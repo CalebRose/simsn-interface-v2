@@ -5245,6 +5245,8 @@ export class BootstrapData {
   TopNFLRushers: NFLPlayer[];
   TopNFLReceivers: NFLPlayer[];
   FaceData: {[key: number]: FaceDataResponse};
+  ContractMap: {[key: number]: NFLContract};
+  ExtensionMap: {[key: number]: NFLExtensionOffer};
 
   constructor(source: any = {}) {
     if (typeof source === "string") source = JSON.parse(source);
@@ -5283,6 +5285,8 @@ export class BootstrapData {
     this.TopNFLRushers = this.convertValues(source["TopNFLRushers"], NFLPlayer);
     this.TopNFLReceivers = this.convertValues(source["TopNFLReceivers"], NFLPlayer);
     this.FaceData = this.convertValues(source["FaceData"], FaceDataResponse, true);
+    this.ContractMap = this.convertValues(source["ContractMap"], NFLContract, true);
+    this.ExtensionMap = this.convertValues(source["ExtensionMap"], NFLExtensionOffer, true);
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

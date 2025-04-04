@@ -11,8 +11,8 @@ import {
   getCFBOverall,
 } from "../../_utility/getLetterGrade";
 import { getYear } from "../../_utility/getYear";
-import { CollegePlayer as CHLPlayer, Croot } from "../../models/hockeyModels";
-import { CollegePlayer } from "../../models/footballModels";
+import { CollegePlayer as CHLPlayer, ProfessionalPlayer as PHLPlayer, Croot } from "../../models/hockeyModels";
+import { CollegePlayer as CFBPlayer, NFLPlayer } from "../../models/footballModels";
 import {
   Agility,
   Speed,
@@ -56,6 +56,33 @@ export const getCHLAttributes = (
   ];
   if (!isMobile && category === Attributes) {
     list = list.concat(...getAdditionalHockeyAttributes(player));
+  } else if (!isMobile && category === Potentials) {
+    list = list.concat(...getAdditionalPotentialAttributes(player));
+  }
+  return list;
+};
+
+export const getPHLAttributes = (
+  player: PHLPlayer,
+  isMobile: boolean,
+  category: string
+) => {
+  const heightObj = HeightToFeetAndInches(player.Height);
+  let list = [
+    { label: "Name", value: `${player.FirstName} ${player.LastName}` },
+    { label: "Pos", value: player.Position },
+    { label: "Arch", value: player.Archetype },
+    { label: "Yr", value: player.Year},
+    { label: "Ovr", value: player.Overall },
+  ];
+  if (!isMobile && category === Attributes) {
+    list = list.concat(
+      ...getAdditionalHockeyAttributes(player).map(attr => ({
+        ...attr,
+        letter: attr.value,
+        value: attr.raw,
+      }))
+    );
   } else if (!isMobile && category === Potentials) {
     list = list.concat(...getAdditionalPotentialAttributes(player));
   }
@@ -139,58 +166,91 @@ export const getAdditionalHockeyAttributeGrades = (player: Croot) => {
   ];
 };
 
-export const getAdditionalHockeyAttributes = (player: CHLPlayer) => {
+export const getAdditionalHockeyAttributes = (player: CHLPlayer | PHLPlayer) => {
   return [
-    { label: "Agi", value: getHockeyLetterGrade(player.Agility, player.Year) },
-    { label: "FO", value: getHockeyLetterGrade(player.Faceoffs, player.Year) },
+    { 
+      label: "Agi",
+      raw: player.Agility, 
+      value: getHockeyLetterGrade(player.Agility, player.Year) 
+    },
+    { 
+      label: "FO",
+      raw: player.Faceoffs, 
+      value: getHockeyLetterGrade(player.Faceoffs, player.Year) 
+    },
     {
       label: "LSA",
+      raw: player.LongShotAccuracy,
       value: getHockeyLetterGrade(player.LongShotAccuracy, player.Year),
     },
     {
       label: "LSP",
+      raw: player.LongShotPower,
       value: getHockeyLetterGrade(player.LongShotPower, player.Year),
     },
     {
       label: "CSA",
+      raw: player.CloseShotAccuracy,
       value: getHockeyLetterGrade(player.CloseShotAccuracy, player.Year),
     },
     {
       label: "CSP",
+      raw: player.CloseShotPower,
       value: getHockeyLetterGrade(player.CloseShotPower, player.Year),
     },
-    { label: "Pass", value: getHockeyLetterGrade(player.Passing, player.Year) },
+    { 
+      label: "Pass", 
+      raw: player.Passing,
+      value: getHockeyLetterGrade(player.Passing, player.Year) 
+    },
     {
       label: "PH",
+      raw: player.PuckHandling,
       value: getHockeyLetterGrade(player.PuckHandling, player.Year),
     },
-    { label: "Str", value: getHockeyLetterGrade(player.Strength, player.Year) },
+    { 
+      label: "Str", 
+      raw: player.Strength,
+      value: getHockeyLetterGrade(player.Strength, player.Year) },
     {
       label: "BChk",
+      raw: player.BodyChecking,
       value: getHockeyLetterGrade(player.BodyChecking, player.Year),
     },
     {
       label: "SChk",
+      raw: player.StickChecking,
       value: getHockeyLetterGrade(player.StickChecking, player.Year),
     },
     {
       label: "SB",
+      raw: player.ShotBlocking,
       value: getHockeyLetterGrade(player.ShotBlocking, player.Year),
     },
     {
       label: "GK",
+      raw: player.Goalkeeping,
       value: getHockeyLetterGrade(player.Goalkeeping, player.Year),
     },
     {
       label: "GV",
+      raw: player.GoalieVision,
       value: getHockeyLetterGrade(player.GoalieVision, player.Year),
     },
-    { label: "Sta", value: getGeneralLetterGrade(player.Stamina) },
-    { label: "Inj", value: getGeneralLetterGrade(player.InjuryRating) },
+    { 
+      label: "Sta",
+      raw: player.Stamina, 
+      value: getGeneralLetterGrade(player.Stamina) 
+    },
+    { 
+      label: "Inj",
+      raw: player.InjuryRating, 
+      value: getGeneralLetterGrade(player.InjuryRating) 
+    },
   ];
 };
 
-export const getAdditionalPotentialAttributes = (player: CHLPlayer) => {
+export const getAdditionalPotentialAttributes = (player: CHLPlayer | PHLPlayer) => {
   return [
     { label: "Agi", value: getGeneralLetterGrade(player.AgilityPotential) },
     { label: "FO", value: getGeneralLetterGrade(player.FaceoffsPotential) },
@@ -374,10 +434,10 @@ const archetypeAcronyms: { [key: string]: string } = {
   "Run Stopper": "RDS",
   "Speed Rusher": "SPR",
   Coverage: "CVG",
-  PassRush: "PRS",
+  "Pass Rush": "PRS",
   "Ball Hawk": "BH",
-  ManCoverage: "MCV",
-  ZoneCoverage: "ZCV",
+  "Man Coverage": "MCV",
+  "Zone Coverage": "ZCV",
   Accuracy: "ACC",
   "Triple-Threat": "TT",
   Wingback: "WB",
@@ -396,8 +456,83 @@ const getArchetypeValue = (archetype: string, isMobile: boolean) => {
     : archetype;
 };
 
+export const getNFLAttributes = (
+  player: NFLPlayer,
+  isMobile: boolean,
+  category: string,
+  showLetterGrade: boolean
+) => {
+  const nflPlayer = player as NFLPlayer
+  const nflPlayerAttributes = [
+    { label: "Name", value: `${nflPlayer.FirstName} ${nflPlayer.LastName}` },
+    { label: "Pos", value: nflPlayer.Position },
+    { label: "Arch", value: getArchetypeValue(nflPlayer.Archetype, isMobile) },
+    { label: "Yr", value: GetNFLYear(nflPlayer.Experience)},
+    { 
+      label: "Ovr", 
+      value: showLetterGrade 
+        ? GetNFLOverall(nflPlayer.Overall, true) 
+        : nflPlayer.Overall 
+    },
+  ];
+  const additionalAttributes = !isMobile && category === "Attributes"
+    ? getAdditionalNFLAttributes(nflPlayer).map(attr => ({
+        ...attr,
+        value: showLetterGrade 
+          ? GetNFLOverall(attr.value as number, true) 
+          : attr.value,
+      }))
+    : [];
+
+  return [...nflPlayerAttributes, ...additionalAttributes];
+};
+
+export const getAdditionalNFLAttributes = (player: NFLPlayer) => {
+  return [
+    { label: "POT", value: player.PotentialGrade },
+    { label: "FIQ", value: player.FootballIQ },
+    { label: "SPD", value: player.Speed },
+    { label: "AGI", value: player.Agility },
+    { label: "CAR", value: player.Carrying },
+    { label: "CTH", value: player.Catching },
+    { label: "RTE", value: player.RouteRunning },
+    { label: "THP", value: player.ThrowPower },
+    { label: "THA", value: player.ThrowAccuracy },
+    { label: "PBK", value: player.PassBlock },
+    { label: "RBK", value: player.RunBlock },
+    { label: "STR", value: player.Strength },
+    { label: "TKL", value: player.Tackle },
+    { label: "ZCV", value: player.ZoneCoverage },
+    { label: "MCV", value: player.ManCoverage },
+    { label: "PRS", value: player.PassRush },
+    { label: "RDF", value: player.RunDefense },
+    { label: "KP", value: player.KickPower },
+    { label: "KA", value: player.KickAccuracy },
+    { label: "PP", value: player.PuntPower },
+    { label: "PA", value: player.PuntAccuracy },
+    { label: "STA", value: player.Stamina },
+    { label: "INJ", value: player.Injury },
+  ];
+};
+
+export const GetNFLOverall = (ovr: number, showLetterGrade: boolean) => {
+  if (!showLetterGrade) return ovr;
+  if (ovr > 61) return 'A';
+  else if (ovr > 59) return 'A-';
+  else if (ovr > 57) return 'B+';
+  else if (ovr > 55) return 'B';
+  else if (ovr > 53) return 'B-';
+  else if (ovr > 51) return 'C+';
+  else if (ovr > 49) return 'C';
+  else if (ovr > 47) return 'C-';
+  else if (ovr > 45) return 'D+';
+  else if (ovr > 43) return 'D';
+  else if (ovr > 41) return 'D-';
+  return 'F';
+};
+
 export const getCFBAttributes = (
-  player: CollegePlayer,
+  player: CFBPlayer,
   isMobile: boolean,
   category: string
 ) => {
@@ -416,7 +551,7 @@ export const getCFBAttributes = (
   return list;
 };
 
-export const getAdditionalCFBAttributes = (player: CollegePlayer) => {
+export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
   return [
     { label: "POT", value: player.PotentialGrade },
     {
@@ -620,14 +755,19 @@ export const getAdditionalCFBAttributes = (player: CollegePlayer) => {
   ];
 };
 
+export const GetNFLYear = (data: number) => {
+  if (data < 2) return 'R';
+  return Number(data);
+};
+
 interface PriorityAttribute {
   Name: string;
   Value?: number | string;
-  Letter: string;
-}
+  Letter?: string | number;
+};
 
-export const setPriorityAttributes = (
-  player: CollegePlayer
+export const setPriorityCFBAttributes = (
+  player: CFBPlayer
 ): PriorityAttribute[] => {
   let priorityAttributes: PriorityAttribute[] = [];
 
@@ -1431,7 +1571,6 @@ export const setPriorityAttributes = (
       break;
   }
 
-  // Add common attributes for all positions
   priorityAttributes.push(
     {
       Name: FootballIQ,
@@ -1468,7 +1607,93 @@ export const setPriorityAttributes = (
   return priorityAttributes;
 };
 
-export const getShotgunRating = (player: CollegePlayer) => {
+const headerMap: { [key: string]: string } = {
+  Agility: "Agility",
+  Speed: "Speed",
+  Carrying: "Carrying",
+  ShotgunRating: "Shotgun Rating",
+  ThrowPower: "Throw Power",
+  ThrowAccuracy: "Throw Accuracy",
+  Strength: "Strength",
+  Catching: "Catching",
+  PassBlock: "Pass Block",
+  RunBlock: "Run Block",
+  RouteRunning: "Route Running",
+  Tackle: "Tackle",
+  PassRush: "Pass Rush",
+  RunDefense: "Run Defense",
+  ZoneCoverage: "Zone Coverage",
+  ManCoverage: "Man Coverage",
+  KickAccuracy: "Kick Accuracy",
+  KickPower: "Kick Power",
+  PuntAccuracy: "Punt Accuracy",
+  PuntPower: "Punt Power",
+  FootballIQ: "Football IQ",
+  Stamina: "Stamina",
+  Injury: "Injury",
+};
+
+const priorityAttributesMap: { [key: string]: string[] } = {
+  QB: ["Agility", "Speed", "Carrying", "ThrowPower", "ThrowAccuracy", "Strength"],
+  RB: ["Agility", "Speed", "Carrying", "Catching", "PassBlock", "Strength"],
+  FB: ["Agility", "Speed", "Carrying", "Catching", "PassBlock", "Strength"],
+  WR: ["Agility", "Speed", "Carrying", "Catching", "RouteRunning", "Strength"],
+  TE: ["Agility", "Speed", "Carrying", "Catching", "RouteRunning", "Strength", "PassBlock", "RunBlock"],
+  OT: ["Agility", "Strength", "PassBlock", "RunBlock"],
+  OG: ["Agility", "Strength", "PassBlock", "RunBlock"],
+  C: ["Agility", "Strength", "PassBlock", "RunBlock"],
+  DE: ["Agility", "Tackle", "Strength", "PassRush", "RunDefense"],
+  DT: ["Agility", "Tackle", "Strength", "PassRush", "RunDefense"],
+  ILB: ["Agility", "Speed", "Tackle", "Strength", "PassRush", "RunDefense", "ZoneCoverage", "ManCoverage"],
+  OLB: ["Agility", "Speed", "Tackle", "Strength", "PassRush", "RunDefense", "ZoneCoverage", "ManCoverage"],
+  CB: ["Agility", "Speed", "Tackle", "Strength", "ZoneCoverage", "ManCoverage", "Catching"],
+  FS: ["Agility", "Speed", "Tackle", "Strength", "RunDefense", "ZoneCoverage", "ManCoverage", "Catching"],
+  SS: ["Agility", "Speed", "Tackle", "Strength", "RunDefense", "ZoneCoverage", "ManCoverage", "Catching"],
+  K: ["KickAccuracy", "KickPower"],
+  P: ["PuntAccuracy", "PuntPower"],
+  ATH: ["Agility", "Speed", "Strength"],
+};
+
+export const setPriorityNFLAttributes = (
+  player: NFLPlayer,
+  showLetterGrade: boolean
+): PriorityAttribute[] => {
+  const position = player.Position;
+  const attributesForPosition = priorityAttributesMap[position] || [];
+  const priorityAttributes = attributesForPosition.map(attrName => {
+    const rawValue = (player as any)[attrName];
+    return {
+      Name: headerMap[attrName] || attrName,
+      Value: showLetterGrade ? GetNFLOverall(rawValue, true) : rawValue,
+    };
+  });
+  
+  if (player.Position === "QB") {
+    priorityAttributes.push({
+      Name: "Shotgun Rating",
+      Value: getShotgunRating(player),
+    });
+  }
+
+  priorityAttributes.push(
+    {
+      Name: "Football IQ",
+      Value: showLetterGrade ? GetNFLOverall(player.FootballIQ, true) : player.FootballIQ,
+    },
+    {
+      Name: "Stamina",
+      Value: showLetterGrade ? GetNFLOverall(player.Stamina, true) : player.Stamina,
+    },
+    {
+      Name: "Injury",
+      Value: showLetterGrade ? GetNFLOverall(player.Injury, true) : player.Injury,
+    }
+  );
+
+  return priorityAttributes;
+};
+
+export const getShotgunRating = (player: CFBPlayer | NFLPlayer) => {
   if (player.Shotgun === 1) {
     return "Shotgun";
   } else if (player.Shotgun === -1) {

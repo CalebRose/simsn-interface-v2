@@ -3178,6 +3178,8 @@ export class BootstrapData {
   ProTeamLineups: ProfessionalLineup[];
   ProTeamShootoutLineup: ProfessionalShootoutLineup;
   FaceData: { [key: number]: FaceDataResponse };
+  ContractMap: { [key: number]: ProContract };
+  ExtensionMap: { [key: number]: ExtensionOffer };
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -3270,6 +3272,16 @@ export class BootstrapData {
     this.FaceData = this.convertValues(
       source["FaceData"],
       FaceDataResponse,
+      true
+    );
+    this.ContractMap = this.convertValues(
+      source["ContractMap"],
+      ProContract,
+      true
+    );
+    this.ExtensionMap = this.convertValues(
+      source["ExtensionMap"],
+      ExtensionOffer,
       true
     );
   }

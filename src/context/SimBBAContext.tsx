@@ -26,7 +26,9 @@ import {
   Gameplan,
   NBAGameplan,
   TransferPlayerResponse,
-  FaceDataResponse
+  FaceDataResponse,
+  NBAContract,
+  NBAExtensionOffer
 } from "../models/basketballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { BootstrapService } from "../_services/bootstrapService";
@@ -85,6 +87,8 @@ interface SimBBAContextProps {
   playerFaces: {
     [key: number]: FaceDataResponse;
   };
+  proContractMap: Record<number, NBAContract> | null;
+  proExtensionMap: Record<number, NBAExtensionOffer> | null;
 }
 
 // ✅ Initial Context State
@@ -135,6 +139,8 @@ const defaultContext: SimBBAContextProps = {
   topNBAAssists: [],
   topNBARebounds: [],
   playerFaces: {},
+  proContractMap: {},
+  proExtensionMap: {},
 };
 
 export const SimBBAContext = createContext<SimBBAContextProps>(defaultContext);
@@ -235,9 +241,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [topNBAPoints, setTopNBAPoints] = useState<NBAPlayer[]>([]);
   const [topNBAAssists, setTopNBAAssists] = useState<NBAPlayer[]>([]);
   const [topNBARebounds, setTopNBARebounds] = useState<NBAPlayer[]>([]);
-    const [playerFaces, setPlayerFaces] = useState<{
-      [key: number]: FaceDataResponse;
-    }>({});
+  const [playerFaces, setPlayerFaces] = useState<{
+    [key: number]: FaceDataResponse;
+  }>({});
+  const [proContractMap, setProContractMap] = useState<Record<number, NBAContract> | null>({});
+  const [proExtensionMap, setProExtensionMap] = useState<Record<number, NBAExtensionOffer> | null>({});
   
 
   useEffect(() => {
@@ -391,6 +399,9 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     setRecruits(res.Recruits);
     setFreeAgency(res.FreeAgency);
     setAllCollegeGames(res.AllCollegeGames);
+    setProContractMap(res.ContractMap);
+    setProExtensionMap(res.ExtensionMap);
+    
     if (res.AllCollegeGames.length > 0 && cbb_Timestamp) {
       const currentSeasonGames = res.AllCollegeGames.filter(
         (x) => x.SeasonID === cbb_Timestamp.SeasonID
@@ -463,7 +474,9 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         topNBAPoints,
         topNBAAssists,
         topNBARebounds,
-        playerFaces
+        playerFaces,
+        proContractMap,
+        proExtensionMap
       }}
     >
       {children}

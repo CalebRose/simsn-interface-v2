@@ -76,7 +76,7 @@ export const SideMenuItem: React.FC<SideMenuItemProps> = ({
       </button>
 
       {isOpen && dropdown && (
-        <ul className="pl-2">
+        <ul className="pl-4 w-full">
           {dropdown.map((item, index) => (
             <SideMenuItem key={index} {...item} league={league} />
           ))}

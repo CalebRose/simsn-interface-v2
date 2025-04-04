@@ -24,6 +24,10 @@
   -webkit-text-size-adjust: 100%;
 }
 
+.table-header-group {
+  z-index: 10;
+}
+
 a {
   font-weight: 500;
   color: #646cff;

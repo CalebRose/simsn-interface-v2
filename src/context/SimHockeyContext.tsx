@@ -32,6 +32,8 @@ import {
   ProfessionalShootoutLineup,
   RecruitPlayerProfile,
   FaceDataResponse,
+  ProContract,
+  ExtensionOffer
 } from "../models/hockeyModels";
 import { TeamService } from "../_services/teamService";
 import {
@@ -104,6 +106,8 @@ interface SimHCKContextProps {
   playerFaces: {
     [key: number]: FaceDataResponse;
   };
+  proContractMap: Record<number, ProContract> | null;
+  proExtensionMap: Record<number, ExtensionOffer> | null;
 }
 
 // ✅ Default context value
@@ -162,6 +166,8 @@ const defaultContext: SimHCKContextProps = {
   saveCHLGameplan: async () => {},
   savePHLGameplan: async () => {},
   playerFaces: {},
+  proContractMap: {},
+  proExtensionMap: {},
 };
 
 // ✅ Create the context
@@ -264,6 +270,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const [playerFaces, setPlayerFaces] = useState<{
     [key: number]: FaceDataResponse;
   }>({});
+  const [proContractMap, setProContractMap] = useState<Record<number, ProContract> | null>({});
+  const [proExtensionMap, setProExtensionMap] = useState<Record<number, ExtensionOffer> | null>({});
 
   useEffect(() => {
     if (currentUser) {
@@ -281,6 +289,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       phlid = currentUser.PHLTeamID;
     }
     const res = await BootstrapService.GetHCKBootstrapData(chlid, phlid);
+    console.log(res)
     setCHLTeams(res.AllCollegeTeams);
     setProTeams(res.AllProTeams);
     setAllCollegeGames(res.AllCollegeGames);
@@ -306,6 +315,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     setRecruitProfiles(res.RecruitProfiles);
     setProNotifications(res.ProNotifications);
     setPlayerFaces(res.FaceData);
+    setProContractMap(res.ContractMap);
+    setProExtensionMap(res.ExtensionMap);
 
     if (res.AllCollegeGames.length > 0 && hck_Timestamp) {
       const currentSeasonGames = res.AllCollegeGames.filter(
@@ -577,6 +588,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         saveCHLGameplan,
         savePHLGameplan,
         playerFaces,
+        proContractMap,
+        proExtensionMap
       }}
     >
       {children}
