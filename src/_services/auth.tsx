@@ -49,7 +49,7 @@ export const AuthService: {
     email: string,
     password: string
   ): Promise<AuthResponse> => {
-    const fauth = getAuth();
+    const fauth = getAuth(firebaseApp);
 
     return new Promise<AuthResponse>((resolve) => {
       createUserWithEmailAndPassword(fauth, email, password)
