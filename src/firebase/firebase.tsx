@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { firebaseConfig } from "../firebase-config";
 
-const firebaseApp = initializeApp(firebaseConfig);
+const firebaseApp = initializeApp(firebaseConfig());
 export const firestore = getFirestore(firebaseApp);
 
 // Firestore converter for type safety
