@@ -1,7 +1,6 @@
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { AuthService } from "../_services/auth";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
-import { firestore, useFirestore } from "../firebase/firebase";
+import { useEffect, useState } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
+import firebaseApp, { firestore } from "../firebase/firebase";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 
 // ✅ Define Current User Type
@@ -30,7 +29,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuth();
+    const auth = getAuth(firebaseApp);
 
     const unsubscribeAuth = onAuthStateChanged(
       auth,

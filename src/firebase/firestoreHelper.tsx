@@ -7,8 +7,7 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-
-const firestore = getFirestore();
+import { firestore } from "./firebase";
 
 /**
  * Updates a user's Firestore document by username.

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { initializeApp } from "firebase/app";
+import { FirebaseApp, initializeApp, getApps, getApp } from "firebase/app";
 import {
   getFirestore,
   doc as firestoreDoc,
@@ -12,8 +12,16 @@ import {
 } from "firebase/firestore";
 import { firebaseConfig } from "../firebase-config";
 
-const firebaseApp = initializeApp(firebaseConfig());
+let firebaseApp: FirebaseApp;
+const config = firebaseConfig();
+
+if (!getApps().length) {
+  firebaseApp = initializeApp(config);
+} else {
+  firebaseApp = getApp();
+}
 export const firestore = getFirestore(firebaseApp);
+export default firebaseApp;
 
 // Firestore converter for type safety
 const converter = <T extends DocumentData>(): FirestoreDataConverter<T> => ({

@@ -14,9 +14,8 @@ import {
   DocumentData,
   DocumentReference,
 } from "firebase/firestore";
-import { firebaseConfig } from "../firebase-config";
+import firebaseApp from "../firebase/firebase";
 
-const firebaseApp = initializeApp(firebaseConfig);
 const fireStore = getFirestore(firebaseApp);
 
 // 🔑 Define types for return values
