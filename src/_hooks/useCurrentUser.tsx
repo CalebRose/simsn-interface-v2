@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
-import firebaseApp, { firestore } from "../firebase/firebase";
+import { doc as firestoreDoc, onSnapshot } from "firebase/firestore";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import { fireBaseAppPromise, getFirestoreInstance } from "../firebase-config";
 
 // ✅ Define Current User Type
 export interface CurrentUser {
@@ -29,37 +29,31 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuth(firebaseApp);
+    let unsubAuth: () => void;
+    (async () => {
+      const app = await fireBaseAppPromise;
+      const auth = getAuth(app);
 
-    const unsubscribeAuth = onAuthStateChanged(
-      auth,
-      async (user: User | null) => {
-        if (user) {
-          try {
-            const userRef = doc(firestore, "users", user.uid);
-            const unsubscribeSnapshot = onSnapshot(userRef, (docSnapshot) => {
-              if (docSnapshot.exists()) {
-                setCurrentUser(docSnapshot.data() as CurrentUser);
-              } else {
-                setCurrentUser(null);
-              }
-              setIsLoading(false);
-            });
-
-            return () => unsubscribeSnapshot();
-          } catch (err) {
-            console.error("Failed to fetch user profile:", err);
-            setCurrentUser(null);
-          }
-        } else {
-          setCurrentUser(null); // Logged out
+      unsubAuth = onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          setCurrentUser(null);
+          setIsLoading(false);
+          return;
         }
+        getFirestoreInstance().then((firestore) => {
+          const userRef = firestoreDoc(firestore, "users", user.uid);
+          const unsubSnap = onSnapshot(userRef, (snap) => {
+            setCurrentUser(snap.exists() ? (snap.data() as any) : null);
+            setIsLoading(false);
+            unsubSnap();
+          });
+        });
+      });
+    })();
 
-        setIsLoading(false);
-      }
-    );
-
-    return () => unsubscribeAuth();
+    return () => {
+      unsubAuth?.();
+    };
   }, []);
 
   return [currentUser, setCurrentUser, isLoading];

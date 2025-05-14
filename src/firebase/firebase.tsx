@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { FirebaseApp, initializeApp, getApps, getApp } from "firebase/app";
 import {
   getFirestore,
   doc as firestoreDoc,
@@ -10,18 +9,11 @@ import {
   FirestoreDataConverter,
   WithFieldValue,
 } from "firebase/firestore";
-import { firebaseConfig } from "../firebase-config";
+import { fireBaseAppPromise, getFirestoreInstance } from "../firebase-config";
 
-let firebaseApp: FirebaseApp;
-const config = firebaseConfig();
-
-if (!getApps().length) {
-  firebaseApp = initializeApp(config);
-} else {
-  firebaseApp = getApp();
-}
-export const firestore = getFirestore(firebaseApp);
-export default firebaseApp;
+const getFirebaseApp = async () => {
+  return await fireBaseAppPromise;
+};
 
 // Firestore converter for type safety
 const converter = <T extends DocumentData>(): FirestoreDataConverter<T> => ({
@@ -29,47 +21,28 @@ const converter = <T extends DocumentData>(): FirestoreDataConverter<T> => ({
   fromFirestore: (snapshot) => snapshot.data() as T, // Deserialize
 });
 
-export const useFirestore = <T extends DocumentData>(
-  collectionName: string,
-  docName: string
-): [T | null, (newData: Partial<T>) => Promise<void>, boolean] => {
+export function useFirestore<T>(collection: string, id: string) {
   const [data, setData] = useState<T | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setLoading] = useState(true);
 
-  // Memoize the Firestore document reference
-  const docRef = useMemo<DocumentReference<T>>(
-    () =>
-      firestoreDoc(firestore, collectionName, docName).withConverter(
-        converter<T>()
-      ),
-    [collectionName, docName]
-  );
-
-  // Listen for real-time updates to the document
   useEffect(() => {
-    const unsubscribe = onSnapshot(docRef, (doc) => {
-      if (doc.exists()) {
-        setData(doc.data() as T);
-      } else {
-        setData(null);
-      }
-      setIsLoading(false);
-    });
+    let unsub: () => void;
+    (async () => {
+      const firestore = await getFirestoreInstance();
+      const ref = firestoreDoc(firestore, collection, id);
+      unsub = onSnapshot(ref, (snap) => {
+        setData(snap.exists() ? (snap.data() as T) : null);
+        setLoading(false);
+      });
+    })();
+    return () => unsub?.();
+  }, [collection, id]);
 
-    return () => unsubscribe();
-  }, [docRef]);
+  const updateData = async (newData: Partial<T>) => {
+    const firestore = await getFirestoreInstance();
+    const ref = firestoreDoc(firestore, collection, id);
+    await updateDoc(ref, newData);
+  };
 
-  // Update the document with new data
-  const updateData = useCallback(
-    async (newData: Partial<T>): Promise<void> => {
-      try {
-        await updateDoc(docRef, newData as WithFieldValue<T>);
-      } catch (error) {
-        console.error("Error updating document:", error);
-      }
-    },
-    [docRef]
-  );
-
-  return [data, updateData, isLoading];
-};
+  return [data, updateData, isLoading] as const;
+}

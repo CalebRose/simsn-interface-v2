@@ -7,7 +7,7 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { firestore } from "./firebase";
+import { getFirestoreInstance } from "../firebase-config";
 
 /**
  * Updates a user's Firestore document by username.
@@ -19,6 +19,7 @@ export const updateUserByUsername = async (
   updateData: any
 ) => {
   try {
+    const firestore = await getFirestoreInstance();
     const userQuery = query(
       collection(firestore, "users"),
       where("username", "==", username)

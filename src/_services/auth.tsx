@@ -7,16 +7,13 @@ import {
   User,
 } from "firebase/auth";
 import {
-  getFirestore,
   doc as firestoreDoc,
   setDoc,
   onSnapshot,
   DocumentData,
   DocumentReference,
 } from "firebase/firestore";
-import firebaseApp from "../firebase/firebase";
-
-const fireStore = getFirestore(firebaseApp);
+import { fireBaseAppPromise, getFirestoreInstance } from "../firebase-config";
 
 // 🔑 Define types for return values
 interface AuthResponse {
@@ -49,7 +46,9 @@ export const AuthService: {
     email: string,
     password: string
   ): Promise<AuthResponse> => {
+    const firebaseApp = await fireBaseAppPromise;
     const fauth = getAuth(firebaseApp);
+    const firestore = await getFirestoreInstance();
 
     return new Promise<AuthResponse>((resolve) => {
       createUserWithEmailAndPassword(fauth, email, password)
@@ -65,7 +64,7 @@ export const AuthService: {
             displayName: username,
           });
           try {
-            await setDoc(firestoreDoc(fireStore, "users", user.uid), {
+            await setDoc(firestoreDoc(firestore, "users", user.uid), {
               username,
               email: user.email,
               createdAt: new Date(),
@@ -87,24 +86,26 @@ export const AuthService: {
   },
 
   // Get user profile from Firestore
-  getProfile: (hard = false): Promise<UserProfile | false> => {
+  getProfile: async (hard = false): Promise<UserProfile | false> => {
+    const firebaseApp = await fireBaseAppPromise;
+    const fauth = getAuth(firebaseApp);
     return new Promise<UserProfile | false>((res) => {
-      const fauth = getAuth();
-
       fauth.onAuthStateChanged((user) => {
         if (user) {
-          const userRef: DocumentReference<DocumentData> = firestoreDoc(
-            fireStore,
-            `users`,
-            user.uid
-          );
+          getFirestoreInstance().then((firestore) => {
+            const userRef: DocumentReference<DocumentData> = firestoreDoc(
+              firestore,
+              `users`,
+              user.uid
+            );
 
-          onSnapshot(userRef, (doc) => {
-            if (doc.exists()) {
-              res({ data: doc.data(), user });
-            } else {
-              res(false);
-            }
+            onSnapshot(userRef, (doc) => {
+              if (doc.exists()) {
+                res({ data: doc.data(), user });
+              } else {
+                res(false);
+              }
+            });
           });
         } else {
           res(false);

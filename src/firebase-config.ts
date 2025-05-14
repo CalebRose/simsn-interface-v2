@@ -1,12 +1,43 @@
-export const firebaseConfig = () => ({
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
-  simFBAKey: import.meta.env.VITE_SIMFBA_KEY,
-  simFBAUser: import.meta.env.VITE_SIMFBA_USER,
+import { getApp, getApps, initializeApp } from "firebase/app";
+import { fbaUrl } from "./_constants/urls";
+import { GetCall } from "./_helper/fetchHelper";
+import { getFirestore } from "firebase/firestore";
+
+interface firebaseConfig {
+  Key: string;
+  Domain: string;
+  DBUrl: string;
+  ProjectID: string;
+  Bucket: string;
+  SenderID: string;
+  AppID: string;
+  MeasurementID: string;
+  User: string;
+  UserKey: string;
+}
+
+async function loadConfig() {
+  const res = (await GetCall(`${fbaUrl}admin/fire/it/up`)) as firebaseConfig;
+  return {
+    apiKey: res.Key,
+    authDomain: res.Domain,
+    databaseURL: res.DBUrl,
+    projectId: res.ProjectID,
+    storageBucket: res.Bucket,
+    messagingSenderId: res.SenderID,
+    appId: res.AppID,
+    measurementId: res.MeasurementID,
+    simFBAKey: res.User,
+    simFBAUser: res.UserKey,
+  };
+}
+
+export const fireBaseAppPromise = loadConfig().then((cfg) => {
+  if (!getApps().length) return initializeApp(cfg);
+  return getApp();
 });
+
+export async function getFirestoreInstance() {
+  const app = await fireBaseAppPromise;
+  return getFirestore(app);
+}
