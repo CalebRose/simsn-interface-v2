@@ -53,6 +53,8 @@ import {
   DraftPick,
   CollegeGameplan,
   ProGameplan,
+  CollegePollOfficial,
+  CollegePollSubmission,
 } from "../models/hockeyModels";
 import { TeamService } from "../_services/teamService";
 import {
@@ -74,6 +76,7 @@ import { FreeAgencyService } from "../_services/freeAgencyService";
 import { StatsService } from "../_services/statsService";
 import { GenerateNumberFromRange } from "../_helper/utilHelper";
 import { TradeService } from "../_services/tradeService";
+import { CollegePollService } from "../_services/collegePollService";
 
 // ✅ Define the context props
 interface SimHCKContextProps {
@@ -101,6 +104,8 @@ interface SimHCKContextProps {
   portalPlayers: CollegePlayer[]; // Replace with a more specific type if available
   collegeInjuryReport: CollegePlayer[];
   collegeNews: NewsLog[];
+  collegePolls: CollegePollOfficial[];
+  collegePollSubmission: CollegePollSubmission;
   allCollegeGames: CollegeGame[];
   currentCollegeSeasonGames: CollegeGame[];
   collegeTeamsGames: CollegeGame[];
@@ -171,6 +176,8 @@ interface SimHCKContextProps {
     playerID: number,
     teamID: number
   ) => Promise<void>;
+  submitCollegePoll: (dto: any) => Promise<void>;
+
   playerFaces: {
     [key: number]: FaceDataResponse;
   };
@@ -242,6 +249,8 @@ const defaultContext: SimHCKContextProps = {
   tradePreferencesMap: {},
   phlDraftPicks: [],
   phlDraftPickMap: {},
+  collegePolls: [],
+  collegePollSubmission: {} as CollegePollSubmission,
   removeUserfromCHLTeamCall: async () => {},
   removeUserfromPHLTeamCall: async () => {},
   addUserToCHLTeam: () => {},
@@ -279,6 +288,7 @@ const defaultContext: SimHCKContextProps = {
   cancelTrade: async () => {},
   syncAcceptedTrade: async () => {},
   vetoTrade: async () => {},
+  submitCollegePoll: async () => {},
   topCHLGoals: [],
   topCHLAssists: [],
   topCHLSaves: [],
@@ -420,6 +430,14 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     ExtensionOffer
   > | null>({});
 
+  /*
+  collegePolls: [],
+  collegePollSubmission: {} as CollegePollSubmission,
+  */
+  const [collegePolls, setCollegePolls] = useState<CollegePollOfficial[]>([]);
+  const [collegePollSubmission, setCollegePollSubmission] =
+    useState<CollegePollSubmission>({} as CollegePollSubmission);
+
   const [topCHLGoals, setTopCHLGoals] = useState<CollegePlayer[]>([]);
   const [topCHLAssists, setTopCHLAssists] = useState<CollegePlayer[]>([]);
   const [topCHLSaves, setTopCHLSaves] = useState<CollegePlayer[]>([]);
@@ -506,10 +524,10 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   }, [proRosterMap, phlTeams]);
 
   useEffect(() => {
-    if (currentUser) {
+    if (currentUser && hck_Timestamp) {
       getBootstrapData();
     }
-  }, [currentUser]);
+  }, [currentUser, hck_Timestamp]);
 
   const getBootstrapData = async () => {
     let chlid = 0;
@@ -532,6 +550,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     setPHLTeam(res.ProTeam);
     setCollegeNews(res.CollegeNews);
     setProNews(res.ProNews);
+    setCollegePolls(res.OfficialPolls);
+    setCollegePollSubmission(res.CollegePoll);
     setCollegeNotifications(res.CollegeNotifications);
     setAllCHLStandings(res.CollegeStandings);
     setCHLGameplan(res.CHLGameplan);
@@ -1267,6 +1287,13 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     });
   }, []);
 
+  const submitCollegePoll = useCallback(async (dto: any) => {
+    const res = await CollegePollService.HCKSubmitPoll(dto);
+    if (res) {
+      setCollegePollSubmission(res);
+    }
+  }, []);
+
   return (
     <SimHCKContext.Provider
       value={{
@@ -1376,6 +1403,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         proPlayerMap,
         ExportHCKRoster,
         ExportCHLRecruits,
+        collegePolls,
+        collegePollSubmission,
+        submitCollegePoll,
       }}
     >
       {children}

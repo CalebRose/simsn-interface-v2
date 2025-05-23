@@ -73,7 +73,9 @@ export const TeamSchedule = ({
         ) : (
           <div className="grid">
             <div
-              className={`grid ${isFootball ? "grid-cols-7" : "grid-cols-5"} font-semibold border-b-2 pb-2`}
+              className={`grid ${
+                isFootball ? "grid-cols-7" : "grid-cols-5"
+              } font-semibold border-b-2 pb-2`}
               style={{
                 borderColor,
               }}
@@ -83,12 +85,12 @@ export const TeamSchedule = ({
                   Week
                 </Text>
               </div>
-            {isFootball && (
-              <div className="text-left col-span-2">
-                <Text variant="xs" className={`${textColorClass}`}>
-                  Timeslot
-                </Text>
-              </div>
+              {isFootball && (
+                <div className="text-left col-span-2">
+                  <Text variant="xs" className={`${textColorClass}`}>
+                    Timeslot
+                  </Text>
+                </div>
               )}
               <div className="text-left col-span-2">
                 <Text variant="xs" className={`${textColorClass}`}>
@@ -117,7 +119,9 @@ export const TeamSchedule = ({
             {processedSchedule.map((game, index) => (
               <div
                 key={index}
-                className={`grid ${isFootball ? "grid-cols-7" : "grid-cols-5"} border-b border-b-[#34455d] items-center`}
+                className={`grid ${
+                  isFootball ? "grid-cols-7" : "grid-cols-5"
+                } border-b border-b-[#34455d] items-center`}
                 style={{
                   backgroundColor:
                     index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
@@ -128,13 +132,13 @@ export const TeamSchedule = ({
                     {game.weekLabel}
                   </Text>
                 </div>
-              {isFootball && (
-                <div className="text-left col-span-2">
-                  <Text variant="xs" className="font-semibold opacity-70">
-                    {game.TimeSlot.split(" ").slice(0, 2).join(" ")}
-                  </Text>
-                </div>
-              )}
+                {isFootball && (
+                  <div className="text-left col-span-2">
+                    <Text variant="xs" className="font-semibold opacity-70">
+                      {game.TimeSlot.split(" ").slice(0, 2).join(" ")}
+                    </Text>
+                  </div>
+                )}
                 <div className="flex items-center col-span-2 justify-start text-center">
                   <Text variant="xs" className="font-semibold text-center">
                     {game.gameLocation}
@@ -234,7 +238,9 @@ export const WeeklySchedule = ({
       ) : (
         <div className="grid">
           <div
-            className={`grid ${isFootball ? "grid-cols-7" : "grid-cols-5"} font-semibold border-b-2 pb-2`}
+            className={`grid ${
+              isFootball ? "grid-cols-7" : "grid-cols-5"
+            } font-semibold border-b-2 pb-2`}
             style={{
               borderColor,
             }}
@@ -244,12 +250,12 @@ export const WeeklySchedule = ({
                 Week
               </Text>
             </div>
-          {isFootball && (
-            <div className="text-left col-span-2">
-              <Text variant="xs" className={`${textColorClass}`}>
-                Timeslot
-              </Text>
-            </div>
+            {isFootball && (
+              <div className="text-left col-span-2">
+                <Text variant="xs" className={`${textColorClass}`}>
+                  Timeslot
+                </Text>
+              </div>
             )}
             <div className="text-left col-span-1 pl-4">
               <Text variant="xs" className={`${textColorClass}`}>
@@ -273,17 +279,19 @@ export const WeeklySchedule = ({
             </div>
           </div>
           <SchedulePageGameModal
-              isOpen={gameModal.isModalOpen}
-              onClose={gameModal.handleCloseModal}
-              league={league}
-              game={selectedGame}
-              title={`${selectedGame?.HomeTeamAbbr} vs ${selectedGame?.AwayTeamAbbr}`}
-              playerMap={playerMap}
-            />
+            isOpen={gameModal.isModalOpen}
+            onClose={gameModal.handleCloseModal}
+            league={league}
+            game={selectedGame}
+            title={`${selectedGame?.HomeTeamAbbr} vs ${selectedGame?.AwayTeamAbbr}`}
+            playerMap={playerMap}
+          />
           {processedSchedule.map((game, index) => (
             <div
               key={index}
-              className={`grid ${isFootball ? "grid-cols-7" : "grid-cols-5"} border-b border-b-[#34455d] items-center`}
+              className={`grid ${
+                isFootball ? "grid-cols-7" : "grid-cols-5"
+              } border-b border-b-[#34455d] items-center`}
               style={{
                 backgroundColor:
                   index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
@@ -295,13 +303,13 @@ export const WeeklySchedule = ({
                   {game.GameDay}
                 </Text>
               </div>
-            {isFootball && (
-              <div className="text-left col-span-2">
-                <Text variant="xs" className="font-semibold opacity-70">
-                  {game.TimeSlot.split(" ").slice(0, 2).join(" ")}
-                </Text>
-              </div>
-            )}
+              {isFootball && (
+                <div className="text-left col-span-2">
+                  <Text variant="xs" className="font-semibold opacity-70">
+                    {game.TimeSlot.split(" ").slice(0, 2).join(" ")}
+                  </Text>
+                </div>
+              )}
               <div className="flex items-center col-span-1 text-left">
                 <Logo
                   variant="xs"
@@ -466,7 +474,7 @@ export const TeamStandings = ({
                   {standing.Rank}
                 </Text>
               </div>
-              <div className="flex text-left w-1/2 mx-auto justify-start col-span-2 pl-1 items-center">
+              <div className="flex text-left w-full mx-auto justify-start col-span-2 pl-1 items-center">
                 <Logo
                   variant="xs"
                   classes="w-4 h-4 p-0"

@@ -884,6 +884,8 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
           accessor: "ContractLength",
         },
         { header: "Tagged", accessor: "isTagged" },
+        { header: "Trade Block", accessor: "IsOnTradeBlock" },
+        { header: "PS", accessor: "IsPracticeSquad" },
         { header: "Personality", accessor: "Personality" },
         { header: "Work Ethic", accessor: "WorkEthic" },
       ]);
@@ -981,7 +983,9 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
               : ""
           }`}
           >
-            {attr.label === "Is Tagged" ? (
+            {attr.label === "Is Tagged" ||
+            attr.label === "IsOnTradeBlock" ||
+            attr.label === "PS" ? (
               <>
                 {attr.value === true ? (
                   <CheckCircle

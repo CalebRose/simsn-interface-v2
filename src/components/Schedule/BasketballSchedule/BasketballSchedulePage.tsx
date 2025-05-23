@@ -5,18 +5,10 @@ import {
   SimNBA,
   Overview,
 } from "../../../_constants/constants";
-import { Border } from "../../../_design/Borders";
 import { useAuthStore } from "../../../context/AuthContext";
-import { SelectDropdown } from "../../../_design/Select";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
-import { Button } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
-import {
-  CollegePlayer as CHLPlayer,
-  ProfessionalPlayer as PHLPlayer,
-} from "../../../models/hockeyModels";
-import { CollegePlayer, NFLPlayer } from "../../../models/footballModels";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
 import { isBrightColor } from "../../../_utility/isBrightColor";
@@ -46,6 +38,8 @@ export const BasketballSchedulePage = ({ league, ts }: SchedulePageProps) => {
 
   const [selectedTeam, setSelectedTeam] = useState(cbbTeam);
   const [category, setCategory] = useState(Overview);
+  const [resultsOverride, setResultsOverride] = useState<boolean>(false);
+
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,

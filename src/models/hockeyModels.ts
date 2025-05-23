@@ -3283,6 +3283,8 @@ export class BootstrapData {
   DraftPicks: DraftPick[];
   CHLGameplan: CollegeGameplan;
   PHLGameplan: ProGameplan;
+  CollegePoll: CollegePollSubmission;
+  OfficialPolls: CollegePollOfficial[];
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -3420,6 +3422,14 @@ export class BootstrapData {
       CollegeGameplan
     );
     this.PHLGameplan = this.convertValues(source["PHLGameplan"], ProGameplan);
+    this.CollegePoll = this.convertValues(
+      source["CollegePoll"],
+      CollegePollSubmission
+    );
+    this.OfficialPolls = this.convertValues(
+      source["OfficialPolls"],
+      CollegePollOfficial
+    );
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -4019,204 +4029,6 @@ export class CollegePollSubmission {
     this.Rank19ID = source["Rank19ID"];
     this.Rank20 = source["Rank20"];
     this.Rank20ID = source["Rank20ID"];
-  }
-
-  convertValues(a: any, classs: any, asMap: boolean = false): any {
-    if (!a) {
-      return a;
-    }
-    if (Array.isArray(a)) {
-      return (a as any[]).map((elem) => this.convertValues(elem, classs));
-    } else if ("object" === typeof a) {
-      if (asMap) {
-        for (const key of Object.keys(a)) {
-          a[key] = new classs(a[key]);
-        }
-        return a;
-      }
-      return new classs(a);
-    }
-    return a;
-  }
-}
-export class CollegePollOfficial {
-  ID: number;
-  CreatedAt: Time;
-  UpdatedAt: Time;
-  DeletedAt: DeletedAt;
-  SeasonID: number;
-  WeekID: number;
-  Week: number;
-  Rank1: string;
-  Rank1ID: number;
-  Rank1Votes: number;
-  Rank1No1Votes: number;
-  Rank2: string;
-  Rank2ID: number;
-  Rank2Votes: number;
-  Rank2No1Votes: number;
-  Rank3: string;
-  Rank3ID: number;
-  Rank3Votes: number;
-  Rank3No1Votes: number;
-  Rank4: string;
-  Rank4ID: number;
-  Rank4Votes: number;
-  Rank4No1Votes: number;
-  Rank5: string;
-  Rank5ID: number;
-  Rank5Votes: number;
-  Rank5No1Votes: number;
-  Rank6: string;
-  Rank6ID: number;
-  Rank6Votes: number;
-  Rank6No1Votes: number;
-  Rank7: string;
-  Rank7ID: number;
-  Rank7Votes: number;
-  Rank7No1Votes: number;
-  Rank8: string;
-  Rank8ID: number;
-  Rank8Votes: number;
-  Rank8No1Votes: number;
-  Rank9: string;
-  Rank9ID: number;
-  Rank9Votes: number;
-  Rank9No1Votes: number;
-  Rank10: string;
-  Rank10ID: number;
-  Rank10Votes: number;
-  Rank10No1Votes: number;
-  Rank11: string;
-  Rank11ID: number;
-  Rank11Votes: number;
-  Rank11No1Votes: number;
-  Rank12: string;
-  Rank12ID: number;
-  Rank12Votes: number;
-  Rank12No1Votes: number;
-  Rank13: string;
-  Rank13ID: number;
-  Rank13Votes: number;
-  Rank13No1Votes: number;
-  Rank14: string;
-  Rank14ID: number;
-  Rank14Votes: number;
-  Rank14No1Votes: number;
-  Rank15: string;
-  Rank15ID: number;
-  Rank15Votes: number;
-  Rank15No1Votes: number;
-  Rank16: string;
-  Rank16ID: number;
-  Rank16Votes: number;
-  Rank16No1Votes: number;
-  Rank17: string;
-  Rank17ID: number;
-  Rank17Votes: number;
-  Rank17No1Votes: number;
-  Rank18: string;
-  Rank18ID: number;
-  Rank18Votes: number;
-  Rank18No1Votes: number;
-  Rank19: string;
-  Rank19ID: number;
-  Rank19Votes: number;
-  Rank19No1Votes: number;
-  Rank20: string;
-  Rank20ID: number;
-  Rank20Votes: number;
-  Rank20No1Votes: number;
-
-  constructor(source: any = {}) {
-    if ("string" === typeof source) source = JSON.parse(source);
-    this.ID = source["ID"];
-    this.CreatedAt = this.convertValues(source["CreatedAt"], Time);
-    this.UpdatedAt = this.convertValues(source["UpdatedAt"], Time);
-    this.DeletedAt = this.convertValues(source["DeletedAt"], DeletedAt);
-    this.SeasonID = source["SeasonID"];
-    this.WeekID = source["WeekID"];
-    this.Week = source["Week"];
-    this.Rank1 = source["Rank1"];
-    this.Rank1ID = source["Rank1ID"];
-    this.Rank1Votes = source["Rank1Votes"];
-    this.Rank1No1Votes = source["Rank1No1Votes"];
-    this.Rank2 = source["Rank2"];
-    this.Rank2ID = source["Rank2ID"];
-    this.Rank2Votes = source["Rank2Votes"];
-    this.Rank2No1Votes = source["Rank2No1Votes"];
-    this.Rank3 = source["Rank3"];
-    this.Rank3ID = source["Rank3ID"];
-    this.Rank3Votes = source["Rank3Votes"];
-    this.Rank3No1Votes = source["Rank3No1Votes"];
-    this.Rank4 = source["Rank4"];
-    this.Rank4ID = source["Rank4ID"];
-    this.Rank4Votes = source["Rank4Votes"];
-    this.Rank4No1Votes = source["Rank4No1Votes"];
-    this.Rank5 = source["Rank5"];
-    this.Rank5ID = source["Rank5ID"];
-    this.Rank5Votes = source["Rank5Votes"];
-    this.Rank5No1Votes = source["Rank5No1Votes"];
-    this.Rank6 = source["Rank6"];
-    this.Rank6ID = source["Rank6ID"];
-    this.Rank6Votes = source["Rank6Votes"];
-    this.Rank6No1Votes = source["Rank6No1Votes"];
-    this.Rank7 = source["Rank7"];
-    this.Rank7ID = source["Rank7ID"];
-    this.Rank7Votes = source["Rank7Votes"];
-    this.Rank7No1Votes = source["Rank7No1Votes"];
-    this.Rank8 = source["Rank8"];
-    this.Rank8ID = source["Rank8ID"];
-    this.Rank8Votes = source["Rank8Votes"];
-    this.Rank8No1Votes = source["Rank8No1Votes"];
-    this.Rank9 = source["Rank9"];
-    this.Rank9ID = source["Rank9ID"];
-    this.Rank9Votes = source["Rank9Votes"];
-    this.Rank9No1Votes = source["Rank9No1Votes"];
-    this.Rank10 = source["Rank10"];
-    this.Rank10ID = source["Rank10ID"];
-    this.Rank10Votes = source["Rank10Votes"];
-    this.Rank10No1Votes = source["Rank10No1Votes"];
-    this.Rank11 = source["Rank11"];
-    this.Rank11ID = source["Rank11ID"];
-    this.Rank11Votes = source["Rank11Votes"];
-    this.Rank11No1Votes = source["Rank11No1Votes"];
-    this.Rank12 = source["Rank12"];
-    this.Rank12ID = source["Rank12ID"];
-    this.Rank12Votes = source["Rank12Votes"];
-    this.Rank12No1Votes = source["Rank12No1Votes"];
-    this.Rank13 = source["Rank13"];
-    this.Rank13ID = source["Rank13ID"];
-    this.Rank13Votes = source["Rank13Votes"];
-    this.Rank13No1Votes = source["Rank13No1Votes"];
-    this.Rank14 = source["Rank14"];
-    this.Rank14ID = source["Rank14ID"];
-    this.Rank14Votes = source["Rank14Votes"];
-    this.Rank14No1Votes = source["Rank14No1Votes"];
-    this.Rank15 = source["Rank15"];
-    this.Rank15ID = source["Rank15ID"];
-    this.Rank15Votes = source["Rank15Votes"];
-    this.Rank15No1Votes = source["Rank15No1Votes"];
-    this.Rank16 = source["Rank16"];
-    this.Rank16ID = source["Rank16ID"];
-    this.Rank16Votes = source["Rank16Votes"];
-    this.Rank16No1Votes = source["Rank16No1Votes"];
-    this.Rank17 = source["Rank17"];
-    this.Rank17ID = source["Rank17ID"];
-    this.Rank17Votes = source["Rank17Votes"];
-    this.Rank17No1Votes = source["Rank17No1Votes"];
-    this.Rank18 = source["Rank18"];
-    this.Rank18ID = source["Rank18ID"];
-    this.Rank18Votes = source["Rank18Votes"];
-    this.Rank18No1Votes = source["Rank18No1Votes"];
-    this.Rank19 = source["Rank19"];
-    this.Rank19ID = source["Rank19ID"];
-    this.Rank19Votes = source["Rank19Votes"];
-    this.Rank19No1Votes = source["Rank19No1Votes"];
-    this.Rank20 = source["Rank20"];
-    this.Rank20ID = source["Rank20ID"];
-    this.Rank20Votes = source["Rank20Votes"];
-    this.Rank20No1Votes = source["Rank20No1Votes"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -6299,6 +6111,205 @@ export class ProGameplan {
     this.DefenderSortPreference3 = source["DefenderSortPreference3"];
     this.GoalieSortPreference = source["GoalieSortPreference"];
     this.LongerPassesEnabled = source["LongerPassesEnabled"];
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
+export class CollegePollOfficial {
+  [key: string]: any;
+  ID: number;
+  CreatedAt: Time;
+  UpdatedAt: Time;
+  DeletedAt: DeletedAt;
+  SeasonID: number;
+  WeekID: number;
+  Week: number;
+  Rank1: string;
+  Rank1ID: number;
+  Rank1Votes: number;
+  Rank1No1Votes: number;
+  Rank2: string;
+  Rank2ID: number;
+  Rank2Votes: number;
+  Rank2No1Votes: number;
+  Rank3: string;
+  Rank3ID: number;
+  Rank3Votes: number;
+  Rank3No1Votes: number;
+  Rank4: string;
+  Rank4ID: number;
+  Rank4Votes: number;
+  Rank4No1Votes: number;
+  Rank5: string;
+  Rank5ID: number;
+  Rank5Votes: number;
+  Rank5No1Votes: number;
+  Rank6: string;
+  Rank6ID: number;
+  Rank6Votes: number;
+  Rank6No1Votes: number;
+  Rank7: string;
+  Rank7ID: number;
+  Rank7Votes: number;
+  Rank7No1Votes: number;
+  Rank8: string;
+  Rank8ID: number;
+  Rank8Votes: number;
+  Rank8No1Votes: number;
+  Rank9: string;
+  Rank9ID: number;
+  Rank9Votes: number;
+  Rank9No1Votes: number;
+  Rank10: string;
+  Rank10ID: number;
+  Rank10Votes: number;
+  Rank10No1Votes: number;
+  Rank11: string;
+  Rank11ID: number;
+  Rank11Votes: number;
+  Rank11No1Votes: number;
+  Rank12: string;
+  Rank12ID: number;
+  Rank12Votes: number;
+  Rank12No1Votes: number;
+  Rank13: string;
+  Rank13ID: number;
+  Rank13Votes: number;
+  Rank13No1Votes: number;
+  Rank14: string;
+  Rank14ID: number;
+  Rank14Votes: number;
+  Rank14No1Votes: number;
+  Rank15: string;
+  Rank15ID: number;
+  Rank15Votes: number;
+  Rank15No1Votes: number;
+  Rank16: string;
+  Rank16ID: number;
+  Rank16Votes: number;
+  Rank16No1Votes: number;
+  Rank17: string;
+  Rank17ID: number;
+  Rank17Votes: number;
+  Rank17No1Votes: number;
+  Rank18: string;
+  Rank18ID: number;
+  Rank18Votes: number;
+  Rank18No1Votes: number;
+  Rank19: string;
+  Rank19ID: number;
+  Rank19Votes: number;
+  Rank19No1Votes: number;
+  Rank20: string;
+  Rank20ID: number;
+  Rank20Votes: number;
+  Rank20No1Votes: number;
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.ID = source["ID"];
+    this.CreatedAt = this.convertValues(source["CreatedAt"], Time);
+    this.UpdatedAt = this.convertValues(source["UpdatedAt"], Time);
+    this.DeletedAt = this.convertValues(source["DeletedAt"], DeletedAt);
+    this.SeasonID = source["SeasonID"];
+    this.WeekID = source["WeekID"];
+    this.Week = source["Week"];
+    this.Rank1 = source["Rank1"];
+    this.Rank1ID = source["Rank1ID"];
+    this.Rank1Votes = source["Rank1Votes"];
+    this.Rank1No1Votes = source["Rank1No1Votes"];
+    this.Rank2 = source["Rank2"];
+    this.Rank2ID = source["Rank2ID"];
+    this.Rank2Votes = source["Rank2Votes"];
+    this.Rank2No1Votes = source["Rank2No1Votes"];
+    this.Rank3 = source["Rank3"];
+    this.Rank3ID = source["Rank3ID"];
+    this.Rank3Votes = source["Rank3Votes"];
+    this.Rank3No1Votes = source["Rank3No1Votes"];
+    this.Rank4 = source["Rank4"];
+    this.Rank4ID = source["Rank4ID"];
+    this.Rank4Votes = source["Rank4Votes"];
+    this.Rank4No1Votes = source["Rank4No1Votes"];
+    this.Rank5 = source["Rank5"];
+    this.Rank5ID = source["Rank5ID"];
+    this.Rank5Votes = source["Rank5Votes"];
+    this.Rank5No1Votes = source["Rank5No1Votes"];
+    this.Rank6 = source["Rank6"];
+    this.Rank6ID = source["Rank6ID"];
+    this.Rank6Votes = source["Rank6Votes"];
+    this.Rank6No1Votes = source["Rank6No1Votes"];
+    this.Rank7 = source["Rank7"];
+    this.Rank7ID = source["Rank7ID"];
+    this.Rank7Votes = source["Rank7Votes"];
+    this.Rank7No1Votes = source["Rank7No1Votes"];
+    this.Rank8 = source["Rank8"];
+    this.Rank8ID = source["Rank8ID"];
+    this.Rank8Votes = source["Rank8Votes"];
+    this.Rank8No1Votes = source["Rank8No1Votes"];
+    this.Rank9 = source["Rank9"];
+    this.Rank9ID = source["Rank9ID"];
+    this.Rank9Votes = source["Rank9Votes"];
+    this.Rank9No1Votes = source["Rank9No1Votes"];
+    this.Rank10 = source["Rank10"];
+    this.Rank10ID = source["Rank10ID"];
+    this.Rank10Votes = source["Rank10Votes"];
+    this.Rank10No1Votes = source["Rank10No1Votes"];
+    this.Rank11 = source["Rank11"];
+    this.Rank11ID = source["Rank11ID"];
+    this.Rank11Votes = source["Rank11Votes"];
+    this.Rank11No1Votes = source["Rank11No1Votes"];
+    this.Rank12 = source["Rank12"];
+    this.Rank12ID = source["Rank12ID"];
+    this.Rank12Votes = source["Rank12Votes"];
+    this.Rank12No1Votes = source["Rank12No1Votes"];
+    this.Rank13 = source["Rank13"];
+    this.Rank13ID = source["Rank13ID"];
+    this.Rank13Votes = source["Rank13Votes"];
+    this.Rank13No1Votes = source["Rank13No1Votes"];
+    this.Rank14 = source["Rank14"];
+    this.Rank14ID = source["Rank14ID"];
+    this.Rank14Votes = source["Rank14Votes"];
+    this.Rank14No1Votes = source["Rank14No1Votes"];
+    this.Rank15 = source["Rank15"];
+    this.Rank15ID = source["Rank15ID"];
+    this.Rank15Votes = source["Rank15Votes"];
+    this.Rank15No1Votes = source["Rank15No1Votes"];
+    this.Rank16 = source["Rank16"];
+    this.Rank16ID = source["Rank16ID"];
+    this.Rank16Votes = source["Rank16Votes"];
+    this.Rank16No1Votes = source["Rank16No1Votes"];
+    this.Rank17 = source["Rank17"];
+    this.Rank17ID = source["Rank17ID"];
+    this.Rank17Votes = source["Rank17Votes"];
+    this.Rank17No1Votes = source["Rank17No1Votes"];
+    this.Rank18 = source["Rank18"];
+    this.Rank18ID = source["Rank18ID"];
+    this.Rank18Votes = source["Rank18Votes"];
+    this.Rank18No1Votes = source["Rank18No1Votes"];
+    this.Rank19 = source["Rank19"];
+    this.Rank19ID = source["Rank19ID"];
+    this.Rank19Votes = source["Rank19Votes"];
+    this.Rank19No1Votes = source["Rank19No1Votes"];
+    this.Rank20 = source["Rank20"];
+    this.Rank20ID = source["Rank20ID"];
+    this.Rank20Votes = source["Rank20Votes"];
+    this.Rank20No1Votes = source["Rank20No1Votes"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

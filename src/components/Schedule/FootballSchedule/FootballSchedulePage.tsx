@@ -9,6 +9,7 @@ import {
   FootballWeeks as Weeks,
   Divisions,
   Conferences,
+  AdminRole,
 } from "../../../_constants/constants";
 import { useAuthStore } from "../../../context/AuthContext";
 import { SelectDropdown } from "../../../_design/Select";
@@ -63,6 +64,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [isChecked, setIsChecked] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(currentWeek ?? 1);
   const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
+  const [resultsOverride, setResultsOverride] = useState<boolean>(false);
 
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -111,15 +113,16 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   ]);
 
   const processedSchedule = useMemo(
-    () => processSchedule(teamSchedule, selectedTeam, ts, league),
-    [teamSchedule, selectedTeam, ts, league]
+    () =>
+      processSchedule(teamSchedule, selectedTeam, ts, league, resultsOverride),
+    [teamSchedule, selectedTeam, ts, league, resultsOverride]
   );
 
   const weeklyGames = useMemo(() => {
     if (!selectedWeek) return [];
     const gamesForWeek = groupedWeeklyGames[selectedWeek] || [];
-    return processWeeklyGames(gamesForWeek, ts, league);
-  }, [groupedWeeklyGames, selectedWeek, ts, league]);
+    return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
+  }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);
 
   return (
     <>
@@ -157,16 +160,29 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
             </div>
             <div className="flex flex-col gap-2 sm:gap-4 items-center">
               {category === Overview && (
-                <div className="flex justify-center items-center gap-2">
-                  <ToggleSwitch
-                    onChange={(checked) => {
-                      setView(checked ? WeeklyGames : TeamGames);
-                      setIsChecked(checked);
-                    }}
-                    checked={isChecked}
-                  />
-                  <Text variant="small">Weekly Games</Text>
-                </div>
+                <>
+                  <div className="flex justify-center items-center gap-2">
+                    <ToggleSwitch
+                      onChange={(checked) => {
+                        setView(checked ? WeeklyGames : TeamGames);
+                        setIsChecked(checked);
+                      }}
+                      checked={isChecked}
+                    />
+                    <Text variant="small">Weekly Games</Text>
+                  </div>
+                  {currentUser?.roleID && currentUser.roleID === AdminRole && (
+                    <div className="flex justify-center items-center gap-2">
+                      <ToggleSwitch
+                        onChange={() => {
+                          setResultsOverride((res) => !res);
+                        }}
+                        checked={resultsOverride}
+                      />
+                      <Text variant="small">Show Results</Text>
+                    </div>
+                  )}
+                </>
               )}
               <div className="flex w-[95vw] items-center gap-2 justify-around sm:flex-col">
                 <div className="flex flex-col items-center gap-2 justify-center">
@@ -316,6 +332,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [selectedWeek, setSelectedWeek] = useState(currentWeek ?? 1);
   const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
   const [standingsView, setStandingsView] = useState(Conferences);
+  const [resultsOverride, setResultsOverride] = useState<boolean>(false);
 
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -341,8 +358,19 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     setCategory(Overview);
   };
 
-  const { teamStandings, teamSchedule, groupedWeeklyGames, teamAbbrMap } = useMemo(() => {
-    return getScheduleNFLData(
+  const { teamStandings, teamSchedule, groupedWeeklyGames, teamAbbrMap } =
+    useMemo(() => {
+      return getScheduleNFLData(
+        selectedTeam,
+        currentWeek,
+        selectedWeek,
+        selectedSeason,
+        league,
+        allNFLStandings,
+        allNFLGames,
+        nflTeams
+      );
+    }, [
       selectedTeam,
       currentWeek,
       selectedWeek,
@@ -350,29 +378,20 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       league,
       allNFLStandings,
       allNFLGames,
-      nflTeams
-    );
-  }, [
-    selectedTeam,
-    currentWeek,
-    selectedWeek,
-    selectedSeason,
-    league,
-    allNFLStandings,
-    allNFLGames,
-    nflTeams,
-  ]);
+      nflTeams,
+    ]);
 
   const processedSchedule = useMemo(
-    () => processSchedule(teamSchedule, selectedTeam, ts, league),
-    [teamSchedule, selectedTeam, ts, league]
+    () =>
+      processSchedule(teamSchedule, selectedTeam, ts, league, resultsOverride),
+    [teamSchedule, selectedTeam, ts, league, resultsOverride]
   );
 
   const weeklyGames = useMemo(() => {
     if (!selectedWeek) return [];
     const gamesForWeek = groupedWeeklyGames[selectedWeek] || [];
-    return processWeeklyGames(gamesForWeek, ts, league);
-  }, [groupedWeeklyGames, selectedWeek, ts, league]);
+    return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
+  }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);
 
   return (
     <>
@@ -402,16 +421,29 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               </ButtonGroup>
             </div>
             {category === Overview && (
-              <div className="flex justify-center items-center gap-2">
-                <ToggleSwitch
-                  onChange={(checked) => {
-                    setScheduleView(checked ? WeeklyGames : TeamGames);
-                    setIsChecked(checked);
-                  }}
-                  checked={isChecked}
-                />
-                <Text variant="small">Weekly Games</Text>
-              </div>
+              <>
+                <div className="flex justify-center items-center gap-2">
+                  <ToggleSwitch
+                    onChange={(checked) => {
+                      setScheduleView(checked ? WeeklyGames : TeamGames);
+                      setIsChecked(checked);
+                    }}
+                    checked={isChecked}
+                  />
+                  <Text variant="small">Weekly Games</Text>
+                </div>
+                {currentUser?.roleID && currentUser.roleID === AdminRole && (
+                  <div className="flex justify-center items-center gap-2">
+                    <ToggleSwitch
+                      onChange={() => {
+                        setResultsOverride((res) => !res);
+                      }}
+                      checked={resultsOverride}
+                    />
+                    <Text variant="small">Show Results</Text>
+                  </div>
+                )}
+              </>
             )}
             {category === Standings && (
               <div className="flex justify-center items-center gap-2">

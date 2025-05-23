@@ -131,8 +131,10 @@ interface Game {
 export const RevealResults = (
   game: Game,
   ts: FBTimestamp | BKTimestamp | HCKTimestamp,
-  league: League
+  league: League,
+  resultsOverride: boolean
 ): boolean => {
+  if (resultsOverride) return true;
   const { TimeSlot, Week, SeasonID } = game;
   let gameDay = "";
   let currentWeek = 0,
@@ -172,8 +174,10 @@ export const RevealResults = (
 
 export const RevealHCKResults = (
   game: CHLGame | PHLGame,
-  timestamp: HCKTimestamp
+  timestamp: HCKTimestamp,
+  resultsOverride: boolean
 ): boolean => {
+  if (resultsOverride) return true;
   const currentWeek = timestamp.Week;
   if (game.Week < currentWeek || game.SeasonID < timestamp.SeasonID)
     return true;

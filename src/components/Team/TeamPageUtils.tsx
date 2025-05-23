@@ -661,7 +661,10 @@ export const getNFLAttributes = (
       }`,
     },
     { label: "Arch", value: `${arch1}${arch2.length > 0 ? `/${arch2}` : ""}` },
-    { label: "Yr", value: GetNFLYear(nflPlayer.Experience) },
+    {
+      label: "Yr",
+      value: `${nflPlayer.Age} / ${GetNFLYear(nflPlayer.Experience)}`,
+    },
     {
       label: "Ovr",
       value: showLetterGrade
@@ -693,6 +696,8 @@ export const getNFLAttributes = (
           },
           { label: "Years Left", value: nflContract.ContractLength },
           { label: "Is Tagged", value: nflContract.IsTagged },
+          { label: "IsOnTradeBlock", value: player.IsOnTradeBlock },
+          { label: "PS", value: player.IsPracticeSquad },
           { label: "Personality", value: player.Personality },
           { label: "Work Ethic", value: player.WorkEthic },
         ]

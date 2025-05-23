@@ -103,6 +103,12 @@ export const getHCKWeekID = (week: number, seasonID: number) => {
   return diffSeason * 100 + week;
 };
 
+export const getHCKDisplayWeek = (weekID: number, season: number) => {
+  const diffSeason = season - 2000;
+  const baseWeekDiff = diffSeason * 100;
+  return weekID - baseWeekDiff;
+};
+
 export const GetHCKCollegeStats = (
   statsView: StatsView,
   statsType: StatsType,

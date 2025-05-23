@@ -7,6 +7,7 @@ export const SimPHL = "SimPHL";
 export const SimFBA = "SimFBA";
 export const SimBBA = "SimBBA";
 export const SimHCK = "SimHCK";
+export const AdminRole = "Admin";
 export type League =
   | typeof SimCFB
   | typeof SimNFL

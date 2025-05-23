@@ -8,6 +8,7 @@ import { Border } from "../../_design/Borders";
 import { ToggleSwitch } from "../../_design/Inputs";
 import { Tab, TabGroup } from "../../_design/Tabs";
 import {
+  AdminRole,
   Requests,
   SimCBB,
   SimCFB,
@@ -51,7 +52,7 @@ export const AdminPage = () => {
   const { currentUser } = authStore;
   const { RefreshRequests } = useAdminPage();
   const navigate = useNavigate();
-  if (currentUser && currentUser.roleID && currentUser.roleID !== "Admin") {
+  if (currentUser && currentUser.roleID && currentUser.roleID !== AdminRole) {
     return <UnAuthAdminPage navigate={navigate} />;
   }
   const leagueStore = useLeagueStore();

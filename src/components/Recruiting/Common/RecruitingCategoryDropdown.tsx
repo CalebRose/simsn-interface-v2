@@ -20,7 +20,7 @@ export const CategoryDropdown: FC<RecruitingCategoryDropdownProps> = ({
 }) => {
   return (
     <div className="flex flex-col">
-      <Text variant="h6" classes="text-start">
+      <Text variant="h6" classes="text-start mb-1">
         {label}
       </Text>
       <SelectDropdown

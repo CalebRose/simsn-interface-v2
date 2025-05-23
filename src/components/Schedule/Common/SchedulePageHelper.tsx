@@ -201,7 +201,11 @@ export const getScheduleCHLData = (
   // Team Standings
   const teamStandings = allCHLStandings
     .filter((standings) => standings.ConferenceID === team.ConferenceID)
-    .map((standings, index) => ({ ...standings, Rank: index + 1 }));
+    .map((standings, index) => ({
+      ...standings,
+      TeamAbbr: standings.TeamName,
+      Rank: index + 1,
+    }));
 
   const teamAbbrMap = new Map(
     allCollegeTeams.map((team) => [team.ID, team.Abbreviation])
@@ -271,7 +275,11 @@ export const getSchedulePHLData = (
   // Team Standings
   const teamStandings = allPHLStandings
     .filter((standings) => standings.ConferenceID === team.ConferenceID)
-    .map((standings, index) => ({ ...standings, Rank: index + 1 }));
+    .map((standings, index) => ({
+      ...standings,
+      TeamAbbr: standings.TeamName,
+      Rank: index + 1,
+    }));
 
   const teamAbbrMap = new Map(
     allPHLTeams.map((team) => [team.ID, team.Abbreviation])
@@ -332,15 +340,16 @@ export const processSchedule = (
   schedule: any[],
   team: any,
   ts: any,
-  league: League
+  league: League,
+  resultsOverride: boolean
 ) => {
   let weekCounter: { [key: number]: number } = {};
   return schedule.map((game) => {
     let revealResult = false;
     if (league === SimCHL || league === SimPHL) {
-      revealResult = RevealHCKResults(game, ts);
+      revealResult = RevealHCKResults(game, ts, resultsOverride);
     } else {
-      revealResult = RevealResults(game, ts, league);
+      revealResult = RevealResults(game, ts, league, resultsOverride);
     }
 
     const isHomeGame = game.HomeTeamID === team.ID;
@@ -451,7 +460,8 @@ export const processSchedule = (
 export const processWeeklyGames = (
   schedule: any[],
   ts: any,
-  league: League
+  league: League,
+  resultsOverride: boolean
 ) => {
   const sortGames = (games: any[]) => {
     if (league === SimCHL || league === SimPHL) {
@@ -466,12 +476,11 @@ export const processWeeklyGames = (
   const processedGames = schedule.map((game) => {
     const revealResult =
       league === SimCHL || league === SimPHL
-        ? RevealHCKResults(game, ts)
-        : RevealResults(game, ts, league);
+        ? RevealHCKResults(game, ts, resultsOverride)
+        : RevealResults(game, ts, league, resultsOverride);
 
     const homeTeamLogo = getLogo(league, game.HomeTeamID, false);
     const awayTeamLogo = getLogo(league, game.AwayTeamID, false);
-
     let gameScore = "TBC";
     let headerGameScore = "TBC";
     if (revealResult) {
