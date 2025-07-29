@@ -37,6 +37,7 @@ export interface TableProps<T> {
   league?: League;
   enablePagination?: boolean;
   currentPage?: number;
+  pageSize?: number;
 }
 
 export const Table = <T,>({
@@ -49,6 +50,7 @@ export const Table = <T,>({
   league,
   enablePagination = false,
   currentPage = 0,
+  pageSize: propPageSize,
 }: TableProps<T>): JSX.Element => {
   let backgroundColor = "#1f2937";
   let borderColor = team?.ColorTwo || "#4B5563";
@@ -107,7 +109,7 @@ export const Table = <T,>({
     setSortedData(sorted);
   }, [data, sortState]);
 
-  const pageSize = 100;
+  const pageSize = propPageSize || 100;
 
   const pagedData = useMemo(() => {
     if (!enablePagination) return sortedData;

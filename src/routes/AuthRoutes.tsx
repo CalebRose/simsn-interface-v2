@@ -21,6 +21,7 @@ import { SchedulePage } from "../components/Schedule/SchedulePage";
 import { FreeAgencyPage } from "../components/FreeAgencyPage/FreeAgencyPage";
 import { StatsPage } from "../components/StatsPage/StatsPage";
 import { TeamProfilePage } from "../components/TeamProfile/TeamProfile";
+import { DraftPage } from "../components/Draft/DraftPage";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
@@ -330,4 +331,13 @@ export const AuthRoutes = [
       </AuthGuard>
     }
   />,
+  <Route
+  key="NFL DRAFT"
+  path={routes.NFL_DRAFT_ROOM}
+  element={
+    <AuthGuard>
+      <DraftPage league={SimNFL} />
+    </AuthGuard>
+  }
+/>,
 ];

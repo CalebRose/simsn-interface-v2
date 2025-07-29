@@ -552,7 +552,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       nflID = currentUser.NFLTeamID;
     }
     const res = await BootstrapService.GetSecondFBABootstrapData(cfbID, nflID);
-    console.log({ res });
     if (cfbID > 0) {
       setCollegeNews(res.CollegeNews);
       setTeamProfileMap(res.TeamProfileMap);

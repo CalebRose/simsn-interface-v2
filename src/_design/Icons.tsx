@@ -33,7 +33,8 @@ import {
 } from "@heroicons/react/16/solid";
 import { GiDiamondTrophy, GiTrophyCup, GiRibbonMedal, GiTrophy, GiShieldBash, GiShield, GiSoccerKick, GiAmericanFootballPlayer, GiTicTacToe } from "react-icons/gi";
 import { IoIosRibbon } from "react-icons/io";
-import { FaMedal, FaChalkboardTeacher, FaSortAmountUp } from "react-icons/fa";
+import { FaMedal, FaChalkboardTeacher, FaSortAmountUp, FaHandshake, FaTrash } from "react-icons/fa";
+
 
 
 
@@ -300,3 +301,10 @@ export const ArrowLeft: React.FC<LockIconProps> = ({ textColorClass }) => {
   return <ArrowLeftIcon className={`size-5 ${textColorClass}`} />;
 };
 
+export const Handshake: React.FC<LockIconProps> = ({ textColorClass }) => {
+  return <FaHandshake className={`size-5 ${textColorClass}`} />;
+};
+
+export const Trash: React.FC<LockIconProps> = ({ textColorClass }) => {
+  return <FaTrash className={`size-5 ${textColorClass}`} />;
+};

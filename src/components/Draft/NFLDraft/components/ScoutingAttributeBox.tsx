@@ -1,0 +1,74 @@
+import { FC } from 'react';
+import { NFLDraftee } from '../../../../models/footballModels';
+import { getGradeColor, getRatingColor } from '../../../Gameplan/FootballGameplan/Utils/UIUtils';
+import { getAttributeFieldName } from '../utils/draftHelpers';
+
+interface ScoutingAttributeBoxProps {
+  attributeName: string;
+  player: NFLDraftee;
+  cost: number;
+  revealed: boolean;
+  canAfford: boolean;
+  onClick: () => void;
+}
+
+export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
+  attributeName,
+  player,
+  cost,
+  revealed,
+  canAfford,
+  onClick
+}) => {
+  const fieldName = getAttributeFieldName(attributeName);
+  const isClickable = !revealed && canAfford;
+  const isPotentialGrade = attributeName === 'Potential Grade';
+  let displayValue: string;
+  let valueColor: string = '';
+  
+  if (revealed) {
+    if (isPotentialGrade) {
+      displayValue = (player as any)[fieldName] || '?';
+      valueColor = getGradeColor(displayValue);
+    } else {
+      displayValue = (player as any)[fieldName]?.toString() || '0';
+      valueColor = getRatingColor(parseInt(displayValue));
+    }
+  } else {
+    const grade = (player as any)[`${fieldName}Grade`];
+    displayValue = grade || '?';
+    valueColor = getGradeColor(displayValue);
+  }
+
+  return (
+    <div
+      className={`
+        relative p-2 rounded border text-center cursor-pointer 
+        ${isPotentialGrade ? 'min-w-[60px] min-h-[50px]' : 'min-w-[80px] min-h-[60px]'}
+        flex flex-col justify-center items-center
+        ${revealed 
+          ? 'bg-gray-700 border-gray-600' 
+          : isClickable 
+            ? 'bg-gray-700 border-gray-600 hover:bg-gray-600 hover:border-gray-500 hover:scale-105 transition-transform' 
+            : 'bg-gray-800 border-gray-700 cursor-not-allowed'
+        }
+      `}
+      onClick={onClick}
+      title={`${attributeName}${!revealed ? ` (${cost} points)` : ` - ${displayValue}`}`}
+    >
+      {!isPotentialGrade && (
+        <div className="text-[10px] font-medium text-gray-400 mb-1 leading-tight">
+          {attributeName}
+        </div>
+      )}
+      <div className={`text-sm font-bold ${valueColor}`}>
+        {displayValue}
+      </div>
+      {!revealed && (
+        <div className="absolute top-0 right-0 text-xs bg-gray-900 text-gray-400 px-1 rounded-bl text-[10px]">
+          {cost}
+        </div>
+      )}
+    </div>
+  );
+};

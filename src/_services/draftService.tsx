@@ -21,4 +21,8 @@ export const DraftService = {
   ExportNFLPlayers: async (dto: any): Promise<any> => {
     return await PostCall(`${fbaUrl}nfl/draft/export/picks`, dto);
   },
+
+  GetDraftPageData: async (TeamID: any):Promise<any> => {
+    return await GetCall(`${fbaUrl}nfl/draft/page/${TeamID}`);
+  },
 };

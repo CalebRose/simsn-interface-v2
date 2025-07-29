@@ -88,6 +88,10 @@ export const getAttributeColor = (value: any): string => {
   return 'text-gray-300';
 };
 
+export const getGradeColor = (grade: string): string => {
+  return ATTRIBUTE_COLORS.STRING[grade as keyof typeof ATTRIBUTE_COLORS.STRING] || ATTRIBUTE_COLORS.STRING.DEFAULT;
+};
+
 export const getInputClasses = (
   error?: boolean,
   warning?: boolean,
