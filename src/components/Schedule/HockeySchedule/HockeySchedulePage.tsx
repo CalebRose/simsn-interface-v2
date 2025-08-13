@@ -62,7 +62,6 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     allCHLStandings,
     allCollegeGames: allCHLGames,
     isLoading,
-    collegePolls,
     collegePollSubmission,
     submitCollegePoll,
     ExportHockeySchedule,
