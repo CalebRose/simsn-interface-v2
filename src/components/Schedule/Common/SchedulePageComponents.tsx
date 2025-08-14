@@ -3,7 +3,7 @@ import { getLogo } from "../../../_utility/getLogo";
 import { Text } from "../../../_design/Typography";
 import { Logo } from "../../../_design/Logo";
 import { Button } from "../../../_design/Buttons";
-import { League } from "../../../_constants/constants";
+import { League, SimCHL, SimPHL } from "../../../_constants/constants";
 import { SectionCards } from "../../../_design/SectionCards";
 import { InformationCircle } from "../../../_design/Icons";
 import PlayerPicture from "../../../_utility/usePlayerFaces";
@@ -419,6 +419,7 @@ export const TeamStandings = ({
   textColorClass,
   darkerBackgroundColor,
 }: TeamStandingsProps) => {
+  console.log({ standings });
   return (
     <SectionCards
       team={team}
@@ -439,7 +440,7 @@ export const TeamStandings = ({
       ) : (
         <div className="grid">
           <div
-            className="grid grid-cols-7 font-semibold border-b-2 pb-2"
+            className="grid grid-cols-8 font-semibold border-b-2 pb-2"
             style={{
               borderColor,
             }}
@@ -474,11 +475,18 @@ export const TeamStandings = ({
                 T.L
               </Text>
             </div>
+            {(league === SimCHL || league === SimPHL) && (
+              <div className="text-center col-span-1 ">
+                <Text variant="xs" className={`${textColorClass}`}>
+                  O.T.L
+                </Text>
+              </div>
+            )}
           </div>
           {standings.map((standing, index) => (
             <div
               key={index}
-              className="grid grid-cols-7 border-b border-b-[#34455d] items-center"
+              className="grid grid-cols-8 border-b border-b-[#34455d] items-center"
               style={{
                 backgroundColor:
                   index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
@@ -524,6 +532,13 @@ export const TeamStandings = ({
                   {standing.TotalLosses}
                 </Text>
               </div>
+              {(league === SimCHL || league === SimPHL) && (
+                <div className="text-center col-span-1 ">
+                  <Text variant="xs" className={`font-semibold`}>
+                    {standing.TotalOTLosses}
+                  </Text>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -611,7 +626,7 @@ export const LeagueStandings = ({
               >
                 <div className="grid">
                   <div
-                    className="grid grid-cols-7 font-semibold border-b-2 pb-2"
+                    className="grid grid-cols-8 font-semibold border-b-2 pb-2"
                     style={{
                       borderColor,
                     }}
@@ -646,11 +661,18 @@ export const LeagueStandings = ({
                         T.L
                       </Text>
                     </div>
+                    {(league === SimCHL || league === SimPHL) && (
+                      <div className="text-center col-span-1 ">
+                        <Text variant="xs" className={`${textColorClass}`}>
+                          O.T.L
+                        </Text>
+                      </div>
+                    )}
                   </div>
                   {groupStandings.map((standing: any, index: number) => (
                     <div
                       key={index}
-                      className="grid grid-cols-7 border-b border-b-[#34455d] items-center"
+                      className="grid grid-cols-8 border-b border-b-[#34455d] items-center"
                       style={{
                         backgroundColor:
                           index % 2 === 0
@@ -702,6 +724,13 @@ export const LeagueStandings = ({
                           {standing.TotalLosses}
                         </Text>
                       </div>
+                      {(league === SimCHL || league === SimPHL) && (
+                        <div className="text-center col-span-1 ">
+                          <Text variant="xs" className={`font-semibold`}>
+                            {standing.TotalOTLosses}
+                          </Text>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

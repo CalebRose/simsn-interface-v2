@@ -1467,17 +1467,21 @@ export const CHLCrootInfoModalBody: FC<CHLCrootInfoModalBodyProps> = ({
                     {getHockeyLetterGrade(player.PuckHandling, 1)}
                   </Text>
                 </div>
-                <div className="flex flex-col px-1 gap-1">
-                  <Text
-                    variant="body-small"
-                    classes="mb-1 whitespace-nowrap font-semibold"
-                  >
-                    Strength
-                  </Text>
-                  <Text variant="small">
-                    {getHockeyLetterGrade(player.Strength, 1)}
-                  </Text>
-                </div>
+              </>
+            )}
+            <div className="flex flex-col px-1 gap-1">
+              <Text
+                variant="body-small"
+                classes="mb-1 whitespace-nowrap font-semibold"
+              >
+                Strength
+              </Text>
+              <Text variant="small">
+                {getHockeyLetterGrade(player.Strength, 1)}
+              </Text>
+            </div>
+            {player.Position !== "G" && (
+              <>
                 <div className="flex flex-col px-1 gap-1">
                   <Text
                     variant="body-small"

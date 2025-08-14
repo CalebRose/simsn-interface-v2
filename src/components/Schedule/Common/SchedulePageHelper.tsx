@@ -344,101 +344,103 @@ export const processSchedule = (
   resultsOverride: boolean
 ) => {
   let weekCounter: { [key: number]: number } = {};
-  return schedule.sort((a,b) => a.Week - b.Week).map((game) => {
-    let revealResult = false;
-    if (league === SimCHL || league === SimPHL) {
-      revealResult = RevealHCKResults(game, ts, resultsOverride);
-    } else {
-      revealResult = RevealResults(game, ts, league, resultsOverride);
-    }
-
-    const isHomeGame = game.HomeTeamID === team.ID;
-    const opponentLabel = isHomeGame ? game.AwayTeamAbbr : game.HomeTeamAbbr;
-    const opponentLogo = getLogo(
-      league,
-      isHomeGame ? game.AwayTeamID : game.HomeTeamID,
-      false
-    );
-    const userLogo = getLogo(
-      league,
-      isHomeGame ? game.HomeTeamID : game.AwayTeamID,
-      false
-    );
-
-    const opponentID = isHomeGame ? game.AwayTeamID : game.HomeTeamID;
-
-    let userWin = false;
-    let userLoss = false;
-    let gameScore = "TBC";
-    let headerGameScore = "TBC";
-    const shootoutScore =
-      game.HomeTeamShootoutScore + game.AwayTeamShootoutScore;
-    let isShootout = shootoutScore > 0 ? true : false;
-    let userShootoutScore;
-    let opponentShootoutScore;
-
-    if (revealResult) {
-      const userTeamScore = isHomeGame
-        ? game.HomeTeamScore
-        : game.AwayTeamScore;
-      const opponentScore = isHomeGame
-        ? game.AwayTeamScore
-        : game.HomeTeamScore;
-
-      if (isShootout) {
-        userShootoutScore = isHomeGame
-          ? game.HomeTeamShootoutScore
-          : game.AwayTeamShootoutScore;
-        opponentShootoutScore = isHomeGame
-          ? game.AwayTeamShootoutScore
-          : game.HomeTeamShootoutScore;
-
-        userWin = userShootoutScore > opponentShootoutScore;
-        userLoss = userShootoutScore < opponentShootoutScore;
+  return schedule
+    .sort((a, b) => a.Week - b.Week)
+    .map((game) => {
+      let revealResult = false;
+      if (league === SimCHL || league === SimPHL) {
+        revealResult = RevealHCKResults(game, ts, resultsOverride);
       } else {
-        userWin = userTeamScore > opponentScore;
-        userLoss = userTeamScore < opponentScore;
+        revealResult = RevealResults(game, ts, league, resultsOverride);
       }
 
-      if (
-        game.HomeTeamScore === 0 &&
-        game.AwayTeamScore === 0 &&
-        game.HomeTeamShootoutScore === 0 &&
-        game.AwayTeamShootoutScore === 0
-      ) {
-        gameScore = "TBC";
-        headerGameScore = "TBC";
-      } else if (
-        game.HomeTeamShootoutScore > 0 ||
-        game.AwayTeamShootoutScore > 0
-      ) {
-        gameScore = `${game.HomeTeamScore} - ${game.AwayTeamScore} (${game.HomeTeamShootoutScore} - ${game.AwayTeamShootoutScore})`;
-        headerGameScore = `${userTeamScore} - ${opponentScore} (${userShootoutScore} - ${opponentShootoutScore})`;
-      } else {
-        gameScore = `${game.HomeTeamScore} - ${game.AwayTeamScore}`;
-        headerGameScore = `${userTeamScore} - ${opponentScore}`;
+      const isHomeGame = game.HomeTeamID === team.ID;
+      const opponentLabel = isHomeGame ? game.AwayTeamAbbr : game.HomeTeamAbbr;
+      const opponentLogo = getLogo(
+        league,
+        isHomeGame ? game.AwayTeamID : game.HomeTeamID,
+        false
+      );
+      const userLogo = getLogo(
+        league,
+        isHomeGame ? game.HomeTeamID : game.AwayTeamID,
+        false
+      );
+
+      const opponentID = isHomeGame ? game.AwayTeamID : game.HomeTeamID;
+
+      let userWin = false;
+      let userLoss = false;
+      let gameScore = "TBC";
+      let headerGameScore = "TBC";
+      const shootoutScore =
+        game.HomeTeamShootoutScore + game.AwayTeamShootoutScore;
+      let isShootout = shootoutScore > 0 ? true : false;
+      let userShootoutScore;
+      let opponentShootoutScore;
+
+      if (revealResult) {
+        const userTeamScore = isHomeGame
+          ? game.HomeTeamScore
+          : game.AwayTeamScore;
+        const opponentScore = isHomeGame
+          ? game.AwayTeamScore
+          : game.HomeTeamScore;
+
+        if (isShootout) {
+          userShootoutScore = isHomeGame
+            ? game.HomeTeamShootoutScore
+            : game.AwayTeamShootoutScore;
+          opponentShootoutScore = isHomeGame
+            ? game.AwayTeamShootoutScore
+            : game.HomeTeamShootoutScore;
+
+          userWin = userShootoutScore > opponentShootoutScore;
+          userLoss = userShootoutScore < opponentShootoutScore;
+        } else {
+          userWin = userTeamScore > opponentScore;
+          userLoss = userTeamScore < opponentScore;
+        }
+
+        if (
+          game.HomeTeamScore === 0 &&
+          game.AwayTeamScore === 0 &&
+          game.HomeTeamShootoutScore === 0 &&
+          game.AwayTeamShootoutScore === 0
+        ) {
+          gameScore = "TBC";
+          headerGameScore = "TBC";
+        } else if (
+          game.HomeTeamShootoutScore > 0 ||
+          game.AwayTeamShootoutScore > 0
+        ) {
+          gameScore = `${game.HomeTeamScore} - ${game.AwayTeamScore} (${game.HomeTeamShootoutScore} - ${game.AwayTeamShootoutScore})`;
+          headerGameScore = `${userTeamScore} - ${opponentScore} (${userShootoutScore} - ${opponentShootoutScore})`;
+        } else {
+          gameScore = `${game.HomeTeamScore} - ${game.AwayTeamScore}`;
+          headerGameScore = `${userTeamScore} - ${opponentScore}`;
+        }
       }
-    }
 
-    let weekLabel = `${game.Week}`;
-    if (league === SimCHL || league === SimPHL) {
-      weekLabel += game.GameDay;
-    }
+      let weekLabel = `${game.Week}`;
+      if (league === SimCHL || league === SimPHL) {
+        weekLabel += game.GameDay;
+      }
 
-    return {
-      ...game,
-      opponentLabel,
-      opponentLogo,
-      userLogo,
-      userWin,
-      userLoss,
-      gameScore,
-      headerGameScore,
-      gameLocation: isHomeGame ? "vs" : "@",
-      weekLabel,
-      opponentID,
-    };
-  });
+      return {
+        ...game,
+        opponentLabel,
+        opponentLogo,
+        userLogo,
+        userWin,
+        userLoss,
+        gameScore,
+        headerGameScore,
+        gameLocation: isHomeGame ? "vs" : "@",
+        weekLabel,
+        opponentID,
+      };
+    });
 };
 
 export const processWeeklyGames = (
@@ -543,6 +545,7 @@ export const processLeagueStandings = (
         );
         return {
           ...team,
+          TeamAbbr: team.TeamName,
           ConferenceName: conference ? conference.name : "Unknown",
         };
       });
