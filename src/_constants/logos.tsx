@@ -447,13 +447,15 @@ export const logos = {
   LA_Clippers: baseUrl + "/logos/LA_Clippers.png",
   LA_Lakers: baseUrl + "/logos/LA_Lakers.png",
   PHO_Suns: baseUrl + "/logos/PHO_Suns.png",
+  PHO_Moons: baseUrl + "/logos/phoenix_moon.png",
   SAC_Kings: baseUrl + "/logos/SAC_Kings.png",
   DAL_Mavericks: baseUrl + "/logos/DAL_Mavericks.png",
   HOU_Rockets: baseUrl + "/logos/HOU_Rockets.png",
   MEM_Grizzlies: baseUrl + "/logos/MEM_Grizzlies.png",
   NO_Pelicans: baseUrl + "/logos/NO_Pelicans.png",
+  NO_Pelicants: baseUrl + "/logos/NO_pelicant.png",
   SA_Spurs: baseUrl + "/logos/SA_Spurs.png",
-  SD_Clippers: `${baseUrl}/logos/SDClippers2.png`,
+  SD_Clippers: `${baseUrl}/logos/San_Diego_Clippers_NBA_G_League_Logo.png`,
 };
 
 export const retro_logos = {
@@ -890,13 +892,15 @@ export const retro_logos = {
   LA_Clippers: baseUrl + "/logos/LA_Clippers.png",
   LA_Lakers: baseUrl + "/logos/LA_Lakers.png",
   PHO_Suns: baseUrl + "/logos/PHO_Suns.png",
+  PHO_Moons: baseUrl + "/logos/phoenix_moon.png",
   SAC_Kings: baseUrl + "/logos/SAC_Kings.png",
   DAL_Mavericks: baseUrl + "/logos/DAL_Mavericks.png",
   HOU_Rockets: baseUrl + "/logos/HOU_Rockets.png",
   MEM_Grizzlies: baseUrl + "/logos/MEM_Grizzlies.png",
   NO_Pelicans: baseUrl + "/logos/NO_Pelicans.png",
+  NO_Pelicants: baseUrl + "/logos/NO_pelicant.png",
   SA_Spurs: baseUrl + "/logos/SA_Spurs.png",
-  SD_Clippers: `${baseUrl}/logos/san_diego_clippers_logo.png`,
+  SD_Clippers: `${baseUrl}/logos/San_Diego_Clippers_NBA_G_League_Logo.png`,
 };
 
 export const ISLLogos = {

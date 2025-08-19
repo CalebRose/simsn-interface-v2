@@ -3,7 +3,7 @@ import { getLogo } from "../../../_utility/getLogo";
 import { Text } from "../../../_design/Typography";
 import { Logo } from "../../../_design/Logo";
 import { Button } from "../../../_design/Buttons";
-import { League, SimCHL, SimPHL } from "../../../_constants/constants";
+import { League, SimCHL, SimNBA, SimPHL } from "../../../_constants/constants";
 import { SectionCards } from "../../../_design/SectionCards";
 import { InformationCircle } from "../../../_design/Icons";
 import PlayerPicture from "../../../_utility/usePlayerFaces";
@@ -334,7 +334,7 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={homeTeam.TeamName}
+                    label={homeTeam.TeamName || homeTeam.Team}
                     teamID={game.HomeTeamID}
                     textColorClass={textColorClass}
                     league={league}
@@ -349,7 +349,7 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={awayTeam.TeamName}
+                    label={awayTeam.TeamName || awayTeam.Team}
                     teamID={game.AwayTeamID}
                     textColorClass={textColorClass}
                     league={league}
@@ -575,7 +575,7 @@ export const LeagueStandings = ({
   darkerBackgroundColor,
 }: LeagueStandingsProps) => {
   const { groupedStandings, sortedGroupNames } = useMemo(() => {
-    const customOrder =
+    let customOrder =
       category === "Divisions"
         ? ["Atlantic", "Metropolitan", "Central", "Pacific"]
         : [
@@ -591,6 +591,20 @@ export const LeagueStandings = ({
             "Mountain West",
             "SunBelt",
           ];
+    if (league === SimNBA) {
+      customOrder = [
+        "Western",
+        "Eastern",
+        "Euroleague",
+        "Liga Mediterranea",
+        "Northern Europa",
+        "AsiaLeague",
+        "Oceania League",
+        "Liga das Americas",
+        "LeagueAfrica",
+        "The Gulf League",
+      ];
+    }
 
     return processLeagueStandings(standings, customOrder, league, category);
   }, [standings, league, category]);

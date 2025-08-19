@@ -1,7 +1,11 @@
 import { fbaUrl, hckUrl, bbaUrl } from "../_constants/urls";
 import { GetActionCall, GetCall, PostCall } from "../_helper/fetchHelper";
 import { TradePreferences, TradeProposal } from "../models/hockeyModels";
-import { NFLTradePreferences, NFLTradeProposalDTO } from "../models/footballModels";
+import {
+  NFLTradePreferences,
+  NFLTradeProposalDTO,
+} from "../models/footballModels";
+import { NBATradeProposalDTO } from "../models/basketballModels";
 
 export const TradeService = {
   HCKUpdateTradePreferences: async (dto: TradePreferences): Promise<void> => {
@@ -44,7 +48,9 @@ export const TradeService = {
     await GetActionCall(`${fbaUrl}trades/nfl/place/block/${playerId}`);
   },
 
-  FBAUpdateTradePreferences: async (dto: NFLTradePreferences): Promise<void> => {
+  FBAUpdateTradePreferences: async (
+    dto: NFLTradePreferences
+  ): Promise<void> => {
     await PostCall(`${fbaUrl}trades/nfl/preferences/update`, dto);
   },
 
@@ -89,6 +95,50 @@ export const TradeService = {
   },
 
   FBARegenerateCapsheets: async (): Promise<void> => {
+    await GetActionCall(`${fbaUrl}nfl/capsheet/generate`);
+  },
+
+  BBACreateTradeProposal: async (dto: NBATradeProposalDTO): Promise<void> => {
+    await PostCall(`${fbaUrl}trades/nfl/create/proposal`, dto);
+  },
+
+  BBAProcessDraftTrade: async (dto: any): Promise<void> => {
+    await PostCall(`${fbaUrl}trades/nfl/draft/process`, dto);
+  },
+
+  BBAAcceptTradeProposal: async (proposalId: number): Promise<void> => {
+    await GetActionCall(`${fbaUrl}trades/nfl/proposal/accept/${proposalId}`);
+  },
+
+  BBARejectTradeProposal: async (proposalId: number): Promise<void> => {
+    await GetActionCall(`${fbaUrl}trades/nfl/proposal/reject/${proposalId}`);
+  },
+
+  BBACancelTradeProposal: async (proposalId: number): Promise<void> => {
+    await GetActionCall(`${fbaUrl}trades/nfl/proposal/cancel/${proposalId}`);
+  },
+
+  BBAGetAllAcceptedTrades: async (): Promise<any> => {
+    return await GetCall(`${fbaUrl}trades/nfl/all/accepted`);
+  },
+
+  BBAGetAllRejectedTrades: async (): Promise<any> => {
+    return await GetCall(`${fbaUrl}trades/nfl/all/rejected`);
+  },
+
+  BBAConfirmAcceptedTrade: async (proposalId: number): Promise<void> => {
+    await GetActionCall(`${fbaUrl}admin/trades/accept/sync/${proposalId}`);
+  },
+
+  BBAVetoAcceptedTrade: async (proposalId: number): Promise<void> => {
+    await GetActionCall(`${fbaUrl}admin/trades/veto/sync/${proposalId}`);
+  },
+
+  BBACleanupRejectedTrades: async (): Promise<void> => {
+    await GetActionCall(`${fbaUrl}admin/trades/cleanup`);
+  },
+
+  BBARegenerateCapsheets: async (): Promise<void> => {
     await GetActionCall(`${fbaUrl}nfl/capsheet/generate`);
   },
 };

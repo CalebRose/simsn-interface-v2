@@ -112,7 +112,7 @@ export const GamesBar = ({
     if (league === SimCHL || league === SimPHL) {
       revealResult = RevealHCKResults(item, ts, false);
     } else if (league === SimCBB || league === SimNBA) {
-      revealResult = RevealBBAResults(item, ts, GetBKCurrentWeek(league, ts));
+      revealResult = RevealBBAResults(item, ts, false);
     } else {
       revealResult = RevealResults(item, ts, league, false);
     }
@@ -309,11 +309,7 @@ export const TeamMatchUp = ({
     if (league === SimCFB || league === SimNFL) {
       revealResult = RevealResults(matchUp[0], ts, league, false);
     } else if (league === SimCBB || league === SimNBA) {
-      revealResult = RevealBBAResults(
-        matchUp[0],
-        ts,
-        GetBKCurrentWeek(league, ts)
-      );
+      revealResult = RevealBBAResults(matchUp[0], ts, false);
     } else if (league === SimCHL || league === SimPHL) {
       revealResult = RevealHCKResults(matchUp[0], ts, false);
     }
