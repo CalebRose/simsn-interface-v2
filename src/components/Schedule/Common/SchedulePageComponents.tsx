@@ -29,7 +29,7 @@ interface TeamScheduleProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamSchedule = ({
@@ -48,7 +48,7 @@ export const TeamSchedule = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamScheduleProps) => {
   const gameModal = useModal();
   const [selectedGame, setSelectedGame] = useState<any>(null);
@@ -66,7 +66,7 @@ export const TeamSchedule = ({
         textColorClass={textColorClass}
         darkerBackgroundColor={darkerBackgroundColor}
       >
-        {isLoadingTwo ? (
+        {isLoading ? (
           <div className="flex justify-center items-center pb-2">
             <Text variant="small" classes={`${textColorClass}`}>
               Loading...
@@ -223,7 +223,7 @@ export const WeeklySchedule = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamScheduleProps) => {
   const gameModal = useModal();
   const [selectedGame, setSelectedGame] = useState<any>(null);
@@ -240,7 +240,7 @@ export const WeeklySchedule = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center pb-2">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -399,7 +399,7 @@ interface TeamStandingsProps {
   team: any;
   league: League;
   currentUser: any;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
   backgroundColor: string;
   headerColor: string;
   borderColor: string;
@@ -412,7 +412,7 @@ export const TeamStandings = ({
   team,
   league,
   currentUser,
-  isLoadingTwo,
+  isLoading,
   backgroundColor,
   headerColor,
   borderColor,
@@ -430,7 +430,7 @@ export const TeamStandings = ({
       darkerBackgroundColor={darkerBackgroundColor}
       textColorClass={textColorClass}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -570,7 +570,7 @@ interface LeagueStandingsProps {
   league: League;
   category?: string;
   currentUser: any;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
   backgroundColor: string;
   headerColor: string;
   borderColor: string;
@@ -584,7 +584,7 @@ export const LeagueStandings = ({
   league,
   category,
   currentUser,
-  isLoadingTwo,
+  isLoading,
   backgroundColor,
   headerColor,
   borderColor,
@@ -628,7 +628,7 @@ export const LeagueStandings = ({
 
   return (
     <div className="flex flex-wrap gap-4">
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center w-full">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -803,7 +803,7 @@ interface LeagueStatsProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const LeagueStats = ({
@@ -817,7 +817,7 @@ export const LeagueStats = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading,
 }: LeagueStatsProps) => {
   const renderStatCard = (title: string, stats: any[]) => (
     <SectionCards
@@ -830,7 +830,7 @@ export const LeagueStats = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center min-h-[5em] w-full">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...

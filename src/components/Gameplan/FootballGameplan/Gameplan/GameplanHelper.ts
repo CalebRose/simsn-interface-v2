@@ -479,7 +479,7 @@ export const validateGameplan = (gameplan: GameplanData): ValidationError[] => {
   const deepAndPADeepTotal = gameplan.PassDeep + gameplan.PassPADeep;
   const isAirRaidOrVertical = gameplan.OffensiveScheme === 'Air Raid' || gameplan.OffensiveScheme === 'Vertical';
   const maxDeepAndPADeep = isAirRaidOrVertical ? 15 : 10;
-  
+
   if (deepAndPADeepTotal > maxDeepAndPADeep) {
     errors.push({
       field: 'deepAndPADeep',

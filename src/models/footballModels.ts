@@ -5294,7 +5294,6 @@ export class BootstrapData {
   TopNFLPassers: NFLPlayer[];
   TopNFLRushers: NFLPlayer[];
   TopNFLReceivers: NFLPlayer[];
-  FaceData: { [key: number]: FaceDataResponse };
   ContractMap: { [key: number]: NFLContract };
   ExtensionMap: { [key: number]: NFLExtensionOffer };
   RecruitProfiles: RecruitPlayerProfile[];
@@ -5406,11 +5405,6 @@ export class BootstrapData {
     this.TopNFLReceivers = this.convertValues(
       source["TopNFLReceivers"],
       NFLPlayer
-    );
-    this.FaceData = this.convertValues(
-      source["FaceData"],
-      FaceDataResponse,
-      true
     );
     this.ContractMap = this.convertValues(
       source["ContractMap"],

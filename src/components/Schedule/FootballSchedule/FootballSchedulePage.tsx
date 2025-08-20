@@ -265,7 +265,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -286,7 +286,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                   teamMap={cfbTeamMap}
                 />
               )}
@@ -305,7 +305,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                   teamMap={cfbTeamMap}
                 />
               )}
@@ -323,7 +323,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -540,7 +540,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -561,7 +561,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                   teamMap={nflTeamMap}
                 />
               )}
@@ -580,7 +580,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                   teamMap={nflTeamMap}
                 />
               )}
@@ -598,7 +598,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}

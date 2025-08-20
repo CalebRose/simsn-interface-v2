@@ -74,7 +74,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topCFBPassers,
     topCFBReceivers,
     topCFBRushers,
-    isLoadingTwo,
+    isLoading,
     playerFaces,
   } = useSimFBAStore();
   const {
@@ -96,7 +96,6 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topNBAPoints,
     topNBAAssists,
     topNBARebounds,
-    isLoadingTwo: isLoadingBB,
   } = useSimBBAStore();
   const {
     collegeNotifications: chlNotifications,
@@ -418,7 +417,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   team={team}
                   league={league}
                   currentUser={currentUser}
-                  isLoadingTwo={isLoadingTwo}
+                  isLoading={isLoading}
                   backgroundColor={backgroundColor}
                   headerColor={headerColor}
                   borderColor={borderColor}
@@ -450,7 +449,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoadingTwo}
+                  isLoading={isLoading}
                   playerMap={playerMap}
                 />
               </Border>
@@ -471,7 +470,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                     borderColor={borderColor}
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
-                    isLoadingTwo={isLoadingTwo}
+                    isLoading={isLoading}
                   />
                 </Border>
               )}
@@ -510,7 +509,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                     borderColor={borderColor}
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
-                    isLoadingTwo={isLoadingTwo}
+                    isLoading={isLoading}
                   />
                 </Border>
                 <Border
@@ -528,7 +527,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                     borderColor={borderColor}
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
-                    isLoadingTwo={isLoadingTwo}
+                    isLoading={isLoading}
                   />
                 </Border>
               </div>
@@ -571,7 +570,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoadingTwo}
+                  isLoading={isLoading}
                 />
               </Border>
             )}
@@ -594,7 +593,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoadingTwo}
+                  isLoading={isLoading}
                 />
               </Border>
             </div>

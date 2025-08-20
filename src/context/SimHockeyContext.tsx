@@ -529,6 +529,18 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   }, []);
 
   const getBootstrapTeamData = async () => {
+    let chlID = 0;
+    let phlID = 0;
+    if (currentUser && currentUser.CHLTeamID) {
+      chlID = currentUser.CHLTeamID;
+    }
+    if (currentUser && currentUser.PHLTeamID) {
+      phlID = currentUser.PHLTeamID;
+    }
+    // if the user has no hockey teams, skip all HCK bootstrapping
+    if (chlID == 0 && phlID == 0) {
+      return;
+    }
     const res = await BootstrapService.GetHCKBootstrapTeamData();
     setCHLTeams(res.AllCollegeTeams);
     setProTeams(res.AllProTeams);

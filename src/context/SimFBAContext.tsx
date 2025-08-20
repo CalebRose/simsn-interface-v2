@@ -86,14 +86,12 @@ import {
 } from "../_helper/statsPageHelper";
 import { TradeService } from "../_services/tradeService";
 import { CollegePollService } from "../_services/collegePollService";
+import { FaceDataService } from "../_services/faceDataService";
 
 // ✅ Define Types for Context
 interface SimFBAContextProps {
   cfb_Timestamp: Timestamp | null;
   isLoading: boolean;
-  isLoadingTwo: boolean;
-  isLoadingThree: boolean;
-  isLoadingFour: boolean;
   cfbTeam: CollegeTeam | null;
   cfbTeams: CollegeTeam[];
   cfbTeamMap: Record<number, CollegeTeam> | null;
@@ -160,6 +158,7 @@ interface SimFBAContextProps {
   removeUserfromNFLTeamCall: (request: NFLRequest) => Promise<void>;
   addUserToCFBTeam: (teamID: number, user: string) => void;
   addUserToNFLTeam: (teamID: number, user: string, role: string) => void;
+  getBootstrapRosterData: () => void;
   cutCFBPlayer: (playerID: number, teamID: number) => Promise<void>;
   cutNFLPlayer: (playerID: number, teamID: number) => Promise<void>;
   sendNFLPlayerToPracticeSquad: (
@@ -236,9 +235,6 @@ interface SimFBAContextProps {
 const defaultContext: SimFBAContextProps = {
   cfb_Timestamp: null,
   isLoading: true,
-  isLoadingTwo: true,
-  isLoadingThree: true,
-  isLoadingFour: true,
   cfbTeam: null,
   cfbTeams: [],
   cfbTeamOptions: [],
@@ -303,6 +299,7 @@ const defaultContext: SimFBAContextProps = {
   removeUserfromNFLTeamCall: async () => {},
   addUserToCFBTeam: async () => {},
   addUserToNFLTeam: async () => {},
+  getBootstrapRosterData: async () => {},
   cutCFBPlayer: async () => {},
   cutNFLPlayer: async () => {},
   sendNFLPlayerToPracticeSquad: async () => {},
@@ -368,9 +365,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const { cfb_Timestamp, setCFB_Timestamp } = useWebSockets(fba_ws, SimFBA);
   const isFetching = useRef(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isLoadingTwo, setIsLoadingTwo] = useState<boolean>(true);
-  const [isLoadingThree, setIsLoadingThree] = useState<boolean>(true);
-  const [isLoadingFour, setIsLoadingFour] = useState<boolean>(true);
   const [cfbTeam, setCFBTeam] = useState<CollegeTeam | null>(null);
   const [cfbTeams, setCFBTeams] = useState<CollegeTeam[]>([]);
   const [cfbTeamMap, setCFBTeamMap] = useState<Record<number, CollegeTeam>>({});
@@ -618,10 +612,23 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   }, [nflTeam, nflGameplanMap]);
 
   useEffect(() => {
+    getFaceData();
     getBootstrapTeamData();
   }, []);
 
   const getBootstrapTeamData = async () => {
+    let cfbID = 0;
+    let nflID = 0;
+    if (currentUser && currentUser.teamId) {
+      cfbID = currentUser.teamId;
+    }
+    if (currentUser && currentUser.NFLTeamID) {
+      nflID = currentUser.NFLTeamID;
+    }
+    // if the user has no football teams, skip all FBA bootstrapping
+    if (cfbID == 0 && nflID == 0) {
+      return;
+    }
     const res = await BootstrapService.GetFBABootstrapTeamData();
     setCFBTeams(res.AllCollegeTeams);
     setNFLTeams(res.AllProTeams);
@@ -675,6 +682,11 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       setProTeamMap(nflMap);
     }
   };
+
+  const getFaceData = async () => {
+    const res = await FaceDataService.GetFBAFaceData();
+    setPlayerFaces(res);
+  }
 
   useEffect(() => {
     if (currentUser && !isFetching.current) {
@@ -744,17 +756,12 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   }, [currentProSeasonGames, cfbTeam]);
 
   const bootstrapAllData = async () => {
-    await getFirstBootstrapData();
-    await new Promise((resolve) => setTimeout(resolve, 3500)); // Wait 5 seconds
-    await getSecondBootstrapData();
-    await new Promise((resolve) => setTimeout(resolve, 3500)); // Wait 5 seconds
-    await getThirdBootstrapData();
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await getLandingBootstrapData();
     fetchAllHistory();
     isFetching.current = false;
   };
 
-  const getFirstBootstrapData = async () => {
+  const getLandingBootstrapData = async () => {
     let cfbID = 0;
     let nflID = 0;
     if (currentUser && currentUser.teamId) {
@@ -763,11 +770,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NFLTeamID) {
       nflID = currentUser.NFLTeamID;
     }
-    const res = await BootstrapService.GetFBABootstrapData(cfbID, nflID);
+    const res = await BootstrapService.GetFBALandingBootstrapData(cfbID, nflID);
 
     if (cfbID > 0) {
       setCFBTeam(res.CollegeTeam);
-      setHistoricCollegePlayers(res.HistoricCollegePlayers);
       setCollegeInjuryReport(res.CollegeInjuryReport);
       setCollegeNotifications(res.CollegeNotifications);
       setTopCFBPassers(res.TopCFBPassers);
@@ -778,113 +784,50 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       setCollegeGameplanMap(res.CollegeGameplanMap);
       setNFLGameplanMap(res.NFLGameplanMap);
       setCollegeDepthChart(res.CollegeDepthChart || null);
-      setNFLDepthChart(res.NFLDepthChart || null);
-    }
-
-    if (nflID > 0) {
-      setNFLTeam(res.ProTeam);
-      setProNotifications(res.ProNotifications);
-    }
-
-    setIsLoading(false);
-  };
-
-  const getSecondBootstrapData = async () => {
-    let cfbID = 0;
-    let nflID = 0;
-    if (currentUser && currentUser.teamId) {
-      cfbID = currentUser.teamId;
-    }
-    if (currentUser && currentUser.NFLTeamID) {
-      nflID = currentUser.NFLTeamID;
-    }
-    const res = await BootstrapService.GetSecondFBABootstrapData(cfbID, nflID);
-    if (cfbID > 0) {
-      setCollegeNews(res.CollegeNews);
-      setTeamProfileMap(res.TeamProfileMap);
+      setRecruitProfiles(res.RecruitProfiles);
       setAllCollegeGames(res.AllCollegeGames);
       setAllCFBStandings(res.CollegeStandings);
     }
 
     if (nflID > 0) {
+      setNFLTeam(res.ProTeam);
+      setProNotifications(res.ProNotifications);
       setTopNFLPassers(res.TopNFLPassers);
       setTopNFLRushers(res.TopNFLRushers);
       setTopNFLReceivers(res.TopNFLReceivers);
-      setCapsheetMap(res.CapsheetMap);
       setProRosterMap(res.ProRosterMap);
-      setNFLRetiredPlayers(res.RetiredPlayers);
       setPracticeSquadPlayers(res.PracticeSquadPlayers);
       setProInjuryReport(res.ProInjuryReport);
-      setAllProGames(res.AllProGames);
+      setAllProGames(res.AllProGames)
       setAllProStandings(res.ProStandings);
     }
 
-    if (
-      res.CollegeStandings &&
-      res.CollegeStandings.length > 0 &&
-      cfb_Timestamp
-    ) {
-      const currentSeasonStandings = res.CollegeStandings.filter(
-        (x) => x.SeasonID === cfb_Timestamp.CollegeSeasonID
-      );
-      const collegeStandingsMap = Object.fromEntries(
-        currentSeasonStandings.map((standings) => [standings.TeamID, standings])
-      );
-      setCurrentCFBStandings(currentSeasonStandings);
-      setCFBStandingsMap(collegeStandingsMap);
-    }
-
-    if (res.ProStandings && res.ProStandings.length > 0 && cfb_Timestamp) {
-      const currentSeasonStandings = res.ProStandings.filter(
-        (x) => x.SeasonID === cfb_Timestamp.NFLSeasonID
-      );
-      const nflStandingsMap = Object.fromEntries(
-        currentSeasonStandings.map((standings) => [standings.TeamID, standings])
-      );
-      setCurrentProStandings(currentSeasonStandings);
-      setProStandingsMap(nflStandingsMap);
-    }
-    setIsLoadingTwo(false);
-  };
-
-  const getThirdBootstrapData = async () => {
-    let cfbID = 0;
-    let nflID = 0;
-    if (currentUser && currentUser.teamId) {
-      cfbID = currentUser.teamId;
-    }
-    if (currentUser && currentUser.NFLTeamID) {
-      nflID = currentUser.NFLTeamID;
-    }
-    const res = await BootstrapService.GetThirdFBABootstrapData(cfbID, nflID);
-    if (cfbID > 0) {
-      setRecruits(res.Recruits);
-      setCFBDepthchartMap(res.CollegeDepthChartMap);
-      setRecruitProfiles(res.RecruitProfiles);
-    }
-
-    if (nflID > 0) {
-      setProNews(res.ProNews);
-      setFreeAgentOffers(res.FreeAgentOffers);
-      setWaiverOffers(res.WaiverWireOffers);
-      setNFLDepthchartMap(res.NFLDepthChartMap);
-      setProContractMap(res.ContractMap);
-      setProExtensionMap(res.ExtensionMap);
-      setFreeAgents(res.FreeAgents);
-      setWaiverPlayers(res.WaiverPlayers);
-      setNFLDraftees(res.NFLDraftees);
-    }
-
-    setPlayerFaces(res.FaceData);
-    setIsLoadingThree(false);
+    setIsLoading(false);
   };
 
   const teamHistoryService = new FBATeamHistoryService();
   const fetchAllHistory = async () => {
     const response = await teamHistoryService.GetCFBTeamHistory();
     setAllCFBTeamHistory(response);
-    setIsLoadingFour(false);
   };
+
+  const getBootstrapRosterData = async () => {
+    let cfbID = 0;
+    let nflID = 0;
+    if (currentUser && currentUser.teamId) {
+      cfbID = currentUser.teamId;
+    }
+    if (currentUser && currentUser.NFLTeamID) {
+      nflID = currentUser.NFLTeamID;
+    }
+    if (cfbID === 0 && nflID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetFBARosterBootstrapData(cfbID, nflID);
+
+    setProContractMap(res.ContractMap);
+    setProExtensionMap(res.ExtensionMap);
+  }
 
   const cutCFBPlayer = useCallback(
     async (playerID: number, teamID: number) => {
@@ -1624,8 +1567,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         proTeamsGames,
         proNotifications,
         isLoading,
-        isLoadingTwo,
-        isLoadingThree,
         topCFBPassers,
         topCFBRushers,
         topCFBReceivers,
@@ -1648,6 +1589,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         cancelTrade,
         syncAcceptedTrade,
         vetoTrade,
+        getBootstrapRosterData,
         cutCFBPlayer,
         redshirtPlayer,
         promisePlayer,
@@ -1678,7 +1620,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         proContractMap,
         proExtensionMap,
         allCFBTeamHistory,
-        isLoadingFour,
         cfbPlayerGameStatsMap,
         cfbPlayerSeasonStatsMap,
         cfbTeamGameStatsMap,
