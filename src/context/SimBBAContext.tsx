@@ -343,6 +343,19 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   }, []);
 
   const getBootstrapTeamData = async () => {
+    let cbbID = 0;
+    let nbaID = 0;
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
+    }
+    if (currentUser && currentUser.NBATeamID) {
+      nbaID = currentUser.NBATeamID;
+    }
+    // if the user has no basketball teams, skip all BBA bootstrapping
+    if (cbbID == 0 && nbaID == 0) {
+      isFetching.current = false;
+      return;
+    }
     const res = await BootstrapService.GetBBABootstrapTeamData();
     setCBBTeams(res.AllCollegeTeams);
     const sortedProTeams = res.AllProTeams.sort(

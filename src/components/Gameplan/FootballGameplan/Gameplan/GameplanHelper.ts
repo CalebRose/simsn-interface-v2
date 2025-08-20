@@ -78,15 +78,12 @@ export interface GameplanData {
   InvertedOptionRight: number;
   TripleOptionLeft: number;
   TripleOptionRight: number;
+  PassQuick: number;
   PassShort: number;
-  PassMedium: number;
   PassLong: number;
-  PassDeep: number;
   PassScreen: number;
   PassPAShort: number;
-  PassPAMedium: number;
   PassPALong: number;
-  PassPADeep: number;
   ChoiceOutside: number;
   ChoiceInside: number;
   ChoicePower: number;
@@ -212,24 +209,20 @@ export const validatePassPlayDistribution = (gameplan: GameplanData): boolean =>
     case 'Vertical':
     case 'West Coast':
     case 'Run and Shoot':
-      if (gameplan.PassShort > 50) return false;
-      if (gameplan.PassMedium > 50) return false;
-      if (gameplan.PassLong > 50) return false;
-      if (gameplan.PassDeep + gameplan.PassPADeep > 15) return false;
+      if (gameplan.PassQuick > 50) return false;
+      if (gameplan.PassShort + gameplan.PassPAShort > 50) return false;
+      if (gameplan.PassLong + gameplan.PassPALong > 50) return false;
       if (gameplan.PassScreen > 20) return false;
-      if (gameplan.PassPAMedium > 50) return false;
-      if (gameplan.PassPALong > 50) return false;
       break;
       
     case 'Pro':
     case 'Power Run':
     case 'I Option':
+      if (gameplan.PassQuick > 45) return false;
       if (gameplan.PassShort > 45) return false;
-      if (gameplan.PassMedium > 45) return false;
       if (gameplan.PassLong > 45) return false;
-      if (gameplan.PassDeep + gameplan.PassPADeep > 10) return false;
       if (gameplan.PassScreen > 20) return false;
-      if (gameplan.PassPAMedium > 20) return false;
+      if (gameplan.PassPAShort > 20) return false;
       if (gameplan.PassPALong > 20) return false;
       break;
       
@@ -237,23 +230,21 @@ export const validatePassPlayDistribution = (gameplan: GameplanData): boolean =>
     case 'Wing-T':
     case 'Flexbone':
     case 'Wishbone':
+      if (gameplan.PassQuick > 50) return false;
       if (gameplan.PassShort > 50) return false;
-      if (gameplan.PassMedium > 50) return false;
       if (gameplan.PassLong > 50) return false;
-      if (gameplan.PassDeep + gameplan.PassPADeep > 10) return false;
       if (gameplan.PassScreen > 20) return false;
-      if (gameplan.PassPAMedium > 30) return false;
+      if (gameplan.PassPAShort > 30) return false;
       if (gameplan.PassPALong > 30) return false;
       break;
       
     case 'Spread Option':
     case 'Pistol':
+      if (gameplan.PassQuick > 50) return false;
       if (gameplan.PassShort > 50) return false;
-      if (gameplan.PassMedium > 50) return false;
       if (gameplan.PassLong > 50) return false;
-      if (gameplan.PassDeep + gameplan.PassPADeep > 10) return false;
       if (gameplan.PassScreen > 20) return false;
-      if (gameplan.PassPAMedium > 25) return false;
+      if (gameplan.PassPAShort > 25) return false;
       if (gameplan.PassPALong > 25) return false;
       break;
       
@@ -465,24 +456,12 @@ export const validateGameplan = (gameplan: GameplanData): ValidationError[] => {
     });
   }
 
-  const passDistTotal = gameplan.PassShort + gameplan.PassMedium + gameplan.PassLong + gameplan.PassDeep +
-                        gameplan.PassScreen + gameplan.PassPAMedium + gameplan.PassPALong + gameplan.PassPADeep;
+  const passDistTotal = gameplan.PassQuick + gameplan.PassShort + gameplan.PassLong + 
+                        gameplan.PassScreen + gameplan.PassPAShort + gameplan.PassPALong;
   if (!validateTotalDistribution(passDistTotal)) {
     errors.push({
       field: 'passDistribution',
       message: `Total Pass Play Distribution is ${passDistTotal}. Please make sure your allocation equals 100.`,
-      severity: 'error'
-    });
-  }
-
-  const deepAndPADeepTotal = gameplan.PassDeep + gameplan.PassPADeep;
-  const isAirRaidOrVertical = gameplan.OffensiveScheme === 'Air Raid' || gameplan.OffensiveScheme === 'Vertical';
-  const maxDeepAndPADeep = isAirRaidOrVertical ? 15 : 10;
-  
-  if (deepAndPADeepTotal > maxDeepAndPADeep) {
-    errors.push({
-      field: 'deepAndPADeep',
-      message: `Deep and PA Deep combined total is ${deepAndPADeepTotal}%. Maximum allowed for ${gameplan.OffensiveScheme} is ${maxDeepAndPADeep}%.`,
       severity: 'error'
     });
   }
@@ -542,23 +521,6 @@ export const parseFocusPlays = (focusPlaysString: string): string[] => {
 export const stringifyFocusPlays = (focusPlays: string[]): string => {
   return focusPlays.join(',');
 };
-
-export const transformGameplanForSave = (gameplan: GameplanData): any => {
-  const transformed = { ...gameplan };
-  
-  const transformedGameplan = {
-    ...transformed,
-    PassQuick: transformed.PassShort,
-    PassShort: transformed.PassMedium,
-    PassPAShort: transformed.PassPAMedium,
-  };
-  
-  delete (transformedGameplan as any).PassMedium;
-  delete (transformedGameplan as any).PassPAMedium;
-  
-  return transformedGameplan;
-};
-
 
 export const applyDefaultScheme = (
   gameplan: GameplanData, 

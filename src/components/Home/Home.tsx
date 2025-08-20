@@ -42,8 +42,8 @@ export const Home = () => {
   const hkStore = useSimHCKStore();
   const { chlTeam, phlTeam } = hkStore;
   const hkLoading = hkStore.isLoading;
-  const { cfbTeam, nflTeam, isLoadingTwo, isLoadingThree } = fbStore;
-  const fbLoading = fbStore.isLoading;
+  const { cfbTeam, nflTeam, isLoading, isLoadingTwo, isLoadingThree } = fbStore;
+  const fbLoading = isLoading || isLoadingTwo || isLoadingThree;
   const { cbbTeam, nbaTeam } = bkStore;
   const bkLoading = bkStore.isLoading;
   const [selectedTeam, setSelectedTeam] = useState<any>(null);

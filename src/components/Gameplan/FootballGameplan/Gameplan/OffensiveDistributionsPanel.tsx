@@ -70,11 +70,6 @@ export const OffensiveDistributionsPanel: React.FC<OffensiveDistributionsPanelPr
   const passDistTotal = calculatePassDistributionTotal(gameplan);
   const optionDistTotal = calculateOptionDistributionTotal(gameplan);
   const rpoDistTotal = calculateRPODistributionTotal(gameplan);
-  const formatPassTypeLabel = (label: string) => {
-    const match = /^PA(Medium|Long|Deep)$/.exec(label);
-    if (match) return `Play Action ${match[1]}`;
-    return label;
-  };
 
   return (
     <div className={`space-y-6 ${className} border-2 p-4 rounded-lg`} style={{ borderColor, backgroundColor }}>
@@ -120,15 +115,24 @@ export const OffensiveDistributionsPanel: React.FC<OffensiveDistributionsPanelPr
             </Text>
           </div>
           <div className="grid grid-cols-1 gap-2">
-            {PassPlayLabels.map((label) => {
+            {PassPlayLabels.map((label, index) => {
               const fieldName = `Pass${label}`;
+              let displayLabel = label;
+              let passType = label;
+              if (index === 4) {
+                displayLabel = 'Play Action Short';
+                passType = 'PlayActionShort';
+              } else if (index === 5) {
+                displayLabel = 'Play Action Long';
+                passType = 'PlayActionLong';
+              }
               
               return (
                 <div key={fieldName} className="flex items-center gap-2">
                   <div className="flex-1">
                     <GameplanInputSmall
                       name={fieldName}
-                      label={formatPassTypeLabel(label)}
+                      label={displayLabel}
                       value={gameplan[fieldName as keyof GameplanData] as number}
                       onChange={(e) => onChange(fieldName, parseInt(e.target.value) || 0)}
                       disabled={disabled || gameplan.DefaultOffense}
@@ -139,7 +143,7 @@ export const OffensiveDistributionsPanel: React.FC<OffensiveDistributionsPanelPr
                   <Button
                     variant="secondaryOutline"
                     size="sm"
-                    onClick={() => setPassTypeInfoModal(label)}
+                    onClick={() => setPassTypeInfoModal(passType)}
                     className="p-1 rounded-full min-w-0 h-6 w-6 flex items-center justify-center"
                   >
                     <InformationCircle />
@@ -400,7 +404,7 @@ export const OffensiveDistributionsPanel: React.FC<OffensiveDistributionsPanelPr
             <div>
               <Text variant="body" classes="text-white font-semibold">Target Depth Dropdown:</Text>
               <Text variant="small" classes="text-gray-300">
-                Controls which type of pass the receiver will most likely run. Options: Short, Medium, Long, Deep, or None (no preference).
+                Controls which type of pass the receiver will most likely run. Options: Quick, Short, Long, or None (no preference).
               </Text>
             </div>
             <div>
@@ -432,7 +436,7 @@ export const OffensiveDistributionsPanel: React.FC<OffensiveDistributionsPanelPr
               Maximum values for {passTypeInfoModal} pass type by offensive scheme:
             </Text>
             <div className="space-y-3">
-              {passTypeInfoModal && getPassTypeRanges(passTypeInfoModal).map((range, index) => (
+              {getPassTypeRanges(passTypeInfoModal).map((range, index) => (
                 <div key={index} className="bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <Text variant="body" classes="text-white font-semibold">

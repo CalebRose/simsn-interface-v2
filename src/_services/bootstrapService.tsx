@@ -34,22 +34,16 @@ export const BootstrapService = {
   },
 
   // ✅ Get Football Bootstrap Data
-  GetSecondFBABootstrapData: async (
-    collegeID: number,
-    proID: number
-  ): Promise<FBBootstrap> => {
+  GetSecondFBABootstrapData: async (): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/two/${collegeID}/${proID}`
+      `${fbaUrl}bootstrap/two`
     );
   },
 
   // ✅ Get Football Bootstrap Data
-  GetThirdFBABootstrapData: async (
-    collegeID: number,
-    proID: number
-  ): Promise<FBBootstrap> => {
+  GetThirdFBABootstrapData: async (): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/three/${collegeID}/${proID}`
+      `${fbaUrl}bootstrap/three`
     );
   },
 
