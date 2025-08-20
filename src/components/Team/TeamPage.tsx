@@ -949,6 +949,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     placeNFLPlayerOnTradeBlock,
     capsheetMap: nflCapsheetMap,
     proContractMap: nflContractMap,
+    getBootstrapRosterData,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -981,6 +982,10 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return null;
   }, [nflRosterMap, selectedTeam]);
+
+  useEffect(() => {
+    getBootstrapRosterData();
+  }, []);
 
   const rosterContracts = useMemo(() => {
     if (!selectedRoster || !nflContractMap) return null;
