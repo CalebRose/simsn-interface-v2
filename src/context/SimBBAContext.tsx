@@ -542,6 +542,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       setCollegeNews(res.CollegeNews);
       setTeamProfileMap(res.TeamProfileMap);
       setAllCBBStandings(res.CollegeStandings);
+      setCollegePolls(res.CollegePolls);
     }
     if (nbaID > 0) {
       setTopNBAPoints(res.TopNBAPoints);
@@ -1154,7 +1155,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   }, []);
 
   const submitCollegePoll = useCallback(async (dto: any) => {
-    const res = await CollegePollService.FBASubmitPoll(dto);
+    const res = await CollegePollService.BBASubmitPoll(dto);
     if (res) {
       setCollegePollSubmission(res);
       enqueueSnackbar(`College Poll Submitted!`, {

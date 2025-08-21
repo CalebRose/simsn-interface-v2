@@ -1,5 +1,5 @@
 import { FC, useEffect, useMemo, useState } from "react";
-import { League, SimCHL } from "../../../_constants/constants";
+import { League, SimCBB, SimCHL } from "../../../_constants/constants";
 import {
   CollegeGame,
   CollegePollSubmission as HockeyPollSubmission,
@@ -15,6 +15,14 @@ import { Text } from "../../../_design/Typography";
 import { getLogo } from "../../../_utility/getLogo";
 import { Logo } from "../../../_design/Logo";
 import { useAuthStore } from "../../../context/AuthContext";
+import {
+  CollegePollSubmission as BasketballPollSubmission,
+  CollegeStandings,
+  Match,
+  Team,
+  Timestamp as BBATimestamp,
+} from "../../../models/basketballModels";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
 
 interface SubmitPollModalProps {
   isOpen: boolean;
@@ -39,6 +47,15 @@ export const SubmitPollModal: FC<SubmitPollModalProps> = ({
     <>
       {league === SimCHL && (
         <SubmitHockeyPoll
+          isOpen={isOpen}
+          onClose={onClose}
+          pollSubmission={pollSubmission}
+          submitPoll={submitPoll}
+          timestamp={timestamp}
+        />
+      )}
+      {league === SimCBB && (
+        <SubmitBasketballPoll
           isOpen={isOpen}
           onClose={onClose}
           pollSubmission={pollSubmission}
@@ -88,6 +105,10 @@ const PollDropdown: FC<PollDropdownProps> = ({
       let team = selectedTeam as HockeyTeam;
       return team.TeamName;
     }
+    if (league === SimCBB) {
+      let team = selectedTeam as Team;
+      return team.Team;
+    }
     return "";
   }, [selectedTeam]);
 
@@ -95,6 +116,12 @@ const PollDropdown: FC<PollDropdownProps> = ({
     if (!selection) return "";
     if (league === SimCHL && selection.value > 0) {
       const standings = standingsMap[selection.value] as HockeyStandings;
+      if (standings) {
+        return `${standings.TotalWins} Wins | ${standings.TotalLosses} Losses | ${standings.TotalOTLosses} OT Losses | ${standings.ConferenceWins} Conference Wins | ${standings.ConferenceLosses} Losses | ${standings.ConferenceOTLosses} C.OT Losses`;
+      }
+    }
+    if (league === SimCBB && selection.value > 0) {
+      const standings = standingsMap[selection.value] as CollegeStandings;
       if (standings) {
         return `${standings.TotalWins} Wins | ${standings.TotalLosses} Losses | ${standings.ConferenceWins} Conference Wins | ${standings.ConferenceLosses} Losses`;
       }
@@ -253,6 +280,132 @@ export const SubmitHockeyPoll: FC<SubmitHockeyPollProps> = ({
               selection={x}
               setSelection={(value) => updateRank(idx, value)}
               standingsMap={chlStandingsMap}
+              gameMap={gameMap}
+            />
+          ))}
+        </div>
+      </Modal>
+    </>
+  );
+};
+
+interface SubmitBasketballPollProps {
+  isOpen: boolean;
+  onClose: () => void;
+  pollSubmission?: BasketballPollSubmission;
+  submitPoll: (dto: BasketballPollSubmission) => Promise<void>;
+  timestamp: BBATimestamp;
+}
+
+export const SubmitBasketballPoll: FC<SubmitBasketballPollProps> = ({
+  isOpen,
+  onClose,
+  pollSubmission,
+  submitPoll,
+  timestamp,
+}) => {
+  const {
+    cbbTeamOptions,
+    cbbTeamMap,
+    cbbStandingsMap,
+    currentCollegeSeasonGames,
+  } = useSimBBAStore();
+
+  const { currentUser } = useAuthStore();
+
+  const gameMap = useMemo(() => {
+    const currentGameMap: Record<number, Match[]> = {};
+    for (let i = 0; i < currentCollegeSeasonGames.length; i++) {
+      const game = currentCollegeSeasonGames[i];
+      if (!game.GameComplete) continue;
+      if (!currentGameMap[game.HomeTeamID]) {
+        currentGameMap[game.HomeTeamID] = [game];
+      } else {
+        currentGameMap[game.HomeTeamID].push(game);
+      }
+      if (!currentGameMap[game.AwayTeamID]) {
+        currentGameMap[game.AwayTeamID] = [game];
+      } else {
+        currentGameMap[game.AwayTeamID].push(game);
+      }
+    }
+    return currentGameMap;
+  }, [currentCollegeSeasonGames]);
+  const [validPoll, setValidPoll] = useState(true);
+  const [ranks, setRanks] = useState<{ label: string; value: string }[]>(
+    Array.from({ length: 25 }, () => ({ label: "Select", value: "0" }))
+  );
+
+  const updateRank = (
+    index: number,
+    newValue: { label: string; value: string }
+  ) => {
+    setRanks((prevRanks) => {
+      const updated = [...prevRanks];
+      updated[index] = newValue;
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    const seen = new Set();
+    let isValid = true;
+    for (const rank of ranks) {
+      if (seen.has(rank.value)) {
+        isValid = false;
+        break;
+      }
+      seen.add(rank.value);
+    }
+    setValidPoll(isValid);
+  }, [ranks]);
+
+  const submit = async () => {
+    const dto: any = {
+      ID: pollSubmission!.ID,
+      Week: Number(timestamp.CollegeWeek) + 1,
+      WeekID: Number(timestamp.CollegeWeekID) + 1,
+      SeasonID: timestamp.SeasonID,
+      Username: currentUser!.username,
+    };
+    for (let i = 0; i < ranks.length; i++) {
+      const num = i + 1;
+      const rank = ranks[i];
+      dto[`Rank${num}`] = rank.label;
+      dto[`Rank${num}ID`] = Number(rank.value);
+    }
+    await submitPoll(dto as BasketballPollSubmission);
+    onClose();
+  };
+  return (
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={`Submit SimCBB Poll`}
+        maxWidth="max-w-[80rem]"
+        actions={
+          <>
+            <ButtonGroup>
+              <Button size="sm" disabled={!validPoll} onClick={submit}>
+                <Text variant="small">Submit</Text>
+              </Button>
+            </ButtonGroup>
+          </>
+        }
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-[30rem]">
+          {ranks.map((x, idx) => (
+            <PollDropdown
+              key={`rank-${idx + 1}`}
+              label={`Rank ${idx + 1}`}
+              list={cbbTeamOptions}
+              teamMap={cbbTeamMap}
+              league={SimCBB}
+              idx={idx}
+              selection={x}
+              setSelection={(value) => updateRank(idx, value)}
+              standingsMap={cbbStandingsMap}
               gameMap={gameMap}
             />
           ))}

@@ -419,7 +419,6 @@ export const TeamStandings = ({
   textColorClass,
   darkerBackgroundColor,
 }: TeamStandingsProps) => {
-  console.log({ standings });
   return (
     <SectionCards
       team={team}

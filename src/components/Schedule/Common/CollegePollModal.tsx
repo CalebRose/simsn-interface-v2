@@ -1,12 +1,25 @@
 import { FC, useMemo, useState } from "react";
-import { BASE_HCK_SEASON, League, SimCHL } from "../../../_constants/constants";
+import {
+  BASE_FBA_SEASON,
+  BASE_HCK_SEASON,
+  League,
+  SimCBB,
+  SimCHL,
+} from "../../../_constants/constants";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
 import { Modal } from "../../../_design/Modal";
-import { Timestamp as HCKTimestamp } from "../../../models/hockeyModels";
 import {
+  CollegeTeam,
+  Timestamp as HCKTimestamp,
+} from "../../../models/hockeyModels";
+import {
+  getFBADisplayWeek,
   getHCKDisplayWeek,
   getHCKWeekID,
+  MakeBBASeasonsOptionList,
+  MakeBBAWeeksOptionList,
+  MakeFBASeasonsOptionList,
   MakeHCKSeasonsOptionList,
   MakeHCKWeeksOptionList,
 } from "../../../_helper/statsPageHelper";
@@ -20,6 +33,11 @@ import { useAuthStore } from "../../../context/AuthContext";
 import { Logo } from "../../../_design/Logo";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { darkenColor } from "../../../_utility/getDarkerColor";
+import {
+  Timestamp as BBATimestamp,
+  Team,
+} from "../../../models/basketballModels";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
 
 interface CollegePollModalProps {
   isOpen: boolean;
@@ -59,6 +77,14 @@ export const CollegePollModal: FC<CollegePollModalProps> = ({
             timestamp={timestamp}
           />
         )}
+        {league === SimCBB && (
+          <BBACollegePollModal
+            isOpen={isOpen}
+            onClose={onClose}
+            league={league}
+            timestamp={timestamp}
+          />
+        )}
       </Modal>
     </>
   );
@@ -85,13 +111,40 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
   league,
   isRetro,
 }) => {
-  const team = teamMap[poll.TeamID];
-  const standings = standingsMap[poll.TeamID];
+  const team = useMemo(() => {
+    let t = teamMap[poll.TeamID];
+    if (!t) {
+      return null;
+    }
+    if (league === SimCHL) {
+      t = t as CollegeTeam;
+    } else if (league === SimCBB) {
+      t = t as Team;
+    }
+    return t;
+  }, [league, teamMap, poll]);
+  const teamName = useMemo(() => {
+    if (!team) {
+      return "Unknown Team";
+    }
+    if (league === SimCBB) {
+      return team.Team;
+    }
+    return team.TeamName;
+  }, [team, league]);
   const logo = getLogo(league, team.ID, isRetro);
-  let description = "";
-  if (standings) {
-    description = `${standings.TotalWins}-${standings.TotalLosses}-${standings.TotalOTLosses} (${standings.ConferenceWins}-${standings.ConferenceLosses}-${standings.ConferenceOTLosses})`;
-  }
+  const description = useMemo(() => {
+    const standings = standingsMap[poll.TeamID];
+    if (standings) {
+      if (league === SimCHL) {
+        return `${standings.TotalWins} Wins | ${standings.TotalLosses} Losses | ${standings.TotalOTLosses} OT Losses | ${standings.ConferenceWins} Conference Wins | ${standings.ConferenceLosses} Losses | ${standings.ConferenceOTLosses} C.OT Losses`;
+      } else if (league === SimCBB) {
+        return `${standings.TotalWins} Wins | ${standings.TotalLosses} Losses | ${standings.ConferenceWins} Conference Wins | ${standings.ConferenceLosses} Losses`;
+      }
+    }
+    return "";
+  }, [league, standingsMap, poll]);
+
   return (
     <div
       className="grid grid-cols-10 border-b border-b-[#34455d] h-[3rem]"
@@ -111,7 +164,7 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
             <Logo url={logo} variant="xs" />
           </div>
           <div className="col-span-4 items-center flex">
-            <Text variant="xs">{team.TeamName}</Text>
+            <Text variant="xs">{teamName}</Text>
           </div>
         </div>
       </div>
@@ -261,6 +314,148 @@ export const HCKCollegePollModal: FC<CollegePollModalProps> = ({
               backgroundColor={backgroundColor}
               teamMap={chlTeamMap}
               standingsMap={chlStandingsMap}
+              league={league}
+              isRetro={currentUser?.isRetro || false}
+            />
+          ))}
+      </div>
+    </>
+  );
+};
+
+export const BBACollegePollModal: FC<CollegePollModalProps> = ({
+  league,
+  timestamp,
+}) => {
+  const ts = timestamp as BBATimestamp;
+  const { currentUser } = useAuthStore();
+  const { collegePolls, cbbTeamMap, cbbStandingsMap, cbbTeam } =
+    useSimBBAStore();
+
+  const { isMobile } = useResponsive();
+  const [selectedWeek, setSelectedWeek] = useState<number>(2501);
+  const [selectedSeason, setSelectedSeason] = useState<number>(5); // SEASON ID
+  const teamColors = useTeamColors(
+    cbbTeam?.ColorOne,
+    cbbTeam?.ColorTwo,
+    cbbTeam?.ColorThree
+  );
+  const seasonOptions = useMemo(() => {
+    if (!ts) {
+      return [{ label: "2025", value: "1" }];
+    }
+    return MakeBBASeasonsOptionList(ts);
+  }, [ts]);
+
+  const weekOptions = useMemo(() => {
+    return MakeBBAWeeksOptionList(selectedSeason);
+  }, [selectedSeason]);
+
+  const SelectSeasonOption = (opts: SingleValue<SelectOption>) => {
+    const value = opts!.value;
+    const num = Number(value);
+    const newWeekID = getHCKWeekID(1, num);
+    setSelectedSeason(num);
+    setSelectedWeek(newWeekID);
+  };
+
+  const SelectWeekOption = (opts: SingleValue<SelectOption>) => {
+    const value = opts!.value;
+    const num = Number(value);
+    setSelectedWeek(num);
+  };
+
+  const CurrentCollegePoll = useMemo(() => {
+    const pollIdx = collegePolls.findIndex(
+      (x) => x.WeekID === Number(selectedWeek)
+    );
+
+    const pollArr: any[] = [];
+    if (pollIdx < 0) {
+      return pollArr;
+    }
+    for (let i = 1; i <= 25; i++) {
+      const obj: any = {};
+      obj[`Team`] = collegePolls[pollIdx][`Rank${i}`];
+      obj[`TeamID`] = collegePolls[pollIdx][`Rank${i}ID`];
+      obj[`Votes`] = collegePolls[pollIdx][`Rank${i}Votes`];
+      obj[`No1Votes`] = collegePolls[pollIdx][`Rank${i}No1Votes`];
+      pollArr.push(obj);
+    }
+    return pollArr;
+  }, [selectedWeek, collegePolls]);
+  const backgroundColor = "#1f2937";
+  const darkerBackgroundColor = darkenColor(backgroundColor, -5);
+  const borderColor = teamColors.Two;
+  const displaySeason = useMemo(() => {
+    return BASE_FBA_SEASON + selectedSeason;
+  }, [selectedSeason]);
+
+  const displayWeek = useMemo(() => {
+    return getFBADisplayWeek(selectedWeek, displaySeason);
+  }, [selectedWeek, displaySeason]);
+
+  return (
+    <>
+      <div className="grid grid-cols-2 mb-3">
+        <CategoryDropdown
+          label={`Current Season: ${displaySeason}`}
+          options={seasonOptions}
+          change={SelectSeasonOption}
+          isMulti={false}
+          isMobile={isMobile}
+        />
+        <CategoryDropdown
+          label={`Current Week: ${displayWeek}`}
+          options={weekOptions}
+          change={SelectWeekOption}
+          isMulti={false}
+          isMobile={isMobile}
+        />
+      </div>
+      <div
+        className="grid grid-cols-10 border-b-2 pb-2"
+        style={{
+          borderColor,
+        }}
+      >
+        <div className="text-left col-span-1">
+          <Text variant="body" className="font-semibold">
+            Rank
+          </Text>
+        </div>
+        <div className="text-left col-span-4">
+          <Text variant="body" className="font-semibold">
+            Team
+          </Text>
+        </div>
+        <div className="text-left col-span-3">
+          <Text variant="body" className="font-semibold">
+            Record
+          </Text>
+        </div>
+        <div className="text-left col-span-2">
+          <Text variant="body" className="font-semibold">
+            Votes
+          </Text>
+        </div>
+      </div>
+      <div className="overflow-y-auto max-h-[30rem]">
+        {CurrentCollegePoll.length === 0 && (
+          <Text variant="h4" classes="my-4">
+            The official poll has yet to be curated for the designated week.
+          </Text>
+        )}
+        {CurrentCollegePoll.length > 0 &&
+          CurrentCollegePoll.map((poll, idx) => (
+            <CollegePollRow
+              key={idx}
+              poll={poll}
+              idx={idx}
+              darkerBackgroundColor={darkerBackgroundColor}
+              backgroundColor={backgroundColor}
+              teamMap={cbbTeamMap}
+              standingsMap={cbbStandingsMap}
               league={league}
               isRetro={currentUser?.isRetro || false}
             />

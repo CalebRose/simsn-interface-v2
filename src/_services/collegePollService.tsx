@@ -1,10 +1,11 @@
-import { fbaUrl, hckUrl } from "../_constants/urls";
+import { bbaUrl, fbaUrl, hckUrl } from "../_constants/urls";
 import { GetCall, PostCall } from "../_helper/fetchHelper";
 import { CollegePollSubmission as HCKPollSubmission } from "../models/hockeyModels";
-import { 
-  CollegePollSubmission as FBAPollSubmission, 
-  PollDataResponse as FBAPollDataResponse 
+import {
+  CollegePollSubmission as FBAPollSubmission,
+  PollDataResponse as FBAPollDataResponse,
 } from "../models/footballModels";
+import { CollegePollSubmission as BBAPollSubmission } from "../models/basketballModels";
 
 export const CollegePollService = {
   HCKSubmitPoll: async (dto: any): Promise<HCKPollSubmission> => {
@@ -25,5 +26,9 @@ export const CollegePollService = {
 
   FBASubmitPoll: async (dto: FBAPollSubmission): Promise<FBAPollSubmission> => {
     return await PostCall(`${fbaUrl}college/poll/submit/`, dto);
+  },
+
+  BBASubmitPoll: async (dto: BBAPollSubmission): Promise<any> => {
+    return await PostCall(`${bbaUrl}college/poll/create/`, dto);
   },
 };

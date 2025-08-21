@@ -3386,6 +3386,8 @@ export class BootstrapData {
   CollegeInjuryReport: CollegePlayer[];
   CollegeNotifications: Notification[];
   CollegeGameplan: Gameplan[];
+  CollegePolls: CollegePollOfficial[];
+
   TopCBBPoints: CollegePlayer[];
   TopCBBAssists: CollegePlayer[];
   TopCBBRebounds: CollegePlayer[];
@@ -3433,6 +3435,11 @@ export class BootstrapData {
       source["CollegeNotifications"],
       Notification
     );
+    this.CollegePolls = this.convertValues(
+      source["CollegePolls"],
+      CollegePollOfficial
+    );
+
     this.CollegeGameplan = this.convertValues(
       source["CollegeGameplan"],
       Gameplan
@@ -4499,6 +4506,7 @@ export class NBAWaiverOfferDTO {
 }
 
 export class CollegePollSubmission {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -4639,6 +4647,7 @@ export class CollegePollSubmission {
   }
 }
 export class CollegePollOfficial {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
