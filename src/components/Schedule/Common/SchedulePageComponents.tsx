@@ -439,7 +439,9 @@ export const TeamStandings = ({
       ) : (
         <div className="grid">
           <div
-            className="grid grid-cols-8 font-semibold border-b-2 pb-2"
+            className={`grid grid-cols-${
+              league === SimCHL || league === SimPHL ? "9" : "7"
+            } font-semibold border-b-2 pb-2`}
             style={{
               borderColor,
             }}
@@ -464,6 +466,13 @@ export const TeamStandings = ({
                 C.L
               </Text>
             </div>
+            {(league === SimCHL || league === SimPHL) && (
+              <div className="text-center col-span-1 ">
+                <Text variant="xs" className={`${textColorClass}`}>
+                  C.OT.L
+                </Text>
+              </div>
+            )}
             <div className="text-center col-span-1 ">
               <Text variant="xs" className={`${textColorClass}`}>
                 T.W
@@ -477,7 +486,7 @@ export const TeamStandings = ({
             {(league === SimCHL || league === SimPHL) && (
               <div className="text-center col-span-1 ">
                 <Text variant="xs" className={`${textColorClass}`}>
-                  O.T.L
+                  OT.L
                 </Text>
               </div>
             )}
@@ -485,7 +494,9 @@ export const TeamStandings = ({
           {standings.map((standing, index) => (
             <div
               key={index}
-              className="grid grid-cols-8 border-b border-b-[#34455d] items-center"
+              className={`grid grid-cols-${
+                league === SimCHL || league === SimPHL ? "9" : "7"
+              } border-b border-b-[#34455d] items-center`}
               style={{
                 backgroundColor:
                   index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
@@ -521,6 +532,13 @@ export const TeamStandings = ({
                   {standing.ConferenceLosses}
                 </Text>
               </div>
+              {(league === SimCHL || league === SimPHL) && (
+                <div className="text-center col-span-1 ">
+                  <Text variant="xs" className={`font-semibold`}>
+                    {standing.ConferenceOTLosses}
+                  </Text>
+                </div>
+              )}
               <div className="text-center flex col-span-1 items-center justify-center">
                 <Text variant="xs" className="font-semibold">
                   {standing.TotalWins}
