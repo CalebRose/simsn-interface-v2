@@ -665,7 +665,7 @@ const archetypeAcronyms: { [key: string]: string } = {
   "Line Captain": "LC",
   "Nose Tackle": "NT",
   "Pass Rusher": "PRS",
-  "Run Stopper": "RDS",
+  "Run Stopper": "RST",
   "Speed Rusher": "SPR",
   Coverage: "CVG",
   "Pass Rush": "PRS",
