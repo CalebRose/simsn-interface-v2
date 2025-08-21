@@ -144,6 +144,7 @@ interface SimBBAContextProps {
   SearchBasketballStats: (dto: any) => Promise<void>;
   ExportBasketballStats: (dto: any) => Promise<void>;
   ExportCBBRecruits: () => Promise<void>;
+  ExportPlayByPlay: (dto: any) => Promise<void>;
   submitCollegePoll: (dto: any) => Promise<void>;
   proposeTrade: (dto: NBATradeProposal) => Promise<void>;
   acceptTrade: (dto: NBATradeProposal) => Promise<void>;
@@ -249,6 +250,7 @@ const defaultContext: SimBBAContextProps = {
   syncAcceptedTrade: async () => {},
   vetoTrade: async () => {},
   ExportBasketballSchedule: async () => {},
+  ExportPlayByPlay: async () => {},
   collegePolls: [],
   collegePollSubmission: {} as CollegePollSubmission,
   nbaDraftees: [],
@@ -1166,6 +1168,15 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     const res = await scheduleService.HCKTimeslotExport(dto);
   }, []);
 
+  // Fixme: This function is not used in the current context, but it is included for completeness.
+  const ExportPlayByPlay = useCallback(async (dto: any) => {
+    if (dto.League === SimCBB) {
+      const res = await scheduleService.HCKExportCHLPlayByPlay(dto);
+    } else {
+      const res = await scheduleService.HCKExportPHLPlayByPlay(dto);
+    }
+  }, []);
+
   return (
     <SimBBAContext.Provider
       value={{
@@ -1262,6 +1273,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         ExportBasketballStats,
         ExportCBBRecruits,
         ExportBasketballSchedule,
+        ExportPlayByPlay,
       }}
     >
       {children}

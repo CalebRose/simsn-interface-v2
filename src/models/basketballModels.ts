@@ -480,7 +480,8 @@ export class NBAContractOffer {
   IsAccepted: boolean;
   IsRejected: boolean;
   IsActive: boolean;
-
+  Syncs: number;
+  ToGLeague: boolean;
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
     this.ID = source["ID"];
@@ -508,6 +509,8 @@ export class NBAContractOffer {
     this.IsAccepted = source["IsAccepted"];
     this.IsRejected = source["IsRejected"];
     this.IsActive = source["IsActive"];
+    this.Syncs = source["Syncs"];
+    this.ToGLeague = source["ToGLeague"];
   }
 
   updateField(name: string, value: number): NBAContractOffer {
@@ -1491,10 +1494,16 @@ export class NBATeam {
   ColorOne: string;
   ColorTwo: string;
   ColorThree: string;
+  OwnerDiscordID: string;
+  GMDiscordID: string;
+  CoachDiscordID: string;
+  AssistantDiscordID: string;
+  LastLogin: Time;
+  PenaltyMark: number;
+  NoLongerActiveUser: boolean;
   Gameplan: NBAGameplan;
   TeamStats: NBATeamStats[];
   TeamSeasonStats: NBATeamSeasonStats;
-  RecruitingProfile: TeamRecruitingProfile;
   Capsheet: NBACapsheet;
   Contracts: NBAContract[];
   DraftPicks: DraftPick[];
@@ -1536,15 +1545,18 @@ export class NBATeam {
     this.ColorOne = source["ColorOne"];
     this.ColorTwo = source["ColorTwo"];
     this.ColorThree = source["ColorThree"];
+    this.OwnerDiscordID = source["OwnerDiscordID"];
+    this.GMDiscordID = source["GMDiscordID"];
+    this.CoachDiscordID = source["CoachDiscordID"];
+    this.AssistantDiscordID = source["AssistantDiscordID"];
+    this.LastLogin = this.convertValues(source["LastLogin"], Time);
+    this.PenaltyMark = source["PenaltyMark"];
+    this.NoLongerActiveUser = source["NoLongerActiveUser"];
     this.Gameplan = this.convertValues(source["Gameplan"], NBAGameplan);
     this.TeamStats = this.convertValues(source["TeamStats"], NBATeamStats);
     this.TeamSeasonStats = this.convertValues(
       source["TeamSeasonStats"],
       NBATeamSeasonStats
-    );
-    this.RecruitingProfile = this.convertValues(
-      source["RecruitingProfile"],
-      TeamRecruitingProfile
     );
     this.Capsheet = this.convertValues(source["Capsheet"], NBACapsheet);
     this.Contracts = this.convertValues(source["Contracts"], NBAContract);
@@ -2793,6 +2805,7 @@ export class TeamRecruitingProfile {
   ESPNScore: number;
   RivalsScore: number;
   Rank247Score: number;
+  IsUserTeam: boolean;
   CompositeScore: number;
   FiveStars: number;
   FourStars: number;
@@ -2818,6 +2831,7 @@ export class TeamRecruitingProfile {
     this.TeamAbbr = source["TeamAbbr"];
     this.State = source["State"];
     this.Region = source["Region"];
+    this.IsUserTeam = source["IsUserTeam"];
     this.ScholarshipsAvailable = source["ScholarshipsAvailable"];
     this.WeeklyPoints = source["WeeklyPoints"];
     this.BonusPoints = source["BonusPoints"];
@@ -3302,7 +3316,9 @@ export class Team {
   TeamStats: TeamStats[];
   TeamSeasonStats: TeamSeasonStats;
   RecruitingProfile: TeamRecruitingProfile;
-
+  PenaltyMark: number;
+  NoLongerActiveUser: boolean;
+  LastLogin: Time;
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
     this.ID = source["ID"];
@@ -3329,6 +3345,9 @@ export class Team {
     this.ColorOne = source["ColorOne"];
     this.ColorTwo = source["ColorTwo"];
     this.ColorThree = source["ColorThree"];
+    this.PenaltyMark = source["PenaltyMark"];
+    this.NoLongerActiveUser = source["NoLongerActiveUser"];
+    this.LastLogin = this.convertValues(source["LastLogin"], Time);
     this.Gameplan = this.convertValues(source["Gameplan"], Gameplan);
     this.TeamStats = this.convertValues(source["TeamStats"], TeamStats);
     this.TeamSeasonStats = this.convertValues(
@@ -4422,6 +4441,7 @@ export class NBAContractOfferDTO {
   Year5Opt: boolean;
   IsAccepted: boolean;
   IsRejected: boolean;
+  ToGLeague: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -4451,6 +4471,7 @@ export class NBAContractOfferDTO {
     this.Year5Opt = source["Year5Opt"];
     this.IsAccepted = source["IsAccepted"];
     this.IsRejected = source["IsRejected"];
+    this.ToGLeague = source["ToGLeague"];
   }
 }
 
@@ -7204,6 +7225,128 @@ export class Timestamp {
     this.RunGames = source["RunGames"];
     this.TransferPortalPhase = source["TransferPortalPhase"];
     this.TransferPortalRound = source["TransferPortalRound"];
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
+export class MatchResultsTeam {
+  Team: string;
+  FirstHalfScore: number;
+  SecondQuarterScore: number;
+  SecondHalfScore: number;
+  FourthQuarterScore: number;
+  OvertimeScore: number;
+  Points: number;
+  Possessions: number;
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.Team = source["Team"];
+    this.FirstHalfScore = source["FirstHalfScore"];
+    this.SecondQuarterScore = source["SecondQuarterScore"];
+    this.SecondHalfScore = source["SecondHalfScore"];
+    this.FourthQuarterScore = source["FourthQuarterScore"];
+    this.OvertimeScore = source["OvertimeScore"];
+    this.Points = source["Points"];
+    this.Possessions = source["Possessions"];
+  }
+}
+export class MatchResultsPlayer {
+  ID: number;
+  TeamID: number;
+  FirstName: string;
+  LastName: string;
+  Position: string;
+  Archetype: string;
+  League: string;
+  Year: number;
+  Minutes: number;
+  Possessions: number;
+  FGM: number;
+  FGA: number;
+  FGPercent: number;
+  ThreePointsMade: number;
+  ThreePointAttempts: number;
+  ThreePointPercent: number;
+  FTM: number;
+  FTA: number;
+  FTPercent: number;
+  Points: number;
+  TotalRebounds: number;
+  OffRebounds: number;
+  DefRebounds: number;
+  Assists: number;
+  Steals: number;
+  Blocks: number;
+  Turnovers: number;
+  Fouls: number;
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.ID = source["ID"];
+    this.TeamID = source["TeamID"];
+    this.FirstName = source["FirstName"];
+    this.LastName = source["LastName"];
+    this.Position = source["Position"];
+    this.Archetype = source["Archetype"];
+    this.League = source["League"];
+    this.Year = source["Year"];
+    this.Minutes = source["Minutes"];
+    this.Possessions = source["Possessions"];
+    this.FGM = source["FGM"];
+    this.FGA = source["FGA"];
+    this.FGPercent = source["FGPercent"];
+    this.ThreePointsMade = source["ThreePointsMade"];
+    this.ThreePointAttempts = source["ThreePointAttempts"];
+    this.ThreePointPercent = source["ThreePointPercent"];
+    this.FTM = source["FTM"];
+    this.FTA = source["FTA"];
+    this.FTPercent = source["FTPercent"];
+    this.Points = source["Points"];
+    this.TotalRebounds = source["TotalRebounds"];
+    this.OffRebounds = source["OffRebounds"];
+    this.DefRebounds = source["DefRebounds"];
+    this.Assists = source["Assists"];
+    this.Steals = source["Steals"];
+    this.Blocks = source["Blocks"];
+    this.Turnovers = source["Turnovers"];
+    this.Fouls = source["Fouls"];
+  }
+}
+export class MatchResultsResponse {
+  HomePlayers: MatchResultsPlayer[];
+  AwayPlayers: MatchResultsPlayer[];
+  HomeStats: MatchResultsTeam;
+  AwayStats: MatchResultsTeam;
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.HomePlayers = this.convertValues(
+      source["HomePlayers"],
+      MatchResultsPlayer
+    );
+    this.AwayPlayers = this.convertValues(
+      source["AwayPlayers"],
+      MatchResultsPlayer
+    );
+    this.HomeStats = this.convertValues(source["HomeStats"], MatchResultsTeam);
+    this.AwayStats = this.convertValues(source["AwayStats"], MatchResultsTeam);
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

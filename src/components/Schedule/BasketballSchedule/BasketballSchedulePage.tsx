@@ -67,6 +67,8 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     ExportBasketballSchedule,
   } = bbStore;
 
+  console.log({ cbbTeamMap });
+
   const [selectedTeam, setSelectedTeam] = useState(cbbTeam);
   const [category, setCategory] = useState(Overview);
   const [view, setView] = useState(TeamGames);

@@ -1,5 +1,6 @@
-import { fbaUrl, hckUrl } from "../_constants/urls.js";
+import { bbaUrl, fbaUrl, hckUrl } from "../_constants/urls.js";
 import { GetCall, GetExportCall, PostCall } from "../_helper/fetchHelper.js";
+import { MatchResultsResponse } from "../models/basketballModels.js";
 import { GameResultsResponse as FootballGameResults } from "../models/footballModels.js";
 import { GameResultsResponse as HockeyGameResults } from "../models/hockeyModels.js";
 
@@ -65,6 +66,14 @@ export default class FBAScheduleService {
       `${hckUrl}games/result/export/phl/${dto.GameID}/`,
       "blob"
     );
+  }
+
+  async GetCBBGameResultData(id: number): Promise<MatchResultsResponse> {
+    return await GetCall(`${bbaUrl}match/result/cbb/${id}/`);
+  }
+
+  async GetNBAGameResultData(id: number): Promise<MatchResultsResponse> {
+    return await GetCall(`${bbaUrl}match/result/nba/${id}/`);
   }
 
   // async ExportPlayByPlay(isNFL, id, ht, at) {
