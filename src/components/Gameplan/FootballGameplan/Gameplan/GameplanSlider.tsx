@@ -15,6 +15,7 @@ export interface GameplanSliderProps {
   className?: string;
   error?: string;
   warning?: string;
+  runpass?: boolean;
 }
 
 export const GameplanSlider: React.FC<GameplanSliderProps> = ({
@@ -30,20 +31,44 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
   valueLabel,
   className = '',
   error,
-  warning
+  warning,
+  runpass = false,
 }) => {
+  const percentage = ((value - min) / (max - min)) * 100;
+  
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      <div className="flex items-center justify-between">
-        <Text variant="small" classes="text-gray-300 font-medium">
-          {label}
-        </Text>
-        {showValue && (
-          <Text variant="small" classes="text-blue-400 font-semibold">
-            {valueLabel || value}
+      {runpass ? (
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <Text variant="small" classes="text-gray-300 font-medium">
+              Pass
+            </Text>
+            <Text variant="small" classes="text-gray-400">
+              {100 - value}%
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="small" classes="text-gray-300 font-medium">
+              Run
+            </Text>
+            <Text variant="small" classes="text-gray-400">
+              {value}%
+            </Text>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between">
+          <Text variant="small" classes="text-gray-300 font-medium">
+            {label}
           </Text>
-        )}
-      </div>
+          {showValue && (
+            <Text variant="small" classes="text-blue-400 font-semibold">
+              {valueLabel || value}
+            </Text>
+          )}
+        </div>
+      )}
       <div className="relative">
         <input
           type="range"
@@ -55,7 +80,7 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
           step={step}
           disabled={disabled}
           className={`
-            w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer
+            w-full h-2 p-0 bg-gray-700 rounded-lg appearance-none cursor-pointer
             slider-thumb:appearance-none slider-thumb:h-4 slider-thumb:w-4 
             slider-thumb:rounded-full slider-thumb:bg-blue-500 slider-thumb:cursor-pointer
             slider-thumb:hover:bg-blue-400 slider-thumb:transition-colors
@@ -68,14 +93,6 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
             background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((value - min) / (max - min)) * 100}%, #374151 ${((value - min) / (max - min)) * 100}%, #374151 100%)`
           }}
         />
-        <div className="flex justify-between mt-1">
-          <Text variant="xs" classes="text-gray-500">
-            {min}
-          </Text>
-          <Text variant="xs" classes="text-gray-500">
-            {max}
-          </Text>
-        </div>
       </div>
       {error && (
         <Text variant="xs" classes="text-red-400">
