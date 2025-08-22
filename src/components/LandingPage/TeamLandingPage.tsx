@@ -275,6 +275,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       } = getLandingCBBData(
         team,
         currentWeek,
+        ts,
         league,
         currentUser,
         allCBBStandings,
@@ -306,6 +307,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       } = getLandingNBAData(
         team,
         currentWeek,
+        ts,
         league,
         currentUser,
         allNBAStandings,
