@@ -144,8 +144,8 @@ export const RunnerInput: React.FC<RunnerInputProps> = ({
     : label;
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <Text variant="xs" classes="text-gray-300 font-medium min-w-0 flex-1">
+    <div className={`flex items-center justify-center gap-2 ${className}`}>
+      <Text variant="xs" classes="w-full xl:w-[22.7em] text-gray-300 font-medium text-left">
         {displayLabel}
       </Text>
       <div className="">
@@ -168,6 +168,7 @@ export interface TargetInputProps extends RunnerInputProps {
   targetDepth?: string;
   onTargetDepthChange?: (depth: string) => void;
   targetDepthOptions?: string[];
+  targetWR?: boolean;
 }
 
 export const TargetInput: React.FC<TargetInputProps> = ({
@@ -181,15 +182,16 @@ export const TargetInput: React.FC<TargetInputProps> = ({
   targetDepthOptions = ['Quick', 'Short', 'Long', 'None'],
   disabled = false,
   error,
-  className = ''
+  className = '',
+  targetWR,
 }) => {
   const displayLabel = playerInfo 
     ? `${playerInfo.archetype} ${playerInfo.position} ${playerInfo.firstName} ${playerInfo.lastName} | ${playerInfo.overall}`
     : label;
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <Text variant="xs" classes=" text-gray-300 font-medium min-w-0 flex-1">
+    <div className={`flex items-center justify-center gap-2 ${className}`}>
+      <Text variant="xs" classes={`text-left text-gray-300 font-medium ${targetWR ? 'w-full xl:w-[18em]' : 'w-3/5'}`}>
         {displayLabel}
       </Text>
       {onTargetDepthChange && (

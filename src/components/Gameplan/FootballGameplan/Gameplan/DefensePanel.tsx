@@ -201,24 +201,30 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                           )}
                         </div>
                       </div>
-                      <GameplanInputSmall
-                        name={runToPassField}
-                        label="Run to Pass"
-                        value={gameplan[runToPassField as keyof GameplanData] as number}
-                        onChange={(e) => onChange(runToPassField, parseInt(e.target.value) || 0)}
-                        disabled={disabled || gameplan.DefaultDefense}
-                        size="xs"
-                        max={100}
-                      />
-                      <GameplanInputSmall
-                        name={blitzWeightField}
-                        label="Blitz Weight"
-                        value={gameplan[blitzWeightField as keyof GameplanData] as number}
-                        onChange={(e) => onChange(blitzWeightField, parseInt(e.target.value) || 0)}
-                        disabled={disabled || gameplan.DefaultDefense}
-                        size="xs"
-                        max={100}
-                      />
+                      <div>
+                        <div className="border-b pb-2" style={{ borderColor: accentColor }}>
+                          <GameplanSlider
+                            name={runToPassField}
+                            label="Run to Pass"
+                            value={gameplan[runToPassField as keyof GameplanData] as number}
+                            onChange={(e) => onChange(runToPassField, parseInt(e.target.value) || 0)}
+                            min={0}
+                            max={100}
+                            disabled={disabled || gameplan.DefaultDefense}
+                            runpass
+                          />
+                        </div>
+                        <GameplanSlider
+                          name={blitzWeightField}
+                          label="Blitz Weight"
+                          value={gameplan[blitzWeightField as keyof GameplanData] as number}
+                          onChange={(e) => onChange(blitzWeightField, parseInt(e.target.value) || 0)}
+                          min={0}
+                          max={100}
+                          disabled={disabled || gameplan.DefaultDefense}
+                          className="pt-2"
+                        />
+                      </div>
                       <div>
                         <Text variant="xs" classes="text-gray-300 mb-1">
                           Blitz Aggression:

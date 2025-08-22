@@ -11,6 +11,7 @@ import { GameplanValidationResult } from './useGameplanValidation';
 import { getFieldError, getFieldWarning } from '../Utils/GameplanValidationUtils';
 import { getAggressionLevelColor, getAggressionLevelText } from '../Utils/ComponentStyleUtils';
 import { InformationCircle } from '../../../../_design/Icons';
+import GameplanSlider from './GameplanSlider';
 
 export interface SpecialTeamsPanelProps {
   gameplan: GameplanData;
@@ -92,27 +93,27 @@ export const SpecialTeamsPanel: React.FC<SpecialTeamsPanelProps> = ({
         </Text>
         <div className="grid grid-cols-3 gap-6">
           <div className="col-span-1">
-            <GameplanInput
+            <GameplanSlider
               name="GoFor4AndShort"
               label={SpecialTeamsLabels.GoFor4AndShort}
               value={gameplan.GoFor4AndShort}
               onChange={(e) => onChange('GoFor4AndShort', parseInt(e.target.value) || 0)}
-              disabled={disabled || gameplan.DefaultSpecialTeams}
               min={SpecialTeamsOptions.GoFor4AndShort.Min}
               max={SpecialTeamsOptions.GoFor4AndShort.Max}
               error={getFieldError(validation, 'GoFor4AndShort')}
               warning={getFieldWarning(validation, 'GoFor4AndShort')}
-            />      
-            <GameplanInput
+              disabled={disabled || gameplan.DefaultSpecialTeams}
+            />
+            <GameplanSlider
               name="GoFor4AndLong"
               label={SpecialTeamsLabels.GoFor4AndLong}
               value={gameplan.GoFor4AndLong}
               onChange={(e) => onChange('GoFor4AndLong', parseInt(e.target.value) || 0)}
-              disabled={disabled || gameplan.DefaultSpecialTeams}
               min={SpecialTeamsOptions.GoFor4AndLong.Min}
               max={SpecialTeamsOptions.GoFor4AndLong.Max}
               error={getFieldError(validation, 'GoFor4AndLong')}
               warning={getFieldWarning(validation, 'GoFor4AndLong')}
+              disabled={disabled || gameplan.DefaultSpecialTeams}
             />
           </div>
           <div className="mt-4 p-3 bg-gray-700 bg-opacity-50 rounded-lg col-span-2">

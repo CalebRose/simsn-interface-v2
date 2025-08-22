@@ -350,6 +350,7 @@ export const OffensiveDistributionsPanel: React.FC<OffensiveDistributionsPanelPr
                 targetDepthOptions={['WR1', 'WR2', 'WR3', 'WR4', 'WR5']}
                 disabled={disabled || gameplan.DefaultOffense}
                 error={getFieldError(validation, 'RunnerDistributionWR')}
+                targetWR
               />
             </div>
           </div>
