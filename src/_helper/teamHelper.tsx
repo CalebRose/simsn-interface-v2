@@ -85,8 +85,10 @@ export const GetLeagueTS = (
 export const RevealBBAResults = (
   game: Match | NBAMatch,
   timestamp: BKTimestamp,
-  currentWeek: number
+  resultsOverride: boolean
 ): boolean => {
+  if (resultsOverride) return true;
+  const currentWeek = timestamp.CollegeWeek;
   if (game.Week < currentWeek || game.SeasonID < timestamp.SeasonID)
     return true;
   const { MatchOfWeek, GameComplete } = game;

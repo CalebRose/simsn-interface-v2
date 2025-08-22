@@ -10,6 +10,7 @@ import {
   Divisions,
   Conferences,
   AdminRole,
+  SimCFB,
 } from "../../../_constants/constants";
 import { useAuthStore } from "../../../context/AuthContext";
 import { SelectDropdown } from "../../../_design/Select";
@@ -37,6 +38,9 @@ import {
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { darkenColor } from "../../../_utility/getDarkerColor";
 import { ToggleSwitch } from "../../../_design/Inputs";
+import { CollegePollModal } from "../Common/CollegePollModal";
+import { SubmitPollModal } from "../Common/SubmitPollModal";
+import { useModal } from "../../../_hooks/useModal";
 
 interface SchedulePageProps {
   league: League;
@@ -56,6 +60,8 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     allCFBStandings,
     allCollegeGames: allCFBGames,
     isLoading,
+    collegePollSubmission,
+    submitCollegePoll,
   } = fbStore;
 
   const [selectedTeam, setSelectedTeam] = useState(cfbTeam);
@@ -65,7 +71,8 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [selectedWeek, setSelectedWeek] = useState(currentWeek ?? 1);
   const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
-
+  const submitPollModal = useModal();
+  const collegePollModal = useModal();
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
@@ -126,6 +133,20 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   return (
     <>
+      <CollegePollModal
+        league={SimCFB}
+        isOpen={collegePollModal.isModalOpen}
+        onClose={collegePollModal.handleCloseModal}
+        timestamp={ts}
+      />
+      <SubmitPollModal
+        league={SimCFB}
+        isOpen={submitPollModal.isModalOpen}
+        onClose={submitPollModal.handleCloseModal}
+        pollSubmission={collegePollSubmission}
+        submitPoll={submitCollegePoll}
+        timestamp={ts}
+      />
       <div className="flex flex-col w-full">
         <div className="sm:grid sm:grid-cols-6 sm:gap-4 w-full h-[82vh]">
           <div className="flex flex-col w-full sm:col-span-1 items-center gap-4 pb-2">

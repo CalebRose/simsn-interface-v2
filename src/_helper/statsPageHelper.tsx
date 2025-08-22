@@ -47,11 +47,12 @@ import {
   NFLTeam,
   NFLTeamSeasonStats,
   NFLTeamStats,
-  Timestamp,
+  Timestamp as FBATimestamp,
   CollegeTeamStats,
   CollegeTeamSeasonStats,
   CollegeTeam,
 } from "../models/footballModels";
+import { Timestamp } from "../models/basketballModels";
 
 export const MakeCHLPlayerMapFromRosterMap = (
   chlTeams: CHLTeam[],
@@ -274,7 +275,7 @@ export const isSeasonStats = (s: any): s is HCKSeasonStats => {
   return typeof s.StatType === "number" && typeof s.GamesPlayed === "number";
 };
 
-export const MakeFBASeasonsOptionList = (ts: Timestamp) => {
+export const MakeFBASeasonsOptionList = (ts: FBATimestamp) => {
   const seasonsList = [];
   for (let i = 1; i <= ts.CollegeSeasonID; i++) {
     const iterativeSeason = 2020 + i;
@@ -289,6 +290,30 @@ export const MakeFBAWeeksOptionList = (seasonID: number) => {
   const weeksList = [];
 
   for (let i = 1; i <= BASE_FBA_WEEKS_IN_SEASON; i++) {
+    const weekID = getFBAWeekID(i, seasonID);
+    const weekLabel = `Week ${i}`;
+    const option = { label: weekLabel, value: weekID.toString() };
+    weeksList.push(option);
+  }
+
+  return weeksList;
+};
+
+export const MakeBBASeasonsOptionList = (ts: Timestamp) => {
+  const seasonsList = [];
+  for (let i = 1; i <= ts.SeasonID; i++) {
+    const iterativeSeason = 2020 + i;
+    const seasonLabel = `${iterativeSeason}`;
+    const option = { label: seasonLabel, value: i.toString() };
+    seasonsList.push(option);
+  }
+  return seasonsList;
+};
+
+export const MakeBBAWeeksOptionList = (seasonID: number) => {
+  const weeksList = [];
+
+  for (let i = 1; i <= BASE_HCK_WEEKS_IN_SEASON; i++) {
     const weekID = getFBAWeekID(i, seasonID);
     const weekLabel = `Week ${i}`;
     const option = { label: weekLabel, value: weekID.toString() };

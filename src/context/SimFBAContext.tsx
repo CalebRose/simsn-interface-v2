@@ -53,6 +53,12 @@ import {
   NFLDraftee,
   HistoricCollegePlayer,
   NFLRetiredPlayer,
+  CollegePollOfficial,
+  CollegePollSubmission,
+  NFLTradeProposal,
+  NFLTradePreferences,
+  NFLDraftPick,
+  NFLTradeProposalDTO,
 } from "../models/footballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { fba_ws } from "../_constants/urls";
@@ -78,6 +84,8 @@ import {
   MakeCFBPlayerMapFromRosterMap,
   MakeNFLPlayerMapFromRosterMap,
 } from "../_helper/statsPageHelper";
+import { TradeService } from "../_services/tradeService";
+import { CollegePollService } from "../_services/collegePollService";
 
 // ✅ Define Types for Context
 interface SimFBAContextProps {
@@ -139,7 +147,14 @@ interface SimFBAContextProps {
   topNFLPassers: NFLPlayer[];
   topNFLRushers: NFLPlayer[];
   topNFLReceivers: NFLPlayer[];
+  collegePolls: CollegePollOfficial[];
+  collegePollSubmission: CollegePollSubmission;
   nflDraftees: NFLDraftee[];
+  tradeProposalsMap: Record<number, NFLTradeProposal[]>;
+  tradePreferencesMap: Record<number, NFLTradePreferences>;
+  nflDraftPicks: NFLDraftPick[];
+  nflDraftPickMap: Record<number, NFLDraftPick[]>;
+  individualDraftPickMap: Record<number, NFLDraftPick>;
   removeUserfromCFBTeamCall: (teamID: number) => Promise<void>;
   removeUserfromNFLTeamCall: (request: NFLRequest) => Promise<void>;
   addUserToCFBTeam: (teamID: number, user: string) => void;
@@ -186,6 +201,13 @@ interface SimFBAContextProps {
   CancelFreeAgencyOffer: (dto: any) => Promise<void>;
   SaveWaiverWireOffer: (dto: any) => Promise<void>;
   CancelWaiverWireOffer: (dto: any) => Promise<void>;
+  submitCollegePoll: (dto: any) => Promise<void>;
+  proposeTrade: (dto: NFLTradeProposal) => Promise<void>;
+  acceptTrade: (dto: NFLTradeProposal) => Promise<void>;
+  rejectTrade: (dto: NFLTradeProposal) => Promise<void>;
+  cancelTrade: (dto: NFLTradeProposal) => Promise<void>;
+  syncAcceptedTrade: (dto: NFLTradeProposal) => Promise<void>;
+  vetoTrade: (dto: NFLTradeProposal) => Promise<void>;
   playerFaces: {
     [key: number]: FaceDataResponse;
   };
@@ -266,6 +288,13 @@ const defaultContext: SimFBAContextProps = {
   freeAgents: [],
   waiverPlayers: [],
   nflDraftees: [],
+  collegePolls: [],
+  collegePollSubmission: {} as CollegePollSubmission,
+  nflDraftPicks: [],
+  nflDraftPickMap: {},
+  individualDraftPickMap: {},
+  tradePreferencesMap: {},
+  tradeProposalsMap: {},
   removeUserfromCFBTeamCall: async () => {},
   removeUserfromNFLTeamCall: async () => {},
   addUserToCFBTeam: async () => {},
@@ -294,6 +323,13 @@ const defaultContext: SimFBAContextProps = {
   CancelFreeAgencyOffer: async () => {},
   SaveWaiverWireOffer: async () => {},
   CancelWaiverWireOffer: async () => {},
+  submitCollegePoll: async () => {},
+  proposeTrade: async () => {},
+  acceptTrade: async () => {},
+  rejectTrade: async () => {},
+  cancelTrade: async () => {},
+  syncAcceptedTrade: async () => {},
+  vetoTrade: async () => {},
   playerFaces: {},
   proContractMap: {},
   proExtensionMap: {},
@@ -481,6 +517,42 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [freeAgents, setFreeAgents] = useState<NFLPlayer[]>([]);
   const [waiverPlayers, setWaiverPlayers] = useState<NFLPlayer[]>([]);
   const [nflDraftees, setNFLDraftees] = useState<NFLDraftee[]>([]);
+  const [collegePolls, setCollegePolls] = useState<CollegePollOfficial[]>([]);
+  const [collegePollSubmission, setCollegePollSubmission] =
+    useState<CollegePollSubmission>({} as CollegePollSubmission);
+  const [tradeProposalsMap, setTradeProposalsMap] = useState<
+    Record<number, NFLTradeProposal[]>
+  >([]);
+  const [tradePreferencesMap, setTradePreferencesMap] = useState<
+    Record<number, NFLTradePreferences>
+  >([]);
+  const [nflDraftPicks, setNFLDraftPicks] = useState<NFLDraftPick[]>([]);
+
+  const nflDraftPickMap = useMemo(() => {
+    if (!nflDraftPicks) return {};
+    const pickMap: Record<number, NFLDraftPick[]> = {};
+    for (let i = 0; i < nflDraftPicks.length; i++) {
+      const pick = nflDraftPicks[i];
+      if (!pickMap[pick.TeamID]) {
+        pickMap[pick.TeamID] = [pick];
+      } else {
+        pickMap[pick.TeamID].push(pick);
+      }
+    }
+    return pickMap;
+  }, [nflDraftPicks]);
+
+  const individualDraftPickMap = useMemo(() => {
+    const pickMap: Record<number, NFLDraftPick> = {};
+
+    for (let i = 0; i < nflDraftPicks.length; i++) {
+      const pick = nflDraftPicks[i];
+      pickMap[pick.ID] = pick;
+    }
+
+    return pickMap;
+  }, [nflDraftPicks]);
+
   const proPlayerMap = useMemo(() => {
     const playerMap: Record<number, NFLPlayer> = {};
 
@@ -1361,6 +1433,102 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     [nflTeams]
   );
 
+  const proposeTrade = useCallback(async (dto: NFLTradeProposal) => {
+    const thisDTO = new NFLTradeProposalDTO({ dto });
+    const res = await TradeService.FBACreateTradeProposal(thisDTO);
+    enqueueSnackbar(
+      `Sent trade proposal to ${proTeamMap![dto.RecepientTeamID].TeamName}!`,
+      {
+        variant: "success",
+        autoHideDuration: 3000,
+      }
+    );
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NFLTeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NFLTeamID]: [...tp[dto.NFLTeamID], dto],
+      };
+    });
+  }, []);
+
+  const acceptTrade = useCallback(async (dto: NFLTradeProposal) => {
+    const res = await TradeService.FBAAcceptTradeProposal(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NFLTeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const rejectTrade = useCallback(async (dto: NFLTradeProposal) => {
+    const res = await TradeService.FBARejectTradeProposal(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NFLTeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const cancelTrade = useCallback(async (dto: NFLTradeProposal) => {
+    const res = await TradeService.FBACancelTradeProposal(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NFLTeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const syncAcceptedTrade = useCallback(async (dto: NFLTradeProposal) => {
+    const res = await TradeService.FBAConfirmAcceptedTrade(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NFLTeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const vetoTrade = useCallback(async (dto: NFLTradeProposal) => {
+    const res = await TradeService.FBAVetoAcceptedTrade(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NFLTeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const submitCollegePoll = useCallback(async (dto: any) => {
+    const res = await CollegePollService.FBASubmitPoll(dto);
+    if (res) {
+      setCollegePollSubmission(res);
+      enqueueSnackbar(`College Poll Submitted!`, {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    }
+  }, []);
+
   return (
     <SimFBAContext.Provider
       value={{
@@ -1417,6 +1585,20 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         topNFLReceivers,
         cfbPlayerMap,
         nflPlayerMap,
+        collegePolls,
+        collegePollSubmission,
+        nflDraftPicks,
+        individualDraftPickMap,
+        nflDraftPickMap,
+        tradeProposalsMap,
+        tradePreferencesMap,
+        submitCollegePoll,
+        proposeTrade,
+        acceptTrade,
+        rejectTrade,
+        cancelTrade,
+        syncAcceptedTrade,
+        vetoTrade,
         cutCFBPlayer,
         redshirtPlayer,
         promisePlayer,

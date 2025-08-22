@@ -146,7 +146,7 @@ export const GamesTable = ({
     const gameWeek = item.Week;
     const logoUrl = getLogo(league, opposingTeamID, currentUser.isRetro);
     const showResults = [SimCBB, SimNBA].includes(league)
-      ? RevealBBAResults(item, ts, currentWeek)
+      ? RevealBBAResults(item, ts, false)
       : false;
     return (
       <tr

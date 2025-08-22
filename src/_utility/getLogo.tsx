@@ -1417,7 +1417,7 @@ export const getNBALogo = (id: number, isRetro: boolean) => {
     case 18:
       return logoObj.MIN_Timberwolves;
     case 19:
-      return logoObj.NO_Pelicans;
+      return logoObj.NO_Pelicants;
     case 20:
       return logoObj.NY_Knicks;
     case 22:
@@ -1427,7 +1427,7 @@ export const getNBALogo = (id: number, isRetro: boolean) => {
     case 23:
       return logoObj.PHI_76ers;
     case 24:
-      return logoObj.PHO_Suns;
+      return logoObj.PHO_Moons;
     case 25:
       return logoObj.POR_Trailblazers;
     case 26:
