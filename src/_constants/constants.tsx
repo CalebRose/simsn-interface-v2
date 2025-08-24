@@ -676,7 +676,7 @@ export const FootballPositionOptions = [
   { label: "Defensive Tackles", value: "DT" },
   { label: "Outside Linebackers", value: "OLB" },
   { label: "Inside Linebackers", value: "ILB" },
-  { label: "Cornerbacls", value: "CB" },
+  { label: "Cornerbacks", value: "CB" },
   { label: "Free Safeties", value: "FS" },
   { label: "Strong Safeties", value: "SS" },
   { label: "Kickers", value: "K" },
