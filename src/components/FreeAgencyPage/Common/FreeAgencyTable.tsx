@@ -363,6 +363,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
       backgroundColor={backgroundColor}
       team={team}
       enablePagination
+      league={league}
       currentPage={currentPage}
     />
   );
