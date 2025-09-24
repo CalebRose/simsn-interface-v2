@@ -555,6 +555,10 @@ export const getCFBLogo = (id: number, isRetro: boolean) => {
       return logoObj.Georgetown;
     case 144:
       return logoObj.South_Dakota_State;
+    case 265:
+      return logoObj.Chicago_State;
+    case 266:
+      return logoObj.New_Haven;
     default:
       return logoObj.Unknown;
   }

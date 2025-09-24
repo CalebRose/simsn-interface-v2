@@ -170,6 +170,7 @@ export const useSideMenu = () => {
         isRoute: true,
         route: routes.CBB_SCHEDULE,
         league: SimCBB,
+        click: () => navigate(routes.CBB_SCHEDULE),
         toggle: () => toggleMenu(),
       },
       {
@@ -216,6 +217,7 @@ export const useSideMenu = () => {
         isRoute: true,
         route: "",
         league: SimNBA,
+        click: () => navigate(routes.NBA_SCHEDULE),
         toggle: () => toggleMenu(),
       },
       {

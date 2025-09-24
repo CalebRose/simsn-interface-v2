@@ -2879,7 +2879,6 @@ export class RecruitPlayerProfile {
   }
 }
 export class RecruitingTeamProfile {
-  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -2916,6 +2915,8 @@ export class RecruitingTeamProfile {
   AIStarMin: number;
   AIStarMax: number;
   Recruiter: string;
+  OffensiveScheme: string;
+  DefensiveScheme: string;
   Recruits: RecruitPlayerProfile[];
 
   constructor(source: any = {}) {
@@ -2956,6 +2957,8 @@ export class RecruitingTeamProfile {
     this.AIStarMin = source["AIStarMin"];
     this.AIStarMax = source["AIStarMax"];
     this.Recruiter = source["Recruiter"];
+    this.OffensiveScheme = source["OffensiveScheme"];
+    this.DefensiveScheme = source["DefensiveScheme"];
     this.Recruits = this.convertValues(
       source["Recruits"],
       RecruitPlayerProfile
@@ -3255,6 +3258,9 @@ export class BootstrapData {
   RecruitProfiles: RecruitPlayerProfile[];
   TeamProfileMap: { [key: number]: RecruitingTeamProfile };
   PortalPlayers: CollegePlayer[];
+  TransferPortalProfiles: TransferPortalProfile[];
+  CollegePromises: CollegePromise[];
+
   CollegeInjuryReport: CollegePlayer[];
   CollegeNews: NewsLog[];
   CollegeNotifications: Notification[];
@@ -3314,6 +3320,15 @@ export class BootstrapData {
       source["PortalPlayers"],
       CollegePlayer
     );
+    this.TransferPortalProfiles = this.convertValues(
+      source["TransferPortalProfiles"],
+      TransferPortalProfile
+    );
+    this.CollegePromises = this.convertValues(
+      source["CollegePromises"],
+      CollegePromise
+    );
+
     this.CollegeInjuryReport = this.convertValues(
       source["CollegeInjuryReport"],
       CollegePlayer
@@ -6313,6 +6328,117 @@ export class CollegePollOfficial {
     this.Rank20ID = source["Rank20ID"];
     this.Rank20Votes = source["Rank20Votes"];
     this.Rank20No1Votes = source["Rank20No1Votes"];
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
+export class TransferPortalProfile {
+  ID: number;
+  CreatedAt: Time;
+  UpdatedAt: Time;
+  DeletedAt: DeletedAt;
+  SeasonID: number;
+  CollegePlayerID: number;
+  ProfileID: number;
+  PromiseID: number;
+  TeamAbbreviation: string;
+  TotalPoints: number;
+  CurrentWeeksPoints: number;
+  PreviouslySpentPoints: number;
+  SpendingCount: number;
+  RemovedFromBoard: boolean;
+  RolledOnPromise: boolean;
+  LockProfile: boolean;
+  IsSigned: boolean;
+  Recruiter: string;
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.ID = source["ID"];
+    this.CreatedAt = this.convertValues(source["CreatedAt"], Time);
+    this.UpdatedAt = this.convertValues(source["UpdatedAt"], Time);
+    this.DeletedAt = this.convertValues(source["DeletedAt"], DeletedAt);
+    this.SeasonID = source["SeasonID"];
+    this.CollegePlayerID = source["CollegePlayerID"];
+    this.ProfileID = source["ProfileID"];
+    this.PromiseID = source["PromiseID"];
+    this.TeamAbbreviation = source["TeamAbbreviation"];
+    this.TotalPoints = source["TotalPoints"];
+    this.CurrentWeeksPoints = source["CurrentWeeksPoints"];
+    this.PreviouslySpentPoints = source["PreviouslySpentPoints"];
+    this.SpendingCount = source["SpendingCount"];
+    this.RemovedFromBoard = source["RemovedFromBoard"];
+    this.RolledOnPromise = source["RolledOnPromise"];
+    this.LockProfile = source["LockProfile"];
+    this.IsSigned = source["IsSigned"];
+    this.Recruiter = source["Recruiter"];
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
+
+export class CollegePromise {
+  ID: number;
+  CreatedAt: Time;
+  UpdatedAt: Time;
+  DeletedAt: DeletedAt;
+  TeamID: number;
+  CollegePlayerID: number;
+  PromiseType: string;
+  PromiseWeight: string;
+  Benchmark: number;
+  BenchmarkStr: string;
+  PromiseMade: boolean;
+  IsFullfilled: boolean;
+  IsActive: boolean;
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.ID = source["ID"];
+    this.CreatedAt = this.convertValues(source["CreatedAt"], Time);
+    this.UpdatedAt = this.convertValues(source["UpdatedAt"], Time);
+    this.DeletedAt = this.convertValues(source["DeletedAt"], DeletedAt);
+    this.TeamID = source["TeamID"];
+    this.CollegePlayerID = source["CollegePlayerID"];
+    this.PromiseType = source["PromiseType"];
+    this.PromiseWeight = source["PromiseWeight"];
+    this.Benchmark = source["Benchmark"];
+    this.BenchmarkStr = source["BenchmarkStr"];
+    this.PromiseMade = source["PromiseMade"];
+    this.IsFullfilled = source["IsFullfilled"];
+    this.IsActive = source["IsActive"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
