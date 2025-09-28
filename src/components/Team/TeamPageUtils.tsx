@@ -137,6 +137,59 @@ export const getCHLAttributes = (
   ];
 };
 
+export const getCHLPortalAttributes = (
+  player: CHLPlayer,
+  isMobile: boolean,
+  isTablet: boolean,
+  category: string
+) => {
+  const heightObj = HeightToFeetAndInches(player.Height);
+  const attributes = [
+    { label: "Name", value: `${player.FirstName} ${player.LastName}` },
+    { label: "Pos", value: player.Position },
+    { label: "Arch", value: player.Archetype },
+    { label: "Yr", value: getYear(player.Year, player.IsRedshirt) },
+    { label: "Stars", value: player.Stars },
+    { label: "Ht", value: `${heightObj.feet}' ${heightObj.inches}"` },
+    { label: "Wt (lbs)", value: player.Weight },
+    { label: "Ct", value: annotateCountry(player.Country) },
+    { label: "Re", value: annotateRegion(player.State) },
+    { label: "Ovr", value: getHockeyLetterGrade(player.Overall, player.Year) },
+  ];
+
+  const preferenceAttributes =
+    !isMobile && !isTablet && category === Preferences
+      ? [
+          { label: "ProgramPref", value: player.ProgramPref },
+          { label: "ProfDevPref", value: player.ProfDevPref },
+          { label: "TraditionsPref", value: player.TraditionsPref },
+          { label: "FacilitiesPref", value: player.FacilitiesPref },
+          { label: "AtmospherePref", value: player.AtmospherePref },
+          { label: "AcademicsPref", value: player.AcademicsPref },
+          { label: "ConferencePref", value: player.ConferencePref },
+          { label: "CoachPref", value: player.CoachPref },
+          { label: "SeasonMomentumPref", value: player.SeasonMomentumPref },
+        ]
+      : [];
+
+  const additionalAttributes =
+    (!isMobile || isTablet) && category === Attributes
+      ? getAdditionalHockeyAttributes(player)
+      : [];
+
+  const potentialAttributes =
+    (!isMobile || isTablet) && category === Potentials
+      ? getAdditionalPotentialAttributes(player)
+      : [];
+
+  return [
+    ...attributes,
+    ...preferenceAttributes,
+    ...additionalAttributes,
+    ...potentialAttributes,
+  ];
+};
+
 export const getPHLAttributes = (
   player: PHLPlayer,
   isMobile: boolean,
@@ -414,16 +467,6 @@ export const getAdditionalHockeyAttributes = (
       label: "GV",
       raw: player.GoalieVision,
       value: getHockeyLetterGrade(player.GoalieVision, player.Year),
-    },
-    {
-      label: "Sta",
-      raw: player.Stamina,
-      value: getGeneralLetterGrade(player.Stamina),
-    },
-    {
-      label: "Inj",
-      raw: player.InjuryRating,
-      value: getGeneralLetterGrade(player.InjuryRating),
     },
   ];
 };

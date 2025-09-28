@@ -142,7 +142,9 @@ interface SimHCKContextProps {
   tradeProposalsMap: Record<number, TradeProposal[]>;
   tradePreferencesMap: Record<number, TradePreferences>;
   transferPortalProfiles: TransferPortalProfile[];
+  teamTransferPortalProfiles: TransferPortalProfile[];
   collegePromises: CollegePromise[];
+  transferProfileMapByPlayerID: Record<number, TransferPortalProfile[]>;
   addTransferPlayerToBoard: (dto: any) => Promise<void>;
   removeTransferPlayerFromBoard: (dto: any) => Promise<void>;
   saveTransferPortalBoard: () => Promise<void>;
@@ -268,6 +270,8 @@ const defaultContext: SimHCKContextProps = {
   collegePollSubmission: {} as CollegePollSubmission,
   transferPortalProfiles: [],
   collegePromises: [],
+  teamTransferPortalProfiles: [],
+  transferProfileMapByPlayerID: {},
   addTransferPlayerToBoard: async () => {},
   removeTransferPlayerFromBoard: async () => {},
   saveTransferPortalBoard: async () => {},
@@ -546,6 +550,25 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
     return playerMap;
   }, [proRosterMap, phlTeams]);
+
+  const teamTransferPortalProfiles = useMemo(() => {
+    if (!chlTeam) return [];
+    return transferPortalProfiles.filter(
+      (profile) => profile.ProfileID === chlTeam.ID
+    );
+  }, [chlTeam, transferPortalProfiles]);
+
+  const transferProfileMapByPlayerID = useMemo(() => {
+    const transferProfileMap: Record<number, TransferPortalProfile[]> = {};
+    for (let i = 0; i < portalPlayers.length; i++) {
+      const p = portalPlayers[i];
+      const profiles = transferPortalProfiles.filter(
+        (profile) => profile.CollegePlayerID === p.ID
+      );
+      transferProfileMap[p.ID] = profiles;
+    }
+    return transferProfileMap;
+  }, [portalPlayers, transferPortalProfiles]);
 
   useEffect(() => {
     getBootstrapTeamData();
@@ -1528,6 +1551,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         phlDraftPickMap,
         transferPortalProfiles,
         collegePromises,
+        teamTransferPortalProfiles,
+        transferProfileMapByPlayerID,
         removeUserfromCHLTeamCall,
         removeUserfromPHLTeamCall,
         addUserToCHLTeam,

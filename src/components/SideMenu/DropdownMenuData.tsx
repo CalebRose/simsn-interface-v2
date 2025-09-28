@@ -271,8 +271,9 @@ export const useSideMenu = () => {
       {
         label: "Transfer Portal",
         isRoute: true,
-        route: "",
+        route: routes.CHL_TRANSFER,
         league: SimCHL,
+        click: () => navigate(routes.CHL_TRANSFER),
         toggle: () => toggleMenu(),
       },
     ],

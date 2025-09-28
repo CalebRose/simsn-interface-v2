@@ -38,7 +38,11 @@ export const TransferPortalPage: FC<TransferPortalPageProps> = ({ league }) => {
 
   return (
     <>
-      <PageContainer direction="col" isLoading={isLoading} title="Recruiting">
+      <PageContainer
+        direction="col"
+        isLoading={isLoading}
+        title="Transfer Portal"
+      >
         {selectedLeague === SimCHL && chlTeam && <HCKTransferPortal />}
         {selectedLeague === SimCBB && cbbTeam && <>Not yet ready okay?</>}
         {selectedLeague === SimCFB && cfbTeam && (

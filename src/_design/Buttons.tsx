@@ -142,6 +142,7 @@ interface ButtonGroupProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   classes?: string;
   direction?: string;
+  columns?: string;
 }
 
 export const ButtonGroup: React.FC<ButtonGroupProps> = ({
@@ -163,10 +164,11 @@ export const ButtonGroup: React.FC<ButtonGroupProps> = ({
 export const ButtonGrid: React.FC<ButtonGroupProps> = ({
   children,
   classes = "",
+  columns,
 }) => {
   return (
     <div
-      className={`grid grid-cols-4 md:grid-cols-6 lg:grid-flow-col py-1 lg:py-0 gap-x-1 sm:gap-x-2 gap-y-2 ${classes}`}
+      className={`grid grid-flow-col py-1 lg:py-0 gap-x-1 sm:gap-x-2 gap-y-2 ${classes}`}
     >
       {children}
     </div>
