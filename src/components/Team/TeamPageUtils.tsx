@@ -21,6 +21,7 @@ import {
   ProContract as PHLContract,
   Croot as HockeyCroot,
   DraftPick,
+  CollegePlayer,
 } from "../../models/hockeyModels";
 import {
   CollegePlayer as CFBPlayer,
@@ -148,6 +149,7 @@ export const getCHLPortalAttributes = (
     { label: "Name", value: `${player.FirstName} ${player.LastName}` },
     { label: "Pos", value: player.Position },
     { label: "Arch", value: player.Archetype },
+    { label: "Age", value: player.Age },
     { label: "Yr", value: getYear(player.Year, player.IsRedshirt) },
     { label: "Stars", value: player.Stars },
     { label: "Ht", value: `${heightObj.feet}' ${heightObj.inches}"` },
@@ -2608,5 +2610,121 @@ export const getPriorityNBAAttributes = (player: NBAPlayer) => {
       label: "Minutes",
       value: player.Minutes,
     },
+  ];
+};
+
+export const getAdditionalHCKPortalAttributes = (player: CollegePlayer) => {
+  return [
+    { label: "Agi", value: getHockeyLetterGrade(player.Agility, 1) },
+    { label: "FO", value: getHockeyLetterGrade(player.Faceoffs, 1) },
+    {
+      label: "LSA",
+      value: getHockeyLetterGrade(player.LongShotAccuracy, 1),
+    },
+    {
+      label: "LSP",
+      value: getHockeyLetterGrade(player.LongShotPower, 1),
+    },
+    {
+      label: "CSA",
+      value: getHockeyLetterGrade(player.CloseShotAccuracy, 1),
+    },
+    {
+      label: "CSP",
+      value: getHockeyLetterGrade(player.CloseShotPower, 1),
+    },
+    { label: "Pass", value: getHockeyLetterGrade(player.Passing, 1) },
+    {
+      label: "PH",
+      value: getHockeyLetterGrade(player.PuckHandling, 1),
+    },
+    { label: "Str", value: getHockeyLetterGrade(player.Strength, 1) },
+    {
+      label: "BChk",
+      value: getHockeyLetterGrade(player.BodyChecking, 1),
+    },
+    {
+      label: "SChk",
+      value: getHockeyLetterGrade(player.StickChecking, 1),
+    },
+    {
+      label: "SB",
+      value: getHockeyLetterGrade(player.ShotBlocking, 1),
+    },
+    {
+      label: "GK",
+      value: getHockeyLetterGrade(player.Goalkeeping, 1),
+    },
+    {
+      label: "GV",
+      value: getHockeyLetterGrade(player.GoalieVision, 1),
+    },
+  ];
+};
+
+export const getAdditionalHCKPortalPotentialAttributes = (
+  player: CollegePlayer
+) => {
+  return [
+    { label: "Agi", value: player.AgilityGrade },
+    { label: "FO", value: player.FaceoffsGrade },
+    {
+      label: "LSA",
+      value: player.LongShotAccuracyGrade,
+    },
+    {
+      label: "LSP",
+      value: player.LongShotPowerGrade,
+    },
+    {
+      label: "CSA",
+      value: player.CloseShotAccuracyGrade,
+    },
+    {
+      label: "CSP",
+      value: player.CloseShotPowerGrade,
+    },
+    { label: "Pass", value: player.PassingGrade },
+    {
+      label: "PH",
+      value: player.PuckHandlingGrade,
+    },
+    { label: "Str", value: player.StrengthGrade },
+    {
+      label: "BChk",
+      value: player.BodyCheckingGrade,
+    },
+    {
+      label: "SChk",
+      value: player.StickCheckingGrade,
+    },
+    {
+      label: "SB",
+      value: player.ShotBlockingGrade,
+    },
+    {
+      label: "GK",
+      value: player.GoalkeepingGrade,
+    },
+    {
+      label: "GV",
+      value: player.GoalieVisionGrade,
+    },
+  ];
+};
+
+export const getAdditionalHCKPortalPreferenceAttributes = (
+  player: CollegePlayer
+) => {
+  return [
+    { label: "ProgramPref", value: player.ProgramPref },
+    { label: "ProfDevPref", value: player.ProfDevPref },
+    { label: "TraditionsPref", value: player.TraditionsPref },
+    { label: "FacilitiesPref", value: player.FacilitiesPref },
+    { label: "AtmospherePref", value: player.AtmospherePref },
+    { label: "AcademicsPref", value: player.AcademicsPref },
+    { label: "ConferencePref", value: player.ConferencePref },
+    { label: "CoachPref", value: player.CoachPref },
+    { label: "SeasonMomentumPref", value: player.SeasonMomentumPref },
   ];
 };

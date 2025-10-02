@@ -26,6 +26,7 @@ import { Border } from "../../../_design/Borders";
 import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { TransferPlayerTable } from "../Common/TransferPlayerTable";
+import { TransferPortalProfileTable } from "../Common/TransferProfileTable";
 
 export const HCKTransferPortal = () => {
   const hkStore = useSimHCKStore();
@@ -33,11 +34,15 @@ export const HCKTransferPortal = () => {
     chlTeam,
     addTransferPlayerToBoard,
     removeTransferPlayerFromBoard,
+    chlTeamMap,
+    scoutPortalAttribute,
+    updatePointsOnPortalPlayer,
     createPromise,
     cancelPromise,
     exportTransferPortalPlayers,
     saveTransferPortalBoard,
     chlRosterMap,
+    teamTransferPortalProfiles,
   } = hkStore;
   const {
     teamProfile,
@@ -313,7 +318,7 @@ export const HCKTransferPortal = () => {
                   colorOne={teamColors.TextColorOne}
                   colorTwo={teamColors.TextColorTwo}
                   colorThree={teamColors.TextColorThree}
-                  teamMap={{}}
+                  teamMap={chlTeamMap}
                   team={chlTeam}
                   category={tableViewType}
                   openModal={openModal}
@@ -355,7 +360,22 @@ export const HCKTransferPortal = () => {
                   backgroundColor: navyBlueColor,
                 }}
               >
-                Profile table here
+                <TransferPortalProfileTable
+                  colorOne={teamColors.TextColorOne}
+                  colorTwo={teamColors.TextColorTwo}
+                  colorThree={teamColors.TextColorThree}
+                  team={chlTeam}
+                  transferPortalProfiles={teamTransferPortalProfiles}
+                  playerMap={transferMap}
+                  teamMap={chlTeamMap}
+                  league={SimCHL}
+                  teamProfile={teamProfile!}
+                  isMobile={isMobile}
+                  category={tableViewType}
+                  openModal={openModal}
+                  setAttribute={setAttribute}
+                  ChangeInput={updatePointsOnPortalPlayer}
+                />
               </Border>
             </>
           )}

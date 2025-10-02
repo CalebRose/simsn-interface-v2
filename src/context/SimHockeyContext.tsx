@@ -171,6 +171,12 @@ interface SimHCKContextProps {
   toggleScholarship: (dto: any) => Promise<void>;
   removeRecruitFromBoard: (dto: any) => Promise<void>;
   scoutCrootAttribute: (dto: any) => Promise<void>;
+  updatePointsOnPortalPlayer: (
+    id: number,
+    name: string,
+    points: number
+  ) => void;
+  scoutPortalAttribute: (dto: any) => Promise<void>;
   SaveFreeAgencyOffer: (dto: any) => Promise<void>;
   CancelFreeAgencyOffer: (dto: any) => Promise<void>;
   SaveWaiverWireOffer: (dto: any) => Promise<void>;
@@ -318,6 +324,8 @@ const defaultContext: SimHCKContextProps = {
   syncAcceptedTrade: async () => {},
   vetoTrade: async () => {},
   submitCollegePoll: async () => {},
+  updatePointsOnPortalPlayer: () => {},
+  scoutPortalAttribute: async () => {},
   topCHLGoals: [],
   topCHLAssists: [],
   topCHLSaves: [],
@@ -1375,33 +1383,128 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   }, []);
 
   /* 
-  const addRecruitToBoard = async (dto: any) => {
-    const apiDTO = {
-      ...dto,
-      SeasonID: hck_Timestamp?.SeasonID,
-      Team: chlTeam,
-      Recruiter: chlTeam?.Coach,
-      ProfileID: chlTeam?.ID,
-    };
-    const profile = await RecruitService.HCKCreateRecruitProfile(apiDTO);
+  const scoutCrootAttribute = async (dto: any) => {
+    const profile = await RecruitService.HCKScoutRecruitingAttribute(dto);
     if (profile) {
-      const newProfile = new RecruitPlayerProfile({
-        ...profile,
-        ID: GenerateNumberFromRange(500000, 1000000),
+      setRecruitProfiles((profiles) =>
+        [...profiles].map((p) =>
+          p.RecruitID === profile.RecruitID
+            ? new RecruitPlayerProfile({
+                ...profile,
+                [dto.Attribute]: true,
+              })
+            : p
+        )
+      );
+      setTeamProfileMap((prev) => {
+        const currentProfile = prev[profile.ProfileID];
+        if (!currentProfile) return prev;
+        return {
+          ...prev,
+          [profile.ProfileID]: new RecruitingTeamProfile({
+            ...currentProfile,
+            WeeklyScoutingPoints: currentProfile.WeeklyScoutingPoints - 1,
+          }),
+        };
       });
-      setRecruitProfiles((profiles) => [...profiles, newProfile]);
     }
   };
 
-  const removeRecruitFromBoard = async (dto: any) => {
-    const profile = await RecruitService.HCKRemoveCrootFromBoard(dto);
-    if (profile) {
-      setRecruitProfiles((profiles) =>
-        [...profiles].filter((p) => p.RecruitID != dto.RecruitID)
+  const updatePointsOnRecruit = (id: number, name: string, points: number) => {
+    setRecruitProfiles((prevProfiles) => {
+      // Update the profiles and get the new profiles array.
+      const updatedProfiles = prevProfiles.map((profile) =>
+        profile.ID === id && profile.ID > 0
+          ? new RecruitPlayerProfile({ ...profile, [name]: points })
+          : profile
       );
-    }
+
+      // Calculate the total points from the updated profiles.
+      const totalPoints = updatedProfiles.reduce(
+        (sum, profile) => sum + (profile.CurrentWeeksPoints || 0),
+        0
+      );
+
+      // Update the recruiting team profile based on the updated points.
+      setTeamProfileMap((prevTeamProfiles) => {
+        const currentProfile = prevTeamProfiles[chlTeam!.ID];
+        if (!currentProfile) return prevTeamProfiles;
+        return {
+          ...prevTeamProfiles,
+          [chlTeam!.ID]: new RecruitingTeamProfile({
+            ...currentProfile,
+            SpentPoints: totalPoints,
+          }),
+        };
+      });
+
+      return updatedProfiles;
+    });
   };
 */
+
+  const scoutPortalAttribute = async (dto: any) => {
+    const profile = await RecruitService.HCKScoutPortalAttribute(dto);
+    if (profile) {
+      setTransferPortalProfiles((profiles) =>
+        [...profiles].map((p) =>
+          p.CollegePlayerID === profile.CollegePlayerID
+            ? new TransferPortalProfile({
+                ...profile,
+                [dto.Attribute]: true,
+              })
+            : p
+        )
+      );
+      setTeamProfileMap((prev) => {
+        const currentProfile = prev[profile.ProfileID];
+        if (!currentProfile) return prev;
+        return {
+          ...prev,
+          [profile.ProfileID]: new RecruitingTeamProfile({
+            ...currentProfile,
+            WeeklyScoutingPoints: currentProfile.WeeklyScoutingPoints - 1,
+          }),
+        };
+      });
+    }
+  };
+
+  const updatePointsOnPortalPlayer = (
+    id: number,
+    name: string,
+    points: number
+  ) => {
+    setTransferPortalProfiles((prevProfiles) => {
+      // Update the profiles and get the new profiles array.
+      const updatedProfiles = prevProfiles.map((profile) =>
+        profile.ID === id && profile.ID > 0
+          ? new TransferPortalProfile({ ...profile, [name]: points })
+          : profile
+      );
+
+      // Calculate the total points from the updated profiles.
+      const totalPoints = updatedProfiles.reduce(
+        (sum, profile) => sum + (profile.CurrentWeeksPoints || 0),
+        0
+      );
+
+      // Update the recruiting team profile based on the updated points.
+      setTeamProfileMap((prevTeamProfiles) => {
+        const currentProfile = prevTeamProfiles[chlTeam!.ID];
+        if (!currentProfile) return prevTeamProfiles;
+        return {
+          ...prevTeamProfiles,
+          [chlTeam!.ID]: new RecruitingTeamProfile({
+            ...currentProfile,
+            SpentPoints: totalPoints,
+          }),
+        };
+      });
+
+      return updatedProfiles;
+    });
+  };
 
   const addTransferPlayerToBoard = useCallback(
     async (dto: any) => {
@@ -1616,6 +1719,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         createPromise,
         cancelPromise,
         exportTransferPortalPlayers,
+        scoutPortalAttribute,
+        updatePointsOnPortalPlayer,
       }}
     >
       {children}

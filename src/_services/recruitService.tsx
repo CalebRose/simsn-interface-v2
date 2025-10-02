@@ -15,6 +15,7 @@ import {
   RecruitPlayerProfile as HCKRecruitPlayerProfile,
   UpdateRecruitingBoardDTO as HCKUpdateRecruitingBoardDTO,
   UpdateRecruitProfileDto as HCKUpdateRecruitProfileDto,
+  TransferPortalProfile,
 } from "../models/hockeyModels";
 import {
   RecruitPlayerProfile as FBARecruitPlayerProfile,
@@ -42,6 +43,10 @@ export const RecruitService = {
     dto: any
   ): Promise<HCKRecruitPlayerProfile> => {
     return await PostCall(`${hckUrl}recruiting/scout/attribute/`, dto);
+  },
+
+  HCKScoutPortalAttribute: async (dto: any): Promise<TransferPortalProfile> => {
+    return await PostCall(`${hckUrl}portal/scout/attribute/`, dto);
   },
 
   HCKSaveRecruitingBoard: async (

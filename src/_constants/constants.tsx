@@ -36,9 +36,12 @@ export const InfoType = "Info";
 export const RecruitInfoType = "Recruit Info";
 export const AddRecruitType = "Add Recruit";
 export const AddFreeAgentType = "Add Free Agent";
+export const AddPortalPlayerType = "Add Portal Player";
 export const RemoveRecruitType = "Remove Recruit";
 export const ToggleScholarshipType = "Toggle Scholarship";
 export const ScoutAttributeType = "Scout Attribute";
+export const ScoutPortalAttributeType = "Scout Portal Attribute";
+export const ScoutDraftAttributeType = "Scout Draft Attribute";
 export const CancelOffer = "Cancel Offer";
 export const PracticeSquad = "Practice Squad";
 export const Affiliate = "Affiliate";
@@ -67,9 +70,12 @@ export type ModalAction =
   | typeof RecruitInfoType
   | typeof AddRecruitType
   | typeof AddFreeAgentType
+  | typeof AddPortalPlayerType
   | typeof RemoveRecruitType
   | typeof ToggleScholarshipType
   | typeof ScoutAttributeType
+  | typeof ScoutPortalAttributeType
+  | typeof ScoutDraftAttributeType
   | typeof CancelOffer
   | typeof PracticeSquad
   | typeof Affiliate

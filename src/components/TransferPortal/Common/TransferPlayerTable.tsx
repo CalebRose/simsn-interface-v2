@@ -9,6 +9,7 @@ import {
   TeamRecruitingProfile,
 } from "../../../models/basketballModels";
 import {
+  AddPortalPlayerType,
   AddRecruitType,
   Attributes,
   InfoType,
@@ -95,13 +96,14 @@ const getTableColumns = (
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch.", accessor: "Archetype" },
+      { header: "Age", accessor: "Age" },
       { header: "Year", accessor: "Year" },
       { header: "⭐", accessor: "Stars" },
       { header: "Ht", accessor: "Height" },
       { header: "Wt", accessor: "Weight" },
       { header: "Country", accessor: "Country" },
       { header: "Region", accessor: "State" },
-      { header: "Ovr", accessor: "OverallGrade" },
+      { header: "Ovr", accessor: "Overall" },
     ];
 
     if (!isMobile && category === Attributes) {
@@ -228,10 +230,14 @@ const CHLRow: React.FC<CHLRowProps> = ({
   }, [leadingTeamsList]);
 
   const previousTeamLogo = useMemo(() => {
-    if (item.PreviousTeamID === 0) {
+    if (item.PreviousTeamID === 0 && item.LeagueID === 1) {
       return "";
     }
-    const previousURL = getLogo(SimCHL, item.PreviousTeamID, false);
+    let teamID = item.PreviousTeamID;
+    if (item.LeagueID === 2) {
+      teamID = item.TeamID;
+    }
+    const previousURL = getLogo(SimCHL, teamID, false);
     return <Logo url={previousURL} variant="small" />;
   }, [item]);
 
@@ -273,7 +279,7 @@ const CHLRow: React.FC<CHLRowProps> = ({
           <Button
             variant={actionVariant}
             size="xs"
-            onClick={() => openModal(AddRecruitType, item as HockeyPlayer)}
+            onClick={() => openModal(AddPortalPlayerType, item as HockeyPlayer)}
             disabled={recruitOnBoardMap[item.ID] || item.IsSigned}
           >
             {recruitOnBoardMap[item.ID] ||
