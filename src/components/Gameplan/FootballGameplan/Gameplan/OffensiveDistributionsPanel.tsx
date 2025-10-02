@@ -160,7 +160,27 @@ export const OffensiveDistributionsPanel: React.FC<OffensiveDistributionsPanelPr
           </div>
           <div className="grid grid-cols-1 gap-2">
             {validation.playTypeTotals.rpo > 0 ? (
-              RPOLabels.map((label) => {
+              RPOLabels.map((label, idx) => {
+                if (idx === 6) {
+                  return (
+                    <div className="bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg p-2">
+                    <GameplanSlider
+                      key={label}
+                      name={label}
+                      leftright
+                      label="Left vs Right"
+                      value={gameplan[label as keyof GameplanData] as number}
+                      onChange={(e) => onChange(label, parseInt(e.target.value) || 0)}
+                      min={0}
+                      max={100}
+                      disabled={disabled || gameplan.DefaultOffense}
+                      error={getFieldError(validation, label)}
+                      valueLabel={`${gameplan[label as keyof GameplanData]}%`}
+                      className="pt-2"
+                    />
+                    </div>
+                  );
+                }
                 return (
                   <GameplanInputSmall
                     key={label}
