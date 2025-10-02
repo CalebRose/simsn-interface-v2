@@ -63,6 +63,7 @@ export const MakeCHLPlayerMapFromRosterMap = (
   for (let i = 0; i < chlTeams.length; i++) {
     const teamID = chlTeams[i].ID;
     const roster = rosterMap[teamID];
+    if (!roster) continue;
     for (let j = 0; j < roster.length; j++) {
       const player = roster[j];
       playerMap[player.ID] = player;
