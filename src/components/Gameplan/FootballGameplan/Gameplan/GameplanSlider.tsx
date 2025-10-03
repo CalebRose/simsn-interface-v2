@@ -16,6 +16,7 @@ export interface GameplanSliderProps {
   error?: string;
   warning?: string;
   runpass?: boolean;
+  leftright?: boolean;
 }
 
 export const GameplanSlider: React.FC<GameplanSliderProps> = ({
@@ -33,6 +34,7 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
   error,
   warning,
   runpass = false,
+  leftright = false,
 }) => {
   const [inputValue, setInputValue] = useState(value.toString());
   const [isEditing, setIsEditing] = useState(false);
@@ -130,6 +132,50 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
               onBlur={handleInputBlur}
               onFocus={handleInputFocus}
               onKeyDown={handleInputKeyDown}
+              disabled={disabled}
+              className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <Text variant="small" classes="text-gray-400">%</Text>
+          </div>
+        </div>
+      ) :
+      leftright ? (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <Text variant="small" classes="text-gray-300 font-medium">
+              Left
+            </Text>
+            <input
+              type="text"
+              value={inputValue}
+              onChange={handleInputChange}
+              onBlur={handleInputBlur}
+              onFocus={handleInputFocus}
+              onKeyDown={handleInputKeyDown}
+              disabled={disabled}
+              className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <Text variant="small" classes="text-gray-400">%</Text>
+          </div>
+          <div className="flex items-center gap-2">
+            <Text variant="small" classes="text-gray-300 font-medium">
+              Right
+            </Text>
+            <input
+              type="text"
+              value={100 - value}
+              onChange={(e) => {
+                const passValue = parseFloat(e.target.value);
+                if (!isNaN(passValue)) {
+                  const runValue = Math.min(Math.max(100 - passValue, min), max);
+                  const syntheticEvent = {
+                    target: { name, value: runValue.toString() },
+                  } as React.ChangeEvent<HTMLInputElement>;
+                  onChange(syntheticEvent);
+                }
+              }}
+              onBlur={() => setIsEditing(false)}
+              onFocus={() => setIsEditing(true)}
               disabled={disabled}
               className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             />

@@ -87,6 +87,7 @@ export interface GameplanData {
   PassPAMedium: number;
   PassPALong: number;
   PassPADeep: number;
+  LeftVsRight: number;
   ChoiceOutside: number;
   ChoiceInside: number;
   ChoicePower: number;

@@ -502,7 +502,7 @@ export const getFormationLayout = (formation: Formation): FormationLayout => {
   const fbPositions = formation.positions.filter(p => p.startsWith(POSITION_PREFIXES.FB));
   
   const wrPositioning = getWRPositioning(formationType, formation.name, wrPositions);
-  console.log(wrPositions)
+
   wrPositions.forEach(wr => {
     if (wrPositioning[wr]) {
       positions.push({
