@@ -1,5 +1,5 @@
 import { FC, useMemo } from "react";
-import { Table } from "../../_design/Table";
+import { Table, TableCell } from "../../_design/Table";
 import { Text } from "../../_design/Typography";
 import {
   CollegePlayer as CHLPlayer,
@@ -57,6 +57,10 @@ import { TradeBlockRow } from "./TeamPageTypes";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
+import {
+  getGeneralLetterGrade,
+  getHockeyLetterGrade,
+} from "../../_utility/getLetterGrade";
 
 interface CHLRosterTableProps {
   roster: CHLPlayer[];
@@ -224,6 +228,21 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             )}
           </div>
         ))}
+        {category === Attributes && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {getGeneralLetterGrade(item.Stamina)}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {getGeneralLetterGrade(item.InjuryRating)}
+              </Text>
+            </TableCell>
+          </>
+        )}
+
         <div className="table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
@@ -479,6 +498,20 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             )}
           </div>
         ))}
+        {category === Attributes && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.Stamina}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.InjuryRating}
+              </Text>
+            </TableCell>
+          </>
+        )}
         <div
           className={`table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
         >
