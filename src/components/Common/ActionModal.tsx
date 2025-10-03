@@ -1,5 +1,6 @@
 import { FC } from "react";
 import {
+  AddPortalPlayerType,
   AddRecruitType,
   Affiliate,
   CancelOffer,
@@ -7,10 +8,12 @@ import {
   InfoType,
   League,
   ModalAction,
+  PortalInfoType,
   PracticeSquad,
   Promise,
   RecruitInfoType,
   Redshirt,
+  RemovePortalPlayerType,
   RemoveRecruitType,
   ScholarshipOffered,
   ScholarshipRevoked,
@@ -22,7 +25,11 @@ import {
 import { Modal } from "../../_design/Modal";
 import { Button, ButtonGroup } from "../../_design/Buttons";
 import { Text } from "../../_design/Typography";
-import { PlayerInfoModalBody, RecruitInfoModalBody } from "./Modals";
+import {
+  PlayerInfoModalBody,
+  PortalInfoModalBody,
+  RecruitInfoModalBody,
+} from "./Modals";
 import { useSnackbar } from "notistack";
 
 interface ActionModalProps {
@@ -134,6 +141,22 @@ export const ActionModal: FC<ActionModalProps> = ({
           );
         }
         break;
+      case AddPortalPlayerType:
+        if (addPlayerToBoard) {
+          const dto = {
+            CollegePlayerID: player.ID,
+            ProfileID: teamID,
+          };
+          await addPlayerToBoard(dto);
+          enqueueSnackbar(
+            `${player.Position} ${player.FirstName} ${player.LastName} has been added to your transfer portal board!`,
+            {
+              variant: "success",
+              autoHideDuration: 3000,
+            }
+          );
+        }
+        break;
       case RemoveRecruitType:
         if (removePlayerFromBoard) {
           const dto = {
@@ -143,6 +166,22 @@ export const ActionModal: FC<ActionModalProps> = ({
           await removePlayerFromBoard(dto);
           enqueueSnackbar(
             `${player.Position} ${player.FirstName} ${player.LastName} has been removed from board!`,
+            {
+              variant: "success",
+              autoHideDuration: 3000,
+            }
+          );
+        }
+        break;
+      case RemovePortalPlayerType:
+        if (removePlayerFromBoard) {
+          const dto = {
+            CollegePlayerID: player.ID,
+            ProfileID: teamID,
+          };
+          await removePlayerFromBoard(dto);
+          enqueueSnackbar(
+            `${player.Position} ${player.FirstName} ${player.LastName} has been removed from your board!`,
             {
               variant: "success",
               autoHideDuration: 3000,
@@ -220,10 +259,14 @@ export const ActionModal: FC<ActionModalProps> = ({
       break;
     case InfoType:
     case RecruitInfoType:
+    case PortalInfoType:
       title = `${playerID} ${playerLabel}`;
       break;
     case AddRecruitType:
       title = `Add Recruit ${playerLabel} to Board?`;
+      break;
+    case AddPortalPlayerType:
+      title = `Add Portal Player ${playerLabel} to Board?`;
       break;
     case ToggleScholarshipType:
       title =
@@ -232,6 +275,7 @@ export const ActionModal: FC<ActionModalProps> = ({
           : `Revoke Scholarship on Recruit?`;
       break;
     case RemoveRecruitType:
+    case RemovePortalPlayerType:
       title = `Remove ${playerLabel} from Board?`;
       break;
     case ScoutAttributeType:
@@ -250,18 +294,21 @@ export const ActionModal: FC<ActionModalProps> = ({
         actions={
           <>
             <ButtonGroup>
-              {modalAction !== InfoType && modalAction !== RecruitInfoType && (
-                <>
-                  <Button size="sm" variant="danger" onClick={onClose}>
-                    <Text variant="small">Cancel</Text>
-                  </Button>
-                  <Button size="sm" onClick={action}>
-                    <Text variant="small">Confirm</Text>
-                  </Button>
-                </>
-              )}
+              {modalAction !== InfoType &&
+                modalAction !== RecruitInfoType &&
+                modalAction !== PortalInfoType && (
+                  <>
+                    <Button size="sm" variant="danger" onClick={onClose}>
+                      <Text variant="small">Cancel</Text>
+                    </Button>
+                    <Button size="sm" onClick={action}>
+                      <Text variant="small">Confirm</Text>
+                    </Button>
+                  </>
+                )}
               {(modalAction === InfoType ||
-                modalAction === RecruitInfoType) && (
+                modalAction === RecruitInfoType ||
+                modalAction === PortalInfoType) && (
                 <Button size="sm" variant="primary" onClick={onClose}>
                   <Text variant="small">Close</Text>
                 </Button>
@@ -379,6 +426,15 @@ export const ActionModal: FC<ActionModalProps> = ({
             to your recruiting board?
           </Text>
         )}
+        {modalAction === AddPortalPlayerType && (
+          <Text className="mb4 text-start">
+            Are you sure you want to add{" "}
+            <strong>
+              {playerID} {playerLabel}
+            </strong>{" "}
+            to your transfer portal board?
+          </Text>
+        )}
         {modalAction === RemoveRecruitType && (
           <Text className="mb4 text-start">
             Are you sure you want to remove{" "}
@@ -386,6 +442,15 @@ export const ActionModal: FC<ActionModalProps> = ({
               {playerID} {playerLabel}
             </strong>{" "}
             from your recruiting board?
+          </Text>
+        )}
+        {modalAction === RemovePortalPlayerType && (
+          <Text className="mb4 text-start">
+            Are you sure you want to remove{" "}
+            <strong>
+              {playerID} {playerLabel}
+            </strong>{" "}
+            from your transfer portal board?
           </Text>
         )}
         {modalAction === ToggleScholarshipType && (
@@ -473,6 +538,9 @@ export const ActionModal: FC<ActionModalProps> = ({
         )}
         {modalAction === RecruitInfoType && (
           <RecruitInfoModalBody league={league} player={player} />
+        )}
+        {modalAction === PortalInfoType && (
+          <PortalInfoModalBody league={league} player={player} />
         )}
       </Modal>
     </>

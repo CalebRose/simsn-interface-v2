@@ -15,6 +15,7 @@ import {
   InfoType,
   League,
   ModalAction,
+  PortalInfoType,
   Preferences,
   SimCBB,
   SimCFB,
@@ -262,7 +263,7 @@ const CHLRow: React.FC<CHLRowProps> = ({
               onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
                 (e.target as HTMLElement).style.color = "";
               }}
-              onClick={() => openModal(InfoType, item)}
+              onClick={() => openModal(PortalInfoType, item)}
             >
               {attr.value}
             </span>

@@ -5,8 +5,10 @@ import {
   InfoType,
   League,
   ModalAction,
+  PortalInfoType,
   Potentials,
   Preferences,
+  RemovePortalPlayerType,
   RemoveRecruitType,
   ScoutAttributeType,
   SimCHL,
@@ -233,7 +235,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
           onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
             (e.target as HTMLElement).style.color = "";
           }}
-          onClick={() => openModal(InfoType, player)}
+          onClick={() => openModal(PortalInfoType, player)}
         >
           {player.FirstName} {player.LastName}
         </span>
@@ -259,7 +261,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
       {category === Attributes && !isMobile && (
         <>
           {attrList.map((attr) => (
-            <TableCell>
+            <TableCell key={attr.label}>
               <span className={`text-xs`}>{attr.value}</span>
             </TableCell>
           ))}
@@ -268,7 +270,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
       {category === Potentials && (
         <>
           {attrList.map((attr: any) => (
-            <TableCell>
+            <TableCell key={attr.label}>
               {profile[attr.label as keyof TransferPortalProfile] ? (
                 <span className={`text-sm`}>{attr.value}</span>
               ) : (
@@ -324,7 +326,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
           <Button
             variant="danger"
             size="xs"
-            onClick={() => openModal(RemoveRecruitType, player)}
+            onClick={() => openModal(RemovePortalPlayerType, player)}
           >
             <TrashCan />
           </Button>
