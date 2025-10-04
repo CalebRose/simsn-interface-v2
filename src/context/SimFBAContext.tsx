@@ -584,12 +584,16 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (cfbTeam && collegeGameplanMap) {
       const gameplan = collegeGameplanMap[cfbTeam.ID];
       const newPAMediumValue = (gameplan as any).PassPAShort;
-      console.log({ newPAMediumValue });
       return new CollegeGameplan({
         ...gameplan,
         PassShort: (gameplan as any).PassQuick,
         PassMedium: (gameplan as any).PassShort,
         PassPAMedium: newPAMediumValue,
+        // Store Right% internally; invert LeftVsRight from backend (Left%)
+        LeftVsRight:
+          typeof (gameplan as any).LeftVsRight === 'number'
+            ? 100 - (gameplan as any).LeftVsRight
+            : (gameplan as any).LeftVsRight,
       });
     }
     return null;
@@ -603,6 +607,11 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         PassShort: (gameplan as any).PassQuick,
         PassMedium: (gameplan as any).PassShort,
         PassPAMedium: (gameplan as any).PassPAShort,
+        // Store Right% internally; invert LeftVsRight from backend (Left%)
+        LeftVsRight:
+          typeof (gameplan as any).LeftVsRight === 'number'
+            ? 100 - (gameplan as any).LeftVsRight
+            : (gameplan as any).LeftVsRight,
       });
     }
     return null;
