@@ -140,6 +140,7 @@ interface SimFBAContextProps {
   proNews: NewsLog[];
   allProGames: NFLGame[];
   currentProSeasonGames: NFLGame[];
+  proTeamsGames: NFLGame[];
   proNotifications: Notification[];
   topCFBPassers: CollegePlayer[];
   topCFBRushers: CollegePlayer[];
@@ -227,6 +228,8 @@ interface SimFBAContextProps {
   nflGameplan: NFLGameplan | null;
   collegeDepthChart: CollegeTeamDepthChart | null;
   nflDepthChart: NFLDepthChart | null;
+  collegeGameplanMap: Record<number, CollegeGameplan | null>;
+  nflGameplanMap: Record<number, NFLGameplan | null>;
 }
 
 // ✅ Initial Context State
@@ -278,6 +281,7 @@ const defaultContext: SimFBAContextProps = {
   proNews: [],
   allProGames: [],
   currentProSeasonGames: [],
+  proTeamsGames: [],
   proNotifications: [],
   topCFBPassers: [],
   topCFBRushers: [],
@@ -347,6 +351,8 @@ const defaultContext: SimFBAContextProps = {
   nflGameplan: null,
   collegeDepthChart: null,
   nflDepthChart: null,
+  collegeGameplanMap: {},
+  nflGameplanMap: {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -412,10 +418,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   >([]);
   const [collegeNews, setCollegeNews] = useState<NewsLog[]>([]);
   const [allCollegeGames, setAllCollegeGames] = useState<CollegeGame[]>([]);
-  const [currentCollegeSeasonGames, setCurrentCollegeSeasonGames] = useState<
-    CollegeGame[]
-  >([]);
-  const [collegeTeamsGames, setCollegeTeamsGames] = useState<CollegeGame[]>([]);
   const [collegeNotifications, setCollegeNotifications] = useState<
     Notification[]
   >([]);
@@ -463,10 +465,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   );
   const [proNews, setProNews] = useState<NewsLog[]>([]);
   const [allProGames, setAllProGames] = useState<NFLGame[]>([]);
-  const [currentProSeasonGames, setCurrentProSeasonGames] = useState<NFLGame[]>(
-    []
-  );
-  const [proTeamsGames, setProTeamsGames] = useState<NFLGame[]>([]);
   const [proNotifications, setProNotifications] = useState<Notification[]>([]);
   const [playerFaces, setPlayerFaces] = useState<{
     [key: number]: FaceDataResponse;
@@ -506,9 +504,12 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [nflTeamSeasonStatsMap, setNflTeamSeasonStats] = useState<
     Record<number, NFLTeamSeasonStats[]>
   >([]);
-  const [collegeGameplan, setCollegeGameplan] =
-    useState<CollegeGameplan | null>(null);
-  const [nflGameplan, setNFLGameplan] = useState<NFLGameplan | null>(null);
+  const [collegeGameplanMap, setCollegeGameplanMap] = useState<
+    Record<number, CollegeGameplan | null>
+  >({});
+  const [nflGameplanMap, setNFLGameplanMap] = useState<
+    Record<number, NFLGameplan | null>
+  >({});
   const [collegeDepthChart, setCollegeDepthChart] =
     useState<CollegeTeamDepthChart | null>(null);
   const [nflDepthChart, setNFLDepthChart] = useState<NFLDepthChart | null>(
@@ -578,6 +579,43 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
     return playerMap;
   }, [proRosterMap, nflTeams]);
+
+  const collegeGameplan = useMemo(() => {
+    if (cfbTeam && collegeGameplanMap) {
+      const gameplan = collegeGameplanMap[cfbTeam.ID];
+      const newPAMediumValue = (gameplan as any).PassPAShort;
+      return new CollegeGameplan({
+        ...gameplan,
+        PassShort: (gameplan as any).PassQuick,
+        PassMedium: (gameplan as any).PassShort,
+        PassPAMedium: newPAMediumValue,
+        // Store Right% internally; invert LeftVsRight from backend (Left%)
+        LeftVsRight:
+          typeof (gameplan as any).LeftVsRight === 'number'
+            ? 100 - (gameplan as any).LeftVsRight
+            : (gameplan as any).LeftVsRight,
+      });
+    }
+    return null;
+  }, [cfbTeam, collegeGameplanMap]);
+
+  const nflGameplan = useMemo(() => {
+    if (nflTeam && nflGameplanMap) {
+      const gameplan = nflGameplanMap[nflTeam.ID];
+      return new NFLGameplan({
+        ...gameplan,
+        PassShort: (gameplan as any).PassQuick,
+        PassMedium: (gameplan as any).PassShort,
+        PassPAMedium: (gameplan as any).PassPAShort,
+        // Store Right% internally; invert LeftVsRight from backend (Left%)
+        LeftVsRight:
+          typeof (gameplan as any).LeftVsRight === 'number'
+            ? 100 - (gameplan as any).LeftVsRight
+            : (gameplan as any).LeftVsRight,
+      });
+    }
+    return null;
+  }, [nflTeam, nflGameplanMap]);
 
   useEffect(() => {
     getBootstrapTeamData();
@@ -665,6 +703,46 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     return initialMap;
   }, [nflTeams, proRosterMap, nflRetiredPlayers]);
 
+  const currentCollegeSeasonGames = useMemo(() => {
+    if (allCollegeGames && allCollegeGames.length > 0 && cfb_Timestamp) {
+      return allCollegeGames.filter(
+        (x) => x.SeasonID === cfb_Timestamp.CollegeSeasonID
+      );
+    }
+    return [];
+  }, [allCollegeGames, cfb_Timestamp]);
+
+  const collegeTeamsGames = useMemo(() => {
+    if (
+      currentCollegeSeasonGames &&
+      currentCollegeSeasonGames.length > 0 &&
+      cfbTeam
+    ) {
+      return currentCollegeSeasonGames.filter(
+        (x) => x.HomeTeamID === cfbTeam.ID || x.AwayTeamID === cfbTeam.ID
+      );
+    }
+    return [];
+  }, [currentCollegeSeasonGames, cfbTeam]);
+
+  const currentProSeasonGames = useMemo(() => {
+    if (allProGames && allProGames.length > 0 && cfb_Timestamp) {
+      return allProGames.filter(
+        (x) => x.SeasonID === cfb_Timestamp.NFLSeasonID
+      );
+    }
+    return [];
+  }, [allProGames, cfb_Timestamp]);
+
+  const proTeamsGames = useMemo(() => {
+    if (currentProSeasonGames && currentProSeasonGames.length > 0 && cfbTeam) {
+      return currentProSeasonGames.filter(
+        (x) => x.HomeTeamID === cfbTeam.ID || x.AwayTeamID === cfbTeam.ID
+      );
+    }
+    return [];
+  }, [currentProSeasonGames, cfbTeam]);
+
   const bootstrapAllData = async () => {
     await getFirstBootstrapData();
     await new Promise((resolve) => setTimeout(resolve, 3500)); // Wait 5 seconds
@@ -697,18 +775,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       setTopCFBReceivers(res.TopCFBReceivers);
       setCFBRosterMap(res.CollegeRosterMap);
       setPortalPlayers(res.PortalPlayers);
-      setCollegeGameplan(res.CollegeGameplan ? {
-        ...res.CollegeGameplan,
-        PassShort: (res.CollegeGameplan as any).PassQuick,
-        PassMedium: (res.CollegeGameplan as any).PassShort,
-        PassPAMedium: (res.CollegeGameplan as any).PassPAShort,
-      } as any : null);
-      setNFLGameplan(res.NFLGameplan ? {
-        ...res.NFLGameplan,
-        PassShort: (res.NFLGameplan as any).PassQuick,
-        PassMedium: (res.NFLGameplan as any).PassShort,
-        PassPAMedium: (res.NFLGameplan as any).PassPAShort,
-      } as any : null);
+      setCollegeGameplanMap(res.CollegeGameplanMap);
+      setNFLGameplanMap(res.NFLGameplanMap);
       setCollegeDepthChart(res.CollegeDepthChart || null);
       setNFLDepthChart(res.NFLDepthChart || null);
     }
@@ -752,21 +820,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
 
     if (
-      res.AllCollegeGames &&
-      res.AllCollegeGames.length > 0 &&
-      cfb_Timestamp
-    ) {
-      const currentSeasonGames = res.AllCollegeGames.filter(
-        (x) => x.SeasonID === cfb_Timestamp.CollegeSeasonID
-      );
-      setCurrentCollegeSeasonGames(currentSeasonGames);
-      const teamGames = currentSeasonGames.filter(
-        (x) => x.HomeTeamID === cfbID || x.AwayTeamID === cfbID
-      );
-      setCollegeTeamsGames(teamGames);
-    }
-
-    if (
       res.CollegeStandings &&
       res.CollegeStandings.length > 0 &&
       cfb_Timestamp
@@ -779,17 +832,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       );
       setCurrentCFBStandings(currentSeasonStandings);
       setCFBStandingsMap(collegeStandingsMap);
-    }
-
-    if (res.AllProGames && res.AllProGames.length > 0 && cfb_Timestamp) {
-      const currentSeasonGames = res.AllProGames.filter(
-        (x) => x.SeasonID === cfb_Timestamp.NFLSeasonID
-      );
-      setCurrentProSeasonGames(currentSeasonGames);
-      const teamGames = currentSeasonGames.filter(
-        (x) => x.HomeTeamID === cfbID || x.AwayTeamID === cfbID
-      );
-      setProTeamsGames(teamGames);
     }
 
     if (res.ProStandings && res.ProStandings.length > 0 && cfb_Timestamp) {
@@ -1028,7 +1070,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       await GameplanService.SaveCFBGameplan(dto);
 
       if (updatedGameplan) {
-        setCollegeGameplan(updatedGameplan);
+        setCollegeGameplanMap((prev) => ({
+          ...prev,
+          [cfbTeam!.ID]: updatedGameplan,
+        }));
       }
 
       enqueueSnackbar("Gameplan saved!", {
@@ -1051,7 +1096,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       await GameplanService.SaveNFLGameplan(dto);
 
       if (updatedGameplan) {
-        setNFLGameplan(updatedGameplan);
+        setNFLGameplanMap((prev) => ({
+          ...prev,
+          [nflTeam!.ID]: updatedGameplan,
+        }));
       }
 
       enqueueSnackbar("Gameplan saved!", {
@@ -1573,6 +1621,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         proNews,
         allProGames,
         currentProSeasonGames,
+        proTeamsGames,
         proNotifications,
         isLoading,
         isLoadingTwo,
@@ -1648,6 +1697,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         collegeDepthChart,
         nflDepthChart,
         nflDraftees,
+        collegeGameplanMap,
+        nflGameplanMap,
       }}
     >
       {children}

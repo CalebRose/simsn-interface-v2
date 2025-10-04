@@ -11,7 +11,7 @@ import {
   NFLGameplan,
   NFLPlayer,
   NFLDepthChart,
-  NFLDepthChartPosition
+  NFLDepthChartPosition,
 } from "../../../models/footballModels";
 import { Border } from "../../../_design/Borders";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
@@ -20,7 +20,7 @@ import {
   SimNFL,
   Gameplan,
   DepthChart,
-  AdminRole
+  AdminRole,
 } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { Input, ToggleSwitch } from "../../../_design/Inputs";
@@ -34,7 +34,7 @@ import DepthChartCard from "./Common/DepthChartCard";
 import DepthChartView from "./DepthChart/DepthChartView";
 import GameplanView from "./Gameplan/GameplanView";
 import { GameplanData } from "./Gameplan/GameplanHelper";
-import { getTextColorBasedOnBg } from '../../../_utility/getBorderClass';
+import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import UnsavedChangesModal from "./Common/UnsavedChangesModal";
 
 export const CFBGameplanPage = () => {
@@ -48,16 +48,23 @@ export const CFBGameplanPage = () => {
     cfbTeamMap,
     saveCFBDepthChart,
     collegeGameplan: cfbGameplan,
-    collegeDepthChart: cfbDepthChart
+    collegeDepthChart: cfbDepthChart,
+    collegeGameplanMap,
+    collegeTeamsGames,
+    cfb_Timestamp,
   } = fbStore;
   const [category, setCategory] = useState(Gameplan);
   const [pendingCategory, setPendingCategory] = useState<string | null>(null);
-  const [isUnsavedChangesModalOpen, setIsUnsavedChangesModalOpen] = useState(false);
-  const [depthChartHasUnsavedChanges, setDepthChartHasUnsavedChanges] = useState(false);
-  const [gameplanHasUnsavedChanges, setGameplanHasUnsavedChanges] = useState(false);
+  const [isUnsavedChangesModalOpen, setIsUnsavedChangesModalOpen] =
+    useState(false);
+  const [depthChartHasUnsavedChanges, setDepthChartHasUnsavedChanges] =
+    useState(false);
+  const [gameplanHasUnsavedChanges, setGameplanHasUnsavedChanges] =
+    useState(false);
   const [adminModeEnabled, setAdminModeEnabled] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(cfbTeam);
-  const [selectedTeamDepthChart, setSelectedTeamDepthChart] = useState<CFBDepthChart | null>(null);
+  const [selectedTeamDepthChart, setSelectedTeamDepthChart] =
+    useState<CFBDepthChart | null>(null);
 
   const teamPlayers = useMemo(() => {
     if (selectedTeam && cfbRosterMap) {
@@ -77,34 +84,47 @@ export const CFBGameplanPage = () => {
     }
   }, [selectedTeam, cfbDepthchartMap]);
 
-  const handleTeamSelection = useCallback((selectedOption: SingleValue<SelectOption>) => {
-    if (selectedOption && cfbTeamMap) {
-      const teamId = Number(selectedOption.value);
-      const team = cfbTeamMap[teamId];
-      if (team) {
-        setSelectedTeam(team);
-        setDepthChartHasUnsavedChanges(false);
-        setAdminModeEnabled(false);
+  const handleTeamSelection = useCallback(
+    (selectedOption: SingleValue<SelectOption>) => {
+      if (selectedOption && cfbTeamMap) {
+        const teamId = Number(selectedOption.value);
+        const team = cfbTeamMap[teamId];
+        if (team) {
+          setSelectedTeam(team);
+          setDepthChartHasUnsavedChanges(false);
+          setAdminModeEnabled(false);
+        }
       }
-    }
-  }, [cfbTeamMap]);
+    },
+    [cfbTeamMap]
+  );
 
-  const handleDepthChartUpdate = useCallback((updatedDepthChart: CFBDepthChart) => {
-  }, []);
+  const handleDepthChartUpdate = useCallback(
+    (updatedDepthChart: CFBDepthChart) => {},
+    []
+  );
 
-  const handleGameplanUpdate = useCallback((updatedGameplan: GameplanData) => {
-  }, []);
+  const handleGameplanUpdate = useCallback(
+    (updatedGameplan: GameplanData) => {},
+    []
+  );
 
-  const handleCategoryChange = useCallback((newCategory: string) => {
-    const currentHasUnsavedChanges = category === DepthChart ? depthChartHasUnsavedChanges : gameplanHasUnsavedChanges;
-    
-    if (currentHasUnsavedChanges && newCategory !== category) {
-      setPendingCategory(newCategory);
-      setIsUnsavedChangesModalOpen(true);
-    } else {
-      setCategory(newCategory);
-    }
-  }, [category, depthChartHasUnsavedChanges, gameplanHasUnsavedChanges]);
+  const handleCategoryChange = useCallback(
+    (newCategory: string) => {
+      const currentHasUnsavedChanges =
+        category === DepthChart
+          ? depthChartHasUnsavedChanges
+          : gameplanHasUnsavedChanges;
+
+      if (currentHasUnsavedChanges && newCategory !== category) {
+        setPendingCategory(newCategory);
+        setIsUnsavedChangesModalOpen(true);
+      } else {
+        setCategory(newCategory);
+      }
+    },
+    [category, depthChartHasUnsavedChanges, gameplanHasUnsavedChanges]
+  );
 
   const handleConfirmCategoryChange = useCallback(() => {
     if (pendingCategory) {
@@ -119,11 +139,53 @@ export const CFBGameplanPage = () => {
     setIsUnsavedChangesModalOpen(false);
   }, []);
 
+  const opponentTeam = useMemo(() => {
+    // Get the latest unplayed game (look up game by weekID)
+    if (cfbTeam && collegeTeamsGames && collegeGameplanMap) {
+      let nextUnplayedGameIdx = collegeTeamsGames.findIndex(
+        (game) =>
+          game.WeekID === cfb_Timestamp?.CollegeWeekID && !game.GameComplete
+      );
+      if (nextUnplayedGameIdx < 0) {
+        // Check the next week
+        const nextWeekIdx = collegeTeamsGames.findIndex(
+          (game) => game.WeekID === (cfb_Timestamp?.CollegeWeekID || 0) + 1
+        );
+        if (nextWeekIdx < 0) return null;
+        nextUnplayedGameIdx = nextWeekIdx;
+      }
+      const nextGame = collegeTeamsGames[nextUnplayedGameIdx];
+      const opponentId =
+        nextGame.HomeTeamID === cfbTeam.ID
+          ? nextGame.AwayTeamID
+          : nextGame.HomeTeamID;
+      const opponentGameplan = collegeGameplanMap[opponentId] || null;
+      const opponentRoster = cfbRosterMap ? cfbRosterMap[opponentId] || [] : [];
+      return { ...opponentGameplan, Players: opponentRoster };
+    }
+    return null;
+  }, [
+    cfbTeam,
+    collegeTeamsGames,
+    cfbRosterMap,
+    collegeGameplanMap,
+    cfb_Timestamp,
+  ]);
+
+  console.log({
+    opponentTeam,
+    cfbTeam,
+    collegeTeamsGames,
+    cfbRosterMap,
+    collegeGameplanMap,
+    cfb_Timestamp,
+  });
+
   const borderColor = selectedTeam?.ColorOne;
   const backgroundColor = "#1f2937";
   const accentColor = selectedTeam?.ColorTwo;
-  const borderTextColor = getTextColorBasedOnBg(borderColor)
-  const backgroundTextColor = getTextColorBasedOnBg(backgroundColor)
+  const borderTextColor = getTextColorBasedOnBg(borderColor);
+  const backgroundTextColor = getTextColorBasedOnBg(backgroundColor);
 
   return (
     <div className="sm:container w-full sm:mx-auto sm:px-4 py-8">
@@ -147,24 +209,33 @@ export const CFBGameplanPage = () => {
           </ButtonGroup>
           {category === DepthChart && cfbTeamOptions && (
             <div className="flex flex-col 2xl:flex-row items-center gap-4">
-              <div className="2xl:ml-4 w-full 2xl:w-auto" style={{ minWidth: '200px', maxWidth: '300px' }}>
+              <div
+                className="2xl:ml-4 w-full 2xl:w-auto"
+                style={{ minWidth: "200px", maxWidth: "300px" }}
+              >
                 <SelectDropdown
                   options={cfbTeamOptions}
-                  value={cfbTeamOptions.find(opt => opt.value === String(selectedTeam?.ID))}
+                  value={cfbTeamOptions.find(
+                    (opt) => opt.value === String(selectedTeam?.ID)
+                  )}
                   onChange={handleTeamSelection}
                   placeholder="Select Team"
                   isClearable={false}
                 />
               </div>
-              {currentUser?.roleID && currentUser.roleID === AdminRole && selectedTeam?.ID !== cfbTeam?.ID && (
-                <div className="flex justify-center items-center gap-2">
-                  <ToggleSwitch
-                    onChange={(checked) => setAdminModeEnabled(checked)}
-                    checked={adminModeEnabled}
-                  />
-                  <Text variant="small" classes="text-white">Admin Mode</Text>
-                </div>
-              )}
+              {currentUser?.roleID &&
+                currentUser.roleID === AdminRole &&
+                selectedTeam?.ID !== cfbTeam?.ID && (
+                  <div className="flex justify-center items-center gap-2">
+                    <ToggleSwitch
+                      onChange={(checked) => setAdminModeEnabled(checked)}
+                      checked={adminModeEnabled}
+                    />
+                    <Text variant="small" classes="text-white">
+                      Admin Mode
+                    </Text>
+                  </div>
+                )}
             </div>
           )}
         </div>
@@ -175,7 +246,7 @@ export const CFBGameplanPage = () => {
         onClose={handleCancelCategoryChange}
         onConfirm={handleConfirmCategoryChange}
         currentView={category}
-        targetView={pendingCategory || ''}
+        targetView={pendingCategory || ""}
       />
 
       {category === DepthChart ? (
@@ -186,7 +257,10 @@ export const CFBGameplanPage = () => {
           league={SimCFB}
           gameplan={cfbGameplan}
           onDepthChartUpdate={handleDepthChartUpdate}
-          canModify={selectedTeam?.ID === cfbTeam?.ID || (currentUser?.roleID === AdminRole && adminModeEnabled)}
+          canModify={
+            selectedTeam?.ID === cfbTeam?.ID ||
+            (currentUser?.roleID === AdminRole && adminModeEnabled)
+          }
           backgroundColor={backgroundColor}
           borderColor={borderColor}
           accentColor={accentColor}
@@ -203,7 +277,9 @@ export const CFBGameplanPage = () => {
       ) : cfbGameplan ? (
         <GameplanView
           gameplan={cfbGameplan}
-          players={cfbRosterMap && cfbTeam ? cfbRosterMap[cfbTeam.ID] || [] : []}
+          players={
+            cfbRosterMap && cfbTeam ? cfbRosterMap[cfbTeam.ID] || [] : []
+          }
           depthChart={cfbDepthChart}
           team={cfbTeam}
           league={SimCFB}
@@ -211,6 +287,7 @@ export const CFBGameplanPage = () => {
           backgroundColor="#1f2937"
           borderColor={cfbTeam?.ColorOne}
           accentColor={cfbTeam?.ColorTwo}
+          opponentTeam={opponentTeam}
           borderTextColor={getTextColorBasedOnBg(cfbTeam?.ColorOne)}
           backgroundTextColor={getTextColorBasedOnBg("#1f2937")}
           onHasUnsavedChangesChange={setGameplanHasUnsavedChanges}
@@ -221,7 +298,8 @@ export const CFBGameplanPage = () => {
             No Gameplan Found
           </Text>
           <Text variant="body" classes="text-gray-400">
-            Unable to load gameplan data for this team. Please try refreshing the page or contact support.
+            Unable to load gameplan data for this team. Please try refreshing
+            the page or contact support.
           </Text>
         </div>
       )}
@@ -240,13 +318,19 @@ export const NFLGameplanPage = () => {
     nflDepthchartMap,
     proRosterMap: NFLRosterMap,
     nflGameplan,
-    nflDepthChart
+    nflDepthChart,
+    nflGameplanMap,
+    proTeamsGames,
+    cfb_Timestamp,
   } = fbStore;
   const [category, setCategory] = useState(Gameplan);
   const [pendingCategory, setPendingCategory] = useState<string | null>(null);
-  const [isUnsavedChangesModalOpen, setIsUnsavedChangesModalOpen] = useState(false);
-  const [depthChartHasUnsavedChanges, setDepthChartHasUnsavedChanges] = useState(false);
-  const [gameplanHasUnsavedChanges, setGameplanHasUnsavedChanges] = useState(false);
+  const [isUnsavedChangesModalOpen, setIsUnsavedChangesModalOpen] =
+    useState(false);
+  const [depthChartHasUnsavedChanges, setDepthChartHasUnsavedChanges] =
+    useState(false);
+  const [gameplanHasUnsavedChanges, setGameplanHasUnsavedChanges] =
+    useState(false);
   const [adminModeEnabled, setAdminModeEnabled] = useState(false);
 
   const [selectedTeam, setSelectedTeam] = useState(() => {
@@ -256,7 +340,8 @@ export const NFLGameplanPage = () => {
     }
     return nflTeam;
   });
-  const [selectedTeamDepthChart, setSelectedTeamDepthChart] = useState<NFLDepthChart | null>(null);
+  const [selectedTeamDepthChart, setSelectedTeamDepthChart] =
+    useState<NFLDepthChart | null>(null);
 
   const selectedTeamPlayers = useMemo(() => {
     if (selectedTeam && NFLRosterMap) {
@@ -272,41 +357,52 @@ export const NFLGameplanPage = () => {
     }
   }, [selectedTeam, nflDepthchartMap]);
 
-  const handleTeamSelection = useCallback((selectedOption: SingleValue<SelectOption>) => {
-    if (selectedOption && nflTeamMap) {
-      const teamId = Number(selectedOption.value);
-      const team = nflTeamMap[teamId];
-      if (team) {
-        setSelectedTeam(team);
-        setDepthChartHasUnsavedChanges(false);
-        setAdminModeEnabled(false);
+  const handleTeamSelection = useCallback(
+    (selectedOption: SingleValue<SelectOption>) => {
+      if (selectedOption && nflTeamMap) {
+        const teamId = Number(selectedOption.value);
+        const team = nflTeamMap[teamId];
+        if (team) {
+          setSelectedTeam(team);
+          setDepthChartHasUnsavedChanges(false);
+          setAdminModeEnabled(false);
+        }
       }
-    }
-  }, [nflTeamMap]);
+    },
+    [nflTeamMap]
+  );
 
   const borderColor = selectedTeam?.ColorOne;
   const backgroundColor = "#1f2937";
   const accentColor = selectedTeam?.ColorTwo;
-  const borderTextColor = getTextColorBasedOnBg(borderColor)
-  const backgroundTextColor = getTextColorBasedOnBg(backgroundColor)
+  const borderTextColor = getTextColorBasedOnBg(borderColor);
+  const backgroundTextColor = getTextColorBasedOnBg(backgroundColor);
 
-  const handleDepthChartUpdate = useCallback((updatedDepthChart: NFLDepthChart) => {
-  }, []);
+  const handleDepthChartUpdate = useCallback(
+    (updatedDepthChart: NFLDepthChart) => {},
+    []
+  );
 
   const handleGameplanUpdate = useCallback((updatedGameplan: GameplanData) => {
-    console.log('NFL Gameplan updated:', updatedGameplan);
+    console.log("NFL Gameplan updated:", updatedGameplan);
   }, []);
 
-  const handleCategoryChange = useCallback((newCategory: string) => {
-    const currentHasUnsavedChanges = category === DepthChart ? depthChartHasUnsavedChanges : gameplanHasUnsavedChanges;
-    
-    if (currentHasUnsavedChanges && newCategory !== category) {
-      setPendingCategory(newCategory);
-      setIsUnsavedChangesModalOpen(true);
-    } else {
-      setCategory(newCategory);
-    }
-  }, [category, depthChartHasUnsavedChanges, gameplanHasUnsavedChanges]);
+  const handleCategoryChange = useCallback(
+    (newCategory: string) => {
+      const currentHasUnsavedChanges =
+        category === DepthChart
+          ? depthChartHasUnsavedChanges
+          : gameplanHasUnsavedChanges;
+
+      if (currentHasUnsavedChanges && newCategory !== category) {
+        setPendingCategory(newCategory);
+        setIsUnsavedChangesModalOpen(true);
+      } else {
+        setCategory(newCategory);
+      }
+    },
+    [category, depthChartHasUnsavedChanges, gameplanHasUnsavedChanges]
+  );
 
   const handleConfirmCategoryChange = useCallback(() => {
     if (pendingCategory) {
@@ -320,6 +416,34 @@ export const NFLGameplanPage = () => {
     setPendingCategory(null);
     setIsUnsavedChangesModalOpen(false);
   }, []);
+
+  const opponentTeam = useMemo(() => {
+    // Get the latest unplayed game (look up game by weekID)
+    if (nflTeam && proTeamsGames && nflGameplanMap) {
+      let nextUnplayedGameIdx = proTeamsGames.findIndex(
+        (game) =>
+          game.WeekID === cfb_Timestamp?.CollegeWeekID && !game.GameComplete
+      );
+      if (nextUnplayedGameIdx < 0) {
+        // Check the next week
+        const nextWeekIdx = proTeamsGames.findIndex(
+          (game) => game.WeekID === (cfb_Timestamp?.CollegeWeekID || 0) + 1
+        );
+        if (nextWeekIdx < 0) return null;
+        nextUnplayedGameIdx = nextWeekIdx;
+      }
+      // STOP. Let me take care of this.
+      const nextGame = proTeamsGames[nextUnplayedGameIdx];
+      const opponentId =
+        nextGame.HomeTeamID === nflTeam.ID
+          ? nextGame.AwayTeamID
+          : nextGame.HomeTeamID;
+      const opponentGameplan = nflGameplanMap[opponentId] || null;
+      const opponentRoster = NFLRosterMap ? NFLRosterMap[opponentId] || [] : [];
+      return { ...opponentGameplan, Players: opponentRoster };
+    }
+    return null;
+  }, [nflTeam, proTeamsGames, NFLRosterMap, nflGameplanMap, cfb_Timestamp]);
 
   return (
     <div>
@@ -344,78 +468,94 @@ export const NFLGameplanPage = () => {
             </ButtonGroup>
             {category === DepthChart && nflTeamOptions && (
               <div className="flex flex-col 2xl:flex-row items-center gap-4">
-                <div className="2xl:ml-4 w-full 2xl:w-auto" style={{ minWidth: '200px', maxWidth: '300px' }}>
+                <div
+                  className="2xl:ml-4 w-full 2xl:w-auto"
+                  style={{ minWidth: "200px", maxWidth: "300px" }}
+                >
                   <SelectDropdown
                     options={nflTeamOptions}
-                    value={nflTeamOptions.find(opt => opt.value === String(selectedTeam?.ID))}
+                    value={nflTeamOptions.find(
+                      (opt) => opt.value === String(selectedTeam?.ID)
+                    )}
                     onChange={handleTeamSelection}
                     placeholder="Select Team"
                     isClearable={false}
                   />
                 </div>
-                {currentUser?.roleID && currentUser.roleID === AdminRole && selectedTeam?.ID !== nflTeam?.ID && (
-                  <div className="flex justify-center items-center gap-2">
-                    <ToggleSwitch
-                      onChange={(checked) => setAdminModeEnabled(checked)}
-                      checked={adminModeEnabled}
-                    />
-                    <Text variant="small" classes="text-white">Admin Mode</Text>
-                  </div>
-                )}
+                {currentUser?.roleID &&
+                  currentUser.roleID === AdminRole &&
+                  selectedTeam?.ID !== nflTeam?.ID && (
+                    <div className="flex justify-center items-center gap-2">
+                      <ToggleSwitch
+                        onChange={(checked) => setAdminModeEnabled(checked)}
+                        checked={adminModeEnabled}
+                      />
+                      <Text variant="small" classes="text-white">
+                        Admin Mode
+                      </Text>
+                    </div>
+                  )}
               </div>
             )}
           </div>
         </div>
-        
+
         <UnsavedChangesModal
           isOpen={isUnsavedChangesModalOpen}
           onClose={handleCancelCategoryChange}
           onConfirm={handleConfirmCategoryChange}
           currentView={category}
-          targetView={pendingCategory || ''}
+          targetView={pendingCategory || ""}
         />
 
-      {category === DepthChart ? (
-        <DepthChartView
-          players={selectedTeamPlayers}
-          depthChart={selectedTeamDepthChart || nflDepthChart}
-          team={selectedTeam}
-          league={SimNFL}
-          gameplan={nflGameplan}
-          onDepthChartUpdate={handleDepthChartUpdate}
-          canModify={selectedTeam?.ID === nflTeam?.ID || (currentUser?.roleID === AdminRole && adminModeEnabled)}
-          backgroundColor={backgroundColor}
-          borderColor={borderColor}
-          accentColor={accentColor}
-          borderTextColor={borderTextColor}
-          backgroundTextColor={backgroundTextColor}
-          onHasUnsavedChangesChange={setDepthChartHasUnsavedChanges}
-        />
-      ) : nflGameplan ? (
-        <GameplanView
-          gameplan={nflGameplan}
-          players={NFLRosterMap && nflTeam ? NFLRosterMap[nflTeam.ID] || [] : []}
-          depthChart={nflDepthChart}
-          team={nflTeam}
-          league={SimNFL}
-          onGameplanUpdate={handleGameplanUpdate}
-          backgroundColor="#1f2937"
-          borderColor={nflTeam?.ColorOne}
-          accentColor={nflTeam?.ColorTwo}
-          borderTextColor={getTextColorBasedOnBg(nflTeam?.ColorOne)}
-          backgroundTextColor={getTextColorBasedOnBg("#1f2937")}
-          onHasUnsavedChangesChange={setGameplanHasUnsavedChanges}
-        />
-      ) : (
-        <div className="text-center">
-          <Text variant="h3" classes="text-white mb-4">
-            No Gameplan Found
-          </Text>
-          <Text variant="body" classes="text-gray-400">
-            Unable to load gameplan data for this team. Please try refreshing the page or contact support.
-          </Text>
-        </div>
-      )}
+        {category === DepthChart ? (
+          <DepthChartView
+            players={selectedTeamPlayers}
+            depthChart={selectedTeamDepthChart || nflDepthChart}
+            team={selectedTeam}
+            league={SimNFL}
+            gameplan={nflGameplan}
+            onDepthChartUpdate={handleDepthChartUpdate}
+            canModify={
+              selectedTeam?.ID === nflTeam?.ID ||
+              (currentUser?.roleID === AdminRole && adminModeEnabled)
+            }
+            backgroundColor={backgroundColor}
+            borderColor={borderColor}
+            accentColor={accentColor}
+            borderTextColor={borderTextColor}
+            backgroundTextColor={backgroundTextColor}
+            onHasUnsavedChangesChange={setDepthChartHasUnsavedChanges}
+          />
+        ) : nflGameplan ? (
+          <GameplanView
+            gameplan={nflGameplan}
+            players={
+              NFLRosterMap && nflTeam ? NFLRosterMap[nflTeam.ID] || [] : []
+            }
+            depthChart={nflDepthChart}
+            team={nflTeam}
+            league={SimNFL}
+            onGameplanUpdate={handleGameplanUpdate}
+            backgroundColor="#1f2937"
+            borderColor={nflTeam?.ColorOne}
+            accentColor={nflTeam?.ColorTwo}
+            opponentTeam={opponentTeam}
+            borderTextColor={getTextColorBasedOnBg(nflTeam?.ColorOne)}
+            backgroundTextColor={getTextColorBasedOnBg("#1f2937")}
+            onHasUnsavedChangesChange={setGameplanHasUnsavedChanges}
+          />
+        ) : (
+          <div className="text-center">
+            <Text variant="h3" classes="text-white mb-4">
+              No Gameplan Found
+            </Text>
+            <Text variant="body" classes="text-gray-400">
+              Unable to load gameplan data for this team. Please try refreshing
+              the page or contact support.
+            </Text>
+          </div>
+        )}
       </div>
     </div>
   );

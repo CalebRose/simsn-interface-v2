@@ -601,10 +601,12 @@ export class NFLGameplan {
   TripleOptionRight: number;
   PassQuick: number;
   PassShort: number;
+  PassMedium: number;
   PassLong: number;
   PassDeep: number;
   PassScreen: number;
   PassPAShort: number;
+  PassPAMedium: number;
   PassPALong: number;
   PassPADeep: number;
   LeftVsRight: number;
@@ -743,10 +745,12 @@ export class NFLGameplan {
     this.TripleOptionRight = source["TripleOptionRight"];
     this.PassQuick = source["PassQuick"];
     this.PassShort = source["PassShort"];
+    this.PassMedium = source["PassMedium"];
     this.PassLong = source["PassLong"];
     this.PassDeep = source["PassDeep"];
     this.PassScreen = source["PassScreen"];
     this.PassPAShort = source["PassPAShort"];
+    this.PassPAMedium = source["PassPAMedium"];
     this.PassPALong = source["PassPALong"];
     this.PassPADeep = source["PassPADeep"];
     this.LeftVsRight = source["LeftVsRight"];
@@ -3655,10 +3659,12 @@ export class CollegeGameplan {
   TripleOptionRight: number;
   PassQuick: number;
   PassShort: number;
+  PassMedium: number;
   PassLong: number;
   PassDeep: number;
   PassScreen: number;
   PassPAShort: number;
+  PassPAMedium: number;
   PassPALong: number;
   PassPADeep: number;
   LeftVsRight: number;
@@ -3797,10 +3803,12 @@ export class CollegeGameplan {
     this.TripleOptionRight = source["TripleOptionRight"];
     this.PassQuick = source["PassQuick"];
     this.PassShort = source["PassShort"];
+    this.PassMedium = source["PassMedium"];
     this.PassLong = source["PassLong"];
     this.PassDeep = source["PassDeep"];
     this.PassScreen = source["PassScreen"];
     this.PassPAShort = source["PassPAShort"];
+    this.PassPAMedium = source["PassPAMedium"];
     this.PassPALong = source["PassPALong"];
     this.PassPADeep = source["PassPADeep"];
     this.LeftVsRight = source["LeftVsRight"];
@@ -5258,6 +5266,8 @@ export class BootstrapData {
   CollegeNotifications: Notification[];
   AllCollegeGames: CollegeGame[];
   CollegeGameplan: CollegeGameplan | null;
+  CollegeGameplanMap: Record<number, CollegeGameplan | null>;
+  NFLGameplanMap: Record<number, NFLGameplan | null>;
   CollegeDepthChart: CollegeTeamDepthChart | null;
   CollegeDepthChartMap: { [key: number]: CollegeTeamDepthChart } | null;
   AllProTeams: NFLTeam[];
@@ -5340,6 +5350,11 @@ export class BootstrapData {
         CollegeTeamDepthChart,
         true
       ) || null;
+    this.CollegeGameplanMap =
+      this.convertValues(source["CollegeGameplanMap"], CollegeGameplan, true) ||
+      null;
+    this.NFLGameplanMap =
+      this.convertValues(source["NFLGameplanMap"], NFLGameplan, true) || null;
     this.ProTeam = this.convertValues(source["ProTeam"], NFLTeam) || null;
     this.AllProTeams = this.convertValues(source["AllProTeams"], NFLTeam) || [];
     this.ProStandings =
