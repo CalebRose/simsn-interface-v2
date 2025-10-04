@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Text } from '../../../../_design/Typography';
+import React, { useState, useCallback, useEffect } from "react";
+import { Text } from "../../../../_design/Typography";
 
 export interface GameplanSliderProps {
   name: string;
@@ -30,7 +30,7 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
   disabled = false,
   showValue = true,
   valueLabel,
-  className = '',
+  className = "",
   error,
   warning,
   runpass = false,
@@ -46,22 +46,25 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
     }
   }, [value, isEditing]);
 
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-    
-    const numValue = parseFloat(newValue);
-    if (!isNaN(numValue)) {
-      const clampedValue = Math.min(Math.max(numValue, min), max);
-      const syntheticEvent = {
-        target: {
-          name,
-          value: clampedValue.toString(),
-        },
-      } as React.ChangeEvent<HTMLInputElement>;
-      onChange(syntheticEvent);
-    }
-  }, [name, min, max, onChange]);
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      setInputValue(newValue);
+
+      const numValue = parseFloat(newValue);
+      if (!isNaN(numValue)) {
+        const clampedValue = Math.min(Math.max(numValue, min), max);
+        const syntheticEvent = {
+          target: {
+            name,
+            value: clampedValue.toString(),
+          },
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(syntheticEvent);
+      }
+    },
+    [name, min, max, onChange]
+  );
 
   const handleInputBlur = useCallback(() => {
     setIsEditing(false);
@@ -87,59 +90,72 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
     setIsEditing(true);
   }, []);
 
-  const handleInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.currentTarget.blur();
-    }
-  }, []);
-  
+  const handleInputKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.currentTarget.blur();
+      }
+    },
+    []
+  );
+
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
       {runpass ? (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
+        <div className="grid grid-cols-2 items-center">
+          <div className="flex flex-col items-center gap-1">
             <Text variant="small" classes="text-gray-300 font-medium">
               Pass
             </Text>
-            <input
-              type="text"
-              value={100 - value}
-              onChange={(e) => {
-                const passValue = parseFloat(e.target.value);
-                if (!isNaN(passValue)) {
-                  const runValue = Math.min(Math.max(100 - passValue, min), max);
-                  const syntheticEvent = {
-                    target: { name, value: runValue.toString() },
-                  } as React.ChangeEvent<HTMLInputElement>;
-                  onChange(syntheticEvent);
-                }
-              }}
-              onBlur={() => setIsEditing(false)}
-              onFocus={() => setIsEditing(true)}
-              disabled={disabled}
-              className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-            <Text variant="small" classes="text-gray-400">%</Text>
+            <div className="flex flex-row gap-x-1 items-center justify-center">
+              <input
+                type="text"
+                value={100 - value}
+                onChange={(e) => {
+                  const passValue = parseFloat(e.target.value);
+                  if (!isNaN(passValue)) {
+                    const runValue = Math.min(
+                      Math.max(100 - passValue, min),
+                      max
+                    );
+                    const syntheticEvent = {
+                      target: { name, value: runValue.toString() },
+                    } as React.ChangeEvent<HTMLInputElement>;
+                    onChange(syntheticEvent);
+                  }
+                }}
+                onBlur={() => setIsEditing(false)}
+                onFocus={() => setIsEditing(true)}
+                disabled={disabled}
+                className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <Text variant="small" classes="text-gray-400">
+                %
+              </Text>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-1">
             <Text variant="small" classes="text-gray-300 font-medium">
               Run
             </Text>
-            <input
-              type="text"
-              value={inputValue}
-              onChange={handleInputChange}
-              onBlur={handleInputBlur}
-              onFocus={handleInputFocus}
-              onKeyDown={handleInputKeyDown}
-              disabled={disabled}
-              className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-            <Text variant="small" classes="text-gray-400">%</Text>
+            <div className="flex flex-row gap-x-1 items-center justify-center">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                onFocus={handleInputFocus}
+                onKeyDown={handleInputKeyDown}
+                disabled={disabled}
+                className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <Text variant="small" classes="text-gray-400">
+                %
+              </Text>
+            </div>
           </div>
         </div>
-      ) :
-      leftright ? (
+      ) : leftright ? (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
             <Text variant="small" classes="text-gray-300 font-medium">
@@ -155,7 +171,9 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
               disabled={disabled}
               className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             />
-            <Text variant="small" classes="text-gray-400">%</Text>
+            <Text variant="small" classes="text-gray-400">
+              %
+            </Text>
           </div>
           <div className="flex items-center gap-2">
             <Text variant="small" classes="text-gray-300 font-medium">
@@ -167,7 +185,10 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
               onChange={(e) => {
                 const passValue = parseFloat(e.target.value);
                 if (!isNaN(passValue)) {
-                  const runValue = Math.min(Math.max(100 - passValue, min), max);
+                  const runValue = Math.min(
+                    Math.max(100 - passValue, min),
+                    max
+                  );
                   const syntheticEvent = {
                     target: { name, value: runValue.toString() },
                   } as React.ChangeEvent<HTMLInputElement>;
@@ -179,7 +200,9 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
               disabled={disabled}
               className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             />
-            <Text variant="small" classes="text-gray-400">%</Text>
+            <Text variant="small" classes="text-gray-400">
+              %
+            </Text>
           </div>
         </div>
       ) : (
@@ -191,7 +214,11 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
             <div className="flex items-center gap-1">
               <input
                 type="text"
-                value={isEditing ? inputValue : (valueLabel || value).toString().replace('%', '')}
+                value={
+                  isEditing
+                    ? inputValue
+                    : (valueLabel || value).toString().replace("%", "")
+                }
                 onChange={handleInputChange}
                 onBlur={handleInputBlur}
                 onFocus={handleInputFocus}
@@ -199,8 +226,10 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
                 disabled={disabled}
                 className="w-14 px-1 py-0.5 text-sm text-blue-400 font-semibold bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none text-right disabled:opacity-50 disabled:cursor-not-allowed"
               />
-              {(valueLabel && valueLabel.includes('%')) && (
-                <Text variant="small" classes="text-blue-400 font-semibold">%</Text>
+              {valueLabel && valueLabel.includes("%") && (
+                <Text variant="small" classes="text-blue-400 font-semibold">
+                  %
+                </Text>
               )}
             </div>
           )}
@@ -223,11 +252,13 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
             slider-thumb:hover:bg-blue-400 slider-thumb:transition-colors
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${error ? 'ring-2 ring-red-500 ring-opacity-50' : ''}
-            ${warning ? 'ring-2 ring-yellow-500 ring-opacity-50' : ''}
+            ${error ? "ring-2 ring-red-500 ring-opacity-50" : ""}
+            ${warning ? "ring-2 ring-yellow-500 ring-opacity-50" : ""}
           `}
           style={{
-            background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((value - min) / (max - min)) * 100}%, #374151 ${((value - min) / (max - min)) * 100}%, #374151 100%)`
+            background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${
+              ((value - min) / (max - min)) * 100
+            }%, #374151 ${((value - min) / (max - min)) * 100}%, #374151 100%)`,
           }}
         />
       </div>
@@ -260,7 +291,7 @@ export const PitchDiveFocusSlider: React.FC<PitchDiveFocusSliderProps> = ({
   onPitchChange,
   onDiveChange,
   disabled = false,
-  className = ''
+  className = "",
 }) => {
   return (
     <div className={`space-y-4 ${className}`}>
@@ -274,7 +305,7 @@ export const PitchDiveFocusSlider: React.FC<PitchDiveFocusSliderProps> = ({
         disabled={disabled}
         valueLabel={`${pitchValue}%`}
       />
-      
+
       <GameplanSlider
         name="DiveFocus"
         label="Dive Focus"
