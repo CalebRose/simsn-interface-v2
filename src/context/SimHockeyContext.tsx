@@ -1414,11 +1414,30 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     name: string,
     points: number
   ) => {
+    const profileIdx = transferPortalProfiles.findIndex((x) => x.ID === id);
+    if (profileIdx === -1) return;
+    // Profile Exists and there are already points allocated, return. Users cannot update the amount of points lower than what's already allocated.
+    const existingProfile = transferPortalProfiles[profileIdx];
+    if (existingProfile.TotalPoints > 0) {
+      return;
+    }
+    let pointsValue = points;
+    if (points > 10) {
+      pointsValue = 10;
+    } else if (points < 0) {
+      pointsValue = 0;
+    } else if (
+      points < existingProfile.CurrentWeeksPoints &&
+      existingProfile.TotalPoints > 0
+    ) {
+      pointsValue = existingProfile.CurrentWeeksPoints;
+    }
+
     setTransferPortalProfiles((prevProfiles) => {
       // Update the profiles and get the new profiles array.
       const updatedProfiles = prevProfiles.map((profile) =>
         profile.ID === id && profile.ID > 0
-          ? new TransferPortalProfile({ ...profile, [name]: points })
+          ? new TransferPortalProfile({ ...profile, [name]: pointsValue })
           : profile
       );
 
