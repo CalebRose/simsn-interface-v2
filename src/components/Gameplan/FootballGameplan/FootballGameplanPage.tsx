@@ -172,15 +172,6 @@ export const CFBGameplanPage = () => {
     cfb_Timestamp,
   ]);
 
-  console.log({
-    opponentTeam,
-    cfbTeam,
-    collegeTeamsGames,
-    cfbRosterMap,
-    collegeGameplanMap,
-    cfb_Timestamp,
-  });
-
   const borderColor = selectedTeam?.ColorOne;
   const backgroundColor = "#1f2937";
   const accentColor = selectedTeam?.ColorTwo;
