@@ -171,14 +171,15 @@ export const GameplanSlider: React.FC<GameplanSliderProps> = ({
                     Math.max(100 - passValue, min),
                     max
                   );
+                  setInputValue(runValue.toString());
                   const syntheticEvent = {
                     target: { name, value: runValue.toString() },
                   } as React.ChangeEvent<HTMLInputElement>;
                   onChange(syntheticEvent);
                 }
               }}
-              onBlur={handleInputBlur}
-              onFocus={handleInputFocus}
+              onBlur={() => setIsEditing(false)}
+              onFocus={() => setIsEditing(true)}
               onKeyDown={handleInputKeyDown}
               disabled={disabled}
               className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
