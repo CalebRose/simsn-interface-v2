@@ -584,7 +584,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (cfbTeam && collegeGameplanMap) {
       const gameplan = collegeGameplanMap[cfbTeam.ID];
       const newPAMediumValue = (gameplan as any).PassPAShort;
-      console.log({ newPAMediumValue });
       return new CollegeGameplan({
         ...gameplan,
         PassShort: (gameplan as any).PassQuick,
