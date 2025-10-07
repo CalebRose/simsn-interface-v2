@@ -1297,7 +1297,8 @@ export const RPOLabels = [
   'ChoicePower',
   'PeekOutside',
   'PeekInside',
-  'PeekPower'
+  'PeekPower',
+  'LeftVsRight'
 ];
 
 export const TargetingLabels = [

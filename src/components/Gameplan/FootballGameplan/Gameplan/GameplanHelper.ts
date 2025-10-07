@@ -87,6 +87,7 @@ export interface GameplanData {
   PassPAMedium: number;
   PassPALong: number;
   PassPADeep: number;
+  LeftVsRight: number;
   ChoiceOutside: number;
   ChoiceInside: number;
   ChoicePower: number;
@@ -552,6 +553,10 @@ export const transformGameplanForSave = (gameplan: GameplanData): any => {
     PassShort: transformed.PassMedium,
     PassPAShort: transformed.PassPAMedium,
   };
+
+  if (typeof transformed.LeftVsRight === 'number') {
+    (transformedGameplan as any).LeftVsRight = 100 - transformed.LeftVsRight;
+  }
   
   delete (transformedGameplan as any).PassMedium;
   delete (transformedGameplan as any).PassPAMedium;

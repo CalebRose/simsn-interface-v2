@@ -45,6 +45,9 @@ export const CFBGameplanPage = () => {
     saveCFBDepthChart,
     collegeGameplan: cfbGameplan,
     collegeDepthChart: cfbDepthChart,
+    collegeGameplanMap,
+    collegeTeamsGames,
+    cfb_Timestamp,
   } = fbStore;
   const [category, setCategory] = useState(Gameplan);
   const [pendingCategory, setPendingCategory] = useState<string | null>(null);
@@ -131,6 +134,39 @@ export const CFBGameplanPage = () => {
     setPendingCategory(null);
     setIsUnsavedChangesModalOpen(false);
   }, []);
+
+  const opponentTeam = useMemo(() => {
+    // Get the latest unplayed game (look up game by weekID)
+    if (cfbTeam && collegeTeamsGames && collegeGameplanMap) {
+      let nextUnplayedGameIdx = collegeTeamsGames.findIndex(
+        (game) =>
+          game.WeekID === cfb_Timestamp?.CollegeWeekID && !game.GameComplete
+      );
+      if (nextUnplayedGameIdx < 0) {
+        // Check the next week
+        const nextWeekIdx = collegeTeamsGames.findIndex(
+          (game) => game.WeekID === (cfb_Timestamp?.CollegeWeekID || 0) + 1
+        );
+        if (nextWeekIdx < 0) return null;
+        nextUnplayedGameIdx = nextWeekIdx;
+      }
+      const nextGame = collegeTeamsGames[nextUnplayedGameIdx];
+      const opponentId =
+        nextGame.HomeTeamID === cfbTeam.ID
+          ? nextGame.AwayTeamID
+          : nextGame.HomeTeamID;
+      const opponentGameplan = collegeGameplanMap[opponentId] || null;
+      const opponentRoster = cfbRosterMap ? cfbRosterMap[opponentId] || [] : [];
+      return { ...opponentGameplan, Players: opponentRoster };
+    }
+    return null;
+  }, [
+    cfbTeam,
+    collegeTeamsGames,
+    cfbRosterMap,
+    collegeGameplanMap,
+    cfb_Timestamp,
+  ]);
 
   const borderColor = selectedTeam?.ColorOne;
   const backgroundColor = "#1f2937";
@@ -238,6 +274,7 @@ export const CFBGameplanPage = () => {
           backgroundColor="#1f2937"
           borderColor={cfbTeam?.ColorOne}
           accentColor={cfbTeam?.ColorTwo}
+          opponentTeam={opponentTeam}
           borderTextColor={getTextColorBasedOnBg(cfbTeam?.ColorOne)}
           backgroundTextColor={getTextColorBasedOnBg("#1f2937")}
           onHasUnsavedChangesChange={setGameplanHasUnsavedChanges}
@@ -269,6 +306,9 @@ export const NFLGameplanPage = () => {
     proRosterMap: NFLRosterMap,
     nflGameplan,
     nflDepthChart,
+    nflGameplanMap,
+    proTeamsGames,
+    cfb_Timestamp,
   } = fbStore;
   const [category, setCategory] = useState(Gameplan);
   const [pendingCategory, setPendingCategory] = useState<string | null>(null);
@@ -363,6 +403,34 @@ export const NFLGameplanPage = () => {
     setPendingCategory(null);
     setIsUnsavedChangesModalOpen(false);
   }, []);
+
+  const opponentTeam = useMemo(() => {
+    // Get the latest unplayed game (look up game by weekID)
+    if (nflTeam && proTeamsGames && nflGameplanMap) {
+      let nextUnplayedGameIdx = proTeamsGames.findIndex(
+        (game) =>
+          game.WeekID === cfb_Timestamp?.CollegeWeekID && !game.GameComplete
+      );
+      if (nextUnplayedGameIdx < 0) {
+        // Check the next week
+        const nextWeekIdx = proTeamsGames.findIndex(
+          (game) => game.WeekID === (cfb_Timestamp?.CollegeWeekID || 0) + 1
+        );
+        if (nextWeekIdx < 0) return null;
+        nextUnplayedGameIdx = nextWeekIdx;
+      }
+      // STOP. Let me take care of this.
+      const nextGame = proTeamsGames[nextUnplayedGameIdx];
+      const opponentId =
+        nextGame.HomeTeamID === nflTeam.ID
+          ? nextGame.AwayTeamID
+          : nextGame.HomeTeamID;
+      const opponentGameplan = nflGameplanMap[opponentId] || null;
+      const opponentRoster = NFLRosterMap ? NFLRosterMap[opponentId] || [] : [];
+      return { ...opponentGameplan, Players: opponentRoster };
+    }
+    return null;
+  }, [nflTeam, proTeamsGames, NFLRosterMap, nflGameplanMap, cfb_Timestamp]);
 
   return (
     <div>
@@ -459,6 +527,7 @@ export const NFLGameplanPage = () => {
             backgroundColor="#1f2937"
             borderColor={nflTeam?.ColorOne}
             accentColor={nflTeam?.ColorTwo}
+            opponentTeam={opponentTeam}
             borderTextColor={getTextColorBasedOnBg(nflTeam?.ColorOne)}
             backgroundTextColor={getTextColorBasedOnBg("#1f2937")}
             onHasUnsavedChangesChange={setGameplanHasUnsavedChanges}
