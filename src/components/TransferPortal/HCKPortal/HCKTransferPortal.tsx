@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import {
   Attributes,
   CountryOptions,
+  Help1,
   HockeyArchetypeOptions,
   HockeyPositionOptions,
   navyBlueColor,
@@ -27,6 +28,7 @@ import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { TransferPlayerTable } from "../Common/TransferPlayerTable";
 import { TransferPortalProfileTable } from "../Common/TransferProfileTable";
+import { PortalHelpModal } from "../../Recruiting/Common/RecruitingHelpModal";
 
 export const HCKTransferPortal = () => {
   const hkStore = useSimHCKStore();
@@ -110,11 +112,18 @@ export const HCKTransferPortal = () => {
           league={SimCHL}
           modalAction={modalAction}
           player={modalPlayer}
+          scoutAttribute={scoutPortalAttribute}
           addPlayerToBoard={addTransferPlayerToBoard}
           removePlayerFromBoard={removeTransferPlayerFromBoard}
           attribute={attribute}
         />
       )}
+      <PortalHelpModal
+        isOpen={helpModal.isModalOpen}
+        onClose={helpModal.handleCloseModal}
+        league={SimCHL}
+        modalAction={Help1}
+      />
       {/* Add help modals here & setting modals if needed */}
       <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[2fr_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
         <TransferPortalSideBar

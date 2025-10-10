@@ -35,6 +35,7 @@ import {
 } from "../../Team/TeamPageUtils";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { useResponsive } from "../../../_hooks/useMobile";
+import { getHockeyLetterGrade } from "../../../_utility/getLetterGrade";
 
 const getTransferProfileTableColumns = (
   league: League,
@@ -218,6 +219,8 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
     openModal(ScoutAttributeType, player);
   };
 
+  console.log({ profile, attrList, test: "TEST" });
+
   return (
     <div
       className="table-row border-b dark:border-gray-700 text-left"
@@ -256,7 +259,9 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
         <span className={`text-xs`}>{annotateRegion(player.State)}</span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{player.OverallGrade}</span>
+        <span className={`text-xs`}>
+          {getHockeyLetterGrade(player.Overall, player.Year)}
+        </span>
       </TableCell>
       {category === Attributes && !isMobile && (
         <>

@@ -6366,6 +6366,22 @@ export class TransferPortalProfile {
   RolledOnPromise: boolean;
   LockProfile: boolean;
   IsSigned: boolean;
+  Agility: boolean;
+  Faceoffs: boolean;
+  LongShotAccuracy: boolean;
+  LongShotPower: boolean;
+  CloseShotAccuracy: boolean;
+  CloseShotPower: boolean;
+  OneTimer: boolean;
+  Passing: boolean;
+  PuckHandling: boolean;
+  Strength: boolean;
+  BodyChecking: boolean;
+  StickChecking: boolean;
+  ShotBlocking: boolean;
+  Goalkeeping: boolean;
+  GoalieVision: boolean;
+  GoalieReboundControl: boolean;
   Recruiter: string;
 
   constructor(source: any = {}) {
@@ -6387,6 +6403,22 @@ export class TransferPortalProfile {
     this.RolledOnPromise = source["RolledOnPromise"];
     this.LockProfile = source["LockProfile"];
     this.IsSigned = source["IsSigned"];
+    this.Agility = source["Agility"];
+    this.Faceoffs = source["Faceoffs"];
+    this.LongShotAccuracy = source["LongShotAccuracy"];
+    this.LongShotPower = source["LongShotPower"];
+    this.CloseShotAccuracy = source["CloseShotAccuracy"];
+    this.CloseShotPower = source["CloseShotPower"];
+    this.OneTimer = source["OneTimer"];
+    this.Passing = source["Passing"];
+    this.PuckHandling = source["PuckHandling"];
+    this.Strength = source["Strength"];
+    this.BodyChecking = source["BodyChecking"];
+    this.StickChecking = source["StickChecking"];
+    this.ShotBlocking = source["ShotBlocking"];
+    this.Goalkeeping = source["Goalkeeping"];
+    this.GoalieVision = source["GoalieVision"];
+    this.GoalieReboundControl = source["GoalieReboundControl"];
     this.Recruiter = source["Recruiter"];
   }
 

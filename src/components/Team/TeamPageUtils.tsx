@@ -2666,49 +2666,55 @@ export const getAdditionalHCKPortalPotentialAttributes = (
   player: CollegePlayer
 ) => {
   return [
-    { label: "Agi", value: player.AgilityGrade },
-    { label: "FO", value: player.FaceoffsGrade },
+    { label: "Agility", value: getGeneralLetterGrade(player.AgilityPotential) },
     {
-      label: "LSA",
-      value: player.LongShotAccuracyGrade,
+      label: "Faceoffs",
+      value: getGeneralLetterGrade(player.FaceoffsPotential),
     },
     {
-      label: "LSP",
-      value: player.LongShotPowerGrade,
+      label: "LongShotAccuracy",
+      value: getGeneralLetterGrade(player.LongShotAccuracyPotential),
     },
     {
-      label: "CSA",
-      value: player.CloseShotAccuracyGrade,
+      label: "LongShotPower",
+      value: getGeneralLetterGrade(player.LongShotPowerPotential),
     },
     {
-      label: "CSP",
-      value: player.CloseShotPowerGrade,
-    },
-    { label: "Pass", value: player.PassingGrade },
-    {
-      label: "PH",
-      value: player.PuckHandlingGrade,
-    },
-    { label: "Str", value: player.StrengthGrade },
-    {
-      label: "BChk",
-      value: player.BodyCheckingGrade,
+      label: "CloseShotAccuracy",
+      value: getGeneralLetterGrade(player.CloseShotAccuracyPotential),
     },
     {
-      label: "SChk",
-      value: player.StickCheckingGrade,
+      label: "CloseShotPower",
+      value: getGeneralLetterGrade(player.CloseShotPowerPotential),
+    },
+    { label: "Passing", value: getGeneralLetterGrade(player.PassingPotential) },
+    {
+      label: "PuckHandling",
+      value: getGeneralLetterGrade(player.PuckHandlingPotential),
     },
     {
-      label: "SB",
-      value: player.ShotBlockingGrade,
+      label: "Strength",
+      value: getGeneralLetterGrade(player.StrengthPotential),
     },
     {
-      label: "GK",
-      value: player.GoalkeepingGrade,
+      label: "BodyChecking",
+      value: getGeneralLetterGrade(player.BodyCheckingPotential),
     },
     {
-      label: "GV",
-      value: player.GoalieVisionGrade,
+      label: "StickChecking",
+      value: getGeneralLetterGrade(player.StickCheckingPotential),
+    },
+    {
+      label: "ShotBlocking",
+      value: getGeneralLetterGrade(player.ShotBlockingPotential),
+    },
+    {
+      label: "Goalkeeping",
+      value: getGeneralLetterGrade(player.GoalkeepingPotential),
+    },
+    {
+      label: "GoalieVision",
+      value: getGeneralLetterGrade(player.GoalieVisionPotential),
     },
   ];
 };
