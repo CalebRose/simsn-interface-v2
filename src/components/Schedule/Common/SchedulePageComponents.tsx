@@ -121,13 +121,14 @@ export const TeamSchedule = ({
             />
             {processedSchedule.map((game, index) => (
               <div
-                key={index}
+                key={`${game.ID}-${game.Week}-${index}`}
                 className={`grid ${
                   isFootball ? "grid-cols-7" : "grid-cols-5"
                 } border-b border-b-[#34455d] items-center`}
                 style={{
                   backgroundColor:
                     index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
+                  order: index, // Force display order for Safari mobile
                 }}
               >
                 <div className="text-left col-span-1">
@@ -303,13 +304,14 @@ export const WeeklySchedule = ({
             const awayTeam = teamMap[game.AwayTeamID];
             return (
               <div
-                key={index}
+                key={`${game.ID}-${game.Week}-${index}`}
                 className={`grid ${
                   isFootball ? "grid-cols-9" : "grid-cols-7"
                 } border-b border-b-[#34455d] items-center`}
                 style={{
                   backgroundColor:
                     index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
+                  order: index, // Force display order for Safari mobile
                 }}
               >
                 <div className="text-left col-span-1">

@@ -82,11 +82,21 @@ export const getScheduleCFBData = (
     allCollegeTeams.map((team) => [team.ID, team.Mascot])
   );
 
-  // Team Schedule
+  // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allCollegeGames
     .filter(
       (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
     )
+    .sort((a, b) => {
+      // Ensure consistent ordering by week, then by ID for stability
+      if (a.Week !== b.Week) {
+        return a.Week - b.Week;
+      }
+      if (a.WeekID !== b.WeekID) {
+        return a.WeekID - b.WeekID;
+      }
+      return a.ID - b.ID;
+    })
     .map((game) => ({
       ...game,
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
@@ -152,11 +162,21 @@ export const getScheduleNFLData = (
     allNFLTeams.map((team) => [team.ID, team.Mascot])
   );
 
-  // Team Schedule
+  // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allNFLGames
     .filter(
       (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
     )
+    .sort((a, b) => {
+      // Ensure consistent ordering by week, then by ID for stability
+      if (a.Week !== b.Week) {
+        return a.Week - b.Week;
+      }
+      if (a.WeekID !== b.WeekID) {
+        return a.WeekID - b.WeekID;
+      }
+      return a.ID - b.ID;
+    })
     .map((game) => ({
       ...game,
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
@@ -227,11 +247,21 @@ export const getScheduleCHLData = (
     allCollegeTeams.map((team) => [team.ID, team.Mascot])
   );
 
-  // Team Schedule
+  // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allCollegeGames
     .filter(
       (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
     )
+    .sort((a, b) => {
+      // Ensure consistent ordering by week, then by ID for stability
+      if (a.Week !== b.Week) {
+        return a.Week - b.Week;
+      }
+      if (a.WeekID !== b.WeekID) {
+        return a.WeekID - b.WeekID;
+      }
+      return a.ID - b.ID;
+    })
     .map((game) => ({
       ...game,
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
@@ -301,11 +331,21 @@ export const getSchedulePHLData = (
     allPHLTeams.map((team) => [team.ID, team.Mascot])
   );
 
-  // Team Schedule
+  // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allPHLGames
     .filter(
       (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
     )
+    .sort((a, b) => {
+      // Ensure consistent ordering by week, then by ID for stability
+      if (a.Week !== b.Week) {
+        return a.Week - b.Week;
+      }
+      if (a.WeekID !== b.WeekID) {
+        return a.WeekID - b.WeekID;
+      }
+      return a.ID - b.ID;
+    })
     .map((game) => ({
       ...game,
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
@@ -375,11 +415,21 @@ export const getScheduleCBBData = (
     allCollegeTeams.map((team) => [team.ID, team.Nickname])
   );
 
-  // Team Schedule
+  // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allCollegeGames
     .filter(
       (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
     )
+    .sort((a, b) => {
+      // Ensure consistent ordering by week, then by ID for stability
+      if (a.Week !== b.Week) {
+        return a.Week - b.Week;
+      }
+      if (a.WeekID !== b.WeekID) {
+        return a.WeekID - b.WeekID;
+      }
+      return a.ID - b.ID;
+    })
     .map((game) => ({
       ...game,
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
@@ -446,11 +496,22 @@ export const getScheduleNBAData = (
     allNBATeams.map((team) => [team.ID, team.Nickname])
   );
 
-  // Team Schedule
+  // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allNBAGames
     .filter(
       (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
     )
+    .sort((a, b) => {
+      // Ensure consistent ordering by week, then by ID for stability
+      if (a.Week !== b.Week) {
+        return a.Week - b.Week;
+      }
+      if (a.WeekID !== b.WeekID) {
+        return a.WeekID - b.WeekID;
+      }
+
+      return a.ID - b.ID;
+    })
     .map((game) => ({
       ...game,
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
@@ -498,7 +559,16 @@ export const processSchedule = (
 ) => {
   let weekCounter: { [key: number]: number } = {};
   return schedule
-    .sort((a, b) => a.Week - b.Week)
+    .sort((a, b) => {
+      // Enhanced sort for mobile Safari consistency
+      if (a.Week !== b.Week) {
+        return a.Week - b.Week;
+      }
+      if (a.WeekID !== b.WeekID) {
+        return a.WeekID - b.WeekID;
+      }
+      return a.ID - b.ID;
+    })
     .map((game) => {
       let revealResult = false;
       if (league === SimCHL || league === SimPHL) {
