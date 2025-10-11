@@ -220,31 +220,6 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
       response = await scheduleService.GetCFBGameResultData(game.ID);
     }
 
-    // Debug logging to identify team data issues
-    console.log("🏈 Game Data Debug:", {
-      gameID: game.ID,
-      expectedHomeTeam: `${game.HomeTeamName} (ID: ${game.HomeTeamID})`,
-      expectedAwayTeam: `${game.AwayTeamName} (ID: ${game.AwayTeamID})`,
-      homePlayersCount: response.HomePlayers?.length || 0,
-      awayPlayersCount: response.AwayPlayers?.length || 0,
-      firstHomePlayer: response.HomePlayers?.[0]
-        ? {
-            name: `${response.HomePlayers[0].FirstName} ${response.HomePlayers[0].LastName}`,
-            teamAbbr: response.HomePlayers[0].TeamAbbr,
-            position: response.HomePlayers[0].Position,
-          }
-        : null,
-      firstAwayPlayer: response.AwayPlayers?.[0]
-        ? {
-            name: `${response.AwayPlayers[0].FirstName} ${response.AwayPlayers[0].LastName}`,
-            teamAbbr: response.AwayPlayers[0].TeamAbbr,
-            position: response.AwayPlayers[0].Position,
-          }
-        : null,
-      expectedHomeAbbr: game.HomeTeamAbbr,
-      expectedAwayAbbr: game.AwayTeamAbbr,
-    });
-
     const filteredHomePlayerList = FilterStatsData(response.HomePlayers);
     const filteredAwayPlayerList = FilterStatsData(response.AwayPlayers);
 
@@ -257,14 +232,6 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
         homePlayerTeam === game.AwayTeamAbbr ||
         awayPlayerTeam === game.HomeTeamAbbr
       ) {
-        console.warn("🚨 DETECTED TEAM DATA SWAP!", {
-          homePlayerTeam,
-          awayPlayerTeam,
-          expectedHomeTeam: game.HomeTeamAbbr,
-          expectedAwayTeam: game.AwayTeamAbbr,
-          shouldSwap: true,
-        });
-
         // Auto-fix: Swap the player arrays if they're reversed
         setViewableHomePlayers(filteredAwayPlayerList);
         setViewableAwayPlayers(filteredHomePlayerList);
