@@ -369,6 +369,8 @@ export const TeamMatchUp = ({
     }
   };
 
+  console.log("matchUp", matchUp);
+
   const gameModal = useModal();
 
   return (
