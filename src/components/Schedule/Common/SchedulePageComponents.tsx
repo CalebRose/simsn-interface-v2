@@ -121,13 +121,14 @@ export const TeamSchedule = ({
             />
             {processedSchedule.map((game, index) => (
               <div
-                key={index}
+                key={`${game.ID}-${game.Week}-${index}`}
                 className={`grid ${
                   isFootball ? "grid-cols-7" : "grid-cols-5"
                 } border-b border-b-[#34455d] items-center`}
                 style={{
                   backgroundColor:
                     index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
+                  order: index, // Force display order for Safari mobile
                 }}
               >
                 <div className="text-left col-span-1">
@@ -301,15 +302,23 @@ export const WeeklySchedule = ({
           {processedSchedule.map((game, index) => {
             const homeTeam = teamMap[game.HomeTeamID];
             const awayTeam = teamMap[game.AwayTeamID];
+            const homeTeamLabel = homeTeam
+              ? homeTeam.TeamName || homeTeam.Team
+              : "N/A";
+            const awayTeamLabel = awayTeam
+              ? awayTeam.TeamName || awayTeam.Team
+              : "N/A";
+
             return (
               <div
-                key={index}
+                key={`${game.ID}-${game.Week}-${index}`}
                 className={`grid ${
                   isFootball ? "grid-cols-9" : "grid-cols-7"
                 } border-b border-b-[#34455d] items-center`}
                 style={{
                   backgroundColor:
                     index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
+                  order: index, // Force display order for Safari mobile
                 }}
               >
                 <div className="text-left col-span-1">
@@ -334,7 +343,7 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={homeTeam.TeamName || homeTeam.Team}
+                    label={homeTeamLabel}
                     teamID={game.HomeTeamID}
                     textColorClass={textColorClass}
                     league={league}
@@ -349,7 +358,7 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={awayTeam.TeamName || awayTeam.Team}
+                    label={awayTeamLabel}
                     teamID={game.AwayTeamID}
                     textColorClass={textColorClass}
                     league={league}
@@ -360,7 +369,7 @@ export const WeeklySchedule = ({
                     textColorClass={`${
                       game.gameScore === "TBC" ? "opacity-50" : ""
                     }`}
-                    disable={game.gameSCore === "TBC"}
+                    disable={game.gameScore === "TBC"}
                     openModal={() => {
                       setSelectedGame(game);
                       gameModal.handleOpenModal();

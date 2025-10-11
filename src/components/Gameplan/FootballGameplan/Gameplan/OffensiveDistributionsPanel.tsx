@@ -154,11 +154,6 @@ export const OffensiveDistributionsPanel: React.FC<
             <div className="grid grid-cols-1 gap-2">
               {PassPlayLabels.map((label) => {
                 const fieldName = `Pass${label}`;
-                console.log({
-                  label,
-                  fieldName,
-                  value: gameplan[fieldName as keyof GameplanData],
-                });
 
                 return (
                   <div key={fieldName} className="flex items-center gap-2">

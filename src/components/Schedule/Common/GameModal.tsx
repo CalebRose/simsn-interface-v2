@@ -46,10 +46,6 @@ import {
   FBGameModalKicking,
   FBGameModalReturning,
   FBGameModalPBP,
-  HKGameModalForwards,
-  HKGameModalDefensemen,
-  HKGameModalGoalies,
-  HKGameModalPBP,
   FBGameModalStrategy,
   FBGameModalInfo,
   FBGameModalWeather,
@@ -69,6 +65,7 @@ import {
   GetBasketballResultsValues,
 } from "./GameModalHelper";
 import { Table, TableCell } from "../../../_design/Table";
+import { getLogo } from "../../../_utility/getLogo";
 
 export interface SchedulePageGameModalProps {
   isOpen: boolean;
@@ -222,13 +219,36 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
     } else {
       response = await scheduleService.GetCFBGameResultData(game.ID);
     }
+
     const filteredHomePlayerList = FilterStatsData(response.HomePlayers);
     const filteredAwayPlayerList = FilterStatsData(response.AwayPlayers);
 
-    setViewableHomePlayers(filteredHomePlayerList);
-    setViewableAwayPlayers(filteredAwayPlayerList);
-    setHomePlayers(response.HomePlayers);
-    setAwayPlayers(response.AwayPlayers);
+    // Data validation: Check if team data is swapped
+    if (response.HomePlayers?.[0] && response.AwayPlayers?.[0]) {
+      const homePlayerTeam = response.HomePlayers[0].TeamAbbr;
+      const awayPlayerTeam = response.AwayPlayers[0].TeamAbbr;
+
+      if (
+        homePlayerTeam === game.AwayTeamAbbr ||
+        awayPlayerTeam === game.HomeTeamAbbr
+      ) {
+        // Auto-fix: Swap the player arrays if they're reversed
+        setViewableHomePlayers(filteredAwayPlayerList);
+        setViewableAwayPlayers(filteredHomePlayerList);
+        setHomePlayers(response.AwayPlayers);
+        setAwayPlayers(response.HomePlayers);
+      } else {
+        setViewableHomePlayers(filteredHomePlayerList);
+        setViewableAwayPlayers(filteredAwayPlayerList);
+        setHomePlayers(response.HomePlayers);
+        setAwayPlayers(response.AwayPlayers);
+      }
+    } else {
+      setViewableHomePlayers(filteredHomePlayerList);
+      setViewableAwayPlayers(filteredAwayPlayerList);
+      setHomePlayers(response.HomePlayers);
+      setAwayPlayers(response.AwayPlayers);
+    }
 
     const pbp: PlayByPlay[] = isPro
       ? response.PlayByPlays.map((play) => ({
@@ -336,6 +356,16 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
     return { isOvertime, OvertimeHomeScore, OvertimeAwayScore };
   }, [score]);
 
+  const homeTeamLogo = useMemo(() => {
+    if (!game || game.HomeTeamID === 0) return "";
+    return getLogo(league, game.HomeTeamID, false);
+  }, [game, league]);
+
+  const awayTeamLogo = useMemo(() => {
+    if (!game || game.AwayTeamID === 0) return "";
+    return getLogo(league, game.AwayTeamID, false);
+  }, [game, league]);
+
   return (
     <>
       {isLoading ? (
@@ -348,7 +378,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
             <div className="flex w-full justify-around px-2">
               <div className="flex flex-col items-center w-1/3">
                 <div className="flex items-center h-full gap-1 sm:gap-4">
-                  <Logo url={game.HomeTeamLogo} classes="w-full h-full" />
+                  <Logo url={homeTeamLogo} classes="w-full h-full" />
                   <div className="flex flex-col text-left sm:pr-8">
                     {league === SimCFB && (
                       <Text variant="small" classes="opacity-50">
@@ -489,7 +519,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                       {game.AwayTeamMascot}
                     </Text>
                   </div>
-                  <Logo url={game.AwayTeamLogo} classes="w-full h-full" />
+                  <Logo url={awayTeamLogo} classes="w-full h-full" />
                 </div>
               </div>
             </div>
@@ -543,7 +573,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Strategy
@@ -566,14 +596,14 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Strategy
                           </Text>
                         </div>
                         <FBGameModalStrategy
-                          data={viewableHomePlayers}
+                          data={viewableAwayPlayers}
                           league={league}
                           isPro={isPro}
                           backgroundColor={backgroundColor}
@@ -590,7 +620,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Passing
@@ -611,7 +641,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Passing
@@ -634,7 +664,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Rushing
@@ -655,7 +685,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Rushing
@@ -678,7 +708,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Receiving
@@ -699,7 +729,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Receiving
@@ -722,7 +752,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Defensive
@@ -743,7 +773,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Defensive
@@ -766,7 +796,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Kicking and Punting
@@ -787,7 +817,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Kicking and Punting
@@ -810,7 +840,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Returning
@@ -831,7 +861,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Returning
@@ -1081,6 +1111,16 @@ export const HockeyGameModal = ({
       await ExportPlayByPlay(dto);
     }
   }, []);
+
+  const homeTeamLogo = useMemo(() => {
+    if (!game || game.HomeTeamID === 0) return "";
+    return getLogo(league, game.HomeTeamID, false);
+  }, [game, league]);
+
+  const awayTeamLogo = useMemo(() => {
+    if (!game || game.AwayTeamID === 0) return "";
+    return getLogo(league, game.AwayTeamID, false);
+  }, [game, league]);
   return (
     <>
       {isLoading ? (
@@ -1093,7 +1133,7 @@ export const HockeyGameModal = ({
             <div className="flex w-full justify-around px-2">
               <div className="flex flex-col items-center w-1/3">
                 <div className="flex items-center h-full gap-1 sm:gap-4">
-                  <Logo url={game.HomeTeamLogo} classes="w-full h-full" />
+                  <Logo url={homeTeamLogo} classes="w-full h-full" />
                   <div className="flex flex-col text-left sm:pr-8">
                     <Text variant="small" classes="opacity-50">
                       {game.HomeTeamRank > 0 ? `#${game.HomeTeamRank}` : "NR"}
@@ -1275,7 +1315,7 @@ export const HockeyGameModal = ({
                       {game.AwayTeamMascot}
                     </Text>
                   </div>
-                  <Logo url={game.AwayTeamLogo} classes="w-full h-full" />
+                  <Logo url={awayTeamLogo} classes="w-full h-full" />
                 </div>
               </div>
             </div>
@@ -1427,7 +1467,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Forwards
@@ -1516,7 +1556,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Fowards
@@ -1607,7 +1647,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Defensemen
@@ -1696,7 +1736,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Defensemen
@@ -1787,7 +1827,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Goalies
@@ -1861,7 +1901,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Goalies
@@ -2163,6 +2203,16 @@ export const BasketBallGameModal = ({
     return baseColumns;
   }, [isPro, homeStats, awayStats]);
 
+  const homeTeamLogo = useMemo(() => {
+    if (!game || game.HomeTeamID === 0) return "";
+    return getLogo(league, game.HomeTeamID, false);
+  }, [game, league]);
+
+  const awayTeamLogo = useMemo(() => {
+    if (!game || game.AwayTeamID === 0) return "";
+    return getLogo(league, game.AwayTeamID, false);
+  }, [game, league]);
+
   return (
     <>
       {isLoading ? (
@@ -2175,7 +2225,7 @@ export const BasketBallGameModal = ({
             <div className="flex w-full justify-around px-2">
               <div className="flex flex-col items-center w-1/3">
                 <div className="flex items-center h-full gap-1 sm:gap-4">
-                  <Logo url={game.HomeTeamLogo} classes="w-full h-full" />
+                  <Logo url={homeTeamLogo} classes="w-full h-full" />
                   <div className="flex flex-col text-left sm:pr-8">
                     <Text variant="small" classes="opacity-50">
                       {game.HomeTeamRank > 0 ? `#${game.HomeTeamRank}` : "NR"}
@@ -2328,7 +2378,7 @@ export const BasketBallGameModal = ({
                       {game.AwayTeamMascot}
                     </Text>
                   </div>
-                  <Logo url={game.AwayTeamLogo} classes="w-full h-full" />
+                  <Logo url={awayTeamLogo} classes="w-full h-full" />
                 </div>
               </div>
             </div>
@@ -2402,7 +2452,7 @@ export const BasketBallGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Players
@@ -2430,7 +2480,7 @@ export const BasketBallGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Players
