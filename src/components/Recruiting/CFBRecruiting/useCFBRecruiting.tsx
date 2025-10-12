@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../_hooks/useModal";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import {
@@ -27,6 +27,7 @@ export const useCFBRecruiting = () => {
     cfbTeamMap,
     recruitProfiles,
     cfb_Timestamp,
+    getBootstrapRecruitingData,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [recruitingCategory, setRecruitingCategory] =
@@ -48,6 +49,10 @@ export const useCFBRecruiting = () => {
     HockeyCroot | FootballCroot | BasketballCroot
   >({} as FootballCroot);
   const [modalAction, setModalAction] = useState<ModalAction>(RecruitInfoType);
+
+  useEffect(() => {
+    getBootstrapRecruitingData();
+  }, []);
 
   const recruitingLocked = useMemo(() => {
     if (cfb_Timestamp) {

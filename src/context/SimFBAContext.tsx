@@ -159,6 +159,7 @@ interface SimFBAContextProps {
   addUserToCFBTeam: (teamID: number, user: string) => void;
   addUserToNFLTeam: (teamID: number, user: string, role: string) => void;
   getBootstrapRosterData: () => void;
+  getBootstrapRecruitingData: () => void;
   cutCFBPlayer: (playerID: number, teamID: number) => Promise<void>;
   cutNFLPlayer: (playerID: number, teamID: number) => Promise<void>;
   sendNFLPlayerToPracticeSquad: (
@@ -300,6 +301,7 @@ const defaultContext: SimFBAContextProps = {
   addUserToCFBTeam: async () => {},
   addUserToNFLTeam: async () => {},
   getBootstrapRosterData: async () => {},
+  getBootstrapRecruitingData: async () => {},
   cutCFBPlayer: async () => {},
   cutNFLPlayer: async () => {},
   sendNFLPlayerToPracticeSquad: async () => {},
@@ -827,6 +829,20 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
     setProContractMap(res.ContractMap);
     setProExtensionMap(res.ExtensionMap);
+  }
+
+  const getBootstrapRecruitingData = async () => {
+    let cfbID = 0;
+    if (currentUser && currentUser.teamId) {
+      cfbID = currentUser.teamId;
+    }
+    if (cfbID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetFBARecruitingBootstrapData(cfbID);
+    setRecruits(res.Recruits);
+    setTeamProfileMap(res.TeamProfileMap);
+    setRecruitProfiles(res.RecruitProfiles);
   }
 
   const cutCFBPlayer = useCallback(
@@ -1590,6 +1606,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         syncAcceptedTrade,
         vetoTrade,
         getBootstrapRosterData,
+        getBootstrapRecruitingData,
         cutCFBPlayer,
         redshirtPlayer,
         promisePlayer,
