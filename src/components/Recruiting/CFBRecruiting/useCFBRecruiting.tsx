@@ -62,6 +62,7 @@ export const useCFBRecruiting = () => {
   }, [cfb_Timestamp]);
 
   const recruitOnBoardMap = useMemo(() => {
+    if (!recruitProfiles) return {};
     const boardMap: Record<number, boolean> = {};
     recruitProfiles.forEach((profile) => {
       boardMap[profile.RecruitID] = true;
@@ -70,6 +71,7 @@ export const useCFBRecruiting = () => {
   }, [recruitProfiles]);
 
   const sortedCrootProfiles = useMemo(() => {
+    if (!recruitProfiles) return [];
     return recruitProfiles.sort((a, b) => {
       const aVal = a.IsSigned || a.IsLocked ? 1 : 0;
       const bVal = b.IsSigned || b.IsLocked ? 1 : 0;

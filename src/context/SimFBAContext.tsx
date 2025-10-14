@@ -160,6 +160,8 @@ interface SimFBAContextProps {
   addUserToNFLTeam: (teamID: number, user: string, role: string) => void;
   getBootstrapRosterData: () => void;
   getBootstrapRecruitingData: () => void;
+  getBootstrapFreeAgencyData: () => void;
+  getBootstrapScheduleData: () => void;
   cutCFBPlayer: (playerID: number, teamID: number) => Promise<void>;
   cutNFLPlayer: (playerID: number, teamID: number) => Promise<void>;
   sendNFLPlayerToPracticeSquad: (
@@ -302,6 +304,8 @@ const defaultContext: SimFBAContextProps = {
   addUserToNFLTeam: async () => {},
   getBootstrapRosterData: async () => {},
   getBootstrapRecruitingData: async () => {},
+  getBootstrapFreeAgencyData: async () => {},
+  getBootstrapScheduleData: async () => {},
   cutCFBPlayer: async () => {},
   cutNFLPlayer: async () => {},
   sendNFLPlayerToPracticeSquad: async () => {},
@@ -843,6 +847,52 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setRecruits(res.Recruits);
     setTeamProfileMap(res.TeamProfileMap);
     setRecruitProfiles(res.RecruitProfiles);
+  }
+
+  const getBootstrapFreeAgencyData = async () => {
+    let nflID = 0;
+    if (currentUser && currentUser.NFLTeamID) {
+      nflID = currentUser.NFLTeamID;
+    }
+    if (nflID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetFBAFreeAgencyBootstrapData(nflID);
+    setFreeAgentOffers(res.FreeAgentOffers);
+    setWaiverOffers(res.WaiverWireOffers);
+    setFreeAgents(res.FreeAgents);
+    setWaiverPlayers(res.WaiverPlayers);
+  }
+
+  const getBootstrapScheduleData = async () => {
+    let cfbID = 0;
+    let nflID = 0;
+    const seasonId = cfb_Timestamp?.CollegeSeasonID || 0;
+    const username = currentUser?.username || "";
+    if (currentUser && currentUser.teamId) {
+      cfbID = currentUser.teamId;
+    }
+    if (currentUser && currentUser.NFLTeamID) {
+      nflID = currentUser.NFLTeamID;
+    }
+    if ((cfbID === 0 && nflID === 0) || (seasonId === 0 || username === "")) {
+      return;
+    }
+    const res = await BootstrapService.GetFBASchedulingBootstrapData(username, cfbID, nflID, seasonId);
+    setAllCollegeGames(res.AllCollegeGames);
+    setAllProGames(res.AllProGames);
+  }
+
+  const getBootstrapDataDraft = async () => {
+    let nflID = 0;
+    if (currentUser && currentUser.NFLTeamID) {
+      nflID = currentUser.NFLTeamID;
+    }
+    if (nflID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetFBADraftBootstrapData(nflID);
+    setNFLDraftees(res.NFLDraftees);
   }
 
   const cutCFBPlayer = useCallback(
@@ -1607,6 +1657,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         vetoTrade,
         getBootstrapRosterData,
         getBootstrapRecruitingData,
+        getBootstrapFreeAgencyData,
+        getBootstrapScheduleData,
         cutCFBPlayer,
         redshirtPlayer,
         promisePlayer,
