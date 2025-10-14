@@ -29,7 +29,11 @@ import {
   SimNFL,
   SimPHL,
 } from "../_constants/constants";
-import { Request as CBBRequest, NBARequest } from "../models/basketballModels";
+import {
+  Request as CBBRequest,
+  NBARequest,
+  NBATeam,
+} from "../models/basketballModels";
 import { useLeagueStore } from "./LeagueContext";
 import { RequestService } from "../_services/requestService";
 import { updateUserByUsername } from "../firebase/firestoreHelper";
@@ -90,8 +94,10 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   const [bbaNBARequests, setBBANBARequests] = useState<NBARequest[]>([]);
 
   const { addUserToCHLTeam, addUserToPHLTeam } = useSimHCKStore();
-  const { addUserToCFBTeam, addUserToNFLTeam } = useSimFBAStore();
-  const { addUserToCBBTeam, addUserToNBATeam } = useSimBBAStore();
+  const { addUserToCFBTeam, addUserToNFLTeam, cfbTeamMap, proTeamMap } =
+    useSimFBAStore();
+  const { addUserToCBBTeam, addUserToNBATeam, cbbTeamMap, nbaTeamMap } =
+    useSimBBAStore();
 
   useEffect(() => {
     if (
@@ -201,6 +207,11 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
 
   const acceptCBBRequest = useCallback(
     async (request: CBBRequest) => {
+      const team = cbbTeamMap![request.TeamID];
+      if (!team) {
+        console.error(`Team with ID ${request.TeamID} not found in cbbTeamMap`);
+        return;
+      }
       const res = await RequestService.ApproveCBBRequest(request);
 
       setBBACBBRequests((prevRequests) =>
@@ -209,11 +220,13 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       const payload = {
         username: request.Username,
         cbb_id: request.TeamID,
+        cbb_abbr: team.Abbr,
+        cbb_team: team.Team,
       };
       addUserToCBBTeam(request.TeamID, request.Username);
       await updateUserByUsername(request.Username, payload);
     },
-    [bbaCBBRequests]
+    [bbaCBBRequests, cbbTeamMap]
   );
 
   const rejectCBBRequest = useCallback(
@@ -228,6 +241,13 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
 
   const acceptNBARequest = useCallback(
     async (request: NBARequest) => {
+      const team = nbaTeamMap![request.NBATeamID];
+      if (!team) {
+        console.error(
+          `Team with ID ${request.NBATeamID} not found in nbaTeamMap`
+        );
+        return;
+      }
       const res = await RequestService.ApproveNBARequest(request);
       setBBANBARequests((prevRequests) =>
         prevRequests.filter((req) => req.ID !== request.ID)
@@ -244,11 +264,13 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
         username: request.Username,
         NBATeamID: request.NBATeamID,
         NBARole: role,
+        NBATeam: team.Team,
+        NBATeamAbbreviation: team.Abbr,
       };
       addUserToNBATeam(request.NBATeamID, request.Username, role);
       await updateUserByUsername(request.Username, payload);
     },
-    [bbaNBARequests]
+    [bbaNBARequests, nbaTeamMap]
   );
 
   const rejectNBARequest = useCallback(
@@ -263,6 +285,11 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
 
   const acceptCFBRequest = useCallback(
     async (request: CFBRequest) => {
+      const team = cfbTeamMap![request.TeamID];
+      if (!team) {
+        console.error(`Team with ID ${request.TeamID} not found in cfbTeamMap`);
+        return;
+      }
       const res = await RequestService.ApproveCFBRequest(request);
 
       setFBACFBRequests((prevRequests) =>
@@ -271,11 +298,13 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       const payload = {
         username: request.Username,
         teamId: request.TeamID,
+        team: team.TeamName,
+        teamAbbr: team.TeamAbbr,
       };
       addUserToCFBTeam(request.TeamID, request.Username);
       await updateUserByUsername(request.Username, payload);
     },
-    [fbaCFBRequests]
+    [fbaCFBRequests, cfbTeamMap]
   );
 
   const rejectCFBRequest = useCallback(
@@ -290,6 +319,13 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
 
   const acceptNFLRequest = useCallback(
     async (request: NFLRequest) => {
+      const team = proTeamMap![request.NFLTeamID];
+      if (!team) {
+        console.error(
+          `Team with ID ${request.NFLTeamID} not found in proTeamMap`
+        );
+        return;
+      }
       const res = await RequestService.ApproveNFLRequest(request);
       setFBANFLRequests((prevRequests) =>
         prevRequests.filter((req) => req.ID !== request.ID)
@@ -306,11 +342,13 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
         username: request.Username,
         NFLTeamID: request.NFLTeamID,
         NFLRole: role,
+        NFLTeam: team.TeamName,
+        NFLTeamAbbreviation: team.TeamAbbr,
       };
       addUserToNFLTeam(request.NFLTeamID, request.Username, role);
       await updateUserByUsername(request.Username, payload);
     },
-    [fbaNFLRequests]
+    [fbaNFLRequests, proTeamMap]
   );
 
   const rejectNFLRequest = useCallback(
