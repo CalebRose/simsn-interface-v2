@@ -61,11 +61,10 @@ export const BootstrapService = {
   GetFBASchedulingBootstrapData: async (
     username: string,
     collegeID: number,
-    proID: number,
     seasonID: number
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/roster/${username}/${collegeID}/${proID}/${seasonID}`
+      `${fbaUrl}bootstrap/roster/${username}/${collegeID}/${seasonID}`
     );
   },
 
