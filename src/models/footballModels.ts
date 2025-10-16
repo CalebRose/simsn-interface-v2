@@ -5294,11 +5294,15 @@ export class BootstrapData {
   TopNFLPassers: NFLPlayer[];
   TopNFLRushers: NFLPlayer[];
   TopNFLReceivers: NFLPlayer[];
-  FaceData: { [key: number]: FaceDataResponse };
   ContractMap: { [key: number]: NFLContract };
   ExtensionMap: { [key: number]: NFLExtensionOffer };
   RecruitProfiles: RecruitPlayerProfile[];
   NFLDraftees: NFLDraftee[];
+  CollegePromises: CollegePromise[];
+  CollegePolls: CollegePollOfficial[];
+  CollegePollSubmission: CollegePollSubmission;
+  NFLWarRoomMap: { [key: number]: NFLWarRoom };
+  NFLScoutingProfileMap: { [key: number]: ScoutingProfile };
 
   constructor(source: any = {}) {
     if (typeof source === "string") source = JSON.parse(source);
@@ -5407,11 +5411,6 @@ export class BootstrapData {
       source["TopNFLReceivers"],
       NFLPlayer
     );
-    this.FaceData = this.convertValues(
-      source["FaceData"],
-      FaceDataResponse,
-      true
-    );
     this.ContractMap = this.convertValues(
       source["ContractMap"],
       NFLContract,
@@ -5423,6 +5422,11 @@ export class BootstrapData {
       true
     );
     this.NFLDraftees = this.convertValues(source["NFLDraftees"], NFLDraftee);
+    this.CollegePromises = this.convertValues(source["CollegePromises"], CollegePromise);
+    this.CollegePolls = this.convertValues(source["CollegePolls"], CollegePollOfficial);
+    this.CollegePollSubmission = this.convertValues(source["CollegePollSubmission"], CollegePollSubmission);
+    this.NFLWarRoomMap = this.convertValues(source["NFLWarRoomMap"], NFLWarRoom, true);
+    this.NFLScoutingProfileMap = this.convertValues(source["NFLScoutingProfileMap"], ScoutingProfile, true);
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

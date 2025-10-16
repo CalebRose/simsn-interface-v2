@@ -553,7 +553,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -576,7 +576,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
               {view === WeeklyGames && (
@@ -596,7 +596,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
             </div>
@@ -613,7 +613,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -1057,7 +1057,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -1080,7 +1080,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
               {category === Overview && scheduleView === WeeklyGames && (
@@ -1100,7 +1100,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
             </div>
@@ -1117,7 +1117,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}

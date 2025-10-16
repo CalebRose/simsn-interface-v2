@@ -213,7 +213,7 @@ interface TeamStandingsProps {
   team: any;
   league: League;
   currentUser: any;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
   backgroundColor: string;
   headerColor: string;
   borderColor: string;
@@ -226,7 +226,7 @@ export const TeamStandings = ({
   team,
   league,
   currentUser,
-  isLoadingTwo,
+  isLoading: isLoading,
   backgroundColor,
   headerColor,
   borderColor,
@@ -244,7 +244,7 @@ export const TeamStandings = ({
       darkerBackgroundColor={darkerBackgroundColor}
       textColorClass={textColorClass}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -280,7 +280,7 @@ interface TeamMatchUpProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
   playerMap: any;
 }
 
@@ -299,7 +299,7 @@ export const TeamMatchUp = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
   playerMap,
 }: TeamMatchUpProps) => {
   const [selectedGame, setSelectedGame] = useState<any>(null);
@@ -390,7 +390,7 @@ export const TeamMatchUp = ({
         title={`${selectedGame?.HomeTeam} vs ${selectedGame?.AwayTeam}`}
         playerMap={playerMap}
       />
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center pb-2">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -517,7 +517,7 @@ interface TeamOverviewProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamOverview = ({
@@ -530,7 +530,7 @@ export const TeamOverview = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamOverviewProps) => {
   return (
     <SectionCards
@@ -543,7 +543,7 @@ export const TeamOverview = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -666,7 +666,7 @@ interface TeamMailboxProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamMailbox = ({
@@ -677,7 +677,7 @@ export const TeamMailbox = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamMailboxProps) => {
   return (
     <SectionCards
@@ -690,7 +690,7 @@ export const TeamMailbox = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -727,7 +727,7 @@ interface TeamStatsProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamStats = ({
@@ -741,7 +741,7 @@ export const TeamStats = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamStatsProps) => {
   const { boxOne, boxTwo, boxThree } = getLandingBoxStats(league, teamStats);
   return (
@@ -755,7 +755,7 @@ export const TeamStats = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center min-h-[10em]">
           <Text variant="small" classes={`${textColorClass} h-full`}>
             Loading...
@@ -905,7 +905,7 @@ interface TeamNewsProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamNews = ({
@@ -916,7 +916,7 @@ export const TeamNews = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamNewsProps) => {
   return (
     <SectionCards
@@ -929,7 +929,7 @@ export const TeamNews = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -1139,7 +1139,7 @@ interface TeamInjuriesProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamInjuries = ({
@@ -1150,7 +1150,7 @@ export const TeamInjuries = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamInjuriesProps) => {
   return (
     <SectionCards
@@ -1163,7 +1163,7 @@ export const TeamInjuries = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center pb-2">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
