@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../_hooks/useModal";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import {
@@ -27,6 +27,7 @@ export const useCFBRecruiting = () => {
     cfbTeamMap,
     recruitProfiles,
     cfb_Timestamp,
+    getBootstrapRecruitingData,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [recruitingCategory, setRecruitingCategory] =
@@ -49,6 +50,10 @@ export const useCFBRecruiting = () => {
   >({} as FootballCroot);
   const [modalAction, setModalAction] = useState<ModalAction>(RecruitInfoType);
 
+  useEffect(() => {
+    getBootstrapRecruitingData();
+  }, []);
+
   const recruitingLocked = useMemo(() => {
     if (cfb_Timestamp) {
       return cfb_Timestamp.IsRecruitingLocked;
@@ -57,6 +62,7 @@ export const useCFBRecruiting = () => {
   }, [cfb_Timestamp]);
 
   const recruitOnBoardMap = useMemo(() => {
+    if (!recruitProfiles) return {};
     const boardMap: Record<number, boolean> = {};
     recruitProfiles.forEach((profile) => {
       boardMap[profile.RecruitID] = true;
@@ -65,6 +71,7 @@ export const useCFBRecruiting = () => {
   }, [recruitProfiles]);
 
   const sortedCrootProfiles = useMemo(() => {
+    if (!recruitProfiles) return [];
     return recruitProfiles.sort((a, b) => {
       const aVal = a.IsSigned || a.IsLocked ? 1 : 0;
       const bVal = b.IsSigned || b.IsLocked ? 1 : 0;

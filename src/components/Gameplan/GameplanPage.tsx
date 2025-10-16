@@ -19,9 +19,19 @@ interface GameplanPageProps {
 
 export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
   const leagueStore = useLeagueStore();
+  const fbStore = useSimFBAStore();
   const { selectedLeague, setSelectedLeague } = leagueStore;
   const { chlTeam, phlTeam } = useSimHCKStore();
   const { cfbTeam, nflTeam } = useSimFBAStore();
+  const {
+    collegeGameplanMap,
+    collegeDepthChart,
+    cfbDepthChartMap,
+    nflGameplanMap,
+    nflDepthChart,
+    nflDepthChartMap,
+    getBootstrapGameplanData,
+  } = fbStore
 
   useEffect(() => {
     if (selectedLeague !== league) {
@@ -36,14 +46,20 @@ export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
     if (selectedLeague === SimPHL && phlTeam) {
       return false;
     }
-    if (selectedLeague === SimCFB && cfbTeam) {
-      return false;
+    if (selectedLeague === SimCFB) {
+      if (cfbTeam && collegeGameplanMap && collegeDepthChart && cfbDepthChartMap) {
+        return false;
+      }
+      getBootstrapGameplanData();
     }
-    if (selectedLeague === SimNFL && nflTeam) {
-      return false;
+    if (selectedLeague === SimNFL) {
+      if (nflTeam && nflGameplanMap && nflDepthChart && nflDepthChartMap) {
+        return false;
+      }
+      getBootstrapGameplanData();
     }
     return true;
-  }, [chlTeam, phlTeam, cfbTeam, nflTeam, selectedLeague]);
+  }, [chlTeam, phlTeam, cfbTeam, nflTeam, selectedLeague, collegeGameplanMap, collegeDepthChart, cfbDepthChartMap, nflGameplanMap, nflDepthChart, nflDepthChartMap]);
 
   const title = useMemo(() => {
     if (selectedLeague === SimCHL && chlTeam) {

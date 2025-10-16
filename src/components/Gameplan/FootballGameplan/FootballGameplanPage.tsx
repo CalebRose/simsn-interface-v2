@@ -42,7 +42,7 @@ export const CFBGameplanPage = () => {
   const fbStore = useSimFBAStore();
   const {
     cfbTeam,
-    cfbDepthchartMap,
+    cfbDepthChartMap,
     cfbRosterMap,
     cfbTeamOptions,
     cfbTeamMap,
@@ -78,11 +78,11 @@ export const CFBGameplanPage = () => {
   const [isLoadingGameplan, setIsLoadingGameplan] = useState(false);
 
   useEffect(() => {
-    if (selectedTeam && cfbDepthchartMap) {
-      const depthChart = cfbDepthchartMap[selectedTeam.ID];
+    if (selectedTeam && cfbDepthChartMap) {
+      const depthChart = cfbDepthChartMap[selectedTeam.ID];
       setSelectedTeamDepthChart(depthChart || null);
     }
-  }, [selectedTeam, cfbDepthchartMap]);
+  }, [selectedTeam, cfbDepthChartMap]);
 
   const handleTeamSelection = useCallback(
     (selectedOption: SingleValue<SelectOption>) => {
@@ -306,7 +306,7 @@ export const NFLGameplanPage = () => {
     nflTeam,
     proTeamMap: nflTeamMap,
     nflTeamOptions,
-    nflDepthchartMap,
+    nflDepthChartMap,
     proRosterMap: NFLRosterMap,
     nflGameplan,
     nflDepthChart,
@@ -342,11 +342,11 @@ export const NFLGameplanPage = () => {
   }, [NFLRosterMap, selectedTeam]);
 
   useEffect(() => {
-    if (selectedTeam && nflDepthchartMap) {
-      const depthChart = nflDepthchartMap[selectedTeam.ID];
+    if (selectedTeam && nflDepthChartMap) {
+      const depthChart = nflDepthChartMap[selectedTeam.ID];
       setSelectedTeamDepthChart(depthChart || null);
     }
-  }, [selectedTeam, nflDepthchartMap]);
+  }, [selectedTeam, nflDepthChartMap]);
 
   const handleTeamSelection = useCallback(
     (selectedOption: SingleValue<SelectOption>) => {

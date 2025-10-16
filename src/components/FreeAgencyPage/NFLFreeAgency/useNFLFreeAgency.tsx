@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../_hooks/useModal";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import {
@@ -35,6 +35,7 @@ export const useNFLFreeAgency = () => {
     proPlayerMap,
     freeAgents,
     waiverPlayers,
+    getBootstrapFreeAgencyData,
   } = fbStore;
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -50,6 +51,10 @@ export const useNFLFreeAgency = () => {
   const [archetype, setArchetype] = useState<string[]>([]);
   const [regions, setRegions] = useState<string[]>([]);
   const pageSize = 100;
+
+  useEffect(() => {
+    getBootstrapFreeAgencyData();
+  }, []);
 
   const freeAgentMap = useMemo(() => {
     const dict: Record<number, NFLPlayer> = {};
@@ -74,17 +79,20 @@ export const useNFLFreeAgency = () => {
   }, [waiverPlayers]);
 
   const teamFreeAgentOffers = useMemo(() => {
-    if (!nflTeam) return [];
+    if (!nflTeam || !freeAgentOffers) return [];
     return freeAgentOffers.filter((x) => x.TeamID === nflTeam.ID);
   }, [nflTeam, freeAgentOffers]);
 
   const teamWaiverOffers = useMemo(() => {
-    if (!nflTeam) return [];
+    if (!nflTeam || !waiverOffers) return [];
     return waiverOffers.filter((x) => x.TeamID === nflTeam.ID);
   }, [nflTeam, waiverOffers]);
 
   const freeAgentOfferMapByPlayer = useMemo(() => {
     const dict: Record<number, FreeAgencyOffer[]> = {};
+    if (!freeAgentOffers) {
+      return dict;
+    }
     for (let i = 0; i < freeAgentOffers.length; i++) {
       const offer = freeAgentOffers[i];
       if (dict[offer.NFLPlayerID] && dict[offer.NFLPlayerID].length > 0) {
@@ -98,6 +106,9 @@ export const useNFLFreeAgency = () => {
 
   const waiverOfferMapByPlayer = useMemo(() => {
     const dict: Record<number, NFLWaiverOffer[]> = {};
+    if (!waiverOffers) {
+      return dict;
+    }
     for (let i = 0; i < waiverOffers.length; i++) {
       const offer = waiverOffers[i];
       if (dict[offer.PlayerID] && dict[offer.PlayerID].length > 0) {
@@ -111,6 +122,9 @@ export const useNFLFreeAgency = () => {
 
   const teamFreeAgentOfferMap = useMemo(() => {
     const dict: Record<number, FreeAgencyOffer> = {};
+    if (!teamFreeAgentOffers) {
+      return dict;
+    }
     for (let i = 0; i < teamFreeAgentOffers.length; i++) {
       const offer = teamFreeAgentOffers[i];
       dict[offer.NFLPlayerID] = offer;
@@ -120,8 +134,11 @@ export const useNFLFreeAgency = () => {
 
   const teamWaiverOfferMap = useMemo(() => {
     const dict: Record<number, NFLWaiverOffer> = {};
-    for (let i = 0; i < waiverOffers.length; i++) {
-      const offer = waiverOffers[i];
+    if (!teamWaiverOffers) {
+      return dict;
+    }
+    for (let i = 0; i < teamWaiverOffers.length; i++) {
+      const offer = teamWaiverOffers[i];
       dict[offer.PlayerID] = offer;
     }
     return dict;

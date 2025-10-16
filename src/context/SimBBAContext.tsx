@@ -426,6 +426,19 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   }, []);
 
   const getBootstrapTeamData = async () => {
+    let cbbID = 0;
+    let nbaID = 0;
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
+    }
+    if (currentUser && currentUser.NBATeamID) {
+      nbaID = currentUser.NBATeamID;
+    }
+    // if the user has no basketball teams, skip BBA bootstrapping
+    if (cbbID === 0 && nbaID === 0) {
+      isFetching.current = false;
+      return;
+    }
     const res = await BootstrapService.GetBBABootstrapTeamData();
     setCBBTeams(res.AllCollegeTeams);
     const sortedProTeams = res.AllProTeams.sort(
@@ -506,6 +519,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NBATeamID) {
       nbaID = currentUser.NBATeamID;
     }
+    // if the user has no basketball teams, skip BBA bootstrapping
+    if (cbbID === 0 && nbaID === 0) {
+      setIsLoading(false);
+      return;
+    }
     const res = await BootstrapService.GetBBABootstrapData(cbbID, nbaID);
     if (cbbID > 0) {
       setCBBTeam(res.CollegeTeam);
@@ -537,6 +555,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NBATeamID) {
       nbaID = currentUser.NBATeamID;
     }
+    // if the user has no basketball teams, skip BBA bootstrapping
+    if (cbbID === 0 && nbaID === 0) {
+      return;
+    }
+
     const res = await BootstrapService.GetSecondBBABootstrapData(cbbID, nbaID);
     if (cbbID > 0) {
       setCollegeNews(res.CollegeNews);
@@ -593,6 +616,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NBATeamID) {
       nbaID = currentUser.NBATeamID;
     }
+    // if the user has no basketball teams, skip BBA bootstrapping
+    if (cbbID === 0 && nbaID === 0) {
+      return;
+    }
+
     const res = await BootstrapService.GetThirdBBABootstrapData(cbbID, nbaID);
     if (cbbID > 0) {
       setRecruits(res.Recruits);
