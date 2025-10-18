@@ -10,7 +10,7 @@ import { ProfessionalTeam, TradeProposal } from "../../models/hockeyModels";
 import { AdminTradeCard } from "./AdminCards";
 import {
   mapTradeOptions,
-  mapTradeProposals,
+  mapHCKTradeProposals,
 } from "../Team/Helpers/tradeModalHelper";
 
 export const AdminTradesTab = () => {

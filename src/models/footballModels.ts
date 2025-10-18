@@ -5303,7 +5303,9 @@ export class BootstrapData {
   CollegePollSubmission: CollegePollSubmission;
   NFLWarRoomMap: { [key: number]: NFLWarRoom };
   NFLScoutingProfileMap: { [key: number]: ScoutingProfile };
-
+  TradeProposals: NFLTeamProposals;
+  TradePreferences: { [key: number]: NFLTradePreferences };
+  NFLDraftPicks: NFLDraftPick[];
   constructor(source: any = {}) {
     if (typeof source === "string") source = JSON.parse(source);
 
@@ -5336,6 +5338,8 @@ export class BootstrapData {
       ) || null;
     this.PortalPlayers =
       this.convertValues(source["PortalPlayers"], CollegePlayer) || [];
+    this.NFLDraftPicks =
+      this.convertValues(source["NFLDraftPicks"], NFLDraftPick) || [];
     this.CollegeInjuryReport =
       this.convertValues(source["CollegeInjuryReport"], CollegePlayer) || [];
     this.CollegeNews = this.convertValues(source["CollegeNews"], NewsLog) || [];
@@ -5422,11 +5426,37 @@ export class BootstrapData {
       true
     );
     this.NFLDraftees = this.convertValues(source["NFLDraftees"], NFLDraftee);
-    this.CollegePromises = this.convertValues(source["CollegePromises"], CollegePromise);
-    this.CollegePolls = this.convertValues(source["CollegePolls"], CollegePollOfficial);
-    this.CollegePollSubmission = this.convertValues(source["CollegePollSubmission"], CollegePollSubmission);
-    this.NFLWarRoomMap = this.convertValues(source["NFLWarRoomMap"], NFLWarRoom, true);
-    this.NFLScoutingProfileMap = this.convertValues(source["NFLScoutingProfileMap"], ScoutingProfile, true);
+    this.CollegePromises = this.convertValues(
+      source["CollegePromises"],
+      CollegePromise
+    );
+    this.CollegePolls = this.convertValues(
+      source["CollegePolls"],
+      CollegePollOfficial
+    );
+    this.CollegePollSubmission = this.convertValues(
+      source["CollegePollSubmission"],
+      CollegePollSubmission
+    );
+    this.NFLWarRoomMap = this.convertValues(
+      source["NFLWarRoomMap"],
+      NFLWarRoom,
+      true
+    );
+    this.NFLScoutingProfileMap = this.convertValues(
+      source["NFLScoutingProfileMap"],
+      ScoutingProfile,
+      true
+    );
+    this.TradeProposals = this.convertValues(
+      source["TradeProposals"],
+      NFLTeamProposals
+    );
+    this.TradePreferences = this.convertValues(
+      source["TradePreferences"],
+      NFLTradePreferences,
+      true
+    );
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

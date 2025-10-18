@@ -4,14 +4,25 @@ import {
   ProCapsheet,
   ProfessionalTeam,
   Timestamp as HCKTimestamp,
-  TradeProposal,
-  DraftPick,
+  TradeProposal as HCKTradeProposal,
+  DraftPick as HCKDraftPick,
   ProfessionalPlayer,
   TradeOption as HCKTradeOption,
 } from "../../../models/hockeyModels";
-import { NFLTeam } from "../../../models/footballModels";
-import { NBATeam } from "../../../models/basketballModels";
-import { League, SimPHL } from "../../../_constants/constants";
+import {
+  NFLCapsheet,
+  NFLDraftPick,
+  NFLPlayer,
+  NFLTeam,
+  NFLTradeOptionObj,
+  NFLTradeProposalDTO,
+} from "../../../models/footballModels";
+import {
+  NBACapsheet,
+  NBATeam,
+  NBATradeProposal,
+} from "../../../models/basketballModels";
+import { League, SimNFL, SimPHL } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { TradeBlockRow } from "../TeamPageTypes";
 import { Button } from "../../../_design/Buttons";
@@ -22,7 +33,8 @@ import { useResponsive } from "../../../_hooks/useMobile";
 import {
   getTradeOptionsList,
   mapSelectedOptionsToTradeOptions,
-  mapTradeProposals,
+  mapHCKTradeProposals,
+  mapFBATradeProposals,
 } from "../Helpers/tradeModalHelper";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
@@ -38,18 +50,26 @@ interface ManageTradeModalProps {
   onClose: () => void;
   team: ProfessionalTeam | NFLTeam | NBATeam;
   league: League;
-  sentTradeProposals: TradeProposal[];
-  receivedTradeProposals: TradeProposal[];
+  sentTradeProposals:
+    | HCKTradeProposal[]
+    | NFLTradeProposalDTO[]
+    | NBATradeProposal[];
+  receivedTradeProposals:
+    | HCKTradeProposal[]
+    | NFLTradeProposalDTO[]
+    | NBATradeProposal[];
   backgroundColor?: string;
   borderColor?: string;
   textColorClass?: string;
-  userCapSheet: ProCapsheet;
+  userCapSheet: ProCapsheet | NFLCapsheet | NBACapsheet;
   ts: HCKTimestamp;
-  individualDraftPickMap: Record<number, DraftPick>;
-  proPlayerMap: Record<number, ProfessionalPlayer>;
-  cancelTrade: (dto: TradeProposal) => Promise<void>;
-  acceptTrade: (dto: TradeProposal) => Promise<void>;
-  rejectTrade: (dto: TradeProposal) => Promise<void>;
+  individualDraftPickMap:
+    | Record<number, HCKDraftPick>
+    | Record<number, NFLDraftPick>;
+  proPlayerMap: Record<number, ProfessionalPlayer> | Record<number, NFLPlayer>;
+  cancelTrade: (dto: any) => Promise<void>;
+  acceptTrade: (dto: any) => Promise<void>;
+  rejectTrade: (dto: any) => Promise<void>;
 }
 
 export const ManageTradeModal: FC<ManageTradeModalProps> = ({
@@ -80,22 +100,40 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     title = `Manage ${teamName} Trades`;
   }
   const cleanSentTrades = useMemo(() => {
-    return mapTradeProposals(sentTradeProposals, team.ID);
-  }, [sentTradeProposals]);
+    if (league === SimPHL) {
+      return mapHCKTradeProposals(
+        sentTradeProposals as HCKTradeProposal[],
+        team.ID
+      );
+    }
+    return mapFBATradeProposals(
+      sentTradeProposals as NFLTradeProposalDTO[],
+      team.ID
+    );
+  }, [sentTradeProposals, league]);
 
   const cleanReceivedTrades = useMemo(() => {
-    return mapTradeProposals(receivedTradeProposals, team.ID);
-  }, [receivedTradeProposals]);
+    if (league === SimPHL) {
+      return mapHCKTradeProposals(
+        receivedTradeProposals as HCKTradeProposal[],
+        team.ID
+      );
+    }
+    return mapFBATradeProposals(
+      receivedTradeProposals as NFLTradeProposalDTO[],
+      team.ID
+    );
+  }, [receivedTradeProposals, league]);
 
-  const cancel = async (dto: TradeProposal) => {
+  const cancel = async (dto: HCKTradeProposal | NFLTradeProposalDTO) => {
     return await cancelTrade(dto);
   };
 
-  const accept = async (dto: TradeProposal) => {
+  const accept = async (dto: HCKTradeProposal | NFLTradeProposalDTO) => {
     return await acceptTrade(dto);
   };
 
-  const reject = async (dto: TradeProposal) => {
+  const reject = async (dto: HCKTradeProposal | NFLTradeProposalDTO) => {
     return await rejectTrade(dto);
   };
 
@@ -158,18 +196,26 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
                 </Border>
               </>
             )}
-            {cleanReceivedTrades.map((trade) => (
-              <TradeSection
-                otherTeam={phlTeamMap[trade.TeamID]}
-                trade={trade}
-                league={league}
-                individualDraftPickMap={individualDraftPickMap}
-                proPlayerMap={proPlayerMap}
-                cancel={cancel}
-                accept={accept}
-                reject={reject}
-              />
-            ))}
+            {cleanReceivedTrades.map((trade) => {
+              let key = 0;
+              if (league === SimPHL) {
+                key = (trade as HCKTradeProposal).TeamID;
+              } else if (league === SimNFL) {
+                key = (trade as NFLTradeProposalDTO).NFLTeamID;
+              }
+              return (
+                <TradeSection
+                  otherTeam={phlTeamMap[key]}
+                  trade={trade}
+                  league={league}
+                  individualDraftPickMap={individualDraftPickMap}
+                  proPlayerMap={proPlayerMap}
+                  cancel={cancel}
+                  accept={accept}
+                  reject={reject}
+                />
+              );
+            })}
           </div>
         </div>
       </Modal>
@@ -178,14 +224,16 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
 };
 
 interface TradeSectionProps {
-  trade: TradeProposal;
-  otherTeam: ProfessionalTeam;
+  trade: HCKTradeProposal | NFLTradeProposalDTO;
+  otherTeam: ProfessionalTeam | NFLTeam;
   league: League;
-  individualDraftPickMap: Record<number, DraftPick>;
-  proPlayerMap: Record<number, ProfessionalPlayer>;
-  cancel: (dto: TradeProposal) => Promise<void>;
-  accept: (dto: TradeProposal) => Promise<void>;
-  reject: (dto: TradeProposal) => Promise<void>;
+  individualDraftPickMap:
+    | Record<number, HCKDraftPick>
+    | Record<number, NFLDraftPick>;
+  proPlayerMap: Record<number, ProfessionalPlayer> | Record<number, NFLPlayer>;
+  cancel: (dto: any) => Promise<void>;
+  accept: (dto: any) => Promise<void>;
+  reject: (dto: any) => Promise<void>;
   isSentTrade?: boolean;
 }
 
@@ -201,35 +249,72 @@ const TradeSection: FC<TradeSectionProps> = ({
   isSentTrade,
 }) => {
   const otherLogo = getLogo(league, otherTeam.ID, false);
+  const teamLabel = useMemo(() => {
+    if (league === SimPHL) {
+      let phlTeam = otherTeam as ProfessionalTeam;
+      return phlTeam.Abbreviation;
+    } else if (league === SimNFL) {
+      let nflTeam = otherTeam as NFLTeam;
+      return nflTeam.TeamAbbr;
+    }
+  }, [league, otherTeam]);
+
+  const tradeOptions = useMemo(() => {
+    if (league === SimPHL) {
+      return (trade as HCKTradeProposal).TeamTradeOptions;
+    } else if (league === SimNFL) {
+      return (trade as NFLTradeProposalDTO).NFLTeamTradeOptions;
+    }
+    return [];
+  }, [league, trade]);
+
   return (
     <Border direction="row" classes="p-4">
       <div className="grid grid-cols-4 w-full">
         <div className="flex flex-col items-start">
-          <Logo
-            url={otherLogo}
-            label={otherTeam.Abbreviation}
-            textClass="text-center"
-          />
+          <Logo url={otherLogo} label={teamLabel} textClass="text-center" />
         </div>
         <div className="flex flex-col">
           <Text>Sending</Text>
-          {trade.TeamTradeOptions.map((item) => (
-            <ManageOption
-              item={item}
-              player={proPlayerMap[item.PlayerID]}
-              pick={individualDraftPickMap[item.DraftPickID]}
-            />
-          ))}
+          {tradeOptions.map((item) => {
+            let playerID = 0;
+            let draftPickID = 0;
+            if (league === SimPHL) {
+              playerID = (item as HCKTradeOption).PlayerID;
+              draftPickID = (item as HCKTradeOption).DraftPickID;
+            } else if (league === SimNFL) {
+              playerID = (item as NFLTradeOptionObj).NFLPlayerID;
+              draftPickID = (item as NFLTradeOptionObj).NFLDraftPickID;
+            }
+            return (
+              <ManageOption
+                item={item}
+                player={proPlayerMap[playerID]}
+                pick={individualDraftPickMap[draftPickID]}
+              />
+            );
+          })}
         </div>
         <div className="flex flex-col">
           <Text>Receiving</Text>
-          {trade.RecepientTeamTradeOptions.map((item) => (
-            <ManageOption
-              item={item}
-              player={proPlayerMap[item.PlayerID]}
-              pick={individualDraftPickMap[item.DraftPickID]}
-            />
-          ))}
+          {trade.RecepientTeamTradeOptions.map((item) => {
+            let playerID = 0;
+            let draftPickID = 0;
+            if (league === SimPHL) {
+              playerID = (item as HCKTradeOption).PlayerID;
+              draftPickID = (item as HCKTradeOption).DraftPickID;
+            } else if (league === SimNFL) {
+              playerID = (item as NFLTradeOptionObj).NFLPlayerID;
+              draftPickID = (item as NFLTradeOptionObj).NFLDraftPickID;
+            }
+            return (
+              <ManageOption
+                item={item}
+                player={proPlayerMap[playerID]}
+                pick={individualDraftPickMap[draftPickID]}
+              />
+            );
+          })}
         </div>
         {isSentTrade ? (
           <div className="flex flex-col items-end gap-y-2">
@@ -253,9 +338,9 @@ const TradeSection: FC<TradeSectionProps> = ({
 };
 
 interface ManageOptionProps {
-  item: HCKTradeOption;
-  player: ProfessionalPlayer;
-  pick: DraftPick;
+  item: HCKTradeOption | NFLTradeOptionObj;
+  player: ProfessionalPlayer | NFLPlayer;
+  pick: HCKDraftPick | NFLDraftPick;
 }
 
 export const ManageOption: FC<ManageOptionProps> = ({ item, player, pick }) => {
@@ -328,8 +413,8 @@ interface ProposeTradeModalProps {
   league: League;
   userTradeBlock: TradeBlockRow[];
   otherTeamTradeBlock: TradeBlockRow[];
-  userCapSheet: ProCapsheet;
-  recipientCapSheet: ProCapsheet;
+  userCapSheet: ProCapsheet | NFLCapsheet | NBACapsheet;
+  recipientCapSheet: ProCapsheet | NFLCapsheet | NBACapsheet;
   ts: HCKTimestamp;
   backgroundColor?: string;
   borderColor?: string;

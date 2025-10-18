@@ -242,7 +242,7 @@ export const getPHLContracts = (contract: any) => {
   ];
 };
 
-export const getPHLTradeBlockAttributes = (
+export const getTradeBlockAttributes = (
   item: TradeBlockRow,
   isPlayer: boolean,
   isMobile: boolean,

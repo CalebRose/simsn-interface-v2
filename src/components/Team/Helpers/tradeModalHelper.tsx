@@ -1,3 +1,4 @@
+import { NFLTradeProposalDTO } from "../../../models/footballModels";
 import { TradeOption, TradeProposal } from "../../../models/hockeyModels";
 import { TradeBlockRow } from "../TeamPageTypes";
 
@@ -41,7 +42,7 @@ export const mapSelectedOptionsToTradeOptions = (
   return list;
 };
 
-export const mapTradeProposals = (
+export const mapHCKTradeProposals = (
   proposals: TradeProposal[],
   teamID: number
 ): TradeProposal[] => {
@@ -56,6 +57,28 @@ export const mapTradeProposals = (
       ),
       RecepientTeamTradeOptions: item.TeamTradeOptions.filter(
         (x) => x.TeamID !== teamID
+      ),
+    });
+    list.push(obj);
+  }
+  return list;
+};
+
+export const mapFBATradeProposals = (
+  proposals: NFLTradeProposalDTO[],
+  teamID: number
+): NFLTradeProposalDTO[] => {
+  const list: NFLTradeProposalDTO[] = [];
+  if (!proposals || proposals.length === 0) return list;
+  for (let i = 0; i < proposals.length; i++) {
+    const item = proposals[i];
+    const obj = new NFLTradeProposalDTO({
+      ...item,
+      TeamTradeOptions: item.NFLTeamTradeOptions.filter(
+        (x) => x.NFLTeamID === teamID
+      ),
+      RecepientTeamTradeOptions: item.RecepientTeamTradeOptions.filter(
+        (x) => x.NFLTeamID !== teamID
       ),
     });
     list.push(obj);
