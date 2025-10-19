@@ -52,7 +52,7 @@ import {
   CollegeTeamSeasonStats,
   CollegeTeam,
 } from "../models/footballModels";
-import { Timestamp } from "../models/basketballModels";
+import { Timestamp as BBATimestamp } from "../models/basketballModels";
 
 export const MakeCHLPlayerMapFromRosterMap = (
   chlTeams: CHLTeam[],
@@ -300,7 +300,7 @@ export const MakeFBAWeeksOptionList = (seasonID: number) => {
   return weeksList;
 };
 
-export const MakeBBASeasonsOptionList = (ts: Timestamp) => {
+export const MakeBBASeasonsOptionList = (ts: BBATimestamp) => {
   const seasonsList = [];
   for (let i = 1; i <= ts.SeasonID; i++) {
     const iterativeSeason = 2020 + i;

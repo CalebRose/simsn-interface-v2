@@ -153,6 +153,7 @@ interface SimFBAContextProps {
   topNFLReceivers: NFLPlayer[];
   collegePolls: CollegePollOfficial[];
   collegePollSubmission: CollegePollSubmission;
+  collegePollsMapBySeason: Record<number, CollegePollOfficial[]>;
   nflDraftees: NFLDraftee[];
   nflTradeProposals: NFLTeamProposals;
   tradeProposalsMap: Record<number, NFLTradeProposal[]>;
@@ -306,6 +307,7 @@ const defaultContext: SimFBAContextProps = {
   nflDraftees: [],
   collegePolls: [],
   collegePollSubmission: {} as CollegePollSubmission,
+  collegePollsMapBySeason: {},
   nflDraftPicks: [],
   nflDraftPickMap: {},
   individualDraftPickMap: {},
@@ -390,6 +392,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const { currentUser } = useAuthStore();
   const { cfb_Timestamp, setCFB_Timestamp } = useWebSockets(fba_ws, SimFBA);
   const isFetching = useRef(false);
+  const isScheduleDataFetching = useRef(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [cfbTeam, setCFBTeam] = useState<CollegeTeam | null>(null);
   const [cfbTeams, setCFBTeams] = useState<CollegeTeam[]>([]);
@@ -560,7 +563,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   >({});
 
   const nflDraftPickMap = useMemo(() => {
-    console.log({ nflDraftPicks });
     if (!nflDraftPicks) return {};
     const pickMap: Record<number, NFLDraftPick[]> = {};
     for (let i = 0; i < nflDraftPicks.length; i++) {
@@ -648,6 +650,21 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
     return null;
   }, [nflTeam, nflGameplanMap]);
+
+  const collegePollsMapBySeason = useMemo(() => {
+    console.log({ collegePolls });
+    const pollMap: Record<number, CollegePollOfficial[]> = {};
+    if (!collegePolls) return pollMap;
+    for (let i = 0; i < collegePolls.length; i++) {
+      const poll = collegePolls[i];
+      if (!pollMap[poll.SeasonID]) {
+        pollMap[poll.SeasonID] = [poll];
+      } else {
+        pollMap[poll.SeasonID].push(poll);
+      }
+    }
+    return pollMap;
+  }, [collegePolls]);
 
   useEffect(() => {
     getFaceData();
@@ -904,7 +921,12 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setWaiverPlayers(res.WaiverPlayers);
   };
 
-  const getBootstrapScheduleData = async () => {
+  const getBootstrapScheduleData = useCallback(async () => {
+    if (isScheduleDataFetching.current) {
+      console.log("Schedule data already fetching, skipping...");
+      return;
+    }
+
     let cfbID = 0;
     const seasonId = cfb_Timestamp?.CollegeSeasonID || 0;
     const username = currentUser?.username || "";
@@ -914,14 +936,26 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (cfbID === 0 || seasonId === 0 || username === "") {
       return;
     }
-    const res = await BootstrapService.GetFBASchedulingBootstrapData(
-      username,
-      cfbID,
-      seasonId
-    );
-    setCollegePolls(res.CollegePolls);
-    setCollegePollSubmission(res.CollegePollSubmission);
-  };
+
+    isScheduleDataFetching.current = true;
+    console.log("Starting bootstrap schedule data fetch...");
+
+    try {
+      const res = await BootstrapService.GetFBASchedulingBootstrapData(
+        username,
+        cfbID,
+        seasonId
+      );
+      setCollegePolls(res.OfficialPolls);
+      setCollegePollSubmission(res.CollegePollSubmission);
+    } finally {
+      isScheduleDataFetching.current = false;
+    }
+  }, [
+    cfb_Timestamp?.CollegeSeasonID,
+    currentUser?.username,
+    currentUser?.teamId,
+  ]);
 
   // Use this once the draft page is finished
   const getBootstrapDraftData = async () => {
@@ -1749,6 +1783,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         nflPlayerMap,
         collegePolls,
         collegePollSubmission,
+        collegePollsMapBySeason,
         nflDraftPicks,
         individualDraftPickMap,
         nflDraftPickMap,

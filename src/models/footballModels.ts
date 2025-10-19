@@ -5299,7 +5299,7 @@ export class BootstrapData {
   RecruitProfiles: RecruitPlayerProfile[];
   NFLDraftees: NFLDraftee[];
   CollegePromises: CollegePromise[];
-  CollegePolls: CollegePollOfficial[];
+  OfficialPolls: CollegePollOfficial[];
   CollegePollSubmission: CollegePollSubmission;
   NFLWarRoomMap: { [key: number]: NFLWarRoom };
   NFLScoutingProfileMap: { [key: number]: ScoutingProfile };
@@ -5430,8 +5430,8 @@ export class BootstrapData {
       source["CollegePromises"],
       CollegePromise
     );
-    this.CollegePolls = this.convertValues(
-      source["CollegePolls"],
+    this.OfficialPolls = this.convertValues(
+      source["OfficialPolls"],
       CollegePollOfficial
     );
     this.CollegePollSubmission = this.convertValues(
@@ -6593,6 +6593,7 @@ export class CollegePollSubmission {
   }
 }
 export class CollegePollOfficial {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
