@@ -1,6 +1,6 @@
 const localURL = "http://localhost:5001/api/";
 const FBAApiURL = "https://simfba.azurewebsites.net/api/";
-export const fbaUrl = localURL;
+export const fbaUrl = FBAApiURL;
 
 const localWSURL = "ws://localhost:5001/ws";
 const FBAWSURL = "wss://simfba.azurewebsites.net/ws";
