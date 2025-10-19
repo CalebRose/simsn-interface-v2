@@ -22,12 +22,18 @@ export const getTradeOptionsList = (rows: TradeBlockRow[]) => {
 
 export const mapSelectedOptionsToTradeOptions = (
   rows: TradeBlockRow[],
-  teamID: number
+  teamID: number,
+  salaryPercentages?: Record<number, number>
 ): any[] => {
   const list = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
+    let salaryPercentage = 0;
+    if (row.isPlayer && salaryPercentages) {
+      salaryPercentage = salaryPercentages[row.player!.ID] || 0;
+    }
+
     const obj = {
       TeamID: teamID,
       PlayerID: row.isPlayer ? row.id : 0,
@@ -35,7 +41,7 @@ export const mapSelectedOptionsToTradeOptions = (
       DraftPickID: row.isPlayer ? 0 : row.id,
       Player: row.player,
       Draftpick: row.pick,
-      SalaryPercentage: 0,
+      SalaryPercentage: salaryPercentage,
     };
     list.push(obj);
   }

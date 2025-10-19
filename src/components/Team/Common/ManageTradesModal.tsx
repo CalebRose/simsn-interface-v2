@@ -44,6 +44,8 @@ import { Close } from "../../../_design/Icons";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { Logo } from "../../../_design/Logo";
 import { getLogo } from "../../../_utility/getLogo";
+import { useLeagueStore } from "../../../context/LeagueContext";
+import GameplanInput from "../../Gameplan/FootballGameplan/Gameplan/GameplanInput";
 
 interface ManageTradeModalProps {
   isOpen: boolean;
@@ -364,9 +366,33 @@ interface TradeOptionProps {
   option: TradeBlockRow;
   removeItem: (idx: number) => void;
   idx: number;
+  onSalaryPercentageChange?: (itemKey: number, percentage: number) => void;
+  currentSalaryPercentage?: number;
 }
 
-const TradeOption: FC<TradeOptionProps> = ({ option, removeItem, idx }) => {
+const TradeOption: FC<TradeOptionProps> = ({
+  option,
+  removeItem,
+  idx,
+  onSalaryPercentageChange,
+  currentSalaryPercentage = 0,
+}) => {
+  const { selectedLeague } = useLeagueStore();
+
+  const adjustTradeValue = (value: number) => {
+    let adjustedValue = value;
+    if (value < 0) {
+      adjustedValue = 0;
+    } else if (value > 100) {
+      adjustedValue = 100;
+    }
+
+    if (onSalaryPercentageChange) {
+      const itemKey = option!.player!.ID;
+      onSalaryPercentageChange(itemKey, adjustedValue);
+    }
+  };
+
   return (
     <Border classes="w-full px-4 gap-x-4 items-center justify-center py-2">
       <div className="flex flex-row w-full justify-between">
@@ -387,6 +413,16 @@ const TradeOption: FC<TradeOptionProps> = ({ option, removeItem, idx }) => {
             <Text>
               {option.position} {option.arch} {option.name}
             </Text>
+            {selectedLeague === SimNFL && (
+              <>
+                <GameplanInput
+                  value={currentSalaryPercentage}
+                  name="SalaryPercentage"
+                  label="Trade Value %"
+                  onChange={(e) => adjustTradeValue(Number(e.target.value))}
+                />
+              </>
+            )}
           </>
         )}
         {!option.isPlayer && (
@@ -442,6 +478,12 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
   const [selectedRecipientItems, setSelectedRecipientItems] = useState<
     TradeBlockRow[]
   >([]);
+  // Track salary percentages for NFL trades
+  const [userItemSalaryPercentages, setUserItemSalaryPercentages] = useState<
+    Record<number, number>
+  >({});
+  const [recipientItemSalaryPercentages, setRecipientItemSalaryPercentages] =
+    useState<Record<number, number>>({});
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const sectionBg = darkenColor("#1f2937", -5);
   const { isDesktop } = useResponsive();
@@ -451,6 +493,7 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
 
   useEffect(() => {
     setSelectedRecipientItems([]);
+    setRecipientItemSalaryPercentages({});
   }, [recipientTeam]);
 
   const changeUserItemList = (opts: SingleValue<SelectOption>) => {
@@ -484,25 +527,65 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
   };
 
   const removeItemFromUserList = (idx: number) => {
+    const itemToRemove = selectedUserItems[idx];
+    const key = itemToRemove.isPlayer ? itemToRemove.player!.ID : 0;
+
     setSelectedUserItems((items: any[]) =>
       items.filter((items, index) => index !== idx)
     );
+
+    // Remove salary percentage when item is removed
+    setUserItemSalaryPercentages((prev) => {
+      const updated = { ...prev };
+      delete updated[key];
+      return updated;
+    });
   };
 
   const removeItemFromRecipientList = (idx: number) => {
+    const itemToRemove = selectedRecipientItems[idx];
+    const key = itemToRemove.isPlayer ? itemToRemove.player!.ID : 0;
+
     setSelectedRecipientItems((items: any[]) =>
       items.filter((items, index) => index !== idx)
     );
+
+    // Remove salary percentage when item is removed
+    setRecipientItemSalaryPercentages((prev) => {
+      const updated = { ...prev };
+      delete updated[key];
+      return updated;
+    });
+  };
+
+  const updateSalaryPercentage = (
+    itemKey: number,
+    percentage: number,
+    isUserTeam: boolean
+  ) => {
+    if (isUserTeam) {
+      setUserItemSalaryPercentages((prev) => ({
+        ...prev,
+        [itemKey]: percentage,
+      }));
+    } else {
+      setRecipientItemSalaryPercentages((prev) => ({
+        ...prev,
+        [itemKey]: percentage,
+      }));
+    }
   };
 
   const sendProposal = async () => {
     const userOptions = mapSelectedOptionsToTradeOptions(
       selectedUserItems,
-      userTeam.ID
+      userTeam.ID,
+      userItemSalaryPercentages
     );
     const recepientOptions = mapSelectedOptionsToTradeOptions(
       selectedRecipientItems,
-      recipientTeam.ID
+      recipientTeam.ID,
+      recipientItemSalaryPercentages
     );
     const dto = {
       TeamID: userTeam.ID,
@@ -621,13 +704,23 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
               />
             </div>
             <div className="overflow-y-auto max-h-[25rem] w-full">
-              {selectedUserItems.map((x, idx) => (
-                <TradeOption
-                  option={x}
-                  removeItem={removeItemFromUserList}
-                  idx={idx}
-                />
-              ))}
+              {selectedUserItems.map((x, idx) => {
+                const itemKey = x.isPlayer ? x.player!.ID : 0;
+                return (
+                  <TradeOption
+                    key={`user-${idx}`}
+                    option={x}
+                    removeItem={removeItemFromUserList}
+                    idx={idx}
+                    onSalaryPercentageChange={(key, percentage) =>
+                      updateSalaryPercentage(key, percentage, true)
+                    }
+                    currentSalaryPercentage={
+                      userItemSalaryPercentages[itemKey] || 0
+                    }
+                  />
+                );
+              })}
             </div>
           </div>
           <div className="flex flex-col items-center px-6">
@@ -687,13 +780,23 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
               />
             </div>
             <div className="overflow-y-auto max-h-[25rem] w-full">
-              {selectedRecipientItems.map((x, idx) => (
-                <TradeOption
-                  option={x}
-                  removeItem={removeItemFromRecipientList}
-                  idx={idx}
-                />
-              ))}
+              {selectedRecipientItems.map((x, idx) => {
+                const itemKey = x.isPlayer ? x.player!.ID : 0;
+                return (
+                  <TradeOption
+                    key={`recipient-${idx}`}
+                    option={x}
+                    removeItem={removeItemFromRecipientList}
+                    idx={idx}
+                    onSalaryPercentageChange={(key, percentage) =>
+                      updateSalaryPercentage(key, percentage, false)
+                    }
+                    currentSalaryPercentage={
+                      recipientItemSalaryPercentages[itemKey] || 0
+                    }
+                  />
+                );
+              })}
             </div>
           </div>
           {isDesktop && (
