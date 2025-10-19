@@ -26,6 +26,8 @@ import { useSimBBAStore } from "../../../context/SimBBAContext";
 import {
   CollegeGame,
   CollegePollSubmission,
+  CollegeStandings,
+  CollegeTeam,
   Timestamp as FBATimestamp,
 } from "../../../models/footballModels";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
@@ -119,6 +121,9 @@ const PollDropdown: FC<PollDropdownProps> = ({
     if (league === SimCHL) {
       let team = selectedTeam as HockeyTeam;
       return team.TeamName;
+    } else if (league === SimCFB) {
+      let team = selectedTeam as CollegeTeam;
+      return team.TeamName;
     }
     if (league === SimCBB) {
       let team = selectedTeam as Team;
@@ -141,8 +146,14 @@ const PollDropdown: FC<PollDropdownProps> = ({
         return `${standings.TotalWins} Wins | ${standings.TotalLosses} Losses | ${standings.ConferenceWins} Conference Wins | ${standings.ConferenceLosses} Losses`;
       }
     }
+    if (league === SimCFB && selection.value > 0) {
+      const standings = standingsMap[selection.value] as CollegeStandings;
+      if (standings) {
+        return `${standings.TotalWins} Wins | ${standings.TotalLosses} Losses | ${standings.ConferenceWins} Conference Wins | ${standings.ConferenceLosses} Losses`;
+      }
+    }
     return "";
-  }, [selection, standingsMap]);
+  }, [league, selection, standingsMap]);
 
   const teamLogo = useMemo(() => {
     if (!selectedTeam) return "";
@@ -152,6 +163,9 @@ const PollDropdown: FC<PollDropdownProps> = ({
   const lastPlayedGame = useMemo(() => {
     if (!selection) return "";
     if (league === SimCHL && selection.value > 0) {
+      const games = gameMap[selection.value];
+    }
+    if (league === SimCFB && selection.value > 0) {
       const games = gameMap[selection.value];
     }
   }, [selection, gameMap]);
@@ -502,8 +516,12 @@ export const SubmitFootballPoll: FC<SubmitFootballPollProps> = ({
   }, [ranks]);
 
   const submit = async () => {
+    let id = 0;
+    if (pollSubmission) {
+      id = pollSubmission.ID;
+    }
     const dto: any = {
-      ID: pollSubmission!.ID,
+      ID: id,
       Week: Number(timestamp.CollegeWeek) + 1,
       WeekID: Number(timestamp.CollegeWeekID) + 1,
       SeasonID: timestamp.CollegeSeasonID,

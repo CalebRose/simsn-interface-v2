@@ -25,7 +25,7 @@ export const CollegePollService = {
   },
 
   FBASubmitPoll: async (dto: FBAPollSubmission): Promise<FBAPollSubmission> => {
-    return await PostCall(`${fbaUrl}college/poll/submit/`, dto);
+    return await PostCall(`${fbaUrl}college/poll/create/`, dto);
   },
 
   BBASubmitPoll: async (dto: BBAPollSubmission): Promise<any> => {

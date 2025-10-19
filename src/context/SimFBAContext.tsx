@@ -413,10 +413,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [currentCFBStandings, setCurrentCFBStandings] = useState<
     CollegeStandings[]
   >([]);
-  const [cfbStandingsMap, setCFBStandingsMap] = useState<Record<
-    number,
-    CollegeStandings
-  > | null>({});
   const [cfbRosterMap, setCFBRosterMap] = useState<Record<
     number,
     CollegePlayer[]
@@ -665,6 +661,14 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
     return pollMap;
   }, [collegePolls]);
+
+  const cfbStandingsMap = useMemo(() => {
+    if (!allCFBStandings) return {};
+    const standingsMap = Object.fromEntries(
+      allCFBStandings.map((standing) => [standing.TeamID, standing])
+    );
+    return standingsMap;
+  }, [allCFBStandings]);
 
   useEffect(() => {
     getFaceData();
