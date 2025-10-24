@@ -1,3 +1,4 @@
+import { NFLTradeProposalDTO } from "../../../models/footballModels";
 import { TradeOption, TradeProposal } from "../../../models/hockeyModels";
 import { TradeBlockRow } from "../TeamPageTypes";
 
@@ -21,12 +22,18 @@ export const getTradeOptionsList = (rows: TradeBlockRow[]) => {
 
 export const mapSelectedOptionsToTradeOptions = (
   rows: TradeBlockRow[],
-  teamID: number
+  teamID: number,
+  salaryPercentages?: Record<number, number>
 ): any[] => {
   const list = [];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
+    let salaryPercentage = 0;
+    if (row.isPlayer && salaryPercentages) {
+      salaryPercentage = salaryPercentages[row.player!.ID] || 0;
+    }
+
     const obj = {
       TeamID: teamID,
       PlayerID: row.isPlayer ? row.id : 0,
@@ -34,14 +41,14 @@ export const mapSelectedOptionsToTradeOptions = (
       DraftPickID: row.isPlayer ? 0 : row.id,
       Player: row.player,
       Draftpick: row.pick,
-      SalaryPercentage: 0,
+      SalaryPercentage: salaryPercentage,
     };
     list.push(obj);
   }
   return list;
 };
 
-export const mapTradeProposals = (
+export const mapHCKTradeProposals = (
   proposals: TradeProposal[],
   teamID: number
 ): TradeProposal[] => {
@@ -56,6 +63,28 @@ export const mapTradeProposals = (
       ),
       RecepientTeamTradeOptions: item.TeamTradeOptions.filter(
         (x) => x.TeamID !== teamID
+      ),
+    });
+    list.push(obj);
+  }
+  return list;
+};
+
+export const mapFBATradeProposals = (
+  proposals: NFLTradeProposalDTO[],
+  teamID: number
+): NFLTradeProposalDTO[] => {
+  const list: NFLTradeProposalDTO[] = [];
+  if (!proposals || proposals.length === 0) return list;
+  for (let i = 0; i < proposals.length; i++) {
+    const item = proposals[i];
+    const obj = new NFLTradeProposalDTO({
+      ...item,
+      TeamTradeOptions: item.NFLTeamTradeOptions.filter(
+        (x) => x.NFLTeamID === teamID
+      ),
+      RecepientTeamTradeOptions: item.RecepientTeamTradeOptions.filter(
+        (x) => x.NFLTeamID !== teamID
       ),
     });
     list.push(obj);

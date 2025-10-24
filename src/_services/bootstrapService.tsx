@@ -43,7 +43,7 @@ export const BootstrapService = {
   },
 
   GetFBARecruitingBootstrapData: async (
-    collegeID: number,
+    collegeID: number
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
       `${fbaUrl}bootstrap/recruiting/${collegeID}`
@@ -51,11 +51,9 @@ export const BootstrapService = {
   },
 
   GetFBAFreeAgencyBootstrapData: async (
-    proID: number,
+    proID: number
   ): Promise<FBBootstrap> => {
-    return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/freeagency/${proID}`
-    );
+    return await GetCall<FBBootstrap>(`${fbaUrl}bootstrap/freeagency/${proID}`);
   },
 
   GetFBASchedulingBootstrapData: async (
@@ -64,24 +62,18 @@ export const BootstrapService = {
     seasonID: number
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/roster/${username}/${collegeID}/${seasonID}`
+      `${fbaUrl}bootstrap/scheduling/${username}/${collegeID}/${seasonID}`
     );
   },
 
-  GetFBADraftBootstrapData: async (
-    proID: number,
-  ): Promise<FBBootstrap> => {
-    return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/draft/${proID}`
-    );
+  GetFBADraftBootstrapData: async (proID: number): Promise<FBBootstrap> => {
+    return await GetCall<FBBootstrap>(`${fbaUrl}bootstrap/draft/${proID}`);
   },
 
   GetFBAPortalBootstrapData: async (
-    collegeID: number,
+    collegeID: number
   ): Promise<FBBootstrap> => {
-    return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/portal/${collegeID}`
-    );
+    return await GetCall<FBBootstrap>(`${fbaUrl}bootstrap/portal/${collegeID}`);
   },
 
   GetFBAGameplanBootstrapData: async (

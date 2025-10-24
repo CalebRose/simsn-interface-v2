@@ -4,14 +4,25 @@ import {
   ProCapsheet,
   ProfessionalTeam,
   Timestamp as HCKTimestamp,
-  TradeProposal,
-  DraftPick,
+  TradeProposal as HCKTradeProposal,
+  DraftPick as HCKDraftPick,
   ProfessionalPlayer,
   TradeOption as HCKTradeOption,
 } from "../../../models/hockeyModels";
-import { NFLTeam } from "../../../models/footballModels";
-import { NBATeam } from "../../../models/basketballModels";
-import { League, SimPHL } from "../../../_constants/constants";
+import {
+  NFLCapsheet,
+  NFLDraftPick,
+  NFLPlayer,
+  NFLTeam,
+  NFLTradeOptionObj,
+  NFLTradeProposalDTO,
+} from "../../../models/footballModels";
+import {
+  NBACapsheet,
+  NBATeam,
+  NBATradeProposal,
+} from "../../../models/basketballModels";
+import { League, SimNFL, SimPHL } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { TradeBlockRow } from "../TeamPageTypes";
 import { Button } from "../../../_design/Buttons";
@@ -22,7 +33,8 @@ import { useResponsive } from "../../../_hooks/useMobile";
 import {
   getTradeOptionsList,
   mapSelectedOptionsToTradeOptions,
-  mapTradeProposals,
+  mapHCKTradeProposals,
+  mapFBATradeProposals,
 } from "../Helpers/tradeModalHelper";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
@@ -32,24 +44,34 @@ import { Close } from "../../../_design/Icons";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { Logo } from "../../../_design/Logo";
 import { getLogo } from "../../../_utility/getLogo";
+import { useLeagueStore } from "../../../context/LeagueContext";
+import GameplanInput from "../../Gameplan/FootballGameplan/Gameplan/GameplanInput";
 
 interface ManageTradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   team: ProfessionalTeam | NFLTeam | NBATeam;
   league: League;
-  sentTradeProposals: TradeProposal[];
-  receivedTradeProposals: TradeProposal[];
+  sentTradeProposals:
+    | HCKTradeProposal[]
+    | NFLTradeProposalDTO[]
+    | NBATradeProposal[];
+  receivedTradeProposals:
+    | HCKTradeProposal[]
+    | NFLTradeProposalDTO[]
+    | NBATradeProposal[];
   backgroundColor?: string;
   borderColor?: string;
   textColorClass?: string;
-  userCapSheet: ProCapsheet;
+  userCapSheet: ProCapsheet | NFLCapsheet | NBACapsheet;
   ts: HCKTimestamp;
-  individualDraftPickMap: Record<number, DraftPick>;
-  proPlayerMap: Record<number, ProfessionalPlayer>;
-  cancelTrade: (dto: TradeProposal) => Promise<void>;
-  acceptTrade: (dto: TradeProposal) => Promise<void>;
-  rejectTrade: (dto: TradeProposal) => Promise<void>;
+  individualDraftPickMap:
+    | Record<number, HCKDraftPick>
+    | Record<number, NFLDraftPick>;
+  proPlayerMap: Record<number, ProfessionalPlayer> | Record<number, NFLPlayer>;
+  cancelTrade: (dto: any) => Promise<void>;
+  acceptTrade: (dto: any) => Promise<void>;
+  rejectTrade: (dto: any) => Promise<void>;
 }
 
 export const ManageTradeModal: FC<ManageTradeModalProps> = ({
@@ -80,22 +102,40 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     title = `Manage ${teamName} Trades`;
   }
   const cleanSentTrades = useMemo(() => {
-    return mapTradeProposals(sentTradeProposals, team.ID);
-  }, [sentTradeProposals]);
+    if (league === SimPHL) {
+      return mapHCKTradeProposals(
+        sentTradeProposals as HCKTradeProposal[],
+        team.ID
+      );
+    }
+    return mapFBATradeProposals(
+      sentTradeProposals as NFLTradeProposalDTO[],
+      team.ID
+    );
+  }, [sentTradeProposals, league]);
 
   const cleanReceivedTrades = useMemo(() => {
-    return mapTradeProposals(receivedTradeProposals, team.ID);
-  }, [receivedTradeProposals]);
+    if (league === SimPHL) {
+      return mapHCKTradeProposals(
+        receivedTradeProposals as HCKTradeProposal[],
+        team.ID
+      );
+    }
+    return mapFBATradeProposals(
+      receivedTradeProposals as NFLTradeProposalDTO[],
+      team.ID
+    );
+  }, [receivedTradeProposals, league]);
 
-  const cancel = async (dto: TradeProposal) => {
+  const cancel = async (dto: HCKTradeProposal | NFLTradeProposalDTO) => {
     return await cancelTrade(dto);
   };
 
-  const accept = async (dto: TradeProposal) => {
+  const accept = async (dto: HCKTradeProposal | NFLTradeProposalDTO) => {
     return await acceptTrade(dto);
   };
 
-  const reject = async (dto: TradeProposal) => {
+  const reject = async (dto: HCKTradeProposal | NFLTradeProposalDTO) => {
     return await rejectTrade(dto);
   };
 
@@ -158,18 +198,26 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
                 </Border>
               </>
             )}
-            {cleanReceivedTrades.map((trade) => (
-              <TradeSection
-                otherTeam={phlTeamMap[trade.TeamID]}
-                trade={trade}
-                league={league}
-                individualDraftPickMap={individualDraftPickMap}
-                proPlayerMap={proPlayerMap}
-                cancel={cancel}
-                accept={accept}
-                reject={reject}
-              />
-            ))}
+            {cleanReceivedTrades.map((trade) => {
+              let key = 0;
+              if (league === SimPHL) {
+                key = (trade as HCKTradeProposal).TeamID;
+              } else if (league === SimNFL) {
+                key = (trade as NFLTradeProposalDTO).NFLTeamID;
+              }
+              return (
+                <TradeSection
+                  otherTeam={phlTeamMap[key]}
+                  trade={trade}
+                  league={league}
+                  individualDraftPickMap={individualDraftPickMap}
+                  proPlayerMap={proPlayerMap}
+                  cancel={cancel}
+                  accept={accept}
+                  reject={reject}
+                />
+              );
+            })}
           </div>
         </div>
       </Modal>
@@ -178,14 +226,16 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
 };
 
 interface TradeSectionProps {
-  trade: TradeProposal;
-  otherTeam: ProfessionalTeam;
+  trade: HCKTradeProposal | NFLTradeProposalDTO;
+  otherTeam: ProfessionalTeam | NFLTeam;
   league: League;
-  individualDraftPickMap: Record<number, DraftPick>;
-  proPlayerMap: Record<number, ProfessionalPlayer>;
-  cancel: (dto: TradeProposal) => Promise<void>;
-  accept: (dto: TradeProposal) => Promise<void>;
-  reject: (dto: TradeProposal) => Promise<void>;
+  individualDraftPickMap:
+    | Record<number, HCKDraftPick>
+    | Record<number, NFLDraftPick>;
+  proPlayerMap: Record<number, ProfessionalPlayer> | Record<number, NFLPlayer>;
+  cancel: (dto: any) => Promise<void>;
+  accept: (dto: any) => Promise<void>;
+  reject: (dto: any) => Promise<void>;
   isSentTrade?: boolean;
 }
 
@@ -201,35 +251,72 @@ const TradeSection: FC<TradeSectionProps> = ({
   isSentTrade,
 }) => {
   const otherLogo = getLogo(league, otherTeam.ID, false);
+  const teamLabel = useMemo(() => {
+    if (league === SimPHL) {
+      let phlTeam = otherTeam as ProfessionalTeam;
+      return phlTeam.Abbreviation;
+    } else if (league === SimNFL) {
+      let nflTeam = otherTeam as NFLTeam;
+      return nflTeam.TeamAbbr;
+    }
+  }, [league, otherTeam]);
+
+  const tradeOptions = useMemo(() => {
+    if (league === SimPHL) {
+      return (trade as HCKTradeProposal).TeamTradeOptions;
+    } else if (league === SimNFL) {
+      return (trade as NFLTradeProposalDTO).NFLTeamTradeOptions;
+    }
+    return [];
+  }, [league, trade]);
+
   return (
     <Border direction="row" classes="p-4">
       <div className="grid grid-cols-4 w-full">
         <div className="flex flex-col items-start">
-          <Logo
-            url={otherLogo}
-            label={otherTeam.Abbreviation}
-            textClass="text-center"
-          />
+          <Logo url={otherLogo} label={teamLabel} textClass="text-center" />
         </div>
         <div className="flex flex-col">
           <Text>Sending</Text>
-          {trade.TeamTradeOptions.map((item) => (
-            <ManageOption
-              item={item}
-              player={proPlayerMap[item.PlayerID]}
-              pick={individualDraftPickMap[item.DraftPickID]}
-            />
-          ))}
+          {tradeOptions.map((item) => {
+            let playerID = 0;
+            let draftPickID = 0;
+            if (league === SimPHL) {
+              playerID = (item as HCKTradeOption).PlayerID;
+              draftPickID = (item as HCKTradeOption).DraftPickID;
+            } else if (league === SimNFL) {
+              playerID = (item as NFLTradeOptionObj).NFLPlayerID;
+              draftPickID = (item as NFLTradeOptionObj).NFLDraftPickID;
+            }
+            return (
+              <ManageOption
+                item={item}
+                player={proPlayerMap[playerID]}
+                pick={individualDraftPickMap[draftPickID]}
+              />
+            );
+          })}
         </div>
         <div className="flex flex-col">
           <Text>Receiving</Text>
-          {trade.RecepientTeamTradeOptions.map((item) => (
-            <ManageOption
-              item={item}
-              player={proPlayerMap[item.PlayerID]}
-              pick={individualDraftPickMap[item.DraftPickID]}
-            />
-          ))}
+          {trade.RecepientTeamTradeOptions.map((item) => {
+            let playerID = 0;
+            let draftPickID = 0;
+            if (league === SimPHL) {
+              playerID = (item as HCKTradeOption).PlayerID;
+              draftPickID = (item as HCKTradeOption).DraftPickID;
+            } else if (league === SimNFL) {
+              playerID = (item as NFLTradeOptionObj).NFLPlayerID;
+              draftPickID = (item as NFLTradeOptionObj).NFLDraftPickID;
+            }
+            return (
+              <ManageOption
+                item={item}
+                player={proPlayerMap[playerID]}
+                pick={individualDraftPickMap[draftPickID]}
+              />
+            );
+          })}
         </div>
         {isSentTrade ? (
           <div className="flex flex-col items-end gap-y-2">
@@ -253,9 +340,9 @@ const TradeSection: FC<TradeSectionProps> = ({
 };
 
 interface ManageOptionProps {
-  item: HCKTradeOption;
-  player: ProfessionalPlayer;
-  pick: DraftPick;
+  item: HCKTradeOption | NFLTradeOptionObj;
+  player: ProfessionalPlayer | NFLPlayer;
+  pick: HCKDraftPick | NFLDraftPick;
 }
 
 export const ManageOption: FC<ManageOptionProps> = ({ item, player, pick }) => {
@@ -279,9 +366,33 @@ interface TradeOptionProps {
   option: TradeBlockRow;
   removeItem: (idx: number) => void;
   idx: number;
+  onSalaryPercentageChange?: (itemKey: number, percentage: number) => void;
+  currentSalaryPercentage?: number;
 }
 
-const TradeOption: FC<TradeOptionProps> = ({ option, removeItem, idx }) => {
+const TradeOption: FC<TradeOptionProps> = ({
+  option,
+  removeItem,
+  idx,
+  onSalaryPercentageChange,
+  currentSalaryPercentage = 0,
+}) => {
+  const { selectedLeague } = useLeagueStore();
+
+  const adjustTradeValue = (value: number) => {
+    let adjustedValue = value;
+    if (value < 0) {
+      adjustedValue = 0;
+    } else if (value > 100) {
+      adjustedValue = 100;
+    }
+
+    if (onSalaryPercentageChange) {
+      const itemKey = option!.player!.ID;
+      onSalaryPercentageChange(itemKey, adjustedValue);
+    }
+  };
+
   return (
     <Border classes="w-full px-4 gap-x-4 items-center justify-center py-2">
       <div className="flex flex-row w-full justify-between">
@@ -302,6 +413,16 @@ const TradeOption: FC<TradeOptionProps> = ({ option, removeItem, idx }) => {
             <Text>
               {option.position} {option.arch} {option.name}
             </Text>
+            {selectedLeague === SimNFL && (
+              <>
+                <GameplanInput
+                  value={currentSalaryPercentage}
+                  name="SalaryPercentage"
+                  label="Trade Value %"
+                  onChange={(e) => adjustTradeValue(Number(e.target.value))}
+                />
+              </>
+            )}
           </>
         )}
         {!option.isPlayer && (
@@ -328,8 +449,8 @@ interface ProposeTradeModalProps {
   league: League;
   userTradeBlock: TradeBlockRow[];
   otherTeamTradeBlock: TradeBlockRow[];
-  userCapSheet: ProCapsheet;
-  recipientCapSheet: ProCapsheet;
+  userCapSheet: ProCapsheet | NFLCapsheet | NBACapsheet;
+  recipientCapSheet: ProCapsheet | NFLCapsheet | NBACapsheet;
   ts: HCKTimestamp;
   backgroundColor?: string;
   borderColor?: string;
@@ -357,6 +478,12 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
   const [selectedRecipientItems, setSelectedRecipientItems] = useState<
     TradeBlockRow[]
   >([]);
+  // Track salary percentages for NFL trades
+  const [userItemSalaryPercentages, setUserItemSalaryPercentages] = useState<
+    Record<number, number>
+  >({});
+  const [recipientItemSalaryPercentages, setRecipientItemSalaryPercentages] =
+    useState<Record<number, number>>({});
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const sectionBg = darkenColor("#1f2937", -5);
   const { isDesktop } = useResponsive();
@@ -366,6 +493,7 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
 
   useEffect(() => {
     setSelectedRecipientItems([]);
+    setRecipientItemSalaryPercentages({});
   }, [recipientTeam]);
 
   const changeUserItemList = (opts: SingleValue<SelectOption>) => {
@@ -399,25 +527,65 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
   };
 
   const removeItemFromUserList = (idx: number) => {
+    const itemToRemove = selectedUserItems[idx];
+    const key = itemToRemove.isPlayer ? itemToRemove.player!.ID : 0;
+
     setSelectedUserItems((items: any[]) =>
       items.filter((items, index) => index !== idx)
     );
+
+    // Remove salary percentage when item is removed
+    setUserItemSalaryPercentages((prev) => {
+      const updated = { ...prev };
+      delete updated[key];
+      return updated;
+    });
   };
 
   const removeItemFromRecipientList = (idx: number) => {
+    const itemToRemove = selectedRecipientItems[idx];
+    const key = itemToRemove.isPlayer ? itemToRemove.player!.ID : 0;
+
     setSelectedRecipientItems((items: any[]) =>
       items.filter((items, index) => index !== idx)
     );
+
+    // Remove salary percentage when item is removed
+    setRecipientItemSalaryPercentages((prev) => {
+      const updated = { ...prev };
+      delete updated[key];
+      return updated;
+    });
+  };
+
+  const updateSalaryPercentage = (
+    itemKey: number,
+    percentage: number,
+    isUserTeam: boolean
+  ) => {
+    if (isUserTeam) {
+      setUserItemSalaryPercentages((prev) => ({
+        ...prev,
+        [itemKey]: percentage,
+      }));
+    } else {
+      setRecipientItemSalaryPercentages((prev) => ({
+        ...prev,
+        [itemKey]: percentage,
+      }));
+    }
   };
 
   const sendProposal = async () => {
     const userOptions = mapSelectedOptionsToTradeOptions(
       selectedUserItems,
-      userTeam.ID
+      userTeam.ID,
+      userItemSalaryPercentages
     );
     const recepientOptions = mapSelectedOptionsToTradeOptions(
       selectedRecipientItems,
-      recipientTeam.ID
+      recipientTeam.ID,
+      recipientItemSalaryPercentages
     );
     const dto = {
       TeamID: userTeam.ID,
@@ -536,13 +704,23 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
               />
             </div>
             <div className="overflow-y-auto max-h-[25rem] w-full">
-              {selectedUserItems.map((x, idx) => (
-                <TradeOption
-                  option={x}
-                  removeItem={removeItemFromUserList}
-                  idx={idx}
-                />
-              ))}
+              {selectedUserItems.map((x, idx) => {
+                const itemKey = x.isPlayer ? x.player!.ID : 0;
+                return (
+                  <TradeOption
+                    key={`user-${idx}`}
+                    option={x}
+                    removeItem={removeItemFromUserList}
+                    idx={idx}
+                    onSalaryPercentageChange={(key, percentage) =>
+                      updateSalaryPercentage(key, percentage, true)
+                    }
+                    currentSalaryPercentage={
+                      userItemSalaryPercentages[itemKey] || 0
+                    }
+                  />
+                );
+              })}
             </div>
           </div>
           <div className="flex flex-col items-center px-6">
@@ -602,13 +780,23 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
               />
             </div>
             <div className="overflow-y-auto max-h-[25rem] w-full">
-              {selectedRecipientItems.map((x, idx) => (
-                <TradeOption
-                  option={x}
-                  removeItem={removeItemFromRecipientList}
-                  idx={idx}
-                />
-              ))}
+              {selectedRecipientItems.map((x, idx) => {
+                const itemKey = x.isPlayer ? x.player!.ID : 0;
+                return (
+                  <TradeOption
+                    key={`recipient-${idx}`}
+                    option={x}
+                    removeItem={removeItemFromRecipientList}
+                    idx={idx}
+                    onSalaryPercentageChange={(key, percentage) =>
+                      updateSalaryPercentage(key, percentage, false)
+                    }
+                    currentSalaryPercentage={
+                      recipientItemSalaryPercentages[itemKey] || 0
+                    }
+                  />
+                );
+              })}
             </div>
           </div>
           {isDesktop && (

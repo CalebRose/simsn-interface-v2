@@ -370,7 +370,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
   }, [phlRosterMap, selectedTeam]);
 
-  const draftPicks = useMemo(() => {
+  const selectedTeamDraftPicks = useMemo(() => {
     if (!selectedTeam || !phlDraftPickMap) return [];
     return phlDraftPickMap[selectedTeam.ID];
   }, [selectedTeam, phlDraftPickMap]);
@@ -393,7 +393,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           overall: player.Overall.toString(),
           draftRound: "N/A",
           draftPick: "N/A",
-          value: contract.ContractValue.toString(),
+          value: contract.ContractValue.toFixed(2).toString(),
           isPlayer: true,
         };
         tradeBlockSet.push(block);
@@ -413,7 +413,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           overall: "N/A",
           draftRound: pick.DraftRound.toString(),
           draftPick: pick.DraftNumber.toString(),
-          value: pick.DraftValue.toString(),
+          value: pick.DraftValue.toFixed(2).toString(),
           isPlayer: false,
           season: pick.Season,
         };
@@ -442,15 +442,15 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           overall: player.Overall.toString(),
           draftRound: "N/A",
           draftPick: "N/A",
-          value: contract.ContractValue.toString(),
+          value: contract.ContractValue.toFixed(2).toString(),
           isPlayer: true,
         };
         tradeBlockSet.push(block);
       }
     }
-    if (draftPicks) {
-      for (let i = 0; i < draftPicks.length; i++) {
-        const pick = draftPicks[i];
+    if (selectedTeamDraftPicks) {
+      for (let i = 0; i < selectedTeamDraftPicks.length; i++) {
+        const pick = selectedTeamDraftPicks[i];
         const block: TradeBlockRow = {
           id: pick.ID,
           pick: pick,
@@ -461,7 +461,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           overall: "N/A",
           draftRound: pick.DraftRound.toString(),
           draftPick: pick.DraftNumber.toString(),
-          value: pick.DraftValue.toString(),
+          value: pick.DraftValue.toFixed(2).toString(),
           isPlayer: false,
           season: pick.Season,
         };
@@ -469,7 +469,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
       }
     }
     return tradeBlockSet;
-  }, [selectedRoster, draftPicks, phlContractMap]);
+  }, [selectedRoster, selectedTeamDraftPicks, phlContractMap]);
 
   const receivedProposals = useMemo(() => {
     const proposals: TradeProposal[] = [];
@@ -613,7 +613,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           backgroundColor={backgroundColor}
           headerColor={headerColor}
           borderColor={borderColor}
-          draftPickCount={draftPicks.length}
+          draftPickCount={selectedTeamDraftPicks.length}
           openTradeModal={manageTradesModal.handleOpenModal}
           openProposeTradeModal={proposeTradeModal.handleOpenModal}
         />
@@ -949,6 +949,14 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     placeNFLPlayerOnTradeBlock,
     capsheetMap: nflCapsheetMap,
     proContractMap: nflContractMap,
+    nflTradeProposals,
+    proPlayerMap,
+    nflDraftPickMap,
+    individualDraftPickMap,
+    proposeTrade,
+    cancelTrade,
+    acceptTrade,
+    rejectTrade,
     getBootstrapRosterData,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -967,6 +975,8 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
+  const manageTradesModal = useModal();
+  const proposeTradeModal = useModal();
   let backgroundColor = "#1f2937";
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
@@ -1024,7 +1034,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     setModalAction(action);
     setModalPlayer(player);
   };
-  const capsheetMap = useMemo(() => {
+  const nflCapsheet = useMemo(() => {
     if (selectedTeam && nflCapsheetMap) {
       return nflCapsheetMap[selectedTeam.ID];
     }
@@ -1037,8 +1047,153 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
   }, [nflContractMap, modalPlayer]);
 
+  const teamTradeBlock = useMemo(() => {
+    const tradeBlockSet: TradeBlockRow[] = [];
+    if (!nflRosterMap || !nflContractMap) return tradeBlockSet;
+    const roster = nflRosterMap![nflTeam!.ID];
+    const tradeBlockPlayers = roster?.filter((player) => player.IsOnTradeBlock);
+    if (tradeBlockPlayers) {
+      for (let i = 0; i < tradeBlockPlayers!.length; i++) {
+        const player = tradeBlockPlayers![i];
+        const contract = nflContractMap![player.ID];
+        if (!contract) continue;
+        const block: TradeBlockRow = {
+          id: player.ID,
+          player: player,
+          name: `${player.FirstName} ${player.LastName}`,
+          position: player.Position,
+          arch: player.Archetype,
+          year: player.Experience.toString(),
+          overall: player.Overall.toString(),
+          draftRound: "N/A",
+          draftPick: "N/A",
+          value: contract.ContractValue.toFixed(2).toString(),
+          isPlayer: true,
+        };
+        tradeBlockSet.push(block);
+      }
+    }
+    const userTeamPicks = nflDraftPickMap[nflTeam!.ID];
+    if (userTeamPicks) {
+      for (let i = 0; i < userTeamPicks.length; i++) {
+        const pick = userTeamPicks[i];
+        const block: TradeBlockRow = {
+          id: pick.ID,
+          pick: pick,
+          name: `N/A`,
+          position: "N/A",
+          arch: "N/A",
+          year: pick.Season.toString(),
+          overall: "N/A",
+          draftRound: pick.DraftRound.toString(),
+          draftPick: pick.DraftNumber.toString(),
+          value: pick.DraftValue.toFixed(2).toString(),
+          isPlayer: false,
+          season: pick.Season,
+        };
+        tradeBlockSet.push(block);
+      }
+    }
+    return tradeBlockSet;
+  }, [nflRosterMap, nflTeam, nflDraftPickMap, nflContractMap]);
+
+  const selectedTeamDraftPicks = useMemo(() => {
+    if (!selectedTeam || !nflDraftPickMap) return [];
+    return nflDraftPickMap[selectedTeam.ID];
+  }, [selectedTeam, nflDraftPickMap]);
+
+  const selectedTeamTradeBlock = useMemo(() => {
+    const tradeBlockSet: TradeBlockRow[] = [];
+    if (!selectedRoster || !nflContractMap) return tradeBlockSet;
+    const tradeBlockPlayers = selectedRoster?.filter(
+      (player) => player.IsOnTradeBlock
+    );
+    if (tradeBlockPlayers) {
+      for (let i = 0; i < tradeBlockPlayers!.length; i++) {
+        const player = tradeBlockPlayers![i];
+        const contract = nflContractMap![player.ID];
+        if (!contract) continue;
+        const block: TradeBlockRow = {
+          id: player.ID,
+          player: player,
+          name: `${player.FirstName} ${player.LastName}`,
+          position: player.Position,
+          arch: player.Archetype,
+          year: player.Experience.toString(),
+          overall: player.Overall.toString(),
+          draftRound: "N/A",
+          draftPick: "N/A",
+          value: contract.ContractValue.toFixed(2).toString(),
+          isPlayer: true,
+        };
+        tradeBlockSet.push(block);
+      }
+    }
+    if (selectedTeamDraftPicks) {
+      for (let i = 0; i < selectedTeamDraftPicks.length; i++) {
+        const pick = selectedTeamDraftPicks[i];
+        const block: TradeBlockRow = {
+          id: pick.ID,
+          pick: pick,
+          name: `N/A`,
+          position: "N/A",
+          arch: "N/A",
+          year: pick.Season.toString(),
+          overall: "N/A",
+          draftRound: pick.DraftRound.toString(),
+          draftPick: pick.DraftNumber.toString(),
+          value: pick.DraftValue.toFixed(2).toString(),
+          isPlayer: false,
+          season: pick.Season,
+        };
+        tradeBlockSet.push(block);
+      }
+    }
+    return tradeBlockSet;
+  }, [selectedRoster, selectedTeamDraftPicks, nflContractMap]);
+
+  const sentTradeProposals = useMemo(() => {
+    if (!nflTradeProposals) return [];
+    return nflTradeProposals.SentTradeProposals || [];
+  }, [nflTradeProposals]);
+
+  const receivedTradeProposals = useMemo(() => {
+    if (!nflTradeProposals) return [];
+    return nflTradeProposals.ReceivedTradeProposals || [];
+  }, [nflTradeProposals]);
+
   return (
     <>
+      <ManageTradeModal
+        isOpen={manageTradesModal.isModalOpen}
+        onClose={manageTradesModal.handleCloseModal}
+        team={nflTeam!!}
+        league={SimNFL}
+        userCapSheet={nflCapsheet!!}
+        sentTradeProposals={sentTradeProposals}
+        receivedTradeProposals={receivedTradeProposals}
+        ts={ts}
+        individualDraftPickMap={individualDraftPickMap}
+        proPlayerMap={proPlayerMap}
+        cancelTrade={cancelTrade}
+        acceptTrade={acceptTrade}
+        rejectTrade={rejectTrade}
+      />
+      <ProposeTradeModal
+        isOpen={proposeTradeModal.isModalOpen}
+        onClose={proposeTradeModal.handleCloseModal}
+        userTeam={nflTeam!!}
+        recipientTeam={selectedTeam!!}
+        league={SimNFL}
+        userTradeBlock={teamTradeBlock}
+        otherTeamTradeBlock={selectedTeamTradeBlock}
+        userCapSheet={nflCapsheetMap![nflTeam!.ID]}
+        recipientCapSheet={nflCapsheetMap![selectedTeam!.ID]}
+        backgroundColor={backgroundColor}
+        borderColor={borderColor}
+        ts={ts}
+        proposeTrade={proposeTrade}
+      />
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
@@ -1064,18 +1219,22 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
           League={league}
           ts={ts}
           isPro={true}
+          isUserTeam={selectedTeam!.ID === nflTeam!.ID}
           TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
           Coach={selectedTeam?.NFLCoachName}
           Owner={selectedTeam?.NFLOwnerName}
           GM={selectedTeam?.NFLGMName}
           Scout={selectedTeam?.NFLAssistantName}
-          Capsheet={capsheetMap}
+          Capsheet={nflCapsheet}
           Conference={selectedTeam?.Conference}
           Arena={selectedTeam?.Stadium}
           Capacity={selectedTeam?.StadiumCapacity}
           backgroundColor={backgroundColor}
           headerColor={headerColor}
           borderColor={borderColor}
+          draftPickCount={selectedTeamDraftPicks?.length}
+          openTradeModal={manageTradesModal.handleOpenModal}
+          openProposeTradeModal={proposeTradeModal.handleOpenModal}
         />
       </div>
       <div className="flex flex-row md:flex-col w-full">
