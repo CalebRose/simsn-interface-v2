@@ -1,3 +1,4 @@
+import { NFLDraftPick, NFLPlayer } from "../../models/footballModels";
 import { DraftPick, ProfessionalPlayer } from "../../models/hockeyModels";
 
 export interface TradeBlockRow {
@@ -11,7 +12,7 @@ export interface TradeBlockRow {
   draftRound: string;
   draftPick: string;
   value: string;
-  player?: ProfessionalPlayer;
-  pick?: DraftPick;
+  player?: ProfessionalPlayer | NFLPlayer;
+  pick?: DraftPick | NFLDraftPick;
   season?: number;
 }

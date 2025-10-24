@@ -62,6 +62,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     isLoading,
     collegePollSubmission,
     submitCollegePoll,
+    getBootstrapScheduleData,
   } = fbStore;
 
   const [selectedTeam, setSelectedTeam] = useState(cfbTeam);
@@ -82,6 +83,10 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   const { isMobile } = useResponsive();
+
+  useEffect(() => {
+    getBootstrapScheduleData();
+  }, [getBootstrapScheduleData]);
 
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
@@ -174,6 +179,15 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   size="md"
                   variant="primary"
                   classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  onClick={submitPollModal.handleOpenModal}
+                >
+                  <Text variant="small">Submit Poll</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  onClick={collegePollModal.handleOpenModal}
                 >
                   <Text variant="small">College Poll</Text>
                 </Button>

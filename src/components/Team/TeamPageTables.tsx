@@ -29,7 +29,7 @@ import {
   getNFLAttributes,
   getCBBAttributes,
   getNBAAttributes,
-  getPHLTradeBlockAttributes,
+  getTradeBlockAttributes,
 } from "./TeamPageUtils";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { useModal } from "../../_hooks/useModal";
@@ -1709,7 +1709,7 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
     index: number,
     backgroundColor: string
   ) => {
-    const attributes = getPHLTradeBlockAttributes(
+    const attributes = getTradeBlockAttributes(
       item,
       item.isPlayer,
       !isDesktop,
@@ -1745,7 +1745,7 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
                 onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
                   (e.target as HTMLElement).style.color = "";
                 }}
-                onClick={() => openModal(InfoType, item.player!!)}
+                onClick={() => openModal(InfoType, item.player!! as PHLPlayer)}
               >
                 <Text variant="small">{attr.value}</Text>
               </span>
@@ -1771,7 +1771,163 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
             }
             onChange={(selectedOption) => {
               if (selectedOption?.value === "tradeBlock") {
-                item.isPlayer ? openModal(TradeBlock, item.player!!) : () => {};
+                item.isPlayer
+                  ? openModal(TradeBlock, item.player!! as PHLPlayer)
+                  : () => {};
+              }
+            }}
+            isDisabled={disable}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Table
+      columns={rosterColumns}
+      data={roster}
+      rowRenderer={rowRenderer}
+      backgroundColor={backgroundColor}
+      team={team}
+    />
+  );
+};
+
+interface NFLTradeBlockTableProps {
+  roster: TradeBlockRow[];
+  ts: any;
+  backgroundColor?: string;
+  headerColor?: string;
+  borderColor?: string;
+  team?: any;
+  category?: string;
+  openModal: (action: ModalAction, player: NFLPlayer) => void;
+  disable: boolean;
+}
+
+export const NFLTradeBlockTable: FC<NFLTradeBlockTableProps> = ({
+  roster = [],
+  ts,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  team,
+  category,
+  openModal,
+  disable,
+}) => {
+  const textColorClass = getTextColorBasedOnBg(backgroundColor);
+  const { isDesktop, isTablet } = useResponsive();
+
+  const rosterColumns = useMemo(() => {
+    let columns = [
+      { header: "Type", accessor: "isPlayer" },
+      { header: "Name", accessor: "LastName" },
+      {
+        header: !isDesktop && !isTablet ? "Pos" : "Position",
+        accessor: "Position",
+      },
+      {
+        header: !isDesktop && !isTablet ? "Arch" : "Archetype",
+        accessor: "Archetype",
+      },
+      {
+        header: !isDesktop && !isTablet ? "Exp" : "Experience",
+        accessor: "Year",
+      },
+      {
+        header: !isDesktop && !isTablet ? "Ovr" : "Overall",
+        accessor: "Overall",
+      },
+      {
+        header: !isDesktop && !isTablet ? "DR" : "DraftRound",
+        accessor: "DraftRound",
+      },
+      {
+        header: !isDesktop && !isTablet ? "PN" : "PickNumber",
+        accessor: "PickNumber",
+      },
+      {
+        header: !isDesktop && !isTablet ? "Val" : "Value",
+        accessor: "Value",
+      },
+    ];
+
+    columns.push({ header: "Actions", accessor: "actions" });
+    return columns;
+  }, [isDesktop, category]);
+
+  const rowRenderer = (
+    item: TradeBlockRow,
+    index: number,
+    backgroundColor: string
+  ) => {
+    const attributes = getTradeBlockAttributes(
+      item,
+      item.isPlayer,
+      !isDesktop,
+      isTablet,
+      category!
+    );
+    return (
+      <div
+        key={item.id}
+        className={`table-row border-b dark:border-gray-700 text-left`}
+        style={{ backgroundColor }}
+      >
+        {attributes.map((attr, idx) => (
+          <div
+            key={idx}
+            className={`table-cell 
+        align-middle 
+        min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
+          category === Overview && idx === 6
+            ? "text-left"
+            : idx !== 0
+            ? "text-center"
+            : ""
+        }`}
+          >
+            {attr.label === "Name" ? (
+              <span
+                className={`cursor-pointer font-semibold`}
+                onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+                  (e.target as HTMLElement).style.color = "#fcd53f";
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+                  (e.target as HTMLElement).style.color = "";
+                }}
+                onClick={() => openModal(InfoType, item.player!! as NFLPlayer)}
+              >
+                <Text variant="small">{attr.value}</Text>
+              </span>
+            ) : (
+              <Text variant="small" classes="text-start">
+                {attr.value}
+              </Text>
+            )}
+          </div>
+        ))}
+        <div className="table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
+          <SelectDropdown
+            placeholder={!isDesktop ? "Action" : "Select an action"}
+            options={
+              item.isPlayer
+                ? [
+                    {
+                      value: "tradeBlock",
+                      label: `Trade Block - ${item.name}`,
+                    },
+                  ]
+                : []
+            }
+            onChange={(selectedOption) => {
+              if (selectedOption?.value === "tradeBlock") {
+                item.isPlayer
+                  ? openModal(TradeBlock, item.player!! as NFLPlayer)
+                  : () => {};
               }
             }}
             isDisabled={disable}
