@@ -144,6 +144,7 @@ interface SimHCKContextProps {
   transferPortalProfiles: TransferPortalProfile[];
   teamTransferPortalProfiles: TransferPortalProfile[];
   collegePromises: CollegePromise[];
+  collegePromiseMap: Record<number, CollegePromise>;
   transferProfileMapByPlayerID: Record<number, TransferPortalProfile[]>;
   addTransferPlayerToBoard: (dto: any) => Promise<void>;
   removeTransferPlayerFromBoard: (dto: any) => Promise<void>;
@@ -160,7 +161,6 @@ interface SimHCKContextProps {
   cutPHLPlayer: (playerID: number, teamID: number) => Promise<void>;
   affiliatePlayer: (playerID: number, teamID: number) => Promise<void>;
   redshirtPlayer: (playerID: number, teamID: number) => Promise<void>;
-  promisePlayer: (playerID: number, teamID: number) => Promise<void>;
   updateCHLRosterMap: (newMap: Record<number, CollegePlayer[]>) => void;
   updateProRosterMap: (newMap: Record<number, ProfessionalPlayer[]>) => void;
   saveCHLGameplan: (dto: any) => Promise<void>;
@@ -276,6 +276,7 @@ const defaultContext: SimHCKContextProps = {
   collegePollSubmission: {} as CollegePollSubmission,
   transferPortalProfiles: [],
   collegePromises: [],
+  collegePromiseMap: {},
   teamTransferPortalProfiles: [],
   transferProfileMapByPlayerID: {},
   addTransferPlayerToBoard: async () => {},
@@ -292,7 +293,6 @@ const defaultContext: SimHCKContextProps = {
   cutPHLPlayer: async () => {},
   affiliatePlayer: async () => {},
   redshirtPlayer: async () => {},
-  promisePlayer: async () => {},
   updateCHLRosterMap: () => {},
   updateProRosterMap: () => {},
   saveCHLGameplan: async () => {},
@@ -577,6 +577,15 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
     return transferProfileMap;
   }, [portalPlayers, transferPortalProfiles]);
+
+  const collegePromiseMap = useMemo(() => {
+    const map: Record<number, CollegePromise> = {};
+    for (let i = 0; i < collegePromises.length; i++) {
+      const promise = collegePromises[i];
+      map[promise.CollegePlayerID] = promise;
+    }
+    return map;
+  }, [collegePromises]);
 
   useEffect(() => {
     getBootstrapTeamData();
@@ -869,10 +878,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         setCHLRosterMap(rosterMap);
       }
     },
-    [chlRosterMap]
-  );
-  const promisePlayer = useCallback(
-    async (playerID: number, teamID: number) => {},
     [chlRosterMap]
   );
   const cutPHLPlayer = useCallback(
@@ -1497,6 +1502,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     },
     [transferPortalProfiles]
   );
+
   const removeTransferPlayerFromBoard = useCallback(
     async (dto: any) => {
       const profile = await TransferPortalService.HCKRemoveProfileFromBoard(
@@ -1627,6 +1633,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         phlDraftPickMap,
         transferPortalProfiles,
         collegePromises,
+        collegePromiseMap,
         teamTransferPortalProfiles,
         transferProfileMapByPlayerID,
         removeUserfromCHLTeamCall,
@@ -1635,7 +1642,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         addUserToPHLTeam,
         cutCHLPlayer,
         redshirtPlayer,
-        promisePlayer,
         cutPHLPlayer,
         PlacePHLPlayerOnTradeBlock,
         affiliatePlayer,

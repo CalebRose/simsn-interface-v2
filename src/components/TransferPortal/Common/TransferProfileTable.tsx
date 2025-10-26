@@ -1,15 +1,13 @@
 import { Dispatch, FC, ReactNode, SetStateAction, useMemo } from "react";
 import {
   Attributes,
-  ButtonColor,
-  InfoType,
   League,
   ModalAction,
   PortalInfoType,
   Potentials,
   Preferences,
+  Promise,
   RemovePortalPlayerType,
-  RemoveRecruitType,
   ScoutAttributeType,
   SimCHL,
 } from "../../../_constants/constants";
@@ -21,7 +19,7 @@ import {
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { Input } from "../../../_design/Inputs";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
-import { TrashCan } from "../../../_design/Icons";
+import { Handshake, TrashCan } from "../../../_design/Icons";
 import {
   annotateCountry,
   annotateRegion,
@@ -120,6 +118,7 @@ interface CHLProfileRowProps {
   category: string;
   ChangeInput: (id: number, name: string, points: number) => void;
   openModal: (action: ModalAction, player: CollegePlayer) => void;
+  openPromiseModal: (player: CollegePlayer) => void;
   setAttribute: (attr: string) => void;
   backgroundColor: string;
 }
@@ -132,6 +131,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
   ChangeInput,
   openModal,
   setAttribute,
+  openPromiseModal,
   backgroundColor,
 }) => {
   const hkStore = useSimHCKStore();
@@ -329,6 +329,13 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
       <TableCell>
         <ButtonGroup classes="flex-nowrap">
           <Button
+            variant="primary"
+            size="xs"
+            onClick={() => openPromiseModal(player)}
+          >
+            <Handshake />
+          </Button>
+          <Button
             variant="danger"
             size="xs"
             onClick={() => openModal(RemovePortalPlayerType, player)}
@@ -354,6 +361,7 @@ interface TransferPortalProfileTableProps {
   isMobile?: boolean;
   category: string;
   openModal: (action: ModalAction, player: CollegePlayer) => void;
+  openPromiseModal: (player: CollegePlayer) => void;
   ChangeInput: (id: number, name: string, points: number) => void;
   setAttribute: Dispatch<SetStateAction<string>>;
 }
@@ -375,6 +383,7 @@ export const TransferPortalProfileTable: FC<
   ChangeInput,
   openModal,
   setAttribute,
+  openPromiseModal,
 }) => {
   const backgroundColor = colorOne;
   const borderColor = colorTwo;
@@ -397,6 +406,7 @@ export const TransferPortalProfileTable: FC<
           category={category}
           ChangeInput={ChangeInput}
           openModal={openModal}
+          openPromiseModal={openPromiseModal}
           setAttribute={setAttribute}
         />
       );

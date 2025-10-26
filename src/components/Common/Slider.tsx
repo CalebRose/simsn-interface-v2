@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Text } from "../../../../_design/Typography";
+import { Text } from "../../_design/Typography";
 
 export interface GameplanSliderProps {
   name: string;
@@ -19,7 +19,7 @@ export interface GameplanSliderProps {
   leftright?: boolean;
 }
 
-export const GameplanSlider: React.FC<GameplanSliderProps> = ({
+export const Slider: React.FC<GameplanSliderProps> = ({
   name,
   label,
   value,
@@ -296,7 +296,7 @@ export const PitchDiveFocusSlider: React.FC<PitchDiveFocusSliderProps> = ({
 }) => {
   return (
     <div className={`space-y-4 ${className}`}>
-      <GameplanSlider
+      <Slider
         name="PitchFocus"
         label="Pitch Focus"
         value={pitchValue}
@@ -307,7 +307,7 @@ export const PitchDiveFocusSlider: React.FC<PitchDiveFocusSliderProps> = ({
         valueLabel={`${pitchValue}%`}
       />
 
-      <GameplanSlider
+      <Slider
         name="DiveFocus"
         label="Dive Focus"
         value={diveValue}
@@ -321,4 +321,4 @@ export const PitchDiveFocusSlider: React.FC<PitchDiveFocusSliderProps> = ({
   );
 };
 
-export default GameplanSlider;
+export default Slider;

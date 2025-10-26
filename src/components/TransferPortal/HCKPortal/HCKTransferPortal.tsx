@@ -29,6 +29,7 @@ import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDrop
 import { TransferPlayerTable } from "../Common/TransferPlayerTable";
 import { TransferPortalProfileTable } from "../Common/TransferProfileTable";
 import { PortalHelpModal } from "../../Recruiting/Common/RecruitingHelpModal";
+import { PromiseModal } from "../../Common/PromiseModal";
 
 export const HCKTransferPortal = () => {
   const hkStore = useSimHCKStore();
@@ -45,6 +46,7 @@ export const HCKTransferPortal = () => {
     saveTransferPortalBoard,
     chlRosterMap,
     teamTransferPortalProfiles,
+    collegePromiseMap,
   } = hkStore;
   const {
     teamProfile,
@@ -75,6 +77,8 @@ export const HCKTransferPortal = () => {
     filteredPlayers,
     attribute,
     setAttribute,
+    promiseModal,
+    openPromiseModal,
   } = useHCKTransferPortal();
   const rosterCount = useMemo(() => {
     if (!chlTeam) {
@@ -100,8 +104,26 @@ export const HCKTransferPortal = () => {
   const portalExport = async () => {
     await exportTransferPortalPlayers();
   };
+
+  const modalPlayerPromise = useMemo(() => {
+    if (!modalPlayer) {
+      return null;
+    }
+    return collegePromiseMap[modalPlayer.ID];
+  }, [modalPlayer, collegePromiseMap]);
+
   return (
     <>
+      {modalPlayer && (
+        <PromiseModal
+          league={SimCHL}
+          isOpen={promiseModal.isModalOpen}
+          onClose={promiseModal.handleCloseModal}
+          player={modalPlayer}
+          promise={modalPlayerPromise}
+          promisePlayer={createPromise}
+        />
+      )}
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
@@ -382,6 +404,7 @@ export const HCKTransferPortal = () => {
                   isMobile={isMobile}
                   category={tableViewType}
                   openModal={openModal}
+                  openPromiseModal={openPromiseModal}
                   setAttribute={setAttribute}
                   ChangeInput={updatePointsOnPortalPlayer}
                 />

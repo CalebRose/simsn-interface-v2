@@ -37,6 +37,7 @@ export const useHCKTransferPortal = () => {
     hck_Timestamp,
   } = hkStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const promiseModal = useModal();
 
   const [recruitingCategory, setRecruitingCategory] =
     useState<RecruitingCategory>(Overview);
@@ -158,6 +159,13 @@ export const useHCKTransferPortal = () => {
     setModalPlayer(player);
   };
 
+  const openPromiseModal = (
+    player: HockeyPlayer | FootballPlayer | BasketballPlayer
+  ) => {
+    promiseModal.handleOpenModal();
+    setModalPlayer(player);
+  };
+
   const updateRecruitingCategory = (category: RecruitingCategory) => {
     setRecruitingCategory(category);
     if (category === Overview && tableViewType === Potentials) {
@@ -194,5 +202,7 @@ export const useHCKTransferPortal = () => {
     filteredPlayers,
     attribute,
     setAttribute,
+    promiseModal,
+    openPromiseModal,
   };
 };

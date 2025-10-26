@@ -52,6 +52,7 @@ import {
 import { useSimBBAStore } from "../../context/SimBBAContext";
 import { GetRecruitingTendency } from "../../_utility/getRecruitingTendency";
 import { getDisplayStatus } from "../../_helper/recruitingHelper";
+import { SelectDropdown } from "../../_design/Select";
 
 interface PlayerInfoModalBodyProps {
   league: League;

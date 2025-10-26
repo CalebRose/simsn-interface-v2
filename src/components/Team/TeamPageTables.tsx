@@ -70,6 +70,7 @@ interface CHLRosterTableProps {
   team?: any;
   category?: string;
   openModal: (action: ModalAction, player: CHLPlayer) => void;
+  openPromiseModal: (player: CHLPlayer) => void;
   disable: boolean;
 }
 
@@ -81,6 +82,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
   team,
   category,
   openModal,
+  openPromiseModal,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -279,7 +281,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
                 openModal(Redshirt, item);
               }
               if (selectedOption?.value === "promise") {
-                openModal(Promise, item);
+                openPromiseModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
               }

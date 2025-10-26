@@ -1,5 +1,10 @@
 import { useMemo } from "react";
-import { CollegePlayer } from "../models/hockeyModels";
+import {
+  CollegePlayer as HockeyPlayer,
+  CollegeTeam as HockeyTeam,
+} from "../models/hockeyModels";
+import { CollegeTeam } from "../models/footballModels";
+import { Team } from "../models/basketballModels";
 
 export const useFilteredHockeyTransferPlayers = ({
   portalPlayers,
@@ -9,7 +14,7 @@ export const useFilteredHockeyTransferPlayers = ({
   regions,
   stars,
 }: {
-  portalPlayers: CollegePlayer[];
+  portalPlayers: HockeyPlayer[];
   country: string;
   positions: string[];
   archetype: string[];
@@ -58,4 +63,82 @@ export const useFilteredHockeyTransferPlayers = ({
     // depend on the raw list plus the Sets
     [portalPlayers, country, positionSet, archSet, regionSet, starsSet]
   );
+};
+
+export const getHCKPromiseWeight = (promiseType: string, benchmark: number) => {
+  if (promiseType === "") {
+    return "None";
+  }
+  if (promiseType === "No Redshirt") {
+    return "Low";
+  }
+  if (promiseType === "Home State Game") {
+    return "Medium";
+  }
+  if (promiseType === "Time on Ice") {
+    if (benchmark < 1 || benchmark > 20) {
+      return "Invalid";
+    }
+    if (benchmark <= 5) return "Very Low";
+    if (benchmark <= 10) return "Low";
+    if (benchmark <= 14) return "Medium";
+    if (benchmark <= 18) return "High";
+    return "Very High";
+  }
+  if (promiseType === "Wins") {
+    if (benchmark < 0 || benchmark > 34) {
+      return "Invalid";
+    }
+    if (benchmark === 0) return "Why even try?";
+    if (benchmark <= 2) return "Extremely Low";
+    if (benchmark <= 8) return "Very Low";
+    if (benchmark <= 18) return "Low";
+    if (benchmark <= 24) return "Medium";
+    if (benchmark <= 30) return "High";
+    if (benchmark < 34) return "Very High";
+    return "Extremely High";
+  }
+  if (promiseType === "Conference Championship") {
+    return "High";
+  }
+  if (promiseType === "Playoffs") {
+    return "Very High";
+  }
+  if (promiseType === "Frozen Four") {
+    return "Extremely High";
+  }
+  if (promiseType === "National Championship") {
+    return "If you make this promise then you better win it!";
+  }
+  return "None";
+};
+
+export const getSimCHLTeamStateOptions = (chlTeams: HockeyTeam[]) => {
+  const list: { label: string; value: string }[] = [];
+  chlTeams.forEach((team) => {
+    if (!list.find((item) => item.value === team.State)) {
+      list.push({ label: team.State, value: team.State });
+    }
+  });
+  return list;
+};
+
+export const getSimCFBTeamStateOptions = (cfbTeams: CollegeTeam[]) => {
+  const list: { label: string; value: string }[] = [];
+  cfbTeams.forEach((team) => {
+    if (!list.find((item) => item.value === team.State)) {
+      list.push({ label: team.State, value: team.State });
+    }
+  });
+  return list;
+};
+
+export const getSimCBBTeamStateOptions = (cbbTeams: Team[]) => {
+  const list: { label: string; value: string }[] = [];
+  cbbTeams.forEach((team) => {
+    if (!list.find((item) => item.value === team.State)) {
+      list.push({ label: team.State, value: team.State });
+    }
+  });
+  return list;
 };

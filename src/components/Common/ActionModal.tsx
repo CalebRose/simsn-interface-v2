@@ -45,6 +45,7 @@ interface ActionModalProps {
   capsheet?: any;
   contract?: any;
   offer?: any;
+  promise?: any;
   cutPlayer?: (playerID: number, teamID: number) => Promise<void>;
   sendToPracticeSquad?: (playerID: number, teamID: number) => Promise<void>;
   affiliatePlayer?: (playerID: number, teamID: number) => Promise<void>;
@@ -68,6 +69,7 @@ export const ActionModal: FC<ActionModalProps> = ({
   modalAction,
   player,
   contract,
+  promise,
   capsheet,
   offer,
   redshirtPlayer,
@@ -411,11 +413,6 @@ export const ActionModal: FC<ActionModalProps> = ({
               player?
             </Text>
           </>
-        )}
-        {modalAction === Promise && (
-          <Text className="mb4 text-start">
-            Are you sure you want to send a promise to this player?
-          </Text>
         )}
         {modalAction === AddRecruitType && (
           <Text className="mb4 text-start">
