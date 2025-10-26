@@ -446,7 +446,7 @@ export const GenerateNFLFAErrorList = (
 
   // 8) Rule5: bonus % rules around draft
   const isOffseason = ts.IsOffSeason;
-  if (!ValidateNFLRule5(totalBonus, totalComp + totalBonus, isOffseason)) {
+  if (!ValidateNFLRule5(totalBonus, totalComp, isOffseason)) {
     if (isOffseason) {
       errors.push(
         "Before the NFL Draft, at least 30% of any contract must be bonus money."
