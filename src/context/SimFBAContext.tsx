@@ -91,6 +91,7 @@ import {
 import { TradeService } from "../_services/tradeService";
 import { CollegePollService } from "../_services/collegePollService";
 import { FaceDataService } from "../_services/faceDataService";
+import FBAScheduleService from "../_services/scheduleService";
 
 // ✅ Define Types for Context
 interface SimFBAContextProps {
@@ -222,6 +223,7 @@ interface SimFBAContextProps {
   cancelTrade: (dto: NFLTradeProposal) => Promise<void>;
   syncAcceptedTrade: (dto: NFLTradeProposal) => Promise<void>;
   vetoTrade: (dto: NFLTradeProposal) => Promise<void>;
+  ExportFootballSchedule: (dto: any) => Promise<void>;
   playerFaces: {
     [key: number]: FaceDataResponse;
   };
@@ -357,6 +359,7 @@ const defaultContext: SimFBAContextProps = {
   cancelTrade: async () => {},
   syncAcceptedTrade: async () => {},
   vetoTrade: async () => {},
+  ExportFootballSchedule: async () => {},
   playerFaces: {},
   proContractMap: {},
   proExtensionMap: {},
@@ -648,7 +651,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   }, [nflTeam, nflGameplanMap]);
 
   const collegePollsMapBySeason = useMemo(() => {
-    console.log({ collegePolls });
     const pollMap: Record<number, CollegePollOfficial[]> = {};
     if (!collegePolls) return pollMap;
     for (let i = 0; i < collegePolls.length; i++) {
@@ -888,7 +890,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (cfbID === 0 && nflID === 0) {
       return;
     }
+    console.log({ cfbID, nflID });
     const res = await BootstrapService.GetFBARosterBootstrapData(cfbID, nflID);
+    console.log({ res });
     setNFLTradeProposals(res.TradeProposals);
     setTradePreferencesMap(res.TradePreferences);
     setProContractMap(res.ContractMap);
@@ -1729,6 +1733,11 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const ExportFootballSchedule = useCallback(async (dto: any) => {
+    const scheduleService = new FBAScheduleService();
+    const res = await scheduleService.FBATimeslotExport(dto);
+  }, []);
+
   return (
     <SimFBAContext.Provider
       value={{
@@ -1835,6 +1844,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         addUserToNFLTeam,
         removeUserfromCFBTeamCall,
         removeUserfromNFLTeamCall,
+        ExportFootballSchedule,
         playerFaces,
         proContractMap,
         proExtensionMap,

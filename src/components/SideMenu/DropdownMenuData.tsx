@@ -170,6 +170,7 @@ export const useSideMenu = () => {
         isRoute: true,
         route: routes.CBB_SCHEDULE,
         league: SimCBB,
+        click: () => navigate(routes.CBB_SCHEDULE),
         toggle: () => toggleMenu(),
       },
       {
@@ -216,6 +217,7 @@ export const useSideMenu = () => {
         isRoute: true,
         route: "",
         league: SimNBA,
+        click: () => navigate(routes.NBA_SCHEDULE),
         toggle: () => toggleMenu(),
       },
       {
@@ -269,8 +271,9 @@ export const useSideMenu = () => {
       {
         label: "Transfer Portal",
         isRoute: true,
-        route: "",
+        route: routes.CHL_TRANSFER,
         league: SimCHL,
+        click: () => navigate(routes.CHL_TRANSFER),
         toggle: () => toggleMenu(),
       },
     ],

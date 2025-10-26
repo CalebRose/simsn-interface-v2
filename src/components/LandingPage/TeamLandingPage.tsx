@@ -16,7 +16,6 @@ import { GetCurrentWeek } from "../../_helper/teamHelper";
 import { LeagueType } from "./TeamLandingPageTitles";
 import {
   GamesBar,
-  TeamOverview,
   TeamStandings,
   TeamMatchUp,
   TeamMailbox,

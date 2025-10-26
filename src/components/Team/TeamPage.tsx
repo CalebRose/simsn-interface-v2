@@ -61,6 +61,7 @@ import {
   ManageTradeModal,
   ProposeTradeModal,
 } from "./Common/ManageTradesModal";
+import { PromiseModal } from "../Common/PromiseModal";
 
 interface TeamPageProps {
   league: League;
@@ -139,14 +140,22 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     chlTeamOptions,
     chlStandingsMap,
     teamProfileMap,
+    collegePromiseMap,
     cutCHLPlayer,
     redshirtPlayer,
-    promisePlayer,
+    createPromise,
     ExportHCKRoster,
   } = hkStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const promiseModal = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<CHLPlayer | null>(null);
+  const modalPlayerPromise = useMemo(() => {
+    if (!modalPlayer) {
+      return null;
+    }
+    return collegePromiseMap[modalPlayer.ID];
+  }, [modalPlayer, collegePromiseMap]);
   const [selectedTeam, setSelectedTeam] = useState(() => {
     if (teamId) {
       const id = Number(teamId);
@@ -195,6 +204,11 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     setModalPlayer(player);
   };
 
+  const openPromiseModal = (player: CHLPlayer) => {
+    promiseModal.handleOpenModal();
+    setModalPlayer(player);
+  };
+
   const exportRoster = async () => {
     await ExportHCKRoster(selectedTeam!.ID, false);
   };
@@ -213,7 +227,16 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
           player={modalPlayer}
           cutPlayer={cutCHLPlayer}
           redshirtPlayer={redshirtPlayer}
-          promisePlayer={promisePlayer}
+        />
+      )}
+      {modalPlayer && (
+        <PromiseModal
+          league={SimCHL}
+          isOpen={promiseModal.isModalOpen}
+          onClose={promiseModal.handleCloseModal}
+          player={modalPlayer}
+          promise={modalPlayerPromise}
+          promisePlayer={createPromise}
         />
       )}
       <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
@@ -302,6 +325,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            openPromiseModal={openPromiseModal}
             disable={selectedTeam!.ID !== chlTeam!.ID}
           />
         </Border>
@@ -780,6 +804,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     cutCFBPlayer,
     redshirtPlayer,
     promisePlayer,
+    getBootstrapRosterData,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -831,6 +856,10 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     setModalAction(action);
     setModalPlayer(player);
   };
+
+  useEffect(() => {
+    getBootstrapRosterData();
+  }, []);
 
   return (
     <>

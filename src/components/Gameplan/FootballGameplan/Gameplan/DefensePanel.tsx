@@ -14,7 +14,7 @@ import {
   FocusPlayOptions,
 } from "../Constants/GameplanConstants";
 import { GameplanInputSmall } from "./GameplanInput";
-import { GameplanSlider, PitchDiveFocusSlider } from "./GameplanSlider";
+import { Slider, PitchDiveFocusSlider } from "../../../Common/Slider";
 import {
   SchemeDropdown,
   CoverageDropdown,
@@ -250,7 +250,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                           className="border-b pb-2"
                           style={{ borderColor: accentColor }}
                         >
-                          <GameplanSlider
+                          <Slider
                             name={runToPassField}
                             label="Run to Pass"
                             value={
@@ -270,7 +270,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                             runpass
                           />
                         </div>
-                        <GameplanSlider
+                        <Slider
                           name={blitzWeightField}
                           label="Blitz Weight"
                           value={

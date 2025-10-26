@@ -21,7 +21,7 @@ import {
 } from "../Constants/GameplanConstants";
 import { RunnerInput, TargetInput } from "./GameplanInput";
 import { GameplanInputSmall } from "./GameplanInput";
-import { GameplanSlider } from "./GameplanSlider";
+import { Slider } from "../../../Common/Slider";
 import { GameplanValidationResult } from "./useGameplanValidation";
 import { getCFBOverall } from "../../../../_utility/getLetterGrade";
 import { GetNFLOverall } from "../../../Team/TeamPageUtils";
@@ -205,7 +205,7 @@ export const OffensiveDistributionsPanel: React.FC<
                   if (idx === 6) {
                     return (
                       <div className="bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg p-2">
-                        <GameplanSlider
+                        <Slider
                           key={label}
                           name={label}
                           leftright
@@ -526,7 +526,7 @@ export const OffensiveDistributionsPanel: React.FC<
               <Text variant="h5" classes="text-white font-semibold mb-4">
                 Primary HB Usage
               </Text>
-              <GameplanSlider
+              <Slider
                 name="PrimaryHB"
                 label="Primary HB"
                 value={gameplan.PrimaryHB}

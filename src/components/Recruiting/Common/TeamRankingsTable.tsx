@@ -67,6 +67,9 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
     backgroundColor: string
   ) => {
     const cfbTeam = teamMap[item.ID];
+    if (!cfbTeam) {
+      return <></>; // or some fallback UI
+    }
     const logo = getLogo(SimCFB, item.ID, false);
     return (
       <div
@@ -134,6 +137,9 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
     backgroundColor: string
   ) => {
     const chlTeam = teamMap[item.ID];
+    if (!chlTeam) {
+      return <></>; // or some fallback UI
+    }
     const logo = getLogo(SimCHL, item.ID, false);
     return (
       <div
@@ -201,6 +207,9 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
     backgroundColor: string
   ) => {
     const cbbTeam = teamMap[item.ID] as CBBTeam;
+    if (!cbbTeam) {
+      return <></>; // or some fallback UI
+    }
     const logo = getLogo(SimCBB, item.ID, false);
     return (
       <div

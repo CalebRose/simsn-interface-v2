@@ -47,6 +47,20 @@ export default class FBAScheduleService {
     return await GetCall(`${hckUrl}games/result/phl/${id}/`);
   }
 
+  async FBATimeslotExport(dto: any): Promise<void> {
+    await GetExportCall(
+      `${fbaUrl}games/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.WeekID}/${dto.Timeslot}/`,
+      "blob"
+    );
+  }
+
+  async BBATimeslotExport(dto: any): Promise<void> {
+    await GetExportCall(
+      `${bbaUrl}match/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.WeekID}/${dto.Timeslot}/`,
+      "blob"
+    );
+  }
+
   async HCKTimeslotExport(dto: any): Promise<void> {
     await GetExportCall(
       `${hckUrl}games/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.Timeslot}/`,
