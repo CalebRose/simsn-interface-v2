@@ -123,7 +123,6 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
   league,
   isRetro,
 }) => {
-  console.log({ poll });
   const team = useMemo(() => {
     let t = teamMap[poll.TeamID];
     if (!t) {
@@ -497,8 +496,6 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
   const { currentUser } = useAuthStore();
   const { collegePollsMapBySeason, cfbTeamMap, cfbStandingsMap, cfbTeam } =
     useSimFBAStore();
-
-  console.log({ cfbTeam, cfbTeamMap });
 
   const { isMobile } = useResponsive();
   const [selectedWeek, setSelectedWeek] = useState<number>(2601);

@@ -2291,8 +2291,6 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
     return list;
   }, [transferProfiles]);
 
-  console.log({ transferProfiles, leadingTeamsList });
-
   return (
     <>
       <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">

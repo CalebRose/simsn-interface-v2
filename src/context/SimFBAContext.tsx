@@ -648,7 +648,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   }, [nflTeam, nflGameplanMap]);
 
   const collegePollsMapBySeason = useMemo(() => {
-    console.log({ collegePolls });
     const pollMap: Record<number, CollegePollOfficial[]> = {};
     if (!collegePolls) return pollMap;
     for (let i = 0; i < collegePolls.length; i++) {

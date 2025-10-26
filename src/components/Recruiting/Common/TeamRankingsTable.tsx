@@ -136,7 +136,6 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
     index: number,
     backgroundColor: string
   ) => {
-    console.log({ item });
     const chlTeam = teamMap[item.ID];
     if (!chlTeam) {
       return <></>; // or some fallback UI
@@ -281,7 +280,6 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
     }
     return CFBRowRenderer;
   };
-  console.log({ teamProfiles });
   return (
     <div className="xl:min-w-[70vw]">
       <Table

@@ -219,8 +219,6 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
     openModal(ScoutAttributeType, player);
   };
 
-  console.log({ profile, attrList, test: "TEST" });
-
   return (
     <div
       className="table-row border-b dark:border-gray-700 text-left"
