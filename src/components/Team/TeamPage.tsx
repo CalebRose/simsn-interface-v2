@@ -804,6 +804,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     cutCFBPlayer,
     redshirtPlayer,
     promisePlayer,
+    getBootstrapRosterData,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -855,6 +856,10 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     setModalAction(action);
     setModalPlayer(player);
   };
+
+  useEffect(() => {
+    getBootstrapRosterData();
+  }, []);
 
   return (
     <>

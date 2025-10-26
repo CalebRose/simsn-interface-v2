@@ -201,7 +201,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
 
   const handleScheduleExport = async (opts: any) => {
     const dto = {
-      SeasonID: selectedSeason,
+      SeasonID: selectedSeason - 2020,
       WeekID: getFBAWeekID(selectedWeek, selectedSeason - 2020),
       Timeslot: opts.value,
     };
@@ -553,7 +553,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -576,7 +576,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
               {view === WeeklyGames && (
@@ -596,7 +596,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
             </div>
@@ -613,7 +613,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -771,7 +771,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
 
   const handleScheduleExport = async (opts: any) => {
     const dto = {
-      SeasonID: selectedSeason,
+      SeasonID: selectedSeason - 2020,
       WeekID: getFBAWeekID(selectedWeek, selectedSeason - 2020),
       Timeslot: opts.value,
     };
@@ -1093,7 +1093,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -1116,7 +1116,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
               {view === WeeklyGames && (
@@ -1136,7 +1136,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
             </div>
@@ -1153,7 +1153,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}

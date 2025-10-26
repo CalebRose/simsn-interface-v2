@@ -1194,7 +1194,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   }, []);
 
   const ExportBasketballSchedule = useCallback(async (dto: any) => {
-    const res = await scheduleService.HCKTimeslotExport(dto);
+    const res = await scheduleService.BBATimeslotExport(dto);
   }, []);
 
   // Fixme: This function is not used in the current context, but it is included for completeness.

@@ -41,6 +41,7 @@ import { ToggleSwitch } from "../../../_design/Inputs";
 import { CollegePollModal } from "../Common/CollegePollModal";
 import { SubmitPollModal } from "../Common/SubmitPollModal";
 import { useModal } from "../../../_hooks/useModal";
+import { getFBAWeekID } from "../../../_helper/statsPageHelper";
 
 interface SchedulePageProps {
   league: League;
@@ -63,6 +64,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     collegePollSubmission,
     submitCollegePoll,
     getBootstrapScheduleData,
+    ExportFootballSchedule,
   } = fbStore;
 
   const [selectedTeam, setSelectedTeam] = useState(cfbTeam);
@@ -135,6 +137,15 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const gamesForWeek = groupedWeeklyGames[selectedWeek] || [];
     return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
   }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);
+
+  const onExportSchedule = async (weekID: SingleValue<SelectOption>) => {
+    const numericWeekID = getFBAWeekID(
+      Number(weekID?.value),
+      selectedSeason - 2020
+    );
+    const dto = { SeasonID: selectedSeason - 2020, WeekID: numericWeekID };
+    await ExportFootballSchedule(dto);
+  };
 
   return (
     <>
@@ -260,9 +271,9 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <div className="flex flex-col items-center gap-2 justify-center">
                   <Text variant="body">Export Day of Week</Text>
                   <SelectDropdown
-                    options={cfbTeamOptions}
+                    options={Weeks}
                     placeholder="Select Timeslot..."
-                    onChange={selectTeamOption}
+                    onChange={onExportSchedule}
                   />
                 </div>
               )}
@@ -360,6 +371,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     allProStandings: allNFLStandings,
     allProGames: allNFLGames,
     isLoading,
+    ExportFootballSchedule,
   } = fbStore;
 
   const [selectedTeam, setSelectedTeam] = useState(nflTeam);
@@ -429,7 +441,14 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const gamesForWeek = groupedWeeklyGames[selectedWeek] || [];
     return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
   }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);
-
+  const onExportSchedule = async (weekID: SingleValue<SelectOption>) => {
+    const numericWeekID = getFBAWeekID(
+      Number(weekID?.value),
+      selectedSeason - 2020
+    );
+    const dto = { SeasonID: selectedSeason - 2020, WeekID: numericWeekID };
+    await ExportFootballSchedule(dto);
+  };
   return (
     <>
       <div className="flex flex-col w-full">
@@ -535,9 +554,9 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               <div className="flex flex-col items-center gap-2 justify-center">
                 <Text variant="body">Export Day of Week</Text>
                 <SelectDropdown
-                  options={nflTeamOptions}
-                  placeholder="Select Timeslot..."
-                  onChange={selectTeamOption}
+                  options={Weeks}
+                  placeholder="Select Week..."
+                  onChange={onExportSchedule}
                 />
               </div>
             )}
