@@ -133,7 +133,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   );
 
   const weeklyGames = useMemo(() => {
-    if (!selectedWeek) return [];
+    if (selectedWeek === null || selectedTeam === undefined) return [];
     const gamesForWeek = groupedWeeklyGames[selectedWeek] || [];
     return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
   }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);
@@ -437,7 +437,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   );
 
   const weeklyGames = useMemo(() => {
-    if (!selectedWeek) return [];
+    if (selectedWeek === null || selectedTeam === undefined) return [];
     const gamesForWeek = groupedWeeklyGames[selectedWeek] || [];
     return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
   }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);

@@ -45,7 +45,6 @@ import {
   SundayNightFootball,
   MondayNightFootball,
 } from "../../../_constants/constants";
-import { useCurrentUser } from "../../../_hooks/useCurrentUser";
 import {
   CollegeStandings,
   Match as CBBGame,
