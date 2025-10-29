@@ -147,10 +147,10 @@ const GameplanView: React.FC<GameplanViewProps> = ({
 
       if (league === SimCFB) {
         dto.UpdatedGameplan = transformGameplanForSave(localGameplan);
-        result = await saveCFBGameplan(dto);
+        result = await saveCFBGameplan(dto, { ...gameplan, ...localGameplan });
       } else {
         dto.UpdatedNFLGameplan = transformGameplanForSave(localGameplan);
-        result = await saveNFLGameplan(dto);
+        result = await saveNFLGameplan(dto, { ...gameplan, ...localGameplan });
       }
 
       if (result && result.success) {
