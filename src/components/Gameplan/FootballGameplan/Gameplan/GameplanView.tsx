@@ -147,10 +147,10 @@ const GameplanView: React.FC<GameplanViewProps> = ({
 
       if (league === SimCFB) {
         dto.UpdatedGameplan = transformGameplanForSave(localGameplan);
-        result = await saveCFBGameplan(dto, { ...gameplan, ...localGameplan });
+        result = await saveCFBGameplan(dto);
       } else {
         dto.UpdatedNFLGameplan = transformGameplanForSave(localGameplan);
-        result = await saveNFLGameplan(dto, { ...gameplan, ...localGameplan });
+        result = await saveNFLGameplan(dto);
       }
 
       if (result && result.success) {
@@ -178,6 +178,10 @@ const GameplanView: React.FC<GameplanViewProps> = ({
   ]);
 
   const handleResetGameplan = useCallback(() => {
+    setLocalGameplan(gameplan);
+  }, [gameplan]);
+
+  useEffect(() => {
     setLocalGameplan(gameplan);
   }, [gameplan]);
 

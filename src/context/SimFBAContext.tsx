@@ -1225,10 +1225,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     try {
       await GameplanService.SaveCFBGameplan(dto);
 
-      if (updatedGameplan) {
+      if (dto?.UpdatedGameplan) {
         setCollegeGameplanMap((prev) => ({
           ...prev,
-          [cfbTeam!.ID]: updatedGameplan,
+          [cfbTeam!.ID]: dto.UpdatedGameplan as CollegeGameplan,
         }));
       }
 
@@ -1251,10 +1251,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     try {
       await GameplanService.SaveNFLGameplan(dto);
 
-      if (updatedGameplan) {
+      if (dto?.UpdatedNFLGameplan) {
         setNFLGameplanMap((prev) => ({
           ...prev,
-          [nflTeam!.ID]: updatedGameplan,
+          [nflTeam!.ID]: dto.UpdatedNFLGameplan as NFLGameplan,
         }));
       }
 
