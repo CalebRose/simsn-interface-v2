@@ -7,14 +7,12 @@ import {
 } from "../../../../models/footballModels";
 import { SimCFB, SimNFL } from "../../../../_constants/constants";
 import { Text } from "../../../../_design/Typography";
-import { SelectDropdown } from "../../../../_design/Select";
 import { SelectOption } from "../../../../_hooks/useSelectStyles";
 import { useSimFBAStore } from "../../../../context/SimFBAContext";
 import { useAuthStore } from "../../../../context/AuthContext";
-import { Button } from "../../../../_design/Buttons";
 import { SingleValue } from "react-select";
 import { GameplanData, transformGameplanForSave } from "./GameplanHelper";
-import { GameplanTab, GameplanTabs } from "../Constants/GameplanConstants";
+import { GameplanTab } from "../Constants/GameplanConstants";
 import { useGameplanValidation } from "./useGameplanValidation";
 import OffensiveFormationsPanel from "./OffensiveFormationsPanel";
 import OffensiveDistributionsPanel from "./OffensiveDistributionsPanel";

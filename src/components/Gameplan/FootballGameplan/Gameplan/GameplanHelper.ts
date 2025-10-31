@@ -1,4 +1,4 @@
-import { FormationMap, SchemeData } from '../Constants/GameplanConstants';
+import { FormationMap, SchemeData } from "../Constants/GameplanConstants";
 
 export interface GameplanData {
   ID: number;
@@ -137,48 +137,50 @@ export interface GameplanData {
 export interface ValidationError {
   field: string;
   message: string;
-  severity: 'error' | 'warning';
+  severity: "error" | "warning";
 }
 
-export const getMaxForPassPlays = (scheme: string, playTypeIndex: number): number => {
+export const getMaxForPassPlays = (
+  scheme: string,
+  playTypeIndex: number
+): number => {
   switch (playTypeIndex) {
     case 0:
-      return scheme === 'Pro' ? 45 : 50;
+      return scheme === "Pro" ? 45 : 50;
     case 1:
-      return scheme === 'Pro' ? 45 : 50;
+      return scheme === "Pro" ? 45 : 50;
     case 2:
-      if (scheme === 'Pro') return 45;
-      if (scheme === 'Air Raid') return 50;
+      if (scheme === "Pro") return 45;
+      if (scheme === "Air Raid") return 50;
       return 35;
     case 3:
       return 20;
     case 4:
-      return scheme === 'Double Wing Option' ? 30 : 20;
+      return scheme === "Double Wing Option" ? 30 : 20;
     case 5:
-      return scheme === 'Double Wing Option' ? 30 : 20;
+      return scheme === "Double Wing Option" ? 30 : 20;
     default:
       return 20;
   }
 };
 
-export const validateRunPlayDistribution = (gameplan: GameplanData): boolean => {
+export const validateRunPlayDistribution = (
+  gameplan: GameplanData
+): boolean => {
   const maxNormalRun = 80;
   const maxDraw = 15;
-  
+
   const runPlays = [
     gameplan.RunOutsideLeft,
     gameplan.RunOutsideRight,
     gameplan.RunInsideLeft,
     gameplan.RunInsideRight,
     gameplan.RunPowerLeft,
-    gameplan.RunPowerRight
+    gameplan.RunPowerRight,
   ];
-  
-  const drawPlays = [
-    gameplan.RunDrawLeft,
-    gameplan.RunDrawRight
-  ];
-  
+
+  const drawPlays = [gameplan.RunDrawLeft, gameplan.RunDrawRight];
+
   const optionPlays = [
     gameplan.ReadOptionLeft,
     gameplan.ReadOptionRight,
@@ -187,44 +189,44 @@ export const validateRunPlayDistribution = (gameplan: GameplanData): boolean => 
     gameplan.InvertedOptionLeft,
     gameplan.InvertedOptionRight,
     gameplan.TripleOptionLeft,
-    gameplan.TripleOptionRight
+    gameplan.TripleOptionRight,
   ];
-  
+
   for (const play of runPlays) {
     if (play > maxNormalRun) return false;
   }
-  
+
   for (const play of drawPlays) {
     if (play > maxDraw) return false;
   }
-  
+
   for (const play of optionPlays) {
     if (play > maxNormalRun) return false;
   }
-  
+
   return true;
 };
 
-export const validatePassPlayDistribution = (gameplan: GameplanData): boolean => {
+export const validatePassPlayDistribution = (
+  gameplan: GameplanData
+): boolean => {
   const scheme = gameplan.OffensiveScheme;
-  
+
   switch (scheme) {
-    case 'Air Raid':
-    case 'Vertical':
-    case 'West Coast':
-    case 'Run and Shoot':
+    case "Air Raid":
+    case "Vertical":
+    case "West Coast":
+    case "Run and Shoot":
       if (gameplan.PassShort > 50) return false;
-      if (gameplan.PassMedium > 50) return false;
-      if (gameplan.PassLong > 50) return false;
+      if (gameplan.PassMedium + gameplan.PassPAMedium > 50) return false;
+      if (gameplan.PassLong + gameplan.PassPALong > 50) return false;
       if (gameplan.PassDeep + gameplan.PassPADeep > 15) return false;
       if (gameplan.PassScreen > 20) return false;
-      if (gameplan.PassPAMedium > 50) return false;
-      if (gameplan.PassPALong > 50) return false;
       break;
-      
-    case 'Pro':
-    case 'Power Run':
-    case 'I Option':
+
+    case "Pro":
+    case "Power Run":
+    case "I Option":
       if (gameplan.PassShort > 45) return false;
       if (gameplan.PassMedium > 45) return false;
       if (gameplan.PassLong > 45) return false;
@@ -233,11 +235,11 @@ export const validatePassPlayDistribution = (gameplan: GameplanData): boolean =>
       if (gameplan.PassPAMedium > 20) return false;
       if (gameplan.PassPALong > 20) return false;
       break;
-      
-    case 'Double Wing Option':
-    case 'Wing-T':
-    case 'Flexbone':
-    case 'Wishbone':
+
+    case "Double Wing Option":
+    case "Wing-T":
+    case "Flexbone":
+    case "Wishbone":
       if (gameplan.PassShort > 50) return false;
       if (gameplan.PassMedium > 50) return false;
       if (gameplan.PassLong > 50) return false;
@@ -246,9 +248,9 @@ export const validatePassPlayDistribution = (gameplan: GameplanData): boolean =>
       if (gameplan.PassPAMedium > 30) return false;
       if (gameplan.PassPALong > 30) return false;
       break;
-      
-    case 'Spread Option':
-    case 'Pistol':
+
+    case "Spread Option":
+    case "Pistol":
       if (gameplan.PassShort > 50) return false;
       if (gameplan.PassMedium > 50) return false;
       if (gameplan.PassLong > 50) return false;
@@ -257,33 +259,33 @@ export const validatePassPlayDistribution = (gameplan: GameplanData): boolean =>
       if (gameplan.PassPAMedium > 25) return false;
       if (gameplan.PassPALong > 25) return false;
       break;
-      
+
     default:
       break;
   }
-  
+
   return true;
 };
 
 export const getDefensivePositions = (positions: string[]): string[] => {
   const lines: string[] = [];
   let currentLine: string[] = [];
-  
-  positions.forEach(item => {
-    if (item === '\n') {
+
+  positions.forEach((item) => {
+    if (item === "\n") {
       if (currentLine.length > 0) {
-        lines.push(currentLine.join(' '));
+        lines.push(currentLine.join(" "));
         currentLine = [];
       }
     } else {
       currentLine.push(item);
     }
   });
-  
+
   if (currentLine.length > 0) {
-    lines.push(currentLine.join(' '));
+    lines.push(currentLine.join(" "));
   }
-  
+
   return lines;
 };
 
@@ -292,8 +294,8 @@ export const validateWeightDistribution = (weight: number): boolean => {
 };
 
 export const validatePlayTypeDistribution = (
-  weight: number, 
-  min: number, 
+  weight: number,
+  min: number,
   max: number
 ): boolean => {
   return weight >= min && weight <= max;
@@ -310,7 +312,10 @@ export const checkDistributionInUnusedWeight = (
   rpo: number,
   pass: number
 ): boolean => {
-  if (formationWeight === 0 && (traditionalRun > 0 || optionRun > 0 || rpo > 0 || pass > 0)) {
+  if (
+    formationWeight === 0 &&
+    (traditionalRun > 0 || optionRun > 0 || rpo > 0 || pass > 0)
+  ) {
     return false;
   }
   return true;
@@ -320,7 +325,9 @@ export const validateTotalDistribution = (total: number): boolean => {
   return total === 100;
 };
 
-export const getSchemeRanges = (schemeName: string): SchemeData['Ranges'] | null => {
+export const getSchemeRanges = (
+  schemeName: string
+): SchemeData["Ranges"] | null => {
   const scheme = FormationMap[schemeName];
   return scheme ? scheme.Ranges : null;
 };
@@ -328,264 +335,334 @@ export const getSchemeRanges = (schemeName: string): SchemeData['Ranges'] | null
 export const validateGameplan = (gameplan: GameplanData): ValidationError[] => {
   const errors: ValidationError[] = [];
   const scheme = FormationMap[gameplan.OffensiveScheme];
-  
+
   if (!scheme) {
     errors.push({
-      field: 'OffensiveScheme',
-      message: 'Invalid offensive scheme selected',
-      severity: 'error'
+      field: "OffensiveScheme",
+      message: "Invalid offensive scheme selected",
+      severity: "error",
     });
     return errors;
   }
-  
+
   const { Ranges } = scheme;
-  
+
   const formationWeights = [
-    gameplan.OffForm1TraditionalRun + gameplan.OffForm1OptionRun + gameplan.OffForm1RPO + gameplan.OffForm1Pass,
-    gameplan.OffForm2TraditionalRun + gameplan.OffForm2OptionRun + gameplan.OffForm2RPO + gameplan.OffForm2Pass,
-    gameplan.OffForm3TraditionalRun + gameplan.OffForm3OptionRun + gameplan.OffForm3RPO + gameplan.OffForm3Pass,
-    gameplan.OffForm4TraditionalRun + gameplan.OffForm4OptionRun + gameplan.OffForm4RPO + gameplan.OffForm4Pass,
-    gameplan.OffForm5TraditionalRun + gameplan.OffForm5OptionRun + gameplan.OffForm5RPO + gameplan.OffForm5Pass
+    gameplan.OffForm1TraditionalRun +
+      gameplan.OffForm1OptionRun +
+      gameplan.OffForm1RPO +
+      gameplan.OffForm1Pass,
+    gameplan.OffForm2TraditionalRun +
+      gameplan.OffForm2OptionRun +
+      gameplan.OffForm2RPO +
+      gameplan.OffForm2Pass,
+    gameplan.OffForm3TraditionalRun +
+      gameplan.OffForm3OptionRun +
+      gameplan.OffForm3RPO +
+      gameplan.OffForm3Pass,
+    gameplan.OffForm4TraditionalRun +
+      gameplan.OffForm4OptionRun +
+      gameplan.OffForm4RPO +
+      gameplan.OffForm4Pass,
+    gameplan.OffForm5TraditionalRun +
+      gameplan.OffForm5OptionRun +
+      gameplan.OffForm5RPO +
+      gameplan.OffForm5Pass,
   ];
-  
-  const usedFormations = formationWeights.filter(weight => weight > 0).length;
+
+  const usedFormations = formationWeights.filter((weight) => weight > 0).length;
   if (usedFormations < 2) {
     errors.push({
-      field: 'formations',
+      field: "formations",
       message: `You're currently weighted to use ${usedFormations} formations when the minimum is 2. Please increase the weight of unused formations.`,
-      severity: 'error'
+      severity: "error",
     });
   }
-  
+
   formationWeights.forEach((weight, index) => {
     if (weight > 50) {
       errors.push({
         field: `OffForm${index + 1}`,
-        message: `Offensive Formation ${index + 1} has a weight greater than 50. Please reduce to 50 or less.`,
-        severity: 'error'
+        message: `Offensive Formation ${
+          index + 1
+        } has a weight greater than 50. Please reduce to 50 or less.`,
+        severity: "error",
       });
     }
   });
-  
-  const totalFormationWeight = formationWeights.reduce((sum, weight) => sum + weight, 0);
+
+  const totalFormationWeight = formationWeights.reduce(
+    (sum, weight) => sum + weight,
+    0
+  );
   if (totalFormationWeight !== 100) {
     errors.push({
-      field: 'formations',
+      field: "formations",
       message: `Total Offensive Formation Ratio is ${totalFormationWeight}. Please make sure your allocation equals 100.`,
-      severity: 'error'
-    });
-  }
-  
-  const tradRunTotal = gameplan.OffForm1TraditionalRun + gameplan.OffForm2TraditionalRun + 
-                      gameplan.OffForm3TraditionalRun + gameplan.OffForm4TraditionalRun + 
-                      gameplan.OffForm5TraditionalRun;
-  const optRunTotal = gameplan.OffForm1OptionRun + gameplan.OffForm2OptionRun + 
-                     gameplan.OffForm3OptionRun + gameplan.OffForm4OptionRun + 
-                     gameplan.OffForm5OptionRun;
-  const rpoTotal = gameplan.OffForm1RPO + gameplan.OffForm2RPO + 
-                   gameplan.OffForm3RPO + gameplan.OffForm4RPO + 
-                   gameplan.OffForm5RPO;
-  const passTotal = gameplan.OffForm1Pass + gameplan.OffForm2Pass + 
-                    gameplan.OffForm3Pass + gameplan.OffForm4Pass + 
-                    gameplan.OffForm5Pass;
-  
-  if (!validatePlayTypeDistribution(tradRunTotal, Ranges.TraditionalRun.Min, Ranges.TraditionalRun.Max)) {
-    errors.push({
-      field: 'traditionalRun',
-      message: `Traditional Run total is ${tradRunTotal}. Must be between ${Ranges.TraditionalRun.Min} and ${Ranges.TraditionalRun.Max}.`,
-      severity: 'error'
-    });
-  }
-  
-  if (!validatePlayTypeDistribution(optRunTotal, Ranges.OptionRun.Min, Ranges.OptionRun.Max)) {
-    errors.push({
-      field: 'optionRun',
-      message: `Option Run total is ${optRunTotal}. Must be between ${Ranges.OptionRun.Min} and ${Ranges.OptionRun.Max}.`,
-      severity: 'error'
-    });
-  }
-  
-  if (!validatePlayTypeDistribution(rpoTotal, Ranges.RPO.Min, Ranges.RPO.Max)) {
-    errors.push({
-      field: 'rpo',
-      message: `RPO total is ${rpoTotal}. Must be between ${Ranges.RPO.Min} and ${Ranges.RPO.Max}.`,
-      severity: 'error'
-    });
-  }
-  
-  if (!validatePlayTypeDistribution(passTotal, Ranges.Pass.Min, Ranges.Pass.Max)) {
-    errors.push({
-      field: 'pass',
-      message: `Pass total is ${passTotal}. Must be between ${Ranges.Pass.Min} and ${Ranges.Pass.Max}.`,
-      severity: 'error'
-    });
-  }
-  
-  const playTypeSum = tradRunTotal + optRunTotal + rpoTotal + passTotal;
-  if (playTypeSum !== 100) {
-    errors.push({
-      field: 'playTypes',
-      message: `The sum of all Play Types across all formations is ${playTypeSum}. Please set this to 100.`,
-      severity: 'error'
-    });
-  }
-  
-  if (!validateRunPlayDistribution(gameplan)) {
-    errors.push({
-      field: 'runPlays',
-      message: 'Run Play Distribution is out of range. Please change ranges for all inside, outside, and power plays (50 max) and all draw plays (15 max)',
-      severity: 'error'
-    });
-  }
-  
-  if (!validatePassPlayDistribution(gameplan)) {
-    errors.push({
-      field: 'passPlays',
-      message: `Pass play distribution is invalid for ${gameplan.OffensiveScheme} scheme. Please check play type limits.`,
-      severity: 'error'
-    });
-  }
-  
-  if (gameplan.OffensiveScheme === 'Air Raid' && gameplan.OffForm3TraditionalRun > 0) {
-    errors.push({
-      field: 'OffForm3TraditionalRun',
-      message: 'The Empty Gun formation does not have a runningback and thus cannot support traditional run plays. Please set this value to 0.',
-      severity: 'error'
-    });
-  }
-  
-  const runDistTotal = gameplan.RunOutsideLeft + gameplan.RunOutsideRight + 
-                       gameplan.RunInsideLeft + gameplan.RunInsideRight + 
-                       gameplan.RunPowerLeft + gameplan.RunPowerRight + 
-                       gameplan.RunDrawLeft + gameplan.RunDrawRight;
-  if (!validateTotalDistribution(runDistTotal)) {
-    errors.push({
-      field: 'runDistribution',
-      message: `Total Run Play Distribution is ${runDistTotal}. Please make sure your allocation equals 100.`,
-      severity: 'error'
+      severity: "error",
     });
   }
 
-  const passDistTotal = gameplan.PassShort + gameplan.PassMedium + gameplan.PassLong + gameplan.PassDeep +
-                        gameplan.PassScreen + gameplan.PassPAMedium + gameplan.PassPALong + gameplan.PassPADeep;
+  const tradRunTotal =
+    gameplan.OffForm1TraditionalRun +
+    gameplan.OffForm2TraditionalRun +
+    gameplan.OffForm3TraditionalRun +
+    gameplan.OffForm4TraditionalRun +
+    gameplan.OffForm5TraditionalRun;
+  const optRunTotal =
+    gameplan.OffForm1OptionRun +
+    gameplan.OffForm2OptionRun +
+    gameplan.OffForm3OptionRun +
+    gameplan.OffForm4OptionRun +
+    gameplan.OffForm5OptionRun;
+  const rpoTotal =
+    gameplan.OffForm1RPO +
+    gameplan.OffForm2RPO +
+    gameplan.OffForm3RPO +
+    gameplan.OffForm4RPO +
+    gameplan.OffForm5RPO;
+  const passTotal =
+    gameplan.OffForm1Pass +
+    gameplan.OffForm2Pass +
+    gameplan.OffForm3Pass +
+    gameplan.OffForm4Pass +
+    gameplan.OffForm5Pass;
+
+  if (
+    !validatePlayTypeDistribution(
+      tradRunTotal,
+      Ranges.TraditionalRun.Min,
+      Ranges.TraditionalRun.Max
+    )
+  ) {
+    errors.push({
+      field: "traditionalRun",
+      message: `Traditional Run total is ${tradRunTotal}. Must be between ${Ranges.TraditionalRun.Min} and ${Ranges.TraditionalRun.Max}.`,
+      severity: "error",
+    });
+  }
+
+  if (
+    !validatePlayTypeDistribution(
+      optRunTotal,
+      Ranges.OptionRun.Min,
+      Ranges.OptionRun.Max
+    )
+  ) {
+    errors.push({
+      field: "optionRun",
+      message: `Option Run total is ${optRunTotal}. Must be between ${Ranges.OptionRun.Min} and ${Ranges.OptionRun.Max}.`,
+      severity: "error",
+    });
+  }
+
+  if (!validatePlayTypeDistribution(rpoTotal, Ranges.RPO.Min, Ranges.RPO.Max)) {
+    errors.push({
+      field: "rpo",
+      message: `RPO total is ${rpoTotal}. Must be between ${Ranges.RPO.Min} and ${Ranges.RPO.Max}.`,
+      severity: "error",
+    });
+  }
+
+  if (
+    !validatePlayTypeDistribution(passTotal, Ranges.Pass.Min, Ranges.Pass.Max)
+  ) {
+    errors.push({
+      field: "pass",
+      message: `Pass total is ${passTotal}. Must be between ${Ranges.Pass.Min} and ${Ranges.Pass.Max}.`,
+      severity: "error",
+    });
+  }
+
+  const playTypeSum = tradRunTotal + optRunTotal + rpoTotal + passTotal;
+  if (playTypeSum !== 100) {
+    errors.push({
+      field: "playTypes",
+      message: `The sum of all Play Types across all formations is ${playTypeSum}. Please set this to 100.`,
+      severity: "error",
+    });
+  }
+
+  if (!validateRunPlayDistribution(gameplan)) {
+    errors.push({
+      field: "runPlays",
+      message:
+        "Run Play Distribution is out of range. Please change ranges for all inside, outside, and power plays (50 max) and all draw plays (15 max)",
+      severity: "error",
+    });
+  }
+
+  if (!validatePassPlayDistribution(gameplan)) {
+    errors.push({
+      field: "passPlays",
+      message: `Pass play distribution is invalid for ${gameplan.OffensiveScheme} scheme. Please check play type limits.`,
+      severity: "error",
+    });
+  }
+
+  if (
+    gameplan.OffensiveScheme === "Air Raid" &&
+    gameplan.OffForm3TraditionalRun > 0
+  ) {
+    errors.push({
+      field: "OffForm3TraditionalRun",
+      message:
+        "The Empty Gun formation does not have a runningback and thus cannot support traditional run plays. Please set this value to 0.",
+      severity: "error",
+    });
+  }
+
+  const runDistTotal =
+    gameplan.RunOutsideLeft +
+    gameplan.RunOutsideRight +
+    gameplan.RunInsideLeft +
+    gameplan.RunInsideRight +
+    gameplan.RunPowerLeft +
+    gameplan.RunPowerRight +
+    gameplan.RunDrawLeft +
+    gameplan.RunDrawRight;
+  if (!validateTotalDistribution(runDistTotal)) {
+    errors.push({
+      field: "runDistribution",
+      message: `Total Run Play Distribution is ${runDistTotal}. Please make sure your allocation equals 100.`,
+      severity: "error",
+    });
+  }
+
+  const passDistTotal =
+    gameplan.PassShort +
+    gameplan.PassMedium +
+    gameplan.PassLong +
+    gameplan.PassDeep +
+    gameplan.PassScreen +
+    gameplan.PassPAMedium +
+    gameplan.PassPALong +
+    gameplan.PassPADeep;
   if (!validateTotalDistribution(passDistTotal)) {
     errors.push({
-      field: 'passDistribution',
+      field: "passDistribution",
       message: `Total Pass Play Distribution is ${passDistTotal}. Please make sure your allocation equals 100.`,
-      severity: 'error'
+      severity: "error",
     });
   }
 
   const deepAndPADeepTotal = gameplan.PassDeep + gameplan.PassPADeep;
-  const isAirRaidOrVertical = gameplan.OffensiveScheme === 'Air Raid' || gameplan.OffensiveScheme === 'Vertical';
+  const isAirRaidOrVertical =
+    gameplan.OffensiveScheme === "Air Raid" ||
+    gameplan.OffensiveScheme === "Vertical";
   const maxDeepAndPADeep = isAirRaidOrVertical ? 15 : 10;
 
   if (deepAndPADeepTotal > maxDeepAndPADeep) {
     errors.push({
-      field: 'deepAndPADeep',
+      field: "deepAndPADeep",
       message: `Deep and PA Deep combined total is ${deepAndPADeepTotal}%. Maximum allowed for ${gameplan.OffensiveScheme} is ${maxDeepAndPADeep}%.`,
-      severity: 'error'
+      severity: "error",
     });
   }
-  
+
   if (optRunTotal > 0) {
-    const optionDistTotal = gameplan.ReadOptionLeft + gameplan.ReadOptionRight + 
-                           gameplan.SpeedOptionLeft + gameplan.SpeedOptionRight + 
-                           gameplan.InvertedOptionLeft + gameplan.InvertedOptionRight + 
-                           gameplan.TripleOptionLeft + gameplan.TripleOptionRight;
+    const optionDistTotal =
+      gameplan.ReadOptionLeft +
+      gameplan.ReadOptionRight +
+      gameplan.SpeedOptionLeft +
+      gameplan.SpeedOptionRight +
+      gameplan.InvertedOptionLeft +
+      gameplan.InvertedOptionRight +
+      gameplan.TripleOptionLeft +
+      gameplan.TripleOptionRight;
     if (!validateTotalDistribution(optionDistTotal)) {
       errors.push({
-        field: 'optionDistribution',
+        field: "optionDistribution",
         message: `Total Option Run Distribution is ${optionDistTotal}. Please make sure your allocation equals 100.`,
-        severity: 'error'
+        severity: "error",
       });
     }
   }
-  
+
   if (rpoTotal > 0) {
-    const rpoDistTotal = gameplan.ChoiceOutside + gameplan.ChoiceInside + gameplan.ChoicePower + 
-                         gameplan.PeekOutside + gameplan.PeekInside + gameplan.PeekPower;
+    const rpoDistTotal =
+      gameplan.ChoiceOutside +
+      gameplan.ChoiceInside +
+      gameplan.ChoicePower +
+      gameplan.PeekOutside +
+      gameplan.PeekInside +
+      gameplan.PeekPower;
     if (!validateTotalDistribution(rpoDistTotal)) {
       errors.push({
-        field: 'rpoDistribution',
+        field: "rpoDistribution",
         message: `Total RPO Distribution is ${rpoDistTotal}. Please make sure your allocation equals 100.`,
-        severity: 'error'
+        severity: "error",
       });
     }
   }
-  
+
   const defFormations = [
     gameplan.DefFormation1,
     gameplan.DefFormation2,
     gameplan.DefFormation3,
     gameplan.DefFormation4,
-    gameplan.DefFormation5
+    gameplan.DefFormation5,
   ];
-  
+
   defFormations.forEach((formation, index) => {
     if (!formation || formation.length === 0) {
       errors.push({
         field: `DefFormation${index + 1}`,
-        message: `Defensive Formation ${index + 1} was not selected. Please select a defensive formation.`,
-        severity: 'error'
+        message: `Defensive Formation ${
+          index + 1
+        } was not selected. Please select a defensive formation.`,
+        severity: "error",
       });
     }
   });
-  
+
   return errors;
 };
 
 export const parseFocusPlays = (focusPlaysString: string): string[] => {
   if (!focusPlaysString) return [];
-  return focusPlaysString.split(',').filter(play => play.trim().length > 0);
+  return focusPlaysString.split(",").filter((play) => play.trim().length > 0);
 };
 
 export const stringifyFocusPlays = (focusPlays: string[]): string => {
-  return focusPlays.join(',');
+  return focusPlays.join(",");
 };
 
 export const transformGameplanForSave = (gameplan: GameplanData): any => {
   const transformed = { ...gameplan };
-  
+
   const transformedGameplan = {
     ...transformed,
-    PassQuick: transformed.PassShort,
-    PassShort: transformed.PassMedium,
-    PassPAShort: transformed.PassPAMedium,
   };
 
-  if (typeof transformed.LeftVsRight === 'number') {
+  if (typeof transformed.LeftVsRight === "number") {
     (transformedGameplan as any).LeftVsRight = 100 - transformed.LeftVsRight;
   }
-  
-  delete (transformedGameplan as any).PassMedium;
-  delete (transformedGameplan as any).PassPAMedium;
-  
+
   return transformedGameplan;
 };
 
-
 export const applyDefaultScheme = (
-  gameplan: GameplanData, 
-  schemeType: 'offense' | 'defense',
+  gameplan: GameplanData,
+  schemeType: "offense" | "defense",
   defaultSchemes: any,
   opponentScheme?: string
 ): GameplanData => {
   const updatedGameplan = { ...gameplan };
-  
-  if (schemeType === 'offense') {
+
+  if (schemeType === "offense") {
     const defaults = defaultSchemes[gameplan.OffensiveScheme];
     if (defaults) {
       Object.assign(updatedGameplan, defaults);
       updatedGameplan.PrimaryHB = 75;
     }
-  } else if (schemeType === 'defense' && opponentScheme) {
+  } else if (schemeType === "defense" && opponentScheme) {
     const defaults = defaultSchemes[gameplan.DefensiveScheme];
     const defaultsByOppScheme = defaults?.[opponentScheme];
     if (defaultsByOppScheme) {
       Object.assign(updatedGameplan, defaultsByOppScheme);
     }
   }
-  
+
   return updatedGameplan;
 };

@@ -616,12 +616,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const collegeGameplan = useMemo(() => {
     if (cfbTeam && collegeGameplanMap) {
       const gameplan = collegeGameplanMap[cfbTeam.ID];
-      const newPAMediumValue = (gameplan as any).PassPAShort;
       return new CollegeGameplan({
         ...gameplan,
-        PassShort: (gameplan as any).PassQuick,
-        PassMedium: (gameplan as any).PassShort,
-        PassPAMedium: newPAMediumValue,
         // Store Right% internally; invert LeftVsRight from backend (Left%)
         LeftVsRight:
           typeof (gameplan as any).LeftVsRight === "number"
@@ -637,9 +633,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       const gameplan = nflGameplanMap[nflTeam.ID];
       return new NFLGameplan({
         ...gameplan,
-        PassShort: (gameplan as any).PassQuick,
-        PassMedium: (gameplan as any).PassShort,
-        PassPAMedium: (gameplan as any).PassPAShort,
         // Store Right% internally; invert LeftVsRight from backend (Left%)
         LeftVsRight:
           typeof (gameplan as any).LeftVsRight === "number"
