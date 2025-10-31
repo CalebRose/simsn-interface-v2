@@ -181,6 +181,10 @@ const GameplanView: React.FC<GameplanViewProps> = ({
     setLocalGameplan(gameplan);
   }, [gameplan]);
 
+  useEffect(() => {
+    setLocalGameplan(gameplan);
+  }, [gameplan]);
+
   const hasUnsavedChanges = useMemo(() => {
     if (!localGameplan || !gameplan) return false;
 
