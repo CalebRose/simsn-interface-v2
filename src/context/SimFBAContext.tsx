@@ -883,9 +883,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (cfbID === 0 && nflID === 0) {
       return;
     }
-    console.log({ cfbID, nflID });
     const res = await BootstrapService.GetFBARosterBootstrapData(cfbID, nflID);
-    console.log({ res });
     setNFLTradeProposals(res.TradeProposals);
     setTradePreferencesMap(res.TradePreferences);
     setProContractMap(res.ContractMap);
