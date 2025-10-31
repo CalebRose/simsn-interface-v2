@@ -42,7 +42,6 @@ export const CFBGameplanPage = () => {
     cfbRosterMap,
     cfbTeamOptions,
     cfbTeamMap,
-    saveCFBDepthChart,
     collegeGameplan: cfbGameplan,
     collegeDepthChart: cfbDepthChart,
     collegeGameplanMap,
@@ -69,8 +68,6 @@ export const CFBGameplanPage = () => {
     return [];
   }, [cfbRosterMap, selectedTeam]);
 
-  const [gameplanData, setGameplanData] = useState<CFBGameplan | null>(null);
-  const [depthChartData, setDepthChartData] = useState<any>(null);
   const [isLoadingGameplan, setIsLoadingGameplan] = useState(false);
 
   useEffect(() => {

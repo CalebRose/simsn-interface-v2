@@ -616,12 +616,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const collegeGameplan = useMemo(() => {
     if (cfbTeam && collegeGameplanMap) {
       const gameplan = collegeGameplanMap[cfbTeam.ID];
-      const newPAMediumValue = (gameplan as any).PassPAShort;
       return new CollegeGameplan({
         ...gameplan,
-        PassShort: (gameplan as any).PassQuick,
-        PassMedium: (gameplan as any).PassShort,
-        PassPAMedium: newPAMediumValue,
         // Store Right% internally; invert LeftVsRight from backend (Left%)
         LeftVsRight:
           typeof (gameplan as any).LeftVsRight === "number"
@@ -637,9 +633,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       const gameplan = nflGameplanMap[nflTeam.ID];
       return new NFLGameplan({
         ...gameplan,
-        PassShort: (gameplan as any).PassQuick,
-        PassMedium: (gameplan as any).PassShort,
-        PassPAMedium: (gameplan as any).PassPAShort,
         // Store Right% internally; invert LeftVsRight from backend (Left%)
         LeftVsRight:
           typeof (gameplan as any).LeftVsRight === "number"
@@ -890,9 +883,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (cfbID === 0 && nflID === 0) {
       return;
     }
-    console.log({ cfbID, nflID });
     const res = await BootstrapService.GetFBARosterBootstrapData(cfbID, nflID);
-    console.log({ res });
     setNFLTradeProposals(res.TradeProposals);
     setTradePreferencesMap(res.TradePreferences);
     setProContractMap(res.ContractMap);
