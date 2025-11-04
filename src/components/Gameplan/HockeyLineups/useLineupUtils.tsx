@@ -112,6 +112,7 @@ export const useCHLLineupUtils = (
       if (playerID === 0) return;
 
       const player = chlTeamRosterMap[playerID];
+      if (!player || player.ID === 0) return;
       if (player.IsInjured) {
         errList.push(
           `${player.Position} ${player.FirstName} ${player.LastName} is currently injured and will be out for approximately ${player.DaysOfRecovery} days.`
