@@ -616,6 +616,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const collegeGameplan = useMemo(() => {
     if (cfbTeam && collegeGameplanMap) {
       const gameplan = collegeGameplanMap[cfbTeam.ID];
+      if (!gameplan) return null;
       return new CollegeGameplan({
         ...gameplan,
         // Store Right% internally; invert LeftVsRight from backend (Left%)
@@ -631,6 +632,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const nflGameplan = useMemo(() => {
     if (nflTeam && nflGameplanMap) {
       const gameplan = nflGameplanMap[nflTeam.ID];
+      if (!gameplan) return null;
       return new NFLGameplan({
         ...gameplan,
         // Store Right% internally; invert LeftVsRight from backend (Left%)

@@ -7,6 +7,7 @@ import {
   NBAWaiverOfferDTO,
 } from "../models/basketballModels";
 import {
+  ExtensionOffer,
   FreeAgencyOffer,
   FreeAgencyOfferDTO,
   WaiverOffer,
@@ -16,8 +17,8 @@ import {
   FreeAgencyOffer as NFLFreeAgencyOffer,
   FreeAgencyOfferDTO as NFLFreeAgencyOfferDTO,
   NFLWaiverOffer,
-  NFLWaiverOffDTO
-} from "../models/footballModels"
+  NFLWaiverOffDTO,
+} from "../models/footballModels";
 
 export const FreeAgencyService = {
   HCKSaveFreeAgencyOffer: async (
@@ -40,6 +41,24 @@ export const FreeAgencyService = {
     dto: WaiverOfferDTO
   ): Promise<WaiverOffer> => {
     return await PostCall(`${hckUrl}phl/waiverwire/cancel/offer`, dto);
+  },
+
+  HCKSaveExtensionOffer: async (
+    dto: ExtensionOffer
+  ): Promise<ExtensionOffer> => {
+    return await PostCall(
+      `${hckUrl}phl/roster/extend/create/${dto.PlayerID}`,
+      dto
+    );
+  },
+
+  HCKCancelExtensionOffer: async (
+    dto: ExtensionOffer
+  ): Promise<ExtensionOffer> => {
+    return await PostCall(
+      `${hckUrl}phl/roster/extend/cancel/${dto.PlayerID}`,
+      dto
+    );
   },
 
   BBASaveFreeAgencyOffer: async (

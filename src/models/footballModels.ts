@@ -921,6 +921,12 @@ export class NFLExtensionOffer {
     }
     return a;
   }
+  updateField(name: string, value: number): NFLExtensionOffer {
+    const copy = new NFLExtensionOffer();
+    Object.assign(copy, this);
+    (copy as any)[name] = value;
+    return copy;
+  }
 }
 export class NFLWaiverOffer {
   [key: string]: any;

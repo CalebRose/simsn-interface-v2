@@ -21,6 +21,7 @@ import {
   Affiliate,
   TradeBlock,
   PracticeSquad,
+  ExtensionOfferType,
 } from "../../_constants/constants";
 import {
   getCHLAttributes,
@@ -61,6 +62,7 @@ import {
   getGeneralLetterGrade,
   getHockeyLetterGrade,
 } from "../../_utility/getLetterGrade";
+import { useSimFBAStore } from "../../context/SimFBAContext";
 
 interface CHLRosterTableProps {
   roster: CHLPlayer[];
@@ -314,6 +316,7 @@ interface PHLRosterTableProps {
   team?: any;
   category?: string;
   openModal: (action: ModalAction, player: PHLPlayer) => void;
+  openExtensionModal: (player: PHLPlayer) => void;
   disable: boolean;
 }
 
@@ -327,6 +330,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
   team,
   category,
   openModal,
+  openExtensionModal,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -556,6 +560,11 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
                 openModal(Affiliate, item);
               } else if (selectedOption?.value === "tradeBlock") {
                 openModal(TradeBlock, item);
+              } else if (
+                selectedOption?.value === "extension" &&
+                playerContract!.ContractLength <= 1
+              ) {
+                openExtensionModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
               }
@@ -626,6 +635,7 @@ interface CFBRosterTableProps {
   category?: string;
   openModal: (action: ModalAction, player: CFBPlayer) => void;
   disable: boolean;
+  redshirtCount?: number;
 }
 
 export const CFBRosterTable: FC<CFBRosterTableProps> = ({
@@ -633,11 +643,13 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
   backgroundColor,
   headerColor,
   borderColor,
+  redshirtCount,
   team,
   category,
   openModal,
   disable,
 }) => {
+  const store = useSimFBAStore();
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const { isDesktop } = useResponsive();
 
@@ -785,7 +797,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
                 value: "cut",
                 label: `Cut - ${item.FirstName} ${item.LastName}`,
               },
-              ...(item.IsRedshirting || item.IsRedshirt
+              ...(item.IsRedshirting || item.IsRedshirt || redshirtCount!! < 20
                 ? []
                 : [
                     {
