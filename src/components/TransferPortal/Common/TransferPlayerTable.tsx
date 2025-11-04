@@ -242,6 +242,8 @@ const CHLRow: React.FC<CHLRowProps> = ({
     return <Logo url={previousURL} variant="small" />;
   }, [item]);
 
+  console.log({ item, chlTeam, recruitOnBoardMap });
+
   return (
     <div
       key={item.ID}

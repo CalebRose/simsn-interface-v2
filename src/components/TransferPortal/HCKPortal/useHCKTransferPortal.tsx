@@ -60,13 +60,22 @@ export const useHCKTransferPortal = () => {
     return false;
   }, [hck_Timestamp]);
 
+  const teamTransferPortalProfiles = useMemo(() => {
+    if (chlTeam && transferPortalProfiles) {
+      return transferPortalProfiles.filter(
+        (profile) => profile.ProfileID === chlTeam.ID
+      );
+    }
+    return [];
+  }, [chlTeam, transferPortalProfiles]);
+
   const transferOnBoardMap = useMemo(() => {
     const boardMap: Record<number, boolean> = {};
-    transferPortalProfiles.forEach((profile) => {
+    teamTransferPortalProfiles.forEach((profile) => {
       boardMap[profile.CollegePlayerID] = true;
     });
     return boardMap;
-  }, [transferPortalProfiles]);
+  }, [teamTransferPortalProfiles]);
 
   const regionOptions = useMemo(() => {
     if (country === USA) {
