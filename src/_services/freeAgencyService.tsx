@@ -46,7 +46,10 @@ export const FreeAgencyService = {
   HCKSaveExtensionOffer: async (
     dto: ExtensionOffer
   ): Promise<ExtensionOffer> => {
-    return await PostCall(`${hckUrl}phl/roster/extend/${dto.PlayerID}`, dto);
+    return await PostCall(
+      `${hckUrl}phl/roster/extend/create/${dto.PlayerID}`,
+      dto
+    );
   },
 
   HCKCancelExtensionOffer: async (
