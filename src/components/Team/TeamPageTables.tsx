@@ -560,7 +560,10 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
                 openModal(Affiliate, item);
               } else if (selectedOption?.value === "tradeBlock") {
                 openModal(TradeBlock, item);
-              } else if (selectedOption?.value === "extension") {
+              } else if (
+                selectedOption?.value === "extension" &&
+                playerContract!.ContractLength <= 1
+              ) {
                 openExtensionModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
