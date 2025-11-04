@@ -578,17 +578,19 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
 
   return (
     <>
-      <ExtensionOfferModal
-        isOpen={extensionModal.isModalOpen}
-        onClose={extensionModal.handleCloseModal}
-        player={modalPlayer!!}
-        league={SimPHL}
-        ts={ts}
-        capsheet={capsheet!!}
-        existingOffer={phlExtensionMap![modalPlayer!.ID]}
-        confirmOffer={SaveExtensionOffer}
-        cancelOffer={CancelExtensionOffer}
-      />
+      {modalPlayer && (
+        <ExtensionOfferModal
+          isOpen={extensionModal.isModalOpen}
+          onClose={extensionModal.handleCloseModal}
+          player={modalPlayer!!}
+          league={SimPHL}
+          ts={ts}
+          capsheet={capsheet!!}
+          existingOffer={phlExtensionMap![modalPlayer!.ID]}
+          confirmOffer={SaveExtensionOffer}
+          cancelOffer={CancelExtensionOffer}
+        />
+      )}
       <ManageTradeModal
         isOpen={manageTradesModal.isModalOpen}
         onClose={manageTradesModal.handleCloseModal}
