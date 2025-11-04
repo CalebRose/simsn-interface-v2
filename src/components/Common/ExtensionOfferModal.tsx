@@ -48,7 +48,6 @@ import {
 } from "../../_helper/offerHelper";
 
 interface ExtensionOfferModalProps {
-  action: OfferAction;
   player: ProfessionalPlayer | NFLPlayer | NBAPlayer;
   existingOffer?: PHLExtensionOffer | NFLExtensionOffer | NBAExtensionOffer;
   league: League;
@@ -57,18 +56,19 @@ interface ExtensionOfferModalProps {
   capsheet: ProCapsheet | NFLCapsheet | NBACapsheet;
   onClose: () => void;
   confirmOffer: (dto: any) => Promise<void>;
+  cancelOffer: (dto: any) => Promise<void>;
 }
 
 export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
   isOpen,
   onClose,
-  action,
   player,
   league,
   existingOffer,
   ts,
   capsheet,
   confirmOffer,
+  cancelOffer,
 }) => {
   const [offer, setOffer] = useState<
     PHLExtensionOffer | NFLExtensionOffer | NBAExtensionOffer
@@ -83,8 +83,8 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
   });
 
   useEffect(() => {
-    setOffer(createExtensionOffer(league, action, existingOffer));
-  }, [existingOffer, league, action]);
+    setOffer(createExtensionOffer(league, existingOffer));
+  }, [existingOffer, league]);
 
   const isNFL = useMemo(() => {
     return league === SimNFL && offer instanceof NFLExtensionOffer;
@@ -103,13 +103,8 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
   }, [player]);
 
   const title = useMemo(() => {
-    if (action === FreeAgentOffer) {
-      return `Offer ${playerLabel}`;
-    } else if (action === WaiverOffer) {
-      return `Pick Up ${playerLabel}`;
-    }
-    return "";
-  }, [action, playerLabel]);
+    return `Extend ${playerLabel}`;
+  }, [playerLabel]);
 
   const totalBonus = useMemo(() => {
     if (!offer || !isNFL) return 0;
@@ -329,6 +324,43 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
     onClose();
   }, [offer, player, capsheet, league]);
 
+  const Cancel = useCallback(async () => {
+    if (league === SimPHL) {
+      const { totalComp, ContractLength } = getPHLSalaryData(
+        offer as PHLExtensionOffer
+      );
+      if (totalComp === 0 && ContractLength === 0) {
+        onClose();
+        return;
+      }
+      const dto = new PHLExtensionOffer({
+        ...offer,
+        PlayerID: player.ID,
+        TeamID: capsheet.ID,
+      });
+      await cancelOffer(dto);
+    }
+    if (league === SimNFL) {
+      const { totalComp, ContractLength } = getNFLSalaryData(
+        offer as NFLExtensionOffer
+      );
+      if (totalComp === 0 && ContractLength === 0) {
+        onClose();
+        return;
+      }
+
+      const dto = new NFLExtensionOffer({
+        ...offer,
+        NFLPlayerID: player.ID,
+        TeamID: capsheet.ID,
+        AAV: aavValue,
+      });
+      await cancelOffer(dto);
+    }
+
+    onClose();
+  }, [offer, player, capsheet, league]);
+
   return (
     <>
       <Modal
@@ -340,6 +372,17 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
             <ButtonGroup>
               <Button variant="danger" onClick={onClose}>
                 Cancel
+              </Button>
+              <Button
+                variant="secondary"
+                disabled={
+                  existingOffer === null ||
+                  existingOffer === undefined ||
+                  existingOffer.ID === 0
+                }
+                onClick={Cancel}
+              >
+                {existingOffer ? "Revoke Offer" : "Cancel Offer"}
               </Button>
               <Button
                 variant={errors.length === 0 ? "success" : "warning"}

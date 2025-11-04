@@ -181,6 +181,8 @@ interface SimHCKContextProps {
   CancelFreeAgencyOffer: (dto: any) => Promise<void>;
   SaveWaiverWireOffer: (dto: any) => Promise<void>;
   CancelWaiverWireOffer: (dto: any) => Promise<void>;
+  SaveExtensionOffer: (dto: any) => Promise<void>;
+  CancelExtensionOffer: (dto: any) => Promise<void>;
   SaveRecruitingBoard: () => Promise<void>;
   SaveAIRecruitingSettings: (dto: UpdateRecruitingBoardDTO) => Promise<void>;
   SearchHockeyStats: (dto: any) => Promise<void>;
@@ -310,6 +312,8 @@ const defaultContext: SimHCKContextProps = {
   CancelFreeAgencyOffer: async () => {},
   SaveWaiverWireOffer: async () => {},
   CancelWaiverWireOffer: async () => {},
+  SaveExtensionOffer: async () => {},
+  CancelExtensionOffer: async () => {},
   SearchHockeyStats: async () => {},
   ExportHockeyStats: async () => {},
   ExportHCKRoster: async () => {},
@@ -1222,6 +1226,36 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const SaveExtensionOffer = useCallback(async (dto: ExtensionOffer) => {
+    const res = await FreeAgencyService.HCKSaveExtensionOffer(dto);
+    if (res) {
+      enqueueSnackbar("Extension Offer Created!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+      setProExtensionMap((prevOffers) => {
+        const offers = { ...prevOffers };
+        offers[res.PlayerID] = new ExtensionOffer({ ...res });
+        return offers;
+      });
+    }
+  }, []);
+
+  const CancelExtensionOffer = useCallback(async (dto: ExtensionOffer) => {
+    const res = await FreeAgencyService.HCKCancelExtensionOffer(dto);
+    if (res) {
+      enqueueSnackbar("Extension Offer Cancelled!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+      setProExtensionMap((prevOffers) => {
+        const offers = { ...prevOffers };
+        delete offers[dto.PlayerID];
+        return offers;
+      });
+    }
+  }, []);
+
   const SearchHockeyStats = useCallback(async (dto: any) => {
     if (dto.League === SimCHL) {
       const res = await StatsService.HCKCollegeStatsSearch(dto);
@@ -1667,6 +1701,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         CancelFreeAgencyOffer,
         SaveWaiverWireOffer,
         CancelWaiverWireOffer,
+        SaveExtensionOffer,
+        CancelExtensionOffer,
         chlPlayerGameStatsMap,
         chlPlayerSeasonStatsMap,
         chlTeamGameStatsMap,

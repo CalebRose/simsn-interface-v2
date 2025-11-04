@@ -504,7 +504,6 @@ export const createOffer = (
 
 export const createExtensionOffer = (
   league: League,
-  action: string,
   existingOffer?: PHLExtensionOffer | NFLExtensionOffer | NBAExtensionOffer
 ) => {
   const props = existingOffer ? { ...existingOffer } : undefined;

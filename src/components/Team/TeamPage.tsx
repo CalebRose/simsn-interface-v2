@@ -62,6 +62,7 @@ import {
   ProposeTradeModal,
 } from "./Common/ManageTradesModal";
 import { PromiseModal } from "../Common/PromiseModal";
+import { ExtensionOfferModal } from "../Common/ExtensionOfferModal";
 
 interface TeamPageProps {
   league: League;
@@ -361,8 +362,11 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     acceptTrade,
     rejectTrade,
     ExportHCKRoster,
+    SaveExtensionOffer,
+    CancelExtensionOffer,
   } = hkStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const extensionModal = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<PHLPlayer | null>(null);
   const [selectedTeam, setSelectedTeam] = useState(() => {
@@ -547,7 +551,12 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     setModalPlayer(player);
   };
 
-  const capsheetMap = useMemo(() => {
+  const openExtensionModal = (player: PHLPlayer) => {
+    extensionModal.handleOpenModal();
+    setModalPlayer(player);
+  };
+
+  const capsheet = useMemo(() => {
     if (selectedTeam && phlCapsheetMap) {
       return phlCapsheetMap[selectedTeam.ID];
     }
@@ -569,6 +578,17 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
 
   return (
     <>
+      <ExtensionOfferModal
+        isOpen={extensionModal.isModalOpen}
+        onClose={extensionModal.handleCloseModal}
+        player={modalPlayer!!}
+        league={SimPHL}
+        ts={ts}
+        capsheet={capsheet!!}
+        existingOffer={phlExtensionMap![modalPlayer!.ID]}
+        confirmOffer={SaveExtensionOffer}
+        cancelOffer={CancelExtensionOffer}
+      />
       <ManageTradeModal
         isOpen={manageTradesModal.isModalOpen}
         onClose={manageTradesModal.handleCloseModal}
@@ -630,7 +650,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           Owner={selectedTeam?.Owner}
           GM={selectedTeam?.GM}
           Scout={selectedTeam?.Scout}
-          Capsheet={capsheetMap}
+          Capsheet={capsheet}
           Conference={selectedTeam?.Conference}
           Arena={selectedTeam?.Arena}
           Capacity={selectedTeam?.ArenaCapacity}
@@ -769,6 +789,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            openExtensionModal={openExtensionModal}
             disable={selectedTeam!.ID !== phlTeam!.ID}
           />
         )}
@@ -836,6 +857,11 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return null;
   }, [cfbRosterMap, selectedTeam]);
+
+  const redshirtCount = useMemo(() => {
+    if (!selectedRoster) return 0;
+    return selectedRoster.filter((player) => player.IsRedshirting).length;
+  }, [selectedRoster]);
 
   const selectedTeamProfile = useMemo(() => {
     if (selectedTeam && teamProfileMap) {
@@ -954,6 +980,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            redshirtCount={redshirtCount}
             disable={selectedTeam!.ID !== cfbTeam!.ID}
           />
         </Border>
