@@ -159,6 +159,30 @@ export const Table = <T,>({
           return 0;
         }
       }
+      console.log({ page, key, order });
+      if (page === "RecruitingProfileTable") {
+        if (
+          key.includes("LastName") ||
+          key.includes("Position") ||
+          key.includes("Archetype") ||
+          key.includes("Stars") ||
+          key.includes("City") ||
+          key.includes("HighSchool") ||
+          key.includes("State") ||
+          key.includes("Country") ||
+          key.includes("OverallGrade") ||
+          key.includes("PotentialGrade") ||
+          key.includes("AffinityOne") ||
+          key.includes("AffinityTwo") ||
+          key.includes("RecruitingStatus") ||
+          key.includes("SignedStatus")
+        ) {
+          if (!a.Croot || !b.Croot) return 0;
+          if (a.Croot[key] > b.Croot[key]) return order === "asc" ? -1 : 1;
+          if (a.Croot[key] < b.Croot[key]) return order === "asc" ? 1 : -1;
+          return 0;
+        }
+      }
       if (a[key] < b[key]) return order === "asc" ? -1 : 1;
       if (a[key] > b[key]) return order === "asc" ? 1 : -1;
       return 0;
