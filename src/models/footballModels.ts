@@ -4783,6 +4783,7 @@ export class Recruit {
   }
 }
 export class RecruitPlayerProfile {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

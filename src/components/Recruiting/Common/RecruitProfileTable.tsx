@@ -852,6 +852,7 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
     if (league === SimCHL) {
       return (profile: HockeyCrootProfile, idx: number, bg: string) => {
         const croot = recruitMap[profile.RecruitID] as HockeyCroot;
+        profile.Croot = croot;
         return (
           <CHLProfileRow
             profile={profile}
@@ -870,6 +871,7 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
     if (league === SimCFB) {
       return (profile: FootballCrootProfile, idx: number, bg: string) => {
         const croot = recruitMap[profile.RecruitID] as FootballCroot;
+        profile.Croot = croot;
         return (
           <CFBProfileRow
             teamProfile={teamProfile}
@@ -888,6 +890,7 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
     }
     return (profile: BasketballCrootProfile, idx: number, bg: string) => {
       const croot = recruitMap[profile.RecruitID] as BasketballCroot;
+      profile.Croot = croot;
       return (
         <CBBProfileRow
           teamProfile={teamProfile}
@@ -910,6 +913,7 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
       data={recruitProfiles!!}
       team={team}
       rowRenderer={rowRenderer(league)}
+      page="RecruitingProfileTable"
     />
   );
 };
