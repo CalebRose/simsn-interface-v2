@@ -256,6 +256,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
         PromiseWeight: promiseWeight,
         Benchmark: benchmark,
         BenchmarkStr: benchmarkStr,
+        IsActive: true,
         TeamID:
           league === SimCHL
             ? chlTeam?.ID
