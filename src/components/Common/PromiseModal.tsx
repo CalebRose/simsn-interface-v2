@@ -78,7 +78,8 @@ export const PromiseModal: FC<PromiseModalProps> = ({
   onClose,
   promisePlayer,
 }) => {
-  const { chlTeams, chlTeam } = useSimHCKStore();
+  const { chlTeams, chlTeam, chlPlayerSeasonStatsMap, hck_Timestamp } =
+    useSimHCKStore();
   const { cfbTeams, cfbTeam } = useSimFBAStore();
   const { cbbTeams, cbbTeam } = useSimBBAStore();
 
@@ -188,6 +189,15 @@ export const PromiseModal: FC<PromiseModalProps> = ({
   const seasonStats = useMemo(() => {
     if (league === SimCHL) {
       if (player) {
+        const seasonStats = chlPlayerSeasonStatsMap[hck_Timestamp!.SeasonID];
+        // Need to find by player.ID;
+        const playerSeasonStatsIdx = seasonStats.findIndex(
+          (s) => s.PlayerID === player.ID
+        );
+        if (playerSeasonStatsIdx >= 0) {
+          return seasonStats[playerSeasonStatsIdx];
+        }
+
         return player.SeasonStats;
       }
       return new HockeyPlayerSeasonStats();
@@ -205,7 +215,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
       return new BasketballPlayerSeasonStats();
     }
     return null;
-  }, [league, player]);
+  }, [league, player, hck_Timestamp, chlPlayerSeasonStatsMap]);
 
   const stateOptions = useMemo(() => {
     if (league === SimCHL) {
@@ -255,7 +265,28 @@ export const PromiseModal: FC<PromiseModalProps> = ({
       };
       await promisePlayer(dto);
     }
+    onClose();
   };
+
+  const timeOnIce = useMemo(() => {
+    if (league !== SimCHL) return 0;
+    if (seasonStats && seasonStats.TimeOnIce && seasonStats.GamesPlayed) {
+      return (seasonStats.TimeOnIce / 60 / seasonStats.GamesPlayed).toFixed(2);
+    }
+    return 0;
+  }, [seasonStats, league]);
+
+  const penaltyMinutes = useMemo(() => {
+    if (league !== SimCHL) return 0;
+    if (seasonStats && seasonStats.PenaltyMinutes && seasonStats.GamesPlayed) {
+      return (
+        seasonStats.PenaltyMinutes /
+        60 /
+        seasonStats.GamesPlayed
+      ).toFixed(2);
+    }
+    return 0;
+  }, [seasonStats, league]);
 
   return (
     <>
@@ -291,7 +322,9 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                 </Text>
               </div>
               <div>
-                <Text variant="body-small">Details</Text>
+                <Text variant="body-small">
+                  Transfer Intention: {player.TransferLikeliness}
+                </Text>
               </div>
             </div>
             <Text>Season Stats</Text>
@@ -325,13 +358,13 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                   <div>
                     <Text>Time On Ice</Text>
                     <Text>
-                      <strong>{seasonStats.TimeOnIce / 60}</strong>
+                      <strong>{timeOnIce}</strong>
                     </Text>
                   </div>
                   <div>
                     <Text>Pen. Minutes</Text>
                     <Text>
-                      <strong>{seasonStats.PenaltyMinutes / 60}</strong>
+                      <strong>{penaltyMinutes}</strong>
                     </Text>
                   </div>
                   <div>

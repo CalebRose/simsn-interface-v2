@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
 import {
   Cut,
   League,
@@ -139,18 +139,38 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     chlTeamMap,
     chlRosterMap,
     chlTeamOptions,
-    chlStandingsMap,
     teamProfileMap,
     collegePromiseMap,
     cutCHLPlayer,
     redshirtPlayer,
     createPromise,
     ExportHCKRoster,
+    SearchHockeyStats,
   } = hkStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<CHLPlayer | null>(null);
+
+  const hasRunSearch = useRef(false);
+  const searchRef = useRef(SearchHockeyStats);
+
+  useEffect(() => {
+    if (hasRunSearch.current) return;
+    hasRunSearch.current = true;
+
+    const dto = {
+      League: SimCHL,
+      ViewType: "SEASON",
+      SeasonID: ts?.SeasonID,
+      GameType: "2",
+      WeekID: ts?.WeekID,
+    };
+
+    searchRef.current?.(dto);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const modalPlayerPromise = useMemo(() => {
     if (!modalPlayer) {
       return null;

@@ -1257,6 +1257,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   }, []);
 
   const SearchHockeyStats = useCallback(async (dto: any) => {
+    console.log("PING!");
     if (dto.League === SimCHL) {
       const res = await StatsService.HCKCollegeStatsSearch(dto);
       if (dto.ViewType === SEASON_VIEW) {
