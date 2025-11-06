@@ -630,9 +630,38 @@ export const stringifyFocusPlays = (focusPlays: string[]): string => {
 
 export const transformGameplanForSave = (gameplan: GameplanData): any => {
   const transformed = { ...gameplan };
-
+  const offForm1Weight =
+    transformed.OffForm1TraditionalRun +
+    transformed.OffForm1OptionRun +
+    transformed.OffForm1RPO +
+    transformed.OffForm1Pass;
+  const offForm2Weight =
+    transformed.OffForm2TraditionalRun +
+    transformed.OffForm2OptionRun +
+    transformed.OffForm2RPO +
+    transformed.OffForm2Pass;
+  const offForm3Weight =
+    transformed.OffForm3TraditionalRun +
+    transformed.OffForm3OptionRun +
+    transformed.OffForm3RPO +
+    transformed.OffForm3Pass;
+  const offForm4Weight =
+    transformed.OffForm4TraditionalRun +
+    transformed.OffForm4OptionRun +
+    transformed.OffForm4RPO +
+    transformed.OffForm4Pass;
+  const offForm5Weight =
+    transformed.OffForm5TraditionalRun +
+    transformed.OffForm5OptionRun +
+    transformed.OffForm5RPO +
+    transformed.OffForm5Pass;
   const transformedGameplan = {
     ...transformed,
+    OffForm1Weight: offForm1Weight,
+    OffForm2Weight: offForm2Weight,
+    OffForm3Weight: offForm3Weight,
+    OffForm4Weight: offForm4Weight,
+    OffForm5Weight: offForm5Weight,
   };
 
   if (typeof transformed.LeftVsRight === "number") {
