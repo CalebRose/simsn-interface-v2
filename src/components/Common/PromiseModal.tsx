@@ -188,9 +188,12 @@ export const PromiseModal: FC<PromiseModalProps> = ({
 
   const seasonStats = useMemo(() => {
     if (league === SimCHL) {
-      if (player) {
+      if (player && chlPlayerSeasonStatsMap && hck_Timestamp) {
         const seasonStats = chlPlayerSeasonStatsMap[hck_Timestamp!.SeasonID];
         // Need to find by player.ID;
+        if (!seasonStats) {
+          return new HockeyPlayerSeasonStats();
+        }
         const playerSeasonStatsIdx = seasonStats.findIndex(
           (s) => s.PlayerID === player.ID
         );
