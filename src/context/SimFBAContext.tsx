@@ -803,13 +803,13 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   }, [allProGames, cfb_Timestamp]);
 
   const proTeamsGames = useMemo(() => {
-    if (currentProSeasonGames && currentProSeasonGames.length > 0 && cfbTeam) {
+    if (currentProSeasonGames && currentProSeasonGames.length > 0 && nflTeam) {
       return currentProSeasonGames.filter(
-        (x) => x.HomeTeamID === cfbTeam.ID || x.AwayTeamID === cfbTeam.ID
+        (x) => x.HomeTeamID === nflTeam.ID || x.AwayTeamID === nflTeam.ID
       );
     }
     return [];
-  }, [currentProSeasonGames, cfbTeam]);
+  }, [currentProSeasonGames, nflTeam]);
 
   const bootstrapAllData = async () => {
     await getLandingBootstrapData();
