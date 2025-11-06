@@ -405,18 +405,17 @@ export const NFLGameplanPage = () => {
     // Get the latest unplayed game (look up game by weekID)
     if (nflTeam && proTeamsGames && nflGameplanMap) {
       let nextUnplayedGameIdx = proTeamsGames.findIndex(
-        (game) =>
-          game.WeekID === cfb_Timestamp?.CollegeWeekID && !game.GameComplete
+        (game) => game.WeekID === cfb_Timestamp?.NFLWeekID && !game.GameComplete
       );
       if (nextUnplayedGameIdx < 0) {
         // Check the next week
         const nextWeekIdx = proTeamsGames.findIndex(
-          (game) => game.WeekID === (cfb_Timestamp?.CollegeWeekID || 0) + 1
+          (game) => game.WeekID === (cfb_Timestamp?.NFLWeekID || 0) + 1
         );
         if (nextWeekIdx < 0) return null;
         nextUnplayedGameIdx = nextWeekIdx;
       }
-      // STOP. Let me take care of this.
+
       const nextGame = proTeamsGames[nextUnplayedGameIdx];
       const opponentId =
         nextGame.HomeTeamID === nflTeam.ID
