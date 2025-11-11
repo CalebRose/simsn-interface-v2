@@ -90,6 +90,20 @@ export default class FBAScheduleService {
     return await GetCall(`${bbaUrl}match/result/nba/${id}/`);
   }
 
+  async FBAExportCFBPlayByPlay(dto: any): Promise<void> {
+    await GetExportCall(
+      `${fbaUrl}statistics/cfb/export/play/by/play/${dto.GameID}/`,
+      "blob"
+    );
+  }
+
+  async FBAExportNFLPlayByPlay(dto: any): Promise<void> {
+    await GetExportCall(
+      `${fbaUrl}statistics/nfl/export/play/by/play/${dto.GameID}/`,
+      "blob"
+    );
+  }
+
   // async ExportPlayByPlay(isNFL, id, ht, at) {
   //     const prefix = isNFL ? 'nfl' : 'cfb';
   //     let fullURL = `${url}statistics/${prefix}/export/play/by/play/${id}`;

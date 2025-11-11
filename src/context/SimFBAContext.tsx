@@ -224,6 +224,8 @@ interface SimFBAContextProps {
   syncAcceptedTrade: (dto: NFLTradeProposal) => Promise<void>;
   vetoTrade: (dto: NFLTradeProposal) => Promise<void>;
   ExportFootballSchedule: (dto: any) => Promise<void>;
+  ExportPlayByPlay: (dto: any) => Promise<void>;
+
   playerFaces: {
     [key: number]: FaceDataResponse;
   };
@@ -360,6 +362,7 @@ const defaultContext: SimFBAContextProps = {
   syncAcceptedTrade: async () => {},
   vetoTrade: async () => {},
   ExportFootballSchedule: async () => {},
+  ExportPlayByPlay: async () => {},
   playerFaces: {},
   proContractMap: {},
   proExtensionMap: {},
@@ -1731,6 +1734,15 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     const res = await scheduleService.FBATimeslotExport(dto);
   }, []);
 
+  const ExportPlayByPlay = useCallback(async (dto: any) => {
+    const scheduleService = new FBAScheduleService();
+    if (dto.League === SimCFB) {
+      const res = await scheduleService.FBAExportCFBPlayByPlay(dto);
+    } else {
+      const res = await scheduleService.FBAExportNFLPlayByPlay(dto);
+    }
+  }, []);
+
   return (
     <SimFBAContext.Provider
       value={{
@@ -1838,6 +1850,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         removeUserfromCFBTeamCall,
         removeUserfromNFLTeamCall,
         ExportFootballSchedule,
+        ExportPlayByPlay,
         playerFaces,
         proContractMap,
         proExtensionMap,

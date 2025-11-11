@@ -797,7 +797,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
                 value: "cut",
                 label: `Cut - ${item.FirstName} ${item.LastName}`,
               },
-              ...(item.IsRedshirting || item.IsRedshirt || redshirtCount!! < 20
+              ...(item.IsRedshirting || item.IsRedshirt || redshirtCount!! > 20
                 ? []
                 : [
                     {
