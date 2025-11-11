@@ -132,7 +132,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
           <Text variant="small">{player.Archetype}</Text>
         </TableCell>
         <TableCell>
-          <Text variant="small">{getYear(item.Year, item.IsRedshirt)}</Text>
+          <Text variant="small">{getYear(item.Year, player.IsRedshirt)}</Text>
         </TableCell>
         <TableCell>
           <Text variant="small">

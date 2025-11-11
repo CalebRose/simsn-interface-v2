@@ -5268,6 +5268,7 @@ export class BootstrapData {
   Recruits: Croot[];
   TeamProfileMap: { [key: string]: RecruitingTeamProfile } | null;
   PortalPlayers: CollegePlayer[];
+
   CollegeInjuryReport: CollegePlayer[];
   CollegeNews: NewsLog[];
   CollegeNotifications: Notification[];

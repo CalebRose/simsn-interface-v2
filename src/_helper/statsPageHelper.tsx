@@ -290,7 +290,7 @@ export const MakeFBASeasonsOptionList = (ts: FBATimestamp) => {
 export const MakeFBAWeeksOptionList = (seasonID: number) => {
   const weeksList = [];
 
-  for (let i = 1; i <= BASE_FBA_WEEKS_IN_SEASON; i++) {
+  for (let i = 0; i <= BASE_FBA_WEEKS_IN_SEASON; i++) {
     const weekID = getFBAWeekID(i, seasonID);
     const weekLabel = `Week ${i}`;
     const option = { label: weekLabel, value: weekID.toString() };
