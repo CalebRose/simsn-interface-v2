@@ -157,7 +157,7 @@ export interface GameModalProps {
 
 export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
   const fbStore = useSimFBAStore();
-  const { cfbTeamMap, proTeamMap } = fbStore;
+  const { cfbTeamMap, proTeamMap, ExportPlayByPlay } = fbStore;
   const scheduleService = new FBAScheduleService();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [homePlayers, setHomePlayers] = useState<PlayerStats[]>([]);
@@ -366,6 +366,16 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
     return getLogo(league, game.AwayTeamID, false);
   }, [game, league]);
 
+  const exportPlayByPlayResults = useCallback(async () => {
+    if (league === SimCFB || league === SimNFL) {
+      const dto = {
+        League: league,
+        GameID: game.ID,
+      };
+      await ExportPlayByPlay(dto);
+    }
+  }, []);
+
   return (
     <>
       {isLoading ? (
@@ -491,14 +501,21 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                   </div>
                 </div>
                 <div className="flex justify-center items-center gap-2 py-2">
-                  <ToggleSwitch
-                    onChange={(checked) => {
-                      setView(checked ? PBP : BoxScore);
-                      setIsChecked(checked);
-                    }}
-                    checked={isChecked}
-                  />
-                  <Text variant="small">Play By Play</Text>
+                  <div>
+                    <ToggleSwitch
+                      onChange={(checked) => {
+                        setView(checked ? PBP : BoxScore);
+                        setIsChecked(checked);
+                      }}
+                      checked={isChecked}
+                    />
+                    <Text variant="small">Play By Play</Text>
+                  </div>
+                  <div>
+                    <Button size="xs" onClick={exportPlayByPlayResults}>
+                      Export
+                    </Button>
+                  </div>
                 </div>
               </div>
               <div className="flex flex-col items-center w-1/3">
