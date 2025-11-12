@@ -1,7 +1,9 @@
 import { useMemo } from "react";
 import {
+  CollegePromise,
   CollegePlayer as HockeyPlayer,
   CollegeTeam as HockeyTeam,
+  TransferPortalProfile,
 } from "../models/hockeyModels";
 import { CollegeTeam } from "../models/footballModels";
 import { Team } from "../models/basketballModels";
@@ -86,7 +88,7 @@ export const getHCKPromiseWeight = (promiseType: string, benchmark: number) => {
     return "Very High";
   }
   if (promiseType === "Wins") {
-    if (benchmark < 0 || benchmark > 34) {
+    if (benchmark > 34) {
       return "Invalid";
     }
     if (benchmark === 0) return "Why even try?";
@@ -141,4 +143,39 @@ export const getSimCBBTeamStateOptions = (cbbTeams: Team[]) => {
     }
   });
   return list;
+};
+
+export const getHCKModifierValue = (
+  profile: TransferPortalProfile,
+  promise: CollegePromise
+) => {
+  if (!promise || !profile) {
+    return 1;
+  }
+  if (promise.ID === 0 || !promise.IsActive) {
+    return 1;
+  }
+
+  const weight = promise.PromiseWeight;
+  switch (weight) {
+    case "Why even try?":
+      return 0.5;
+    case "Extremely Low":
+      return 1.01;
+    case "Very Low":
+      return 1.05;
+    case "Low":
+      return 1.1;
+    case "Medium":
+      return 1.3;
+    case "High":
+      return 1.5;
+    case "Very High":
+      return 1.75;
+    case "Extremely High":
+      return 2.0;
+    case "If you make this promise then you better win it!":
+      return 2.25;
+  }
+  return 1;
 };
