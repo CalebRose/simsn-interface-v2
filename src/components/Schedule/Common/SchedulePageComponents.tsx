@@ -324,7 +324,7 @@ export const WeeklySchedule = ({
                 <div className="text-left col-span-1">
                   <Text variant="xs" className="font-semibold">
                     {week}
-                    {game.GameDay}
+                    {game.GameDay || game.MatchOfWeek}
                   </Text>
                 </div>
                 {isFootball && (
