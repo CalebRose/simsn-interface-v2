@@ -3,6 +3,7 @@ import { Croot as HockeyCroot } from "../models/hockeyModels";
 import {
   Croot as FootballCroot,
   RecruitingTeamProfile,
+  RecruitPlayerProfile,
 } from "../models/footballModels";
 import RegionMatcher from "../_matchers/regionMatcher.json";
 import StateMatcher from "../_matchers/stateMatcher.json";
@@ -458,4 +459,34 @@ export const getDisplayStatus = (odds: number) => {
     return "Just Outside";
   }
   return "Unlikely";
+};
+
+export const CalculateAdjustedCFBPoints = (
+  recruitProfile: RecruitPlayerProfile,
+  teamProfile: RecruitingTeamProfile,
+  recruit: FootballCroot
+) => {
+  let am1 = recruitProfile.AffinityOneEligible;
+  let am2 = recruitProfile.AffinityTwoEligible;
+  let res = recruitProfile.RecruitingEfficiencyScore;
+  let points = recruitProfile.CurrentWeeksPoints;
+  let consistencyBonus = recruitProfile.SpendingCount;
+  let affinityBonus = 0;
+  if (am1) {
+    affinityBonus += 0.1;
+  }
+  if (am2) {
+    affinityBonus += 0.1;
+  }
+  res += affinityBonus;
+  points = points * res;
+  if (!teamProfile.IsFBS) {
+    const starMod = recruit.Stars * 0.04;
+    points *= 1 - starMod;
+  }
+  if (consistencyBonus > 0) {
+    const streakBonus = affinityBonus * consistencyBonus;
+    points *= 1 + streakBonus;
+  }
+  return Math.round(points * 100) / 100;
 };

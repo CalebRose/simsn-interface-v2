@@ -34,6 +34,7 @@ import {
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { getHockeyLetterGrade } from "../../../_utility/getLetterGrade";
+import { getHCKModifierValue } from "../../../_helper/transferPortalHelper";
 
 const getTransferProfileTableColumns = (
   league: League,
@@ -135,7 +136,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
   backgroundColor,
 }) => {
   const hkStore = useSimHCKStore();
-  const { transferProfileMapByPlayerID } = hkStore;
+  const { transferProfileMapByPlayerID, collegePromiseMap } = hkStore;
   const { isTablet } = useResponsive();
 
   const transferProfiles = useMemo(() => {
@@ -147,9 +148,9 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
   if (category === Potentials)
     attrList = getAdditionalHCKPortalPotentialAttributes(player);
   const prefList = getAdditionalHCKPortalPreferenceAttributes(player);
-
+  const promise = collegePromiseMap[player.ID];
   // 3) Compute modifier
-  let modValue = 1;
+  let modValue = getHCKModifierValue(profile, promise);
 
   // 4) Change handler
   const onPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -313,7 +314,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
             name="CurrentWeeksPoints"
             value={profile.CurrentWeeksPoints as number}
             classes="text-xs"
-            disabled={player.TeamID > 0}
+            disabled={player.TeamID < 75}
             onChange={onPointsChange}
           />
         </div>
