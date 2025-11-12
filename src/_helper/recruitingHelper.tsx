@@ -59,6 +59,9 @@ export const useFilteredHockeyRecruits = ({
   statuses: string[];
   stars: number[];
 }) => {
+  if (!recruits) {
+    return [];
+  }
   // 1) build Sets once per-change
   const positionSet = useMemo(() => new Set(positions), [positions]);
   const archSet = useMemo(() => new Set(archetype), [archetype]);

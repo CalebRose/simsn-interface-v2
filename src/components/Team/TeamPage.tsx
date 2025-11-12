@@ -14,6 +14,7 @@ import {
   SimCBB,
   SimNBA,
   TradeBlock,
+  Promises,
 } from "../../_constants/constants";
 import { Border } from "../../_design/Borders";
 import { PageContainer } from "../../_design/Container";
@@ -322,6 +323,16 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
                 onClick={() => setCategory(Potentials)}
               >
                 <Text variant="small">Potentials</Text>
+              </Button>
+            )}
+            {!isMobile && (
+              <Button
+                size="sm"
+                disabled={selectedTeam?.ID !== chlTeam?.ID}
+                isSelected={category === Promises}
+                onClick={() => setCategory(Promises)}
+              >
+                <Text variant="small">Promises</Text>
               </Button>
             )}
             <Button variant="primary" size="sm" onClick={exportRoster}>

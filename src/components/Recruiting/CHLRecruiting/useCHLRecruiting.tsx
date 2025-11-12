@@ -100,6 +100,9 @@ export const useCHLRecruiting = () => {
 
   const recruitMap = useMemo(() => {
     const rMap: any = {};
+    if (!recruits) {
+      return rMap;
+    }
     for (let i = 0; i < recruits.length; i++) {
       rMap[recruits[i].ID] = recruits[i];
     }
@@ -117,6 +120,7 @@ export const useCHLRecruiting = () => {
   });
 
   const filteredClass = useMemo(() => {
+    if (!recruits) return [];
     return recruits.filter((croot) => croot.TeamID === selectedClassView);
   }, [recruits, selectedClassView]);
 

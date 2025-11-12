@@ -189,6 +189,7 @@ export const Attributes = "Attributes";
 export const Values = "Values";
 export const Preferences = "Preferences";
 export const Potentials = "Potentials";
+export const Promises = "Promises";
 export const Contracts = "Contracts";
 export const Overview = "Overview";
 export const Details = "Details";

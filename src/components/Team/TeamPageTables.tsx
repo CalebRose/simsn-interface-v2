@@ -21,7 +21,7 @@ import {
   Affiliate,
   TradeBlock,
   PracticeSquad,
-  ExtensionOfferType,
+  Promises,
 } from "../../_constants/constants";
 import {
   getCHLAttributes,
@@ -89,7 +89,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const { isDesktop, isTablet } = useResponsive();
-  const { hck_Timestamp } = useSimHCKStore();
+  const { hck_Timestamp, collegePromiseMap } = useSimHCKStore();
 
   let rosterColumns = useMemo(() => {
     let columns = [
@@ -150,6 +150,16 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "Inj", accessor: "Injury" },
       ]);
     }
+    if ((isDesktop || isTablet) && category === Promises) {
+      columns = columns.concat([
+        { header: "Promise Type", accessor: "PromiseType" },
+        { header: "Promise Weight", accessor: "PromiseWeight" },
+        { header: "Benchmark", accessor: "Benchmark" },
+        { header: "Benchmark 2", accessor: "BenchmarkStr" },
+        { header: "Committed", accessor: "PromiseMade" },
+        { header: "Active", accessor: "IsActive" },
+      ]);
+    }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
   }, [isDesktop, category]);
@@ -164,6 +174,8 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     backgroundColor: string
   ) => {
     const attributes = getCHLAttributes(item, !isDesktop, isTablet, category!);
+    const collegePromise = collegePromiseMap[item.ID];
+    const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
     return (
       <div
         key={item.ID}
@@ -242,6 +254,40 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {getGeneralLetterGrade(item.InjuryRating)}
+              </Text>
+            </TableCell>
+          </>
+        )}
+        {category == Promises && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.PromiseType : "No Promise"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.PromiseWeight : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.Benchmark : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.BenchmarkStr : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise && collegePromise.PromiseMade ? "Yes" : "No"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise && collegePromise.IsActive ? "Yes" : "No"}
               </Text>
             </TableCell>
           </>

@@ -79,6 +79,7 @@ export const HCKTransferPortal = () => {
     setAttribute,
     promiseModal,
     openPromiseModal,
+    currentSpentPoints,
   } = useHCKTransferPortal();
   const rosterCount = useMemo(() => {
     if (!chlTeam) {
@@ -234,7 +235,7 @@ export const HCKTransferPortal = () => {
                       Weekly Points
                     </Text>
                     <Text variant="body">
-                      {teamProfile?.SpentPoints} of {teamProfile?.WeeklyPoints}
+                      {currentSpentPoints} of {teamProfile?.WeeklyPoints}
                     </Text>
                   </div>
                   <div className="flex flex-col">
