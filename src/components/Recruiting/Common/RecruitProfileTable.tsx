@@ -49,6 +49,7 @@ import {
 import { getLogo } from "../../../_utility/getLogo";
 import { Logo } from "../../../_design/Logo";
 import {
+  CalculateAdjustedCFBPoints,
   isBadFit,
   isGoodFit,
   ValidateAffinity,
@@ -415,14 +416,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
       : "secondary";
 
   // 3) Compute modifier
-  let modifier = profile.RecruitingEfficiencyScore;
-  if (profile.AffinityOneEligible) {
-    modifier += 0.1;
-  }
-  if (profile.AffinityTwoEligible) {
-    modifier += 0.1;
-  }
-  let modValue = profile.CurrentWeeksPoints * modifier;
+  let modifier = CalculateAdjustedCFBPoints(profile, teamProfile, croot);
 
   // 4) Change handler
   const onPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -576,7 +570,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{modValue.toFixed(3)}</span>
+        <span className={`text-xs`}>{modifier.toFixed(3)}</span>
       </TableCell>
       <TableCell>
         <span className={`text-xs`}>{profile.TotalPoints.toFixed(3)}</span>
