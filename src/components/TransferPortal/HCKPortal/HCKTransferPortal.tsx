@@ -38,6 +38,7 @@ export const HCKTransferPortal = () => {
     addTransferPlayerToBoard,
     removeTransferPlayerFromBoard,
     chlTeamMap,
+    chlPlayerMap,
     scoutPortalAttribute,
     updatePointsOnPortalPlayer,
     createPromise,
@@ -398,7 +399,7 @@ export const HCKTransferPortal = () => {
                   colorThree={teamColors.TextColorThree}
                   team={chlTeam}
                   transferPortalProfiles={teamTransferPortalProfiles}
-                  playerMap={transferMap}
+                  playerMap={chlPlayerMap}
                   teamMap={chlTeamMap}
                   league={SimCHL}
                   teamProfile={teamProfile!}

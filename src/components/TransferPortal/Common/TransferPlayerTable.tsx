@@ -169,7 +169,10 @@ const CHLRow: React.FC<CHLRowProps> = ({
   const { transferProfileMapByPlayerID, chlTeam } = hkStore;
   const { isTablet } = useResponsive();
   const selection = getCHLPortalAttributes(item, isMobile, isTablet, category!);
-  const actionVariant = !recruitOnBoardMap[item.ID] ? "success" : "secondary";
+  const actionVariant =
+    !recruitOnBoardMap[item.ID] && item.PreviousTeamID !== chlTeam?.ID
+      ? "success"
+      : "secondary";
 
   const transferProfiles = useMemo(() => {
     return transferProfileMapByPlayerID[item.ID];
@@ -281,7 +284,11 @@ const CHLRow: React.FC<CHLRowProps> = ({
             variant={actionVariant}
             size="xs"
             onClick={() => openModal(AddPortalPlayerType, item as HockeyPlayer)}
-            disabled={recruitOnBoardMap[item.ID] || item.IsSigned}
+            disabled={
+              recruitOnBoardMap[item.ID] ||
+              item.IsSigned ||
+              item.PreviousTeamID === chlTeam?.ID
+            }
           >
             {recruitOnBoardMap[item.ID] ||
             item.IsSigned ||

@@ -97,6 +97,7 @@ interface SimHCKContextProps {
   currentCHLStandings: CollegeStandings[];
   chlStandingsMap: Record<number, CollegeStandings>;
   chlRosterMap: Record<number, CollegePlayer[]>;
+  chlPlayerMap: Record<number, CollegePlayer>;
   chlGameplan: CollegeGameplan;
   chlLineups: CollegeLineup[];
   chlShootoutLineup: CollegeShootoutLineup;
@@ -236,6 +237,7 @@ const defaultContext: SimHCKContextProps = {
   currentCHLStandings: [],
   chlStandingsMap: {},
   chlRosterMap: {},
+  chlPlayerMap: {},
   chlGameplan: {} as CollegeGameplan,
   chlLineups: [],
   chlShootoutLineup: {} as CollegeShootoutLineup,
@@ -570,6 +572,29 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     );
   }, [chlTeam, transferPortalProfiles]);
 
+  const chlPlayerMap = useMemo(() => {
+    const playerMap: Record<number, CollegePlayer> = {};
+    if (chlRosterMap && chlTeams) {
+      for (let i = 0; i < chlTeams.length; i++) {
+        const team = chlTeams[i];
+        const roster = chlRosterMap[team.ID];
+        if (roster) {
+          for (let j = 0; j < roster.length; j++) {
+            const p = roster[j];
+            playerMap[p.ID] = p;
+          }
+        }
+      }
+    }
+    if (portalPlayers) {
+      for (let i = 0; i < portalPlayers.length; i++) {
+        const p = portalPlayers[i];
+        playerMap[p.ID] = p;
+      }
+    }
+    return playerMap;
+  }, [chlRosterMap, chlTeams, portalPlayers]);
+
   const transferProfileMapByPlayerID = useMemo(() => {
     const transferProfileMap: Record<number, TransferPortalProfile[]> = {};
     for (let i = 0; i < portalPlayers.length; i++) {
@@ -582,6 +607,11 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     return transferProfileMap;
   }, [portalPlayers, transferPortalProfiles]);
 
+  const teamCollegePromises = useMemo(() => {
+    if (!chlTeam || !collegePromises) return [];
+    return collegePromises.filter((promise) => promise.TeamID === chlTeam.ID);
+  }, [chlTeam, collegePromises]);
+
   const collegePromiseMap = useMemo(() => {
     const map: Record<number, CollegePromise> = {};
     for (let i = 0; i < collegePromises.length; i++) {
@@ -589,7 +619,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       map[promise.CollegePlayerID] = promise;
     }
     return map;
-  }, [collegePromises]);
+  }, [teamCollegePromises]);
 
   useEffect(() => {
     getBootstrapTeamData();
@@ -1624,6 +1654,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         currentCHLStandings,
         chlStandingsMap,
         chlRosterMap,
+        chlPlayerMap,
         chlGameplan,
         chlLineups,
         chlShootoutLineup,

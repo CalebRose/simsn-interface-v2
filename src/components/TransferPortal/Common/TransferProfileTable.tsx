@@ -138,9 +138,14 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
   const hkStore = useSimHCKStore();
   const { transferProfileMapByPlayerID, collegePromiseMap } = hkStore;
   const { isTablet } = useResponsive();
-
   const transferProfiles = useMemo(() => {
-    return transferProfileMapByPlayerID[player.ID];
+    if (!player) {
+      console.log("No player found for profile:", profile);
+      return [];
+    }
+    const profiles = transferProfileMapByPlayerID[player.ID];
+    if (!profiles) return [];
+    return profiles;
   }, [transferProfileMapByPlayerID, player]);
 
   // 1) Build attribute lists once
