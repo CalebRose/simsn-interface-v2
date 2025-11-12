@@ -220,6 +220,8 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
     openModal(ScoutAttributeType, player);
   };
 
+  const canPlacePointsDown = player.TeamID === 0 || player.TeamID >= 75;
+
   return (
     <div
       className="table-row border-b dark:border-gray-700 text-left"
@@ -314,7 +316,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
             name="CurrentWeeksPoints"
             value={profile.CurrentWeeksPoints as number}
             classes="text-xs"
-            disabled={player.TeamID < 75}
+            disabled={!canPlacePointsDown}
             onChange={onPointsChange}
           />
         </div>

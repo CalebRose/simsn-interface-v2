@@ -69,6 +69,19 @@ export const useHCKTransferPortal = () => {
     return [];
   }, [chlTeam, transferPortalProfiles]);
 
+  const currentSpentPoints = useMemo(() => {
+    if (
+      !teamTransferPortalProfiles ||
+      teamTransferPortalProfiles.length === 0
+    ) {
+      return 0;
+    }
+    return teamTransferPortalProfiles.reduce(
+      (acc, profile) => acc + profile.CurrentWeeksPoints,
+      0
+    );
+  }, [teamTransferPortalProfiles]);
+
   const transferOnBoardMap = useMemo(() => {
     const boardMap: Record<number, boolean> = {};
     teamTransferPortalProfiles.forEach((profile) => {
@@ -213,5 +226,6 @@ export const useHCKTransferPortal = () => {
     setAttribute,
     promiseModal,
     openPromiseModal,
+    currentSpentPoints,
   };
 };
