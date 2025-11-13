@@ -634,10 +634,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     if (currentUser && currentUser.PHLTeamID) {
       phlID = currentUser.PHLTeamID;
     }
-    // if the user has no hockey teams, skip all HCK bootstrapping
-    if (chlID == 0 && phlID == 0) {
-      return;
-    }
     const res = await BootstrapService.GetHCKBootstrapTeamData();
     setCHLTeams(res.AllCollegeTeams);
     setProTeams(res.AllProTeams);
@@ -726,6 +722,10 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
     if (currentUser && currentUser.PHLTeamID) {
       phlid = currentUser.PHLTeamID;
+    }
+    // if the user has no hockey teams, skip all HCK bootstrapping
+    if (chlid == 0 && phlid == 0) {
+      return;
     }
     const res = await BootstrapService.GetHCKBootstrapData(chlid, phlid);
     if (chlid > 0) {
