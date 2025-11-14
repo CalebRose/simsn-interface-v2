@@ -59,7 +59,16 @@ export const GamesBar = ({
 }: GamesBarProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isHockey = league === SimCHL || league === SimPHL ? true : false;
-  const { cfbStandingsMap, proStandingsMap } = useSimFBAStore();
+  const { cfbStandingsMap, proStandingsMap, allProStandings } = useSimFBAStore();
+  const proStandingsLookup = useMemo(() => {
+    if (proStandingsMap && Object.keys(proStandingsMap).length > 0) {
+      return proStandingsMap as Record<number, any>;
+    }
+    if (allProStandings && allProStandings.length > 0) {
+      return Object.fromEntries(allProStandings.map((s: any) => [s.TeamID, s]));
+    }
+    return {} as Record<number, any>;
+  }, [proStandingsMap, allProStandings]);
 
   useEffect(() => {
     if (scrollContainerRef.current && games.length > 0) {
@@ -116,7 +125,7 @@ export const GamesBar = ({
       const standings =
         league === SimCFB
           ? cfbStandingsMap && (cfbStandingsMap as any)[opponentID]
-          : proStandingsMap && (proStandingsMap as any)[opponentID];
+          : proStandingsLookup[opponentID];
       if (standings) {
         const wins = standings.TotalWins ?? 0;
         const losses = standings.TotalLosses ?? 0;
@@ -327,7 +336,16 @@ export const TeamMatchUp = ({
   playerMap,
 }: TeamMatchUpProps) => {
   const [selectedGame, setSelectedGame] = useState<any>(null);
-  const { cfbStandingsMap, proStandingsMap } = useSimFBAStore();
+  const { cfbStandingsMap, proStandingsMap, allProStandings } = useSimFBAStore();
+  const proStandingsLookup = useMemo(() => {
+    if (proStandingsMap && Object.keys(proStandingsMap).length > 0) {
+      return proStandingsMap as Record<number, any>;
+    }
+    if (allProStandings && allProStandings.length > 0) {
+      return Object.fromEntries(allProStandings.map((s: any) => [s.TeamID, s]));
+    }
+    return {} as Record<number, any>;
+  }, [proStandingsMap, allProStandings]);
 
   let revealResult = false;
   if (matchUp.length > 0) {
@@ -364,7 +382,7 @@ export const TeamMatchUp = ({
       const standings =
         league === SimCFB
           ? cfbStandingsMap && (cfbStandingsMap as any)[opponentID]
-          : proStandingsMap && (proStandingsMap as any)[opponentID];
+          : proStandingsLookup[opponentID];
       if (standings) {
         const wins = standings.TotalWins ?? 0;
         const losses = standings.TotalLosses ?? 0;
@@ -375,7 +393,7 @@ export const TeamMatchUp = ({
       const myStandings =
         league === SimCFB
           ? cfbStandingsMap && (cfbStandingsMap as any)[team.ID]
-          : proStandingsMap && (proStandingsMap as any)[team.ID];
+          : proStandingsLookup[team.ID];
       if (myStandings) {
         const wins = myStandings.TotalWins ?? 0;
         const losses = myStandings.TotalLosses ?? 0;
