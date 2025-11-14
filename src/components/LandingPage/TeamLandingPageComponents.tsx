@@ -59,6 +59,7 @@ export const GamesBar = ({
 }: GamesBarProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isHockey = league === SimCHL || league === SimPHL ? true : false;
+  const { cfbStandingsMap, proStandingsMap } = useSimFBAStore();
 
   useEffect(() => {
     if (scrollContainerRef.current && games.length > 0) {
@@ -108,6 +109,22 @@ export const GamesBar = ({
       : `at ${opponentAbbr}`;
     let resultColor = "";
 
+    // Opponent record (football only)
+    let opponentRecord = "";
+    if (league === SimCFB || league === SimNFL) {
+      const opponentID = isHomeGame ? item.AwayTeamID : item.HomeTeamID;
+      const standings =
+        league === SimCFB
+          ? cfbStandingsMap && (cfbStandingsMap as any)[opponentID]
+          : proStandingsMap && (proStandingsMap as any)[opponentID];
+      if (standings) {
+        const wins = standings.TotalWins ?? 0;
+        const losses = standings.TotalLosses ?? 0;
+        const ties = standings.TotalTies ?? 0; // NFL only
+        opponentRecord = ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+      }
+    }
+
     let revealResult = false;
     if (league === SimCHL || league === SimPHL) {
       revealResult = RevealHCKResults(item, ts, false);
@@ -148,9 +165,16 @@ export const GamesBar = ({
               url={opponentLogoUrl}
             />
             <Text variant="xs">{gameScore}</Text>
-            <Text variant="xs" classes="">
-              {gameDetails}
-            </Text>
+            <div className="flex items-center justify-center gap-1">
+              <Text variant="xs" classes="">
+                {gameDetails}
+              </Text>
+              {opponentRecord && (
+                <Text variant="xs" classes="opacity-70">
+                 ({opponentRecord})
+                </Text>
+              )}
+            </div>
           </div>
           <Text variant="xs" classes="pt-1 border-t">
             Week {item.Week}
@@ -303,6 +327,7 @@ export const TeamMatchUp = ({
   playerMap,
 }: TeamMatchUpProps) => {
   const [selectedGame, setSelectedGame] = useState<any>(null);
+  const { cfbStandingsMap, proStandingsMap } = useSimFBAStore();
 
   let revealResult = false;
   if (matchUp.length > 0) {
@@ -322,6 +347,8 @@ export const TeamMatchUp = ({
   const navigate = useNavigate();
   let homeID = 0;
   let awayID = 0;
+  let opponentRecord = "";
+  let userRecord = "";
   if (matchUp?.length > 0) {
     const userGame = matchUp[0];
     isHomeGame = matchUp[0].HomeTeamID === team.ID;
@@ -331,6 +358,31 @@ export const TeamMatchUp = ({
     homeID = isHomeGame ? userGame.HomeTeamID : userGame.AwayTeamID;
     awayID = isHomeGame ? userGame.AwayTeamID : userGame.HomeTeamID;
     gameLocation = isHomeGame ? "VS" : "AT";
+
+    if (league === SimCFB || league === SimNFL) {
+      const opponentID = isHomeGame ? userGame.AwayTeamID : userGame.HomeTeamID;
+      const standings =
+        league === SimCFB
+          ? cfbStandingsMap && (cfbStandingsMap as any)[opponentID]
+          : proStandingsMap && (proStandingsMap as any)[opponentID];
+      if (standings) {
+        const wins = standings.TotalWins ?? 0;
+        const losses = standings.TotalLosses ?? 0;
+        const ties = standings.TotalTies ?? 0;
+        opponentRecord = ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+      }
+
+      const myStandings =
+        league === SimCFB
+          ? cfbStandingsMap && (cfbStandingsMap as any)[team.ID]
+          : proStandingsMap && (proStandingsMap as any)[team.ID];
+      if (myStandings) {
+        const wins = myStandings.TotalWins ?? 0;
+        const losses = myStandings.TotalLosses ?? 0;
+        const ties = myStandings.TotalTies ?? 0;
+        userRecord = ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+      }
+    }
 
     if (revealResult) {
       const userTeamScore = isHomeGame
@@ -406,15 +458,32 @@ export const TeamMatchUp = ({
                   containerClass="max-w-24 w-24 p-4"
                   url={homeLogo}
                 />
-                <ClickableTeamLabel
-                  label={homeLabel}
-                  teamID={homeID}
-                  textColorClass={textColorClass}
-                  league={league}
-                />
+                <div className="flex items-center">
+                  <ClickableTeamLabel
+                    label={homeLabel}
+                    teamID={homeID}
+                    textColorClass={textColorClass}
+                    league={league}
+                  />
+                  {userRecord && isHomeGame && (
+                    <Text variant="small" classes="opacity-70">
+                      ({userRecord})
+                    </Text>
+                  )}
+                  {opponentRecord && !isHomeGame && (
+                  <Text variant="small" classes="opacity-70">
+                    {opponentRecord}
+                  </Text>
+                )}
+                </div>
                 <Text variant="xs" classes="opacity-70">
                   {`HC ${coaches[0]}`}
                 </Text>
+                {opponentRecord && !isHomeGame && (
+                  <Text variant="xs" classes="opacity-70">
+                    ({opponentRecord})
+                  </Text>
+                )}
               </div>
             </div>
             <div className="flex flex-col col-span-1 items-center">
@@ -429,12 +498,24 @@ export const TeamMatchUp = ({
                   containerClass="max-w-24 w-24 p-4"
                   url={awayLogo}
                 />
-                <ClickableTeamLabel
-                  label={awayLabel}
-                  teamID={awayID}
-                  textColorClass={textColorClass}
-                  league={league}
-                />
+                <div className="flex items-center">
+                  <ClickableTeamLabel
+                    label={awayLabel}
+                    teamID={awayID}
+                    textColorClass={textColorClass}
+                    league={league}
+                  />
+                  {opponentRecord && isHomeGame && (
+                  <Text variant="small" classes="opacity-70">
+                    ({opponentRecord})
+                  </Text>
+                )}
+                {userRecord && !isHomeGame && (
+                  <Text variant="small" classes="opacity-70">
+                    ({userRecord})
+                  </Text>
+                )}
+                </div>
                 <Text variant="xs" classes="opacity-70">
                   {`HC ${coaches[1]}`}
                 </Text>
