@@ -42,6 +42,7 @@ import { CollegePollModal } from "../Common/CollegePollModal";
 import { SubmitPollModal } from "../Common/SubmitPollModal";
 import { useModal } from "../../../_hooks/useModal";
 import { getFBAWeekID } from "../../../_helper/statsPageHelper";
+import FBAScheduleService from "../../../_services/scheduleService";
 
 interface SchedulePageProps {
   league: League;
@@ -74,6 +75,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [selectedWeek, setSelectedWeek] = useState(currentWeek ?? 1);
   const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
+  const [seasonCFBGames, setSeasonCFBGames] = useState<any[]>([]);
   const submitPollModal = useModal();
   const collegePollModal = useModal();
   const teamColors = useTeamColors(
@@ -97,6 +99,28 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const darkerBackgroundColor = darkenColor(backgroundColor, -5);
 
+  useEffect(() => {
+    const seasonID = (selectedSeason ?? 0) - 2020;
+    if (!selectedSeason || seasonID <= 0) return;
+    const availableSeasons = new Set((allCFBGames || []).map((g: any) => g.SeasonID));
+    if (availableSeasons.has(seasonID)) {
+      const filtered = (allCFBGames || []).filter((g: any) => g.SeasonID === seasonID);
+      setSeasonCFBGames(filtered);
+      return;
+    }
+    const load = async () => {
+      try {
+        const service = new FBAScheduleService();
+        const res = await service.GetAllCollegeGamesInASeason(seasonID);
+        const games = res?.AllCollegeGames ?? res ?? [];
+        setSeasonCFBGames(games);
+      } catch (e) {
+        setSeasonCFBGames([]);
+      }
+    };
+    load();
+  }, [selectedSeason, allCFBGames]);
+
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = cfbTeamMap ? cfbTeamMap[value] : null;
@@ -112,7 +136,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       selectedSeason,
       league,
       allCFBStandings,
-      allCFBGames,
+      seasonCFBGames.length > 0 ? seasonCFBGames : allCFBGames,
       cfbTeams
     );
   }, [
@@ -123,6 +147,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     league,
     allCFBStandings,
     allCFBGames,
+    seasonCFBGames,
     cfbTeams,
   ]);
 
@@ -271,8 +296,8 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                     options={FootballSeasons}
                     placeholder="Select Season..."
                     onChange={(selectedOption) => {
-                      const selectedSeason = Number(selectedOption?.value);
-                      setSelectedWeek(selectedSeason);
+                      const newSeason = Number(selectedOption?.value);
+                      setSelectedSeason(newSeason);
                     }}
                   />
                 </div>
@@ -394,6 +419,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
   const [standingsView, setStandingsView] = useState(Conferences);
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
+  const [seasonNFLGames, setSeasonNFLGames] = useState<any[]>([]);
 
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -412,6 +438,28 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const darkerBackgroundColor = darkenColor(backgroundColor, -5);
 
+  useEffect(() => {
+    const seasonID = (selectedSeason ?? 0) - 2020;
+    if (!selectedSeason || seasonID <= 0) return;
+    const availableSeasons = new Set((allNFLGames || []).map((g: any) => g.SeasonID));
+    if (availableSeasons.has(seasonID)) {
+      const filtered = (allNFLGames || []).filter((g: any) => g.SeasonID === seasonID);
+      setSeasonNFLGames(filtered);
+      return;
+    }
+    const load = async () => {
+      try {
+        const service = new FBAScheduleService();
+        const res = await service.GetAllNFLGamesInASeason(seasonID);
+        const games = res?.AllProGames ?? res ?? [];
+        setSeasonNFLGames(games);
+      } catch (e) {
+        setSeasonNFLGames([]);
+      }
+    };
+    load();
+  }, [selectedSeason, allNFLGames]);
+
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = nflTeamMap ? nflTeamMap[value] : null;
@@ -428,7 +476,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         selectedSeason,
         league,
         allNFLStandings,
-        allNFLGames,
+        seasonNFLGames.length > 0 ? seasonNFLGames : allNFLGames,
         nflTeams
       );
     }, [
@@ -439,6 +487,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       league,
       allNFLStandings,
       allNFLGames,
+      seasonNFLGames,
       nflTeams,
     ]);
 
@@ -472,6 +521,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     });
     return map;
   }, [allNFLStandings]);
+
   return (
     <>
       <div className="flex flex-col w-full">
@@ -567,8 +617,8 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   options={FootballSeasons}
                   placeholder="Select Season..."
                   onChange={(selectedOption) => {
-                    const selectedSeason = Number(selectedOption?.value);
-                    setSelectedWeek(selectedSeason);
+                    const newSeason = Number(selectedOption?.value);
+                    setSelectedSeason(newSeason);
                   }}
                 />
               </div>

@@ -64,9 +64,15 @@ export const getScheduleCFBData = (
   allCollegeGames: CollegeGame[],
   allCollegeTeams: CollegeTeam[]
 ) => {
-  // Team Standings
+  const seasonYear = Number(selectedSeason);
+  const seasonID = seasonYear - 2020; // backend SeasonID mapping
+
   const teamStandings = allCFBStandings
-    .filter((standings) => standings.ConferenceID === team.ConferenceID)
+    .filter(
+      (standings) =>
+        standings.Season === seasonYear &&
+        standings.ConferenceID === team.ConferenceID
+    )
     .map((standings, index) => ({ ...standings, Rank: index + 1 }));
 
   const teamAbbrMap = new Map(
@@ -81,8 +87,12 @@ export const getScheduleCFBData = (
     allCollegeTeams.map((team) => [team.ID, team.Mascot])
   );
 
+  const seasonGames = allCollegeGames.filter(
+    (game) => game.SeasonID === seasonID
+  );
+
   // Team Schedule - Fixed sorting for mobile Safari consistency
-  const teamSchedule = allCollegeGames
+  const teamSchedule = seasonGames
     .filter(
       (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
     )
@@ -108,8 +118,8 @@ export const getScheduleCFBData = (
       AwayTeamLogo: getLogo(league, game.AwayTeamID, false),
     }));
 
-  // Weekly Games
-  const groupedWeeklyGames = allCollegeGames.reduce((acc: any, game) => {
+
+  const groupedWeeklyGames = seasonGames.reduce((acc: any, game) => {
     if (!acc[game.Week]) {
       acc[game.Week] = [];
     }
@@ -144,9 +154,15 @@ export const getScheduleNFLData = (
   allNFLGames: NFLGame[],
   allNFLTeams: NFLTeam[]
 ) => {
-  // Team Standings
+  const seasonYear = Number(selectedSeason);
+  const seasonID = seasonYear - 2020; // backend SeasonID mapping
+
   const teamStandings = allNFLStandings
-    .filter((standings) => standings.ConferenceID === team.ConferenceID)
+    .filter(
+      (standings) =>
+        standings.Season === seasonYear &&
+        standings.ConferenceID === team.ConferenceID
+    )
     .map((standings, index) => ({ ...standings, Rank: index + 1 }));
 
   const teamAbbrMap = new Map(
@@ -161,8 +177,10 @@ export const getScheduleNFLData = (
     allNFLTeams.map((team) => [team.ID, team.Mascot])
   );
 
+  const seasonGames = allNFLGames.filter((game) => game.SeasonID === seasonID);
+
   // Team Schedule - Fixed sorting for mobile Safari consistency
-  const teamSchedule = allNFLGames
+  const teamSchedule = seasonGames
     .filter(
       (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
     )
@@ -188,8 +206,7 @@ export const getScheduleNFLData = (
       AwayTeamLogo: getLogo(league, game.AwayTeamID, false),
     }));
 
-  // Weekly Games
-  const groupedWeeklyGames = allNFLGames.reduce((acc: any, game) => {
+  const groupedWeeklyGames = seasonGames.reduce((acc: any, game) => {
     if (!acc[game.Week]) {
       acc[game.Week] = [];
     }

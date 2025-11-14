@@ -859,7 +859,7 @@ export const HockeySeasons: { label: string; value: string }[] = [
 ];
 
 export const FootballWeeks: { label: string; value: string }[] = Array.from(
-  { length: 21 },
+  { length: 23 },
   (_, i) => ({
     label: i.toString(),
     value: i.toString(),
