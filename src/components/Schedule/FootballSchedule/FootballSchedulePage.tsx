@@ -138,6 +138,16 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
   }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);
 
+  const teamRecordMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    (allCFBStandings || []).forEach((s: any) => {
+      if (s?.TeamID != null) {
+        map[s.TeamID] = `${s.TotalWins}-${s.TotalLosses}`;
+      }
+    });
+    return map;
+  }, [allCFBStandings]);
+
   const onExportSchedule = async (weekID: SingleValue<SelectOption>) => {
     const numericWeekID = getFBAWeekID(
       Number(weekID?.value),
@@ -313,6 +323,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   darkerBackgroundColor={darkerBackgroundColor}
                   isLoading={isLoading}
                   teamMap={cfbTeamMap}
+                  teamRecordMap={teamRecordMap}
                 />
               )}
               {view === WeeklyGames && (
@@ -332,6 +343,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   darkerBackgroundColor={darkerBackgroundColor}
                   isLoading={isLoading}
                   teamMap={cfbTeamMap}
+                  teamRecordMap={teamRecordMap}
                 />
               )}
             </div>
@@ -449,6 +461,17 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const dto = { SeasonID: selectedSeason - 2020, WeekID: numericWeekID };
     await ExportFootballSchedule(dto);
   };
+
+  const teamRecordMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    (allNFLStandings || []).forEach((s: any) => {
+      if (s?.TeamID != null) {
+        const ties = typeof s.TotalTies === "number" && s.TotalTies > 0 ? `-${s.TotalTies}` : "";
+        map[s.TeamID] = `${s.TotalWins}-${s.TotalLosses}${ties}`;
+      }
+    });
+    return map;
+  }, [allNFLStandings]);
   return (
     <>
       <div className="flex flex-col w-full">
@@ -596,6 +619,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   darkerBackgroundColor={darkerBackgroundColor}
                   isLoading={isLoading}
                   teamMap={nflTeamMap}
+                  teamRecordMap={teamRecordMap}
                 />
               )}
               {scheduleView === WeeklyGames && (
@@ -615,6 +639,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   darkerBackgroundColor={darkerBackgroundColor}
                   isLoading={isLoading}
                   teamMap={nflTeamMap}
+                  teamRecordMap={teamRecordMap}
                 />
               )}
             </div>
