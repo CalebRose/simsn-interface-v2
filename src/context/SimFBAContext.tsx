@@ -828,6 +828,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
     // if the user has no football teams, skip FBA landing bootstrapping
     if (cfbID === 0 && nflID === 0) {
+      setIsLoading(false);
       return;
     }
     const res = await BootstrapService.GetFBALandingBootstrapData(cfbID, nflID);
