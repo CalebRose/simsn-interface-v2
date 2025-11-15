@@ -1583,7 +1583,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const saveTransferPortalBoard = useCallback(async () => {
     const dto = {
       Profile: teamProfileMap[chlTeam!.ID],
-      Players: transferPortalProfiles,
+      Players: teamTransferPortalProfiles,
       TeamID: chlTeam!.ID,
     };
     await TransferPortalService.HCKSaveTransferPortalBoard(dto);

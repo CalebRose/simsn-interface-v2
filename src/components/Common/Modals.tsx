@@ -2598,6 +2598,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
               const team = chlTeamMap[contender.TeamID];
               const fullOdds = Math.round(contender.Odds * 100);
               const displayStatus = getDisplayStatus(fullOdds);
+              console.log({ contender });
               return (
                 <>
                   <div className="flex flex-row justify-start px-2">
@@ -2607,7 +2608,15 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
                     </span>
                   </div>
                   <Text variant="xs" classes="font-semibold">
-                    {contender.PromiseID > 0 ? "Yes" : "No"}
+                    {(() => {
+                      // Handle both number and NullInt64 object types
+                      const promiseId =
+                        typeof contender.PromiseID === "object" &&
+                        contender.PromiseID !== null
+                          ? (contender.PromiseID as any).Int64
+                          : contender.PromiseID;
+                      return promiseId > 0 ? "Yes" : "No";
+                    })()}
                   </Text>
                   <Text variant="xs" classes="font-semibold">
                     {displayStatus}
