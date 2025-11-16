@@ -602,7 +602,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   currentUser={currentUser}
                   playerMap={playerMap}
                   teamMap={chlTeamMap}
-                  week={selectedWeek}
+                  week={selectedWeek.value}
                   league={league}
                   ts={ts}
                   processedSchedule={weeklyGames}
@@ -649,8 +649,8 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     phlTeamMap,
     proRosterMap: phlRosterMap,
     phlTeamOptions,
-    allProStandings: allPHLStandings,
-    allProGames: allPHLGames,
+    proStandingsMapBySeason,
+    proGamesMapBySeason,
     isLoading,
     ExportHockeySchedule,
   } = hkStore;
@@ -659,12 +659,24 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [category, setCategory] = useState(Overview);
   const [scheduleView, setScheduleView] = useState(TeamGames);
   const [isChecked, setIsChecked] = useState(false);
-  const [selectedWeek, setSelectedWeek] = useState(currentWeek ?? 1);
-  const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
+  const [selectedWeek, setSelectedWeek] = useState<{
+    label: string;
+    value: string;
+  }>({ label: "1", value: "1" });
+  const [selectedSeason, setSelectedSeason] = useState<{
+    label: string;
+    value: string;
+  }>({ label: ts.Season.toString(), value: ts.SeasonID.toString() });
   const [standingsView, setStandingsView] = useState(Conferences);
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
   const hckExportOptions = useMemo(() => NonFBAExportOptions(), []);
+  const selectedWeekValue = useMemo(() => {
+    return Number(selectedWeek.value);
+  }, [selectedWeek]);
 
+  const selectedSeasonValue = useMemo(() => {
+    return Number(selectedSeason.value);
+  }, [selectedSeason]);
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
@@ -715,6 +727,14 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     return map;
   }, [phlRosterMap]);
 
+  const proGamesBySelectedSeason = useMemo(() => {
+    return proGamesMapBySeason[selectedSeasonValue] || [];
+  }, [proGamesMapBySeason, selectedSeasonValue]);
+
+  const proStandingsBySelectedSeason = useMemo(() => {
+    return proStandingsMapBySeason[selectedSeasonValue] || [];
+  }, [proStandingsMapBySeason, selectedSeasonValue]);
+
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = phlTeamMap ? phlTeamMap[value] : null;
@@ -729,8 +749,8 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       selectedWeek,
       selectedSeason,
       league,
-      allPHLStandings,
-      allPHLGames,
+      proStandingsBySelectedSeason,
+      proGamesBySelectedSeason,
       phlTeams
     );
   }, [
@@ -739,8 +759,8 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     selectedWeek,
     selectedSeason,
     league,
-    allPHLStandings,
-    allPHLGames,
+    proStandingsBySelectedSeason,
+    proGamesBySelectedSeason,
     phlTeams,
   ]);
 
@@ -752,14 +772,17 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   const weeklyGames = useMemo(() => {
     if (!selectedWeek) return [];
-    const gamesForWeek = groupedWeeklyGames[selectedWeek] || [];
+    const gamesForWeek = groupedWeeklyGames[selectedWeekValue] || [];
     return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
-  }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);
+  }, [groupedWeeklyGames, selectedWeekValue, ts, league, resultsOverride]);
 
   const handleScheduleExport = async (opts: any) => {
     const dto = {
       SeasonID: selectedSeason,
-      WeekID: getHCKWeekID(selectedWeek, selectedSeason - 2024),
+      WeekID: getHCKWeekID(
+        selectedWeekValue,
+        Number(selectedSeason.label) - 2024
+      ),
       Timeslot: opts.value,
     };
     await ExportHockeySchedule(dto);
@@ -898,8 +921,11 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                       }))}
                       placeholder="Select Week..."
                       onChange={(selectedOption) => {
-                        const selectedWeek = Number(selectedOption?.value);
-                        setSelectedWeek(selectedWeek);
+                        const opt = {
+                          label: selectedOption!.label,
+                          value: selectedOption!.value,
+                        };
+                        setSelectedWeek(opt);
                       }}
                       styles={{
                         control: (provided, state) => ({
@@ -959,8 +985,11 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   options={HockeySeasons}
                   placeholder="Select Season..."
                   onChange={(selectedOption) => {
-                    const selectedSeason = Number(selectedOption?.value);
-                    setSelectedWeek(selectedSeason);
+                    const opt = {
+                      label: selectedOption!.label,
+                      value: selectedOption!.value,
+                    };
+                    setSelectedSeason(opt);
                   }}
                   styles={{
                     control: (provided, state) => ({
@@ -1066,7 +1095,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 currentUser={currentUser}
                 league={league}
                 category={standingsView}
-                standings={allPHLStandings}
+                standings={proStandingsBySelectedSeason}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
@@ -1104,7 +1133,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   Abbr={selectedTeam?.Abbreviation}
                   category={scheduleView}
                   currentUser={currentUser}
-                  week={selectedWeek}
+                  week={selectedWeek.value}
                   league={league}
                   ts={ts}
                   playerMap={playerMap}
