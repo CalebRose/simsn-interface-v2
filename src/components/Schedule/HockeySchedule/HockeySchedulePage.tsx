@@ -78,7 +78,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [selectedSeason, setSelectedSeason] = useState<{
     label: string;
     value: string;
-  }>({ label: "2025", value: "1" });
+  }>({ label: ts.Season.toString(), value: ts.SeasonID.toString() });
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
   const hckExportOptions = useMemo(() => NonFBAExportOptions(), []);
   const selectedWeekValue = useMemo(() => {

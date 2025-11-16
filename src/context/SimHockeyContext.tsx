@@ -760,11 +760,12 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   }, [allCollegeGames]);
 
   const currentCollegeSeasonGames = useMemo(() => {
-    return collegeGamesMapBySeason[hck_Timestamp?.SeasonID || 0];
+    return collegeGamesMapBySeason[hck_Timestamp?.SeasonID || 0] || [];
   }, [collegeGamesMapBySeason, hck_Timestamp?.SeasonID]);
 
   const collegeTeamsGames = useMemo(() => {
     if (!chlTeam) return [];
+    if (!currentCollegeSeasonGames) return [];
     return currentCollegeSeasonGames.filter(
       (x) => x.HomeTeamID === chlTeam.ID || x.AwayTeamID === chlTeam.ID
     );
@@ -784,7 +785,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   }, [allProGames]);
 
   const currentProSeasonGames = useMemo(() => {
-    return proGamesMapBySeason[hck_Timestamp?.SeasonID || 0];
+    return proGamesMapBySeason[hck_Timestamp?.SeasonID || 0] || [];
   }, [proGamesMapBySeason, hck_Timestamp?.SeasonID]);
 
   const proTeamsGames = useMemo(() => {
