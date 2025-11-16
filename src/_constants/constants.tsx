@@ -851,11 +851,11 @@ export const FootballSeasons: { label: string; value: string }[] = [
 ];
 
 export const HockeySeasons: { label: string; value: string }[] = [
-  { label: "2025", value: "2025" },
-  { label: "2026", value: "2026" },
-  { label: "2027", value: "2027" },
-  { label: "2028", value: "2028" },
-  { label: "2029", value: "2029" },
+  { label: "2025", value: "1" },
+  { label: "2026", value: "2" },
+  { label: "2027", value: "3" },
+  { label: "2028", value: "4" },
+  { label: "2029", value: "5" },
 ];
 
 export const FootballWeeks: { label: string; value: string }[] = Array.from(
