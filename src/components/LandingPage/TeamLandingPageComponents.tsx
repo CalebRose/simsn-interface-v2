@@ -483,25 +483,15 @@ export const TeamMatchUp = ({
                     textColorClass={textColorClass}
                     league={league}
                   />
-                  {userRecord && isHomeGame && (
+                  {userRecord && (
                     <Text variant="small" classes="opacity-70">
                       ({userRecord})
                     </Text>
                   )}
-                  {opponentRecord && !isHomeGame && (
-                  <Text variant="small" classes="opacity-70">
-                    {opponentRecord}
-                  </Text>
-                )}
                 </div>
                 <Text variant="xs" classes="opacity-70">
                   {`HC ${coaches[0]}`}
                 </Text>
-                {opponentRecord && !isHomeGame && (
-                  <Text variant="xs" classes="opacity-70">
-                    ({opponentRecord})
-                  </Text>
-                )}
               </div>
             </div>
             <div className="flex flex-col col-span-1 items-center">
@@ -523,14 +513,9 @@ export const TeamMatchUp = ({
                     textColorClass={textColorClass}
                     league={league}
                   />
-                  {opponentRecord && isHomeGame && (
+                  {opponentRecord && (
                   <Text variant="small" classes="opacity-70">
                     ({opponentRecord})
-                  </Text>
-                )}
-                {userRecord && !isHomeGame && (
-                  <Text variant="small" classes="opacity-70">
-                    ({userRecord})
                   </Text>
                 )}
                 </div>
