@@ -9,6 +9,7 @@ import {
   Overview,
   Potentials,
   Preferences,
+  Promises,
   RecruitingTeamBoard,
   SimCHL,
   StarOptions,
@@ -208,6 +209,17 @@ export const HCKTransferPortal = () => {
                     onClick={() => setTableViewType(Potentials)}
                   >
                     Potentials
+                  </Button>
+                )}
+                {recruitingCategory === RecruitingTeamBoard && (
+                  <Button
+                    type="button"
+                    variant={
+                      tableViewType === Promises ? "success" : "secondary"
+                    }
+                    onClick={() => setTableViewType(Promises)}
+                  >
+                    Promises
                   </Button>
                 )}
                 <Button
