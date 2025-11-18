@@ -819,6 +819,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
     // if the user has no hockey teams, skip all HCK bootstrapping
     if (chlid == 0 && phlid == 0) {
+      setIsLoading(false);
       return;
     }
     const res = await BootstrapService.GetHCKBootstrapData(chlid, phlid);

@@ -13,7 +13,6 @@ import {
   SimCHL,
   SimPHL,
 } from "../../_constants/constants";
-import { Logo } from "../../_design/Logo";
 import { getLogo } from "../../_utility/getLogo";
 import { GetTeamLabel } from "../../_helper/teamHelper";
 import { useAuthStore } from "../../context/AuthContext";
@@ -37,21 +36,10 @@ export const Home = () => {
   } = useAuthStore();
   const { setSelectedLeague, selectedLeague, ts } = useLeagueStore();
   const navigate = useNavigate();
-  const fbStore = useSimFBAStore();
-  const bkStore = useSimBBAStore();
-  const hkStore = useSimHCKStore();
-  const { chlTeam, phlTeam } = hkStore;
-  const hkLoading = hkStore.isLoading;
-  const { cfbTeam, nflTeam, isLoading } = fbStore;
-  const fbLoading = isLoading;
-  const { cbbTeam, nbaTeam } = bkStore;
-  const bkLoading = bkStore.isLoading;
+  const { chlTeam, phlTeam, isLoading: hkLoading } = useSimHCKStore();
+  const { cfbTeam, nflTeam, isLoading: fbLoading } = useSimFBAStore();
+  const { cbbTeam, nbaTeam, isLoading: bkLoading } = useSimBBAStore();
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
-  const logoUrl =
-    selectedTeam &&
-    getLogo(selectedLeague as League, selectedTeam?.ID, currentUser?.isRetro);
-  const teamName =
-    selectedTeam && GetTeamLabel(selectedLeague as League, selectedTeam);
 
   const teamByLeague = (league: League) => {
     switch (league) {
