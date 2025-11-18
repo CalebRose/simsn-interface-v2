@@ -7,6 +7,7 @@ import {
   Potentials,
   Preferences,
   Promise,
+  Promises,
   RemovePortalPlayerType,
   ScoutAttributeType,
   SimCHL,
@@ -85,6 +86,13 @@ const getTransferProfileTableColumns = (
         { header: "SB", accessor: "ShotBlockingGrade" },
         { header: "GK", accessor: "GoalkeepingGrade" },
         { header: "GV", accessor: "GoalieVisionGrade" },
+      ]);
+    } else if (category === Promises) {
+      columns = columns.concat([
+        { header: "Promise Type", accessor: "PromiseType" },
+        { header: "Promise Weight", accessor: "PromiseWeight" },
+        { header: "Benchmark", accessor: "Benchmark" },
+        { header: "Benchmark Two", accessor: "BenchmarkStr" },
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
@@ -295,6 +303,30 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
               )}
             </TableCell>
           ))}
+        </>
+      )}
+      {category === Promises && (
+        <>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.PromiseType : "N/A"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.PromiseWeight : "N/A"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.Benchmark : "N/A"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.BenchmarkStr : "N/A"}
+            </span>
+          </TableCell>
         </>
       )}
       {category === Preferences && (
