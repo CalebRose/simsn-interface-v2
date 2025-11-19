@@ -181,7 +181,7 @@ const CHLRow: React.FC<CHLRowProps> = ({
   const leadingTeamsList = useMemo(() => {
     const list = [];
     const sortedProfiles = transferProfiles.sort(
-      (a, b) => a.TotalPoints - b.TotalPoints
+      (a, b) => b.TotalPoints - a.TotalPoints
     );
     let runningThreshold = 0;
     let totalPoints = 0;
