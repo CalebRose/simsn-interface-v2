@@ -616,8 +616,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
   const collegePromiseMap = useMemo(() => {
     const map: Record<number, CollegePromise> = {};
-    for (let i = 0; i < collegePromises.length; i++) {
-      const promise = collegePromises[i];
+    for (let i = 0; i < teamCollegePromises.length; i++) {
+      const promise = teamCollegePromises[i];
       map[promise.CollegePlayerID] = promise;
     }
     return map;

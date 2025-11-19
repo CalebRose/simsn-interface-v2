@@ -159,7 +159,6 @@ export const Table = <T,>({
           return 0;
         }
       }
-      console.log({ page, key, order });
       if (page === "RecruitingProfileTable") {
         if (
           key.includes("LastName") ||

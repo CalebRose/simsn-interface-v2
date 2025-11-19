@@ -2260,7 +2260,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
   const leadingTeamsList = useMemo(() => {
     const list = [];
     const sortedProfiles = transferProfiles.sort(
-      (a, b) => a.TotalPoints - b.TotalPoints
+      (a, b) => b.TotalPoints - a.TotalPoints
     );
     let runningThreshold = 0;
     let totalPoints = 0;
@@ -2598,7 +2598,6 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
               const team = chlTeamMap[contender.TeamID];
               const fullOdds = Math.round(contender.Odds * 100);
               const displayStatus = getDisplayStatus(fullOdds);
-              console.log({ contender });
               return (
                 <>
                   <div className="flex flex-row justify-start px-2">

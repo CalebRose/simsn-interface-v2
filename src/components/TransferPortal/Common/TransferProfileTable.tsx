@@ -174,8 +174,9 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
   // 5) Leading teams (memo)
   const leadingTeamsList = useMemo(() => {
     const list = [];
+    // Descending sort for total points
     const sortedProfiles = transferProfiles.sort(
-      (a, b) => a.TotalPoints - b.TotalPoints
+      (a, b) => b.TotalPoints - a.TotalPoints
     );
     let runningThreshold = 0;
     let totalPoints = 0;
