@@ -21,7 +21,7 @@ export const TransferPortalService = {
   },
 
   HCKSaveTransferPortalBoard: async (dto: any): Promise<void> => {
-    return await PostCall(`${hckUrl}portal/saveboard`, dto);
+    await PostCall(`${hckUrl}portal/saveboard`, dto);
   },
 
   HCKCreatePromise: async (dto: any): Promise<CollegePromise> => {

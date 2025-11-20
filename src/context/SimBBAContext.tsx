@@ -434,11 +434,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NBATeamID) {
       nbaID = currentUser.NBATeamID;
     }
-    // if the user has no basketball teams, skip BBA bootstrapping
-    if (cbbID === 0 && nbaID === 0) {
-      isFetching.current = false;
-      return;
-    }
     const res = await BootstrapService.GetBBABootstrapTeamData();
     setCBBTeams(res.AllCollegeTeams);
     const sortedProTeams = res.AllProTeams.sort(
@@ -521,6 +516,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
     // if the user has no basketball teams, skip BBA bootstrapping
     if (cbbID === 0 && nbaID === 0) {
+      isFetching.current = false;
       setIsLoading(false);
       return;
     }

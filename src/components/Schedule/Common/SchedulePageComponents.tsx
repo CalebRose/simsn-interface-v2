@@ -19,6 +19,7 @@ interface TeamScheduleProps {
   category?: string;
   playerMap?: any;
   teamMap?: any;
+  teamRecordMap?: Record<number, string>;
   week: any;
   currentUser: any;
   league: League;
@@ -39,6 +40,7 @@ export const TeamSchedule = ({
   currentUser,
   playerMap,
   teamMap,
+  teamRecordMap,
   week,
   league,
   ts,
@@ -57,7 +59,11 @@ export const TeamSchedule = ({
   return (
     <>
       <SectionCards
-        header={`${Abbr} Schedule`}
+        header={`${Abbr}${
+          team && teamRecordMap && teamRecordMap[team?.ID]
+            ? ` (${teamRecordMap[team.ID]})`
+            : ""
+        } Schedule`}
         team={team}
         classes={`w-full ${textColorClass}`}
         backgroundColor={backgroundColor}
@@ -155,7 +161,11 @@ export const TeamSchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={game.opponentLabel}
+                    label={`${game.opponentLabel}${
+                      teamRecordMap && teamRecordMap[game.opponentID]
+                        ? ` (${teamRecordMap[game.opponentID]})`
+                        : ""
+                    }`}
                     teamID={game.opponentID}
                     textColorClass={textColorClass}
                     league={league}
@@ -215,6 +225,7 @@ export const WeeklySchedule = ({
   currentUser,
   playerMap,
   teamMap,
+  teamRecordMap,
   week,
   league,
   ts,
@@ -308,6 +319,8 @@ export const WeeklySchedule = ({
             const awayTeamLabel = awayTeam
               ? awayTeam.TeamName || awayTeam.Team
               : "N/A";
+            const homeRecord = teamRecordMap?.[game.HomeTeamID];
+            const awayRecord = teamRecordMap?.[game.AwayTeamID];
 
             return (
               <div
@@ -343,7 +356,7 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={homeTeamLabel}
+                    label={`${homeTeamLabel}${homeRecord ? ` (${homeRecord})` : ""}`}
                     teamID={game.HomeTeamID}
                     textColorClass={textColorClass}
                     league={league}
@@ -358,7 +371,7 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={awayTeamLabel}
+                    label={`${awayTeamLabel}${awayRecord ? ` (${awayRecord})` : ""}`}
                     teamID={game.AwayTeamID}
                     textColorClass={textColorClass}
                     league={league}

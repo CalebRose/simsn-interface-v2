@@ -39,6 +39,7 @@ import { Text } from "../../_design/Typography";
 import { useModal } from "../../_hooks/useModal";
 import {
   CollegePlayer as CHLPlayer,
+  CollegePromise,
   DraftPick,
   ProfessionalPlayer as PHLPlayer,
   TradeProposal,
@@ -141,7 +142,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     chlRosterMap,
     chlTeamOptions,
     teamProfileMap,
-    collegePromiseMap,
+    collegePromises,
     cutCHLPlayer,
     redshirtPlayer,
     createPromise,
@@ -171,13 +172,6 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     searchRef.current?.(dto);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const modalPlayerPromise = useMemo(() => {
-    if (!modalPlayer) {
-      return null;
-    }
-    return collegePromiseMap[modalPlayer.ID];
-  }, [modalPlayer, collegePromiseMap]);
   const [selectedTeam, setSelectedTeam] = useState(() => {
     if (teamId) {
       const id = Number(teamId);
@@ -185,6 +179,28 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return chlTeam;
   });
+  const selectedTeamPromises = useMemo(() => {
+    if (!collegePromises || !selectedTeam) return [];
+    return collegePromises.filter(
+      (promise) => promise.TeamID === selectedTeam.ID
+    );
+  }, [selectedTeam, collegePromises]);
+
+  const collegePromiseMap = useMemo(() => {
+    const map: Record<number, CollegePromise> = {};
+    selectedTeamPromises.forEach((promise) => {
+      map[promise.CollegePlayerID] = promise;
+    });
+    return map;
+  }, [selectedTeamPromises]);
+
+  const modalPlayerPromise = useMemo(() => {
+    if (!modalPlayer) {
+      return null;
+    }
+    return collegePromiseMap[modalPlayer.ID];
+  }, [modalPlayer, collegePromiseMap]);
+
   const [category, setCategory] = useState(Overview);
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -309,6 +325,15 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
             {!isMobile && (
               <Button
                 size="sm"
+                isSelected={category === Promises}
+                onClick={() => setCategory(Promises)}
+              >
+                <Text variant="small">Promises</Text>
+              </Button>
+            )}
+            {!isMobile && (
+              <Button
+                size="sm"
                 isSelected={category === Attributes}
                 onClick={() => setCategory(Attributes)}
               >
@@ -323,16 +348,6 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
                 onClick={() => setCategory(Potentials)}
               >
                 <Text variant="small">Potentials</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                disabled={selectedTeam?.ID !== chlTeam?.ID}
-                isSelected={category === Promises}
-                onClick={() => setCategory(Promises)}
-              >
-                <Text variant="small">Promises</Text>
               </Button>
             )}
             <Button variant="primary" size="sm" onClick={exportRoster}>

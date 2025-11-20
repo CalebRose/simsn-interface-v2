@@ -9,6 +9,7 @@ import {
   Overview,
   Potentials,
   Preferences,
+  Promises,
   RecruitingTeamBoard,
   SimCHL,
   StarOptions,
@@ -38,6 +39,7 @@ export const HCKTransferPortal = () => {
     addTransferPlayerToBoard,
     removeTransferPlayerFromBoard,
     chlTeamMap,
+    chlPlayerMap,
     scoutPortalAttribute,
     updatePointsOnPortalPlayer,
     createPromise,
@@ -207,6 +209,17 @@ export const HCKTransferPortal = () => {
                     onClick={() => setTableViewType(Potentials)}
                   >
                     Potentials
+                  </Button>
+                )}
+                {recruitingCategory === RecruitingTeamBoard && (
+                  <Button
+                    type="button"
+                    variant={
+                      tableViewType === Promises ? "success" : "secondary"
+                    }
+                    onClick={() => setTableViewType(Promises)}
+                  >
+                    Promises
                   </Button>
                 )}
                 <Button
@@ -398,7 +411,7 @@ export const HCKTransferPortal = () => {
                   colorThree={teamColors.TextColorThree}
                   team={chlTeam}
                   transferPortalProfiles={teamTransferPortalProfiles}
-                  playerMap={transferMap}
+                  playerMap={chlPlayerMap}
                   teamMap={chlTeamMap}
                   league={SimCHL}
                   teamProfile={teamProfile!}

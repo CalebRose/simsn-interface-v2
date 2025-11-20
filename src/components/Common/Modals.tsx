@@ -2260,7 +2260,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
   const leadingTeamsList = useMemo(() => {
     const list = [];
     const sortedProfiles = transferProfiles.sort(
-      (a, b) => a.TotalPoints - b.TotalPoints
+      (a, b) => b.TotalPoints - a.TotalPoints
     );
     let runningThreshold = 0;
     let totalPoints = 0;
@@ -2607,7 +2607,15 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
                     </span>
                   </div>
                   <Text variant="xs" classes="font-semibold">
-                    {contender.PromiseID > 0 ? "Yes" : "No"}
+                    {(() => {
+                      // Handle both number and NullInt64 object types
+                      const promiseId =
+                        typeof contender.PromiseID === "object" &&
+                        contender.PromiseID !== null
+                          ? (contender.PromiseID as any).Int64
+                          : contender.PromiseID;
+                      return promiseId > 0 ? "Yes" : "No";
+                    })()}
                   </Text>
                   <Text variant="xs" classes="font-semibold">
                     {displayStatus}

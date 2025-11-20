@@ -7,6 +7,7 @@ import {
   Potentials,
   Preferences,
   Promise,
+  Promises,
   RemovePortalPlayerType,
   ScoutAttributeType,
   SimCHL,
@@ -86,6 +87,13 @@ const getTransferProfileTableColumns = (
         { header: "GK", accessor: "GoalkeepingGrade" },
         { header: "GV", accessor: "GoalieVisionGrade" },
       ]);
+    } else if (category === Promises) {
+      columns = columns.concat([
+        { header: "Promise Type", accessor: "PromiseType" },
+        { header: "Promise Weight", accessor: "PromiseWeight" },
+        { header: "Benchmark", accessor: "Benchmark" },
+        { header: "Benchmark Two", accessor: "BenchmarkStr" },
+      ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
         { header: "Program", accessor: "ProgramPref" },
@@ -138,9 +146,14 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
   const hkStore = useSimHCKStore();
   const { transferProfileMapByPlayerID, collegePromiseMap } = hkStore;
   const { isTablet } = useResponsive();
-
   const transferProfiles = useMemo(() => {
-    return transferProfileMapByPlayerID[player.ID];
+    if (!player) {
+      console.log("No player found for profile:", profile);
+      return [];
+    }
+    const profiles = transferProfileMapByPlayerID[player.ID];
+    if (!profiles) return [];
+    return profiles;
   }, [transferProfileMapByPlayerID, player]);
 
   // 1) Build attribute lists once
@@ -161,8 +174,9 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
   // 5) Leading teams (memo)
   const leadingTeamsList = useMemo(() => {
     const list = [];
+    // Descending sort for total points
     const sortedProfiles = transferProfiles.sort(
-      (a, b) => a.TotalPoints - b.TotalPoints
+      (a, b) => b.TotalPoints - a.TotalPoints
     );
     let runningThreshold = 0;
     let totalPoints = 0;
@@ -290,6 +304,30 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
               )}
             </TableCell>
           ))}
+        </>
+      )}
+      {category === Promises && (
+        <>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.PromiseType : "N/A"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.PromiseWeight : "N/A"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.Benchmark : "N/A"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.BenchmarkStr : "N/A"}
+            </span>
+          </TableCell>
         </>
       )}
       {category === Preferences && (
