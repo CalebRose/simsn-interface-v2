@@ -883,6 +883,27 @@ export const PHLWeeks: { label: string; value: string }[] = Array.from(
   ]
 ).flat();
 
+export const LeagueTypeOptions = [
+  { label: SimCFB, value: SimCFB },
+  { label: SimNFL, value: SimNFL },
+  { label: SimCBB, value: SimCBB },
+  { label: SimNBA, value: SimNBA },
+  { label: SimCHL, value: SimCHL },
+  { label: SimPHL, value: SimPHL },
+];
+
+export const NewsTypeOptions = [
+  { label: "Trade", value: "Trade Block" },
+  { label: "Injury", value: "Injury Report" },
+  { label: "Free Agency", value: "Free Agency" },
+  { label: "Coaching Job", value: "Coaching Job" },
+  { label: "Recruiting", value: "Recruiting" },
+  { label: "Commitment", value: "Commitment" },
+  { label: "Graduation", value: "Graduation" },
+  { label: "Transfer Portal", value: "Transfer Portal" },
+  { label: "Collusion", value: "Collusion" },
+];
+
 export const MAX_TEAM_INFO_COLUMNS = 4;
 export const MAX_TEAM_PHL_INFO_COLUMNS = 5;
 
