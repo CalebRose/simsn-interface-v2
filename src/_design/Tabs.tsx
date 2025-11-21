@@ -37,7 +37,7 @@ export const Tab: React.FC<TabProps> = ({
     : "inline-block p-2 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300";
   return (
     <li onClick={() => setSelected(label)}>
-      <Text variant="small" className={`${selectedClass} ${classes}`}>
+      <Text variant="small" className={`${selectedClass} cursor-pointer ${classes}`}>
         {label}
       </Text>
     </li>
