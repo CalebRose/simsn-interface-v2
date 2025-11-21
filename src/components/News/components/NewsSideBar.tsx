@@ -29,6 +29,8 @@ import {
   MakeHCKSeasonsOptionList,
   MakeHCKWeeksOptionList,
 } from "../../../_helper/statsPageHelper";
+import { Refresh } from "../../../_design/Icons";
+import { Text } from "../../../_design/Typography";
 
 interface NewsSideBarProps {
   teamColors: any;
@@ -44,6 +46,7 @@ interface NewsSideBarProps {
   totalPages: number;
   goToPreviousPage: () => void;
   goToNextPage: () => void;
+  refreshNews: () => void;
 }
 
 export const NewsSideBar: FC<NewsSideBarProps> = ({
@@ -60,6 +63,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   goToNextPage,
   currentPage,
   totalPages,
+  refreshNews,
 }) => {
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
 
@@ -90,39 +94,43 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   }, [league, selectedTeam]);
 
   const seasonOptions = useMemo(() => {
+    const noneOption = { label: "None", value: "-1" };
     if (!ts) {
-      return [{ label: "2025", value: "1" }];
+      return [noneOption, { label: "2025", value: "1" }];
     }
+    let options = [];
     if (league === SimCHL || league === SimPHL) {
-      return MakeHCKSeasonsOptionList(ts);
+      options = MakeHCKSeasonsOptionList(ts);
+    } else if (league === SimCFB || league === SimNFL) {
+      options = MakeFBASeasonsOptionList(ts);
+    } else if (league === SimCBB || league === SimNBA) {
+      options = MakeFBASeasonsOptionList(ts);
+    } else {
+      options = [{ label: "2025", value: "1" }];
     }
-    if (league === SimCFB || league === SimNFL) {
-      return MakeFBASeasonsOptionList(ts);
-    }
-    if (league === SimCBB || league === SimNBA) {
-      return MakeFBASeasonsOptionList(ts);
-    }
-    return [{ label: "2025", value: "1" }];
+    return [noneOption, ...options];
   }, [ts, league]);
 
   const weekOptions = useMemo(() => {
+    const noneOption = { label: "None", value: "-1" };
+    let options = [];
     if (league === SimCHL || league === SimPHL) {
-      return MakeHCKWeeksOptionList(selectedSeason);
+      options = MakeHCKWeeksOptionList(selectedSeason);
+    } else if (league === SimCFB || league === SimNFL) {
+      options = MakeFBAWeeksOptionList(selectedSeason);
+    } else if (league === SimCBB || league === SimNBA) {
+      options = MakeBBAWeeksOptionList(selectedSeason);
+    } else {
+      options = MakeHCKWeeksOptionList(selectedSeason);
     }
-    if (league === SimCFB || league === SimNFL) {
-      return MakeFBAWeeksOptionList(selectedSeason);
-    }
-    if (league === SimCBB || league === SimNBA) {
-      return MakeBBAWeeksOptionList(selectedSeason);
-    }
-    return MakeHCKWeeksOptionList(selectedSeason);
+    return [noneOption, ...options];
   }, [selectedSeason, league]);
 
   return (
-    <div className="flex flex-col w-full h-full max-[1024px]:gap-y-2 mb-2">
+    <div className="flex flex-col w-full h-fit max-[1024px]:gap-y-2 mb-2 sticky top-20 mt-4">
       <Border
         direction="col"
-        classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-full items-center justify-start"
+        classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-fit items-center justify-start"
         styles={{
           borderColor: teamColors.One,
           backgroundColor: navyBlueColor,
@@ -166,6 +174,36 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
             isMobile={false}
             change={SelectNewsTypeOption}
           />
+        </div>
+        <div className="flex flex-col gap-x-2 gap-y-2 flex-wrap w-full text-start mt-2 px-2">
+          <ButtonGroup direction="row" classes="justify-center">
+            <Button
+              variant="primary"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 0}
+            >
+              Previous
+            </Button>
+            <Text variant="body-small" classes="flex items-center">
+              {currentPage + 1}
+            </Text>
+            <Button
+              variant="primary"
+              onClick={goToNextPage}
+              disabled={currentPage + 1 >= totalPages}
+            >
+              Next
+            </Button>
+          </ButtonGroup>
+        </div>
+        <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mx-2 mt-2">
+          <Button
+            variant="success"
+            onClick={refreshNews}
+            classes="flex gap-x-2 text-center justify-center items-center"
+          >
+            Refresh News <Refresh />
+          </Button>
         </div>
       </Border>
     </div>

@@ -893,14 +893,16 @@ export const LeagueTypeOptions = [
 ];
 
 export const NewsTypeOptions = [
-  { label: "Trade", value: "Trade Block" },
-  { label: "Injury", value: "Injury Report" },
-  { label: "Free Agency", value: "Free Agency" },
-  { label: "Coaching Job", value: "Coaching Job" },
+  { label: "None", value: "" },
   { label: "Recruiting", value: "Recruiting" },
   { label: "Commitment", value: "Commitment" },
-  { label: "Graduation", value: "Graduation" },
   { label: "Transfer Portal", value: "Transfer Portal" },
+  { label: "Trade", value: "Trade Block" },
+  { label: "Free Agency", value: "Free Agency" },
+  { label: "Game Results", value: "Upset Alert" },
+  { label: "Injury", value: "Injury Report" },
+  { label: "Coaching Job", value: "Coaching Job" },
+  { label: "Graduation", value: "Graduation" },
   { label: "Collusion", value: "Collusion" },
 ];
 

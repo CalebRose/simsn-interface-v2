@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { darkenColor } from "../../_utility/getDarkerColor";
@@ -36,16 +36,19 @@ export const useNewsPage = () => {
     cfb_Timestamp,
     collegeNews: cfbNews,
     proNews: nflNews,
+    getBootstrapNewsData: getFBABootstrapNewsData,
   } = useSimFBAStore();
   const {
     cbb_Timestamp,
     collegeNews: cbbNews,
     proNews: nbaNews,
+    getBootstrapNewsData: getBBABootstrapNewsData,
   } = useSimBBAStore();
   const {
     hck_Timestamp,
     collegeNews: chlNews,
     proNews: phlNews,
+    getBootstrapNewsData: getHCKBootstrapNewsData,
   } = useSimHCKStore();
   const isLoadingData = !selectedTeam;
   const backgroundColor = "#1f2937";
@@ -59,6 +62,24 @@ export const useNewsPage = () => {
   const [selectedWeek, setSelectedWeek] = useState<number>(2501);
   const [selectedSeason, setSelectedSeason] = useState<number>(1);
   const [selectedNewsType, setSelectedNewsType] = useState<string>("");
+
+  useEffect(() => {
+    getFBABootstrapNewsData();
+    getBBABootstrapNewsData();
+    getHCKBootstrapNewsData();
+  }, []);
+
+  const RefreshNews = useCallback(() => {
+    if (isCFBUser || isNFLUser) {
+      getFBABootstrapNewsData();
+    }
+    if (isCBBUser || isNBAUser) {
+      getBBABootstrapNewsData();
+    }
+    if (isCHLUser || isPHLUser) {
+      getHCKBootstrapNewsData();
+    }
+  }, [isCFBUser, isNFLUser, isCBBUser, isNBAUser, isCHLUser, isPHLUser]);
 
   const ts = useMemo(() => {
     if (selectedLeague === SimCHL || selectedLeague === SimPHL) {
@@ -89,17 +110,66 @@ export const useNewsPage = () => {
     }
   }, [selectedLeague, cfbNews, nflNews, cbbNews, nbaNews, chlNews, phlNews]);
 
+  const filterNewsData = () => {
+    return useMemo(() => {
+      let source = selectedLeagueNews;
+      console.log({ selectedNewsType, selectedSeason, selectedWeek });
+      return source.filter((news) => {
+        // news type filter - empty string means show all
+        if (selectedNewsType !== "" && selectedNewsType !== news.MessageType) {
+          return false;
+        }
+        if (selectedSeason !== -1 && selectedSeason !== news.SeasonID) {
+          return false;
+        }
+        if (selectedWeek !== -1 && selectedWeek !== news.WeekID) {
+          return false;
+        }
+        return true;
+      });
+    }, [selectedNewsType, selectedLeagueNews, selectedSeason, selectedWeek]);
+  };
+
+  const filteredNews = filterNewsData();
+
+  const pageSize = 100;
   const {
     currentPage,
     setCurrentPage,
     totalPages,
     goToPreviousPage,
     goToNextPage,
-  } = usePagination(selectedLeagueNews.length, 30);
+  } = usePagination(filteredNews.length, 100);
+
+  const toPreviousPage = () => {
+    // Force the window to scroll back up to the top.
+    window.scrollTo(0, 0);
+    goToPreviousPage();
+  };
+
+  const toNextPage = () => {
+    window.scrollTo(0, 0);
+    goToNextPage();
+  };
+
+  const pagedData = useMemo(() => {
+    const start = currentPage!! * 100;
+    return filteredNews.slice(start, start + pageSize);
+  }, [filteredNews, currentPage, pageSize]);
 
   const changeLeagueOption = (opts: SingleValue<SelectOption>) => {
     const leagueOption = opts?.value as League;
     setSelectedLeague(leagueOption);
+    if (leagueOption === SimCFB || leagueOption === SimNFL) {
+      setSelectedSeason(6);
+      setSelectedWeek(-1);
+    } else if (leagueOption === SimCBB || leagueOption === SimNBA) {
+      setSelectedSeason(5);
+      setSelectedWeek(-1);
+    } else if (leagueOption === SimCHL || leagueOption === SimPHL) {
+      setSelectedSeason(2);
+      setSelectedWeek(-1);
+    }
     setCurrentPage(0);
   };
 
@@ -137,8 +207,8 @@ export const useNewsPage = () => {
     SelectNewsTypeOption,
     currentPage,
     totalPages,
-    goToPreviousPage,
-    goToNextPage,
+    toPreviousPage,
+    toNextPage,
     backgroundColor,
     darkerBackgroundColor,
     textColorClass,
@@ -160,5 +230,7 @@ export const useNewsPage = () => {
     setSelectedLeague,
     selectedLeague,
     selectedTeam,
+    pagedData,
+    RefreshNews,
   };
 };

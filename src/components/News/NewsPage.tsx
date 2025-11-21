@@ -2,7 +2,9 @@ import React from "react";
 import { PageContainer } from "../../_design/Container";
 import { useNewsPage } from "./useNewsPage";
 import { NewsSideBar } from "./components/NewsSideBar";
+import { NewsLogItem } from "./components/NewsLogItem";
 import { League } from "../../_constants/constants";
+import { NewsLog } from "../../models/footballModels";
 export const NewsPage = () => {
   const {
     teamColors,
@@ -16,8 +18,10 @@ export const NewsPage = () => {
     SelectNewsTypeOption,
     currentPage,
     totalPages,
-    goToPreviousPage,
-    goToNextPage,
+    toPreviousPage,
+    toNextPage,
+    pagedData,
+    RefreshNews,
   } = useNewsPage();
 
   return (
@@ -34,12 +38,21 @@ export const NewsPage = () => {
             SelectSeasonOption={SelectSeasonOption}
             SelectWeekOption={SelectWeekOption}
             SelectNewsTypeOption={SelectNewsTypeOption}
-            goToPreviousPage={goToPreviousPage}
-            goToNextPage={goToNextPage}
+            goToPreviousPage={toPreviousPage}
+            goToNextPage={toNextPage}
             currentPage={currentPage}
             totalPages={totalPages}
+            refreshNews={RefreshNews}
           />
-          <div>News Content</div>
+          <div className="flex flex-col w-full">
+            {pagedData.map((newsItem: NewsLog) => (
+              <NewsLogItem
+                key={newsItem.ID}
+                newsItem={newsItem}
+                league={selectedLeague as League}
+              />
+            ))}
+          </div>
         </div>
       </>
     </PageContainer>

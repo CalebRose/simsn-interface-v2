@@ -161,6 +161,7 @@ interface SimBBAContextProps {
   nbaDraftPicks: DraftPick[];
   nbaDraftPickMap: Record<number, DraftPick[]>;
   individualDraftPickMap: Record<number, DraftPick>;
+  getBootstrapNewsData: () => void;
 }
 
 // ✅ Initial Context State
@@ -251,6 +252,7 @@ const defaultContext: SimBBAContextProps = {
   vetoTrade: async () => {},
   ExportBasketballSchedule: async () => {},
   ExportPlayByPlay: async () => {},
+  getBootstrapNewsData: async () => {},
   collegePolls: [],
   collegePollSubmission: {} as CollegePollSubmission,
   nbaDraftees: [],
@@ -505,6 +507,29 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     isFetching.current = false;
   };
 
+  const getBootstrapNewsData = useCallback(async () => {
+    let cbbID = 0;
+    let nbaID = 0;
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
+    }
+    if (currentUser && currentUser.NBATeamID) {
+      nbaID = currentUser.NBATeamID;
+    }
+    if (cbbID === 0 && nbaID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetBBANewsBootstrapData(cbbID, nbaID);
+
+    if (cbbID > 0) {
+      setCollegeNews(res.CollegeNews as any);
+    }
+
+    if (nbaID > 0) {
+      setProNews(res.ProNews as any);
+    }
+  }, [currentUser?.cbb_id, currentUser?.NBATeamID]);
+
   const getFirstBootstrapData = async () => {
     let cbbID = 0;
     let nbaID = 0;
@@ -558,7 +583,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
 
     const res = await BootstrapService.GetSecondBBABootstrapData(cbbID, nbaID);
     if (cbbID > 0) {
-      setCollegeNews(res.CollegeNews);
       setTeamProfileMap(res.TeamProfileMap);
       setAllCBBStandings(res.CollegeStandings);
       setCollegePolls(res.CollegePolls);
@@ -625,7 +649,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
 
     if (nbaID > 0) {
-      setProNews(res.ProNews);
       setFreeAgentOffers(res.FreeAgentOffers);
       setWaiverOffers(res.WaiverOffers);
       setProContractMap(res.ContractMap);
@@ -1299,6 +1322,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         ExportCBBRecruits,
         ExportBasketballSchedule,
         ExportPlayByPlay,
+        getBootstrapNewsData,
       }}
     >
       {children}
