@@ -30,7 +30,7 @@ import {
   MakeHCKSeasonsOptionList,
   MakeHCKWeeksOptionList,
 } from "../../../_helper/statsPageHelper";
-import { Refresh } from "../../../_design/Icons";
+import { BarsArrowDown, BarsArrowUp, Refresh } from "../../../_design/Icons";
 import { Text } from "../../../_design/Typography";
 
 interface NewsSideBarProps {
@@ -48,6 +48,8 @@ interface NewsSideBarProps {
   goToPreviousPage: () => void;
   goToNextPage: () => void;
   refreshNews: () => void;
+  sortByNewest: boolean;
+  setSortByNewest: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const NewsSideBar: FC<NewsSideBarProps> = ({
@@ -65,6 +67,8 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   currentPage,
   totalPages,
   refreshNews,
+  setSortByNewest,
+  sortByNewest,
 }) => {
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
 
@@ -237,13 +241,20 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
             </Button>
           </ButtonGroup>
         </div>
-        <div className="hidden min-[769px]:flex flex-col gap-x-2 flex-wrap w-full text-start mx-2 mt-2">
+        <div className="hidden min-[769px]:flex flex-row gap-2 w-full text-start mx-2 mt-2 pb-2 justify-center">
           <Button
             variant="success"
             onClick={refreshNews}
-            classes="flex gap-x-2 text-center justify-center items-center"
+            classes="flex gap-x-2 text-xs text-center justify-center items-center"
           >
             Refresh News <Refresh />
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => setSortByNewest((prev) => !prev)}
+            classes="flex gap-x-2 text-xs text-center justify-center items-center py-1 px-2 flex-shrink-0"
+          >
+            {sortByNewest ? <BarsArrowDown /> : <BarsArrowUp />}
           </Button>
         </div>
 
@@ -255,6 +266,13 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
             classes="flex gap-x-1 text-center justify-center items-center text-xs py-1 px-2 flex-shrink-0"
           >
             <Refresh />
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => setSortByNewest((prev) => !prev)}
+            classes="flex gap-x-1 text-center justify-center items-center text-xs py-1 px-2 flex-shrink-0"
+          >
+            {sortByNewest ? <BarsArrowDown /> : <BarsArrowUp />}
           </Button>
           <div className="flex items-center gap-x-1">
             <Button

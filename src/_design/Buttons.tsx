@@ -25,7 +25,8 @@ export const Button: React.FC<ButtonProps> = ({
     primary: "bg-blue-500 hover:bg-blue-700 text-white",
     secondary: "bg-gray-500 hover:bg-gray-700 text-white",
     success: `${ButtonGreen} hover:bg-green-700 text-white`,
-    warning: "bg-yellow-500 hover:bg-yellow-700 text-white",
+    warning: "bg-yellow-400 hover:bg-yellow-700 text-white",
+    sort: "bg-orange-500 hover:bg-orange-700 text-white",
     danger: "bg-red-500 hover:bg-red-700 text-white",
     primaryOutline:
       "bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white border border-blue-500 hover:border-transparent",

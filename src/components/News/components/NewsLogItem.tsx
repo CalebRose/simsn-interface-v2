@@ -17,13 +17,18 @@ import { useSimFBAStore } from "../../../context/SimFBAContext";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { useAuthStore } from "../../../context/AuthContext";
-import { doc, getDoc, setDoc, updateDoc, increment } from "firebase/firestore";
-import { firestore } from "../../../firebase/firebase";
+
 import { EngagementButton } from "./EngagementButton";
 
 interface NewsLogItemProps {
   newsItem: NewsLog;
   league: League;
+  engagementData: EngagementData;
+  onEngagementUpdate: (
+    newsId: string,
+    type: EngagementType,
+    userTeamId: number
+  ) => Promise<void>;
 }
 
 interface EngagementData {
@@ -52,24 +57,13 @@ export type EngagementType =
 export const NewsLogItem: React.FC<NewsLogItemProps> = ({
   newsItem,
   league,
+  engagementData,
+  onEngagementUpdate,
 }) => {
   const { currentUser } = useAuthStore();
   const { cfbTeamMap, proTeamMap } = useSimFBAStore();
   const { cbbTeamMap, nbaTeamMap } = useSimBBAStore();
   const { chlTeamMap, phlTeamMap } = useSimHCKStore();
-
-  // Engagement state
-  const [engagementData, setEngagementData] = useState<EngagementData>({
-    heart: 0,
-    wow: 0,
-    sad: 0,
-    happy: 0,
-    angry: 0,
-    hug: 0,
-    eyes: 0,
-    userEngagements: {},
-  });
-  const [isLoadingEngagement, setIsLoadingEngagement] = useState(true);
 
   // Get team information based on league
   const getTeamInfo = () => {
@@ -168,102 +162,10 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
 
   const userTeamId = getUserTeamId();
 
-  // Load engagement data from Firebase
-  useEffect(() => {
-    const loadEngagementData = async () => {
-      if (!newsItem.ID) return;
-
-      try {
-        const docRef = doc(
-          firestore,
-          "newsEngagement",
-          league,
-          "messages",
-          newsItem.ID.toString()
-        );
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data() as EngagementData;
-          setEngagementData(data);
-        } else {
-          // Initialize document if it doesn't exist
-          const initialData: EngagementData = {
-            heart: 0,
-            wow: 0,
-            sad: 0,
-            happy: 0,
-            angry: 0,
-            hug: 0,
-            eyes: 0,
-            userEngagements: {},
-          };
-          await setDoc(docRef, initialData);
-          setEngagementData(initialData);
-        }
-      } catch (error) {
-        console.error("Error loading engagement data:", error);
-      } finally {
-        setIsLoadingEngagement(false);
-      }
-    };
-
-    loadEngagementData();
-  }, [newsItem.ID, league]);
-
   // Handle engagement button clicks
   const handleEngagement = async (type: EngagementType) => {
     if (!userTeamId || !newsItem.ID) return;
-
-    const userKey = `${userTeamId}`;
-    const currentUserEngagement = engagementData.userEngagements[userKey];
-
-    try {
-      const docRef = doc(
-        firestore,
-        "newsEngagement",
-        league,
-        "messages",
-        newsItem.ID.toString()
-      );
-
-      let updates: any = {};
-      let newUserEngagements = { ...engagementData.userEngagements };
-
-      if (currentUserEngagement === type) {
-        // User is toggling off the same button
-        updates[type] = increment(-1);
-        newUserEngagements[userKey] = null;
-      } else if (currentUserEngagement && currentUserEngagement !== type) {
-        // User is switching from one engagement to another
-        updates[currentUserEngagement] = increment(-1);
-        updates[type] = increment(1);
-        newUserEngagements[userKey] = type;
-      } else {
-        // User is engaging for the first time
-        updates[type] = increment(1);
-        newUserEngagements[userKey] = type;
-      }
-
-      updates.userEngagements = newUserEngagements;
-
-      await updateDoc(docRef, updates);
-
-      // Update local state optimistically
-      setEngagementData((prev) => ({
-        ...prev,
-        heart: prev.heart + (updates.heart?._operand || 0),
-        wow: prev.wow + (updates.wow?._operand || 0),
-        sad: prev.sad + (updates.sad?._operand || 0),
-        happy: prev.happy + (updates.happy?._operand || 0),
-        angry: prev.angry + (updates.angry?._operand || 0),
-        hug: prev.hug + (updates.hug?._operand || 0),
-        eyes: prev.eyes + (updates.eyes?._operand || 0),
-        userEngagements: newUserEngagements,
-      }));
-    } catch (error) {
-      console.error("Error updating engagement:", error);
-    }
+    await onEngagementUpdate(newsItem.ID.toString(), type, userTeamId);
   };
 
   // Get current user's engagement status
@@ -387,7 +289,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
               emoji="❤️"
               count={engagementData.heart}
               isActive={currentEngagement === "heart"}
-              isDisabled={isLoadingEngagement || !userTeamId}
+              isDisabled={!userTeamId}
               onClick={() => handleEngagement("heart")}
               activeColor="text-red-500"
               hoverColor="hover:text-red-400"
@@ -398,7 +300,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
               emoji="😮"
               count={engagementData.wow}
               isActive={currentEngagement === "wow"}
-              isDisabled={isLoadingEngagement || !userTeamId}
+              isDisabled={!userTeamId}
               onClick={() => handleEngagement("wow")}
               activeColor="text-yellow-500"
               hoverColor="hover:text-yellow-400"
@@ -409,7 +311,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
               emoji="😂"
               count={engagementData.happy}
               isActive={currentEngagement === "happy"}
-              isDisabled={isLoadingEngagement || !userTeamId}
+              isDisabled={!userTeamId}
               onClick={() => handleEngagement("happy")}
               activeColor="text-yellow-500"
               hoverColor="hover:text-yellow-400"
@@ -420,7 +322,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
               emoji="😢"
               count={engagementData.sad}
               isActive={currentEngagement === "sad"}
-              isDisabled={isLoadingEngagement || !userTeamId}
+              isDisabled={!userTeamId}
               onClick={() => handleEngagement("sad")}
               activeColor="text-blue-500"
               hoverColor="hover:text-blue-400"
@@ -431,7 +333,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
               emoji="😡"
               count={engagementData.angry}
               isActive={currentEngagement === "angry"}
-              isDisabled={isLoadingEngagement || !userTeamId}
+              isDisabled={!userTeamId}
               onClick={() => handleEngagement("angry")}
               activeColor="text-red-600"
               hoverColor="hover:text-red-500"
@@ -442,7 +344,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
               emoji="🤗"
               count={engagementData.hug}
               isActive={currentEngagement === "hug"}
-              isDisabled={isLoadingEngagement || !userTeamId}
+              isDisabled={!userTeamId}
               onClick={() => handleEngagement("hug")}
               activeColor="text-pink-500"
               hoverColor="hover:text-pink-400"
@@ -453,7 +355,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
               emoji="👀"
               count={engagementData.eyes}
               isActive={currentEngagement === "eyes"}
-              isDisabled={isLoadingEngagement || !userTeamId}
+              isDisabled={!userTeamId}
               onClick={() => handleEngagement("eyes")}
               activeColor="text-purple-500"
               hoverColor="hover:text-purple-400"

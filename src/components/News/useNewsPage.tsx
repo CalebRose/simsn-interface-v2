@@ -20,6 +20,8 @@ import { usePagination } from "../../_hooks/usePagination";
 import { getFBAWeekID, getHCKWeekID } from "../../_helper/statsPageHelper";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
+import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
+import { firestore } from "../../firebase/firebase";
 
 export const useNewsPage = () => {
   const {
@@ -80,6 +82,28 @@ export const useNewsPage = () => {
     return -1;
   });
   const [selectedNewsType, setSelectedNewsType] = useState<string>("");
+  const [sortByNewest, setSortByNewest] = useState<boolean>(true);
+
+  // Engagement data state
+  const [engagementData, setEngagementData] = useState<
+    Record<
+      string,
+      {
+        heart: number;
+        wow: number;
+        sad: number;
+        happy: number;
+        angry: number;
+        hug: number;
+        eyes: number;
+        userEngagements: Record<
+          string,
+          "heart" | "wow" | "sad" | "happy" | "angry" | "hug" | "eyes" | null
+        >;
+      }
+    >
+  >({});
+  const [lastEngagementFetch, setLastEngagementFetch] = useState<number>(0);
 
   useEffect(() => {
     getFBABootstrapNewsData();
@@ -132,20 +156,43 @@ export const useNewsPage = () => {
     return useMemo(() => {
       let source = selectedLeagueNews;
       console.log({ selectedNewsType, selectedSeason, selectedWeek });
-      return source.filter((news) => {
-        // news type filter - empty string means show all
-        if (selectedNewsType !== "" && selectedNewsType !== news.MessageType) {
-          return false;
-        }
-        if (selectedSeason !== -1 && selectedSeason !== news.SeasonID) {
-          return false;
-        }
-        if (selectedWeek !== -1 && selectedWeek !== news.WeekID) {
-          return false;
-        }
-        return true;
-      });
-    }, [selectedNewsType, selectedLeagueNews, selectedSeason, selectedWeek]);
+      return source
+        .filter((news) => {
+          // news type filter - empty string means show all
+          if (
+            selectedNewsType !== "" &&
+            selectedNewsType !== news.MessageType
+          ) {
+            return false;
+          }
+          if (selectedSeason !== -1 && selectedSeason !== news.SeasonID) {
+            return false;
+          }
+          if (selectedWeek !== -1 && selectedWeek !== news.WeekID) {
+            return false;
+          }
+          return true;
+        })
+        .sort((a, b) => {
+          if (sortByNewest) {
+            return (
+              new Date(String(b.CreatedAt)).getTime() -
+              new Date(String(a.CreatedAt)).getTime()
+            );
+          } else {
+            return (
+              new Date(String(a.CreatedAt)).getTime() -
+              new Date(String(b.CreatedAt)).getTime()
+            );
+          }
+        });
+    }, [
+      selectedNewsType,
+      selectedLeagueNews,
+      selectedSeason,
+      selectedWeek,
+      sortByNewest,
+    ]);
   };
 
   const filteredNews = filterNewsData();
@@ -174,6 +221,156 @@ export const useNewsPage = () => {
     const start = currentPage!! * 100;
     return filteredNews.slice(start, start + pageSize);
   }, [filteredNews, currentPage, pageSize]);
+
+  // Fetch engagement data for current page of news items
+  const fetchEngagementData = useCallback(
+    async (newsItems: any[]) => {
+      if (!newsItems.length || !selectedLeague) return;
+
+      const engagementPromises = newsItems.map(async (newsItem) => {
+        if (!newsItem.ID) return null;
+
+        try {
+          const docRef = doc(
+            firestore,
+            "newsEngagement",
+            selectedLeague,
+            "messages",
+            newsItem.ID.toString()
+          );
+          const docSnap = await getDoc(docRef);
+
+          const defaultData = {
+            heart: 0,
+            wow: 0,
+            sad: 0,
+            happy: 0,
+            angry: 0,
+            hug: 0,
+            eyes: 0,
+            userEngagements: {},
+          };
+
+          if (docSnap.exists()) {
+            return {
+              newsId: newsItem.ID.toString(),
+              data: { ...defaultData, ...docSnap.data() },
+            };
+          } else {
+            return {
+              newsId: newsItem.ID.toString(),
+              data: defaultData,
+            };
+          }
+        } catch (error) {
+          console.error(
+            `Error fetching engagement for news ${newsItem.ID}:`,
+            error
+          );
+          return null;
+        }
+      });
+
+      const results = await Promise.all(engagementPromises);
+      const newEngagementData: typeof engagementData = {};
+
+      results.forEach((result) => {
+        if (result) {
+          newEngagementData[result.newsId] = result.data;
+        }
+      });
+
+      setEngagementData((prev) => ({ ...prev, ...newEngagementData }));
+      setLastEngagementFetch(Date.now());
+    },
+    [selectedLeague]
+  );
+
+  // Update engagement data when user interacts with buttons
+  const updateEngagementData = useCallback(
+    async (
+      newsId: string,
+      type: "heart" | "wow" | "sad" | "happy" | "angry" | "hug" | "eyes",
+      userTeamId: number
+    ) => {
+      if (!selectedLeague || !newsId || !userTeamId) return;
+
+      const userKey = `${userTeamId}`;
+      const currentData = engagementData[newsId];
+      if (!currentData) return;
+
+      const currentUserEngagement = currentData.userEngagements[userKey];
+
+      try {
+        const docRef = doc(
+          firestore,
+          "newsEngagement",
+          selectedLeague,
+          "messages",
+          newsId
+        );
+
+        let updates: any = {};
+        let newUserEngagements = { ...currentData.userEngagements };
+
+        if (currentUserEngagement === type) {
+          // User is toggling off the same button
+          updates[type] = increment(-1);
+          newUserEngagements[userKey] = null;
+        } else if (currentUserEngagement && currentUserEngagement !== type) {
+          // User is switching from one engagement to another
+          updates[currentUserEngagement] = increment(-1);
+          updates[type] = increment(1);
+          newUserEngagements[userKey] = type;
+        } else {
+          // User is engaging for the first time
+          updates[type] = increment(1);
+          newUserEngagements[userKey] = type;
+        }
+
+        updates.userEngagements = newUserEngagements;
+
+        await updateDoc(docRef, updates);
+
+        // Update local state optimistically
+        setEngagementData((prev) => ({
+          ...prev,
+          [newsId]: {
+            ...currentData,
+            heart: currentData.heart + (updates.heart?._operand || 0),
+            wow: currentData.wow + (updates.wow?._operand || 0),
+            sad: currentData.sad + (updates.sad?._operand || 0),
+            happy: currentData.happy + (updates.happy?._operand || 0),
+            angry: currentData.angry + (updates.angry?._operand || 0),
+            hug: currentData.hug + (updates.hug?._operand || 0),
+            eyes: currentData.eyes + (updates.eyes?._operand || 0),
+            userEngagements: newUserEngagements,
+          },
+        }));
+      } catch (error) {
+        console.error("Error updating engagement:", error);
+      }
+    },
+    [selectedLeague, engagementData]
+  );
+
+  // Fetch engagement data when paged data changes
+  useEffect(() => {
+    if (pagedData.length > 0) {
+      fetchEngagementData(pagedData);
+    }
+  }, [pagedData, fetchEngagementData]);
+
+  // Set up periodic refresh for engagement data (every 3 minutes)
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (pagedData.length > 0) {
+        fetchEngagementData(pagedData);
+      }
+    }, 3 * 60 * 1000); // 3 minutes in milliseconds
+
+    return () => clearInterval(intervalId);
+  }, [pagedData, fetchEngagementData]);
 
   const changeLeagueOption = (opts: SingleValue<SelectOption>) => {
     const leagueOption = opts?.value as League;
@@ -250,5 +447,11 @@ export const useNewsPage = () => {
     selectedTeam,
     pagedData,
     RefreshNews,
+    sortByNewest,
+    setSortByNewest,
+    engagementData,
+    fetchEngagementData,
+    updateEngagementData,
+    lastEngagementFetch,
   };
 };

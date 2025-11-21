@@ -30,6 +30,7 @@ import {
   ArrowDownIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
+  BarsArrowUpIcon,
 } from "@heroicons/react/16/solid";
 import {
   GiDiamondTrophy,
@@ -215,6 +216,10 @@ export const BarsArrowDown: React.FC<LockIconProps> = ({
   textColorClass = "text-white", // Default color is black
 }) => {
   return <BarsArrowDownIcon className={`size-5 ${textColorClass}`} />;
+};
+
+export const BarsArrowUp: React.FC<LockIconProps> = ({ textColorClass }) => {
+  return <BarsArrowUpIcon className={`size-5 ${textColorClass}`} />;
 };
 
 export const InformationCircle: React.FC<LockIconProps> = ({

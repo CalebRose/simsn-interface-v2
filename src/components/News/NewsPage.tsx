@@ -22,6 +22,10 @@ export const NewsPage = () => {
     toNextPage,
     pagedData,
     RefreshNews,
+    sortByNewest,
+    setSortByNewest,
+    engagementData,
+    updateEngagementData,
   } = useNewsPage();
 
   return (
@@ -43,6 +47,8 @@ export const NewsPage = () => {
             currentPage={currentPage}
             totalPages={totalPages}
             refreshNews={RefreshNews}
+            sortByNewest={sortByNewest}
+            setSortByNewest={setSortByNewest}
           />
           <div className="flex flex-col w-full">
             {pagedData.map((newsItem: NewsLog) => (
@@ -50,6 +56,19 @@ export const NewsPage = () => {
                 key={newsItem.ID}
                 newsItem={newsItem}
                 league={selectedLeague as League}
+                engagementData={
+                  engagementData[newsItem.ID?.toString()] || {
+                    heart: 0,
+                    wow: 0,
+                    sad: 0,
+                    happy: 0,
+                    angry: 0,
+                    hug: 0,
+                    eyes: 0,
+                    userEngagements: {},
+                  }
+                }
+                onEngagementUpdate={updateEngagementData}
               />
             ))}
           </div>

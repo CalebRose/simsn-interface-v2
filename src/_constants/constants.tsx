@@ -166,10 +166,9 @@ export type FootballStatsType =
   | typeof OVERALL
   | typeof OFFENSE;
 
-
 export interface PositionStatsConfig {
   statsType: FootballStatsType;
-  labels: string[]; 
+  labels: string[];
 }
 
 export const POSITION_STATS_CONFIG: Record<string, PositionStatsConfig> = {
@@ -924,6 +923,7 @@ export type ButtonColor =
   | "success"
   | "danger"
   | "warning"
+  | "sort"
   | "primaryOutline"
   | "secondaryOutline"
   | "successOutline"
