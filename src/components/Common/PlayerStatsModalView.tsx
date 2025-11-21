@@ -23,12 +23,42 @@ import {
   BASE_FBA_SEASON,
   POSITION_STATS_CONFIG,
   ATH_ARCHETYPE_STATS_CONFIG,
+  FootballPositionOptions,
+  FootballArchetypeOptions,
 } from "../../_constants/constants";
 import { Table, TableCell } from "../../_design/Table";
 import { Text } from "../../_design/Typography";
 import { GetFootballPlayerStatsValues } from "../StatsPage/Common/StatsPageHelper";
 import { getFBAWeekID } from "../../_helper/statsPageHelper";
 import { getPasserRating } from "../../_utility/getPasserRating";
+
+const getPositionValue = (label: string, fallback: string) =>
+  FootballPositionOptions.find((option) => option.label === label)?.value ??
+  fallback;
+
+const QB_VALUE = getPositionValue("Quarterbacks", "QB");
+const RB_VALUE = getPositionValue("Runningbacks", "RB");
+const FB_VALUE = getPositionValue("Fullbacks", "FB");
+const WR_VALUE = getPositionValue("Wide Receivers", "WR");
+const TE_VALUE = getPositionValue("Tightends", "TE");
+const OT_VALUE = getPositionValue("Offensive Tackles", "OT");
+const OG_VALUE = getPositionValue("Offensive Guards", "OG");
+const C_VALUE = getPositionValue("Centers", "C");
+const DE_VALUE = getPositionValue("Defensive Ends", "DE");
+const DT_VALUE = getPositionValue("Defensive Tackles", "DT");
+const OLB_VALUE = getPositionValue("Outside Linebackers", "OLB");
+const ILB_VALUE = getPositionValue("Inside Linebackers", "ILB");
+const CB_VALUE = getPositionValue("Cornerbacks", "CB");
+const FS_VALUE = getPositionValue("Free Safeties", "FS");
+const SS_VALUE = getPositionValue("Strong Safeties", "SS");
+const K_VALUE = getPositionValue("Kickers", "K");
+const P_VALUE = getPositionValue("Punters", "P");
+const ATH_VALUE = getPositionValue("Athletes", "ATH");
+
+const getArchetypeValue = (archetype: string) =>
+  FootballArchetypeOptions.find(
+    (option) => option.value === archetype || option.label === archetype
+  )?.value ?? archetype;
 
 interface PlayerStatsModalViewProps {
   player: CollegePlayer | NFLPlayer;
@@ -53,31 +83,28 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
 
   const getFootballStatsType = (position: string): FootballStatsType => {
     switch (position) {
-      case "QB":
+      case QB_VALUE:
         return PASSING;
-      case "RB":
-      case "FB":
+      case RB_VALUE:
+      case FB_VALUE:
         return RUSHING;
-      case "WR":
-      case "TE":
+      case WR_VALUE:
+      case TE_VALUE:
         return RECEIVING;
-      case "KR":
-      case "PR":
-        return RETURN;
-      case "OT":
-      case "OG":
-      case "C":
+      case OT_VALUE:
+      case OG_VALUE:
+      case C_VALUE:
         return OLINE;
-      case "DE":
-      case "DT":
-      case "OLB":
-      case "ILB":
-      case "CB":
-      case "FS":
-      case "SS":
+      case DE_VALUE:
+      case DT_VALUE:
+      case OLB_VALUE:
+      case ILB_VALUE:
+      case CB_VALUE:
+      case FS_VALUE:
+      case SS_VALUE:
         return DEFENSE;
-      case "K":
-      case "P":
+      case K_VALUE:
+      case P_VALUE:
         return SPECIAL_TEAMS;
       default:
         return PASSING;
@@ -86,8 +113,8 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
 
   const statsConfig = useMemo(() => {
     const positionKey = player.Position;
-    if (positionKey === "ATH") {
-      const archetypeKey = (player as any).Archetype;
+    if (positionKey === ATH_VALUE) {
+      const archetypeKey = getArchetypeValue((player as any).Archetype);
       if (archetypeKey && ATH_ARCHETYPE_STATS_CONFIG[archetypeKey]) {
         return ATH_ARCHETYPE_STATS_CONFIG[archetypeKey];
       }
