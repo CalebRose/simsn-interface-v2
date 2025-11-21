@@ -161,13 +161,13 @@ export const useNewsPage = () => {
     const leagueOption = opts?.value as League;
     setSelectedLeague(leagueOption);
     if (leagueOption === SimCFB || leagueOption === SimNFL) {
-      setSelectedSeason(6);
+      setSelectedSeason(cfb_Timestamp?.CollegeSeasonID || 6);
       setSelectedWeek(-1);
     } else if (leagueOption === SimCBB || leagueOption === SimNBA) {
-      setSelectedSeason(5);
+      setSelectedSeason(cbb_Timestamp?.SeasonID || 5);
       setSelectedWeek(-1);
     } else if (leagueOption === SimCHL || leagueOption === SimPHL) {
-      setSelectedSeason(2);
+      setSelectedSeason(hck_Timestamp?.SeasonID || 2);
       setSelectedWeek(-1);
     }
     setCurrentPage(0);
@@ -176,11 +176,11 @@ export const useNewsPage = () => {
   const SelectSeasonOption = (opts: SingleValue<SelectOption>) => {
     const value = opts!.value;
     const num = Number(value);
-    let newWeekID = getHCKWeekID(1, num);
+    let newWeekID = getHCKWeekID(hck_Timestamp?.WeekID || 1, num);
     if (selectedLeague === SimCFB || selectedLeague === SimNFL) {
-      newWeekID = getFBAWeekID(1, num);
+      newWeekID = getFBAWeekID(cfb_Timestamp?.CollegeWeekID || 1, num);
     } else if (selectedLeague === SimCBB || selectedLeague === SimNBA) {
-      newWeekID = getFBAWeekID(1, num);
+      newWeekID = getFBAWeekID(cbb_Timestamp?.CollegeWeekID || 1, num);
     }
     setSelectedSeason(num);
     setSelectedWeek(newWeekID);
