@@ -175,7 +175,7 @@ export interface PositionStatsConfig {
 export const POSITION_STATS_CONFIG: Record<string, PositionStatsConfig> = {
   QB: {
     statsType: PASSING,
-    labels: ["CMP/ATT", "Comp%", "Yds", "TD", "INT", "QBR"],
+    labels: ["Cmp/Att", "Cmp%", "Yds", "TD", "INT", "QBR"],
   },
   RB: {
     statsType: RUSHING,

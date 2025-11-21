@@ -335,6 +335,7 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
     index: number,
     backgroundColor: string
   ) => {
+    const isCareerRow = (item as any).isCareer;
     const values = GetFootballPlayerStatsValues(
       item,
       statsView,
@@ -344,7 +345,9 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
     return (
       <div
         key={index}
-        className="table-row border-b dark:border-gray-700 text-left"
+        className={`table-row border-b dark:border-gray-700 text-left ${
+          isCareerRow ? "font-semibold" : ""
+        }`}
         style={{ backgroundColor }}
       >
         <TableCell>
@@ -364,11 +367,11 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
             const solo = (item as any).SoloTackles ?? 0;
             const ast = (item as any).AssistedTackles ?? 0;
             display = solo + ast;
-          } else if (label === "CMP/ATT") {
+          } else if (label === "Cmp/Att") {
             const comp = valueMap.get("PC") ?? 0;
             const att = valueMap.get("PA") ?? 0;
-            display = `${comp}/${att}`;
-          } else if (label === "Comp%" || label === "Comp %") {
+            display = `${comp} / ${att}`;
+          } else if (label === "Cmp%" || label === "Cmp %") {
             const comp = Number(valueMap.get("PC") ?? 0);
             const att = Number(valueMap.get("PA") ?? 0);
             if (att > 0) {
