@@ -59,7 +59,8 @@ export const GamesBar = ({
 }: GamesBarProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isHockey = league === SimCHL || league === SimPHL ? true : false;
-  const { cfbStandingsMap, proStandingsMap, allProStandings } = useSimFBAStore();
+  const { cfbStandingsMap, proStandingsMap, allProStandings } =
+    useSimFBAStore();
   const proStandingsLookup = useMemo(() => {
     if (proStandingsMap && Object.keys(proStandingsMap).length > 0) {
       return proStandingsMap as Record<number, any>;
@@ -130,7 +131,8 @@ export const GamesBar = ({
         const wins = standings.TotalWins ?? 0;
         const losses = standings.TotalLosses ?? 0;
         const ties = standings.TotalTies ?? 0; // NFL only
-        opponentRecord = ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+        opponentRecord =
+          ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
       }
     }
 
@@ -180,7 +182,7 @@ export const GamesBar = ({
               </Text>
               {opponentRecord && (
                 <Text variant="xs" classes="opacity-70">
-                 ({opponentRecord})
+                  ({opponentRecord})
                 </Text>
               )}
             </div>
@@ -336,7 +338,8 @@ export const TeamMatchUp = ({
   playerMap,
 }: TeamMatchUpProps) => {
   const [selectedGame, setSelectedGame] = useState<any>(null);
-  const { cfbStandingsMap, proStandingsMap, allProStandings } = useSimFBAStore();
+  const { cfbStandingsMap, proStandingsMap, allProStandings } =
+    useSimFBAStore();
   const proStandingsLookup = useMemo(() => {
     if (proStandingsMap && Object.keys(proStandingsMap).length > 0) {
       return proStandingsMap as Record<number, any>;
@@ -387,7 +390,8 @@ export const TeamMatchUp = ({
         const wins = standings.TotalWins ?? 0;
         const losses = standings.TotalLosses ?? 0;
         const ties = standings.TotalTies ?? 0;
-        opponentRecord = ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+        opponentRecord =
+          ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
       }
 
       const myStandings =
@@ -398,7 +402,8 @@ export const TeamMatchUp = ({
         const wins = myStandings.TotalWins ?? 0;
         const losses = myStandings.TotalLosses ?? 0;
         const ties = myStandings.TotalTies ?? 0;
-        userRecord = ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+        userRecord =
+          ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
       }
     }
 
@@ -514,10 +519,10 @@ export const TeamMatchUp = ({
                     league={league}
                   />
                   {opponentRecord && (
-                  <Text variant="small" classes="opacity-70">
-                    ({opponentRecord})
-                  </Text>
-                )}
+                    <Text variant="small" classes="opacity-70">
+                      ({opponentRecord})
+                    </Text>
+                  )}
                 </div>
                 <Text variant="xs" classes="opacity-70">
                   {`HC ${coaches[1]}`}
@@ -1094,6 +1099,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.CFB_TRANSFER)}>
                 Portal
               </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
+              </Button>
             </>
           )}
           {league === SimNFL && (
@@ -1113,17 +1121,20 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.NFL_STATS)}>
                 Stats
               </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
+              </Button>
               <Button size="xs" onClick={() => navigate(routes.NFL_DRAFT_ROOM)}>
                 Draft
               </Button>
-              <Button size="xs" onClick={draftListModal.handleOpenModal}>
+              {/* <Button size="xs" onClick={draftListModal.handleOpenModal}>
                 Draft List
               </Button>
               <DraftListModal
                 isOpen={draftListModal.isModalOpen}
                 onClose={draftListModal.handleCloseModal}
                 title="Draft List"
-              />
+              /> */}
             </>
           )}
           {league === SimCBB && (
@@ -1142,6 +1153,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               </Button>
               <Button size="xs" onClick={() => navigate(routes.CBB_TRANSFER)}>
                 Portal
+              </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
               </Button>
             </>
           )}
@@ -1165,6 +1179,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.NBA_DRAFT_ROOM)}>
                 Draft
               </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
+              </Button>
             </>
           )}
           {league === SimCHL && (
@@ -1183,6 +1200,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               </Button>
               <Button size="xs" onClick={() => navigate(routes.CHL_TRANSFER)}>
                 Portal
+              </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
               </Button>
             </>
           )}
@@ -1205,6 +1225,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               </Button>
               <Button size="xs" onClick={() => navigate(routes.PHL_DRAFT_ROOM)}>
                 Draft
+              </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
               </Button>
             </>
           )}

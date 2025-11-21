@@ -203,6 +203,7 @@ interface SimHCKContextProps {
     teamID: number
   ) => Promise<void>;
   submitCollegePoll: (dto: any) => Promise<void>;
+  getBootstrapNewsData: () => Promise<void>;
 
   playerFaces: {
     [key: number]: FaceDataResponse;
@@ -335,6 +336,7 @@ const defaultContext: SimHCKContextProps = {
   syncAcceptedTrade: async () => {},
   vetoTrade: async () => {},
   submitCollegePoll: async () => {},
+  getBootstrapNewsData: async () => {},
   updatePointsOnPortalPlayer: () => {},
   scoutPortalAttribute: async () => {},
   topCHLGoals: [],
@@ -808,6 +810,29 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     return map;
   }, [collegePolls]);
 
+  const getBootstrapNewsData = useCallback(async () => {
+    let chlid = 0;
+    let phlid = 0;
+    if (currentUser && currentUser.CHLTeamID) {
+      chlid = currentUser.CHLTeamID;
+    }
+    if (currentUser && currentUser.PHLTeamID) {
+      phlid = currentUser.PHLTeamID;
+    }
+    if (chlid === 0 && phlid === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetHCKNewsBootstrapData(chlid, phlid);
+
+    if (chlid > 0) {
+      setCollegeNews(res.CollegeNews as any);
+    }
+
+    if (phlid > 0) {
+      setProNews(res.ProNews as any);
+    }
+  }, [currentUser?.CHLTeamID, currentUser?.PHLTeamID]);
+
   const getBootstrapData = async () => {
     let chlid = 0;
     let phlid = 0;
@@ -827,7 +852,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setAllCollegeGames(res.AllCollegeGames);
       setCollegeInjuryReport(res.CollegeInjuryReport);
       setCHLTeam(res.CollegeTeam);
-      setCollegeNews(res.CollegeNews);
       setCollegePolls(res.OfficialPolls);
       setCollegePollSubmission(res.CollegePoll);
       setCollegeNotifications(res.CollegeNotifications);
@@ -851,7 +875,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setCapsheetMap(res.CapsheetMap);
       setProInjuryReport(res.ProInjuryReport);
       setPHLTeam(res.ProTeam);
-      setProNews(res.ProNews);
       setPHLLineups(res.ProTeamLineups);
       setPHLGameplan(res.PHLGameplan);
       setPHLShootoutLineup(res.ProTeamShootoutLineup);
@@ -1828,6 +1851,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         collegePolls,
         collegePollSubmission,
         submitCollegePoll,
+        getBootstrapNewsData,
         addTransferPlayerToBoard,
         removeTransferPlayerFromBoard,
         saveTransferPortalBoard,

@@ -812,7 +812,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
   const bootstrapAllData = async () => {
     await getLandingBootstrapData();
-    getBootstrapNewsData();
     fetchAllHistory();
     isFetching.current = false;
   };
@@ -1012,7 +1011,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setNFLDepthChartMap(res.NFLDepthChartMap || {});
   };
 
-  const getBootstrapNewsData = async () => {
+  const getBootstrapNewsData = useCallback(async () => {
     let cfbID = 0;
     let nflID = 0;
     if (currentUser && currentUser.teamId) {
@@ -1033,7 +1032,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (nflID > 0) {
       setProNews(res.ProNews);
     }
-  };
+  }, [currentUser?.teamId, currentUser?.NFLTeamID]);
 
   const cutCFBPlayer = useCallback(
     async (playerID: number, teamID: number) => {

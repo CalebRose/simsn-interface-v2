@@ -94,6 +94,24 @@ export const BootstrapService = {
     );
   },
 
+  GetBBANewsBootstrapData: async (
+    collegeID: number,
+    proID: number
+  ): Promise<FBBootstrap> => {
+    return await GetCall<FBBootstrap>(
+      `${bbaUrl}bootstrap/news/${collegeID}/${proID}`
+    );
+  },
+
+  GetHCKNewsBootstrapData: async (
+    collegeID: number,
+    proID: number
+  ): Promise<FBBootstrap> => {
+    return await GetCall<FBBootstrap>(
+      `${hckUrl}bootstrap/news/${collegeID}/${proID}`
+    );
+  },
+
   GetBBABootstrapTeamData: async (): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(`${bbaUrl}bootstrap/teams/`);
   },

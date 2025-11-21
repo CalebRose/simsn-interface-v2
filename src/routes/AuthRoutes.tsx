@@ -22,6 +22,7 @@ import { FreeAgencyPage } from "../components/FreeAgencyPage/FreeAgencyPage";
 import { StatsPage } from "../components/StatsPage/StatsPage";
 import { TeamProfilePage } from "../components/TeamProfile/TeamProfile";
 import { TransferPortalPage } from "../components/TransferPortal/TransferPortal";
+import { NewsPage } from "../components/News/NewsPage";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
@@ -346,6 +347,15 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <TeamProfilePage league={SimCFB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="NEWSPAGE"
+    path={routes.NEWS}
+    element={
+      <AuthGuard>
+        <NewsPage />
       </AuthGuard>
     }
   />,
