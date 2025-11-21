@@ -28,6 +28,7 @@ import { Table, TableCell } from "../../_design/Table";
 import { Text } from "../../_design/Typography";
 import { GetFootballPlayerStatsValues } from "../StatsPage/Common/StatsPageHelper";
 import { getFBAWeekID } from "../../_helper/statsPageHelper";
+import { getPasserRating } from "../../_utility/getPasserRating";
 
 interface PlayerStatsModalViewProps {
   player: CollegePlayer | NFLPlayer;
@@ -115,7 +116,7 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
       }
     });
 
-    return filtered.sort((a, b) => a.SeasonID - b.SeasonID);
+    return filtered.sort((a, b) => b.SeasonID - a.SeasonID);
   }, [cfbPlayerSeasonStatsMap, nflPlayerSeasonStatsMap, league, player.ID]);
 
   useEffect(() => {
@@ -210,6 +211,125 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
     [valueLabels]
   );
 
+  const careerStats = useMemo(() => {
+    if (playerStats.length === 0) return null;
+
+    const total: any = {
+      SeasonID: 0,
+      GamesPlayed: 0,
+      PassCompletions: 0,
+      PassAttempts: 0,
+      PassingYards: 0,
+      PassingTDs: 0,
+      Interceptions: 0,
+      Sacks: 0,
+      RushAttempts: 0,
+      RushingYards: 0,
+      RushingTDs: 0,
+      Fumbles: 0,
+      Targets: 0,
+      Catches: 0,
+      ReceivingYards: 0,
+      ReceivingTDs: 0,
+      SoloTackles: 0,
+      AssistedTackles: 0,
+      TacklesForLoss: 0,
+      SacksMade: 0,
+      ForcedFumbles: 0,
+      RecoveredFumbles: 0,
+      PassDeflections: 0,
+      InterceptionsCaught: 0,
+      Safeties: 0,
+      DefensiveTDs: 0,
+      FGMade: 0,
+      FGAttempts: 0,
+      LongestFG: 0,
+      ExtraPointsMade: 0,
+      ExtraPointsAttempted: 0,
+      KickoffTouchbacks: 0,
+      Punts: 0,
+      GrossPuntDistance: 0,
+      NetPuntDistance: 0,
+      PuntTouchbacks: 0,
+      PuntsInside20: 0,
+      KickReturns: 0,
+      KickReturnYards: 0,
+      KickReturnTDs: 0,
+      PuntReturns: 0,
+      PuntReturnYards: 0,
+      PuntReturnTDs: 0,
+      Snaps: 0,
+      Pancakes: 0,
+      SacksAllowed: 0,
+    };
+
+    for (const s of playerStats as any[]) {
+      total.GamesPlayed += s.GamesPlayed ?? 0;
+      total.PassCompletions += s.PassCompletions ?? 0;
+      total.PassAttempts += s.PassAttempts ?? 0;
+      total.PassingYards += s.PassingYards ?? 0;
+      total.PassingTDs += s.PassingTDs ?? 0;
+      total.Interceptions += s.Interceptions ?? 0;
+      total.Sacks += s.Sacks ?? 0;
+      total.RushAttempts += s.RushAttempts ?? 0;
+      total.RushingYards += s.RushingYards ?? 0;
+      total.RushingTDs += s.RushingTDs ?? 0;
+      total.Fumbles += s.Fumbles ?? 0;
+      total.Targets += s.Targets ?? 0;
+      total.Catches += s.Catches ?? 0;
+      total.ReceivingYards += s.ReceivingYards ?? 0;
+      total.ReceivingTDs += s.ReceivingTDs ?? 0;
+      total.SoloTackles += s.SoloTackles ?? 0;
+      total.AssistedTackles += s.AssistedTackles ?? 0;
+      total.TacklesForLoss += s.TacklesForLoss ?? 0;
+      total.SacksMade += s.SacksMade ?? 0;
+      total.ForcedFumbles += s.ForcedFumbles ?? 0;
+      total.RecoveredFumbles += s.RecoveredFumbles ?? 0;
+      total.PassDeflections += s.PassDeflections ?? 0;
+      total.InterceptionsCaught += s.InterceptionsCaught ?? 0;
+      total.Safeties += s.Safeties ?? 0;
+      total.DefensiveTDs += s.DefensiveTDs ?? 0;
+      total.FGMade += s.FGMade ?? 0;
+      total.FGAttempts += s.FGAttempts ?? 0;
+      total.LongestFG = Math.max(total.LongestFG, s.LongestFG ?? 0);
+      total.ExtraPointsMade += s.ExtraPointsMade ?? 0;
+      total.ExtraPointsAttempted += s.ExtraPointsAttempted ?? 0;
+      total.KickoffTouchbacks += s.KickoffTouchbacks ?? 0;
+      total.Punts += s.Punts ?? 0;
+      total.GrossPuntDistance += s.GrossPuntDistance ?? 0;
+      total.NetPuntDistance += s.NetPuntDistance ?? 0;
+      total.PuntTouchbacks += s.PuntTouchbacks ?? 0;
+      total.PuntsInside20 += s.PuntsInside20 ?? 0;
+      total.KickReturns += s.KickReturns ?? 0;
+      total.KickReturnYards += s.KickReturnYards ?? 0;
+      total.KickReturnTDs += s.KickReturnTDs ?? 0;
+      total.PuntReturns += s.PuntReturns ?? 0;
+      total.PuntReturnYards += s.PuntReturnYards ?? 0;
+      total.PuntReturnTDs += s.PuntReturnTDs ?? 0;
+      total.Snaps += s.Snaps ?? 0;
+      total.Pancakes += s.Pancakes ?? 0;
+      total.SacksAllowed += s.SacksAllowed ?? 0;
+    }
+
+    if (total.RushAttempts > 0) {
+      total.RushAvg = total.RushingYards / total.RushAttempts;
+    }
+
+    if (total.PassAttempts > 0) {
+      const qbrStr = getPasserRating(
+        league === SimNFL,
+        total.PassCompletions,
+        total.PassAttempts,
+        total.PassingYards,
+        total.PassingTDs,
+        total.Interceptions
+      );
+      total.QBRating = Number(qbrStr);
+    }
+
+    return { ...total, isCareer: true };
+  }, [playerStats, league]);
+
   const rowRenderer = (
     item: CollegePlayerSeasonStats | NFLPlayerSeasonStats,
     index: number,
@@ -229,7 +349,9 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
       >
         <TableCell>
           <Text variant="small">
-            {BASE_FBA_SEASON + item.SeasonID}
+            {(item as any).isCareer
+              ? "Career"
+              : BASE_FBA_SEASON + item.SeasonID}
           </Text>
         </TableCell>
 
@@ -334,7 +456,11 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
       {playerStats.length > 0 && (
         <Table
           columns={columns}
-          data={playerStats}
+          data={
+            careerStats
+              ? [...playerStats, careerStats]
+              : playerStats
+          }
           rowRenderer={rowRenderer}
           team={null as any}
           page="PlayerStatsModal"
