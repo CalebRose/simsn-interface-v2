@@ -59,8 +59,26 @@ export const useNewsPage = () => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  const [selectedWeek, setSelectedWeek] = useState<number>(2501);
-  const [selectedSeason, setSelectedSeason] = useState<number>(1);
+  const [selectedWeek, setSelectedWeek] = useState<number>(() => {
+    if (selectedLeague === SimCHL || selectedLeague === SimPHL) {
+      return hck_Timestamp?.WeekID || -1;
+    } else if (selectedLeague === SimCFB || selectedLeague === SimNFL) {
+      return cfb_Timestamp?.CollegeWeekID || -1;
+    } else if (selectedLeague === SimCBB || selectedLeague === SimNBA) {
+      return cbb_Timestamp?.CollegeWeekID || -1;
+    }
+    return -1;
+  });
+  const [selectedSeason, setSelectedSeason] = useState<number>(() => {
+    if (selectedLeague === SimCHL || selectedLeague === SimPHL) {
+      return hck_Timestamp?.SeasonID || -1;
+    } else if (selectedLeague === SimCFB || selectedLeague === SimNFL) {
+      return cfb_Timestamp?.CollegeSeasonID || -1;
+    } else if (selectedLeague === SimCBB || selectedLeague === SimNBA) {
+      return cbb_Timestamp?.SeasonID || -1;
+    }
+    return -1;
+  });
   const [selectedNewsType, setSelectedNewsType] = useState<string>("");
 
   useEffect(() => {
