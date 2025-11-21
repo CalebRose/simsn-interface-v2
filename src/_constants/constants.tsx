@@ -165,6 +165,134 @@ export type FootballStatsType =
   | typeof SPECIAL_TEAMS
   | typeof OVERALL
   | typeof OFFENSE;
+
+
+export interface PositionStatsConfig {
+  statsType: FootballStatsType;
+  labels: string[]; 
+}
+
+export const POSITION_STATS_CONFIG: Record<string, PositionStatsConfig> = {
+  QB: {
+    statsType: PASSING,
+    labels: ["Cmp/Att", "Cmp%", "Yds", "TD", "INT", "QBR"],
+  },
+  RB: {
+    statsType: RUSHING,
+    labels: ["Att", "Yds", "YPC", "TD", "Fum"],
+  },
+  FB: {
+    statsType: RUSHING,
+    labels: ["Att", "Yds", "YPC", "TD", "Fum"],
+  },
+  WR: {
+    statsType: RECEIVING,
+    labels: ["Cth", "Trgt", "Yds", "TD", "Fum"],
+  },
+  TE: {
+    statsType: RECEIVING,
+    labels: ["Cth", "Trgt", "Yds", "TD", "Fum"],
+  },
+  DE: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  DT: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  OLB: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  ILB: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  CB: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  FS: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  SS: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  OT: {
+    statsType: OLINE,
+    labels: ["Snaps", "ScksAll", "Pnck"],
+  },
+  OG: {
+    statsType: OLINE,
+    labels: ["Snaps", "ScksAll", "Pnck"],
+  },
+  C: {
+    statsType: OLINE,
+    labels: ["Snaps", "ScksAll", "Pnck"],
+  },
+  K: {
+    statsType: SPECIAL_TEAMS,
+    labels: ["FGM", "FGA", "LFG", "XPM", "XPA"],
+  },
+  P: {
+    statsType: SPECIAL_TEAMS,
+    labels: ["P", "GPD", "NPD", "PT", "Ins20"],
+  },
+  KR: {
+    statsType: RETURN,
+    labels: ["KRet", "KRetY", "KRetTDs", "PRet", "PRetY"],
+  },
+  PR: {
+    statsType: RETURN,
+    labels: ["PRet", "PRetY", "PRetTDs", "KRet", "KRetY"],
+  },
+};
+
+export const ATH_ARCHETYPE_STATS_CONFIG: Record<string, PositionStatsConfig> = {
+  "Field General": {
+    statsType: PASSING,
+    labels: ["CMP/ATT", "Comp%", "Yds", "TD", "INT", "QBR"],
+  },
+  "Triple-Threat": {
+    statsType: RUSHING,
+    labels: ["Att", "Yds", "YPC", "TD", "Fum"],
+  },
+  Wingback: {
+    statsType: RECEIVING,
+    labels: ["Cth", "Trgt", "Yds", "TD", "Fum"],
+  },
+  Slotback: {
+    statsType: RECEIVING,
+    labels: ["Cth", "Trgt", "Yds", "TD", "Fum"],
+  },
+  Lineman: {
+    statsType: OLINE,
+    labels: ["Snaps", "ScksAll", "Pnck"],
+  },
+  Strongside: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  Weakside: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  Bandit: {
+    statsType: DEFENSE,
+    labels: ["SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  "Return Specialist": {
+    statsType: RETURN,
+    labels: ["KRet", "KRetY", "KRetTDs", "PRet", "PRetY"],
+  },
+  "Soccer Player": {
+    statsType: SPECIAL_TEAMS,
+    labels: ["FGM", "FGA", "LFG", "XPM", "XPA"],
+  },
+};
 export const PRESEASON = "PRESEASON";
 export const REGULAR_SEASON = "REGULARSEASON";
 export const POST_SEASON = "POSTSEASON";
