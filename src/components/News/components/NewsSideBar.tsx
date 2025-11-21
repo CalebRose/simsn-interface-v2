@@ -22,6 +22,7 @@ import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
+import { NewsDropdown } from "./NewsDropdown";
 import {
   MakeBBAWeeksOptionList,
   MakeFBASeasonsOptionList,
@@ -127,16 +128,16 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   }, [selectedSeason, league]);
 
   return (
-    <div className="flex flex-col w-full h-fit max-[1024px]:gap-y-2 mb-2 sticky top-20 mt-4">
+    <div className="flex flex-col w-full h-fit max-[768px]:gap-y-1 max-[1024px]:gap-y-2 mb-2 sticky top-20 max-[768px]:mt-2 mt-4">
       <Border
         direction="col"
-        classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-fit items-center justify-start"
+        classes="w-full max-[768px]:px-1 max-[768px]:py-1 max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-fit items-center justify-start"
         styles={{
           borderColor: teamColors.One,
           backgroundColor: navyBlueColor,
         }}
       >
-        <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mx-2 mb-2">
+        <div className="flex flex-col gap-x-2 flex-wrap w-full text-start max-[768px]:mx-1 max-[768px]:mb-1 mx-2 mb-2">
           <TeamLabel
             team={teamLabel}
             variant="h5"
@@ -145,62 +146,106 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
             headerTextColorClass={headerTextColorClass}
           />
         </div>
-        <div className="flex flex-col gap-x-2 gap-y-2 flex-wrap w-full text-start mt-2 px-2">
-          <CategoryDropdown
-            label="Active League"
-            options={LeagueTypeOptions}
-            isMulti={false}
-            isMobile={false}
-            change={changeLeagueOption}
-          />
-          <CategoryDropdown
-            label="Season"
-            options={seasonOptions}
-            isMulti={false}
-            isMobile={false}
-            change={SelectSeasonOption}
-          />
-          <CategoryDropdown
-            label="Week"
-            options={weekOptions}
-            isMulti={false}
-            isMobile={false}
-            change={SelectWeekOption}
-          />
-          <CategoryDropdown
-            label="News Type"
-            options={NewsTypeOptions}
-            isMulti={false}
-            isMobile={false}
-            change={SelectNewsTypeOption}
-          />
+        <div className="flex flex-col gap-x-2 max-[768px]:gap-y-1 gap-y-2 flex-wrap w-full text-start max-[768px]:mt-1 mt-2 max-[768px]:px-1 px-2">
+          {/* Desktop layout - single column */}
+          <div className="hidden min-[769px]:flex flex-col gap-y-2">
+            <CategoryDropdown
+              label="Active League"
+              options={LeagueTypeOptions}
+              isMulti={false}
+              isMobile={false}
+              change={changeLeagueOption}
+            />
+            <CategoryDropdown
+              label="Season"
+              options={seasonOptions}
+              isMulti={false}
+              isMobile={false}
+              change={SelectSeasonOption}
+            />
+            <CategoryDropdown
+              label="Week"
+              options={weekOptions}
+              isMulti={false}
+              isMobile={false}
+              change={SelectWeekOption}
+            />
+            <CategoryDropdown
+              label="News Type"
+              options={NewsTypeOptions}
+              isMulti={false}
+              isMobile={false}
+              change={SelectNewsTypeOption}
+            />
+          </div>
+
+          {/* Mobile layout - 2x2 grid */}
+          <div className="flex max-[768px]:flex-col gap-y-1 min-[769px]:hidden">
+            <div className="flex gap-x-1 w-full">
+              <NewsDropdown
+                label="League"
+                options={LeagueTypeOptions}
+                isMulti={false}
+                isMobile={true}
+                change={changeLeagueOption}
+              />
+              <NewsDropdown
+                label="Season"
+                options={seasonOptions}
+                isMulti={false}
+                isMobile={true}
+                change={SelectSeasonOption}
+              />
+            </div>
+            <div className="flex gap-x-1 w-full">
+              <NewsDropdown
+                label="Week"
+                options={weekOptions}
+                isMulti={false}
+                isMobile={true}
+                change={SelectWeekOption}
+              />
+              <NewsDropdown
+                label="Type"
+                options={NewsTypeOptions}
+                isMulti={false}
+                isMobile={true}
+                change={SelectNewsTypeOption}
+              />
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-x-2 gap-y-2 flex-wrap w-full text-start mt-2 px-2">
+        <div className="flex flex-col gap-x-2 max-[768px]:gap-y-1 gap-y-2 flex-wrap w-full text-start max-[768px]:mt-1 mt-2 max-[768px]:px-1 px-2">
           <ButtonGroup direction="row" classes="justify-center">
             <Button
               variant="primary"
               onClick={goToPreviousPage}
               disabled={currentPage === 0}
+              classes="max-[768px]:text-xs max-[768px]:px-2"
             >
               Previous
             </Button>
-            <Text variant="body-small" classes="flex items-center">
+            <Text
+              variant="body-small"
+              classes="flex items-center max-[768px]:text-xs"
+            >
               {currentPage + 1}
             </Text>
             <Button
               variant="primary"
               onClick={goToNextPage}
               disabled={currentPage + 1 >= totalPages}
+              classes="max-[768px]:text-xs max-[768px]:px-2"
             >
               Next
             </Button>
           </ButtonGroup>
         </div>
-        <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mx-2 mt-2">
+        <div className="flex flex-col gap-x-2 flex-wrap w-full text-start max-[768px]:mx-1 max-[768px]:mt-1 mx-2 mt-2">
           <Button
             variant="success"
             onClick={refreshNews}
-            classes="flex gap-x-2 text-center justify-center items-center"
+            classes="flex gap-x-2 text-center justify-center items-center max-[768px]:text-xs max-[768px]:py-1"
           >
             Refresh News <Refresh />
           </Button>

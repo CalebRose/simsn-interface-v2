@@ -313,18 +313,18 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
   };
 
   return (
-    <div className="bg-gray-900/60 border border-gray-700/50 rounded-xl p-4 mb-3 hover:bg-gray-800/60 transition-all duration-200 hover:border-gray-600/50">
-      <div className="flex gap-3">
+    <div className="bg-gray-900/60 border border-gray-700/50 rounded-xl max-[768px]:rounded-lg max-[768px]:p-3 p-4 max-[768px]:mb-2 mb-3 hover:bg-gray-800/60 transition-all duration-200 hover:border-gray-600/50">
+      <div className="flex max-[768px]:gap-2 gap-3">
         {/* Team Logo - Avatar Style */}
         {teamLogo && team ? (
           <div className="flex-shrink-0">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-800 border border-gray-600 flex items-center justify-center">
+            <div className="max-[768px]:w-8 max-[768px]:h-8 w-12 h-12 rounded-full overflow-hidden bg-gray-800 border border-gray-600 flex items-center justify-center">
               <Logo url={teamLogo} classes="w-full h-full object-cover" />
             </div>
           </div>
         ) : (
-          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gray-800 border border-gray-600 flex items-center justify-center">
-            <span className="text-gray-400 text-sm font-bold">
+          <div className="flex-shrink-0 max-[768px]:w-8 max-[768px]:h-8 w-12 h-12 rounded-full bg-gray-800 border border-gray-600 flex items-center justify-center">
+            <span className="text-gray-400 max-[768px]:text-xs text-sm font-bold">
               {newsItem.MessageType?.charAt(0) || "N"}
             </span>
           </div>
@@ -333,12 +333,12 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
         {/* Content */}
         <div className="flex-1 min-w-0">
           {/* Header - Username style */}
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center max-[768px]:gap-1 gap-2 max-[768px]:mb-1 mb-2 max-[768px]:flex-wrap">
             {/* Team Name */}
             {teamName && (
               <Text
                 variant="body"
-                classes="font-bold text-white hover:text-blue-400 cursor-pointer"
+                classes="font-bold text-white hover:text-blue-400 cursor-pointer max-[768px]:text-sm"
               >
                 {teamName}
               </Text>
@@ -347,7 +347,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
             {/* Message Type Badge */}
             {newsItem.MessageType && (
               <span
-                className={`px-2 py-0.5 rounded-md text-xs font-medium ${getMessageTypeStyle(
+                className={`max-[768px]:px-1 max-[768px]:py-0.5 max-[768px]:text-xs px-2 py-0.5 rounded-md text-xs font-medium ${getMessageTypeStyle(
                   newsItem.MessageType
                 )}`}
               >
@@ -355,18 +355,20 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
               </span>
             )}
 
-            <span className="text-gray-500">•</span>
+            <span className="text-gray-500 max-[768px]:hidden">•</span>
 
             {/* Time info */}
-            <div className="flex items-center gap-1 text-gray-500">
+            <div className="flex items-center max-[768px]:gap-0.5 gap-1 text-gray-500">
               {newsItem.Week && (
-                <span className="text-sm">Week {newsItem.Week}</span>
+                <span className="max-[768px]:text-xs text-sm">
+                  Week {newsItem.Week}
+                </span>
               )}
               {newsItem.Week && newsItem.CreatedAt && (
-                <span className="text-sm">•</span>
+                <span className="max-[768px]:text-xs text-sm">•</span>
               )}
               {newsItem.CreatedAt && (
-                <span className="text-sm">
+                <span className="max-[768px]:text-xs text-sm">
                   {formatDate(newsItem.CreatedAt)}
                 </span>
               )}
@@ -374,12 +376,12 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
           </div>
 
           {/* Message Content */}
-          <div className="text-gray-200 text-base leading-relaxed">
+          <div className="text-gray-200 max-[768px]:text-sm max-[768px]:leading-snug text-base leading-relaxed">
             {newsItem.Message}
           </div>
 
           {/* Engagement Bar */}
-          <div className="flex items-center gap-3 mt-3 pt-2 border-t border-gray-700/30 flex-wrap">
+          <div className="flex items-center max-[768px]:gap-2 gap-3 max-[768px]:mt-2 max-[768px]:pt-1.5 mt-3 pt-2 border-t border-gray-700/30 flex-wrap">
             <EngagementButton
               type="heart"
               emoji="❤️"
