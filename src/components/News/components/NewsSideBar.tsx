@@ -215,40 +215,68 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-x-2 max-[768px]:gap-y-1 gap-y-2 flex-wrap w-full text-start max-[768px]:mt-1 mt-2 max-[768px]:px-1 px-2">
+        {/* Desktop layout - separate sections */}
+        <div className="hidden min-[769px]:flex flex-col gap-x-2 gap-y-2 flex-wrap w-full text-start mt-2 px-2">
           <ButtonGroup direction="row" classes="justify-center">
             <Button
               variant="primary"
               onClick={goToPreviousPage}
               disabled={currentPage === 0}
-              classes="max-[768px]:text-xs max-[768px]:px-2"
             >
               Previous
             </Button>
-            <Text
-              variant="body-small"
-              classes="flex items-center max-[768px]:text-xs"
-            >
+            <Text variant="body-small" classes="flex items-center">
               {currentPage + 1}
             </Text>
             <Button
               variant="primary"
               onClick={goToNextPage}
               disabled={currentPage + 1 >= totalPages}
-              classes="max-[768px]:text-xs max-[768px]:px-2"
             >
               Next
             </Button>
           </ButtonGroup>
         </div>
-        <div className="flex flex-col gap-x-2 flex-wrap w-full text-start max-[768px]:mx-1 max-[768px]:mt-1 mx-2 mt-2">
+        <div className="hidden min-[769px]:flex flex-col gap-x-2 flex-wrap w-full text-start mx-2 mt-2">
           <Button
             variant="success"
             onClick={refreshNews}
-            classes="flex gap-x-2 text-center justify-center items-center max-[768px]:text-xs max-[768px]:py-1"
+            classes="flex gap-x-2 text-center justify-center items-center"
           >
             Refresh News <Refresh />
           </Button>
+        </div>
+
+        {/* Mobile layout - combined section with refresh on left */}
+        <div className="flex max-[768px]:flex-row min-[769px]:hidden gap-x-1 w-full text-start mt-1 px-1 items-center justify-between">
+          <Button
+            variant="success"
+            onClick={refreshNews}
+            classes="flex gap-x-1 text-center justify-center items-center text-xs py-1 px-2 flex-shrink-0"
+          >
+            <Refresh />
+          </Button>
+          <div className="flex items-center gap-x-1">
+            <Button
+              variant="primary"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 0}
+              classes="text-xs px-2"
+            >
+              Previous
+            </Button>
+            <Text variant="body-small" classes="flex items-center text-xs px-1">
+              {currentPage + 1}
+            </Text>
+            <Button
+              variant="primary"
+              onClick={goToNextPage}
+              disabled={currentPage + 1 >= totalPages}
+              classes="text-xs px-2"
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </Border>
     </div>
