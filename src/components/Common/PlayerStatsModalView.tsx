@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
-import { SimFBAContext } from "../../context/SimFBAContext";
+import { SimFBAContext, useSimFBAStore } from "../../context/SimFBAContext";
 import {
   CollegePlayer,
   NFLPlayer,
@@ -74,7 +74,7 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
     nflPlayerSeasonStatsMap,
     SearchFootballStats,
     cfb_Timestamp,
-  } = useContext(SimFBAContext);
+  } = useSimFBAStore();
 
   const statsView: StatsView = SEASON_VIEW;
   const [isLoading, setIsLoading] = useState(false);
