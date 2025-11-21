@@ -812,7 +812,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
   const bootstrapAllData = async () => {
     await getLandingBootstrapData();
-    getBootstrapNewsData();
     fetchAllHistory();
     isFetching.current = false;
   };
