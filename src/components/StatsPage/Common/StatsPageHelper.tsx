@@ -93,6 +93,11 @@ export const GetFootballStatsColumns = (
   }
   if (statsView === SEASON_VIEW) {
     columns = columns.concat([{ header: "GP", accessor: "GamesPlayed" }]);
+    if (statsType === PLAYER_VIEW) {
+      columns = columns.concat([{ header: "Snaps", accessor: "Snaps" }]);
+    }
+  } else if (statsType === PLAYER_VIEW) {
+    columns = columns.concat([{ header: "Snaps", accessor: "Snaps" }]);
   }
   if (statsType === PLAYER_VIEW) {
     if (footballStatsType === PASSING) {
@@ -173,7 +178,6 @@ export const GetFootballStatsColumns = (
     } else if (footballStatsType === OLINE) {
       // goalie stats
       columns = columns.concat([
-        { header: "Snaps", accessor: "Snaps" },
         { header: "ScksAll", accessor: "SacksAllowed" },
         { header: "Pnck", accessor: "Pancakes" },
       ]);
@@ -517,6 +521,7 @@ export const GetFootballPlayerStatsValues = (
         QBRating = QBRating.toFixed(2);
       }
       values.push(
+        { label: "Snaps", value: stats.Snaps },
         { label: "PY", value: stats.PassingYards },
         { label: "PC", value: stats.PassCompletions },
         { label: "PA", value: stats.PassAttempts },
@@ -532,6 +537,7 @@ export const GetFootballPlayerStatsValues = (
 
     case RUSHING:
       values.push(
+        { label: "Snaps", value: stats.Snaps },
         { label: "RY", value: stats.RushingYards },
         { label: "RA", value: stats.RushAttempts },
         { label: "RAvg", value: stats.RushAvg },
@@ -543,6 +549,7 @@ export const GetFootballPlayerStatsValues = (
 
     case RECEIVING:
       values.push(
+        { label: "Snaps", value: stats.Snaps },
         { label: "Cth", value: stats.Catches },
         { label: "Trgt", value: stats.Targets },
         { label: "RcY", value: stats.ReceivingYards },
@@ -554,6 +561,7 @@ export const GetFootballPlayerStatsValues = (
 
     case DEFENSE:
       values.push(
+        { label: "Snaps", value: stats.Snaps },
         { label: "SoloTck", value: stats.SoloTackles },
         { label: "AstTckl", value: stats.AssistedTackles },
         { label: "TFL", value: stats.TacklesForLoss },
@@ -569,6 +577,7 @@ export const GetFootballPlayerStatsValues = (
 
     case SPECIAL_TEAMS:
       values.push(
+        { label: "Snaps", value: stats.Snaps },
         { label: "FGM", value: stats.FGMade },
         { label: "FGA", value: stats.FGAttempts },
         { label: "LFG", value: stats.LongestFG },
@@ -585,6 +594,7 @@ export const GetFootballPlayerStatsValues = (
 
     case RETURN:
       values.push(
+        { label: "Snaps", value: stats.Snaps },
         { label: "KRet", value: stats.KickReturns },
         { label: "KRetY", value: stats.KickReturnYards },
         { label: "KRetTDs", value: stats.KickReturnTDs },
