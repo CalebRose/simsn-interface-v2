@@ -143,7 +143,7 @@ export const PlayerStatsModalView: React.FC<PlayerStatsModalViewProps> = ({
       }
     });
 
-    return filtered.sort((a, b) => b.SeasonID - a.SeasonID);
+    return filtered.sort((a, b) => a.SeasonID - b.SeasonID);
   }, [cfbPlayerSeasonStatsMap, nflPlayerSeasonStatsMap, league, player.ID]);
 
   useEffect(() => {
