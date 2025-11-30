@@ -19,7 +19,6 @@ export const LoadingMessages = [
   "Checking all systems...",
   "Checking all simulations...",
   "Fun Fact: Brown was the first FCS team to beat an FBS team. Can you guess which team they beat?",
-  "Fun Fact: The Washington Commanders were the first team to win the SimNFL Superb Owl Observation. Can you guess which team they beat?",
   "Fun Fact: Two 16-seeded teams upset their opponents in the 2022 SimCBB Postseason. Can you guess which teams won?",
   "Counting all good noodles...",
   "Punishing all bad noodles...",
