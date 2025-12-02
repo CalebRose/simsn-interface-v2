@@ -6,7 +6,7 @@ interface AuthContextProps {
   authId: string;
   setAuthId: (id: string) => void;
   currentUser: CurrentUser | null;
-  setCurrentUser:   React.Dispatch<React.SetStateAction<CurrentUser | null>>;
+  setCurrentUser: React.Dispatch<React.SetStateAction<CurrentUser | null>>;
   viewMode: string;
   setViewMode: (mode: string) => void;
   isLoading: boolean;
@@ -47,8 +47,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [authId, setAuthId] = useState<string>("");
   const [currentUser, setCurrentUser, isLoading] = useCurrentUser();
   const [viewMode, setViewMode] = useState<string>(() => {
-    const theme = localStorage.getItem("theme");
-    return theme || "dark";
+    // Guard against SSR and ensure localStorage is available
+    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+      try {
+        const theme = localStorage.getItem("theme");
+        return theme || "dark";
+      } catch (error) {
+        console.warn("Unable to access localStorage:", error);
+        return "dark";
+      }
+    }
+    return "dark";
   });
 
   const isCFBUser = useMemo(() => {
