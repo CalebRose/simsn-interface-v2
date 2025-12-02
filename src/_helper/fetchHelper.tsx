@@ -22,10 +22,11 @@ export const PostCall = async <TRequest, TResponse>(
   dto: TRequest
 ): Promise<TResponse> => {
   try {
+    const token = getSafeToken();
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token || ""}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(dto),
@@ -43,15 +44,16 @@ export const PostCall = async <TRequest, TResponse>(
   }
 };
 
-export const PUTCall = async <TRequest, TResponse>(
+export const DELETECall = async <TRequest, TResponse>(
   url: string,
   dto: TRequest
 ): Promise<TResponse> => {
   try {
+    const token = getSafeToken();
     const response = await fetch(url, {
-      method: "PUT",
+      method: "DELETE",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token || ""}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(dto),
@@ -70,12 +72,16 @@ export const PUTCall = async <TRequest, TResponse>(
 };
 
 // ✅ PUT Request without JSON Response (for void endpoints)
-export const PUTCallNoResponse = async (url: string, dto: any): Promise<void> => {
+export const PUTCallNoResponse = async (
+  url: string,
+  dto: any
+): Promise<void> => {
   try {
+    const token = getSafeToken();
     const response = await fetch(url, {
       method: "PUT",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token || ""}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(dto),
@@ -84,7 +90,6 @@ export const PUTCallNoResponse = async (url: string, dto: any): Promise<void> =>
     if (!response.ok) {
       throw new ApiError(response.status, `HTTP Error: ${response.statusText}`);
     }
-
   } catch (error) {
     console.error(`PUT request failed for URL: ${url}`, error);
     throw error; // Rethrow to handle where the call is made
@@ -92,12 +97,16 @@ export const PUTCallNoResponse = async (url: string, dto: any): Promise<void> =>
 };
 
 // ✅ POST Request without JSON Response (for void endpoints)
-export const PostCallNoResponse = async (url: string, dto: any): Promise<void> => {
+export const PostCallNoResponse = async (
+  url: string,
+  dto: any
+): Promise<void> => {
   try {
+    const token = getSafeToken();
     const response = await fetch(url, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token || ""}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(dto),
@@ -106,19 +115,31 @@ export const PostCallNoResponse = async (url: string, dto: any): Promise<void> =
     if (!response.ok) {
       throw new ApiError(response.status, `HTTP Error: ${response.statusText}`);
     }
-
   } catch (error) {
     console.error(`POST request failed for URL: ${url}`, error);
     throw error; // Rethrow to handle where the call is made
   }
 };
 
+// ✅ Safari-safe token retrieval
+const getSafeToken = (): string | null => {
+  try {
+    if (typeof window !== "undefined" && window.localStorage) {
+      return localStorage.getItem("token");
+    }
+  } catch (error) {
+    console.warn("Unable to access localStorage for token:", error);
+  }
+  return null;
+};
+
 // ✅ GET Request with JSON Response
 export const GetCall = async <T,>(url: string): Promise<T> => {
   try {
+    const token = getSafeToken();
     const response = await fetch(url, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${token || ""}`,
       },
     });
 
@@ -137,7 +158,7 @@ export const GetCall = async <T,>(url: string): Promise<T> => {
 export const GetActionCall = async (url: string): Promise<Response | false> => {
   const response = await fetch(url, {
     headers: {
-      authorization: "Bearer " + localStorage.getItem("token"),
+      authorization: "Bearer " + (getSafeToken() || ""),
     },
     method: "GET",
   });
@@ -165,7 +186,7 @@ export async function GetExportCall<T>(
   url: string,
   responseType: ResponseType = "json"
 ): Promise<T | Blob> {
-  const token = localStorage.getItem("token");
+  const token = getSafeToken();
   const response = await fetch(url, {
     headers: {
       Authorization: token ? `Bearer ${token}` : "",

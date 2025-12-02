@@ -47,17 +47,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [authId, setAuthId] = useState<string>("");
   const [currentUser, setCurrentUser, isLoading] = useCurrentUser();
   const [viewMode, setViewMode] = useState<string>(() => {
-    // Guard against SSR and ensure localStorage is available
-    if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
-      try {
-        const theme = localStorage.getItem("theme");
-        return theme || "dark";
-      } catch (error) {
-        console.warn("Unable to access localStorage:", error);
+    // Safari-safe localStorage access with extensive compatibility checks
+    if (typeof window === "undefined") {
+      return "dark";
+    }
+
+    try {
+      // Check if localStorage exists and is accessible (Safari private mode issue)
+      if (!window.localStorage) {
         return "dark";
       }
+
+      // Test localStorage functionality (Safari can throw on access)
+      const testKey = "__test__";
+      localStorage.setItem(testKey, "test");
+      localStorage.removeItem(testKey);
+
+      // Now safely get the theme
+      const theme = localStorage.getItem("theme");
+      return theme || "dark";
+    } catch (error) {
+      // Safari private browsing mode or other localStorage issues
+      console.warn("localStorage unavailable (Safari private mode?):", error);
+      return "dark";
     }
-    return "dark";
   });
 
   const isCFBUser = useMemo(() => {
