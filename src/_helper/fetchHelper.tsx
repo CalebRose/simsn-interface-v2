@@ -71,6 +71,33 @@ export const DELETECall = async <TRequest, TResponse>(
   }
 };
 
+export const PUTCall = async <TRequest, TResponse>(
+  url: string,
+  dto: TRequest
+): Promise<TResponse> => {
+  try {
+    const token = getSafeToken();
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token || ""}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dto),
+    });
+
+    if (!response.ok) {
+      throw new ApiError(response.status, `HTTP Error: ${response.statusText}`);
+    }
+
+    const data = (await response.json()) as TResponse;
+    return data;
+  } catch (error) {
+    console.error(`POST request failed for URL: ${url}`, error);
+    throw error; // Rethrow to handle where the call is made
+  }
+};
+
 // ✅ PUT Request without JSON Response (for void endpoints)
 export const PUTCallNoResponse = async (
   url: string,

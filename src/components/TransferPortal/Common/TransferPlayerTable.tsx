@@ -276,7 +276,15 @@ const CHLRow: React.FC<CHLRowProps> = ({
         </TableCell>
       ))}
       <TableCell>
-        <div className="flex flex-row gap-x-1 text-xs">{leadingTeams}</div>
+        <div className="flex flex-row gap-x-1 text-xs">
+          {item.TeamID > 0 && item.TeamID < 75 ? (
+            <div key={item.TeamID}>
+              <Logo url={getLogo(SimCHL, item.TeamID, false)} variant="small" />
+            </div>
+          ) : (
+            leadingTeams
+          )}
+        </div>
       </TableCell>
       <TableCell>
         <ButtonGroup classes="flex-nowrap">
