@@ -1591,7 +1591,10 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     if (profileIdx === -1) return;
     // Profile Exists and there are already points allocated, return. Users cannot update the amount of points lower than what's already allocated.
     const existingProfile = transferPortalProfiles[profileIdx];
-    if (existingProfile.TotalPoints > 0) {
+    if (
+      existingProfile.TotalPoints > 0 &&
+      existingProfile.PreviouslySpentPoints > points
+    ) {
       return;
     }
     let pointsValue = points;
