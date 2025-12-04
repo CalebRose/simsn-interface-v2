@@ -496,33 +496,34 @@ export const ActionModal: FC<ActionModalProps> = ({
         )}
         {modalAction === ToggleScholarshipType && (
           <>
-            <Text classes="mb-2">
-              Warning! You are about to switch the toggle status on{" "}
+            <Text classes="mb-3">
+              Warning! You are about to switch the toggle status for:{" "}
+            </Text>
+            <Text classes="mb-3">
               <strong>
                 {playerID} {playerLabel}
               </strong>
-              .
             </Text>
             {attribute === ScholarshipOffered && (
               <Text classes="mb-2">
                 By clicking "Confirm", you will be offering{" "}
                 <strong>{playerLabel}</strong> a scholarship. This will show
                 your intent to the recruit that you would like them to sign with
-                your team. All points placed on <strong>{playerLabel}</strong>{" "}
-                will be considered in the recruiting sync.
+                your team. All points placed on this recruit will be considered
+                in the recruiting sync.
               </Text>
             )}
             {attribute === ScholarshipRevoked && (
               <>
                 <Text>
                   By clicking "Confirm", you will be revoking the scholarship
-                  offer on <strong>{playerLabel}</strong>. All points placed on{" "}
-                  <strong>{playerLabel}</strong> will no longer be considered in
-                  the recruiting sync, and they will seek other schools
-                  elsewhere. You will <strong>NOT</strong> be able to offer them
-                  a scholarship after confirming this action.
+                  offer on <strong>{playerLabel}</strong>. All points placed on
+                  this recruit will no longer be considered in the recruiting
+                  sync, and they will seek other schools elsewhere. You will{" "}
+                  <strong>NOT</strong> be able to offer them a scholarship after
+                  confirming this action.
                 </Text>
-                <Text classes="mt-2">
+                <Text classes="my-2">
                   This action is considered final. Please wait until the
                   countdown ends before proceeding.
                 </Text>
