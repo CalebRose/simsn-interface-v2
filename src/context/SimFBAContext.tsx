@@ -1075,7 +1075,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
           game.GameComplete
       ).length;
 
-      if (gamesCompleted > 3) {
+      if (gamesCompleted > 4) {
         enqueueSnackbar(
           "You cannot redshirt players after 4 games have been completed.",
           { variant: "warning", autoHideDuration: 3000 }
