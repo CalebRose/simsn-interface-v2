@@ -513,14 +513,20 @@ export const ActionModal: FC<ActionModalProps> = ({
               </Text>
             )}
             {attribute === ScholarshipRevoked && (
-              <Text>
-                By clicking "Confirm", you will be revoking the scholarship
-                offer on <strong>{playerLabel}</strong>. All points placed on{" "}
-                <strong>{playerLabel}</strong> will no longer be considered in
-                the recruiting sync, and they will seek other schools elsewhere.
-                You will <strong>NOT</strong> be able to offer them a
-                scholarship after confirming this action.
-              </Text>
+              <>
+                <Text>
+                  By clicking "Confirm", you will be revoking the scholarship
+                  offer on <strong>{playerLabel}</strong>. All points placed on{" "}
+                  <strong>{playerLabel}</strong> will no longer be considered in
+                  the recruiting sync, and they will seek other schools
+                  elsewhere. You will <strong>NOT</strong> be able to offer them
+                  a scholarship after confirming this action.
+                </Text>
+                <Text classes="mt-2">
+                  Additionally, this action is considered final. Please wait
+                  until the countdown ends before proceeding.
+                </Text>
+              </>
             )}
             <Text>Are you sure you want to do this?</Text>
           </>
