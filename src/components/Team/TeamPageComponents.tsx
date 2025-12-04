@@ -17,7 +17,7 @@ import { getLogo } from "../../_utility/getLogo";
 import { Logo } from "../../_design/Logo";
 import { useResponsive } from "../../_hooks/useMobile";
 import { Button } from "../../_design/Buttons";
-import { Bell, ChatBubble, CheckCircle } from "../../_design/Icons";
+import { Bell, ChatBubble } from "../../_design/Icons";
 
 interface TeamInfoProps {
   id?: number;
