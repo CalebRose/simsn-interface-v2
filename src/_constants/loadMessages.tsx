@@ -43,6 +43,9 @@ export const LoadingMessages = [
   "Engaging warp drive...",
   "Have you considered David Ross as your lord and savior?",
   "Loading...",
+  "Booking tickets to Guam...",
+  "Loading...",
+  "Loading...",
 ];
 
 export const CFBRecruitLockedMessages = [
