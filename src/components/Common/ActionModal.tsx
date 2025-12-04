@@ -142,13 +142,6 @@ export const ActionModal: FC<ActionModalProps> = ({
       case Redshirt:
         if (redshirtPlayer) {
           await redshirtPlayer(playerID!, teamID!);
-          enqueueSnackbar(
-            `Placed redshirt on ${player.Position} ${player.FirstName} ${player.LastName}!`,
-            {
-              variant: "success",
-              autoHideDuration: 3000,
-            }
-          );
         }
         break;
       case Promise:

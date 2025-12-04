@@ -1069,6 +1069,19 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         );
         return;
       }
+      const gamesCompleted = collegeTeamsGames.filter(
+        (game) =>
+          (game.HomeTeamID === teamID || game.AwayTeamID === teamID) &&
+          game.GameComplete
+      ).length;
+
+      if (gamesCompleted > 3) {
+        enqueueSnackbar(
+          "You cannot redshirt players after 4 games have been completed.",
+          { variant: "warning", autoHideDuration: 3000 }
+        );
+        return;
+      }
       const res = await PlayerService.RedshirtCFBPlayer(playerID);
       const playerIDX = rosterMap[teamID].findIndex(
         (player) => player.ID === playerID
@@ -1076,6 +1089,14 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       if (playerIDX > -1) {
         rosterMap[teamID][playerIDX].IsRedshirting = true;
         setCFBRosterMap(rosterMap);
+        const player = rosterMap[teamID][playerIDX];
+        enqueueSnackbar(
+          `Placed redshirt on ${player.Position} ${player.FirstName} ${player.LastName}!`,
+          {
+            variant: "success",
+            autoHideDuration: 3000,
+          }
+        );
       }
     },
     [cfbRosterMap]
