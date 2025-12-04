@@ -523,8 +523,8 @@ export const ActionModal: FC<ActionModalProps> = ({
                   a scholarship after confirming this action.
                 </Text>
                 <Text classes="mt-2">
-                  Additionally, this action is considered final. Please wait
-                  until the countdown ends before proceeding.
+                  This action is considered final. Please wait until the
+                  countdown ends before proceeding.
                 </Text>
               </>
             )}
