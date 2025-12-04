@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import {
   AddPortalPlayerType,
   AddRecruitType,
@@ -86,6 +86,47 @@ export const ActionModal: FC<ActionModalProps> = ({
   attribute = "",
 }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const [canConfirm, setCanConfirm] = useState<boolean>(() => {
+    if (
+      modalAction === ToggleScholarshipType &&
+      attribute === ScholarshipRevoked
+    ) {
+      return false;
+    }
+    return true;
+  });
+  const [countdownTime, setCountDownTime] = useState<number>(5);
+
+  useEffect(() => {
+    if (
+      modalAction === ToggleScholarshipType &&
+      attribute === ScholarshipRevoked
+    ) {
+      if (countdownTime > 0) {
+        setCanConfirm(false);
+        const timer = setTimeout(() => {
+          setCountDownTime((prev) => prev - 1);
+        }, 1000);
+        return () => clearTimeout(timer);
+      } else {
+        setCanConfirm(true);
+      }
+    } else {
+      setCanConfirm(true);
+    }
+  }, [modalAction, attribute, countdownTime]);
+
+  // Reset countdown when modal opens for scholarship revocation
+  useEffect(() => {
+    if (
+      modalAction === ToggleScholarshipType &&
+      attribute === ScholarshipRevoked
+    ) {
+      setCountDownTime(5);
+      setCanConfirm(false);
+    }
+  }, [modalAction, attribute, player]);
+
   const action = async () => {
     switch (modalAction) {
       case Cut:
@@ -303,8 +344,11 @@ export const ActionModal: FC<ActionModalProps> = ({
                     <Button size="sm" variant="danger" onClick={onClose}>
                       <Text variant="small">Cancel</Text>
                     </Button>
-                    <Button size="sm" onClick={action}>
-                      <Text variant="small">Confirm</Text>
+                    {/* Disable confirm if countdown is active */}
+                    <Button size="sm" onClick={action} disabled={!canConfirm}>
+                      <Text variant="small">
+                        {canConfirm ? "Confirm" : `${countdownTime}...`}
+                      </Text>
                     </Button>
                   </>
                 )}
