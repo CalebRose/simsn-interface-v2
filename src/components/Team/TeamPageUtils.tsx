@@ -21,10 +21,11 @@ import {
   ProContract as PHLContract,
   Croot as HockeyCroot,
   DraftPick,
+  CollegePlayer,
 } from "../../models/hockeyModels";
 import {
   CollegePlayer as CFBPlayer,
-  Croot,
+  Croot as FBCroot,
   NFLContract,
   NFLPlayer,
 } from "../../models/footballModels";
@@ -67,6 +68,7 @@ import {
 } from "../../_helper/utilHelper";
 import {
   CollegePlayer as CBBPlayer,
+  Croot as BasketballCroot,
   NBAPlayer,
 } from "../../models/basketballModels";
 import { TradeBlockRow } from "./TeamPageTypes";
@@ -131,6 +133,60 @@ export const getCHLAttributes = (
   return [
     ...attributes,
     ...overviewAttributes,
+    ...additionalAttributes,
+    ...potentialAttributes,
+  ];
+};
+
+export const getCHLPortalAttributes = (
+  player: CHLPlayer,
+  isMobile: boolean,
+  isTablet: boolean,
+  category: string
+) => {
+  const heightObj = HeightToFeetAndInches(player.Height);
+  const attributes = [
+    { label: "Name", value: `${player.FirstName} ${player.LastName}` },
+    { label: "Pos", value: player.Position },
+    { label: "Arch", value: player.Archetype },
+    { label: "Age", value: player.Age },
+    { label: "Yr", value: getYear(player.Year, player.IsRedshirt) },
+    { label: "Stars", value: player.Stars },
+    { label: "Ht", value: `${heightObj.feet}' ${heightObj.inches}"` },
+    { label: "Wt (lbs)", value: player.Weight },
+    { label: "Ct", value: annotateCountry(player.Country) },
+    { label: "Re", value: annotateRegion(player.State) },
+    { label: "Ovr", value: getHockeyLetterGrade(player.Overall, player.Year) },
+  ];
+
+  const preferenceAttributes =
+    !isMobile && !isTablet && category === Preferences
+      ? [
+          { label: "ProgramPref", value: player.ProgramPref },
+          { label: "ProfDevPref", value: player.ProfDevPref },
+          { label: "TraditionsPref", value: player.TraditionsPref },
+          { label: "FacilitiesPref", value: player.FacilitiesPref },
+          { label: "AtmospherePref", value: player.AtmospherePref },
+          { label: "AcademicsPref", value: player.AcademicsPref },
+          { label: "ConferencePref", value: player.ConferencePref },
+          { label: "CoachPref", value: player.CoachPref },
+          { label: "SeasonMomentumPref", value: player.SeasonMomentumPref },
+        ]
+      : [];
+
+  const additionalAttributes =
+    (!isMobile || isTablet) && category === Attributes
+      ? getAdditionalHockeyAttributes(player)
+      : [];
+
+  const potentialAttributes =
+    (!isMobile || isTablet) && category === Potentials
+      ? getAdditionalPotentialAttributes(player)
+      : [];
+
+  return [
+    ...attributes,
+    ...preferenceAttributes,
     ...additionalAttributes,
     ...potentialAttributes,
   ];
@@ -241,7 +297,7 @@ export const getPHLContracts = (contract: any) => {
   ];
 };
 
-export const getPHLTradeBlockAttributes = (
+export const getTradeBlockAttributes = (
   item: TradeBlockRow,
   isPlayer: boolean,
   isMobile: boolean,
@@ -414,16 +470,6 @@ export const getAdditionalHockeyAttributes = (
       raw: player.GoalieVision,
       value: getHockeyLetterGrade(player.GoalieVision, player.Year),
     },
-    {
-      label: "Sta",
-      raw: player.Stamina,
-      value: getGeneralLetterGrade(player.Stamina),
-    },
-    {
-      label: "Inj",
-      raw: player.InjuryRating,
-      value: getGeneralLetterGrade(player.InjuryRating),
-    },
   ];
 };
 
@@ -593,7 +639,7 @@ export const getAdditionalCrootPreferenceAttributes = (player: HockeyCroot) => {
 };
 
 export const getCFBCrootAttributes = (
-  player: Croot,
+  player: FBCroot,
   isMobile: boolean,
   category: string
 ) => {
@@ -617,6 +663,34 @@ export const getCFBCrootAttributes = (
   return list;
 };
 
+export const getCBBCrootAttributes = (
+  player: BasketballCroot,
+  isMobile: boolean,
+  category: string
+) => {
+  let list = [
+    { label: "ID", value: player.ID },
+    { label: "Name", value: `${player.FirstName} ${player.LastName}` },
+    { label: "Pos", value: player.Position },
+    { label: "Arch", value: player.Archetype },
+    { label: "Stars", value: player.Stars },
+    { label: "Ht", value: player.Height },
+    { label: "St", value: annotateRegion(player.State) },
+    { label: "Ct", value: annotateCountry(player.Country) },
+    { label: "Ovr", value: player.OverallGrade },
+    { label: "Ins", value: player.Finishing },
+    { label: "Mid", value: player.Shooting2 },
+    { label: "3pt", value: player.Shooting3 },
+    { label: "FT", value: player.FreeThrow },
+    { label: "BW", value: player.Ballwork },
+    { label: "RB", value: player.Rebounding },
+    { label: "Int.D", value: player.InteriorDefense },
+    { label: "PD", value: player.PerimeterDefense },
+    { label: "Pot", value: player.PotentialGrade },
+  ];
+  return list;
+};
+
 const archetypeAcronyms: { [key: string]: string } = {
   Pocket: "PKT",
   Scrambler: "SCR",
@@ -636,7 +710,7 @@ const archetypeAcronyms: { [key: string]: string } = {
   "Line Captain": "LC",
   "Nose Tackle": "NT",
   "Pass Rusher": "PRS",
-  "Run Stopper": "RDS",
+  "Run Stopper": "RST",
   "Speed Rusher": "SPR",
   Coverage: "CVG",
   "Pass Rush": "PRS",
@@ -2310,7 +2384,7 @@ export const getAdditionalCBBAttributes = (player: CBBPlayer) => {
 export const getPriorityCBBAttributes = (player: CBBPlayer) => {
   return [
     {
-      label: "Finishing",
+      label: "Inside Shooting",
       value: getCBBLetterGrade(player.Finishing),
     },
     {
@@ -2352,6 +2426,43 @@ export const getPriorityCBBAttributes = (player: CBBPlayer) => {
     {
       label: "Minutes",
       value: player.Minutes,
+    },
+  ];
+};
+
+export const getPriorityCBBCrootAttributes = (player: BasketballCroot) => {
+  return [
+    {
+      label: "Inside Shooting",
+      value: player.Finishing,
+    },
+    {
+      label: "Mid Range Shooting",
+      value: player.Shooting2,
+    },
+    {
+      label: "3pt Shooting",
+      value: player.Shooting3,
+    },
+    {
+      label: "Free Throw",
+      value: player.FreeThrow,
+    },
+    {
+      label: "Ballwork",
+      value: player.Ballwork,
+    },
+    {
+      label: "Rebounding",
+      value: player.Rebounding,
+    },
+    {
+      label: "Int. Defense",
+      value: player.InteriorDefense,
+    },
+    {
+      label: "Per. Defense",
+      value: player.PerimeterDefense,
     },
   ];
 };
@@ -2499,5 +2610,127 @@ export const getPriorityNBAAttributes = (player: NBAPlayer) => {
       label: "Minutes",
       value: player.Minutes,
     },
+  ];
+};
+
+export const getAdditionalHCKPortalAttributes = (player: CollegePlayer) => {
+  return [
+    { label: "Agi", value: getHockeyLetterGrade(player.Agility, 1) },
+    { label: "FO", value: getHockeyLetterGrade(player.Faceoffs, 1) },
+    {
+      label: "LSA",
+      value: getHockeyLetterGrade(player.LongShotAccuracy, 1),
+    },
+    {
+      label: "LSP",
+      value: getHockeyLetterGrade(player.LongShotPower, 1),
+    },
+    {
+      label: "CSA",
+      value: getHockeyLetterGrade(player.CloseShotAccuracy, 1),
+    },
+    {
+      label: "CSP",
+      value: getHockeyLetterGrade(player.CloseShotPower, 1),
+    },
+    { label: "Pass", value: getHockeyLetterGrade(player.Passing, 1) },
+    {
+      label: "PH",
+      value: getHockeyLetterGrade(player.PuckHandling, 1),
+    },
+    { label: "Str", value: getHockeyLetterGrade(player.Strength, 1) },
+    {
+      label: "BChk",
+      value: getHockeyLetterGrade(player.BodyChecking, 1),
+    },
+    {
+      label: "SChk",
+      value: getHockeyLetterGrade(player.StickChecking, 1),
+    },
+    {
+      label: "SB",
+      value: getHockeyLetterGrade(player.ShotBlocking, 1),
+    },
+    {
+      label: "GK",
+      value: getHockeyLetterGrade(player.Goalkeeping, 1),
+    },
+    {
+      label: "GV",
+      value: getHockeyLetterGrade(player.GoalieVision, 1),
+    },
+  ];
+};
+
+export const getAdditionalHCKPortalPotentialAttributes = (
+  player: CollegePlayer
+) => {
+  return [
+    { label: "Agility", value: getGeneralLetterGrade(player.AgilityPotential) },
+    {
+      label: "Faceoffs",
+      value: getGeneralLetterGrade(player.FaceoffsPotential),
+    },
+    {
+      label: "LongShotAccuracy",
+      value: getGeneralLetterGrade(player.LongShotAccuracyPotential),
+    },
+    {
+      label: "LongShotPower",
+      value: getGeneralLetterGrade(player.LongShotPowerPotential),
+    },
+    {
+      label: "CloseShotAccuracy",
+      value: getGeneralLetterGrade(player.CloseShotAccuracyPotential),
+    },
+    {
+      label: "CloseShotPower",
+      value: getGeneralLetterGrade(player.CloseShotPowerPotential),
+    },
+    { label: "Passing", value: getGeneralLetterGrade(player.PassingPotential) },
+    {
+      label: "PuckHandling",
+      value: getGeneralLetterGrade(player.PuckHandlingPotential),
+    },
+    {
+      label: "Strength",
+      value: getGeneralLetterGrade(player.StrengthPotential),
+    },
+    {
+      label: "BodyChecking",
+      value: getGeneralLetterGrade(player.BodyCheckingPotential),
+    },
+    {
+      label: "StickChecking",
+      value: getGeneralLetterGrade(player.StickCheckingPotential),
+    },
+    {
+      label: "ShotBlocking",
+      value: getGeneralLetterGrade(player.ShotBlockingPotential),
+    },
+    {
+      label: "Goalkeeping",
+      value: getGeneralLetterGrade(player.GoalkeepingPotential),
+    },
+    {
+      label: "GoalieVision",
+      value: getGeneralLetterGrade(player.GoalieVisionPotential),
+    },
+  ];
+};
+
+export const getAdditionalHCKPortalPreferenceAttributes = (
+  player: CollegePlayer
+) => {
+  return [
+    { label: "ProgramPref", value: player.ProgramPref },
+    { label: "ProfDevPref", value: player.ProfDevPref },
+    { label: "TraditionsPref", value: player.TraditionsPref },
+    { label: "FacilitiesPref", value: player.FacilitiesPref },
+    { label: "AtmospherePref", value: player.AtmospherePref },
+    { label: "AcademicsPref", value: player.AcademicsPref },
+    { label: "ConferencePref", value: player.ConferencePref },
+    { label: "CoachPref", value: player.CoachPref },
+    { label: "SeasonMomentumPref", value: player.SeasonMomentumPref },
   ];
 };

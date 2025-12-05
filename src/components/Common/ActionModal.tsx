@@ -1,5 +1,6 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import {
+  AddPortalPlayerType,
   AddRecruitType,
   Affiliate,
   CancelOffer,
@@ -7,10 +8,12 @@ import {
   InfoType,
   League,
   ModalAction,
+  PortalInfoType,
   PracticeSquad,
   Promise,
   RecruitInfoType,
   Redshirt,
+  RemovePortalPlayerType,
   RemoveRecruitType,
   ScholarshipOffered,
   ScholarshipRevoked,
@@ -22,7 +25,11 @@ import {
 import { Modal } from "../../_design/Modal";
 import { Button, ButtonGroup } from "../../_design/Buttons";
 import { Text } from "../../_design/Typography";
-import { PlayerInfoModalBody, RecruitInfoModalBody } from "./Modals";
+import {
+  PlayerInfoModalBody,
+  PortalInfoModalBody,
+  RecruitInfoModalBody,
+} from "./Modals";
 import { useSnackbar } from "notistack";
 
 interface ActionModalProps {
@@ -38,6 +45,7 @@ interface ActionModalProps {
   capsheet?: any;
   contract?: any;
   offer?: any;
+  promise?: any;
   cutPlayer?: (playerID: number, teamID: number) => Promise<void>;
   sendToPracticeSquad?: (playerID: number, teamID: number) => Promise<void>;
   affiliatePlayer?: (playerID: number, teamID: number) => Promise<void>;
@@ -61,6 +69,7 @@ export const ActionModal: FC<ActionModalProps> = ({
   modalAction,
   player,
   contract,
+  promise,
   capsheet,
   offer,
   redshirtPlayer,
@@ -77,6 +86,47 @@ export const ActionModal: FC<ActionModalProps> = ({
   attribute = "",
 }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const [canConfirm, setCanConfirm] = useState<boolean>(() => {
+    if (
+      modalAction === ToggleScholarshipType &&
+      attribute === ScholarshipRevoked
+    ) {
+      return false;
+    }
+    return true;
+  });
+  const [countdownTime, setCountDownTime] = useState<number>(5);
+
+  useEffect(() => {
+    if (
+      modalAction === ToggleScholarshipType &&
+      attribute === ScholarshipRevoked
+    ) {
+      if (countdownTime > 0) {
+        setCanConfirm(false);
+        const timer = setTimeout(() => {
+          setCountDownTime((prev) => prev - 1);
+        }, 1000);
+        return () => clearTimeout(timer);
+      } else {
+        setCanConfirm(true);
+      }
+    } else {
+      setCanConfirm(true);
+    }
+  }, [modalAction, attribute, countdownTime]);
+
+  // Reset countdown when modal opens for scholarship revocation
+  useEffect(() => {
+    if (
+      modalAction === ToggleScholarshipType &&
+      attribute === ScholarshipRevoked
+    ) {
+      setCountDownTime(5);
+      setCanConfirm(false);
+    }
+  }, [modalAction, attribute, player]);
+
   const action = async () => {
     switch (modalAction) {
       case Cut:
@@ -92,13 +142,6 @@ export const ActionModal: FC<ActionModalProps> = ({
       case Redshirt:
         if (redshirtPlayer) {
           await redshirtPlayer(playerID!, teamID!);
-          enqueueSnackbar(
-            `Placed redshirt on ${player.Position} ${player.FirstName} ${player.LastName}!`,
-            {
-              variant: "success",
-              autoHideDuration: 3000,
-            }
-          );
         }
         break;
       case Promise:
@@ -134,6 +177,22 @@ export const ActionModal: FC<ActionModalProps> = ({
           );
         }
         break;
+      case AddPortalPlayerType:
+        if (addPlayerToBoard) {
+          const dto = {
+            CollegePlayerID: player.ID,
+            ProfileID: teamID,
+          };
+          await addPlayerToBoard(dto);
+          enqueueSnackbar(
+            `${player.Position} ${player.FirstName} ${player.LastName} has been added to your transfer portal board!`,
+            {
+              variant: "success",
+              autoHideDuration: 3000,
+            }
+          );
+        }
+        break;
       case RemoveRecruitType:
         if (removePlayerFromBoard) {
           const dto = {
@@ -143,6 +202,22 @@ export const ActionModal: FC<ActionModalProps> = ({
           await removePlayerFromBoard(dto);
           enqueueSnackbar(
             `${player.Position} ${player.FirstName} ${player.LastName} has been removed from board!`,
+            {
+              variant: "success",
+              autoHideDuration: 3000,
+            }
+          );
+        }
+        break;
+      case RemovePortalPlayerType:
+        if (removePlayerFromBoard) {
+          const dto = {
+            CollegePlayerID: player.ID,
+            ProfileID: teamID,
+          };
+          await removePlayerFromBoard(dto);
+          enqueueSnackbar(
+            `${player.Position} ${player.FirstName} ${player.LastName} has been removed from your board!`,
             {
               variant: "success",
               autoHideDuration: 3000,
@@ -215,12 +290,19 @@ export const ActionModal: FC<ActionModalProps> = ({
     case TradeBlock:
       title = `Change Trade Status for ${playerLabel}?`;
       break;
+    case PracticeSquad:
+      title = `Change Practice Squad Status for ${playerLabel}?`;
+      break;
     case InfoType:
     case RecruitInfoType:
+    case PortalInfoType:
       title = `${playerID} ${playerLabel}`;
       break;
     case AddRecruitType:
       title = `Add Recruit ${playerLabel} to Board?`;
+      break;
+    case AddPortalPlayerType:
+      title = `Add Portal Player ${playerLabel} to Board?`;
       break;
     case ToggleScholarshipType:
       title =
@@ -229,6 +311,7 @@ export const ActionModal: FC<ActionModalProps> = ({
           : `Revoke Scholarship on Recruit?`;
       break;
     case RemoveRecruitType:
+    case RemovePortalPlayerType:
       title = `Remove ${playerLabel} from Board?`;
       break;
     case ScoutAttributeType:
@@ -247,18 +330,24 @@ export const ActionModal: FC<ActionModalProps> = ({
         actions={
           <>
             <ButtonGroup>
-              {modalAction !== InfoType && modalAction !== RecruitInfoType && (
-                <>
-                  <Button size="sm" variant="danger" onClick={onClose}>
-                    <Text variant="small">Cancel</Text>
-                  </Button>
-                  <Button size="sm" onClick={action}>
-                    <Text variant="small">Confirm</Text>
-                  </Button>
-                </>
-              )}
+              {modalAction !== InfoType &&
+                modalAction !== RecruitInfoType &&
+                modalAction !== PortalInfoType && (
+                  <>
+                    <Button size="sm" variant="danger" onClick={onClose}>
+                      <Text variant="small">Cancel</Text>
+                    </Button>
+                    {/* Disable confirm if countdown is active */}
+                    <Button size="sm" onClick={action} disabled={!canConfirm}>
+                      <Text variant="small">
+                        {canConfirm ? "Confirm" : `${countdownTime}...`}
+                      </Text>
+                    </Button>
+                  </>
+                )}
               {(modalAction === InfoType ||
-                modalAction === RecruitInfoType) && (
+                modalAction === RecruitInfoType ||
+                modalAction === PortalInfoType) && (
                 <Button size="sm" variant="primary" onClick={onClose}>
                   <Text variant="small">Close</Text>
                 </Button>
@@ -307,19 +396,27 @@ export const ActionModal: FC<ActionModalProps> = ({
         )}
         {modalAction === PracticeSquad && (
           <>
-            <Text className="mb4 text-start">
+            <Text className="mb-4 text-start">
               WARNING! Once you've confirmed,{" "}
               <strong>
                 {playerID} {playerLabel}
               </strong>{" "}
-              will be sent to your NFL Team's Practice Squad. Other teams may
-              attempt to pick up this player. If an offer is placed, you will
-              have approximately 3 FA Syncs to make a decision to pick the
-              player back up onto your roster. Once the player is claimed by
-              another team or claimed by you, they cannot be placed back onto
-              the NFL Team.
+              practice squad status will change.
             </Text>
-            <Text className="mb4 text-start">
+            <Text className="mb-4 text-start">
+              If you are placing {playerID} {playerLabel} <strong>onto</strong>{" "}
+              the practice squad, other teams may attempt to pick up this
+              player. If an offer is placed, you will have approximately 3 FA
+              Syncs to make a decision to pick the player back up onto your
+              roster. Once the player is claimed by another team or claimed by
+              you, they cannot be placed back onto the NFL Team.
+            </Text>
+            <Text className="mb-4 text-start">
+              If you are placing {playerID} {playerLabel} <strong>back</strong>{" "}
+              onto your team, then you don't have to worry about any existing
+              practice squad offers on the player, as they will be removed.
+            </Text>
+            <Text className="mb-4 text-start">
               Are you sure you want to confirm this action?
             </Text>
           </>
@@ -354,11 +451,6 @@ export const ActionModal: FC<ActionModalProps> = ({
             </Text>
           </>
         )}
-        {modalAction === Promise && (
-          <Text className="mb4 text-start">
-            Are you sure you want to send a promise to this player?
-          </Text>
-        )}
         {modalAction === AddRecruitType && (
           <Text className="mb4 text-start">
             Are you sure you want to add{" "}
@@ -366,6 +458,15 @@ export const ActionModal: FC<ActionModalProps> = ({
               {playerID} {playerLabel}
             </strong>{" "}
             to your recruiting board?
+          </Text>
+        )}
+        {modalAction === AddPortalPlayerType && (
+          <Text className="mb4 text-start">
+            Are you sure you want to add{" "}
+            <strong>
+              {playerID} {playerLabel}
+            </strong>{" "}
+            to your transfer portal board?
           </Text>
         )}
         {modalAction === RemoveRecruitType && (
@@ -377,33 +478,49 @@ export const ActionModal: FC<ActionModalProps> = ({
             from your recruiting board?
           </Text>
         )}
+        {modalAction === RemovePortalPlayerType && (
+          <Text className="mb4 text-start">
+            Are you sure you want to remove{" "}
+            <strong>
+              {playerID} {playerLabel}
+            </strong>{" "}
+            from your transfer portal board?
+          </Text>
+        )}
         {modalAction === ToggleScholarshipType && (
           <>
-            <Text classes="mb-2">
-              Warning! You are about to switch the toggle status on{" "}
+            <Text classes="mb-3">
+              Warning! You are about to switch the toggle status for:{" "}
+            </Text>
+            <Text classes="mb-3">
               <strong>
                 {playerID} {playerLabel}
               </strong>
-              .
             </Text>
             {attribute === ScholarshipOffered && (
               <Text classes="mb-2">
                 By clicking "Confirm", you will be offering{" "}
                 <strong>{playerLabel}</strong> a scholarship. This will show
                 your intent to the recruit that you would like them to sign with
-                your team. All points placed on <strong>{playerLabel}</strong>{" "}
-                will be considered in the recruiting sync.
+                your team. All points placed on this recruit will be considered
+                in the recruiting sync.
               </Text>
             )}
             {attribute === ScholarshipRevoked && (
-              <Text>
-                By clicking "Confirm", you will be revoking the scholarship
-                offer on <strong>{playerLabel}</strong>. All points placed on{" "}
-                <strong>{playerLabel}</strong> will no longer be considered in
-                the recruiting sync, and they will seek other schools elsewhere.
-                You will <strong>NOT</strong> be able to offer them a
-                scholarship after confirming this action.
-              </Text>
+              <>
+                <Text>
+                  By clicking "Confirm", you will be revoking the scholarship
+                  offer on <strong>{playerLabel}</strong>. All points placed on
+                  this recruit will no longer be considered in the recruiting
+                  sync, and they will seek other schools elsewhere. You will{" "}
+                  <strong>NOT</strong> be able to offer them a scholarship after
+                  confirming this action.
+                </Text>
+                <Text classes="my-2">
+                  This action is considered final. Please wait until the
+                  countdown ends before proceeding.
+                </Text>
+              </>
             )}
             <Text>Are you sure you want to do this?</Text>
           </>
@@ -462,6 +579,9 @@ export const ActionModal: FC<ActionModalProps> = ({
         )}
         {modalAction === RecruitInfoType && (
           <RecruitInfoModalBody league={league} player={player} />
+        )}
+        {modalAction === PortalInfoType && (
+          <PortalInfoModalBody league={league} player={player} />
         )}
       </Modal>
     </>

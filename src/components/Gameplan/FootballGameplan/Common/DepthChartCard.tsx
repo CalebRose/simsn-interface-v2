@@ -135,7 +135,7 @@ export const DepthChartCard: React.FC<DepthChartCardProps> = ({
             {overallRating}
           </Text>
         </div>
-        {depthChartManager && league === SimCFB && (
+        {league === SimCFB && (
           <div 
           className="absolute top-8 right-0 px-1 py-0.5 rounded-bl-lg rounded-tl-lg z-10"
           style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}

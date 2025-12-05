@@ -1,13 +1,21 @@
 import { fbaUrl, bbaUrl, hckUrl } from "../_constants/urls";
-import { GetExportCall, PostCall, PUTCall } from "../_helper/fetchHelper";
+import {
+  GetActionCall,
+  GetExportCall,
+  PostCall,
+  PostCallNoResponse,
+  PUTCall,
+} from "../_helper/fetchHelper";
 import {
   PlayerRecruitProfile as BBAPlayerRecruitProfile,
   UpdateRecruitingBoardDto as BBAUpdateRecruitingBoardDto,
+  TeamRecruitingProfile,
 } from "../models/basketballModels";
 import {
   RecruitPlayerProfile as HCKRecruitPlayerProfile,
   UpdateRecruitingBoardDTO as HCKUpdateRecruitingBoardDTO,
   UpdateRecruitProfileDto as HCKUpdateRecruitProfileDto,
+  TransferPortalProfile,
 } from "../models/hockeyModels";
 import {
   RecruitPlayerProfile as FBARecruitPlayerProfile,
@@ -37,6 +45,10 @@ export const RecruitService = {
     return await PostCall(`${hckUrl}recruiting/scout/attribute/`, dto);
   },
 
+  HCKScoutPortalAttribute: async (dto: any): Promise<TransferPortalProfile> => {
+    return await PostCall(`${hckUrl}portal/scout/attribute/`, dto);
+  },
+
   HCKSaveRecruitingBoard: async (
     dto: any
   ): Promise<HCKUpdateRecruitingBoardDTO> => {
@@ -56,21 +68,23 @@ export const RecruitService = {
   BBARemoveCrootFromBoard: async (
     dto: any
   ): Promise<BBAPlayerRecruitProfile> => {
-    return await PostCall(`${bbaUrl}recruiting/remove/recruit/`, dto);
+    return await PostCall(`${bbaUrl}recruit/remove/recruit/v2`, dto);
   },
 
   BBAToggleScholarship: async (dto: any): Promise<BBAPlayerRecruitProfile> => {
-    return await PostCall(`${bbaUrl}recruiting/toggle/scholarship/`, dto);
+    return await PostCall(`${bbaUrl}recruit/toggle/Scholarship/v2`, dto);
   },
 
-  BBASaveRecruitingBoard: async (
-    dto: any
-  ): Promise<BBAUpdateRecruitingBoardDto> => {
-    return await PostCall(`${bbaUrl}recruiting/save/board/`, dto);
+  BBASaveRecruitingBoard: async (dto: any): Promise<void> => {
+    await PostCallNoResponse(`${bbaUrl}recruit/saveRecruitingBoard`, dto);
   },
 
-  BBASaveAISettings: async (dto: any): Promise<BBAUpdateRecruitingBoardDto> => {
-    return await PostCall(`${bbaUrl}recruiting/save/ai/`, dto);
+  BBAToggleAISetting: async (teamID: number): Promise<void> => {
+    await GetActionCall(`${bbaUrl}recruit/save/ai/toggle/${teamID}`);
+  },
+
+  BBASaveAISettings: async (dto: any): Promise<TeamRecruitingProfile> => {
+    return await PostCall(`${bbaUrl}recruit/save/ai/settings`, dto);
   },
 
   ExportCHLRecruits: async () => {
@@ -99,11 +113,17 @@ export const RecruitService = {
     return await PostCall(`${fbaUrl}recruiting/savecrootboard/`, dto);
   },
 
-  FBAToggleAIBehavior: async (dto: any): Promise<FBAUpdateRecruitingBoardDTO> => {
+  FBAToggleAIBehavior: async (
+    dto: any
+  ): Promise<FBAUpdateRecruitingBoardDTO> => {
     return await PostCall(`${fbaUrl}recruiting/save/ai/`, dto);
   },
 
   ExportCFBCroots: async () => {
     await GetExportCall(`${fbaUrl}recruits/export/all/`, "blob");
+  },
+
+  ExportCBBCroots: async () => {
+    await GetExportCall(`${bbaUrl}croots/export/all/`, "blob");
   },
 };

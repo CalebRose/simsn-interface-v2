@@ -340,7 +340,6 @@ export const CFBRequestCard: React.FC<CFBRequestCardProps> = ({
     console.error("CFB Team not found for request:", request);
     return null; // Handle the case where the team is not found
   }
-  console.log({ request, cfbTeam, oneItem });
   const authStore = useAuthStore();
   const { currentUser } = authStore;
   const requestLogo = getLogo(

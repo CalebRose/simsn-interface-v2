@@ -1,3 +1,4 @@
+import { CollegePlayerStats } from "../../../models/basketballModels";
 import { CollegePlayerGameStats } from "../../../models/hockeyModels";
 
 export interface PlayByPlay {
@@ -105,8 +106,38 @@ export interface HockeyPlayerStats {
   Sacks?: number;
 }
 
+export interface BasketballPlayerStats {
+  Position: string;
+  FirstName: string;
+  LastName: string;
+  Minutes: number;
+  FGM: number;
+  FGA: number;
+  FGPercentage: number;
+  ThreePM: number;
+  ThreePA: number;
+  ThreePAPercentage: number;
+  FTM: number;
+  FTA: number;
+  FTPercentage: number;
+  Points: number;
+  OffensiveRebounds: number;
+  DefensiveRebounds: number;
+  TotalRebounds: number;
+  Assists: number;
+  Steals: number;
+  Blocks: number;
+  Turnovers: number;
+  Fouls: number;
+}
+
 export interface HockeyFilteredStats {
   ForwardsStats: CollegePlayerGameStats[];
   DefensemenStats: CollegePlayerGameStats[];
   GoalieStats: CollegePlayerGameStats[];
+}
+
+export interface BasketballFilteredStats {
+  TeamOne: BasketballPlayerStats[];
+  TeamTwo: BasketballPlayerStats[];
 }

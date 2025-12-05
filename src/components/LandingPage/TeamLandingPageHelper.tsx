@@ -22,6 +22,7 @@ import {
   CollegePlayer as CBBPlayer,
   NBAPlayer,
   NewsLog as BasketballNewsLog,
+  Timestamp,
 } from "../../models/basketballModels";
 import {
   CollegeStandings as CHLStandings,
@@ -317,6 +318,7 @@ export const getLandingNFLData = (
 export const getLandingCBBData = (
   team: any,
   currentWeek: any,
+  timestamp: Timestamp,
   league: League,
   currentUser: any,
   allCBBStandings: CBBStandings[],
@@ -341,6 +343,11 @@ export const getLandingCBBData = (
 
   // Team Match-Up
   const teamAbbrMap = new Map(allCBBTeams.map((team) => [team.ID, team.Abbr]));
+  const nextGameDay = GetNextGameDay(
+    timestamp.GamesARan,
+    timestamp.GamesBRan,
+    timestamp.GamesCRan
+  );
   let foundMatch: CBBMatch[] | null = null;
   let gameWeek = currentWeek;
 
@@ -349,7 +356,8 @@ export const getLandingCBBData = (
     const nextMatch = allCBBGames.filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
-        game.Week === testWeek
+        game.Week === testWeek &&
+        game.MatchOfWeek === nextGameDay
     );
 
     if (nextMatch.length > 0) {
@@ -448,6 +456,7 @@ export const getLandingCBBData = (
 export const getLandingNBAData = (
   team: any,
   currentWeek: any,
+  timestamp: Timestamp,
   league: League,
   currentUser: any,
   allNBAStandings: NBAStandings[],
@@ -472,6 +481,11 @@ export const getLandingNBAData = (
 
   // Team Match-Up
   const teamAbbrMap = new Map(allNBATeams.map((team) => [team.ID, team.Abbr]));
+  const nextGameDay = GetNextGameDay(
+    timestamp.GamesARan,
+    timestamp.GamesBRan,
+    timestamp.GamesCRan
+  );
   let foundMatch: NBAMatch[] | null = null;
   let gameWeek = currentWeek;
 
@@ -480,7 +494,8 @@ export const getLandingNBAData = (
     const nextMatch = allNBAGames.filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
-        game.Week === testWeek
+        game.Week === testWeek &&
+        game.MatchOfWeek === nextGameDay
     );
 
     if (nextMatch.length > 0) {

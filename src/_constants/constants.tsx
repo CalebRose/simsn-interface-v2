@@ -34,11 +34,17 @@ export const Promise = "Promise";
 export const Redshirt = "Redshirt";
 export const InfoType = "Info";
 export const RecruitInfoType = "Recruit Info";
+export const PortalInfoType = "Portal Info";
 export const AddRecruitType = "Add Recruit";
 export const AddFreeAgentType = "Add Free Agent";
+export const AddPortalPlayerType = "Add Portal Player";
 export const RemoveRecruitType = "Remove Recruit";
+export const RemovePortalPlayerType = "Remove Portal Player";
 export const ToggleScholarshipType = "Toggle Scholarship";
 export const ScoutAttributeType = "Scout Attribute";
+export const ScoutPortalAttributeType = "Scout Portal Attribute";
+export const ScoutDraftAttributeType = "Scout Draft Attribute";
+export const ExtensionOfferType = "Extension Offer";
 export const CancelOffer = "Cancel Offer";
 export const PracticeSquad = "Practice Squad";
 export const Affiliate = "Affiliate";
@@ -65,12 +71,18 @@ export type ModalAction =
   | typeof Redshirt
   | typeof InfoType
   | typeof RecruitInfoType
+  | typeof PortalInfoType
   | typeof AddRecruitType
   | typeof AddFreeAgentType
+  | typeof AddPortalPlayerType
   | typeof RemoveRecruitType
+  | typeof RemovePortalPlayerType
   | typeof ToggleScholarshipType
   | typeof ScoutAttributeType
+  | typeof ScoutPortalAttributeType
+  | typeof ScoutDraftAttributeType
   | typeof CancelOffer
+  | typeof ExtensionOfferType
   | typeof PracticeSquad
   | typeof Affiliate
   | typeof Help1
@@ -134,6 +146,152 @@ export type StatsView = typeof WEEK_VIEW | typeof SEASON_VIEW;
 export const PLAYER_VIEW = "PLAYER";
 export const TEAM_VIEW = "TEAM";
 export type StatsType = typeof PLAYER_VIEW | typeof TEAM_VIEW;
+export const PASSING = "PASSING";
+export const RUSHING = "RUSHING";
+export const RECEIVING = "RECEIVING";
+export const DEFENSE = "DEFENSE";
+export const SPECIAL_TEAMS = "SPECIAL TEAMS";
+export const OLINE = "OLINE";
+export const RETURN = "RETURN";
+export const OVERALL = "OVERALL";
+export const OFFENSE = "OFFENSE";
+export type FootballStatsType =
+  | typeof PASSING
+  | typeof RUSHING
+  | typeof RECEIVING
+  | typeof DEFENSE
+  | typeof OLINE
+  | typeof RETURN
+  | typeof SPECIAL_TEAMS
+  | typeof OVERALL
+  | typeof OFFENSE;
+
+export interface PositionStatsConfig {
+  statsType: FootballStatsType;
+  labels: string[];
+}
+
+export const POSITION_STATS_CONFIG: Record<string, PositionStatsConfig> = {
+  QB: {
+    statsType: PASSING,
+    labels: ["Snaps", "Cmp/Att", "Cmp%", "Yds", "TD", "INT", "QBR"],
+  },
+  RB: {
+    statsType: RUSHING,
+    labels: ["Snaps", "Att", "Yds", "YPC", "TD", "Fum"],
+  },
+  FB: {
+    statsType: RUSHING,
+    labels: ["Snaps", "Att", "Yds", "YPC", "TD", "Fum"],
+  },
+  WR: {
+    statsType: RECEIVING,
+    labels: ["Snaps", "Cth", "Trgt", "Yds", "TD", "Fum"],
+  },
+  TE: {
+    statsType: RECEIVING,
+    labels: ["Snaps", "Cth", "Trgt", "Yds", "TD", "Fum"],
+  },
+  DE: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  DT: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  OLB: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  ILB: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  CB: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  FS: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  SS: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  OT: {
+    statsType: OLINE,
+    labels: ["Snaps", "ScksAll", "Pnck"],
+  },
+  OG: {
+    statsType: OLINE,
+    labels: ["Snaps", "ScksAll", "Pnck"],
+  },
+  C: {
+    statsType: OLINE,
+    labels: ["Snaps", "ScksAll", "Pnck"],
+  },
+  K: {
+    statsType: SPECIAL_TEAMS,
+    labels: ["Snaps", "FGM", "FGA", "LFG", "XPM", "XPA"],
+  },
+  P: {
+    statsType: SPECIAL_TEAMS,
+    labels: ["Snaps", "P", "GPD", "NPD", "PT", "Ins20"],
+  },
+  KR: {
+    statsType: RETURN,
+    labels: ["Snaps", "KRet", "KRetY", "KRetTDs", "PRet", "PRetY"],
+  },
+  PR: {
+    statsType: RETURN,
+    labels: ["Snaps", "PRet", "PRetY", "PRetTDs", "KRet", "KRetY"],
+  },
+};
+
+export const ATH_ARCHETYPE_STATS_CONFIG: Record<string, PositionStatsConfig> = {
+  "Field General": {
+    statsType: PASSING,
+    labels: ["Snaps", "CMP/ATT", "Comp%", "Yds", "TD", "INT", "QBR"],
+  },
+  "Triple-Threat": {
+    statsType: RUSHING,
+    labels: ["Snaps", "Att", "Yds", "YPC", "TD", "Fum"],
+  },
+  Wingback: {
+    statsType: RECEIVING,
+    labels: ["Snaps", "Cth", "Trgt", "Yds", "TD", "Fum"],
+  },
+  Slotback: {
+    statsType: RECEIVING,
+    labels: ["Snaps", "Cth", "Trgt", "Yds", "TD", "Fum"],
+  },
+  Lineman: {
+    statsType: OLINE,
+    labels: ["Snaps", "ScksAll", "Pnck"],
+  },
+  Strongside: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "TFL", "Scks", "FF/FR"],
+  },
+  Weakside: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  Bandit: {
+    statsType: DEFENSE,
+    labels: ["Snaps", "SoloTck", "TotTck", "FF/FR", "PD", "INT"],
+  },
+  "Return Specialist": {
+    statsType: RETURN,
+    labels: ["Snaps", "KRet", "KRetY", "KRetTDs", "PRet", "PRetY"],
+  },
+  "Soccer Player": {
+    statsType: SPECIAL_TEAMS,
+    labels: ["Snaps", "FGM", "FGA", "LFG", "XPM", "XPA"],
+  },
+};
 export const PRESEASON = "PRESEASON";
 export const REGULAR_SEASON = "REGULARSEASON";
 export const POST_SEASON = "POSTSEASON";
@@ -158,6 +316,7 @@ export const Attributes = "Attributes";
 export const Values = "Values";
 export const Preferences = "Preferences";
 export const Potentials = "Potentials";
+export const Promises = "Promises";
 export const Contracts = "Contracts";
 export const Overview = "Overview";
 export const Details = "Details";
@@ -180,6 +339,18 @@ export const SundayNoon = "Sunday Noon";
 export const SundayAfternoon = "Sunday Afternoon";
 export const SundayNightFootball = "Sunday Night Football";
 export const MondayNightFootball = "Monday Night Football";
+export type Timeslot =
+  | typeof ThursdayNight
+  | typeof FridayNight
+  | typeof SaturdayMorning
+  | typeof SaturdayAfternoon
+  | typeof SaturdayEvening
+  | typeof SaturdayNight
+  | typeof ThursdayNightFootball
+  | typeof SundayNoon
+  | typeof SundayAfternoon
+  | typeof SundayNightFootball
+  | typeof MondayNightFootball;
 export const FreeAgent = "FreeAgent";
 export const Waivers = "Waivers";
 export const GLeague = "GLeague";
@@ -206,6 +377,64 @@ export const HockeyArchetypeOptions = [
   { label: "Power", value: "Power" },
   { label: "Sniper", value: "Sniper" },
 ];
+
+export const cbbUSARegionOptions = [
+  { label: "All", value: "All" },
+  { label: "Alabama", value: "Alabama" },
+  { label: "Alaska", value: "Alaska" },
+  { label: "American Samoa", value: "American Samoa" },
+  { label: "Arizona", value: "Arizona" },
+  { label: "Arkansas", value: "Arkansas" },
+  { label: "California", value: "California" },
+  { label: "Colorado", value: "Colorado" },
+  { label: "Connecticut", value: "Connecticut" },
+  { label: "Delaware", value: "Delaware" },
+  { label: "Florida", value: "Florida" },
+  { label: "Georgia", value: "Georgia" },
+  { label: "Guam", value: "Guam" },
+  { label: "Hawaii", value: "Hawaii" },
+  { label: "Idaho", value: "Idaho" },
+  { label: "Illinois", value: "Illinois" },
+  { label: "Indiana", value: "Indiana" },
+  { label: "Iowa", value: "Iowa" },
+  { label: "Kansas", value: "Kansas" },
+  { label: "Kentucky", value: "Kentucky" },
+  { label: "Louisiana", value: "Louisiana" },
+  { label: "Maine", value: "Maine" },
+  { label: "Maryland", value: "Maryland" },
+  { label: "Massachusetts", value: "Massachusetts" },
+  { label: "Michigan", value: "Michigan" },
+  { label: "Minnesota", value: "Minnesota" },
+  { label: "Mississippi", value: "Mississippi" },
+  { label: "Missouri", value: "Missouri" },
+  { label: "Montana", value: "Montana" },
+  { label: "Nebraska", value: "Nebraska" },
+  { label: "Nevada", value: "Nevada" },
+  { label: "New Hampshire", value: "New Hampshire" },
+  { label: "New Jersey", value: "New Jersey" },
+  { label: "New Mexico", value: "New Mexico" },
+  { label: "New York", value: "New York" },
+  { label: "North Carolina", value: "North Carolina" },
+  { label: "North Dakota", value: "North Dakota" },
+  { label: "Ohio", value: "Ohio" },
+  { label: "Oklahoma", value: "Oklahoma" },
+  { label: "Oregon", value: "Oregon" },
+  { label: "Pennsylvania", value: "Pennsylvania" },
+  { label: "Puerto Rico", value: "Puerto Rico" },
+  { label: "Rhode Island", value: "Rhode Island" },
+  { label: "South Carolina", value: "South Carolina" },
+  { label: "South Dakota", value: "South Dakota" },
+  { label: "Tennessee", value: "Tennessee" },
+  { label: "Texas", value: "Texas" },
+  { label: "Utah", value: "Utah" },
+  { label: "Vermont", value: "Vermont" },
+  { label: "Virginia", value: "Virginia" },
+  { label: "Washington", value: "Washington" },
+  { label: "West Virginia", value: "West Virginia" },
+  { label: "Wisconsin", value: "Wisconsin" },
+  { label: "Wyoming", value: "Wyoming" },
+];
+
 export const USARegionOptions = [
   { label: "All", value: "All" },
   { label: "Alabama", value: "AL" },
@@ -405,6 +634,8 @@ export const CountryOptions = [
   { label: "Japan", value: "Japan" },
   { label: "Kazakhstan", value: "Kazakhstan" },
   { label: "Latvia", value: "Latvia" },
+  { label: "Laos", value: "Laos" },
+  { label: "Lithuania", value: "Lithuania" },
   { label: "Mexico", value: "Mexico" },
   { label: "Netherlands", value: "Netherlands" },
   { label: "Norway", value: "Norway" },
@@ -417,6 +648,143 @@ export const CountryOptions = [
   { label: "Taiwan", value: "Taiwan" },
   { label: "UK", value: "UK" },
   { label: "Ukraine", value: "Ukraine" },
+];
+
+export const cbbCountryOptions: { label: string; value: string }[] = [
+  { label: "All", value: "All" },
+  { label: "Albania", value: "Albania" },
+  { label: "Algeria", value: "Algeria" },
+  { label: "Angola", value: "Angola" },
+  { label: "Antarctica", value: "Antarctica" },
+  { label: "Argentina", value: "Argentina" },
+  { label: "Armenia", value: "Armenia" },
+  { label: "Austria", value: "Austria" },
+  { label: "Bangladesh", value: "Bangladesh" },
+  { label: "Barbados", value: "Barbados" },
+  { label: "Belgium", value: "Belgium" },
+  { label: "Belize", value: "Belize" },
+  { label: "Benin", value: "Benin" },
+  { label: "Botswana", value: "Botswana" },
+  { label: "Brazil", value: "Brazil" },
+  { label: "Bulgaria", value: "Bulgaria" },
+  { label: "Cambodia", value: "Cambodia" },
+  { label: "Cameroon", value: "Cameroon" },
+  { label: "Canada", value: "Canada" },
+  { label: "Chad", value: "Chad" },
+  { label: "Chile", value: "Chile" },
+  { label: "China", value: "China" },
+  { label: "Colombia", value: "Colombia" },
+  { label: "Costa Rica", value: "Costa Rica" },
+  { label: "Croatia", value: "Croatia" },
+  { label: "Cuba", value: "Cuba" },
+  { label: "DCR", value: "DCR" },
+  {
+    label: "Democratic Republic of Congo",
+    value: "Democratic Republic of Congo",
+  },
+  { label: "Denmark", value: "Denmark" },
+  { label: "Dominican Republic", value: "Dominican Republic" },
+  { label: "Ecuador", value: "Ecuador" },
+  { label: "Egypt", value: "Egypt" },
+  { label: "El Salvador", value: "El Salvador" },
+  { label: "Estonia", value: "Estonia" },
+  { label: "Eritrea", value: "Eritrea" },
+  { label: "Ethiopia", value: "Ethiopia" },
+  { label: "Fiji", value: "Fiji" },
+  { label: "Finland", value: "Finland" },
+  { label: "France", value: "France" },
+  { label: "French Guiana", value: "French Guiana" },
+  { label: "French Polynesia", value: "French Polynesia" },
+  { label: "Gabon", value: "Gabon" },
+  { label: "Georgia", value: "Georgia" },
+  { label: "Germany", value: "Germany" },
+  { label: "Ghana", value: "Ghana" },
+  { label: "Greece", value: "Greece" },
+  { label: "Grenada", value: "Grenada" },
+  { label: "Guatemala", value: "Guatemala" },
+  { label: "Guinea", value: "Guinea" },
+  { label: "Guyana", value: "Guyana" },
+  { label: "Haiti", value: "Haiti" },
+  { label: "Honduras", value: "Honduras" },
+  { label: "Hungary", value: "Hungary" },
+  { label: "Iceland", value: "Iceland" },
+  { label: "India", value: "India" },
+  { label: "Indonesia", value: "Indonesia" },
+  { label: "Ireland", value: "Ireland" },
+  { label: "Israel", value: "Israel" },
+  { label: "Jamaica", value: "Jamaica" },
+  { label: "Japan", value: "Japan" },
+  { label: "Kenya", value: "Kenya" },
+  { label: "Kyrgyzstan", value: "Kyrgyzstan" },
+  { label: "Laos", value: "Laos" },
+  { label: "Liberia", value: "Liberia" },
+  { label: "Libya", value: "Libya" },
+  { label: "Lithuania", value: "Lithuania" },
+  { label: "Luxembourg", value: "Luxembourg" },
+  { label: "Malaysia", value: "Malaysia" },
+  { label: "Malawi", value: "Malawi" },
+  { label: "Mali", value: "Mali" },
+  { label: "Malta", value: "Malta" },
+  { label: "Mexico", value: "Mexico" },
+  { label: "Moldova", value: "Moldova" },
+  { label: "Mongolia", value: "Mongolia" },
+  { label: "Montenegro", value: "Montenegro" },
+  { label: "Morocco", value: "Morocco" },
+  { label: "Myanmar", value: "Myanmar" },
+  { label: "Namibia", value: "Namibia" },
+  { label: "Nepal", value: "Nepal" },
+  { label: "Nicaragua", value: "Nicaragua" },
+  { label: "Niger", value: "Niger" },
+  { label: "Nigeria", value: "Nigeria" },
+  { label: "North Korea", value: "North Korea" },
+  { label: "North Macedonia", value: "North Macedonia" },
+  { label: "Norway", value: "Norway" },
+  { label: "Pakistan", value: "Pakistan" },
+  { label: "Panama", value: "Panama" },
+  { label: "Papua New Guinea", value: "Papua New Guinea" },
+  { label: "Paraguay", value: "Paraguay" },
+  { label: "Peru", value: "Peru" },
+  { label: "Philippines", value: "Philippines" },
+  { label: "Poland", value: "Poland" },
+  { label: "Portugal", value: "Portugal" },
+  { label: "Romania", value: "Romania" },
+  { label: "Russia", value: "Russia" },
+  { label: "Senegal", value: "Senegal" },
+  { label: "Serbia", value: "Serbia" },
+  { label: "Sierra Leone", value: "Sierra Leone" },
+  { label: "Singapore", value: "Singapore" },
+  { label: "Solomon Islands", value: "Solomon Islands" },
+  { label: "South Africa", value: "South Africa" },
+  { label: "South Korea", value: "South Korea" },
+  { label: "Spain", value: "Spain" },
+  { label: "Suriname", value: "Suriname" },
+  { label: "Sweden", value: "Sweden" },
+  { label: "Switzerland", value: "Switzerland" },
+  { label: "Taiwan", value: "Taiwan" },
+  { label: "Tajikistan", value: "Tajikistan" },
+  { label: "Tanzania", value: "Tanzania" },
+  { label: "Thailand", value: "Thailand" },
+  { label: "The Bahamas", value: "The Bahamas" },
+  { label: "The Gambia", value: "The Gambia" },
+  { label: "Togo", value: "Togo" },
+  { label: "Trinidad", value: "Trinidad" },
+  { label: "Tunisia", value: "Tunisia" },
+  { label: "Turkey", value: "Turkey" },
+  { label: "Turkmenistan", value: "Turkmenistan" },
+  { label: "Uganda", value: "Uganda" },
+  { label: "Ukraine", value: "Ukraine" },
+  { label: "United Kingdom", value: "United Kingdom" },
+  { label: "Uruguay", value: "Uruguay" },
+  { label: "USA", value: "USA" },
+  { label: "Uzbekistan", value: "Uzbekistan" },
+  { label: "Vanuatu", value: "Vanuatu" },
+  { label: "Venezuela", value: "Venezuela" },
+  { label: "Vietnam", value: "Vietnam" },
+  { label: "Wales", value: "Wales" },
+  { label: "Yemen", value: "Yemen" },
+  { label: "Zambia", value: "Zambia" },
+  { label: "Zimbabwe", value: "Zimbabwe" },
+  { label: "New Caledonia", value: "New Caledonia" },
 ];
 
 export const StarOptions = [
@@ -448,7 +816,7 @@ export const FootballPositionOptions = [
   { label: "Defensive Tackles", value: "DT" },
   { label: "Outside Linebackers", value: "OLB" },
   { label: "Inside Linebackers", value: "ILB" },
-  { label: "Cornerbacls", value: "CB" },
+  { label: "Cornerbacks", value: "CB" },
   { label: "Free Safeties", value: "FS" },
   { label: "Strong Safeties", value: "SS" },
   { label: "Kickers", value: "K" },
@@ -494,6 +862,33 @@ export const FootballArchetypeOptions = [
   { label: "Soccer Player", value: "Soccer Player" },
 ];
 
+export const BasketballPositionOptions = [
+  { label: "Point Guards", value: "PG" },
+  { label: "Shooting Guards", value: "SG" },
+  { label: "Small Forwards", value: "SF" },
+  { label: "Power Forwards", value: "PF" },
+  { label: "Centers", value: "C" },
+];
+
+export const BasketballArchetypeOptions = [
+  { label: "All-Around", value: "All-Around" },
+  { label: "Floor General", value: "Floor General" },
+  { label: "Sharp Shooter", value: "Sharp Shooter" },
+  { label: "Mid-Range Magician", value: "Mid-Range Magician" },
+  { label: "Defensive Dawg", value: "Defensive Dawg" },
+  { label: "3-and-D", value: "3-and-D" },
+  { label: "Dunk Specialist", value: "Dunk Specialist" },
+  { label: "Microwave", value: "Microwave" },
+  { label: "Two-Way Wing", value: "Two-Way Wing" },
+  { label: "Slasher", value: "Slasher" },
+  { label: "Traditional Forward", value: "Traditional Forward" },
+  { label: "Offensive Weapon", value: "Offensive Weapon" },
+  { label: "Point Forward", value: "Point Forward" },
+  { label: "Rim Protector", value: "Rim Protector" },
+  { label: "Stretch Bigs", value: "Stretch Bigs" },
+  { label: "Lob Threat", value: "Lob Threat" },
+];
+
 export const Agility = "Agility";
 export const Speed = "Speed";
 export const Carrying = "Carrying";
@@ -502,9 +897,9 @@ export const ThrowPower = "Throw Power";
 export const ThrowAccuracy = "Throw Accuracy";
 export const ShotgunRating = "Shotgun Rating";
 export const ShotgunRatingAcronyms = {
-  "Balanced": "BAL",
+  Balanced: "BAL",
   "Under Center": "UND",
-  "Shotgun": "GUN"
+  Shotgun: "GUN",
 } as const;
 export const Catching = "Catching";
 export const PassBlock = "Pass Block";
@@ -528,6 +923,7 @@ export type ButtonColor =
   | "success"
   | "danger"
   | "warning"
+  | "sort"
   | "primaryOutline"
   | "secondaryOutline"
   | "successOutline"
@@ -546,7 +942,9 @@ export const navyBlueColor = "#1f2937";
 export const MIN_SALARY = 0.75;
 export const MAX_SALARY = 14;
 export const BASE_HCK_WEEKS_IN_SEASON = 30;
+export const BASE_FBA_WEEKS_IN_SEASON = 24;
 export const BASE_HCK_SEASON = 2024;
+export const BASE_FBA_SEASON = 2020;
 
 export const CHLConferenceNames = [
   { label: "ConferenceID", value: "1", name: "AHA" },
@@ -581,18 +979,18 @@ export const FootballSeasons: { label: string; value: string }[] = [
 ];
 
 export const HockeySeasons: { label: string; value: string }[] = [
-  { label: "2025", value: "2025" },
-  { label: "2026", value: "2026" },
-  { label: "2027", value: "2027" },
-  { label: "2028", value: "2028" },
-  { label: "2029", value: "2029" },
+  { label: "2025", value: "1" },
+  { label: "2026", value: "2" },
+  { label: "2027", value: "3" },
+  { label: "2028", value: "4" },
+  { label: "2029", value: "5" },
 ];
 
 export const FootballWeeks: { label: string; value: string }[] = Array.from(
-  { length: 20 },
+  { length: 23 },
   (_, i) => ({
-    label: (i + 1).toString(),
-    value: (i + 1).toString(),
+    label: i.toString(),
+    value: i.toString(),
   })
 );
 
@@ -612,6 +1010,29 @@ export const PHLWeeks: { label: string; value: string }[] = Array.from(
     { label: `${i + 1}C`, value: `${i + 1}C` },
   ]
 ).flat();
+
+export const LeagueTypeOptions = [
+  { label: SimCFB, value: SimCFB },
+  { label: SimNFL, value: SimNFL },
+  { label: SimCBB, value: SimCBB },
+  { label: SimNBA, value: SimNBA },
+  { label: SimCHL, value: SimCHL },
+  { label: SimPHL, value: SimPHL },
+];
+
+export const NewsTypeOptions = [
+  { label: "None", value: "" },
+  { label: "Recruiting", value: "Recruiting" },
+  { label: "Commitment", value: "Commitment" },
+  { label: "Transfer Portal", value: "Transfer Portal" },
+  { label: "Trade", value: "Trade Block" },
+  { label: "Free Agency", value: "Free Agency" },
+  { label: "Game Results", value: "Upset Alert" },
+  { label: "Injury", value: "Injury Report" },
+  { label: "Coaching Job", value: "Coaching Job" },
+  { label: "Graduation", value: "Graduation" },
+  { label: "Collusion", value: "Collusion" },
+];
 
 export const MAX_TEAM_INFO_COLUMNS = 4;
 export const MAX_TEAM_PHL_INFO_COLUMNS = 5;

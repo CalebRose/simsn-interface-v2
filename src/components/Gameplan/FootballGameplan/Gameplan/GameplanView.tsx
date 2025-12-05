@@ -1,28 +1,31 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { CollegePlayer, NFLPlayer, CollegeTeamDepthChart, NFLDepthChart } from '../../../../models/footballModels';
-import { SimCFB, SimNFL } from '../../../../_constants/constants';
-import { Text } from '../../../../_design/Typography';
-import { SelectDropdown } from '../../../../_design/Select';
-import { SelectOption } from '../../../../_hooks/useSelectStyles';
-import { useSimFBAStore } from '../../../../context/SimFBAContext';
-import { useAuthStore } from '../../../../context/AuthContext';
-import { Button } from '../../../../_design/Buttons';
-import { SingleValue } from 'react-select';
-import { GameplanData } from './GameplanHelper';
-import { GameplanTab, GameplanTabs } from '../Constants/GameplanConstants';
-import { useGameplanValidation } from './useGameplanValidation';
-import OffensiveFormationsPanel from './OffensiveFormationsPanel';
-import OffensiveDistributionsPanel from './OffensiveDistributionsPanel';
-import DefensePanel from './DefensePanel';
-import SpecialTeamsPanel from './SpecialTeamsPanel';
-import GameplanManager from './GameplanManager';
-import ValidationToast from '../Common/ValidationToast';
-import { 
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import {
+  CollegePlayer,
+  NFLPlayer,
+  CollegeTeamDepthChart,
+  NFLDepthChart,
+} from "../../../../models/footballModels";
+import { SimCFB, SimNFL } from "../../../../_constants/constants";
+import { Text } from "../../../../_design/Typography";
+import { SelectOption } from "../../../../_hooks/useSelectStyles";
+import { useSimFBAStore } from "../../../../context/SimFBAContext";
+import { useAuthStore } from "../../../../context/AuthContext";
+import { SingleValue } from "react-select";
+import { GameplanData, transformGameplanForSave } from "./GameplanHelper";
+import { GameplanTab } from "../Constants/GameplanConstants";
+import { useGameplanValidation } from "./useGameplanValidation";
+import OffensiveFormationsPanel from "./OffensiveFormationsPanel";
+import OffensiveDistributionsPanel from "./OffensiveDistributionsPanel";
+import DefensePanel from "./DefensePanel";
+import SpecialTeamsPanel from "./SpecialTeamsPanel";
+import GameplanManager from "./GameplanManager";
+import ValidationToast from "../Common/ValidationToast";
+import {
   OffensiveFormations,
   OffensiveDistributions,
   Defense,
-  SpecialTeams 
-} from '../../../../_constants/constants';
+  SpecialTeams,
+} from "../../../../_constants/constants";
 
 export interface GameplanViewProps {
   gameplan: any;
@@ -57,49 +60,60 @@ const GameplanView: React.FC<GameplanViewProps> = ({
   accentColor,
   borderTextColor,
   backgroundTextColor,
-  onHasUnsavedChangesChange
+  onHasUnsavedChangesChange,
 }) => {
   const [localGameplan, setLocalGameplan] = useState<GameplanData>(gameplan);
-  const [selectedTab, setSelectedTab] = useState<GameplanTab>(OffensiveFormations);
+  const [selectedTab, setSelectedTab] =
+    useState<GameplanTab>(OffensiveFormations);
   const [isSaving, setIsSaving] = useState(false);
-  const { cfbTeamOptions, nflTeamOptions, cfbTeamMap, proTeamMap, saveCFBGameplan, saveNFLGameplan } = useSimFBAStore();
+  const {
+    cfbTeamOptions,
+    nflTeamOptions,
+    cfbTeamMap,
+    proTeamMap,
+    saveCFBGameplan,
+    saveNFLGameplan,
+  } = useSimFBAStore();
   const { currentUser } = useAuthStore();
   const validation = useGameplanValidation({
     gameplan: localGameplan,
     league,
-    canModify
+    canModify,
   });
 
   const teamOptions = league === SimCFB ? cfbTeamOptions : nflTeamOptions;
-  const handleTeamSelection = useCallback((selectedOption: SingleValue<SelectOption>) => {
-    if (!selectedOption || !onTeamChange) return;
-    const teamId = Number(selectedOption.value);
-    const teamMap = league === SimCFB ? cfbTeamMap : proTeamMap;
-    const selectedTeam = teamMap?.[teamId];
-    
-    if (selectedTeam) {
-      onTeamChange(selectedTeam);
-    }
-  }, [league, cfbTeamMap, proTeamMap, onTeamChange]);
+  const handleTeamSelection = useCallback(
+    (selectedOption: SingleValue<SelectOption>) => {
+      if (!selectedOption || !onTeamChange) return;
+      const teamId = Number(selectedOption.value);
+      const teamMap = league === SimCFB ? cfbTeamMap : proTeamMap;
+      const selectedTeam = teamMap?.[teamId];
+
+      if (selectedTeam) {
+        onTeamChange(selectedTeam);
+      }
+    },
+    [league, cfbTeamMap, proTeamMap, onTeamChange]
+  );
 
   const handleGameplanChange = useCallback((field: string, value: any) => {
-    setLocalGameplan(prev => ({
+    setLocalGameplan((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   }, []);
 
   const handleToggleChange = useCallback((field: string) => {
-    setLocalGameplan(prev => ({
+    setLocalGameplan((prev) => ({
       ...prev,
-      [field]: !prev[field as keyof GameplanData]
+      [field]: !prev[field as keyof GameplanData],
     }));
   }, []);
 
   const handleSliderChange = useCallback((field: string, value: number) => {
-    setLocalGameplan(prev => ({
+    setLocalGameplan((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   }, []);
 
@@ -108,7 +122,13 @@ const GameplanView: React.FC<GameplanViewProps> = ({
   }, []);
 
   const handleSaveGameplan = useCallback(async () => {
-    if (!validation.isValid || !canModify || isSaving || !localGameplan || !currentUser) {
+    if (
+      !validation.isValid ||
+      !canModify ||
+      isSaving ||
+      !localGameplan ||
+      !currentUser
+    ) {
       return;
     }
 
@@ -120,15 +140,14 @@ const GameplanView: React.FC<GameplanViewProps> = ({
         UpdatedGameplan: {},
         UpdatedNFLGameplan: {},
         Username: currentUser.username,
-        TeamName: team.TeamName || ''
+        TeamName: team.TeamName || "",
       };
-      
+
       if (league === SimCFB) {
-        dto.UpdatedGameplan = localGameplan;
-        console.log(dto)
+        dto.UpdatedGameplan = transformGameplanForSave(localGameplan);
         result = await saveCFBGameplan(dto, { ...gameplan, ...localGameplan });
       } else {
-        dto.UpdatedNFLGameplan = localGameplan;
+        dto.UpdatedNFLGameplan = transformGameplanForSave(localGameplan);
         result = await saveNFLGameplan(dto, { ...gameplan, ...localGameplan });
       }
 
@@ -153,18 +172,22 @@ const GameplanView: React.FC<GameplanViewProps> = ({
     saveNFLGameplan,
     onGameplanUpdate,
     currentUser,
-    team
+    team,
   ]);
 
   const handleResetGameplan = useCallback(() => {
     setLocalGameplan(gameplan);
   }, [gameplan]);
 
+  useEffect(() => {
+    setLocalGameplan(gameplan);
+  }, [gameplan]);
+
   const hasUnsavedChanges = useMemo(() => {
     if (!localGameplan || !gameplan) return false;
-    
+
     const keys = Object.keys(localGameplan) as (keyof GameplanData)[];
-    return keys.some(key => localGameplan[key] !== gameplan[key]);
+    return keys.some((key) => localGameplan[key] !== gameplan[key]);
   }, [localGameplan, gameplan]);
 
   useEffect(() => {
@@ -173,7 +196,7 @@ const GameplanView: React.FC<GameplanViewProps> = ({
     }
   }, [hasUnsavedChanges, onHasUnsavedChangesChange]);
 
-  const opponentScheme = opponentTeam?.OffensiveScheme || 'Power Run';
+  const opponentScheme = opponentTeam?.OffensiveScheme || "Power Run";
   const opponentPlayers = opponentTeam?.Players || [];
 
   const renderActivePanel = () => {
@@ -183,10 +206,10 @@ const GameplanView: React.FC<GameplanViewProps> = ({
       onToggle: handleToggleChange,
       validation,
       disabled: !canModify,
-      className: 'h-full',
+      className: "h-full",
       borderColor: borderColor,
       backgroundColor: backgroundColor,
-      accentColor: accentColor
+      accentColor: accentColor,
     };
 
     switch (selectedTab) {
@@ -212,7 +235,7 @@ const GameplanView: React.FC<GameplanViewProps> = ({
         );
       case SpecialTeams:
         return <SpecialTeamsPanel {...panelProps} />;
-      
+
       default:
         return <OffensiveFormationsPanel {...panelProps} />;
     }
@@ -241,7 +264,9 @@ const GameplanView: React.FC<GameplanViewProps> = ({
           </div>
           <div className="mt-4 text-center">
             <Text variant="small" classes="text-gray-400">
-              {hasUnsavedChanges ? 'Unsaved changes detected' : 'All changes saved'}
+              {hasUnsavedChanges
+                ? "Unsaved changes detected"
+                : "All changes saved"}
             </Text>
           </div>
         </div>

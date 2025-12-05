@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes, ReactNode } from "react";
+import React, { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 import { ButtonColor, ButtonGreen } from "../_constants/constants";
 
 // 🔑 Define Button Props Interface
@@ -25,7 +25,8 @@ export const Button: React.FC<ButtonProps> = ({
     primary: "bg-blue-500 hover:bg-blue-700 text-white",
     secondary: "bg-gray-500 hover:bg-gray-700 text-white",
     success: `${ButtonGreen} hover:bg-green-700 text-white`,
-    warning: "bg-yellow-500 hover:bg-yellow-700 text-white",
+    warning: "bg-yellow-400 hover:bg-yellow-700 text-white",
+    sort: "bg-orange-500 hover:bg-orange-700 text-white",
     danger: "bg-red-500 hover:bg-red-700 text-white",
     primaryOutline:
       "bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white border border-blue-500 hover:border-transparent",
@@ -138,20 +139,23 @@ export const PillButton: React.FC<PillButtonProps> = ({
 };
 
 // 🔑 Define ButtonGroup Props Interface
-interface ButtonGroupProps {
+interface ButtonGroupProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   classes?: string;
   direction?: string;
+  columns?: string;
 }
 
 export const ButtonGroup: React.FC<ButtonGroupProps> = ({
   children,
   classes = "",
   direction = "row",
+  ...props
 }) => {
   return (
     <div
       className={`flex pt-1 lg:pt-0 flex-wrap flex-${direction} gap-x-1 sm:gap-x-2 gap-y-2 ${classes}`}
+      {...props}
     >
       {children}
     </div>
@@ -161,10 +165,11 @@ export const ButtonGroup: React.FC<ButtonGroupProps> = ({
 export const ButtonGrid: React.FC<ButtonGroupProps> = ({
   children,
   classes = "",
+  columns,
 }) => {
   return (
     <div
-      className={`grid grid-cols-4 md:grid-cols-6 lg:grid-flow-col py-1 lg:py-0 gap-x-1 sm:gap-x-2 gap-y-2 ${classes}`}
+      className={`grid grid-flow-col py-1 lg:py-0 gap-x-1 sm:gap-x-2 gap-y-2 ${classes}`}
     >
       {children}
     </div>

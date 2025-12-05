@@ -1,5 +1,6 @@
-import { fbaUrl, hckUrl } from "../_constants/urls.js";
+import { bbaUrl, fbaUrl, hckUrl } from "../_constants/urls.js";
 import { GetCall, GetExportCall, PostCall } from "../_helper/fetchHelper.js";
+import { MatchResultsResponse } from "../models/basketballModels.js";
 import { GameResultsResponse as FootballGameResults } from "../models/footballModels.js";
 import { GameResultsResponse as HockeyGameResults } from "../models/hockeyModels.js";
 
@@ -46,6 +47,20 @@ export default class FBAScheduleService {
     return await GetCall(`${hckUrl}games/result/phl/${id}/`);
   }
 
+  async FBATimeslotExport(dto: any): Promise<void> {
+    await GetExportCall(
+      `${fbaUrl}games/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.WeekID}/${dto.Timeslot}/`,
+      "blob"
+    );
+  }
+
+  async BBATimeslotExport(dto: any): Promise<void> {
+    await GetExportCall(
+      `${bbaUrl}match/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.WeekID}/${dto.Timeslot}/`,
+      "blob"
+    );
+  }
+
   async HCKTimeslotExport(dto: any): Promise<void> {
     await GetExportCall(
       `${hckUrl}games/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.Timeslot}/`,
@@ -63,6 +78,28 @@ export default class FBAScheduleService {
   async HCKExportPHLPlayByPlay(dto: any): Promise<void> {
     await GetExportCall(
       `${hckUrl}games/result/export/phl/${dto.GameID}/`,
+      "blob"
+    );
+  }
+
+  async GetCBBGameResultData(id: number): Promise<MatchResultsResponse> {
+    return await GetCall(`${bbaUrl}match/result/cbb/${id}/`);
+  }
+
+  async GetNBAGameResultData(id: number): Promise<MatchResultsResponse> {
+    return await GetCall(`${bbaUrl}match/result/nba/${id}/`);
+  }
+
+  async FBAExportCFBPlayByPlay(dto: any): Promise<void> {
+    await GetExportCall(
+      `${fbaUrl}statistics/cfb/export/play/by/play/${dto.GameID}/`,
+      "blob"
+    );
+  }
+
+  async FBAExportNFLPlayByPlay(dto: any): Promise<void> {
+    await GetExportCall(
+      `${fbaUrl}statistics/nfl/export/play/by/play/${dto.GameID}/`,
       "blob"
     );
   }

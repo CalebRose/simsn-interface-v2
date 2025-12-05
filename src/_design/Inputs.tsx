@@ -53,12 +53,14 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   textColor?: string;
   classes?: string;
+  gameplan?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
   label,
   error,
   classes,
+  gameplan,
   ...props
 }) => {
   return (
@@ -71,7 +73,8 @@ export const Input: React.FC<InputProps> = ({
       <input
         {...props}
         className={`
-          flex-grow min-w-[5rem] px-4 py-2 border rounded-lg focus:outline-none 
+          flex-grow ${gameplan ? "max-w-[80px]" : "min-w-[5rem]"}
+          px-4 py-2 border rounded-lg focus:outline-none 
           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
           text-base
           placeholder-gray-400 bg-black text-white border-gray-500

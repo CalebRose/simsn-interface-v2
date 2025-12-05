@@ -37,7 +37,7 @@ export interface TableProps<T> {
   league?: League;
   enablePagination?: boolean;
   currentPage?: number;
-  pageSize?: number;
+  page?: string;
 }
 
 export const Table = <T,>({
@@ -50,7 +50,7 @@ export const Table = <T,>({
   league,
   enablePagination = false,
   currentPage = 0,
-  pageSize: propPageSize,
+  page = "",
 }: TableProps<T>): JSX.Element => {
   let backgroundColor = "#1f2937";
   let borderColor = team?.ColorTwo || "#4B5563";
@@ -96,20 +96,100 @@ export const Table = <T,>({
         key.includes("Y2") ||
         key.includes("Y3") ||
         key.includes("Y4") ||
-        key.includes("Y5")
+        key.includes("Y5") ||
+        key.includes("ContractLength")
       ) {
         if (a.Contract[key] > b.Contract[key]) return order === "asc" ? -1 : 1;
         if (a.Contract[key] < b.Contract[key]) return order === "asc" ? 1 : -1;
       }
 
+      if (key.includes("Grade")) {
+        const gradeOrder = [
+          "A+",
+          "A",
+          "A-",
+          "B+",
+          "B",
+          "B-",
+          "C+",
+          "C",
+          "C-",
+          "D+",
+          "D",
+          "D-",
+          "F",
+        ];
+        const ai = gradeOrder.indexOf(a[key] ?? "");
+        const bi = gradeOrder.indexOf(b[key] ?? "");
+        // if either grade isn’t found, fallback to string compare
+        if (ai === -1 || bi === -1) {
+          if (a[key] < b[key]) return order === "asc" ? -1 : 1;
+          if (a[key] > b[key]) return order === "asc" ? 1 : -1;
+          return 0;
+        }
+        if (ai < bi) return order === "asc" ? -1 : 1;
+        if (ai > bi) return order === "asc" ? 1 : -1;
+        return 0;
+      }
+      if (page === "StatsPLAYER") {
+        if (
+          key.includes("LastName") ||
+          key.includes("Team") ||
+          key.includes("TeamName") ||
+          key.includes("Position") ||
+          key.includes("Archetype") ||
+          key.includes("Year") ||
+          key.includes("Overall")
+        ) {
+          if (!a.Player || !b.Player) return 0;
+          if (a.Player[key] > b.Player[key]) return order === "asc" ? -1 : 1;
+          if (a.Player[key] < b.Player[key]) return order === "asc" ? 1 : -1;
+          return 0;
+        }
+      }
+      if (page === "StatsTEAM") {
+        if (
+          key.includes("Conference") ||
+          key.includes("Team") ||
+          key.includes("TeamName")
+        ) {
+          if (!a.Team || !b.Team) return 0;
+          if (a.Team[key] > b.Team[key]) return order === "asc" ? -1 : 1;
+          if (a.Team[key] < b.Team[key]) return order === "asc" ? 1 : -1;
+          return 0;
+        }
+      }
+      if (page === "RecruitingProfileTable") {
+        if (
+          key.includes("LastName") ||
+          key.includes("Position") ||
+          key.includes("Archetype") ||
+          key.includes("Stars") ||
+          key.includes("City") ||
+          key.includes("HighSchool") ||
+          key.includes("State") ||
+          key.includes("Country") ||
+          key.includes("OverallGrade") ||
+          key.includes("PotentialGrade") ||
+          key.includes("AffinityOne") ||
+          key.includes("AffinityTwo") ||
+          key.includes("RecruitingStatus") ||
+          key.includes("SignedStatus")
+        ) {
+          if (!a.Croot || !b.Croot) return 0;
+          if (a.Croot[key] > b.Croot[key]) return order === "asc" ? -1 : 1;
+          if (a.Croot[key] < b.Croot[key]) return order === "asc" ? 1 : -1;
+          return 0;
+        }
+      }
       if (a[key] < b[key]) return order === "asc" ? -1 : 1;
       if (a[key] > b[key]) return order === "asc" ? 1 : -1;
       return 0;
     });
     setSortedData(sorted);
-  }, [data, sortState]);
+  }, [data, sortState, page]);
 
-  const pageSize = propPageSize || 100;
+  const pageSize = 100;
 
   const pagedData = useMemo(() => {
     if (!enablePagination) return sortedData;

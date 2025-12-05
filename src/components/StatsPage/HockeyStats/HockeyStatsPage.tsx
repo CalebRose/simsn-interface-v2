@@ -4,7 +4,7 @@ import { useHockeyStats } from "./useHockeyStatsPage";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { ActionModal } from "../../Common/ActionModal";
 import { Border } from "../../../_design/Borders";
-import { navyBlueColor } from "../../../_constants/constants";
+import { Help1, navyBlueColor } from "../../../_constants/constants";
 import { StatsSidebar } from "../Common/StatsSidebar";
 import { useModal } from "../../../_hooks/useModal";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
@@ -13,6 +13,7 @@ import { ToggleSwitch } from "../../../_design/Inputs";
 import { Text } from "../../../_design/Typography";
 import { HockeyStatsTable } from "./HockeyStatsTable";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
+import { StatsPageHelpModal } from "../Common/StatsPageHelpModal";
 
 export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
   const {
@@ -71,6 +72,12 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
           player={modalPlayer}
         />
       )}
+      <StatsPageHelpModal
+        isOpen={helpModal.isModalOpen}
+        onClose={helpModal.handleCloseModal}
+        league={league}
+        modalAction={Help1}
+      />
       <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[minmax(200px,2fr)_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
         <StatsSidebar
           team={team!!}

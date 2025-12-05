@@ -1,11 +1,15 @@
 import { FC, ReactNode } from "react";
-import { League, SimCFB, SimCHL } from "../../../_constants/constants";
+import { League, SimCBB, SimCFB, SimCHL } from "../../../_constants/constants";
 import { RecruitingTeamProfile as HockeyTeamProfile } from "../../../models/hockeyModels";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { RecruitingTeamProfile as FootballTeamProfile } from "../../../models/footballModels";
 import { Table } from "../../../_design/Table";
 import { getLogo } from "../../../_utility/getLogo";
 import { Logo } from "../../../_design/Logo";
+import {
+  Team as CBBTeam,
+  TeamRecruitingProfile,
+} from "../../../models/basketballModels";
 
 const getRankingsColumns = (league: League, isMobile: boolean) => {
   let columns: { header: string; accessor: string }[] = [
@@ -28,7 +32,10 @@ interface TeamRankingsTableProps {
   colorOne?: string;
   colorTwo?: string;
   colorThree?: string;
-  teamProfiles: HockeyTeamProfile[] | FootballTeamProfile[];
+  teamProfiles:
+    | HockeyTeamProfile[]
+    | FootballTeamProfile[]
+    | TeamRecruitingProfile[];
   teamMap: any;
   team: any;
   league: League;
@@ -45,6 +52,9 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
   league,
   isMobile = false,
 }) => {
+  if (!teamMap) {
+    return <></>;
+  }
   const backgroundColor = colorOne;
   const borderColor = colorTwo;
   const secondaryBorderColor = colorThree;
@@ -57,6 +67,9 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
     backgroundColor: string
   ) => {
     const cfbTeam = teamMap[item.ID];
+    if (!cfbTeam) {
+      return <></>; // or some fallback UI
+    }
     const logo = getLogo(SimCFB, item.ID, false);
     return (
       <div
@@ -124,6 +137,9 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
     backgroundColor: string
   ) => {
     const chlTeam = teamMap[item.ID];
+    if (!chlTeam) {
+      return <></>; // or some fallback UI
+    }
     const logo = getLogo(SimCHL, item.ID, false);
     return (
       <div
@@ -184,11 +200,83 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
       </div>
     );
   };
+
+  const CBBRowRenderer = (
+    item: TeamRecruitingProfile,
+    index: number,
+    backgroundColor: string
+  ) => {
+    const cbbTeam = teamMap[item.ID] as CBBTeam;
+    if (!cbbTeam) {
+      return <></>; // or some fallback UI
+    }
+    const logo = getLogo(SimCBB, item.ID, false);
+    return (
+      <div
+        key={item.ID}
+        className="table-row border-b dark:border-gray-700 text-left"
+        style={{ backgroundColor }}
+      >
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>{index + 1}</span>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap items-center space-x-2">
+          <div className="flex items-center space-x-2">
+            <Logo url={logo} variant="xs" containerClass="p-3" />
+            <span className={`text-sm ${textColorClass}`}>{cbbTeam.Team}</span>
+          </div>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>
+            {cbbTeam.Conference}
+          </span>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>
+            {item.TotalCommitments}
+          </span>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>{item.FiveStars}</span>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>{item.FourStars}</span>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>{item.ThreeStars}</span>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>
+            {item.CompositeScore.toFixed(3)}
+          </span>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>
+            {item.ESPNScore.toFixed(3)}
+          </span>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>
+            {item.RivalsScore.toFixed(3)}
+          </span>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <span className={`text-sm ${textColorClass}`}>
+            {item.Rank247Score.toFixed(3)}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   const rowRenderer = (
     league: League
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimCHL) {
       return CHLRowRenderer;
+    }
+    if (league === SimCBB) {
+      return CBBRowRenderer;
     }
     return CFBRowRenderer;
   };

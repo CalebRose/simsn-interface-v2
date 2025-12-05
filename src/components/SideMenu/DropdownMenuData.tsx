@@ -32,7 +32,7 @@ export const useSideMenu = () => {
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
   const dropdowns: Record<string, DropdownItem[]> = {
     SimCFB: [
-        {
+      {
         label: "Team Profile",
         isRoute: true,
         route: routes.CFB_TEAMPROFILE,
@@ -106,7 +106,7 @@ export const useSideMenu = () => {
       {
         label: "Free Agency",
         isRoute: true,
-        route: "",
+        route: routes.NFL_FREE_AGENCY,
         league: SimNFL,
         toggle: () => toggleMenu(),
       },
@@ -151,14 +151,7 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
       {
-        label: "Recruiting Overview",
-        isRoute: true,
-        route: "",
-        league: SimCBB,
-        toggle: () => toggleMenu(),
-      },
-      {
-        label: "Recruiting Board",
+        label: "Recruiting",
         isRoute: true,
         route: routes.CBB_RECRUITING,
         league: SimCBB,
@@ -178,6 +171,7 @@ export const useSideMenu = () => {
         isRoute: true,
         route: routes.CBB_SCHEDULE,
         league: SimCBB,
+        click: () => navigate(routes.CBB_SCHEDULE),
         toggle: () => toggleMenu(),
       },
       {
@@ -224,6 +218,7 @@ export const useSideMenu = () => {
         isRoute: true,
         route: "",
         league: SimNBA,
+        click: () => navigate(routes.NBA_SCHEDULE),
         toggle: () => toggleMenu(),
       },
       {
@@ -277,8 +272,9 @@ export const useSideMenu = () => {
       {
         label: "Transfer Portal",
         isRoute: true,
-        route: "",
+        route: routes.CHL_TRANSFER,
         league: SimCHL,
+        click: () => navigate(routes.CHL_TRANSFER),
         toggle: () => toggleMenu(),
       },
     ],

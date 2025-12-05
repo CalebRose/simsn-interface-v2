@@ -29,14 +29,25 @@ import {
   TrophyIcon,
   ArrowDownIcon,
   ArrowRightIcon,
-  ArrowLeftIcon
+  ArrowLeftIcon,
+  BarsArrowUpIcon,
 } from "@heroicons/react/16/solid";
-import { GiDiamondTrophy, GiTrophyCup, GiRibbonMedal, GiTrophy, GiShieldBash, GiShield, GiSoccerKick, GiAmericanFootballPlayer, GiTicTacToe } from "react-icons/gi";
-import { IoIosRibbon } from "react-icons/io";
-import { FaMedal, FaChalkboardTeacher, FaSortAmountUp, FaHandshake, FaTrash } from "react-icons/fa";
-
-
-
+import {
+  GiDiamondTrophy,
+  GiTrophyCup,
+  GiRibbonMedal,
+  GiTrophy,
+  GiShieldBash,
+  GiSoccerKick,
+  GiAmericanFootballPlayer,
+  GiTicTacToe,
+} from "react-icons/gi";
+import {
+  FaMedal,
+  FaChalkboardTeacher,
+  FaSortAmountUp,
+  FaHandshake,
+} from "react-icons/fa";
 
 // 🔑 Define Props Interface for LockIcon
 interface LockIconProps {
@@ -207,6 +218,10 @@ export const BarsArrowDown: React.FC<LockIconProps> = ({
   return <BarsArrowDownIcon className={`size-5 ${textColorClass}`} />;
 };
 
+export const BarsArrowUp: React.FC<LockIconProps> = ({ textColorClass }) => {
+  return <BarsArrowUpIcon className={`size-5 ${textColorClass}`} />;
+};
+
 export const InformationCircle: React.FC<LockIconProps> = ({
   textColorClass = "text-white", // Default color is black
 }) => {
@@ -273,6 +288,10 @@ export const SortUp: React.FC<LockIconProps> = ({ textColorClass }) => {
   return <FaSortAmountUp className={`size-5 ${textColorClass}`} />;
 };
 
+export const Handshake: React.FC<LockIconProps> = ({ textColorClass }) => {
+  return <FaHandshake className={`size-5 ${textColorClass}`} />;
+};
+
 export const ShieldBash: React.FC<LockIconProps> = ({ textColorClass }) => {
   return <GiShieldBash className={`size-5 ${textColorClass}`} />;
 };
@@ -299,12 +318,4 @@ export const ArrowRight: React.FC<LockIconProps> = ({ textColorClass }) => {
 
 export const ArrowLeft: React.FC<LockIconProps> = ({ textColorClass }) => {
   return <ArrowLeftIcon className={`size-5 ${textColorClass}`} />;
-};
-
-export const Handshake: React.FC<LockIconProps> = ({ textColorClass }) => {
-  return <FaHandshake className={`size-5 ${textColorClass}`} />;
-};
-
-export const Trash: React.FC<LockIconProps> = ({ textColorClass }) => {
-  return <FaTrash className={`size-5 ${textColorClass}`} />;
 };

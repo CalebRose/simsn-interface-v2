@@ -16,6 +16,7 @@ import {
   ScholarshipOffered,
   ScholarshipRevoked,
   ScoutAttributeType,
+  SimCBB,
   SimCFB,
   SimCHL,
   ToggleScholarshipType,
@@ -38,6 +39,7 @@ import { Button, ButtonGroup } from "../../../_design/Buttons";
 import {
   Croot as BasketballCroot,
   PlayerRecruitProfile as BasketballCrootProfile,
+  TeamRecruitingProfile,
 } from "../../../models/basketballModels";
 import { SadFace, Scholarship, TrashCan } from "../../../_design/Icons";
 import {
@@ -47,6 +49,7 @@ import {
 import { getLogo } from "../../../_utility/getLogo";
 import { Logo } from "../../../_design/Logo";
 import {
+  CalculateAdjustedCFBPoints,
   isBadFit,
   isGoodFit,
   ValidateAffinity,
@@ -140,6 +143,34 @@ const getRecruitProfileColumns = (
       { header: "Pot", accessor: "PotentialGrade" },
       { header: "AF1", accessor: "AffinityOne" },
       { header: "AF2", accessor: "AffinityTwo" },
+      { header: "Status", accessor: "RecruitingStatus" },
+      { header: "Leaders", accessor: "lead" },
+      { header: "Add Points", accessor: "CurrentWeeksPoints" },
+      { header: "Mod.", accessor: "ModifiedPoints" },
+      { header: "Total", accessor: "TotalPoints" },
+      { header: "Actions", accessor: "actions" },
+    ];
+    return columns;
+  }
+  if (league === SimCBB) {
+    let columns: { header: string; accessor: string }[] = [
+      { header: "ID", accessor: "" },
+      { header: "Name", accessor: "LastName" },
+      { header: "Pos", accessor: "Position" },
+      { header: "Arch", accessor: "Archetype" },
+      { header: "⭐", accessor: "Stars" },
+      { header: "State", accessor: "State" },
+      { header: "Country", accessor: "Country" },
+      { header: "Ovr", accessor: "OverallGrade" },
+      { header: "Ins", accessor: "Finishing" },
+      { header: "Mid", accessor: "Shooting2" },
+      { header: "3pt", accessor: "Shooting3" },
+      { header: "FT", accessor: "FreeThrow" },
+      { header: "BW", accessor: "Ballwork" },
+      { header: "RB", accessor: "Rebounding" },
+      { header: "Int. D", accessor: "InteriorDefense" },
+      { header: "Per. D", accessor: "PerimeterDefense" },
+      { header: "Pot", accessor: "PotentialGrade" },
       { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "CurrentWeeksPoints" },
@@ -385,14 +416,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
       : "secondary";
 
   // 3) Compute modifier
-  let modifier = profile.RecruitingEfficiencyScore;
-  if (profile.AffinityOneEligible) {
-    modifier += 0.1;
-  }
-  if (profile.AffinityTwoEligible) {
-    modifier += 0.1;
-  }
-  let modValue = profile.CurrentWeeksPoints * modifier;
+  let modifier = CalculateAdjustedCFBPoints(profile, teamProfile, croot);
 
   // 4) Change handler
   const onPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -546,6 +570,203 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
+        <span className={`text-xs`}>{modifier.toFixed(3)}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{profile.TotalPoints.toFixed(3)}</span>
+      </TableCell>
+      <TableCell>
+        <ButtonGroup classes="flex-nowrap">
+          <Button
+            variant={toggleVariant as ButtonColor}
+            size="xs"
+            onClick={toggleScholarship}
+            disabled={profile.ScholarshipRevoked}
+          >
+            {profile.ScholarshipRevoked ? <SadFace /> : <Scholarship />}
+          </Button>
+          <Button
+            variant="danger"
+            size="xs"
+            onClick={() => openModal(RemoveRecruitType, croot)}
+          >
+            <TrashCan />
+          </Button>
+        </ButtonGroup>
+      </TableCell>
+    </div>
+  );
+};
+
+interface CBBProfileRowProps {
+  profile: BasketballCrootProfile;
+  teamProfile: TeamRecruitingProfile;
+  croot: BasketballCroot;
+  isMobile: boolean;
+  category: string;
+  ChangeInput: (id: number, name: string, points: number) => void;
+  openModal: (action: ModalAction, player: BasketballCroot) => void;
+  setAttribute: (attr: string) => void;
+  backgroundColor: string;
+}
+
+export const CBBProfileRow: FC<CBBProfileRowProps> = ({
+  profile,
+  teamProfile,
+  croot,
+  isMobile,
+  category,
+  ChangeInput,
+  openModal,
+  setAttribute,
+  backgroundColor,
+}) => {
+  // 2) Scholarship button state
+  const toggleVariant =
+    profile.Scholarship && !profile.ScholarshipRevoked
+      ? "success"
+      : !profile.Scholarship && profile.ScholarshipRevoked
+      ? "danger"
+      : "secondary";
+
+  // 3) Compute modifier
+  let modifier = 1.0;
+  if (profile.HasStateBonus) {
+    modifier += 0.25;
+  }
+  if (profile.HasRegionBonus) {
+    modifier += 0.15;
+  }
+  let modValue = profile.CurrentWeeksPoints * modifier;
+
+  // 4) Change handler
+  const onPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = Math.max(0, Math.min(20, Number(e.target.value)));
+    ChangeInput(profile.ID, e.target.name, val);
+  };
+
+  // 5) Leading teams (memo)
+  const leadingTeams = useMemo(() => {
+    if (!croot.LeadingTeams?.length) return "None";
+    if (croot.IsSigned) {
+      return <Logo url={getLogo(SimCBB, croot.TeamID, false)} variant="tiny" />;
+    }
+    const tops = croot.LeadingTeams.filter((x) => x.Odds > 0).slice(0, 4);
+    if (!tops.length) return "None";
+    return tops.map((x) => (
+      <Logo
+        key={x.TeamID}
+        url={getLogo(SimCBB, x.TeamID, false)}
+        variant="tiny"
+      />
+    ));
+  }, [croot.LeadingTeams]);
+
+  // 6) Buttons
+  const toggleScholarship = () => {
+    setAttribute(
+      profile.Scholarship && !profile.ScholarshipRevoked
+        ? ScholarshipRevoked
+        : ScholarshipOffered
+    );
+    openModal(ToggleScholarshipType, croot);
+  };
+
+  const nameColor = useMemo(() => {
+    if (croot.IsCustomCroot) {
+      return "text-blue-400";
+    }
+    return "";
+  }, [croot]);
+
+  return (
+    <div
+      className="table-row border-b dark:border-gray-700 text-left"
+      style={{ backgroundColor }}
+    >
+      <TableCell>
+        <span className={`text-xs`}>{croot.ID}</span>
+      </TableCell>
+      <TableCell>
+        <span
+          className={`text-xs cursor-pointer font-semibold ${nameColor}`}
+          onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+            (e.target as HTMLElement).style.color = "#fcd53f";
+          }}
+          onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+            (e.target as HTMLElement).style.color = "";
+          }}
+          onClick={() => openModal(RecruitInfoType, croot)}
+        >
+          {croot.FirstName} {croot.LastName}
+        </span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.Position}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.Archetype}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.Stars}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{annotateRegion(croot.State)}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{annotateCountry(croot.Country)}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.OverallGrade}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.Finishing}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.Shooting2}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.Shooting3}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.FreeThrow}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.Ballwork}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.Rebounding}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.InteriorDefense}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.PerimeterDefense}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.PotentialGrade}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{croot.SigningStatus}</span>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-row gap-x-2 text-xs">{leadingTeams}</div>
+      </TableCell>
+      <TableCell>
+        <div className="w-[1rem]">
+          <Input
+            type="number"
+            key={profile.ID}
+            label=""
+            name="CurrentWeeksPoints"
+            value={profile.CurrentWeeksPoints as number}
+            classes="text-xs"
+            disabled={profile.IsLocked}
+            onChange={onPointsChange}
+          />
+        </div>
+      </TableCell>
+      <TableCell>
         <span className={`text-xs`}>{modValue.toFixed(3)}</span>
       </TableCell>
       <TableCell>
@@ -625,6 +846,7 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
     if (league === SimCHL) {
       return (profile: HockeyCrootProfile, idx: number, bg: string) => {
         const croot = recruitMap[profile.RecruitID] as HockeyCroot;
+        profile.Croot = croot;
         return (
           <CHLProfileRow
             profile={profile}
@@ -643,6 +865,7 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
     if (league === SimCFB) {
       return (profile: FootballCrootProfile, idx: number, bg: string) => {
         const croot = recruitMap[profile.RecruitID] as FootballCroot;
+        profile.Croot = croot;
         return (
           <CFBProfileRow
             teamProfile={teamProfile}
@@ -661,7 +884,21 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
     }
     return (profile: BasketballCrootProfile, idx: number, bg: string) => {
       const croot = recruitMap[profile.RecruitID] as BasketballCroot;
-      return <></>;
+      profile.Croot = croot;
+      return (
+        <CBBProfileRow
+          teamProfile={teamProfile}
+          profile={profile}
+          key={profile.ID}
+          croot={croot}
+          isMobile={isMobile}
+          backgroundColor={bg}
+          category={category}
+          ChangeInput={ChangeInput}
+          openModal={openModal}
+          setAttribute={setAttribute}
+        />
+      );
     };
   };
   return (
@@ -670,6 +907,7 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
       data={recruitProfiles!!}
       team={team}
       rowRenderer={rowRenderer(league)}
+      page="RecruitingProfileTable"
     />
   );
 };

@@ -4,6 +4,8 @@ import { Text } from "../../../_design/Typography";
 import {
   TeamRecruitingProfile as BasketballTeamProfile,
   Team as BasketballTeam,
+  TeamRecruitingProfile,
+  Team as CBBTeam,
 } from "../../../models/basketballModels";
 import {
   CollegeTeam as FootballTeam,
@@ -51,6 +53,7 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
   let season = 0;
   let affinities: any[] = [];
   let res = 0;
+  let region = "";
   switch (league) {
     case SimCHL:
       const tp = TeamProfile as HockeyTeamProfile;
@@ -68,6 +71,10 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
       season = t.SeasonMomentum;
       break;
     case SimCBB:
+      const cbbtp = TeamProfile as TeamRecruitingProfile;
+      const cbbt = Team as CBBTeam;
+      teamLabel = cbbt.Team;
+      region = cbbtp.Region;
       break;
     case SimCFB:
       const cfbtp = TeamProfile as FootballTeamProfile;
@@ -100,6 +107,7 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
           />
           <Text variant="xs">Recruiter: {TeamProfile?.Recruiter}</Text>
           <Text variant="xs">State: {Team?.State}</Text>
+          {league === SimCBB && <Text variant="xs">Region: {region}</Text>}
           <Text variant="xs">
             Scholarships: {TeamProfile?.ScholarshipsAvailable}
           </Text>

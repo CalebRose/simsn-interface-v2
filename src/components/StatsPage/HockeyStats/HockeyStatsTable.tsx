@@ -95,8 +95,12 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
         style={{ backgroundColor }}
       >
         <TableCell>
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center justify-center">
             <Logo variant="small" url={logo} containerClass="mr-2" />
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="flex flex-row items-start">
             <Text variant="xs">{team.TeamName}</Text>
           </div>
         </TableCell>
@@ -149,9 +153,10 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
     index: number,
     backgroundColor: string
   ) => {
-    const team = teamMap[item.TeamID] as CollegeTeam;
-    if (!team) return <></>;
-    const logo = getLogo(league, team.ID, false);
+    const collegeTeam = teamMap[item.TeamID] as CollegeTeam;
+    if (!collegeTeam) return <></>;
+    item.Team = collegeTeam;
+    const logo = getLogo(league, collegeTeam.ID, false);
     const values = GetHockeyTeamStatsValues(item, statsView);
 
     return (
@@ -161,8 +166,12 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
         style={{ backgroundColor }}
       >
         <TableCell>
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center justify-center">
             <Logo variant="small" url={logo} containerClass="mr-2" />
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="flex flex-row items-start">
             <Text variant="xs">{team.TeamName}</Text>
           </div>
         </TableCell>
@@ -195,8 +204,12 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
         style={{ backgroundColor }}
       >
         <TableCell>
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center  justify-center">
             <Logo variant="small" url={logo} containerClass="mr-2" />
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="flex flex-row items-start">
             <Text variant="xs">{team.TeamName}</Text>
           </div>
         </TableCell>
@@ -251,6 +264,7 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
   ) => {
     const team = teamMap[item.TeamID] as ProfessionalTeam;
     if (!team) return <></>;
+    item.Team = team;
     const logo = getLogo(league, team.ID, false);
     const values = GetHockeyTeamStatsValues(item, statsView);
     return (
@@ -260,8 +274,12 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
         style={{ backgroundColor }}
       >
         <TableCell>
-          <div className="flex flex-row items-center">
+          <div className="flex flex-row items-center  justify-center">
             <Logo variant="small" url={logo} containerClass="mr-2" />
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="flex flex-row items-start">
             <Text variant="xs">{team.TeamName}</Text>
           </div>
         </TableCell>
@@ -299,6 +317,7 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
       team={team}
       currentPage={currentPage}
       enablePagination
+      page={`Stats${statsType}`}
     />
   );
 };

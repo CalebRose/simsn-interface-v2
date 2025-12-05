@@ -1281,12 +1281,14 @@ export const OptionPlayLabels = [
 ];
 
 export const PassPlayLabels = [
-  'Quick',
   'Short',
+  'Medium',
   'Long',
+  'Deep',
   'Screen',
-  'PAShort',
-  'PALong'
+  'PAMedium',
+  'PALong',
+  'PADeep'
 ];
 
 export const RPOLabels = [
@@ -1295,7 +1297,8 @@ export const RPOLabels = [
   'ChoicePower',
   'PeekOutside',
   'PeekInside',
-  'PeekPower'
+  'PeekPower',
+  'LeftVsRight'
 ];
 
 export const TargetingLabels = [
@@ -1313,7 +1316,7 @@ export const TargetingLabels = [
 ];
 
 export const RunnerDistributionLabels = ['QB', 'RB1', 'RB2', 'RB3', 'FB1', 'FB2', 'WR'];
-export const TargetDepthOptions = ['Quick', 'Short', 'Long', 'None'];
+export const TargetDepthOptions = ['Short', 'Medium', 'Long', 'Deep', 'None'];
 export const CoverageOptions = ['Man', 'Zone'];
 
 export const BlitzAggressivenessOptions = [
@@ -1333,12 +1336,14 @@ export const FocusPlayOptions = [
   'Triple Option',
   'RPO Choice',
   'RPO Peek',
-  'Quick Pass',
   'Short Pass',
+  'Medium Pass',
   'Long Pass',
+  'Deep Pass',
   'Screen Pass',
-  'Play Action Short',
-  'Play Action Long'
+  'Play Action Medium',
+  'Play Action Long',
+  'Play Action Deep'
 ];
 
 export const SchemeDropdownClass = 'btn btn-outline-secondary dropdown-toggle w-full';

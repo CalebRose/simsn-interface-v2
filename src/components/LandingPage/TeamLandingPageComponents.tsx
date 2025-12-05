@@ -59,6 +59,17 @@ export const GamesBar = ({
 }: GamesBarProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isHockey = league === SimCHL || league === SimPHL ? true : false;
+  const { cfbStandingsMap, proStandingsMap, allProStandings } =
+    useSimFBAStore();
+  const proStandingsLookup = useMemo(() => {
+    if (proStandingsMap && Object.keys(proStandingsMap).length > 0) {
+      return proStandingsMap as Record<number, any>;
+    }
+    if (allProStandings && allProStandings.length > 0) {
+      return Object.fromEntries(allProStandings.map((s: any) => [s.TeamID, s]));
+    }
+    return {} as Record<number, any>;
+  }, [proStandingsMap, allProStandings]);
 
   useEffect(() => {
     if (scrollContainerRef.current && games.length > 0) {
@@ -108,11 +119,28 @@ export const GamesBar = ({
       : `at ${opponentAbbr}`;
     let resultColor = "";
 
+    // Opponent record (football only)
+    let opponentRecord = "";
+    if (league === SimCFB || league === SimNFL) {
+      const opponentID = isHomeGame ? item.AwayTeamID : item.HomeTeamID;
+      const standings =
+        league === SimCFB
+          ? cfbStandingsMap && (cfbStandingsMap as any)[opponentID]
+          : proStandingsLookup[opponentID];
+      if (standings) {
+        const wins = standings.TotalWins ?? 0;
+        const losses = standings.TotalLosses ?? 0;
+        const ties = standings.TotalTies ?? 0; // NFL only
+        opponentRecord =
+          ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+      }
+    }
+
     let revealResult = false;
     if (league === SimCHL || league === SimPHL) {
       revealResult = RevealHCKResults(item, ts, false);
     } else if (league === SimCBB || league === SimNBA) {
-      revealResult = RevealBBAResults(item, ts, GetBKCurrentWeek(league, ts));
+      revealResult = RevealBBAResults(item, ts, false);
     } else {
       revealResult = RevealResults(item, ts, league, false);
     }
@@ -148,9 +176,16 @@ export const GamesBar = ({
               url={opponentLogoUrl}
             />
             <Text variant="xs">{gameScore}</Text>
-            <Text variant="xs" classes="">
-              {gameDetails}
-            </Text>
+            <div className="flex items-center justify-center gap-1">
+              <Text variant="xs" classes="">
+                {gameDetails}
+              </Text>
+              {opponentRecord && (
+                <Text variant="xs" classes="opacity-70">
+                  ({opponentRecord})
+                </Text>
+              )}
+            </div>
           </div>
           <Text variant="xs" classes="pt-1 border-t">
             Week {item.Week}
@@ -213,7 +248,7 @@ interface TeamStandingsProps {
   team: any;
   league: League;
   currentUser: any;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
   backgroundColor: string;
   headerColor: string;
   borderColor: string;
@@ -226,7 +261,7 @@ export const TeamStandings = ({
   team,
   league,
   currentUser,
-  isLoadingTwo,
+  isLoading: isLoading,
   backgroundColor,
   headerColor,
   borderColor,
@@ -244,7 +279,7 @@ export const TeamStandings = ({
       darkerBackgroundColor={darkerBackgroundColor}
       textColorClass={textColorClass}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -280,7 +315,7 @@ interface TeamMatchUpProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
   playerMap: any;
 }
 
@@ -299,21 +334,28 @@ export const TeamMatchUp = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
   playerMap,
 }: TeamMatchUpProps) => {
   const [selectedGame, setSelectedGame] = useState<any>(null);
+  const { cfbStandingsMap, proStandingsMap, allProStandings } =
+    useSimFBAStore();
+  const proStandingsLookup = useMemo(() => {
+    if (proStandingsMap && Object.keys(proStandingsMap).length > 0) {
+      return proStandingsMap as Record<number, any>;
+    }
+    if (allProStandings && allProStandings.length > 0) {
+      return Object.fromEntries(allProStandings.map((s: any) => [s.TeamID, s]));
+    }
+    return {} as Record<number, any>;
+  }, [proStandingsMap, allProStandings]);
 
   let revealResult = false;
   if (matchUp.length > 0) {
     if (league === SimCFB || league === SimNFL) {
       revealResult = RevealResults(matchUp[0], ts, league, false);
     } else if (league === SimCBB || league === SimNBA) {
-      revealResult = RevealBBAResults(
-        matchUp[0],
-        ts,
-        GetBKCurrentWeek(league, ts)
-      );
+      revealResult = RevealBBAResults(matchUp[0], ts, false);
     } else if (league === SimCHL || league === SimPHL) {
       revealResult = RevealHCKResults(matchUp[0], ts, false);
     }
@@ -326,6 +368,8 @@ export const TeamMatchUp = ({
   const navigate = useNavigate();
   let homeID = 0;
   let awayID = 0;
+  let opponentRecord = "";
+  let userRecord = "";
   if (matchUp?.length > 0) {
     const userGame = matchUp[0];
     isHomeGame = matchUp[0].HomeTeamID === team.ID;
@@ -335,6 +379,33 @@ export const TeamMatchUp = ({
     homeID = isHomeGame ? userGame.HomeTeamID : userGame.AwayTeamID;
     awayID = isHomeGame ? userGame.AwayTeamID : userGame.HomeTeamID;
     gameLocation = isHomeGame ? "VS" : "AT";
+
+    if (league === SimCFB || league === SimNFL) {
+      const opponentID = isHomeGame ? userGame.AwayTeamID : userGame.HomeTeamID;
+      const standings =
+        league === SimCFB
+          ? cfbStandingsMap && (cfbStandingsMap as any)[opponentID]
+          : proStandingsLookup[opponentID];
+      if (standings) {
+        const wins = standings.TotalWins ?? 0;
+        const losses = standings.TotalLosses ?? 0;
+        const ties = standings.TotalTies ?? 0;
+        opponentRecord =
+          ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+      }
+
+      const myStandings =
+        league === SimCFB
+          ? cfbStandingsMap && (cfbStandingsMap as any)[team.ID]
+          : proStandingsLookup[team.ID];
+      if (myStandings) {
+        const wins = myStandings.TotalWins ?? 0;
+        const losses = myStandings.TotalLosses ?? 0;
+        const ties = myStandings.TotalTies ?? 0;
+        userRecord =
+          ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+      }
+    }
 
     if (revealResult) {
       const userTeamScore = isHomeGame
@@ -394,7 +465,7 @@ export const TeamMatchUp = ({
         title={`${selectedGame?.HomeTeam} vs ${selectedGame?.AwayTeam}`}
         playerMap={playerMap}
       />
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center pb-2">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -410,12 +481,19 @@ export const TeamMatchUp = ({
                   containerClass="max-w-24 w-24 p-4"
                   url={homeLogo}
                 />
-                <ClickableTeamLabel
-                  label={homeLabel}
-                  teamID={homeID}
-                  textColorClass={textColorClass}
-                  league={league}
-                />
+                <div className="flex items-center">
+                  <ClickableTeamLabel
+                    label={homeLabel}
+                    teamID={homeID}
+                    textColorClass={textColorClass}
+                    league={league}
+                  />
+                  {userRecord && (
+                    <Text variant="small" classes="opacity-70">
+                      ({userRecord})
+                    </Text>
+                  )}
+                </div>
                 <Text variant="xs" classes="opacity-70">
                   {`HC ${coaches[0]}`}
                 </Text>
@@ -433,12 +511,19 @@ export const TeamMatchUp = ({
                   containerClass="max-w-24 w-24 p-4"
                   url={awayLogo}
                 />
-                <ClickableTeamLabel
-                  label={awayLabel}
-                  teamID={awayID}
-                  textColorClass={textColorClass}
-                  league={league}
-                />
+                <div className="flex items-center">
+                  <ClickableTeamLabel
+                    label={awayLabel}
+                    teamID={awayID}
+                    textColorClass={textColorClass}
+                    league={league}
+                  />
+                  {opponentRecord && (
+                    <Text variant="small" classes="opacity-70">
+                      ({opponentRecord})
+                    </Text>
+                  )}
+                </div>
                 <Text variant="xs" classes="opacity-70">
                   {`HC ${coaches[1]}`}
                 </Text>
@@ -521,7 +606,7 @@ interface TeamOverviewProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamOverview = ({
@@ -534,7 +619,7 @@ export const TeamOverview = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamOverviewProps) => {
   return (
     <SectionCards
@@ -547,7 +632,7 @@ export const TeamOverview = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -670,7 +755,7 @@ interface TeamMailboxProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamMailbox = ({
@@ -681,7 +766,7 @@ export const TeamMailbox = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamMailboxProps) => {
   return (
     <SectionCards
@@ -694,7 +779,7 @@ export const TeamMailbox = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -731,7 +816,7 @@ interface TeamStatsProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamStats = ({
@@ -745,7 +830,7 @@ export const TeamStats = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamStatsProps) => {
   const { boxOne, boxTwo, boxThree } = getLandingBoxStats(league, teamStats);
   return (
@@ -759,7 +844,7 @@ export const TeamStats = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center min-h-[10em]">
           <Text variant="small" classes={`${textColorClass} h-full`}>
             Loading...
@@ -909,7 +994,7 @@ interface TeamNewsProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamNews = ({
@@ -920,7 +1005,7 @@ export const TeamNews = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamNewsProps) => {
   return (
     <SectionCards
@@ -933,7 +1018,7 @@ export const TeamNews = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -1014,6 +1099,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.CFB_TRANSFER)}>
                 Portal
               </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
+              </Button>
             </>
           )}
           {league === SimNFL && (
@@ -1033,17 +1121,20 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.NFL_STATS)}>
                 Stats
               </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
+              </Button>
               <Button size="xs" onClick={() => navigate(routes.NFL_DRAFT_ROOM)}>
                 Draft
               </Button>
-              <Button size="xs" onClick={draftListModal.handleOpenModal}>
+              {/* <Button size="xs" onClick={draftListModal.handleOpenModal}>
                 Draft List
               </Button>
               <DraftListModal
                 isOpen={draftListModal.isModalOpen}
                 onClose={draftListModal.handleCloseModal}
                 title="Draft List"
-              />
+              /> */}
             </>
           )}
           {league === SimCBB && (
@@ -1062,6 +1153,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               </Button>
               <Button size="xs" onClick={() => navigate(routes.CBB_TRANSFER)}>
                 Portal
+              </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
               </Button>
             </>
           )}
@@ -1085,6 +1179,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.NBA_DRAFT_ROOM)}>
                 Draft
               </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
+              </Button>
             </>
           )}
           {league === SimCHL && (
@@ -1103,6 +1200,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               </Button>
               <Button size="xs" onClick={() => navigate(routes.CHL_TRANSFER)}>
                 Portal
+              </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
               </Button>
             </>
           )}
@@ -1126,6 +1226,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.PHL_DRAFT_ROOM)}>
                 Draft
               </Button>
+              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
+                News
+              </Button>
             </>
           )}
         </ButtonGroup>
@@ -1143,7 +1246,7 @@ interface TeamInjuriesProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamInjuries = ({
@@ -1154,7 +1257,7 @@ export const TeamInjuries = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamInjuriesProps) => {
   return (
     <SectionCards
@@ -1167,7 +1270,7 @@ export const TeamInjuries = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center pb-2">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...

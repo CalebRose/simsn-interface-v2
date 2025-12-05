@@ -56,6 +56,8 @@ import {
   ProGameplan,
   CollegePollOfficial,
   CollegePollSubmission,
+  TransferPortalProfile,
+  CollegePromise,
 } from "../models/hockeyModels";
 import { TeamService } from "../_services/teamService";
 import {
@@ -79,6 +81,7 @@ import { GenerateNumberFromRange } from "../_helper/utilHelper";
 import { TradeService } from "../_services/tradeService";
 import { CollegePollService } from "../_services/collegePollService";
 import FBAScheduleService from "../_services/scheduleService";
+import { TransferPortalService } from "../_services/transferPortalService";
 
 // ✅ Define the context props
 interface SimHCKContextProps {
@@ -94,6 +97,7 @@ interface SimHCKContextProps {
   currentCHLStandings: CollegeStandings[];
   chlStandingsMap: Record<number, CollegeStandings>;
   chlRosterMap: Record<number, CollegePlayer[]>;
+  chlPlayerMap: Record<number, CollegePlayer>;
   chlGameplan: CollegeGameplan;
   chlLineups: CollegeLineup[];
   chlShootoutLineup: CollegeShootoutLineup;
@@ -138,6 +142,17 @@ interface SimHCKContextProps {
   topPHLSaves: ProfessionalPlayer[];
   tradeProposalsMap: Record<number, TradeProposal[]>;
   tradePreferencesMap: Record<number, TradePreferences>;
+  transferPortalProfiles: TransferPortalProfile[];
+  teamTransferPortalProfiles: TransferPortalProfile[];
+  collegePromises: CollegePromise[];
+  collegePromiseMap: Record<number, CollegePromise>;
+  transferProfileMapByPlayerID: Record<number, TransferPortalProfile[]>;
+  addTransferPlayerToBoard: (dto: any) => Promise<void>;
+  removeTransferPlayerFromBoard: (dto: any) => Promise<void>;
+  saveTransferPortalBoard: () => Promise<void>;
+  createPromise: (dto: any) => Promise<void>;
+  cancelPromise: (dto: any) => Promise<void>;
+  exportTransferPortalPlayers: () => Promise<void>;
   updatePointsOnRecruit: (id: number, name: string, points: number) => void;
   removeUserfromCHLTeamCall: (teamID: number) => Promise<void>;
   removeUserfromPHLTeamCall: (request: ProTeamRequest) => Promise<void>;
@@ -147,7 +162,6 @@ interface SimHCKContextProps {
   cutPHLPlayer: (playerID: number, teamID: number) => Promise<void>;
   affiliatePlayer: (playerID: number, teamID: number) => Promise<void>;
   redshirtPlayer: (playerID: number, teamID: number) => Promise<void>;
-  promisePlayer: (playerID: number, teamID: number) => Promise<void>;
   updateCHLRosterMap: (newMap: Record<number, CollegePlayer[]>) => void;
   updateProRosterMap: (newMap: Record<number, ProfessionalPlayer[]>) => void;
   saveCHLGameplan: (dto: any) => Promise<void>;
@@ -158,10 +172,18 @@ interface SimHCKContextProps {
   toggleScholarship: (dto: any) => Promise<void>;
   removeRecruitFromBoard: (dto: any) => Promise<void>;
   scoutCrootAttribute: (dto: any) => Promise<void>;
+  updatePointsOnPortalPlayer: (
+    id: number,
+    name: string,
+    points: number
+  ) => void;
+  scoutPortalAttribute: (dto: any) => Promise<void>;
   SaveFreeAgencyOffer: (dto: any) => Promise<void>;
   CancelFreeAgencyOffer: (dto: any) => Promise<void>;
   SaveWaiverWireOffer: (dto: any) => Promise<void>;
   CancelWaiverWireOffer: (dto: any) => Promise<void>;
+  SaveExtensionOffer: (dto: any) => Promise<void>;
+  CancelExtensionOffer: (dto: any) => Promise<void>;
   SaveRecruitingBoard: () => Promise<void>;
   SaveAIRecruitingSettings: (dto: UpdateRecruitingBoardDTO) => Promise<void>;
   SearchHockeyStats: (dto: any) => Promise<void>;
@@ -181,6 +203,7 @@ interface SimHCKContextProps {
     teamID: number
   ) => Promise<void>;
   submitCollegePoll: (dto: any) => Promise<void>;
+  getBootstrapNewsData: () => Promise<void>;
 
   playerFaces: {
     [key: number]: FaceDataResponse;
@@ -199,6 +222,11 @@ interface SimHCKContextProps {
   phlDraftPickMap: Record<number, DraftPick[]>;
   individualDraftPickMap: Record<number, DraftPick>;
   proPlayerMap: Record<number, ProfessionalPlayer>;
+  collegeGamesMapBySeason: Record<number, CollegeGame[]>;
+  proGamesMapBySeason: Record<number, ProfessionalGame[]>;
+  collegePollsBySeason: Record<number, CollegePollOfficial[]>;
+  collegeStandingsMapBySeason: Record<number, CollegeStandings[]>;
+  proStandingsMapBySeason: Record<number, ProfessionalStandings[]>;
 }
 
 // ✅ Default context value
@@ -215,6 +243,7 @@ const defaultContext: SimHCKContextProps = {
   currentCHLStandings: [],
   chlStandingsMap: {},
   chlRosterMap: {},
+  chlPlayerMap: {},
   chlGameplan: {} as CollegeGameplan,
   chlLineups: [],
   chlShootoutLineup: {} as CollegeShootoutLineup,
@@ -255,6 +284,17 @@ const defaultContext: SimHCKContextProps = {
   phlDraftPickMap: {},
   collegePolls: [],
   collegePollSubmission: {} as CollegePollSubmission,
+  transferPortalProfiles: [],
+  collegePromises: [],
+  collegePromiseMap: {},
+  teamTransferPortalProfiles: [],
+  transferProfileMapByPlayerID: {},
+  addTransferPlayerToBoard: async () => {},
+  removeTransferPlayerFromBoard: async () => {},
+  saveTransferPortalBoard: async () => {},
+  createPromise: async () => {},
+  cancelPromise: async () => {},
+  exportTransferPortalPlayers: async () => {},
   removeUserfromCHLTeamCall: async () => {},
   removeUserfromPHLTeamCall: async () => {},
   addUserToCHLTeam: () => {},
@@ -263,7 +303,6 @@ const defaultContext: SimHCKContextProps = {
   cutPHLPlayer: async () => {},
   affiliatePlayer: async () => {},
   redshirtPlayer: async () => {},
-  promisePlayer: async () => {},
   updateCHLRosterMap: () => {},
   updateProRosterMap: () => {},
   saveCHLGameplan: async () => {},
@@ -281,6 +320,8 @@ const defaultContext: SimHCKContextProps = {
   CancelFreeAgencyOffer: async () => {},
   SaveWaiverWireOffer: async () => {},
   CancelWaiverWireOffer: async () => {},
+  SaveExtensionOffer: async () => {},
+  CancelExtensionOffer: async () => {},
   SearchHockeyStats: async () => {},
   ExportHockeyStats: async () => {},
   ExportHCKRoster: async () => {},
@@ -295,6 +336,9 @@ const defaultContext: SimHCKContextProps = {
   syncAcceptedTrade: async () => {},
   vetoTrade: async () => {},
   submitCollegePoll: async () => {},
+  getBootstrapNewsData: async () => {},
+  updatePointsOnPortalPlayer: () => {},
+  scoutPortalAttribute: async () => {},
   topCHLGoals: [],
   topCHLAssists: [],
   topCHLSaves: [],
@@ -314,6 +358,11 @@ const defaultContext: SimHCKContextProps = {
   phlTeamSeasonStatsMap: {},
   individualDraftPickMap: {},
   proPlayerMap: {},
+  collegeGamesMapBySeason: {},
+  proGamesMapBySeason: {},
+  collegePollsBySeason: {},
+  collegeStandingsMapBySeason: {},
+  proStandingsMapBySeason: {},
 };
 
 // ✅ Create the context
@@ -373,10 +422,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   >([]);
   const [collegeNews, setCollegeNews] = useState<NewsLog[]>([]);
   const [allCollegeGames, setAllCollegeGames] = useState<CollegeGame[]>([]);
-  const [currentCollegeSeasonGames, setCurrentCollegeSeasonGames] = useState<
-    CollegeGame[]
-  >([]);
-  const [collegeTeamsGames, setCollegeTeamsGames] = useState<CollegeGame[]>([]);
   const [collegeNotifications, setCollegeNotifications] = useState<
     Notification[]
   >([]);
@@ -410,10 +455,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   >([]);
   const [proNews, setProNews] = useState<NewsLog[]>([]);
   const [allProGames, setAllProGames] = useState<ProfessionalGame[]>([]);
-  const [currentProSeasonGames, setCurrentProSeasonGames] = useState<
-    ProfessionalGame[]
-  >([]);
-  const [proTeamsGames, setProTeamsGames] = useState<ProfessionalGame[]>([]);
   const [proNotifications, setProNotifications] = useState<Notification[]>([]);
   const [playerFaces, setPlayerFaces] = useState<{
     [key: number]: FaceDataResponse;
@@ -426,6 +467,10 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     number,
     ExtensionOffer
   > | null>({});
+  const [transferPortalProfiles, setTransferPortalProfiles] = useState<
+    TransferPortalProfile[]
+  >([]);
+  const [collegePromises, setCollegePromises] = useState<CollegePromise[]>([]);
 
   /*
   collegePolls: [],
@@ -524,11 +569,75 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     return playerMap;
   }, [proRosterMap, phlTeams]);
 
+  const teamTransferPortalProfiles = useMemo(() => {
+    if (!chlTeam) return [];
+    return transferPortalProfiles.filter(
+      (profile) => profile.ProfileID === chlTeam.ID
+    );
+  }, [chlTeam, transferPortalProfiles]);
+
+  const chlPlayerMap = useMemo(() => {
+    const playerMap: Record<number, CollegePlayer> = {};
+    if (chlRosterMap && chlTeams) {
+      for (let i = 0; i < chlTeams.length; i++) {
+        const team = chlTeams[i];
+        const roster = chlRosterMap[team.ID];
+        if (roster) {
+          for (let j = 0; j < roster.length; j++) {
+            const p = roster[j];
+            playerMap[p.ID] = p;
+          }
+        }
+      }
+    }
+    if (portalPlayers) {
+      for (let i = 0; i < portalPlayers.length; i++) {
+        const p = portalPlayers[i];
+        playerMap[p.ID] = p;
+      }
+    }
+    return playerMap;
+  }, [chlRosterMap, chlTeams, portalPlayers]);
+
+  const transferProfileMapByPlayerID = useMemo(() => {
+    const transferProfileMap: Record<number, TransferPortalProfile[]> = {};
+    for (let i = 0; i < portalPlayers.length; i++) {
+      const p = portalPlayers[i];
+      const profiles = transferPortalProfiles.filter(
+        (profile) => profile.CollegePlayerID === p.ID
+      );
+      transferProfileMap[p.ID] = profiles;
+    }
+    return transferProfileMap;
+  }, [portalPlayers, transferPortalProfiles]);
+
+  const teamCollegePromises = useMemo(() => {
+    if (!chlTeam || !collegePromises) return [];
+    return collegePromises.filter((promise) => promise.TeamID === chlTeam.ID);
+  }, [chlTeam, collegePromises]);
+
+  const collegePromiseMap = useMemo(() => {
+    const map: Record<number, CollegePromise> = {};
+    for (let i = 0; i < teamCollegePromises.length; i++) {
+      const promise = teamCollegePromises[i];
+      map[promise.CollegePlayerID] = promise;
+    }
+    return map;
+  }, [teamCollegePromises]);
+
   useEffect(() => {
     getBootstrapTeamData();
   }, []);
 
   const getBootstrapTeamData = async () => {
+    let chlID = 0;
+    let phlID = 0;
+    if (currentUser && currentUser.CHLTeamID) {
+      chlID = currentUser.CHLTeamID;
+    }
+    if (currentUser && currentUser.PHLTeamID) {
+      phlID = currentUser.PHLTeamID;
+    }
     const res = await BootstrapService.GetHCKBootstrapTeamData();
     setCHLTeams(res.AllCollegeTeams);
     setProTeams(res.AllProTeams);
@@ -585,29 +694,144 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
   }, [currentUser]);
 
-  const currentCHLStandings = useMemo(() => {
-    return allCHLStandings.filter(
-      (x) => x.SeasonID === hck_Timestamp?.SeasonID
-    );
+  const collegeStandingsMapBySeason = useMemo(() => {
+    const map: Record<number, CollegeStandings[]> = {};
+    for (let i = 0; i < allCHLStandings.length; i++) {
+      const standing = allCHLStandings[i];
+      if (!map[standing.SeasonID]) {
+        map[standing.SeasonID] = [standing];
+      } else {
+        map[standing.SeasonID].push(standing);
+      }
+    }
+    return map;
   }, [allCHLStandings, hck_Timestamp?.SeasonID]);
 
+  const currentCHLStandings = useMemo(() => {
+    return collegeStandingsMapBySeason[hck_Timestamp?.SeasonID || 0];
+  }, [collegeStandingsMapBySeason, hck_Timestamp?.SeasonID]);
+
   const chlStandingsMap = useMemo(() => {
-    return Object.fromEntries(
-      currentCHLStandings.map((standing) => [standing.TeamID, standing])
-    );
+    const map: Record<number, CollegeStandings> = {};
+    if (!currentCHLStandings) return map;
+    for (let i = 0; i < currentCHLStandings.length; i++) {
+      const standing = currentCHLStandings[i];
+      map[standing.TeamID] = standing;
+    }
+    return map;
   }, [currentCHLStandings, hck_Timestamp?.SeasonID]);
 
-  const currentProStandings = useMemo(() => {
-    return allCHLStandings.filter(
-      (x) => x.SeasonID === hck_Timestamp?.SeasonID
-    );
+  const proStandingsMapBySeason = useMemo(() => {
+    const map: Record<number, ProfessionalStandings[]> = {};
+    for (let i = 0; i < allProStandings.length; i++) {
+      const standing = allProStandings[i];
+      if (!map[standing.SeasonID]) {
+        map[standing.SeasonID] = [standing];
+      } else {
+        map[standing.SeasonID].push(standing);
+      }
+    }
+    return map;
   }, [allProStandings, hck_Timestamp?.SeasonID]);
 
+  const currentProStandings = useMemo(() => {
+    return proStandingsMapBySeason[hck_Timestamp?.SeasonID || 0];
+  }, [proStandingsMapBySeason, hck_Timestamp?.SeasonID]);
+
   const proStandingsMap = useMemo(() => {
-    return Object.fromEntries(
-      currentProStandings.map((standing) => [standing.TeamID, standing])
-    );
+    const map: Record<number, ProfessionalStandings> = {};
+    if (!currentProStandings) return map;
+    for (let i = 0; i < currentProStandings.length; i++) {
+      const standing = currentProStandings[i];
+      map[standing.TeamID] = standing;
+    }
+    return map;
   }, [currentProStandings, hck_Timestamp?.SeasonID]);
+
+  const collegeGamesMapBySeason = useMemo(() => {
+    const map: Record<number, CollegeGame[]> = {};
+    for (let i = 0; i < allCollegeGames.length; i++) {
+      const game = allCollegeGames[i];
+      if (!map[game.SeasonID]) {
+        map[game.SeasonID] = [game];
+      } else {
+        map[game.SeasonID].push(game);
+      }
+    }
+    return map;
+  }, [allCollegeGames]);
+
+  const currentCollegeSeasonGames = useMemo(() => {
+    return collegeGamesMapBySeason[hck_Timestamp?.SeasonID || 0] || [];
+  }, [collegeGamesMapBySeason, hck_Timestamp?.SeasonID]);
+
+  const collegeTeamsGames = useMemo(() => {
+    if (!chlTeam) return [];
+    if (!currentCollegeSeasonGames) return [];
+    return currentCollegeSeasonGames.filter(
+      (x) => x.HomeTeamID === chlTeam.ID || x.AwayTeamID === chlTeam.ID
+    );
+  }, [currentCollegeSeasonGames, chlTeam]);
+
+  const proGamesMapBySeason = useMemo(() => {
+    const map: Record<number, ProfessionalGame[]> = {};
+    for (let i = 0; i < allProGames.length; i++) {
+      const game = allProGames[i];
+      if (!map[game.SeasonID]) {
+        map[game.SeasonID] = [game];
+      } else {
+        map[game.SeasonID].push(game);
+      }
+    }
+    return map;
+  }, [allProGames]);
+
+  const currentProSeasonGames = useMemo(() => {
+    return proGamesMapBySeason[hck_Timestamp?.SeasonID || 0] || [];
+  }, [proGamesMapBySeason, hck_Timestamp?.SeasonID]);
+
+  const proTeamsGames = useMemo(() => {
+    if (!phlTeam) return [];
+    return currentProSeasonGames.filter(
+      (x) => x.HomeTeamID === phlTeam.ID || x.AwayTeamID === phlTeam.ID
+    );
+  }, [currentProSeasonGames, phlTeam]);
+
+  const collegePollsBySeason = useMemo(() => {
+    const map: Record<number, CollegePollOfficial[]> = {};
+    for (let i = 0; i < collegePolls.length; i++) {
+      const poll = collegePolls[i];
+      if (!map[poll.SeasonID]) {
+        map[poll.SeasonID] = [poll];
+      } else {
+        map[poll.SeasonID].push(poll);
+      }
+    }
+    return map;
+  }, [collegePolls]);
+
+  const getBootstrapNewsData = useCallback(async () => {
+    let chlid = 0;
+    let phlid = 0;
+    if (currentUser && currentUser.CHLTeamID) {
+      chlid = currentUser.CHLTeamID;
+    }
+    if (currentUser && currentUser.PHLTeamID) {
+      phlid = currentUser.PHLTeamID;
+    }
+    if (chlid === 0 && phlid === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetHCKNewsBootstrapData(chlid, phlid);
+
+    if (chlid > 0) {
+      setCollegeNews(res.CollegeNews as any);
+    }
+
+    if (phlid > 0) {
+      setProNews(res.ProNews as any);
+    }
+  }, [currentUser?.CHLTeamID, currentUser?.PHLTeamID]);
 
   const getBootstrapData = async () => {
     let chlid = 0;
@@ -618,12 +842,16 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     if (currentUser && currentUser.PHLTeamID) {
       phlid = currentUser.PHLTeamID;
     }
+    // if the user has no hockey teams, skip all HCK bootstrapping
+    if (chlid == 0 && phlid == 0) {
+      setIsLoading(false);
+      return;
+    }
     const res = await BootstrapService.GetHCKBootstrapData(chlid, phlid);
     if (chlid > 0) {
       setAllCollegeGames(res.AllCollegeGames);
       setCollegeInjuryReport(res.CollegeInjuryReport);
       setCHLTeam(res.CollegeTeam);
-      setCollegeNews(res.CollegeNews);
       setCollegePolls(res.OfficialPolls);
       setCollegePollSubmission(res.CollegePoll);
       setCollegeNotifications(res.CollegeNotifications);
@@ -639,13 +867,14 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setRecruits(res.Recruits);
       setRecruitProfiles(res.RecruitProfiles);
       setTeamProfileMap(res.TeamProfileMap);
+      setTransferPortalProfiles(res.TransferPortalProfiles);
+      setCollegePromises(res.CollegePromises);
     }
     if (phlid > 0) {
       setAllProGames(res.AllProGames);
       setCapsheetMap(res.CapsheetMap);
       setProInjuryReport(res.ProInjuryReport);
       setPHLTeam(res.ProTeam);
-      setProNews(res.ProNews);
       setPHLLineups(res.ProTeamLineups);
       setPHLGameplan(res.PHLGameplan);
       setPHLShootoutLineup(res.ProTeamShootoutLineup);
@@ -665,32 +894,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setPHLDraftPicks(res.DraftPicks);
     }
     setPlayerFaces(res.FaceData);
-
-    if (
-      res.AllCollegeGames &&
-      res.AllCollegeGames.length > 0 &&
-      hck_Timestamp
-    ) {
-      const currentSeasonGames = res.AllCollegeGames.filter(
-        (x) => x.SeasonID === hck_Timestamp.SeasonID
-      );
-      setCurrentCollegeSeasonGames(currentSeasonGames);
-      const teamGames = currentSeasonGames.filter(
-        (x) => x.HomeTeamID === chlid || x.AwayTeamID === chlid
-      );
-      setCollegeTeamsGames(teamGames);
-    }
-
-    if (res.AllProGames && res.AllProGames.length > 0 && hck_Timestamp) {
-      const currentSeasonGames = res.AllProGames.filter(
-        (x) => x.SeasonID === hck_Timestamp.SeasonID
-      );
-      setCurrentProSeasonGames(currentSeasonGames);
-      const teamGames = currentSeasonGames.filter(
-        (x) => x.HomeTeamID === chlid || x.AwayTeamID === chlid
-      );
-      setProTeamsGames(teamGames);
-    }
     setIsLoading(false);
     isFetching.current = false;
   };
@@ -801,10 +1004,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         setCHLRosterMap(rosterMap);
       }
     },
-    [chlRosterMap]
-  );
-  const promisePlayer = useCallback(
-    async (playerID: number, teamID: number) => {},
     [chlRosterMap]
   );
   const cutPHLPlayer = useCallback(
@@ -1149,6 +1348,36 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const SaveExtensionOffer = useCallback(async (dto: ExtensionOffer) => {
+    const res = await FreeAgencyService.HCKSaveExtensionOffer(dto);
+    if (res) {
+      enqueueSnackbar("Extension Offer Created!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+      setProExtensionMap((prevOffers) => {
+        const offers = { ...prevOffers };
+        offers[res.PlayerID] = new ExtensionOffer({ ...res });
+        return offers;
+      });
+    }
+  }, []);
+
+  const CancelExtensionOffer = useCallback(async (dto: ExtensionOffer) => {
+    const res = await FreeAgencyService.HCKCancelExtensionOffer(dto);
+    if (res) {
+      enqueueSnackbar("Extension Offer Cancelled!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+      setProExtensionMap((prevOffers) => {
+        const offers = { ...prevOffers };
+        delete offers[dto.PlayerID];
+        return offers;
+      });
+    }
+  }, []);
+
   const SearchHockeyStats = useCallback(async (dto: any) => {
     if (dto.League === SimCHL) {
       const res = await StatsService.HCKCollegeStatsSearch(dto);
@@ -1326,6 +1555,172 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const scoutPortalAttribute = async (dto: any) => {
+    const profile = await RecruitService.HCKScoutPortalAttribute(dto);
+    if (profile) {
+      setTransferPortalProfiles((profiles) =>
+        [...profiles].map((p) =>
+          p.CollegePlayerID === profile.CollegePlayerID
+            ? new TransferPortalProfile({
+                ...profile,
+                [dto.Attribute]: true,
+              })
+            : p
+        )
+      );
+      setTeamProfileMap((prev) => {
+        const currentProfile = prev[profile.ProfileID];
+        if (!currentProfile) return prev;
+        return {
+          ...prev,
+          [profile.ProfileID]: new RecruitingTeamProfile({
+            ...currentProfile,
+            WeeklyScoutingPoints: currentProfile.WeeklyScoutingPoints - 1,
+          }),
+        };
+      });
+    }
+  };
+
+  const updatePointsOnPortalPlayer = (
+    id: number,
+    name: string,
+    points: number
+  ) => {
+    const profileIdx = transferPortalProfiles.findIndex((x) => x.ID === id);
+    if (profileIdx === -1) return;
+    // Profile Exists and there are already points allocated, return. Users cannot update the amount of points lower than what's already allocated.
+    const existingProfile = transferPortalProfiles[profileIdx];
+    if (
+      existingProfile.TotalPoints > 0 &&
+      existingProfile.PreviouslySpentPoints > points
+    ) {
+      return;
+    }
+    let pointsValue = points;
+    if (points > 10) {
+      pointsValue = 10;
+    } else if (points < 0) {
+      pointsValue = 0;
+    } else if (
+      points < existingProfile.CurrentWeeksPoints &&
+      existingProfile.TotalPoints > 0
+    ) {
+      pointsValue = existingProfile.CurrentWeeksPoints;
+    }
+
+    setTransferPortalProfiles((prevProfiles) => {
+      // Update the profiles and get the new profiles array.
+      const updatedProfiles = prevProfiles.map((profile) =>
+        profile.ID === id && profile.ID > 0
+          ? new TransferPortalProfile({ ...profile, [name]: pointsValue })
+          : profile
+      );
+
+      // Calculate the total points from the updated profiles.
+      const totalPoints = updatedProfiles.reduce(
+        (sum, profile) => sum + (profile.CurrentWeeksPoints || 0),
+        0
+      );
+
+      // Update the recruiting team profile based on the updated points.
+      setTeamProfileMap((prevTeamProfiles) => {
+        const currentProfile = prevTeamProfiles[chlTeam!.ID];
+        if (!currentProfile) return prevTeamProfiles;
+        return {
+          ...prevTeamProfiles,
+          [chlTeam!.ID]: new RecruitingTeamProfile({
+            ...currentProfile,
+            SpentPoints: totalPoints,
+          }),
+        };
+      });
+
+      return updatedProfiles;
+    });
+  };
+
+  const addTransferPlayerToBoard = useCallback(
+    async (dto: any) => {
+      const apiDTO = {
+        ...dto,
+        TeamAbbreviation: chlTeam?.Abbreviation,
+        Recruiter: chlTeam?.Coach,
+        SeasonID: hck_Timestamp?.SeasonID,
+        ProfileID: chlTeam?.ID,
+      };
+      const profile =
+        await TransferPortalService.HCKCreateTransferPortalProfile(apiDTO);
+      if (profile) {
+        const newProfile = new TransferPortalProfile({
+          ...profile,
+          ID: GenerateNumberFromRange(500000, 1000000),
+        });
+        setTransferPortalProfiles((profiles) => [...profiles, newProfile]);
+      }
+    },
+    [transferPortalProfiles]
+  );
+
+  const removeTransferPlayerFromBoard = useCallback(
+    async (dto: any) => {
+      const profile = await TransferPortalService.HCKRemoveProfileFromBoard(
+        dto
+      );
+
+      setTransferPortalProfiles((profiles) =>
+        [...profiles].filter((p) => p.CollegePlayerID != dto.CollegePlayerID)
+      );
+    },
+    [transferPortalProfiles]
+  );
+
+  const saveTransferPortalBoard = useCallback(async () => {
+    const dto = {
+      Profile: teamProfileMap[chlTeam!.ID],
+      Players: teamTransferPortalProfiles,
+      TeamID: chlTeam!.ID,
+    };
+    await TransferPortalService.HCKSaveTransferPortalBoard(dto);
+    enqueueSnackbar("Transfer Portal Board Saved!", {
+      variant: "success",
+      autoHideDuration: 3000,
+    });
+  }, [teamProfileMap, transferPortalProfiles, chlTeam]);
+
+  const createPromise = useCallback(
+    async (dto: any) => {
+      const res = await TransferPortalService.HCKCreatePromise(dto);
+      if (res) {
+        setCollegePromises((promises) => [...promises, dto]);
+        enqueueSnackbar("Promise Created!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      }
+    },
+    [collegePromises]
+  );
+
+  const cancelPromise = useCallback(
+    async (dto: any) => {
+      await TransferPortalService.HCKCancelPromise(dto);
+
+      setCollegePromises((promises) =>
+        [...promises].filter((x) => x.CollegePlayerID !== dto.CollegePlayerID)
+      );
+      enqueueSnackbar("Promise Cancelled!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    },
+    [collegePromises]
+  );
+
+  const exportTransferPortalPlayers = useCallback(async () => {
+    const res = await TransferPortalService.ExportHCKPortal();
+  }, []);
+
   const ExportHockeySchedule = useCallback(async (dto: any) => {
     const res = await scheduleService.HCKTimeslotExport(dto);
   }, []);
@@ -1354,6 +1749,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         currentCHLStandings,
         chlStandingsMap,
         chlRosterMap,
+        chlPlayerMap,
         chlGameplan,
         chlLineups,
         chlShootoutLineup,
@@ -1395,13 +1791,17 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         topPHLSaves,
         phlDraftPicks,
         phlDraftPickMap,
+        transferPortalProfiles,
+        collegePromises,
+        collegePromiseMap,
+        teamTransferPortalProfiles,
+        transferProfileMapByPlayerID,
         removeUserfromCHLTeamCall,
         removeUserfromPHLTeamCall,
         addUserToCHLTeam,
         addUserToPHLTeam,
         cutCHLPlayer,
         redshirtPlayer,
-        promisePlayer,
         cutPHLPlayer,
         PlacePHLPlayerOnTradeBlock,
         affiliatePlayer,
@@ -1427,6 +1827,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         CancelFreeAgencyOffer,
         SaveWaiverWireOffer,
         CancelWaiverWireOffer,
+        SaveExtensionOffer,
+        CancelExtensionOffer,
         chlPlayerGameStatsMap,
         chlPlayerSeasonStatsMap,
         chlTeamGameStatsMap,
@@ -1452,6 +1854,20 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         collegePolls,
         collegePollSubmission,
         submitCollegePoll,
+        getBootstrapNewsData,
+        addTransferPlayerToBoard,
+        removeTransferPlayerFromBoard,
+        saveTransferPortalBoard,
+        createPromise,
+        cancelPromise,
+        exportTransferPortalPlayers,
+        scoutPortalAttribute,
+        updatePointsOnPortalPlayer,
+        collegeGamesMapBySeason,
+        proGamesMapBySeason,
+        collegePollsBySeason,
+        collegeStandingsMapBySeason,
+        proStandingsMapBySeason,
       }}
     >
       {children}

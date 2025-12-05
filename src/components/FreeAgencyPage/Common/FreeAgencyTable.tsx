@@ -271,10 +271,11 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
         className={`table-row border-b dark:border-gray-700 text-left`}
         style={{ backgroundColor }}
       >
-        {attributes.map((attr, idx) => (
-          <TableCell
-            key={idx}
-            classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        <>
+          {attributes.map((attr, idx) => (
+            <TableCell
+              key={idx}
+              classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
         text-wrap sm:max-w-full ${
           category === Attributes && idx === 6
             ? "text-left"
@@ -282,27 +283,34 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
             ? "text-center"
             : ""
         }`}
-          >
-            {attr.label === "Name" ? (
-              <span
-                className={`cursor-pointer font-semibold`}
-                onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
-                  (e.target as HTMLElement).style.color = "#fcd53f";
-                }}
-                onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
-                  (e.target as HTMLElement).style.color = "";
-                }}
-                onClick={() => openModal(InfoType, item)}
-              >
+            >
+              {attr.label === "Name" ? (
+                <span
+                  className={`cursor-pointer font-semibold`}
+                  onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+                    (e.target as HTMLElement).style.color = "#fcd53f";
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+                    (e.target as HTMLElement).style.color = "";
+                  }}
+                  onClick={() => openModal(InfoType, item)}
+                >
+                  <Text variant="small">{attr.value}</Text>
+                </span>
+              ) : attr.label === "Sta" || attr.label === "Inj" ? (
+                <Text variant="small">{attr.letter}</Text>
+              ) : (
                 <Text variant="small">{attr.value}</Text>
-              </span>
-            ) : attr.label === "Sta" || attr.label === "Inj" ? (
-              <Text variant="small">{attr.letter}</Text>
-            ) : (
-              <Text variant="small">{attr.value}</Text>
-            )}
+              )}
+            </TableCell>
+          ))}
+          <TableCell>
+            <Text variant="small">{item.Stamina}</Text>
           </TableCell>
-        ))}
+          <TableCell>
+            <Text variant="small">{item.InjuryRating}</Text>
+          </TableCell>
+        </>
         {category === Preferences && (
           <>
             <TableCell>
@@ -363,6 +371,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
       backgroundColor={backgroundColor}
       team={team}
       enablePagination
+      league={league}
       currentPage={currentPage}
     />
   );

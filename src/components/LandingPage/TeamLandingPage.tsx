@@ -16,7 +16,6 @@ import { GetCurrentWeek } from "../../_helper/teamHelper";
 import { LeagueType } from "./TeamLandingPageTitles";
 import {
   GamesBar,
-  TeamOverview,
   TeamStandings,
   TeamMatchUp,
   TeamMailbox,
@@ -74,7 +73,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topCFBPassers,
     topCFBReceivers,
     topCFBRushers,
-    isLoadingTwo,
+    isLoading,
     playerFaces,
   } = useSimFBAStore();
   const {
@@ -96,17 +95,16 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topNBAPoints,
     topNBAAssists,
     topNBARebounds,
-    isLoadingTwo: isLoadingBB,
   } = useSimBBAStore();
   const {
     collegeNotifications: chlNotifications,
     proNotifications: phlNotifications,
-    allCHLStandings,
-    allProStandings: allPHLStandings,
+    collegeStandingsMapBySeason,
+    proStandingsMapBySeason,
+    proGamesMapBySeason,
     chlRosterMap,
     proRosterMap: phlRosterMap,
-    allCollegeGames: allCHLGames,
-    allProGames: allPHLGames,
+    collegeGamesMapBySeason,
     collegeNews: chlNews,
     proNews: phlNews,
     chlTeams,
@@ -275,6 +273,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       } = getLandingCBBData(
         team,
         currentWeek,
+        ts,
         league,
         currentUser,
         allCBBStandings,
@@ -306,6 +305,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       } = getLandingNBAData(
         team,
         currentWeek,
+        ts,
         league,
         currentUser,
         allNBAStandings,
@@ -340,9 +340,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         ts,
         league,
         currentUser,
-        allCHLStandings,
+        collegeStandingsMapBySeason[ts.SeasonID] || [],
         chlNotifications,
-        allCHLGames,
+        collegeGamesMapBySeason[ts.SeasonID] || [],
         chlTeams,
         chlNews,
         topCHLGoals,
@@ -372,9 +372,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         ts,
         league,
         currentUser,
-        allPHLStandings,
+        proStandingsMapBySeason[ts.SeasonID] || [],
         phlNotifications,
-        allPHLGames,
+        proGamesMapBySeason[ts.SeasonID] || [],
         phlTeams,
         phlNews,
         topPHLGoals,
@@ -416,7 +416,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   team={team}
                   league={league}
                   currentUser={currentUser}
-                  isLoadingTwo={isLoadingTwo}
+                  isLoading={isLoading}
                   backgroundColor={backgroundColor}
                   headerColor={headerColor}
                   borderColor={borderColor}
@@ -448,7 +448,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoadingTwo}
+                  isLoading={isLoading}
                   playerMap={playerMap}
                 />
               </Border>
@@ -469,7 +469,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                     borderColor={borderColor}
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
-                    isLoadingTwo={isLoadingTwo}
+                    isLoading={isLoading}
                   />
                 </Border>
               )}
@@ -508,7 +508,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                     borderColor={borderColor}
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
-                    isLoadingTwo={isLoadingTwo}
+                    isLoading={isLoading}
                   />
                 </Border>
                 <Border
@@ -526,7 +526,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                     borderColor={borderColor}
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
-                    isLoadingTwo={isLoadingTwo}
+                    isLoading={isLoading}
                   />
                 </Border>
               </div>
@@ -569,7 +569,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoadingTwo}
+                  isLoading={isLoading}
                 />
               </Border>
             )}
@@ -592,7 +592,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoadingTwo}
+                  isLoading={isLoading}
                 />
               </Border>
             </div>

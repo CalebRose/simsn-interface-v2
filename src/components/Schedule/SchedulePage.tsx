@@ -6,7 +6,7 @@ import {
   SimCFB,
   SimNFL,
   SimCBB,
-  SimNBA
+  SimNBA,
 } from "../../_constants/constants";
 import { PageContainer } from "../../_design/Container";
 import { useAuthStore } from "../../context/AuthContext";
@@ -14,9 +14,18 @@ import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
-import { CFBSchedulePage, NFLSchedulePage } from "./FootballSchedule/FootballSchedulePage";
-import { CHLSchedulePage, PHLSchedulePage } from "./HockeySchedule/HockeySchedulePage";
-import { BasketballSchedulePage } from "./BasketballSchedule/BasketballSchedulePage";
+import {
+  CFBSchedulePage,
+  NFLSchedulePage,
+} from "./FootballSchedule/FootballSchedulePage";
+import {
+  CHLSchedulePage,
+  PHLSchedulePage,
+} from "./HockeySchedule/HockeySchedulePage";
+import {
+  CBBSchedulePage,
+  NBASchedulePage,
+} from "./BasketballSchedule/BasketballSchedulePage";
 
 interface SchedulePageProps {
   league: League;
@@ -74,10 +83,10 @@ export const SchedulePage: FC<SchedulePageProps> = ({ league }) => {
           <PHLSchedulePage league={league} ts={ts} />
         )}
         {selectedLeague === SimCBB && cbbTeam && (
-          <BasketballSchedulePage league={league} ts={ts} />
+          <CBBSchedulePage league={league} ts={ts} />
         )}
         {selectedLeague === SimNBA && nbaTeam && (
-          <BasketballSchedulePage league={league} ts={ts} />
+          <NBASchedulePage league={league} ts={ts} />
         )}
       </PageContainer>
     </>

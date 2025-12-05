@@ -9,11 +9,11 @@ import {
   ModalAction,
   PLAYER_VIEW,
   REGULAR_SEASON,
+  SEASON_VIEW,
   SimCHL,
   SimPHL,
   StatsType,
   StatsView,
-  WEEK_VIEW,
 } from "../../../_constants/constants";
 import {
   GetHCKCollegeStats,
@@ -71,7 +71,7 @@ export const useHockeyStats = () => {
   const [modalPlayer, setModalPlayer] = useState<PHLPlayer | CHLPlayer>(
     {} as PHLPlayer
   );
-  const [statsView, setStatsView] = useState<StatsView>(WEEK_VIEW);
+  const [statsView, setStatsView] = useState<StatsView>(SEASON_VIEW);
   const [statsType, setStatsType] = useState<StatsType>(PLAYER_VIEW);
   const [gameDay, setGameDay] = useState<GameDay>(ADay);
   const [gameType, setGameType] = useState<GameType>(REGULAR_SEASON);
@@ -193,7 +193,7 @@ export const useHockeyStats = () => {
 
   // Search Logic
   const Search = async () => {
-    const selectedGameType =  gameType === REGULAR_SEASON ? "2" : "1";
+    const selectedGameType = gameType === REGULAR_SEASON ? "2" : "1";
     const dto = {
       League: selectedLeague,
       ViewType: statsView,
@@ -206,7 +206,7 @@ export const useHockeyStats = () => {
   };
 
   const Export = async () => {
-    const selectedGameType =  gameType === REGULAR_SEASON ? "2" : "1";
+    const selectedGameType = gameType === REGULAR_SEASON ? "2" : "1";
     const dto = {
       League: selectedLeague,
       ViewType: statsView,

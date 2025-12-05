@@ -8,15 +8,21 @@ import {
   SimPHL,
   WaiverOffer,
 } from "../_constants/constants";
-import { NBAContractOffer, NBAWaiverOffer } from "../models/basketballModels";
+import {
+  NBAContractOffer,
+  NBAWaiverOffer,
+  NBAExtensionOffer,
+} from "../models/basketballModels";
 import {
   NFLCapsheet,
   FreeAgencyOffer as NFLFreeAgencyOffer,
+  NFLExtensionOffer,
   NFLWaiverOffer,
   Timestamp,
 } from "../models/footballModels";
 import {
   FreeAgencyOffer as PHLFreeAgencyOffer,
+  ExtensionOffer as PHLExtensionOffer,
   ProCapsheet,
   Timestamp as HCKTimestamp,
   WaiverOffer as PHLWaiverOffer,
@@ -29,7 +35,9 @@ type ContractEvaluatorMap = {
 
 const NFLContractChecker: ContractEvaluatorMap = NFLContractEvaluator;
 
-export const getPHLSalaryData = (offer: PHLFreeAgencyOffer) => {
+export const getPHLSalaryData = (
+  offer: PHLFreeAgencyOffer | PHLExtensionOffer
+) => {
   const {
     Y1BaseSalary,
     Y2BaseSalary,
@@ -55,7 +63,9 @@ export const getPHLSalaryData = (offer: PHLFreeAgencyOffer) => {
   return { Y1BaseSalary, ContractLength, ContractValue, totalComp, salaries };
 };
 
-export const getNFLSalaryData = (offer: NFLFreeAgencyOffer) => {
+export const getNFLSalaryData = (
+  offer: NFLFreeAgencyOffer | NFLExtensionOffer
+) => {
   const {
     Y1BaseSalary,
     Y2BaseSalary,
@@ -69,6 +79,7 @@ export const getNFLSalaryData = (offer: NFLFreeAgencyOffer) => {
     Y5Bonus,
     ContractLength,
     ContractValue,
+    AAV,
   } = offer;
 
   const salaries: number[] = [
@@ -106,6 +117,7 @@ export const getNFLSalaryData = (offer: NFLFreeAgencyOffer) => {
     totalSalaries,
     salaries,
     bonuses,
+    AAV,
   };
 };
 
@@ -251,7 +263,7 @@ export const ValidateNFLRule6 = (
 };
 
 export const GeneratePHLFAErrorList = (
-  offer: PHLFreeAgencyOffer,
+  offer: PHLFreeAgencyOffer | PHLExtensionOffer,
   ts: HCKTimestamp,
   capsheet: ProCapsheet
 ): string[] => {
@@ -359,9 +371,11 @@ export const GeneratePHLFAErrorList = (
 };
 
 export const GenerateNFLFAErrorList = (
-  offer: NFLFreeAgencyOffer,
+  offer: NFLExtensionOffer | NFLFreeAgencyOffer,
   ts: Timestamp,
-  capsheet: NFLCapsheet
+  capsheet: NFLCapsheet,
+  playerAAV: number,
+  offerAAV: number
 ): string[] => {
   const errors: string[] = [];
   const {
@@ -434,9 +448,15 @@ export const GenerateNFLFAErrorList = (
     errors.push("Any non-zero salary must be at least $0.5 million.");
   }
 
+  if (playerAAV > offerAAV) {
+    errors.push(
+      `The offered AAV (${offerAAV}) is lower than the player's expected AAV (${playerAAV})`
+    );
+  }
+
   // 8) Rule5: bonus % rules around draft
   const isOffseason = ts.IsOffSeason;
-  if (!ValidateNFLRule5(totalBonus, totalComp + totalBonus, isOffseason)) {
+  if (!ValidateNFLRule5(totalBonus, totalComp, isOffseason)) {
     if (isOffseason) {
       errors.push(
         "Before the NFL Draft, at least 30% of any contract must be bonus money."
@@ -482,7 +502,28 @@ export const createOffer = (
   return new PHLFreeAgencyOffer(props);
 };
 
-export const GetNFLContractValue = (age: number, offer: NFLFreeAgencyOffer) => {
+export const createExtensionOffer = (
+  league: League,
+  existingOffer?: PHLExtensionOffer | NFLExtensionOffer | NBAExtensionOffer
+) => {
+  const props = existingOffer ? { ...existingOffer } : undefined;
+
+  if (league === SimNFL) {
+    return new NFLExtensionOffer(props);
+  }
+  if (league === SimNBA) {
+    return new NBAExtensionOffer(props);
+  }
+  if (league === SimPHL) {
+    return new PHLExtensionOffer(props);
+  }
+  return new PHLExtensionOffer(props);
+};
+
+export const GetNFLContractValue = (
+  age: number,
+  offer: NFLFreeAgencyOffer | NFLExtensionOffer
+) => {
   const {
     Y1Bonus,
     Y2Bonus,

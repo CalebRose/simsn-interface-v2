@@ -134,6 +134,7 @@ export const SideMenu = ({}) => {
   };
 
   const navigateToAvailableTeams = () => navigate(routes.AVAILABLE_TEAMS);
+  const navigateToNews = () => navigate(routes.NEWS);
   const navigateToHelp = () => navigate(routes.HELP);
 
   return (
@@ -285,6 +286,11 @@ export const SideMenu = ({}) => {
             <SideMenuItem
               click={navigateToAvailableTeams}
               label="Available Teams"
+              toggle={toggleMenu}
+            />
+            <SideMenuItem
+              click={navigateToNews}
+              label="News"
               toggle={toggleMenu}
             />
             <SideMenuItem

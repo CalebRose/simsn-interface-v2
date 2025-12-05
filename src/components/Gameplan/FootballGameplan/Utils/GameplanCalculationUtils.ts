@@ -32,7 +32,7 @@ const createCacheKey = (gameplan: GameplanData): string => {
     gameplan.OffForm5TraditionalRun, gameplan.OffForm5OptionRun, gameplan.OffForm5RPO, gameplan.OffForm5Pass,
     gameplan.RunOutsideLeft, gameplan.RunOutsideRight, gameplan.RunInsideLeft, gameplan.RunInsideRight,
     gameplan.RunPowerLeft, gameplan.RunPowerRight, gameplan.RunDrawLeft, gameplan.RunDrawRight,
-    gameplan.PassQuick, gameplan.PassShort, gameplan.PassLong, gameplan.PassScreen, gameplan.PassPAShort, gameplan.PassPALong,
+    gameplan.PassShort, gameplan.PassMedium, gameplan.PassLong, gameplan.PassDeep, gameplan.PassScreen, gameplan.PassPAMedium, gameplan.PassPALong, gameplan.PassPADeep,
     gameplan.ReadOptionLeft, gameplan.ReadOptionRight, gameplan.SpeedOptionLeft, gameplan.SpeedOptionRight,
     gameplan.InvertedOptionLeft, gameplan.InvertedOptionRight, gameplan.TripleOptionLeft, gameplan.TripleOptionRight,
     gameplan.ChoiceOutside, gameplan.ChoiceInside, gameplan.ChoicePower, gameplan.PeekOutside, gameplan.PeekInside, gameplan.PeekPower,
@@ -86,8 +86,8 @@ const getMemoizedCalculations = (gameplan: GameplanData): MemoizedCalculations =
                     gameplan.RunInsideLeft + gameplan.RunInsideRight + 
                     gameplan.RunPowerLeft + gameplan.RunPowerRight + 
                     gameplan.RunDrawLeft + gameplan.RunDrawRight,
-    passDistribution: gameplan.PassQuick + gameplan.PassShort + gameplan.PassLong + 
-                     gameplan.PassScreen + gameplan.PassPAShort + gameplan.PassPALong,
+    passDistribution: gameplan.PassShort + gameplan.PassMedium + gameplan.PassLong + gameplan.PassDeep + 
+                     gameplan.PassScreen + gameplan.PassPAMedium + gameplan.PassPALong + gameplan.PassPADeep,
     optionDistribution: gameplan.ReadOptionLeft + gameplan.ReadOptionRight + 
                        gameplan.SpeedOptionLeft + gameplan.SpeedOptionRight + 
                        gameplan.InvertedOptionLeft + gameplan.InvertedOptionRight + 
@@ -111,7 +111,9 @@ const getMemoizedCalculations = (gameplan: GameplanData): MemoizedCalculations =
   
   if (memoCache.size > 100) {
     const firstKey = memoCache.keys().next().value;
-    memoCache.delete(firstKey);
+    if (firstKey) {
+      memoCache.delete(firstKey);
+    }
   }
   
   return calculations;
@@ -182,7 +184,7 @@ export const getPassTypeRanges = (passType: string): { scheme: string; max: numb
   const ranges = [];
   
   switch (passType) {
-    case 'Quick':
+    case 'Short':
       ranges.push(
         { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
         { scheme: 'Pro, Power Run, I Option', max: 45 },
@@ -190,9 +192,9 @@ export const getPassTypeRanges = (passType: string): { scheme: string; max: numb
         { scheme: 'Spread Option, Pistol', max: 50 }
       );
       break;
-    case 'Short':
+    case 'Medium':
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50, note: 'Combined with Play Action Short: max 50' },
+        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
         { scheme: 'Pro, Power Run, I Option', max: 45 },
         { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 50 },
         { scheme: 'Spread Option, Pistol', max: 50 }
@@ -200,10 +202,19 @@ export const getPassTypeRanges = (passType: string): { scheme: string; max: numb
       break;
     case 'Long':
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50, note: 'Combined with Play Action Long: max 50' },
+        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
         { scheme: 'Pro, Power Run, I Option', max: 45 },
         { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 50 },
         { scheme: 'Spread Option, Pistol', max: 50 }
+      );
+      break;
+    case 'Deep':
+      ranges.push(
+        { scheme: 'Air Raid, Vertical', max: 15, note: 'Combined with PA Deep: max 15%' },
+        { scheme: 'West Coast, Run and Shoot', max: 10, note: 'Combined with PA Deep: max 10%' },
+        { scheme: 'Pro, Power Run, I Option', max: 10, note: 'Combined with PA Deep: max 10%' },
+        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 10, note: 'Combined with PA Deep: max 10%' },
+        { scheme: 'Spread Option, Pistol', max: 10, note: 'Combined with PA Deep: max 10%' }
       );
       break;
     case 'Screen':
@@ -214,20 +225,29 @@ export const getPassTypeRanges = (passType: string): { scheme: string; max: numb
         { scheme: 'Spread Option, Pistol', max: 20 }
       );
       break;
-    case 'PlayActionShort':
+    case 'PAMedium':
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50, note: 'Combined with Short: max 50' },
+        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
         { scheme: 'Pro, Power Run, I Option', max: 20 },
         { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 30 },
         { scheme: 'Spread Option, Pistol', max: 25 }
       );
       break;
-    case 'PlayActionLong':
+    case 'PALong':
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50, note: 'Combined with Long: max 50' },
+        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
         { scheme: 'Pro, Power Run, I Option', max: 20 },
         { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 30 },
         { scheme: 'Spread Option, Pistol', max: 25 }
+      );
+      break;
+    case 'PADeep':
+      ranges.push(
+        { scheme: 'Air Raid, Vertical', max: 15, note: 'Combined with Deep: max 15%' },
+        { scheme: 'West Coast, Run and Shoot', max: 10, note: 'Combined with Deep: max 10%' },
+        { scheme: 'Pro, Power Run, I Option', max: 10, note: 'Combined with Deep: max 10%' },
+        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 10, note: 'Combined with Deep: max 10%' },
+        { scheme: 'Spread Option, Pistol', max: 10, note: 'Combined with Deep: max 10%' }
       );
       break;
     default:

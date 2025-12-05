@@ -100,7 +100,7 @@ export const CFBRecruiting = () => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           playerID={modalPlayer.ID}
-          playerLabel={`${modalPlayer.Position} ${modalPlayer.Archetype} ${modalPlayer.FirstName} ${modalPlayer.LastName}`}
+          playerLabel={`${modalPlayer.Stars} ⭐ ${modalPlayer.Position} ${modalPlayer.Archetype} ${modalPlayer.FirstName} ${modalPlayer.LastName} (${modalPlayer.PotentialGrade} Pot.)`}
           teamID={cfbTeam!.ID}
           league={SimCFB}
           modalAction={modalAction}
@@ -425,7 +425,7 @@ export const CFBRecruiting = () => {
                 }}
               >
                 <TeamRankingsTable
-                  colorOne={teamColors.One}
+                  colorOne={navyBlueColor}
                   colorTwo={teamColors.Two}
                   colorThree={teamColors.Three}
                   teamProfiles={teamRankList}

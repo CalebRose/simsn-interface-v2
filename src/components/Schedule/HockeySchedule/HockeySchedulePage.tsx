@@ -52,17 +52,16 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const { currentUser } = useAuthStore();
   const hkStore = useSimHCKStore();
   const currentWeek = GetCurrentWeek(league, ts);
-  const currentSeason = ts.Season;
+  const currentSeason = ts.SeasonID;
   const {
     chlTeam,
     chlTeams,
     chlTeamMap,
     chlRosterMap,
     chlTeamOptions,
-    allCHLStandings,
-    allCollegeGames: allCHLGames,
+    collegeStandingsMapBySeason,
+    collegeGamesMapBySeason,
     isLoading,
-    collegePolls,
     collegePollSubmission,
     submitCollegePoll,
     ExportHockeySchedule,
@@ -72,24 +71,22 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [category, setCategory] = useState(Overview);
   const [view, setView] = useState(TeamGames);
   const [isChecked, setIsChecked] = useState(false);
-  const [selectedWeek, setSelectedWeek] = useState(currentWeek ?? 1);
-  const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
+  const [selectedWeek, setSelectedWeek] = useState<{
+    label: string;
+    value: string;
+  }>({ label: "1", value: "1" });
+  const [selectedSeason, setSelectedSeason] = useState<{
+    label: string;
+    value: string;
+  }>({ label: ts.Season.toString(), value: ts.SeasonID.toString() });
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
   const hckExportOptions = useMemo(() => NonFBAExportOptions(), []);
-  const selectedWeekOption = useMemo(() => {
-    let numVal = selectedWeek.toString();
-    return {
-      label: numVal,
-      value: numVal,
-    };
+  const selectedWeekValue = useMemo(() => {
+    return Number(selectedWeek.value);
   }, [selectedWeek]);
 
-  const selectedSeasonOption = useMemo(() => {
-    let numVal = selectedSeason.toString();
-    return {
-      label: numVal,
-      value: numVal,
-    };
+  const selectedSeasonValue = useMemo(() => {
+    return Number(selectedSeason.value);
   }, [selectedSeason]);
 
   const teamColors = useTeamColors(
@@ -149,6 +146,14 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     setCategory(Overview);
   };
 
+  const collegeGamesBySelectedSeason = useMemo(() => {
+    return collegeGamesMapBySeason[selectedSeasonValue] || [];
+  }, [collegeGamesMapBySeason, selectedSeasonValue]);
+
+  const collegeStandingsBySelectedSeason = useMemo(() => {
+    return collegeStandingsMapBySeason[selectedSeasonValue] || [];
+  }, [collegeStandingsMapBySeason, selectedSeasonValue]);
+
   const { teamStandings, teamSchedule, groupedWeeklyGames } = useMemo(() => {
     return getScheduleCHLData(
       selectedTeam,
@@ -156,8 +161,8 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       selectedWeek,
       selectedSeason,
       league,
-      allCHLStandings,
-      allCHLGames,
+      collegeStandingsBySelectedSeason,
+      collegeGamesBySelectedSeason,
       chlTeams
     );
   }, [
@@ -166,8 +171,8 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     selectedWeek,
     selectedSeason,
     league,
-    allCHLStandings,
-    allCHLGames,
+    collegeStandingsMapBySeason,
+    collegeGamesMapBySeason,
     chlTeams,
   ]);
 
@@ -193,17 +198,20 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   const weeklyGames = useMemo(() => {
     if (!selectedWeek) return [];
-    const gamesForWeek = groupedWeeklyGames[selectedWeek] || [];
+    const gamesForWeek = groupedWeeklyGames[selectedWeekValue] || [];
     return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
-  }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);
+  }, [groupedWeeklyGames, selectedWeekValue, ts, league, resultsOverride]);
 
   const submitPollModal = useModal();
   const collegePollModal = useModal();
 
   const handleScheduleExport = async (opts: any) => {
     const dto = {
-      SeasonID: selectedSeason,
-      WeekID: getHCKWeekID(selectedWeek, selectedSeason - 2024),
+      SeasonID: selectedSeasonValue,
+      WeekID: getHCKWeekID(
+        selectedWeekValue,
+        Number(selectedSeason.label) - 2024
+      ),
       Timeslot: opts.value,
     };
     await ExportHockeySchedule(dto);
@@ -357,15 +365,18 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                     <>
                       <Text variant="body">Week</Text>
                       <SelectDropdown
-                        value={selectedWeekOption}
+                        value={selectedWeek}
                         options={Array.from({ length: 22 }, (_, i) => ({
                           label: `${i + 1}`,
                           value: (i + 1).toString(),
                         }))}
                         placeholder="Select Week..."
                         onChange={(selectedOption) => {
-                          const selectedWeek = Number(selectedOption?.value);
-                          setSelectedWeek(selectedWeek);
+                          const opt = {
+                            label: selectedOption!.label,
+                            value: selectedOption!.value,
+                          };
+                          setSelectedWeek(opt);
                         }}
                         styles={{
                           control: (provided, state) => ({
@@ -424,12 +435,15 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <div className="flex flex-col items-center gap-2 justify-center">
                   <Text variant="body">Seasons</Text>
                   <SelectDropdown
-                    value={selectedSeasonOption}
+                    value={selectedSeason}
                     options={HockeySeasons}
                     placeholder="Select Season..."
                     onChange={(selectedOption) => {
-                      const selectedSeason = Number(selectedOption?.value);
-                      setSelectedSeason(selectedSeason);
+                      const opt = {
+                        label: selectedOption!.label,
+                        value: selectedOption!.value,
+                      };
+                      setSelectedSeason(opt);
                     }}
                     styles={{
                       control: (provided, state) => ({
@@ -548,13 +562,13 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               <LeagueStandings
                 currentUser={currentUser}
                 league={league}
-                standings={allCHLStandings}
+                standings={collegeStandingsBySelectedSeason}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -577,7 +591,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
               {view === WeeklyGames && (
@@ -588,7 +602,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   currentUser={currentUser}
                   playerMap={playerMap}
                   teamMap={chlTeamMap}
-                  week={selectedWeek}
+                  week={selectedWeek.value}
                   league={league}
                   ts={ts}
                   processedSchedule={weeklyGames}
@@ -597,7 +611,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
             </div>
@@ -614,7 +628,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -635,8 +649,8 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     phlTeamMap,
     proRosterMap: phlRosterMap,
     phlTeamOptions,
-    allProStandings: allPHLStandings,
-    allProGames: allPHLGames,
+    proStandingsMapBySeason,
+    proGamesMapBySeason,
     isLoading,
     ExportHockeySchedule,
   } = hkStore;
@@ -645,12 +659,24 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [category, setCategory] = useState(Overview);
   const [scheduleView, setScheduleView] = useState(TeamGames);
   const [isChecked, setIsChecked] = useState(false);
-  const [selectedWeek, setSelectedWeek] = useState(currentWeek ?? 1);
-  const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
+  const [selectedWeek, setSelectedWeek] = useState<{
+    label: string;
+    value: string;
+  }>({ label: "1", value: "1" });
+  const [selectedSeason, setSelectedSeason] = useState<{
+    label: string;
+    value: string;
+  }>({ label: ts.Season.toString(), value: ts.SeasonID.toString() });
   const [standingsView, setStandingsView] = useState(Conferences);
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
   const hckExportOptions = useMemo(() => NonFBAExportOptions(), []);
+  const selectedWeekValue = useMemo(() => {
+    return Number(selectedWeek.value);
+  }, [selectedWeek]);
 
+  const selectedSeasonValue = useMemo(() => {
+    return Number(selectedSeason.value);
+  }, [selectedSeason]);
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
@@ -701,6 +727,14 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     return map;
   }, [phlRosterMap]);
 
+  const proGamesBySelectedSeason = useMemo(() => {
+    return proGamesMapBySeason[selectedSeasonValue] || [];
+  }, [proGamesMapBySeason, selectedSeasonValue]);
+
+  const proStandingsBySelectedSeason = useMemo(() => {
+    return proStandingsMapBySeason[selectedSeasonValue] || [];
+  }, [proStandingsMapBySeason, selectedSeasonValue]);
+
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = phlTeamMap ? phlTeamMap[value] : null;
@@ -715,8 +749,8 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       selectedWeek,
       selectedSeason,
       league,
-      allPHLStandings,
-      allPHLGames,
+      proStandingsBySelectedSeason,
+      proGamesBySelectedSeason,
       phlTeams
     );
   }, [
@@ -725,8 +759,8 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     selectedWeek,
     selectedSeason,
     league,
-    allPHLStandings,
-    allPHLGames,
+    proStandingsBySelectedSeason,
+    proGamesBySelectedSeason,
     phlTeams,
   ]);
 
@@ -738,14 +772,17 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   const weeklyGames = useMemo(() => {
     if (!selectedWeek) return [];
-    const gamesForWeek = groupedWeeklyGames[selectedWeek] || [];
+    const gamesForWeek = groupedWeeklyGames[selectedWeekValue] || [];
     return processWeeklyGames(gamesForWeek, ts, league, resultsOverride);
-  }, [groupedWeeklyGames, selectedWeek, ts, league, resultsOverride]);
+  }, [groupedWeeklyGames, selectedWeekValue, ts, league, resultsOverride]);
 
   const handleScheduleExport = async (opts: any) => {
     const dto = {
       SeasonID: selectedSeason,
-      WeekID: getHCKWeekID(selectedWeek, selectedSeason - 2024),
+      WeekID: getHCKWeekID(
+        selectedWeekValue,
+        Number(selectedSeason.label) - 2024
+      ),
       Timeslot: opts.value,
     };
     await ExportHockeySchedule(dto);
@@ -884,8 +921,11 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                       }))}
                       placeholder="Select Week..."
                       onChange={(selectedOption) => {
-                        const selectedWeek = Number(selectedOption?.value);
-                        setSelectedWeek(selectedWeek);
+                        const opt = {
+                          label: selectedOption!.label,
+                          value: selectedOption!.value,
+                        };
+                        setSelectedWeek(opt);
                       }}
                       styles={{
                         control: (provided, state) => ({
@@ -945,8 +985,11 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   options={HockeySeasons}
                   placeholder="Select Season..."
                   onChange={(selectedOption) => {
-                    const selectedSeason = Number(selectedOption?.value);
-                    setSelectedWeek(selectedSeason);
+                    const opt = {
+                      label: selectedOption!.label,
+                      value: selectedOption!.value,
+                    };
+                    setSelectedSeason(opt);
                   }}
                   styles={{
                     control: (provided, state) => ({
@@ -1052,13 +1095,13 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 currentUser={currentUser}
                 league={league}
                 category={standingsView}
-                standings={allPHLStandings}
+                standings={proStandingsBySelectedSeason}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}
@@ -1081,7 +1124,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
               {category === Overview && scheduleView === WeeklyGames && (
@@ -1090,7 +1133,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   Abbr={selectedTeam?.Abbreviation}
                   category={scheduleView}
                   currentUser={currentUser}
-                  week={selectedWeek}
+                  week={selectedWeek.value}
                   league={league}
                   ts={ts}
                   playerMap={playerMap}
@@ -1101,7 +1144,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   borderColor={borderColor}
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
-                  isLoadingTwo={isLoading}
+                  isLoading={isLoading}
                 />
               )}
             </div>
@@ -1118,7 +1161,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoadingTwo={isLoading}
+                isLoading={isLoading}
               />
             </div>
           )}

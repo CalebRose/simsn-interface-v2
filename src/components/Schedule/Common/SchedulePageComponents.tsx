@@ -3,7 +3,7 @@ import { getLogo } from "../../../_utility/getLogo";
 import { Text } from "../../../_design/Typography";
 import { Logo } from "../../../_design/Logo";
 import { Button } from "../../../_design/Buttons";
-import { League } from "../../../_constants/constants";
+import { League, SimCHL, SimNBA, SimPHL } from "../../../_constants/constants";
 import { SectionCards } from "../../../_design/SectionCards";
 import { InformationCircle } from "../../../_design/Icons";
 import PlayerPicture from "../../../_utility/usePlayerFaces";
@@ -19,6 +19,7 @@ interface TeamScheduleProps {
   category?: string;
   playerMap?: any;
   teamMap?: any;
+  teamRecordMap?: Record<number, string>;
   week: any;
   currentUser: any;
   league: League;
@@ -29,7 +30,7 @@ interface TeamScheduleProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const TeamSchedule = ({
@@ -39,6 +40,7 @@ export const TeamSchedule = ({
   currentUser,
   playerMap,
   teamMap,
+  teamRecordMap,
   week,
   league,
   ts,
@@ -48,7 +50,7 @@ export const TeamSchedule = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamScheduleProps) => {
   const gameModal = useModal();
   const [selectedGame, setSelectedGame] = useState<any>(null);
@@ -57,7 +59,11 @@ export const TeamSchedule = ({
   return (
     <>
       <SectionCards
-        header={`${Abbr} Schedule`}
+        header={`${Abbr}${
+          team && teamRecordMap && teamRecordMap[team?.ID]
+            ? ` (${teamRecordMap[team.ID]})`
+            : ""
+        } Schedule`}
         team={team}
         classes={`w-full ${textColorClass}`}
         backgroundColor={backgroundColor}
@@ -66,7 +72,7 @@ export const TeamSchedule = ({
         textColorClass={textColorClass}
         darkerBackgroundColor={darkerBackgroundColor}
       >
-        {isLoadingTwo ? (
+        {isLoading ? (
           <div className="flex justify-center items-center pb-2">
             <Text variant="small" classes={`${textColorClass}`}>
               Loading...
@@ -121,13 +127,14 @@ export const TeamSchedule = ({
             />
             {processedSchedule.map((game, index) => (
               <div
-                key={index}
+                key={`${game.ID}-${game.Week}-${index}`}
                 className={`grid ${
                   isFootball ? "grid-cols-7" : "grid-cols-5"
                 } border-b border-b-[#34455d] items-center`}
                 style={{
                   backgroundColor:
                     index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
+                  order: index, // Force display order for Safari mobile
                 }}
               >
                 <div className="text-left col-span-1">
@@ -154,7 +161,11 @@ export const TeamSchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={game.opponentLabel}
+                    label={`${game.opponentLabel}${
+                      teamRecordMap && teamRecordMap[game.opponentID]
+                        ? ` (${teamRecordMap[game.opponentID]})`
+                        : ""
+                    }`}
                     teamID={game.opponentID}
                     textColorClass={textColorClass}
                     league={league}
@@ -214,6 +225,7 @@ export const WeeklySchedule = ({
   currentUser,
   playerMap,
   teamMap,
+  teamRecordMap,
   week,
   league,
   ts,
@@ -223,7 +235,7 @@ export const WeeklySchedule = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading: isLoading,
 }: TeamScheduleProps) => {
   const gameModal = useModal();
   const [selectedGame, setSelectedGame] = useState<any>(null);
@@ -240,7 +252,7 @@ export const WeeklySchedule = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center pb-2">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -301,21 +313,31 @@ export const WeeklySchedule = ({
           {processedSchedule.map((game, index) => {
             const homeTeam = teamMap[game.HomeTeamID];
             const awayTeam = teamMap[game.AwayTeamID];
+            const homeTeamLabel = homeTeam
+              ? homeTeam.TeamName || homeTeam.Team
+              : "N/A";
+            const awayTeamLabel = awayTeam
+              ? awayTeam.TeamName || awayTeam.Team
+              : "N/A";
+            const homeRecord = teamRecordMap?.[game.HomeTeamID];
+            const awayRecord = teamRecordMap?.[game.AwayTeamID];
+
             return (
               <div
-                key={index}
+                key={`${game.ID}-${game.Week}-${index}`}
                 className={`grid ${
                   isFootball ? "grid-cols-9" : "grid-cols-7"
                 } border-b border-b-[#34455d] items-center`}
                 style={{
                   backgroundColor:
                     index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
+                  order: index, // Force display order for Safari mobile
                 }}
               >
                 <div className="text-left col-span-1">
                   <Text variant="xs" className="font-semibold">
                     {week}
-                    {game.GameDay}
+                    {game.GameDay || game.MatchOfWeek}
                   </Text>
                 </div>
                 {isFootball && (
@@ -334,7 +356,7 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={homeTeam.TeamName}
+                    label={`${homeTeamLabel}${homeRecord ? ` (${homeRecord})` : ""}`}
                     teamID={game.HomeTeamID}
                     textColorClass={textColorClass}
                     league={league}
@@ -349,7 +371,7 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={awayTeam.TeamName}
+                    label={`${awayTeamLabel}${awayRecord ? ` (${awayRecord})` : ""}`}
                     teamID={game.AwayTeamID}
                     textColorClass={textColorClass}
                     league={league}
@@ -360,7 +382,7 @@ export const WeeklySchedule = ({
                     textColorClass={`${
                       game.gameScore === "TBC" ? "opacity-50" : ""
                     }`}
-                    disable={game.gameSCore === "TBC"}
+                    disable={game.gameScore === "TBC"}
                     openModal={() => {
                       setSelectedGame(game);
                       gameModal.handleOpenModal();
@@ -399,7 +421,7 @@ interface TeamStandingsProps {
   team: any;
   league: League;
   currentUser: any;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
   backgroundColor: string;
   headerColor: string;
   borderColor: string;
@@ -412,7 +434,7 @@ export const TeamStandings = ({
   team,
   league,
   currentUser,
-  isLoadingTwo,
+  isLoading,
   backgroundColor,
   headerColor,
   borderColor,
@@ -430,7 +452,7 @@ export const TeamStandings = ({
       darkerBackgroundColor={darkerBackgroundColor}
       textColorClass={textColorClass}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -439,7 +461,9 @@ export const TeamStandings = ({
       ) : (
         <div className="grid">
           <div
-            className="grid grid-cols-7 font-semibold border-b-2 pb-2"
+            className={`grid grid-cols-${
+              league === SimCHL || league === SimPHL ? "9" : "7"
+            } font-semibold border-b-2 pb-2`}
             style={{
               borderColor,
             }}
@@ -464,6 +488,13 @@ export const TeamStandings = ({
                 C.L
               </Text>
             </div>
+            {(league === SimCHL || league === SimPHL) && (
+              <div className="text-center col-span-1 ">
+                <Text variant="xs" className={`${textColorClass}`}>
+                  C.OT.L
+                </Text>
+              </div>
+            )}
             <div className="text-center col-span-1 ">
               <Text variant="xs" className={`${textColorClass}`}>
                 T.W
@@ -474,11 +505,20 @@ export const TeamStandings = ({
                 T.L
               </Text>
             </div>
+            {(league === SimCHL || league === SimPHL) && (
+              <div className="text-center col-span-1 ">
+                <Text variant="xs" className={`${textColorClass}`}>
+                  OT.L
+                </Text>
+              </div>
+            )}
           </div>
           {standings.map((standing, index) => (
             <div
               key={index}
-              className="grid grid-cols-7 border-b border-b-[#34455d] items-center"
+              className={`grid grid-cols-${
+                league === SimCHL || league === SimPHL ? "9" : "7"
+              } border-b border-b-[#34455d] items-center`}
               style={{
                 backgroundColor:
                   index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
@@ -514,6 +554,13 @@ export const TeamStandings = ({
                   {standing.ConferenceLosses}
                 </Text>
               </div>
+              {(league === SimCHL || league === SimPHL) && (
+                <div className="text-center col-span-1 ">
+                  <Text variant="xs" className={`font-semibold`}>
+                    {standing.ConferenceOTLosses}
+                  </Text>
+                </div>
+              )}
               <div className="text-center flex col-span-1 items-center justify-center">
                 <Text variant="xs" className="font-semibold">
                   {standing.TotalWins}
@@ -524,6 +571,13 @@ export const TeamStandings = ({
                   {standing.TotalLosses}
                 </Text>
               </div>
+              {(league === SimCHL || league === SimPHL) && (
+                <div className="text-center col-span-1 ">
+                  <Text variant="xs" className={`font-semibold`}>
+                    {standing.TotalOTLosses}
+                  </Text>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -538,7 +592,7 @@ interface LeagueStandingsProps {
   league: League;
   category?: string;
   currentUser: any;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
   backgroundColor: string;
   headerColor: string;
   borderColor: string;
@@ -552,7 +606,7 @@ export const LeagueStandings = ({
   league,
   category,
   currentUser,
-  isLoadingTwo,
+  isLoading,
   backgroundColor,
   headerColor,
   borderColor,
@@ -560,7 +614,7 @@ export const LeagueStandings = ({
   darkerBackgroundColor,
 }: LeagueStandingsProps) => {
   const { groupedStandings, sortedGroupNames } = useMemo(() => {
-    const customOrder =
+    let customOrder =
       category === "Divisions"
         ? ["Atlantic", "Metropolitan", "Central", "Pacific"]
         : [
@@ -576,13 +630,27 @@ export const LeagueStandings = ({
             "Mountain West",
             "SunBelt",
           ];
+    if (league === SimNBA) {
+      customOrder = [
+        "Western",
+        "Eastern",
+        "Euroleague",
+        "Liga Mediterranea",
+        "Northern Europa",
+        "AsiaLeague",
+        "Oceania League",
+        "Liga das Americas",
+        "LeagueAfrica",
+        "The Gulf League",
+      ];
+    }
 
     return processLeagueStandings(standings, customOrder, league, category);
   }, [standings, league, category]);
 
   return (
     <div className="flex flex-wrap gap-4">
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center w-full">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...
@@ -611,7 +679,9 @@ export const LeagueStandings = ({
               >
                 <div className="grid">
                   <div
-                    className="grid grid-cols-7 font-semibold border-b-2 pb-2"
+                    className={`grid grid-cols-${
+                      league === SimCHL || league === SimPHL ? "9" : "7"
+                    } font-semibold border-b-2 pb-2`}
                     style={{
                       borderColor,
                     }}
@@ -636,6 +706,13 @@ export const LeagueStandings = ({
                         C.L
                       </Text>
                     </div>
+                    {(league === SimCHL || league === SimPHL) && (
+                      <div className="text-center col-span-1 ">
+                        <Text variant="xs" className={`${textColorClass}`}>
+                          C.OT.L
+                        </Text>
+                      </div>
+                    )}
                     <div className="text-center col-span-1 ">
                       <Text variant="xs" className={`${textColorClass}`}>
                         T.W
@@ -646,11 +723,20 @@ export const LeagueStandings = ({
                         T.L
                       </Text>
                     </div>
+                    {(league === SimCHL || league === SimPHL) && (
+                      <div className="text-center col-span-1 ">
+                        <Text variant="xs" className={`${textColorClass}`}>
+                          OT.L
+                        </Text>
+                      </div>
+                    )}
                   </div>
                   {groupStandings.map((standing: any, index: number) => (
                     <div
                       key={index}
-                      className="grid grid-cols-7 border-b border-b-[#34455d] items-center"
+                      className={`grid grid-cols-${
+                        league === SimCHL || league === SimPHL ? "9" : "7"
+                      } border-b border-b-[#34455d] items-center`}
                       style={{
                         backgroundColor:
                           index % 2 === 0
@@ -692,6 +778,13 @@ export const LeagueStandings = ({
                           {standing.ConferenceLosses}
                         </Text>
                       </div>
+                      {(league === SimCHL || league === SimPHL) && (
+                        <div className="text-center col-span-1 ">
+                          <Text variant="xs" className={`font-semibold`}>
+                            {standing.ConferenceOTLosses}
+                          </Text>
+                        </div>
+                      )}
                       <div className="text-center flex col-span-1 items-center justify-center">
                         <Text variant="xs" className="font-semibold">
                           {standing.TotalWins}
@@ -702,6 +795,13 @@ export const LeagueStandings = ({
                           {standing.TotalLosses}
                         </Text>
                       </div>
+                      {(league === SimCHL || league === SimPHL) && (
+                        <div className="text-center col-span-1 ">
+                          <Text variant="xs" className={`font-semibold`}>
+                            {standing.TotalOTLosses}
+                          </Text>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -725,7 +825,7 @@ interface LeagueStatsProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
-  isLoadingTwo: boolean;
+  isLoading: boolean;
 }
 
 export const LeagueStats = ({
@@ -739,7 +839,7 @@ export const LeagueStats = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
-  isLoadingTwo,
+  isLoading,
 }: LeagueStatsProps) => {
   const renderStatCard = (title: string, stats: any[]) => (
     <SectionCards
@@ -752,7 +852,7 @@ export const LeagueStats = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoadingTwo ? (
+      {isLoading ? (
         <div className="flex justify-center items-center min-h-[5em] w-full">
           <Text variant="small" classes={`${textColorClass}`}>
             Loading...

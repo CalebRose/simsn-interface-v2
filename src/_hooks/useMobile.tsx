@@ -1,19 +1,71 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export const useResponsive = () => {
-  const getSizes = () => ({
-    isMobile: window.innerWidth < 768,
-    isTablet: window.innerWidth > 767 && window.innerWidth <= 1024,
-    isDesktop: window.innerWidth > 1024,
+  const getSizes = useCallback(() => {
+    // Guard against SSR and ensure window is available
+    if (typeof window === "undefined") {
+      return {
+        isMobile: false,
+        isTablet: false,
+        isDesktop: true,
+      };
+    }
+
+    // Safari-safe width access with additional safety checks
+    try {
+      const width =
+        window.innerWidth || document.documentElement?.clientWidth || 0;
+      return {
+        isMobile: width < 768,
+        isTablet: width > 767 && width <= 1024,
+        isDesktop: width > 1024,
+      };
+    } catch (error) {
+      console.warn("Error accessing window dimensions:", error);
+      return {
+        isMobile: false,
+        isTablet: false,
+        isDesktop: true,
+      };
+    }
+  }, []);
+
+  // Initialize with safe defaults, then update in useEffect
+  const [sizes, setSizes] = useState(() => {
+    // Use lazy initialization to avoid calling window during SSR
+    if (typeof window === "undefined") {
+      return {
+        isMobile: false,
+        isTablet: false,
+        isDesktop: true,
+      };
+    }
+    return getSizes();
   });
 
-  const [sizes, setSizes] = useState(getSizes());
-
   useEffect(() => {
-    const onResize = () => setSizes(getSizes());
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+    // Safari requires a small delay to ensure proper initialization
+    const initTimer = setTimeout(() => {
+      setSizes(getSizes());
+    }, 0);
+
+    // Safari-compatible resize handler with throttling
+    let resizeTimer: ReturnType<typeof setTimeout>;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        setSizes(getSizes());
+      }, 100); // Throttle for Safari performance
+    };
+
+    window.addEventListener("resize", onResize, { passive: true });
+
+    return () => {
+      clearTimeout(initTimer);
+      clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [getSizes]);
 
   return sizes; // { isMobile, isTablet, isDesktop }
 };

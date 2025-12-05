@@ -15,7 +15,7 @@ interface FreeAgencyPageProps {
 export const FreeAgencyPage: FC<FreeAgencyPageProps> = ({ league }) => {
   const { selectedLeague, setSelectedLeague } = useLeagueStore();
   const { phlTeam } = useSimHCKStore();
-  const { nflTeam, isLoadingThree } = useSimFBAStore();
+  const { nflTeam, isLoading } = useSimFBAStore();
   const { nbaTeam } = useSimBBAStore();
 
   useEffect(() => {
@@ -24,22 +24,22 @@ export const FreeAgencyPage: FC<FreeAgencyPageProps> = ({ league }) => {
     }
   }, [selectedLeague]);
 
-  const isLoading = useMemo(() => {
+  const isFreeAgencyLoading = useMemo(() => {
     if (selectedLeague === SimPHL && phlTeam) {
       return false;
     }
     if (selectedLeague === SimNBA && nbaTeam) {
       return false;
     }
-    if (selectedLeague === SimNFL && nflTeam && !isLoadingThree) {
+    if (selectedLeague === SimNFL && nflTeam && !isLoading) {
       return false;
     }
     return true;
-  }, [phlTeam, nflTeam, isLoadingThree, selectedLeague]);
+  }, [phlTeam, nflTeam, isLoading, selectedLeague]);
 
   return (
     <>
-      <PageContainer direction="col" isLoading={isLoading} title="Free Agency">
+      <PageContainer direction="col" isLoading={isFreeAgencyLoading} title="Free Agency">
         {selectedLeague === SimPHL && phlTeam && (
           <>
             <PHLFreeAgency />

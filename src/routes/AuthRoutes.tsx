@@ -21,7 +21,8 @@ import { SchedulePage } from "../components/Schedule/SchedulePage";
 import { FreeAgencyPage } from "../components/FreeAgencyPage/FreeAgencyPage";
 import { StatsPage } from "../components/StatsPage/StatsPage";
 import { TeamProfilePage } from "../components/TeamProfile/TeamProfile";
-import { DraftPage } from "../components/Draft/DraftPage";
+import { TransferPortalPage } from "../components/TransferPortal/TransferPortal";
+import { NewsPage } from "../components/News/NewsPage";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
@@ -179,6 +180,33 @@ export const AuthRoutes = [
     }
   />,
   <Route
+    key="CHL Transfer Portal"
+    path={routes.CHL_TRANSFER}
+    element={
+      <AuthGuard>
+        <TransferPortalPage league={SimCHL} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="CFB Transfer Portal"
+    path={routes.CFB_TRANSFER}
+    element={
+      <AuthGuard>
+        <TransferPortalPage league={SimCFB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="CBB Transfer Portal"
+    path={routes.CBB_TRANSFER}
+    element={
+      <AuthGuard>
+        <TransferPortalPage league={SimCBB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
     key="CFB Schedule"
     path={routes.CFB_SCHEDULE}
     element={
@@ -229,15 +257,6 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <SchedulePage league={SimNBA} />
-      </AuthGuard>
-    }
-  />,
-  <Route
-    key="CFB Recruiting"
-    path={routes.CFB_RECRUITING}
-    element={
-      <AuthGuard>
-        <RecruitingPage league={SimCFB} />
       </AuthGuard>
     }
   />,
@@ -322,7 +341,7 @@ export const AuthRoutes = [
       </AuthGuard>
     }
   />,
-   <Route
+  <Route
     key="CFB TEAM PROFILE"
     path={routes.CFB_TEAMPROFILE}
     element={
@@ -332,12 +351,12 @@ export const AuthRoutes = [
     }
   />,
   <Route
-  key="NFL DRAFT"
-  path={routes.NFL_DRAFT_ROOM}
-  element={
-    <AuthGuard>
-      <DraftPage league={SimNFL} />
-    </AuthGuard>
-  }
-/>,
+    key="NEWSPAGE"
+    path={routes.NEWS}
+    element={
+      <AuthGuard>
+        <NewsPage />
+      </AuthGuard>
+    }
+  />,
 ];

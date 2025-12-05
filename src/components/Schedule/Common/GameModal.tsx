@@ -1,4 +1,11 @@
-import { FC, useMemo, useState, useEffect, useCallback } from "react";
+import {
+  FC,
+  useMemo,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
 import {
   League,
   SimCHL,
@@ -7,6 +14,8 @@ import {
   SimNFL,
   PBP,
   BoxScore,
+  SimNBA,
+  SimCBB,
 } from "../../../_constants/constants";
 import { Modal } from "../../../_design/Modal";
 import { Text } from "../../../_design/Typography";
@@ -17,6 +26,8 @@ import {
   PlayByPlay,
   FilteredStats,
   HockeyFilteredStats,
+  BasketballFilteredStats,
+  BasketballPlayerStats,
 } from "./GameModalInterfaces";
 import {
   CollegePlayerGameStats as CHLPlayerGameStats,
@@ -35,10 +46,6 @@ import {
   FBGameModalKicking,
   FBGameModalReturning,
   FBGameModalPBP,
-  HKGameModalForwards,
-  HKGameModalDefensemen,
-  HKGameModalGoalies,
-  HKGameModalPBP,
   FBGameModalStrategy,
   FBGameModalInfo,
   FBGameModalWeather,
@@ -46,6 +53,19 @@ import {
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { Button } from "../../../_design/Buttons";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
+import {
+  CollegePlayerStats as CBBPlayerStats,
+  MatchResultsPlayer,
+  MatchResultsResponse,
+  MatchResultsTeam,
+} from "../../../models/basketballModels";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
+import {
+  getBasketballResultsColumns,
+  GetBasketballResultsValues,
+} from "./GameModalHelper";
+import { Table, TableCell } from "../../../_design/Table";
+import { getLogo } from "../../../_utility/getLogo";
 
 export interface SchedulePageGameModalProps {
   isOpen: boolean;
@@ -66,11 +86,9 @@ export const SchedulePageGameModal: FC<SchedulePageGameModalProps> = ({
   game,
   title,
 }) => {
-  let isPro = false;
-
-  if (league === SimPHL || league === SimNFL) {
-    isPro = true;
-  }
+  const isPro = useMemo(() => {
+    return league === SimPHL || league === SimNFL || league === SimNBA;
+  }, [league]);
 
   return (
     <>
@@ -108,6 +126,22 @@ export const SchedulePageGameModal: FC<SchedulePageGameModalProps> = ({
         {league === SimNFL && (
           <FootballGameModal game={game} league={league} isPro={isPro} />
         )}
+        {league === SimCBB && (
+          <BasketBallGameModal
+            game={game}
+            teamMap={teamMap}
+            league={league}
+            isPro={isPro}
+          />
+        )}
+        {league === SimNBA && (
+          <BasketBallGameModal
+            game={game}
+            teamMap={teamMap}
+            league={league}
+            isPro={isPro}
+          />
+        )}
       </Modal>
     </>
   );
@@ -123,7 +157,7 @@ export interface GameModalProps {
 
 export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
   const fbStore = useSimFBAStore();
-  const { cfbTeamMap, proTeamMap } = fbStore;
+  const { cfbTeamMap, proTeamMap, ExportPlayByPlay } = fbStore;
   const scheduleService = new FBAScheduleService();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [homePlayers, setHomePlayers] = useState<PlayerStats[]>([]);
@@ -185,13 +219,36 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
     } else {
       response = await scheduleService.GetCFBGameResultData(game.ID);
     }
+
     const filteredHomePlayerList = FilterStatsData(response.HomePlayers);
     const filteredAwayPlayerList = FilterStatsData(response.AwayPlayers);
 
-    setViewableHomePlayers(filteredHomePlayerList);
-    setViewableAwayPlayers(filteredAwayPlayerList);
-    setHomePlayers(response.HomePlayers);
-    setAwayPlayers(response.AwayPlayers);
+    // Data validation: Check if team data is swapped
+    if (response.HomePlayers?.[0] && response.AwayPlayers?.[0]) {
+      const homePlayerTeam = response.HomePlayers[0].TeamAbbr;
+      const awayPlayerTeam = response.AwayPlayers[0].TeamAbbr;
+
+      if (
+        homePlayerTeam === game.AwayTeamAbbr ||
+        awayPlayerTeam === game.HomeTeamAbbr
+      ) {
+        // Auto-fix: Swap the player arrays if they're reversed
+        setViewableHomePlayers(filteredAwayPlayerList);
+        setViewableAwayPlayers(filteredHomePlayerList);
+        setHomePlayers(response.AwayPlayers);
+        setAwayPlayers(response.HomePlayers);
+      } else {
+        setViewableHomePlayers(filteredHomePlayerList);
+        setViewableAwayPlayers(filteredAwayPlayerList);
+        setHomePlayers(response.HomePlayers);
+        setAwayPlayers(response.AwayPlayers);
+      }
+    } else {
+      setViewableHomePlayers(filteredHomePlayerList);
+      setViewableAwayPlayers(filteredAwayPlayerList);
+      setHomePlayers(response.HomePlayers);
+      setAwayPlayers(response.AwayPlayers);
+    }
 
     const pbp: PlayByPlay[] = isPro
       ? response.PlayByPlays.map((play) => ({
@@ -299,6 +356,26 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
     return { isOvertime, OvertimeHomeScore, OvertimeAwayScore };
   }, [score]);
 
+  const homeTeamLogo = useMemo(() => {
+    if (!game || game.HomeTeamID === 0) return "";
+    return getLogo(league, game.HomeTeamID, false);
+  }, [game, league]);
+
+  const awayTeamLogo = useMemo(() => {
+    if (!game || game.AwayTeamID === 0) return "";
+    return getLogo(league, game.AwayTeamID, false);
+  }, [game, league]);
+
+  const exportPlayByPlayResults = useCallback(async () => {
+    if (league === SimCFB || league === SimNFL) {
+      const dto = {
+        League: league,
+        GameID: game.ID,
+      };
+      await ExportPlayByPlay(dto);
+    }
+  }, []);
+
   return (
     <>
       {isLoading ? (
@@ -311,7 +388,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
             <div className="flex w-full justify-around px-2">
               <div className="flex flex-col items-center w-1/3">
                 <div className="flex items-center h-full gap-1 sm:gap-4">
-                  <Logo url={game.HomeTeamLogo} classes="w-full h-full" />
+                  <Logo url={homeTeamLogo} classes="w-full h-full" />
                   <div className="flex flex-col text-left sm:pr-8">
                     {league === SimCFB && (
                       <Text variant="small" classes="opacity-50">
@@ -424,14 +501,21 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                   </div>
                 </div>
                 <div className="flex justify-center items-center gap-2 py-2">
-                  <ToggleSwitch
-                    onChange={(checked) => {
-                      setView(checked ? PBP : BoxScore);
-                      setIsChecked(checked);
-                    }}
-                    checked={isChecked}
-                  />
-                  <Text variant="small">Play By Play</Text>
+                  <div>
+                    <ToggleSwitch
+                      onChange={(checked) => {
+                        setView(checked ? PBP : BoxScore);
+                        setIsChecked(checked);
+                      }}
+                      checked={isChecked}
+                    />
+                    <Text variant="small">Play By Play</Text>
+                  </div>
+                  <div>
+                    <Button size="xs" onClick={exportPlayByPlayResults}>
+                      Export
+                    </Button>
+                  </div>
                 </div>
               </div>
               <div className="flex flex-col items-center w-1/3">
@@ -452,7 +536,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                       {game.AwayTeamMascot}
                     </Text>
                   </div>
-                  <Logo url={game.AwayTeamLogo} classes="w-full h-full" />
+                  <Logo url={awayTeamLogo} classes="w-full h-full" />
                 </div>
               </div>
             </div>
@@ -506,7 +590,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Strategy
@@ -529,14 +613,14 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Strategy
                           </Text>
                         </div>
                         <FBGameModalStrategy
-                          data={viewableHomePlayers}
+                          data={viewableAwayPlayers}
                           league={league}
                           isPro={isPro}
                           backgroundColor={backgroundColor}
@@ -553,7 +637,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Passing
@@ -574,7 +658,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Passing
@@ -597,7 +681,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Rushing
@@ -618,7 +702,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Rushing
@@ -641,7 +725,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Receiving
@@ -662,7 +746,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Receiving
@@ -685,7 +769,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Defensive
@@ -706,7 +790,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Defensive
@@ -729,7 +813,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Kicking and Punting
@@ -750,7 +834,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Kicking and Punting
@@ -773,7 +857,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Returning
@@ -794,7 +878,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Returning
@@ -1044,6 +1128,16 @@ export const HockeyGameModal = ({
       await ExportPlayByPlay(dto);
     }
   }, []);
+
+  const homeTeamLogo = useMemo(() => {
+    if (!game || game.HomeTeamID === 0) return "";
+    return getLogo(league, game.HomeTeamID, false);
+  }, [game, league]);
+
+  const awayTeamLogo = useMemo(() => {
+    if (!game || game.AwayTeamID === 0) return "";
+    return getLogo(league, game.AwayTeamID, false);
+  }, [game, league]);
   return (
     <>
       {isLoading ? (
@@ -1056,7 +1150,7 @@ export const HockeyGameModal = ({
             <div className="flex w-full justify-around px-2">
               <div className="flex flex-col items-center w-1/3">
                 <div className="flex items-center h-full gap-1 sm:gap-4">
-                  <Logo url={game.HomeTeamLogo} classes="w-full h-full" />
+                  <Logo url={homeTeamLogo} classes="w-full h-full" />
                   <div className="flex flex-col text-left sm:pr-8">
                     <Text variant="small" classes="opacity-50">
                       {game.HomeTeamRank > 0 ? `#${game.HomeTeamRank}` : "NR"}
@@ -1238,7 +1332,7 @@ export const HockeyGameModal = ({
                       {game.AwayTeamMascot}
                     </Text>
                   </div>
-                  <Logo url={game.AwayTeamLogo} classes="w-full h-full" />
+                  <Logo url={awayTeamLogo} classes="w-full h-full" />
                 </div>
               </div>
             </div>
@@ -1390,7 +1484,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Forwards
@@ -1479,7 +1573,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Fowards
@@ -1570,7 +1664,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Defensemen
@@ -1659,7 +1753,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Defensemen
@@ -1750,7 +1844,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.HomeTeamLogo}
+                            url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.HomeTeamName} Goalies
@@ -1824,7 +1918,7 @@ export const HockeyGameModal = ({
                           <Logo
                             variant="tiny"
                             classes="opacity-80"
-                            url={game.AwayTeamLogo}
+                            url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
                             {game.AwayTeamName} Goalies
@@ -1993,6 +2087,437 @@ export const HockeyGameModal = ({
                       </div>
                     );
                   })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export const BasketBallGameModal = ({
+  league,
+  game,
+  isPro,
+  playerMap,
+  teamMap,
+}: GameModalProps) => {
+  const scheduleService = new FBAScheduleService();
+  const { ExportPlayByPlay, cbbTeam } = useSimBBAStore();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [homePlayers, setHomePlayers] = useState<MatchResultsPlayer[]>([]);
+  const [awayPlayers, setAwayPlayers] = useState<MatchResultsPlayer[]>([]);
+  const homeTeam = teamMap[game.HomeTeamID];
+  const [homeStats, setHomeStats] = useState<MatchResultsTeam>(
+    {} as MatchResultsTeam
+  );
+  const [awayStats, setAwayStats] = useState<MatchResultsTeam>(
+    {} as MatchResultsTeam
+  );
+  const [view, setView] = useState<string>(BoxScore);
+  const [header, setHeader] = useState<string>("Box Score");
+  const [isChecked, setIsChecked] = useState(false);
+  const backgroundColor = "#1f2937";
+  const borderColor = darkenColor(backgroundColor, -5);
+  const homeScoreColor =
+    game.HomeTeamScore > game.AwayTeamScore ||
+    game.HomeTeamShootoutScore > game.AwayTeamShootoutScore
+      ? "#189E5B"
+      : "#ef4444";
+  const awayScoreColor =
+    game.AwayTeamScore > game.HomeTeamScore ||
+    game.AwayTeamShootoutScore > game.HomeTeamShootoutScore
+      ? "#189E5B"
+      : "#ef4444";
+  const city = game.City.length === 0 ? homeTeam.City : game.City;
+  const state = game.State.length === 0 ? homeTeam.State : game.State;
+  const capacity = homeTeam ? homeTeam.Capacity : 0;
+  let gameType = "";
+  if (game.IsNeutralSite) {
+    gameType += "Neutral Site ";
+  }
+  if (game.IsConference) {
+    gameType += "Conference ";
+  }
+  if (game.IsPreseason) {
+    gameType += "Preseason ";
+  }
+  if (game.IsPlayoff) {
+    gameType += "Playoff ";
+  }
+
+  const columns = useMemo(() => {
+    return getBasketballResultsColumns();
+  }, []);
+
+  useEffect(() => {
+    if (!game || game.ID <= 0) return;
+    GetMatchResults();
+  }, [game]);
+
+  // CHANGE
+  const GetMatchResults = async (): Promise<void> => {
+    setIsLoading(true);
+
+    let response: MatchResultsResponse;
+    if (isPro) {
+      response = await scheduleService.GetNBAGameResultData(game.ID);
+    } else {
+      response = await scheduleService.GetCBBGameResultData(game.ID);
+    }
+
+    setHomePlayers(response.HomePlayers);
+    setAwayPlayers(response.AwayPlayers);
+    setHomeStats(response.HomeStats);
+    setAwayStats(response.AwayStats);
+
+    setIsLoading(false);
+  };
+
+  const playerRenderer = (
+    item: MatchResultsPlayer,
+    index: number,
+    backgroundColor: string
+  ) => {
+    const values = GetBasketballResultsValues(item);
+
+    return (
+      <div
+        key={item.ID}
+        className={`table-row border-b dark:border-gray-700 text-left`}
+        style={{ backgroundColor }}
+      >
+        {values.map((stat: any, idx) => {
+          return (
+            <TableCell key={stat.label + idx}>
+              <Text variant="small">{stat.value}</Text>
+            </TableCell>
+          );
+        })}
+      </div>
+    );
+  };
+  const rowRenderer = (
+    league: League
+  ): ((
+    item: MatchResultsPlayer,
+    index: number,
+    backgroundColor: string
+  ) => ReactNode) => {
+    return playerRenderer;
+  };
+
+  const scoreColumnCount = useMemo(() => {
+    let baseColumns = 6;
+    if (isPro) {
+      baseColumns += 2; // For NBA, we have additional columns for Overtime and Shootout
+    }
+    if (homeStats.OvertimeScore > 0 || awayStats.OvertimeScore > 0) {
+      baseColumns += 1; // Overtime column
+    }
+    return baseColumns;
+  }, [isPro, homeStats, awayStats]);
+
+  const homeTeamLogo = useMemo(() => {
+    if (!game || game.HomeTeamID === 0) return "";
+    return getLogo(league, game.HomeTeamID, false);
+  }, [game, league]);
+
+  const awayTeamLogo = useMemo(() => {
+    if (!game || game.AwayTeamID === 0) return "";
+    return getLogo(league, game.AwayTeamID, false);
+  }, [game, league]);
+
+  return (
+    <>
+      {isLoading ? (
+        <div className="flex justify-center items-center">
+          <Text variant="small">Loading...</Text>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center">
+          <div className="flex flex-col sm:gap-2">
+            <div className="flex w-full justify-around px-2">
+              <div className="flex flex-col items-center w-1/3">
+                <div className="flex items-center h-full gap-1 sm:gap-4">
+                  <Logo url={homeTeamLogo} classes="w-full h-full" />
+                  <div className="flex flex-col text-left sm:pr-8">
+                    <Text variant="small" classes="opacity-50">
+                      {game.HomeTeamRank > 0 ? `#${game.HomeTeamRank}` : "NR"}
+                    </Text>
+                    <Text variant="alternate">{game.HomeTeamName}</Text>
+                    <Text variant="h3-alt" classes="font-semibold">
+                      {game.HomeTeamMascot}
+                    </Text>
+                  </div>
+                  <div className="flex flex-col pr-2 sm:pr-0">
+                    <Text variant="h1-alt" style={{ color: homeScoreColor }}>
+                      {game.HomeTeamScore}
+                    </Text>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <div className="flex justify-center">
+                  <Text variant="body" classes="font-semibold">
+                    Final
+                  </Text>
+                </div>
+                <div className="grid">
+                  <div
+                    className={`grid grid-cols-${scoreColumnCount} gap-4 border-b`}
+                  >
+                    <div className="text-center col-span-2"></div>
+                    <div className="text-center col-span-1">
+                      <Text variant="body-small">1</Text>
+                    </div>
+                    <div className="text-center col-span-1">
+                      <Text variant="body-small">2</Text>
+                    </div>
+                    {isPro && (
+                      <>
+                        <div className="text-center col-span-1">
+                          <Text variant="body-small">3</Text>
+                        </div>
+                        <div className="text-center col-span-1">
+                          <Text variant="body-small">4</Text>
+                        </div>
+                      </>
+                    )}
+                    {homeStats.OvertimeScore > 0 ||
+                    awayStats.OvertimeScore > 0 ? (
+                      <div className="text-center col-span-1">
+                        <Text variant="body-small">OT</Text>
+                      </div>
+                    ) : null}
+                    <div className="text-center col-span-1">
+                      <Text variant="body-small">T</Text>
+                    </div>
+                  </div>
+                  <div className={`grid grid-cols-${scoreColumnCount} gap-3`}>
+                    <div className="text-left col-span-2">
+                      <Text variant="body-small">{game.HomeTeamAbbr}</Text>
+                    </div>
+                    <div className="text-center col-span-1">
+                      <Text variant="body-small">
+                        {homeStats.FirstHalfScore}
+                      </Text>
+                    </div>
+                    {isPro && (
+                      <div className="text-center col-span-1">
+                        <Text variant="body-small">
+                          {homeStats.SecondQuarterScore}
+                        </Text>
+                      </div>
+                    )}
+                    <div className="text-center col-span-1">
+                      <Text variant="body-small">
+                        {homeStats.SecondHalfScore}
+                      </Text>
+                    </div>
+                    {isPro && (
+                      <div className="text-center col-span-1">
+                        <Text variant="body-small">
+                          {homeStats.FourthQuarterScore}
+                        </Text>
+                      </div>
+                    )}
+                    {homeStats.OvertimeScore > 0 ||
+                    awayStats.OvertimeScore > 0 ? (
+                      <div className="text-center col-span-1">
+                        <Text variant="body-small">
+                          {homeStats.OvertimeScore}
+                        </Text>
+                      </div>
+                    ) : null}
+                    <div className="text-center col-span-1">
+                      <Text variant="body-small">{game.HomeTeamScore}</Text>
+                    </div>
+                  </div>
+
+                  <div className={`grid grid-cols-${scoreColumnCount} gap-3`}>
+                    <div className="text-left col-span-2">
+                      <Text variant="body-small">{game.AwayTeamAbbr}</Text>
+                    </div>
+                    <div className="text-center col-span-1">
+                      <Text variant="body-small">
+                        {awayStats.FirstHalfScore}
+                      </Text>
+                    </div>
+                    {isPro && (
+                      <div className="text-center col-span-1">
+                        <Text variant="body-small">
+                          {awayStats.SecondQuarterScore}
+                        </Text>
+                      </div>
+                    )}
+                    <div className="text-center col-span-1">
+                      <Text variant="body-small">
+                        {awayStats.SecondHalfScore}
+                      </Text>
+                    </div>
+                    {isPro && (
+                      <div className="text-center col-span-1">
+                        <Text variant="body-small">
+                          {awayStats.FourthQuarterScore}
+                        </Text>
+                      </div>
+                    )}
+                    {homeStats.OvertimeScore > 0 ||
+                    awayStats.OvertimeScore > 0 ? (
+                      <div className="text-center col-span-1">
+                        <Text variant="body-small">
+                          {awayStats.OvertimeScore}
+                        </Text>
+                      </div>
+                    ) : null}
+                    <div className="text-center col-span-1">
+                      <Text variant="body-small">{game.AwayTeamScore}</Text>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-center w-1/3">
+                <div className="flex items-center h-full gap-1 sm:gap-4">
+                  <div className="flex flex-col pl-2 sm:pl-0">
+                    <Text variant="h1-alt" style={{ color: awayScoreColor }}>
+                      {game.AwayTeamScore}
+                    </Text>
+                  </div>
+                  <div className="flex flex-col text-right sm:pl-8">
+                    <Text variant="small" classes="opacity-50">
+                      {game.AwayTeamRank > 0 ? `#${game.AwayTeamRank}` : "NR"}
+                    </Text>
+                    <Text variant="alternate">{game.AwayTeamName}</Text>
+                    <Text variant="h3-alt" classes="font-semibold">
+                      {game.AwayTeamMascot}
+                    </Text>
+                  </div>
+                  <Logo url={awayTeamLogo} classes="w-full h-full" />
+                </div>
+              </div>
+            </div>
+            <div
+              className="flex flex-col rounded-lg p-2 justify-start w-full"
+              style={{ backgroundColor: borderColor }}
+            >
+              {view === BoxScore && (
+                <div className="flex flex-col">
+                  <div className="flex flex-col sm:flex-row items-start gap-1 sm:gap-4">
+                    <div className="flex flex-row items-center justify-start w-full">
+                      <div className="flex flex-col p-2 sm:p-4 w-full">
+                        <div className="flex gap-2 w-full pb-2">
+                          <Text variant="body-small" classes="font-semibold">
+                            Game Info
+                          </Text>
+                        </div>
+                        <div
+                          className="grid rounded-lg border-t px-1"
+                          style={{ backgroundColor }}
+                        >
+                          <div className="grid grid-cols-12 gap-2 font-semibold py-1 border-b">
+                            <Text variant="xs" classes="col-span-3 text-left">
+                              Arena
+                            </Text>
+                            <Text variant="xs" classes="col-span-2">
+                              Attendance
+                            </Text>
+                            <Text variant="xs">Capacity</Text>
+                            <Text variant="xs" classes="col-span-2">
+                              City
+                            </Text>
+                            <Text variant="xs">State</Text>
+                            <Text variant="xs">Country</Text>
+                            <Text variant="xs" classes="col-span-2 text-left">
+                              Game Type
+                            </Text>
+                          </div>
+                          <div
+                            className="grid grid-cols-12 gap-2 text-sm border-b py-1"
+                            style={{
+                              backgroundColor: borderColor,
+                            }}
+                          >
+                            <Text variant="xs" classes="col-span-3 text-left">
+                              {game.Arena}
+                            </Text>
+                            <Text variant="xs" classes="col-span-2">
+                              {game.AttendanceCount
+                                ? game.AttendanceCount
+                                : "N/A"}
+                            </Text>
+                            <Text variant="xs">{capacity}</Text>
+                            <Text variant="xs" classes="col-span-2">
+                              {city}
+                            </Text>
+                            <Text variant="xs">{state}</Text>
+                            <Text variant="xs">?</Text>
+                            <Text variant="xs" classes="col-span-2 text-left">
+                              {gameType}
+                            </Text>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-start gap-1 sm:gap-4">
+                    <div className="flex flex-col items-center justify-start w-full">
+                      <div className="flex flex-col p-2 sm:p-4 w-full">
+                        <div className="flex gap-2 w-full pb-2">
+                          <Logo
+                            variant="tiny"
+                            classes="opacity-80"
+                            url={homeTeamLogo}
+                          />
+                          <Text variant="body-small" classes="font-semibold">
+                            {game.HomeTeamName} Players
+                          </Text>
+                        </div>
+                        <div
+                          className="grid rounded-lg border-t px-1"
+                          style={{ backgroundColor }}
+                        >
+                          <Table
+                            columns={columns}
+                            data={homePlayers}
+                            rowRenderer={rowRenderer(league)}
+                            backgroundColor={backgroundColor}
+                            team={cbbTeam}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-start gap-1 sm:gap-4">
+                    <div className="flex flex-col items-center justify-center w-full">
+                      <div className="flex flex-col p-2 sm:p-4 w-full">
+                        <div className="flex gap-2 items-center w-full pb-2">
+                          <Logo
+                            variant="tiny"
+                            classes="opacity-80"
+                            url={awayTeamLogo}
+                          />
+                          <Text variant="body-small" classes="font-semibold">
+                            {game.AwayTeamName} Players
+                          </Text>
+                        </div>
+                        <div
+                          className="grid rounded-lg border-t px-1"
+                          style={{ backgroundColor }}
+                        >
+                          <Table
+                            columns={columns}
+                            data={awayPlayers}
+                            rowRenderer={rowRenderer(league)}
+                            backgroundColor={backgroundColor}
+                            team={cbbTeam}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

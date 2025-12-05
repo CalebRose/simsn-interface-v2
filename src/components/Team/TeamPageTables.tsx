@@ -1,17 +1,15 @@
 import { FC, useMemo } from "react";
-import { Table } from "../../_design/Table";
+import { Table, TableCell } from "../../_design/Table";
 import { Text } from "../../_design/Typography";
 import {
   CollegePlayer as CHLPlayer,
   ProfessionalPlayer as PHLPlayer,
   ProContract as PHLContract,
-  DraftPick,
 } from "../../models/hockeyModels";
 import {
   CollegePlayer as CFBPlayer,
   NFLPlayer,
   NFLContract,
-  Timestamp,
 } from "../../models/footballModels";
 import { useResponsive } from "../../_hooks/useMobile";
 import {
@@ -19,11 +17,11 @@ import {
   Potentials,
   Contracts,
   Overview,
-  ButtonGreen,
   TextGreen,
   Affiliate,
   TradeBlock,
   PracticeSquad,
+  Promises,
 } from "../../_constants/constants";
 import {
   getCHLAttributes,
@@ -32,7 +30,7 @@ import {
   getNFLAttributes,
   getCBBAttributes,
   getNBAAttributes,
-  getPHLTradeBlockAttributes,
+  getTradeBlockAttributes,
 } from "./TeamPageUtils";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { useModal } from "../../_hooks/useModal";
@@ -59,6 +57,12 @@ import {
 import { TradeBlockRow } from "./TeamPageTypes";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
+import { useSimHCKStore } from "../../context/SimHockeyContext";
+import {
+  getGeneralLetterGrade,
+  getHockeyLetterGrade,
+} from "../../_utility/getLetterGrade";
+import { useSimFBAStore } from "../../context/SimFBAContext";
 
 interface CHLRosterTableProps {
   roster: CHLPlayer[];
@@ -68,6 +72,7 @@ interface CHLRosterTableProps {
   team?: any;
   category?: string;
   openModal: (action: ModalAction, player: CHLPlayer) => void;
+  openPromiseModal: (player: CHLPlayer) => void;
   disable: boolean;
 }
 
@@ -79,10 +84,12 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
   team,
   category,
   openModal,
+  openPromiseModal,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const { isDesktop, isTablet } = useResponsive();
+  const { hck_Timestamp, collegePromiseMap } = useSimHCKStore();
 
   let rosterColumns = useMemo(() => {
     let columns = [
@@ -143,6 +150,16 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "Inj", accessor: "Injury" },
       ]);
     }
+    if ((isDesktop || isTablet) && category === Promises) {
+      columns = columns.concat([
+        { header: "Promise Type", accessor: "PromiseType" },
+        { header: "Promise Weight", accessor: "PromiseWeight" },
+        { header: "Benchmark", accessor: "Benchmark" },
+        { header: "Benchmark 2", accessor: "BenchmarkStr" },
+        { header: "Committed", accessor: "PromiseMade" },
+        { header: "Active", accessor: "IsActive" },
+      ]);
+    }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
   }, [isDesktop, category]);
@@ -157,6 +174,8 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     backgroundColor: string
   ) => {
     const attributes = getCHLAttributes(item, !isDesktop, isTablet, category!);
+    const collegePromise = collegePromiseMap[item.ID];
+    const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
     return (
       <div
         key={item.ID}
@@ -225,6 +244,55 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             )}
           </div>
         ))}
+        {category === Attributes && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {getGeneralLetterGrade(item.Stamina)}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {getGeneralLetterGrade(item.InjuryRating)}
+              </Text>
+            </TableCell>
+          </>
+        )}
+        {category == Promises && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.PromiseType : "No Promise"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.PromiseWeight : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.Benchmark : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.BenchmarkStr : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise && collegePromise.PromiseMade ? "Yes" : "No"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise && collegePromise.IsActive ? "Yes" : "No"}
+              </Text>
+            </TableCell>
+          </>
+        )}
+
         <div className="table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
@@ -254,11 +322,14 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
               if (selectedOption?.value === "cut") {
                 openModal(Cut, item);
               }
-              if (selectedOption?.value === "redshirt") {
+              if (
+                selectedOption?.value === "redshirt" &&
+                hck_Timestamp!.Week < 2
+              ) {
                 openModal(Redshirt, item);
               }
               if (selectedOption?.value === "promise") {
-                openModal(Promise, item);
+                openPromiseModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
               }
@@ -291,6 +362,7 @@ interface PHLRosterTableProps {
   team?: any;
   category?: string;
   openModal: (action: ModalAction, player: PHLPlayer) => void;
+  openExtensionModal: (player: PHLPlayer) => void;
   disable: boolean;
 }
 
@@ -304,6 +376,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
   team,
   category,
   openModal,
+  openExtensionModal,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -477,6 +550,20 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             )}
           </div>
         ))}
+        {category === Attributes && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.Stamina}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.InjuryRating}
+              </Text>
+            </TableCell>
+          </>
+        )}
         <div
           className={`table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
         >
@@ -519,6 +606,11 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
                 openModal(Affiliate, item);
               } else if (selectedOption?.value === "tradeBlock") {
                 openModal(TradeBlock, item);
+              } else if (
+                selectedOption?.value === "extension" &&
+                playerContract!.ContractLength <= 1
+              ) {
+                openExtensionModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
               }
@@ -589,6 +681,7 @@ interface CFBRosterTableProps {
   category?: string;
   openModal: (action: ModalAction, player: CFBPlayer) => void;
   disable: boolean;
+  redshirtCount?: number;
 }
 
 export const CFBRosterTable: FC<CFBRosterTableProps> = ({
@@ -596,11 +689,13 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
   backgroundColor,
   headerColor,
   borderColor,
+  redshirtCount,
   team,
   category,
   openModal,
   disable,
 }) => {
+  const store = useSimFBAStore();
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const { isDesktop } = useResponsive();
 
@@ -748,7 +843,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
                 value: "cut",
                 label: `Cut - ${item.FirstName} ${item.LastName}`,
               },
-              ...(item.IsRedshirting || item.IsRedshirt
+              ...(item.IsRedshirting || item.IsRedshirt || redshirtCount!! > 20
                 ? []
                 : [
                     {
@@ -1707,7 +1802,7 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
     index: number,
     backgroundColor: string
   ) => {
-    const attributes = getPHLTradeBlockAttributes(
+    const attributes = getTradeBlockAttributes(
       item,
       item.isPlayer,
       !isDesktop,
@@ -1743,7 +1838,7 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
                 onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
                   (e.target as HTMLElement).style.color = "";
                 }}
-                onClick={() => openModal(InfoType, item.player!!)}
+                onClick={() => openModal(InfoType, item.player!! as PHLPlayer)}
               >
                 <Text variant="small">{attr.value}</Text>
               </span>
@@ -1769,7 +1864,163 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
             }
             onChange={(selectedOption) => {
               if (selectedOption?.value === "tradeBlock") {
-                item.isPlayer ? openModal(TradeBlock, item.player!!) : () => {};
+                item.isPlayer
+                  ? openModal(TradeBlock, item.player!! as PHLPlayer)
+                  : () => {};
+              }
+            }}
+            isDisabled={disable}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Table
+      columns={rosterColumns}
+      data={roster}
+      rowRenderer={rowRenderer}
+      backgroundColor={backgroundColor}
+      team={team}
+    />
+  );
+};
+
+interface NFLTradeBlockTableProps {
+  roster: TradeBlockRow[];
+  ts: any;
+  backgroundColor?: string;
+  headerColor?: string;
+  borderColor?: string;
+  team?: any;
+  category?: string;
+  openModal: (action: ModalAction, player: NFLPlayer) => void;
+  disable: boolean;
+}
+
+export const NFLTradeBlockTable: FC<NFLTradeBlockTableProps> = ({
+  roster = [],
+  ts,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  team,
+  category,
+  openModal,
+  disable,
+}) => {
+  const textColorClass = getTextColorBasedOnBg(backgroundColor);
+  const { isDesktop, isTablet } = useResponsive();
+
+  const rosterColumns = useMemo(() => {
+    let columns = [
+      { header: "Type", accessor: "isPlayer" },
+      { header: "Name", accessor: "LastName" },
+      {
+        header: !isDesktop && !isTablet ? "Pos" : "Position",
+        accessor: "Position",
+      },
+      {
+        header: !isDesktop && !isTablet ? "Arch" : "Archetype",
+        accessor: "Archetype",
+      },
+      {
+        header: !isDesktop && !isTablet ? "Exp" : "Experience",
+        accessor: "Year",
+      },
+      {
+        header: !isDesktop && !isTablet ? "Ovr" : "Overall",
+        accessor: "Overall",
+      },
+      {
+        header: !isDesktop && !isTablet ? "DR" : "DraftRound",
+        accessor: "DraftRound",
+      },
+      {
+        header: !isDesktop && !isTablet ? "PN" : "PickNumber",
+        accessor: "PickNumber",
+      },
+      {
+        header: !isDesktop && !isTablet ? "Val" : "Value",
+        accessor: "Value",
+      },
+    ];
+
+    columns.push({ header: "Actions", accessor: "actions" });
+    return columns;
+  }, [isDesktop, category]);
+
+  const rowRenderer = (
+    item: TradeBlockRow,
+    index: number,
+    backgroundColor: string
+  ) => {
+    const attributes = getTradeBlockAttributes(
+      item,
+      item.isPlayer,
+      !isDesktop,
+      isTablet,
+      category!
+    );
+    return (
+      <div
+        key={item.id}
+        className={`table-row border-b dark:border-gray-700 text-left`}
+        style={{ backgroundColor }}
+      >
+        {attributes.map((attr, idx) => (
+          <div
+            key={idx}
+            className={`table-cell 
+        align-middle 
+        min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
+          category === Overview && idx === 6
+            ? "text-left"
+            : idx !== 0
+            ? "text-center"
+            : ""
+        }`}
+          >
+            {attr.label === "Name" ? (
+              <span
+                className={`cursor-pointer font-semibold`}
+                onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+                  (e.target as HTMLElement).style.color = "#fcd53f";
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+                  (e.target as HTMLElement).style.color = "";
+                }}
+                onClick={() => openModal(InfoType, item.player!! as NFLPlayer)}
+              >
+                <Text variant="small">{attr.value}</Text>
+              </span>
+            ) : (
+              <Text variant="small" classes="text-start">
+                {attr.value}
+              </Text>
+            )}
+          </div>
+        ))}
+        <div className="table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
+          <SelectDropdown
+            placeholder={!isDesktop ? "Action" : "Select an action"}
+            options={
+              item.isPlayer
+                ? [
+                    {
+                      value: "tradeBlock",
+                      label: `Trade Block - ${item.name}`,
+                    },
+                  ]
+                : []
+            }
+            onChange={(selectedOption) => {
+              if (selectedOption?.value === "tradeBlock") {
+                item.isPlayer
+                  ? openModal(TradeBlock, item.player!! as NFLPlayer)
+                  : () => {};
               }
             }}
             isDisabled={disable}

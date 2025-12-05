@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -36,16 +37,19 @@ import {
   NBAWaiverOfferDTO,
   NBAContractOfferDTO,
   PlayerRecruitProfile,
+  CrootProfile,
+  NBATradeProposal,
+  CollegePollOfficial,
+  CollegePollSubmission,
+  NBADraftee,
+  NBATradePreferences,
+  DraftPick,
+  NBATradeProposalDTO,
 } from "../models/basketballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { BootstrapService } from "../_services/bootstrapService";
 import { bba_ws } from "../_constants/urls";
-import {
-  Assistant,
-  SEASON_VIEW,
-  SimBBA,
-  SimCBB,
-} from "../_constants/constants";
+import { SimBBA, SimCBB } from "../_constants/constants";
 import { StatsService } from "../_services/statsService";
 import { enqueueSnackbar } from "notistack";
 import { FreeAgencyService } from "../_services/freeAgencyService";
@@ -53,6 +57,9 @@ import { RecruitService } from "../_services/recruitService";
 import { GameplanService } from "../_services/gameplanService";
 import { PlayerService } from "../_services/playerService";
 import { TeamService } from "../_services/teamService";
+import { TradeService } from "../_services/tradeService";
+import { CollegePollService } from "../_services/collegePollService";
+import FBAScheduleService from "../_services/scheduleService";
 
 // ✅ Define Types for Context
 interface SimBBAContextProps {
@@ -133,9 +140,28 @@ interface SimBBAContextProps {
   SaveWaiverWireOffer: (dto: any) => Promise<void>;
   CancelWaiverWireOffer: (dto: any) => Promise<void>;
   SaveRecruitingBoard: () => Promise<void>;
-  SaveAIRecruitingSettings: (dto: UpdateRecruitingBoardDto) => Promise<void>;
+  SaveAIRecruitingSettings: (dto: TeamRecruitingProfile) => Promise<void>;
   SearchBasketballStats: (dto: any) => Promise<void>;
   ExportBasketballStats: (dto: any) => Promise<void>;
+  ExportCBBRecruits: () => Promise<void>;
+  ExportPlayByPlay: (dto: any) => Promise<void>;
+  submitCollegePoll: (dto: any) => Promise<void>;
+  proposeTrade: (dto: NBATradeProposal) => Promise<void>;
+  acceptTrade: (dto: NBATradeProposal) => Promise<void>;
+  rejectTrade: (dto: NBATradeProposal) => Promise<void>;
+  cancelTrade: (dto: NBATradeProposal) => Promise<void>;
+  syncAcceptedTrade: (dto: NBATradeProposal) => Promise<void>;
+  vetoTrade: (dto: NBATradeProposal) => Promise<void>;
+  ExportBasketballSchedule: (dto: any) => Promise<void>;
+  collegePolls: CollegePollOfficial[];
+  collegePollSubmission: CollegePollSubmission;
+  nbaDraftees: NBADraftee[];
+  tradeProposalsMap: Record<number, NBATradeProposal[]>;
+  tradePreferencesMap: Record<number, NBATradePreferences>;
+  nbaDraftPicks: DraftPick[];
+  nbaDraftPickMap: Record<number, DraftPick[]>;
+  individualDraftPickMap: Record<number, DraftPick>;
+  getBootstrapNewsData: () => void;
 }
 
 // ✅ Initial Context State
@@ -216,6 +242,25 @@ const defaultContext: SimBBAContextProps = {
   CancelWaiverWireOffer: async () => {},
   SearchBasketballStats: async () => {},
   ExportBasketballStats: async () => {},
+  ExportCBBRecruits: async () => {},
+  submitCollegePoll: async () => {},
+  proposeTrade: async () => {},
+  acceptTrade: async () => {},
+  rejectTrade: async () => {},
+  cancelTrade: async () => {},
+  syncAcceptedTrade: async () => {},
+  vetoTrade: async () => {},
+  ExportBasketballSchedule: async () => {},
+  ExportPlayByPlay: async () => {},
+  getBootstrapNewsData: async () => {},
+  collegePolls: [],
+  collegePollSubmission: {} as CollegePollSubmission,
+  nbaDraftees: [],
+  tradeProposalsMap: {},
+  tradePreferencesMap: {},
+  nbaDraftPicks: [],
+  nbaDraftPickMap: [],
+  individualDraftPickMap: [],
 };
 
 export const SimBBAContext = createContext<SimBBAContextProps>(defaultContext);
@@ -227,6 +272,7 @@ interface SimBBAProviderProps {
 
 export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const { currentUser } = useAuthStore();
+  const scheduleService = new FBAScheduleService();
   const { cbb_Timestamp, setCBB_Timestamp } = useWebSockets(bba_ws, SimBBA);
   const isFetching = useRef(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -308,6 +354,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [internationalPlayers, setInternationalPlayers] = useState<NBAPlayer[]>(
     []
   );
+  const [nbaDraftees, setNBADraftees] = useState<NBADraftee[]>([]);
+
   const [capsheetMap, setCapsheetMap] = useState<Record<
     number,
     NBACapsheet
@@ -339,12 +387,55 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     number,
     NBAExtensionOffer
   > | null>({});
+  const [collegePolls, setCollegePolls] = useState<CollegePollOfficial[]>([]);
+  const [collegePollSubmission, setCollegePollSubmission] =
+    useState<CollegePollSubmission>({} as CollegePollSubmission);
+  const [tradeProposalsMap, setTradeProposalsMap] = useState<
+    Record<number, NBATradeProposal[]>
+  >([]);
+  const [tradePreferencesMap, setTradePreferencesMap] = useState<
+    Record<number, NBATradePreferences>
+  >([]);
+  const [nbaDraftPicks, setNBADraftPicks] = useState<DraftPick[]>([]);
+
+  const nbaDraftPickMap = useMemo(() => {
+    if (!nbaDraftPicks) return {};
+    const pickMap: Record<number, DraftPick[]> = {};
+    for (let i = 0; i < nbaDraftPicks.length; i++) {
+      const pick = nbaDraftPicks[i];
+      if (!pickMap[pick.TeamID]) {
+        pickMap[pick.TeamID] = [pick];
+      } else {
+        pickMap[pick.TeamID].push(pick);
+      }
+    }
+    return pickMap;
+  }, [nbaDraftPicks]);
+
+  const individualDraftPickMap = useMemo(() => {
+    const pickMap: Record<number, DraftPick> = {};
+
+    for (let i = 0; i < nbaDraftPicks.length; i++) {
+      const pick = nbaDraftPicks[i];
+      pickMap[pick.ID] = pick;
+    }
+
+    return pickMap;
+  }, [nbaDraftPicks]);
 
   useEffect(() => {
     getBootstrapTeamData();
   }, []);
 
   const getBootstrapTeamData = async () => {
+    let cbbID = 0;
+    let nbaID = 0;
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
+    }
+    if (currentUser && currentUser.NBATeamID) {
+      nbaID = currentUser.NBATeamID;
+    }
     const res = await BootstrapService.GetBBABootstrapTeamData();
     setCBBTeams(res.AllCollegeTeams);
     const sortedProTeams = res.AllProTeams.sort(
@@ -416,6 +507,29 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     isFetching.current = false;
   };
 
+  const getBootstrapNewsData = useCallback(async () => {
+    let cbbID = 0;
+    let nbaID = 0;
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
+    }
+    if (currentUser && currentUser.NBATeamID) {
+      nbaID = currentUser.NBATeamID;
+    }
+    if (cbbID === 0 && nbaID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetBBANewsBootstrapData(cbbID, nbaID);
+
+    if (cbbID > 0) {
+      setCollegeNews(res.CollegeNews as any);
+    }
+
+    if (nbaID > 0) {
+      setProNews(res.ProNews as any);
+    }
+  }, [currentUser?.cbb_id, currentUser?.NBATeamID]);
+
   const getFirstBootstrapData = async () => {
     let cbbID = 0;
     let nbaID = 0;
@@ -424,6 +538,12 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
     if (currentUser && currentUser.NBATeamID) {
       nbaID = currentUser.NBATeamID;
+    }
+    // if the user has no basketball teams, skip BBA bootstrapping
+    if (cbbID === 0 && nbaID === 0) {
+      isFetching.current = false;
+      setIsLoading(false);
+      return;
     }
     const res = await BootstrapService.GetBBABootstrapData(cbbID, nbaID);
     if (cbbID > 0) {
@@ -456,11 +576,16 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NBATeamID) {
       nbaID = currentUser.NBATeamID;
     }
+    // if the user has no basketball teams, skip BBA bootstrapping
+    if (cbbID === 0 && nbaID === 0) {
+      return;
+    }
+
     const res = await BootstrapService.GetSecondBBABootstrapData(cbbID, nbaID);
     if (cbbID > 0) {
-      setCollegeNews(res.CollegeNews);
       setTeamProfileMap(res.TeamProfileMap);
       setAllCBBStandings(res.CollegeStandings);
+      setCollegePolls(res.CollegePolls);
     }
     if (nbaID > 0) {
       setTopNBAPoints(res.TopNBAPoints);
@@ -511,6 +636,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NBATeamID) {
       nbaID = currentUser.NBATeamID;
     }
+    // if the user has no basketball teams, skip BBA bootstrapping
+    if (cbbID === 0 && nbaID === 0) {
+      return;
+    }
+
     const res = await BootstrapService.GetThirdBBABootstrapData(cbbID, nbaID);
     if (cbbID > 0) {
       setRecruits(res.Recruits);
@@ -519,7 +649,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
 
     if (nbaID > 0) {
-      setProNews(res.ProNews);
       setFreeAgentOffers(res.FreeAgentOffers);
       setWaiverOffers(res.WaiverOffers);
       setProContractMap(res.ContractMap);
@@ -702,13 +831,23 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     const apiDTO = {
       ...dto,
       SeasonID: cbb_Timestamp?.SeasonID,
-      Team: cbbTeam,
+      Team: cbbTeam?.Team,
       Recruiter: cbbTeam?.Coach,
       ProfileID: cbbTeam?.ID,
     };
     const profile = await RecruitService.BBACreateRecruitProfile(apiDTO);
     if (profile) {
-      setRecruitProfiles((profiles) => [...profiles, profile]);
+      setRecruitProfiles((profiles) => {
+        const profileIDX = profiles.findIndex(
+          (x) => x.RecruitID === apiDTO.RecruitID
+        );
+        if (profileIDX < 0) {
+          return [...profiles, profile];
+        }
+        const newProfiles = [...profiles];
+        newProfiles[profileIDX] = { ...profile } as PlayerRecruitProfile;
+        return newProfiles;
+      });
     }
   };
 
@@ -789,17 +928,28 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   };
 
   const SaveRecruitingBoard = useCallback(async () => {
+    const crootProfiles = recruitProfiles.map((profile) => {
+      return new CrootProfile({
+        ID: profile.ID,
+        RecruitID: profile.RecruitID,
+        ProfileID: profile.ProfileID,
+        CurrentWeeksPoints: profile.CurrentWeeksPoints,
+      });
+    });
     const dto = {
       Profile: teamProfileMap!![cbbTeam!.ID],
-      Recruits: recruitProfiles,
+      Recruits: crootProfiles,
       TeamID: cbbTeam!.ID,
     };
-
     await RecruitService.BBASaveRecruitingBoard(dto);
+    enqueueSnackbar(`Recruiting Board Saved for ${cbbTeam?.Team}!`, {
+      variant: "success",
+      autoHideDuration: 3000,
+    });
   }, [teamProfileMap, recruitProfiles, cbbTeam]);
 
   const SaveAIRecruitingSettings = useCallback(
-    async (dto: UpdateRecruitingBoardDto) => {
+    async (dto: TeamRecruitingProfile) => {
       const res = await RecruitService.BBASaveAISettings(dto);
       if (res) {
         enqueueSnackbar("AI Recruiting Settings Saved!", {
@@ -962,6 +1112,119 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const ExportCBBRecruits = useCallback(async () => {
+    await RecruitService.ExportCBBCroots();
+  }, []);
+
+  const proposeTrade = useCallback(async (dto: NBATradeProposal) => {
+    const thisDTO = new NBATradeProposalDTO({ dto });
+    const res = await TradeService.BBACreateTradeProposal(thisDTO);
+    enqueueSnackbar(
+      `Sent trade proposal to ${nbaTeamMap![dto.RecepientTeamID].Team}!`,
+      {
+        variant: "success",
+        autoHideDuration: 3000,
+      }
+    );
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NBATeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NBATeamID]: [...tp[dto.NBATeamID], dto],
+      };
+    });
+  }, []);
+
+  const acceptTrade = useCallback(async (dto: NBATradeProposal) => {
+    const res = await TradeService.FBAAcceptTradeProposal(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NBATeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NBATeamID]: [...tp[dto.NBATeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const rejectTrade = useCallback(async (dto: NBATradeProposal) => {
+    const res = await TradeService.FBARejectTradeProposal(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NBATeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NBATeamID]: [...tp[dto.NBATeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const cancelTrade = useCallback(async (dto: NBATradeProposal) => {
+    const res = await TradeService.FBACancelTradeProposal(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NBATeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NBATeamID]: [...tp[dto.NBATeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const syncAcceptedTrade = useCallback(async (dto: NBATradeProposal) => {
+    const res = await TradeService.FBAConfirmAcceptedTrade(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NBATeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NBATeamID]: [...tp[dto.NBATeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const vetoTrade = useCallback(async (dto: NBATradeProposal) => {
+    const res = await TradeService.FBAVetoAcceptedTrade(dto.ID);
+
+    setTradeProposalsMap((tp) => {
+      const team = tp[dto.NBATeamID];
+      if (!team) return tp;
+      return {
+        ...tp,
+        [dto.NBATeamID]: [...tp[dto.NBATeamID]].filter((x) => x.ID !== dto.ID),
+      };
+    });
+  }, []);
+
+  const submitCollegePoll = useCallback(async (dto: any) => {
+    const res = await CollegePollService.BBASubmitPoll(dto);
+    if (res) {
+      setCollegePollSubmission(res);
+      enqueueSnackbar(`College Poll Submitted!`, {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    }
+  }, []);
+
+  const ExportBasketballSchedule = useCallback(async (dto: any) => {
+    const res = await scheduleService.BBATimeslotExport(dto);
+  }, []);
+
+  // Fixme: This function is not used in the current context, but it is included for completeness.
+  const ExportPlayByPlay = useCallback(async (dto: any) => {
+    if (dto.League === SimCBB) {
+      const res = await scheduleService.HCKExportCHLPlayByPlay(dto);
+    } else {
+      const res = await scheduleService.HCKExportPHLPlayByPlay(dto);
+    }
+  }, []);
+
   return (
     <SimBBAContext.Provider
       value={{
@@ -1017,6 +1280,21 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         playerFaces,
         proContractMap,
         proExtensionMap,
+        collegePolls,
+        collegePollSubmission,
+        nbaDraftPicks,
+        individualDraftPickMap,
+        nbaDraftPickMap,
+        tradeProposalsMap,
+        tradePreferencesMap,
+        nbaDraftees,
+        submitCollegePoll,
+        proposeTrade,
+        acceptTrade,
+        rejectTrade,
+        cancelTrade,
+        syncAcceptedTrade,
+        vetoTrade,
         removeUserfromCBBTeamCall,
         removeUserfromNBATeamCall,
         addUserToCBBTeam,
@@ -1041,6 +1319,10 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         CancelWaiverWireOffer,
         SearchBasketballStats,
         ExportBasketballStats,
+        ExportCBBRecruits,
+        ExportBasketballSchedule,
+        ExportPlayByPlay,
+        getBootstrapNewsData,
       }}
     >
       {children}

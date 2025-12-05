@@ -14,6 +14,7 @@ import { useSimFBAStore } from "../../context/SimFBAContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
 import { PageContainer } from "../../_design/Container";
 import { HockeyStatsPage } from "./HockeyStats/HockeyStatsPage";
+import { FootballStatsPage } from "./FootballStats/FootballStatsPage";
 
 export interface StatsPageProps {
   league: League;
@@ -64,8 +65,7 @@ export const StatsPage: FC<StatsPageProps> = ({ league }) => {
       <PageContainer direction="col" isLoading={isLoading} title="Statistics">
         {selectedLeague === SimCFB && cfbTeam && (
           <>
-            This page will be available when we add the University of Guam to
-            the FCS
+            <FootballStatsPage league={selectedLeague} />
           </>
         )}
         {selectedLeague === SimCBB && cbbTeam && (
@@ -82,7 +82,11 @@ export const StatsPage: FC<StatsPageProps> = ({ league }) => {
           </>
         )}
         {selectedLeague === SimNBA && nbaTeam && <></>}
-        {selectedLeague === SimNFL && nflTeam && <></>}
+        {selectedLeague === SimNFL && nflTeam && (
+          <>
+            <FootballStatsPage league={selectedLeague} />
+          </>
+        )}
       </PageContainer>
     </>
   );

@@ -7,17 +7,22 @@ import {
   ModalAction,
   Preferences,
   RecruitInfoType,
+  SimCBB,
   SimCFB,
   SimCHL,
 } from "../../../_constants/constants";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
-import { Croot as BasketballCroot } from "../../../models/basketballModels";
+import {
+  Croot as BasketballCroot,
+  TeamRecruitingProfile,
+} from "../../../models/basketballModels";
 import {
   Croot as FootballCroot,
   RecruitingTeamProfile,
 } from "../../../models/footballModels";
 import { Croot as HockeyCroot } from "../../../models/hockeyModels";
 import {
+  getCBBCrootAttributes,
   getCFBCrootAttributes,
   getCHLCrootAttributes,
 } from "../../Team/TeamPageUtils";
@@ -62,7 +67,33 @@ const getRecruitingColumns = (
 
     return columns;
   }
+  if (league === SimCBB) {
+    let columns: { header: string; accessor: string }[] = [
+      { header: "ID", accessor: "" },
+      { header: "Name", accessor: "LastName" },
+      { header: "Pos", accessor: "Position" },
+      { header: "Arch.", accessor: "Archetype" },
+      { header: "⭐", accessor: "Stars" },
+      { header: "Ht", accessor: "Height" },
+      { header: "State", accessor: "State" },
+      { header: "Country", accessor: "Country" },
+      { header: "Ovr", accessor: "OverallGrade" },
+      { header: "Ins", accessor: "Finishing" },
+      { header: "Mid", accessor: "Shooting2" },
+      { header: "3pt", accessor: "Shooting3" },
+      { header: "FT", accessor: "FreeThrow" },
+      { header: "BW", accessor: "Ballwork" },
+      { header: "RB", accessor: "Rebounding" },
+      { header: "Int. D", accessor: "InteriorDefense" },
+      { header: "Per. D", accessor: "PerimeterDefense" },
+      { header: "Pot", accessor: "PotentialGrade" },
+      { header: "Status", accessor: "RecruitingStatus" },
+      { header: "Leaders", accessor: "lead" },
+      { header: "Actions", accessor: "actions" },
+    ];
 
+    return columns;
+  }
   if (league === SimCHL) {
     let columns: { header: string; accessor: string }[] = [
       { header: "ID", accessor: "" },
@@ -389,6 +420,123 @@ const CFBRow: React.FC<CFBRowProps> = ({
   );
 };
 
+interface CBBRowProps {
+  item: BasketballCroot;
+  index: number;
+  backgroundColor: string;
+  openModal: (type: ModalAction, player: any) => void;
+  recruitOnBoardMap: Record<number, boolean>;
+  isMobile: boolean;
+  category: string;
+  teamProfile: TeamRecruitingProfile;
+}
+
+const CBBRow: React.FC<CBBRowProps> = ({
+  item,
+  index,
+  openModal,
+  backgroundColor,
+  recruitOnBoardMap,
+  isMobile,
+  category,
+  teamProfile,
+}) => {
+  const selection = getCBBCrootAttributes(item, isMobile, category!);
+  const actionVariant = !recruitOnBoardMap[item.ID] ? "success" : "secondary";
+
+  // Adjust name text color based on whether player is a good or bad fit, or if custom.
+
+  const leadingTeams = useMemo(() => {
+    if (item.LeadingTeams === null || item.LeadingTeams.length === 0) {
+      return "None";
+    }
+
+    const competingTeams = item.LeadingTeams.filter((x, idx) => x.Odds > 0);
+    const topTeams = competingTeams.filter((x, idx) => idx <= 3);
+
+    if (topTeams.length === 0) {
+      return "None";
+    }
+    const competingIDs = topTeams.map((x) => x.TeamID);
+    return competingIDs.map((x) => {
+      const logo = getLogo(SimCBB, x, false);
+      return (
+        <div key={x}>
+          <Logo url={logo} variant="tiny" />
+        </div>
+      );
+    });
+  }, [item]);
+
+  const winningLogo = useMemo(() => {
+    if (!item.IsSigned) {
+      return "";
+    }
+    const winningURL = getLogo(SimCBB, item.TeamID, false);
+    return <Logo url={winningURL} variant="small" />;
+  }, [item]);
+
+  const nameColor = useMemo(() => {
+    if (item.IsCustomCroot) {
+      return "text-blue-400";
+    }
+    return "";
+  }, [item]);
+
+  return (
+    <div
+      key={item.ID}
+      className="table-row border-b dark:border-gray-700 text-left"
+      style={{ backgroundColor }}
+    >
+      {selection.map((attr, idx) => (
+        <TableCell key={attr.label}>
+          {attr.label === "Name" ? (
+            <span
+              className={`text-xs cursor-pointer font-semibold ${nameColor}`}
+              onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+                (e.target as HTMLElement).style.color = "#fcd53f";
+              }}
+              onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+                (e.target as HTMLElement).style.color = "";
+              }}
+              onClick={() => openModal(RecruitInfoType, item)}
+            >
+              {attr.value}
+            </span>
+          ) : (
+            <span className="text-xs">{attr.value}</span>
+          )}
+        </TableCell>
+      ))}
+      <TableCell classes="text-xs">
+        {item.SigningStatus === "" ? "None" : item.SigningStatus}
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-row gap-x-1 text-xs">
+          {item.IsSigned ? winningLogo : leadingTeams}
+        </div>
+      </TableCell>
+      <TableCell>
+        <ButtonGroup classes="flex-nowrap">
+          <Button
+            variant={actionVariant}
+            size="xs"
+            onClick={() => openModal(AddRecruitType, item as BasketballCroot)}
+            disabled={recruitOnBoardMap[item.ID] || item.IsSigned}
+          >
+            {recruitOnBoardMap[item.ID] || item.IsSigned ? (
+              <ActionLock />
+            ) : (
+              <Plus />
+            )}
+          </Button>
+        </ButtonGroup>
+      </TableCell>
+    </div>
+  );
+};
+
 interface RecruitTableProps {
   croots: HockeyCroot[] | FootballCroot[] | BasketballCroot[];
   colorOne?: string;
@@ -425,12 +573,6 @@ export const RecruitTable: FC<RecruitTableProps> = ({
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const columns = getRecruitingColumns(league, category, isMobile);
 
-  const CBBRowRenderer = (
-    item: BasketballCroot,
-    index: number,
-    backgroundColor: string
-  ) => <></>;
-
   const rowRenderer = (
     league: League
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
@@ -463,7 +605,19 @@ export const RecruitTable: FC<RecruitTableProps> = ({
         />
       );
     }
-    return CBBRowRenderer;
+    return (item, index, bg) => (
+      <CBBRow
+        key={item.ID}
+        item={item as BasketballCroot}
+        index={index}
+        backgroundColor={bg}
+        openModal={openModal}
+        isMobile={isMobile}
+        category={category}
+        teamProfile={teamProfile}
+        recruitOnBoardMap={recruitOnBoardMap}
+      />
+    );
   };
 
   return (

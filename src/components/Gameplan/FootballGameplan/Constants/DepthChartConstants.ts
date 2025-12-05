@@ -41,28 +41,28 @@ export const SPECIAL_TEAMS_POSITIONS = ['P', 'PR', 'K', 'KR', 'FG', 'STU'];
 
 export const POSITION_LIMITS = {
   QB: 3,
-  RB: 3,
+  RB: 4,
   FB: 2,
   TE: 3,
   WR: 7,
-  LT: 2,
-  LG: 2,
-  C: 2,
-  RG: 2,
-  RT: 2,
-  LE: 2,
+  LT: 3,
+  LG: 3,
+  C: 3,
+  RG: 3,
+  RT: 3,
+  LE: 3,
   DT: 4,
-  RE: 2,
-  LOLB: 2,
+  RE: 3,
+  LOLB: 3,
   MLB: 4,
-  ROLB: 2,
+  ROLB: 3,
   CB: 5,
-  FS: 2,
-  SS: 2,
+  FS: 3,
+  SS: 3,
   P: 2,
-  PR: 2,
+  PR: 3,
   K: 2,
-  KR: 2,
+  KR: 3,
   FG: 2,
   STU: 15
 };
@@ -132,8 +132,14 @@ export const WING = 'wing';
 export const EMPTY = 'empty';
 export const FLEXBONE_GUN = 'flexbone-gun';
 export const WING_SPLIT_BACK_GUN = 'wing-split-back-gun';
+export const WING_T = 'wing-t';
+export const WING_T_DOUBLE_TIGHT = 'wing-t-double-tight';
 export const DOUBLE_WING_SPLIT = 'double-wing-split';
+export const DOUBLE_WING_TIGHT = 'double-wing-tight';
+export const DOUBLE_WING_SPREAD = 'double-wing-spread';
+export const DOUBLE_WING_STRONG = 'double-wing-strong';
 export const DOUBLE_WING = 'double-wing';
+export const SPLIT_BACK_GUN = 'split-back-gun';
 export const SINGLEBACK = 'singleback';
 
 export const FOUR_THREE_BASE = '4-3-base';
@@ -201,7 +207,9 @@ export const FORMATION_KEYWORDS = {
   EMPTY: 'empty',
   TIGHT: 'tight',
   WING: 'wing',
+  WINGT: 'wing-t',
   DOUBLE: 'double',
+  STRONG: 'strong',
   FLEXBONE: 'flexbone',
   HEAVY: 'heavy',
   LIGHT: 'light',
