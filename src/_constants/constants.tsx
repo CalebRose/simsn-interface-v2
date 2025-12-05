@@ -827,7 +827,7 @@ export const FootballPositionOptions = [
 export const FootballArchetypeOptions = [
   { label: "Balanced", value: "Balanced" },
   { label: "Pocket", value: "Pocket" },
-  { label: "Scrambler", value: "Scrambling" },
+  { label: "Scrambler", value: "Scrambler" },
   { label: "Field General", value: "Field General" },
   { label: "Speed", value: "Speed" },
   { label: "Power", value: "Power" },

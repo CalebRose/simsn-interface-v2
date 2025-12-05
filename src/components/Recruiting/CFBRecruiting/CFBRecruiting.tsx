@@ -100,7 +100,7 @@ export const CFBRecruiting = () => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           playerID={modalPlayer.ID}
-          playerLabel={`${modalPlayer.Stars} ⭐ ${modalPlayer.Position} ${modalPlayer.Archetype} ${modalPlayer.FirstName} ${modalPlayer.LastName} (${modalPlayer.PotentialGrade} Pot.)`}
+          playerLabel={`${modalPlayer.Position} ${modalPlayer.Archetype} ${modalPlayer.FirstName} ${modalPlayer.LastName}`}
           teamID={cfbTeam!.ID}
           league={SimCFB}
           modalAction={modalAction}
