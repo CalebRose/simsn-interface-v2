@@ -154,6 +154,8 @@ export const TeamInfo: FC<TeamInfoProps> = ({
               openTradeModal={openTradeModal}
               openProposeTradeModal={openProposeTradeModal}
               draftPickCount={draftPickCount}
+              teamProfile={TeamProfile}
+              lineColor={borderColor}
             />
           </div>
         )}
@@ -570,6 +572,8 @@ export const AdditionalTeamInfo = ({
   openTradeModal,
   openProposeTradeModal,
   draftPickCount,
+  teamProfile,
+  lineColor,
 }: any) => {
   const { isMobile, isDesktop, isTablet } = useResponsive();
   const home = league === SimCFB || league === SimNFL ? "Stadium" : "Arena";
@@ -619,7 +623,7 @@ export const AdditionalTeamInfo = ({
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-x-2 space-x-4 mb-4">
+      <div className="grid grid-cols-4 gap-x-2 space-x-4 mb-2">
         <div className="flex flex-col">
           <Text variant="small" classes={`${textColorClass} font-semibold`}>
             {`${home}`}
@@ -659,6 +663,18 @@ export const AdditionalTeamInfo = ({
           </Text>
         </div>
       </div>
+      {league === SimCFB && teamProfile && (
+        <div className="flex flex-col w-full">
+          <div
+            className="flex my-1 border-t"
+            style={{ borderColor: lineColor }}
+          />
+          <TeamAffinities
+            teamProfile={teamProfile}
+            textColorClass={textColorClass}
+          />
+        </div>
+      )}
       {isPro && (
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-x-2 space-x-4">
           <div className="flex flex-col text-nowrap">
@@ -800,6 +816,56 @@ export const TeamGrades = ({
           </Text>
         </div>
       )}
+    </div>
+  );
+};
+
+interface TeamAffinitiesProps {
+  teamProfile: any;
+  textColorClass: string;
+}
+
+const AFFINITY_CONFIG = [
+  { key: "AcademicsAffinity", label: "Academics" },
+  { key: "FrontrunnerAffinity", label: "Frontrunner" },
+  { key: "LargeCrowdsAffinity", label: "Large Crowds" },
+  { key: "ReligionAffinity", label: "Religion" },
+  { key: "ServiceAffinity", label: "Service" },
+  { key: "SmallSchoolAffinity", label: "Small School" },
+  { key: "SmallTownAffinity", label: "Small Town" },
+  { key: "BigCityAffinity", label: "Big City" },
+  { key: "MediaSpotlightAffinity", label: "Media" },
+  { key: "RisingStarsAffinity", label: "Rising Stars" },
+];
+
+export const TeamAffinities: FC<TeamAffinitiesProps> = ({
+  teamProfile,
+  textColorClass,
+}) => {
+  const activeAffinities = AFFINITY_CONFIG.filter(
+    (affinity) => teamProfile[affinity.key]
+  );
+
+  if (activeAffinities.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mb-2">
+      <Text
+        variant="body-small"
+        classes={`${textColorClass} font-semibold pb-1 block text-start`}
+      >
+        Affinities
+      </Text>
+      <div className="flex flex-wrap gap-x-1">
+        {activeAffinities.map(({ key, label }, index) => (
+          <Text key={key} variant="small" classes={`${textColorClass}`}>
+            {label}
+            {index < activeAffinities.length - 1 ? "," : ""}
+          </Text>
+        ))}
+      </div>
     </div>
   );
 };

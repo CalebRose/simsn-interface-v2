@@ -333,6 +333,7 @@ export class CollegePlayer {
   LastName: string;
   Position: string;
   Archetype: string;
+  LeagueID: number;
   TeamID: number;
   Team: string;
   Height: number;
@@ -391,9 +392,9 @@ export class CollegePlayer {
   ConferencePref: number;
   CoachPref: number;
   SeasonMomentumPref: number;
-  AGZPassBack: number;
   AGZShot: number;
   AGZPass: number;
+  AGZPassBack: number;
   AGZAgility: number;
   AGZStickCheck: number;
   AGZBodyCheck: number;
@@ -413,10 +414,10 @@ export class CollegePlayer {
   DZStickCheck: number;
   DZBodyCheck: number;
   DGZPass: number;
+  DGZLongPass: number;
   DGZAgility: number;
   DGZStickCheck: number;
   DGZBodyCheck: number;
-  DGZLongPass: number;
   AgilityPotential: number;
   FaceoffsPotential: number;
   CloseShotAccuracyPotential: number;
@@ -446,6 +447,13 @@ export class CollegePlayer {
   TransferLikeliness: string;
   DraftedTeamID: number;
   DraftedTeam: string;
+  DraftedRound: number;
+  DraftPickID: number;
+  DraftedPick: number;
+  DraftedYearID: number;
+  Stats: CollegePlayerGameStats[];
+  SeasonStats: CollegePlayerSeasonStats;
+  Profiles: TransferPortalProfile[];
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -457,6 +465,7 @@ export class CollegePlayer {
     this.LastName = source["LastName"];
     this.Position = source["Position"];
     this.Archetype = source["Archetype"];
+    this.LeagueID = source["LeagueID"];
     this.TeamID = source["TeamID"];
     this.Team = source["Team"];
     this.Height = source["Height"];
@@ -517,10 +526,10 @@ export class CollegePlayer {
     this.SeasonMomentumPref = source["SeasonMomentumPref"];
     this.AGZShot = source["AGZShot"];
     this.AGZPass = source["AGZPass"];
+    this.AGZPassBack = source["AGZPassBack"];
+    this.AGZAgility = source["AGZAgility"];
     this.AGZStickCheck = source["AGZStickCheck"];
     this.AGZBodyCheck = source["AGZBodyCheck"];
-    this.AGZAgility = source["AGZAgility"];
-    this.AGZPassBack = source["AGZPassBack"];
     this.AZShot = source["AZShot"];
     this.AZPass = source["AZPass"];
     this.AZLongPass = source["AZLongPass"];
@@ -570,6 +579,19 @@ export class CollegePlayer {
     this.TransferLikeliness = source["TransferLikeliness"];
     this.DraftedTeamID = source["DraftedTeamID"];
     this.DraftedTeam = source["DraftedTeam"];
+    this.DraftedRound = source["DraftedRound"];
+    this.DraftPickID = source["DraftPickID"];
+    this.DraftedPick = source["DraftedPick"];
+    this.DraftedYearID = source["DraftedYearID"];
+    this.Stats = this.convertValues(source["Stats"], CollegePlayerGameStats);
+    this.SeasonStats = this.convertValues(
+      source["SeasonStats"],
+      CollegePlayerSeasonStats
+    );
+    this.Profiles = this.convertValues(
+      source["Profiles"],
+      TransferPortalProfile
+    );
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1129,6 +1151,7 @@ export class ProfessionalPlayer {
   LastName: string;
   Position: string;
   Archetype: string;
+  LeagueID: number;
   TeamID: number;
   Team: string;
   Height: number;
@@ -1187,9 +1210,9 @@ export class ProfessionalPlayer {
   ConferencePref: number;
   CoachPref: number;
   SeasonMomentumPref: number;
-  AGZPassBack: number;
   AGZShot: number;
   AGZPass: number;
+  AGZPassBack: number;
   AGZAgility: number;
   AGZStickCheck: number;
   AGZBodyCheck: number;
@@ -1209,10 +1232,10 @@ export class ProfessionalPlayer {
   DZStickCheck: number;
   DZBodyCheck: number;
   DGZPass: number;
+  DGZLongPass: number;
   DGZAgility: number;
   DGZStickCheck: number;
   DGZBodyCheck: number;
-  DGZLongPass: number;
   AgilityPotential: number;
   FaceoffsPotential: number;
   CloseShotAccuracyPotential: number;
@@ -1240,16 +1263,26 @@ export class ProfessionalPlayer {
   IsAffiliatePlayer: boolean;
   IsWaived: boolean;
   IsFreeAgent: boolean;
-  IsEligibleForPlay: boolean;
   IsOnTradeBlock: boolean;
+  IsAcceptingOffers: boolean;
+  IsNegotiating: boolean;
+  DraftedTeamID: number;
+  DraftedTeam: string;
+  DraftedRound: number;
+  DraftPickID: number;
+  DraftedPick: number;
+  DraftedYearID: number;
+  MinimumValue: number;
+  Rejections: number;
   AffiliateTeamID: number;
   Marketability: number;
   JerseyPrice: number;
   MarketPreference: number;
   CompetitivePreference: number;
   FinancialPreference: number;
+  IsEligibleForPlay: boolean;
   Stats: ProfessionalPlayerGameStats[];
-  SeasonStats: ProfessionalPlayerSeasonStats[];
+  SeasonStats: ProfessionalPlayerSeasonStats;
   Contract: ProContract;
   Offers: FreeAgencyOffer[];
   WaiverOffer: WaiverOffer[];
@@ -1265,6 +1298,7 @@ export class ProfessionalPlayer {
     this.LastName = source["LastName"];
     this.Position = source["Position"];
     this.Archetype = source["Archetype"];
+    this.LeagueID = source["LeagueID"];
     this.TeamID = source["TeamID"];
     this.Team = source["Team"];
     this.Height = source["Height"];
@@ -1325,8 +1359,8 @@ export class ProfessionalPlayer {
     this.SeasonMomentumPref = source["SeasonMomentumPref"];
     this.AGZShot = source["AGZShot"];
     this.AGZPass = source["AGZPass"];
-    this.AGZAgility = source["AGZAgility"];
     this.AGZPassBack = source["AGZPassBack"];
+    this.AGZAgility = source["AGZAgility"];
     this.AGZStickCheck = source["AGZStickCheck"];
     this.AGZBodyCheck = source["AGZBodyCheck"];
     this.AZShot = source["AZShot"];
@@ -1377,6 +1411,16 @@ export class ProfessionalPlayer {
     this.IsWaived = source["IsWaived"];
     this.IsFreeAgent = source["IsFreeAgent"];
     this.IsOnTradeBlock = source["IsOnTradeBlock"];
+    this.IsAcceptingOffers = source["IsAcceptingOffers"];
+    this.IsNegotiating = source["IsNegotiating"];
+    this.DraftedTeamID = source["DraftedTeamID"];
+    this.DraftedTeam = source["DraftedTeam"];
+    this.DraftedRound = source["DraftedRound"];
+    this.DraftPickID = source["DraftPickID"];
+    this.DraftedPick = source["DraftedPick"];
+    this.DraftedYearID = source["DraftedYearID"];
+    this.MinimumValue = source["MinimumValue"];
+    this.Rejections = source["Rejections"];
     this.AffiliateTeamID = source["AffiliateTeamID"];
     this.Marketability = source["Marketability"];
     this.JerseyPrice = source["JerseyPrice"];
@@ -3249,6 +3293,450 @@ export class CollegeStandings {
     return a;
   }
 }
+
+export class DraftablePlayer {
+  ID: number;
+  CreatedAt: Time;
+  UpdatedAt: Time;
+  DeletedAt: DeletedAt;
+  FirstName: string;
+  LastName: string;
+  Position: string;
+  Archetype: string;
+  LeagueID: number;
+  TeamID: number;
+  Team: string;
+  Height: number;
+  Weight: number;
+  Stars: number;
+  Age: number;
+  Overall: number;
+  Agility: number;
+  Faceoffs: number;
+  LongShotAccuracy: number;
+  LongShotPower: number;
+  CloseShotAccuracy: number;
+  CloseShotPower: number;
+  OneTimer: number;
+  Passing: number;
+  PuckHandling: number;
+  Strength: number;
+  BodyChecking: number;
+  StickChecking: number;
+  ShotBlocking: number;
+  Goalkeeping: number;
+  GoalieVision: number;
+  GoalieReboundControl: number;
+  Discipline: number;
+  Aggression: number;
+  Stamina: number;
+  GoalieStamina: number;
+  InjuryRating: number;
+  DisciplineDeviation: number;
+  InjuryDeviation: number;
+  PrimeAge: number;
+  Clutch: number;
+  HighSchool: string;
+  City: string;
+  State: string;
+  Country: string;
+  OriginalTeamID: number;
+  OriginalTeam: string;
+  PreviousTeamID: number;
+  PreviousTeam: string;
+  Competitiveness: number;
+  TeamLoyalty: number;
+  PlaytimePreference: number;
+  PlayerMorale: number;
+  Personality: string;
+  RelativeID: number;
+  RelativeType: number;
+  Notes: string;
+  HasProgressed: boolean;
+  ProgramPref: number;
+  ProfDevPref: number;
+  TraditionsPref: number;
+  FacilitiesPref: number;
+  AtmospherePref: number;
+  AcademicsPref: number;
+  ConferencePref: number;
+  CoachPref: number;
+  SeasonMomentumPref: number;
+  AGZShot: number;
+  AGZPass: number;
+  AGZPassBack: number;
+  AGZAgility: number;
+  AGZStickCheck: number;
+  AGZBodyCheck: number;
+  AZShot: number;
+  AZPass: number;
+  AZLongPass: number;
+  AZAgility: number;
+  AZStickCheck: number;
+  AZBodyCheck: number;
+  NPass: number;
+  NAgility: number;
+  NStickCheck: number;
+  NBodyCheck: number;
+  DZPass: number;
+  DZPassBack: number;
+  DZAgility: number;
+  DZStickCheck: number;
+  DZBodyCheck: number;
+  DGZPass: number;
+  DGZLongPass: number;
+  DGZAgility: number;
+  DGZStickCheck: number;
+  DGZBodyCheck: number;
+  AgilityGrade: string;
+  FaceoffsGrade: string;
+  LongShotAccuracyGrade: string;
+  LongShotPowerGrade: string;
+  CloseShotAccuracyGrade: string;
+  CloseShotPowerGrade: string;
+  OneTimerGrade: string;
+  PassingGrade: string;
+  PuckHandlingGrade: string;
+  StrengthGrade: string;
+  BodyCheckingGrade: string;
+  StickCheckingGrade: string;
+  ShotBlockingGrade: string;
+  GoalkeepingGrade: string;
+  GoalieVisionGrade: string;
+  GoalieReboundControlGrade: string;
+  AgilityPotential: number;
+  FaceoffsPotential: number;
+  CloseShotAccuracyPotential: number;
+  CloseShotPowerPotential: number;
+  LongShotAccuracyPotential: number;
+  LongShotPowerPotential: number;
+  PassingPotential: number;
+  PuckHandlingPotential: number;
+  StrengthPotential: number;
+  BodyCheckingPotential: number;
+  StickCheckingPotential: number;
+  ShotBlockingPotential: number;
+  GoalkeepingPotential: number;
+  GoalieVisionPotential: number;
+  GoalieReboundPotential: number;
+  IsInjured: boolean;
+  DaysOfRecovery: number;
+  InjuryName: string;
+  InjuryType: string;
+  InjuryCount: number;
+  Regression: number;
+  DecayRate: number;
+  CollegeID: number;
+  DraftedTeamID: number;
+  DraftedTeam: string;
+  DraftedRound: number;
+  DraftPickID: number;
+  DraftedPick: number;
+  DraftablePlayerType: number;
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.ID = source["ID"];
+    this.CreatedAt = this.convertValues(source["CreatedAt"], Time);
+    this.UpdatedAt = this.convertValues(source["UpdatedAt"], Time);
+    this.DeletedAt = this.convertValues(source["DeletedAt"], DeletedAt);
+    this.FirstName = source["FirstName"];
+    this.LastName = source["LastName"];
+    this.Position = source["Position"];
+    this.Archetype = source["Archetype"];
+    this.LeagueID = source["LeagueID"];
+    this.TeamID = source["TeamID"];
+    this.Team = source["Team"];
+    this.Height = source["Height"];
+    this.Weight = source["Weight"];
+    this.Stars = source["Stars"];
+    this.Age = source["Age"];
+    this.Overall = source["Overall"];
+    this.Agility = source["Agility"];
+    this.Faceoffs = source["Faceoffs"];
+    this.LongShotAccuracy = source["LongShotAccuracy"];
+    this.LongShotPower = source["LongShotPower"];
+    this.CloseShotAccuracy = source["CloseShotAccuracy"];
+    this.CloseShotPower = source["CloseShotPower"];
+    this.OneTimer = source["OneTimer"];
+    this.Passing = source["Passing"];
+    this.PuckHandling = source["PuckHandling"];
+    this.Strength = source["Strength"];
+    this.BodyChecking = source["BodyChecking"];
+    this.StickChecking = source["StickChecking"];
+    this.ShotBlocking = source["ShotBlocking"];
+    this.Goalkeeping = source["Goalkeeping"];
+    this.GoalieVision = source["GoalieVision"];
+    this.GoalieReboundControl = source["GoalieReboundControl"];
+    this.Discipline = source["Discipline"];
+    this.Aggression = source["Aggression"];
+    this.Stamina = source["Stamina"];
+    this.GoalieStamina = source["GoalieStamina"];
+    this.InjuryRating = source["InjuryRating"];
+    this.DisciplineDeviation = source["DisciplineDeviation"];
+    this.InjuryDeviation = source["InjuryDeviation"];
+    this.PrimeAge = source["PrimeAge"];
+    this.Clutch = source["Clutch"];
+    this.HighSchool = source["HighSchool"];
+    this.City = source["City"];
+    this.State = source["State"];
+    this.Country = source["Country"];
+    this.OriginalTeamID = source["OriginalTeamID"];
+    this.OriginalTeam = source["OriginalTeam"];
+    this.PreviousTeamID = source["PreviousTeamID"];
+    this.PreviousTeam = source["PreviousTeam"];
+    this.Competitiveness = source["Competitiveness"];
+    this.TeamLoyalty = source["TeamLoyalty"];
+    this.PlaytimePreference = source["PlaytimePreference"];
+    this.PlayerMorale = source["PlayerMorale"];
+    this.Personality = source["Personality"];
+    this.RelativeID = source["RelativeID"];
+    this.RelativeType = source["RelativeType"];
+    this.Notes = source["Notes"];
+    this.HasProgressed = source["HasProgressed"];
+    this.ProgramPref = source["ProgramPref"];
+    this.ProfDevPref = source["ProfDevPref"];
+    this.TraditionsPref = source["TraditionsPref"];
+    this.FacilitiesPref = source["FacilitiesPref"];
+    this.AtmospherePref = source["AtmospherePref"];
+    this.AcademicsPref = source["AcademicsPref"];
+    this.ConferencePref = source["ConferencePref"];
+    this.CoachPref = source["CoachPref"];
+    this.SeasonMomentumPref = source["SeasonMomentumPref"];
+    this.AGZShot = source["AGZShot"];
+    this.AGZPass = source["AGZPass"];
+    this.AGZPassBack = source["AGZPassBack"];
+    this.AGZAgility = source["AGZAgility"];
+    this.AGZStickCheck = source["AGZStickCheck"];
+    this.AGZBodyCheck = source["AGZBodyCheck"];
+    this.AZShot = source["AZShot"];
+    this.AZPass = source["AZPass"];
+    this.AZLongPass = source["AZLongPass"];
+    this.AZAgility = source["AZAgility"];
+    this.AZStickCheck = source["AZStickCheck"];
+    this.AZBodyCheck = source["AZBodyCheck"];
+    this.NPass = source["NPass"];
+    this.NAgility = source["NAgility"];
+    this.NStickCheck = source["NStickCheck"];
+    this.NBodyCheck = source["NBodyCheck"];
+    this.DZPass = source["DZPass"];
+    this.DZPassBack = source["DZPassBack"];
+    this.DZAgility = source["DZAgility"];
+    this.DZStickCheck = source["DZStickCheck"];
+    this.DZBodyCheck = source["DZBodyCheck"];
+    this.DGZPass = source["DGZPass"];
+    this.DGZLongPass = source["DGZLongPass"];
+    this.DGZAgility = source["DGZAgility"];
+    this.DGZStickCheck = source["DGZStickCheck"];
+    this.DGZBodyCheck = source["DGZBodyCheck"];
+    this.AgilityGrade = source["AgilityGrade"];
+    this.FaceoffsGrade = source["FaceoffsGrade"];
+    this.LongShotAccuracyGrade = source["LongShotAccuracyGrade"];
+    this.LongShotPowerGrade = source["LongShotPowerGrade"];
+    this.CloseShotAccuracyGrade = source["CloseShotAccuracyGrade"];
+    this.CloseShotPowerGrade = source["CloseShotPowerGrade"];
+    this.OneTimerGrade = source["OneTimerGrade"];
+    this.PassingGrade = source["PassingGrade"];
+    this.PuckHandlingGrade = source["PuckHandlingGrade"];
+    this.StrengthGrade = source["StrengthGrade"];
+    this.BodyCheckingGrade = source["BodyCheckingGrade"];
+    this.StickCheckingGrade = source["StickCheckingGrade"];
+    this.ShotBlockingGrade = source["ShotBlockingGrade"];
+    this.GoalkeepingGrade = source["GoalkeepingGrade"];
+    this.GoalieVisionGrade = source["GoalieVisionGrade"];
+    this.GoalieReboundControlGrade = source["GoalieReboundControlGrade"];
+    this.AgilityPotential = source["AgilityPotential"];
+    this.FaceoffsPotential = source["FaceoffsPotential"];
+    this.CloseShotAccuracyPotential = source["CloseShotAccuracyPotential"];
+    this.CloseShotPowerPotential = source["CloseShotPowerPotential"];
+    this.LongShotAccuracyPotential = source["LongShotAccuracyPotential"];
+    this.LongShotPowerPotential = source["LongShotPowerPotential"];
+    this.PassingPotential = source["PassingPotential"];
+    this.PuckHandlingPotential = source["PuckHandlingPotential"];
+    this.StrengthPotential = source["StrengthPotential"];
+    this.BodyCheckingPotential = source["BodyCheckingPotential"];
+    this.StickCheckingPotential = source["StickCheckingPotential"];
+    this.ShotBlockingPotential = source["ShotBlockingPotential"];
+    this.GoalkeepingPotential = source["GoalkeepingPotential"];
+    this.GoalieVisionPotential = source["GoalieVisionPotential"];
+    this.GoalieReboundPotential = source["GoalieReboundPotential"];
+    this.IsInjured = source["IsInjured"];
+    this.DaysOfRecovery = source["DaysOfRecovery"];
+    this.InjuryName = source["InjuryName"];
+    this.InjuryType = source["InjuryType"];
+    this.InjuryCount = source["InjuryCount"];
+    this.Regression = source["Regression"];
+    this.DecayRate = source["DecayRate"];
+    this.CollegeID = source["CollegeID"];
+    this.DraftedTeamID = source["DraftedTeamID"];
+    this.DraftedTeam = source["DraftedTeam"];
+    this.DraftedRound = source["DraftedRound"];
+    this.DraftPickID = source["DraftPickID"];
+    this.DraftedPick = source["DraftedPick"];
+    this.DraftablePlayerType = source["DraftablePlayerType"];
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
+
+export class ScoutingProfile {
+  ID: number;
+  CreatedAt: Time;
+  UpdatedAt: Time;
+  DeletedAt: DeletedAt;
+  PlayerID: number;
+  TeamID: number;
+  ShowAttribute1: boolean;
+  ShowAttribute2: boolean;
+  ShowAttribute3: boolean;
+  ShowAttribute4: boolean;
+  ShowAttribute5: boolean;
+  ShowAttribute6: boolean;
+  ShowAttribute7: boolean;
+  ShowAttribute8: boolean;
+  ShowPotential: boolean;
+  RemovedFromBoard: boolean;
+  ShowCount: number;
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.ID = source["ID"];
+    this.CreatedAt = this.convertValues(source["CreatedAt"], Time);
+    this.UpdatedAt = this.convertValues(source["UpdatedAt"], Time);
+    this.DeletedAt = this.convertValues(source["DeletedAt"], DeletedAt);
+    this.PlayerID = source["PlayerID"];
+    this.TeamID = source["TeamID"];
+    this.ShowAttribute1 = source["ShowAttribute1"];
+    this.ShowAttribute2 = source["ShowAttribute2"];
+    this.ShowAttribute3 = source["ShowAttribute3"];
+    this.ShowAttribute4 = source["ShowAttribute4"];
+    this.ShowAttribute5 = source["ShowAttribute5"];
+    this.ShowAttribute6 = source["ShowAttribute6"];
+    this.ShowAttribute7 = source["ShowAttribute7"];
+    this.ShowAttribute8 = source["ShowAttribute8"];
+    this.ShowPotential = source["ShowPotential"];
+    this.RemovedFromBoard = source["RemovedFromBoard"];
+    this.ShowCount = source["ShowCount"];
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
+export class ProWarRoom {
+  ID: number;
+  CreatedAt: Time;
+  UpdatedAt: Time;
+  DeletedAt: DeletedAt;
+  TeamID: number;
+  Team: string;
+  ScoutingPoints: number;
+  SpentPoints: number;
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.ID = source["ID"];
+    this.CreatedAt = this.convertValues(source["CreatedAt"], Time);
+    this.UpdatedAt = this.convertValues(source["UpdatedAt"], Time);
+    this.DeletedAt = this.convertValues(source["DeletedAt"], DeletedAt);
+    this.TeamID = source["TeamID"];
+    this.Team = source["Team"];
+    this.ScoutingPoints = source["ScoutingPoints"];
+    this.SpentPoints = source["SpentPoints"];
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
+
+export class ProDraftPageResponse {
+  WarRoomMap: { [key: number]: ProWarRoom };
+  DraftablePlayers: DraftablePlayer[];
+  ScoutingProfiles: ScoutingProfile[];
+  DraftPicks: DraftPick[][];
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.WarRoomMap = this.convertValues(
+      source["WarRoomMap"],
+      ProWarRoom,
+      true
+    );
+    this.DraftablePlayers = this.convertValues(
+      source["DraftablePlayers"],
+      DraftablePlayer
+    );
+    this.ScoutingProfiles = this.convertValues(
+      source["ScoutingProfiles"],
+      ScoutingProfile
+    );
+    this.DraftPicks = this.convertValues(source["DraftPicks"], DraftPick);
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
+
 export class BootstrapData {
   CollegeTeam: CollegeTeam;
   AllCollegeTeams: CollegeTeam[];
@@ -3297,6 +3785,7 @@ export class BootstrapData {
   PHLGameplan: ProGameplan;
   CollegePoll: CollegePollSubmission;
   OfficialPolls: CollegePollOfficial[];
+  DraftablePlayers: DraftablePlayer[];
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -3450,6 +3939,10 @@ export class BootstrapData {
     this.OfficialPolls = this.convertValues(
       source["OfficialPolls"],
       CollegePollOfficial
+    );
+    this.DraftablePlayers = this.convertValues(
+      source["DraftablePlayers"],
+      DraftablePlayer
     );
   }
 
@@ -5948,6 +6441,7 @@ export class TradeProposal {
   }
 }
 export class DraftPick {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -5968,6 +6462,8 @@ export class DraftPick {
   SelectedPlayerID: number;
   SelectedPlayerName: string;
   SelectedPlayerPosition: string;
+  SelectedPlayerType: number;
+  PickupStatus: number;
   IsCompensation: boolean;
   IsVoid: boolean;
 
@@ -5993,6 +6489,8 @@ export class DraftPick {
     this.SelectedPlayerID = source["SelectedPlayerID"];
     this.SelectedPlayerName = source["SelectedPlayerName"];
     this.SelectedPlayerPosition = source["SelectedPlayerPosition"];
+    this.SelectedPlayerType = source["SelectedPlayerType"];
+    this.PickupStatus = source["PickupStatus"];
     this.IsCompensation = source["IsCompensation"];
     this.IsVoid = source["IsVoid"];
   }

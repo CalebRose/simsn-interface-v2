@@ -863,7 +863,6 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
   const { teamId } = useParams<{ teamId?: string }>();
 
   const { currentUser } = useAuthStore();
-  const fbStore = useSimFBAStore();
   const {
     cfbTeam,
     cfbTeamMap,
@@ -874,7 +873,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     redshirtPlayer,
     promisePlayer,
     getBootstrapRosterData,
-  } = fbStore;
+  } = useSimFBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<CFBPlayer | null>(null);

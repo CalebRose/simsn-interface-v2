@@ -26,10 +26,10 @@ export const EngagementButton: React.FC<EngagementButtonProps> = ({
     <button
       onClick={onClick}
       disabled={isDisabled}
-      className={`flex items-center max-[768px]:gap-0.5 gap-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-110 border rounded-md max-[768px]:px-1.5 max-[768px]:py-0.5 px-2 py-1 max-[768px]:text-xs ${
+      className={`relative flex items-center max-[768px]:gap-0.5 gap-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 border rounded-md max-[768px]:px-1.5 max-[768px]:py-0.5 px-2 py-1 max-[768px]:text-xs ${
         isActive
-          ? `${activeColor} transform scale-110 border-current`
-          : `text-gray-500 ${hoverColor} border-gray-600/30 hover:border-gray-500/50`
+          ? `${activeColor} transform scale-105 border-current z-0`
+          : `text-gray-500 ${hoverColor} border-gray-600/30 hover:border-gray-500/50 z-0`
       }`}
     >
       <span className="max-[768px]:text-sm text-lg">{emoji}</span>

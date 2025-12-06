@@ -132,7 +132,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   }, [selectedSeason, league]);
 
   return (
-    <div className="flex flex-col w-full h-fit max-[768px]:gap-y-1 max-[1024px]:gap-y-2 mb-2 sticky top-20 max-[768px]:mt-2 mt-4">
+    <div className="flex flex-col w-full h-fit max-[768px]:gap-y-1 max-[1024px]:gap-y-2 mb-2 sticky top-20 max-[768px]:mt-2 mt-4 z-10">
       <Border
         direction="col"
         classes="w-full max-[768px]:px-1 max-[768px]:py-1 max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-fit items-center justify-start"

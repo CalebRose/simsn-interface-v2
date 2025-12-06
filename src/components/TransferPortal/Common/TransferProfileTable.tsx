@@ -6,7 +6,6 @@ import {
   PortalInfoType,
   Potentials,
   Preferences,
-  Promise,
   Promises,
   RemovePortalPlayerType,
   ScoutAttributeType,
@@ -20,7 +19,7 @@ import {
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { Input } from "../../../_design/Inputs";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
-import { Handshake, TrashCan } from "../../../_design/Icons";
+import { ActionLock, Handshake, TrashCan } from "../../../_design/Icons";
 import {
   annotateCountry,
   annotateRegion,
@@ -226,7 +225,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
         </div>
       );
     });
-  }, [leadingTeamsList]);
+  }, [leadingTeamsList, player]);
 
   // 6) Buttons
   const scoutAttribute = (attr: string) => {
@@ -343,7 +342,18 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
         <span className={`text-xs`}>{player.RecruitingStatus}</span>
       </TableCell>
       <TableCell>
-        <div className="flex flex-row gap-x-2 text-xs">{leadingTeams}</div>
+        <div className="flex flex-row gap-x-2 text-xs">
+          {player.TeamID > 0 && player.TeamID < 75 ? (
+            <div key={player.TeamID}>
+              <Logo
+                url={getLogo(SimCHL, player.TeamID, false)}
+                variant="small"
+              />
+            </div>
+          ) : (
+            leadingTeams
+          )}
+        </div>
       </TableCell>
       <TableCell>
         <div className="w-[1rem]">
@@ -371,8 +381,13 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
             variant="primary"
             size="xs"
             onClick={() => openPromiseModal(player)}
+            disabled={player.TeamID > 0 && player.TeamID < 75}
           >
-            <Handshake />
+            {player.TeamID > 0 && player.TeamID < 75 ? (
+              <ActionLock />
+            ) : (
+              <Handshake />
+            )}
           </Button>
           <Button
             variant="danger"

@@ -20,7 +20,17 @@ import { usePagination } from "../../_hooks/usePagination";
 import { getFBAWeekID, getHCKWeekID } from "../../_helper/statsPageHelper";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
-import { doc, getDoc, updateDoc, increment } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  increment,
+  setDoc,
+  onSnapshot,
+  collection,
+  query,
+  where,
+} from "firebase/firestore";
 import { firestore } from "../../firebase/firebase";
 
 export const useNewsPage = () => {
@@ -104,6 +114,12 @@ export const useNewsPage = () => {
     >
   >({});
   const [lastEngagementFetch, setLastEngagementFetch] = useState<number>(0);
+  const [collectionListener, setCollectionListener] = useState<
+    (() => void) | null
+  >(null);
+  const [currentPageNewsIds, setCurrentPageNewsIds] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     getFBABootstrapNewsData();
@@ -222,7 +238,100 @@ export const useNewsPage = () => {
     return filteredNews.slice(start, start + pageSize);
   }, [filteredNews, currentPage, pageSize]);
 
-  // Fetch engagement data for current page of news items
+  // Set up single collection listener for all engagement data in current league
+  const setupEngagementListener = useCallback(
+    (newsItems: any[]) => {
+      if (!newsItems.length || !selectedLeague) return;
+
+      // Clean up existing listener first
+      if (collectionListener) {
+        collectionListener();
+        setCollectionListener(null);
+      }
+
+      // Track current page news IDs
+      const newsIds = new Set(
+        newsItems.map((item) => item.ID?.toString()).filter(Boolean)
+      );
+      setCurrentPageNewsIds(newsIds);
+
+      // Initialize engagement data with defaults for current page items
+      const defaultEngagementData: typeof engagementData = {};
+      newsIds.forEach((newsId) => {
+        defaultEngagementData[newsId] = {
+          heart: 0,
+          wow: 0,
+          sad: 0,
+          happy: 0,
+          angry: 0,
+          hug: 0,
+          eyes: 0,
+          userEngagements: {},
+        };
+      });
+      setEngagementData((prev) => ({ ...prev, ...defaultEngagementData }));
+
+      // Set up single collection listener
+      const messagesRef = collection(
+        firestore,
+        "newsEngagement",
+        selectedLeague,
+        "messages"
+      );
+
+      const unsubscribe = onSnapshot(
+        messagesRef,
+        (snapshot) => {
+          const updates: typeof engagementData = {};
+
+          snapshot.docChanges().forEach((change) => {
+            const docId = change.doc.id;
+
+            // Only process documents for news items on current page
+            if (newsIds.has(docId)) {
+              const defaultData = {
+                heart: 0,
+                wow: 0,
+                sad: 0,
+                happy: 0,
+                angry: 0,
+                hug: 0,
+                eyes: 0,
+                userEngagements: {},
+              };
+
+              if (change.type === "added" || change.type === "modified") {
+                if (change.doc.exists()) {
+                  updates[docId] = { ...defaultData, ...change.doc.data() };
+                } else {
+                  updates[docId] = defaultData;
+                }
+              } else if (change.type === "removed") {
+                updates[docId] = defaultData;
+              }
+            }
+          });
+
+          // Batch update engagement data
+          if (Object.keys(updates).length > 0) {
+            setEngagementData((prev) => ({ ...prev, ...updates }));
+          }
+        },
+        (error) => {
+          console.error(
+            `Error listening to engagement collection for ${selectedLeague}:`,
+            error
+          );
+        }
+      );
+
+      setCollectionListener(() => unsubscribe);
+      setLastEngagementFetch(Date.now());
+    },
+    [selectedLeague]
+  );
+
+  // Fetch engagement data for current page of news items (fallback method)
   const fetchEngagementData = useCallback(
     async (newsItems: any[]) => {
       if (!newsItems.length || !selectedLeague) return;
@@ -330,20 +439,58 @@ export const useNewsPage = () => {
 
         updates.userEngagements = newUserEngagements;
 
-        await updateDoc(docRef, updates);
+        try {
+          await updateDoc(docRef, updates);
+        } catch (updateError: any) {
+          // If document doesn't exist, create it first then update
+          if (updateError.code === "not-found") {
+            console.log(`Creating new engagement document for news ${newsId}`);
+
+            // Create document with initial data
+            const initialData = {
+              heart: 0,
+              wow: 0,
+              sad: 0,
+              happy: 0,
+              angry: 0,
+              hug: 0,
+              eyes: 0,
+              userEngagements: {},
+            };
+
+            await setDoc(docRef, initialData);
+
+            // Now update with the user's engagement
+            await updateDoc(docRef, updates);
+          } else {
+            throw updateError;
+          }
+        }
 
         // Update local state optimistically
+        const optimisticUpdates: any = {};
+
+        // Calculate new counts based on the operation
+        if (currentUserEngagement === type) {
+          // User is toggling off - decrease count
+          optimisticUpdates[type] = Math.max(0, currentData[type] - 1);
+        } else if (currentUserEngagement && currentUserEngagement !== type) {
+          // User is switching - decrease old, increase new
+          optimisticUpdates[currentUserEngagement] = Math.max(
+            0,
+            currentData[currentUserEngagement] - 1
+          );
+          optimisticUpdates[type] = currentData[type] + 1;
+        } else {
+          // User is engaging for first time - increase count
+          optimisticUpdates[type] = currentData[type] + 1;
+        }
+
         setEngagementData((prev) => ({
           ...prev,
           [newsId]: {
             ...currentData,
-            heart: currentData.heart + (updates.heart?._operand || 0),
-            wow: currentData.wow + (updates.wow?._operand || 0),
-            sad: currentData.sad + (updates.sad?._operand || 0),
-            happy: currentData.happy + (updates.happy?._operand || 0),
-            angry: currentData.angry + (updates.angry?._operand || 0),
-            hug: currentData.hug + (updates.hug?._operand || 0),
-            eyes: currentData.eyes + (updates.eyes?._operand || 0),
+            ...optimisticUpdates,
             userEngagements: newUserEngagements,
           },
         }));
@@ -354,23 +501,28 @@ export const useNewsPage = () => {
     [selectedLeague, engagementData]
   );
 
-  // Fetch engagement data when paged data changes
+  // Set up collection listener when paged data changes
   useEffect(() => {
     if (pagedData.length > 0) {
-      fetchEngagementData(pagedData);
+      setupEngagementListener(pagedData);
     }
-  }, [pagedData, fetchEngagementData]);
 
-  // Set up periodic refresh for engagement data (every 3 minutes)
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      if (pagedData.length > 0) {
-        fetchEngagementData(pagedData);
+    // Clean up listener when component unmounts or paged data changes
+    return () => {
+      if (collectionListener) {
+        collectionListener();
       }
-    }, 3 * 60 * 1000); // 3 minutes in milliseconds
+    };
+  }, [pagedData, setupEngagementListener]);
 
-    return () => clearInterval(intervalId);
-  }, [pagedData, fetchEngagementData]);
+  // Clean up listener on unmount
+  useEffect(() => {
+    return () => {
+      if (collectionListener) {
+        collectionListener();
+      }
+    };
+  }, [collectionListener]);
 
   const changeLeagueOption = (opts: SingleValue<SelectOption>) => {
     const leagueOption = opts?.value as League;
@@ -451,6 +603,7 @@ export const useNewsPage = () => {
     setSortByNewest,
     engagementData,
     fetchEngagementData,
+    setupEngagementListener,
     updateEngagementData,
     lastEngagementFetch,
   };
