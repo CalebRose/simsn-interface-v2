@@ -75,7 +75,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   // Meaning, any data that is derived from state or props that doesn't need to trigger a re-render should be memoized
   // This improves performance by avoiding unnecessary calculations on each render
   // I suggest using SimFBAContext.tsx as a reference for how we're using useMemo, useEffect, and useCallback :)
-  console.log({ organizations });
+  console.log({ organizations, baseball_Timestamp });
   const mlbOrganization = useMemo(() => {
     if (!currentUser || !organizations) return null;
     return organizations.find((o) => o.id === currentUser.MLBOrgID) || null;

@@ -5,7 +5,7 @@ import { BaseballOrganization, BaseballTeam } from "../models/baseballModels";
 export const BaseballService = {
   //Fetch Orgs
   GetAllOrganizations: async (): Promise<BaseballOrganization[]> => {
-    const url = `${baseballUrl}org_report`;
+    const url = `${baseballUrl}org_report/`;
     return await GetCall<BaseballOrganization[]>(url);
   },
 };
