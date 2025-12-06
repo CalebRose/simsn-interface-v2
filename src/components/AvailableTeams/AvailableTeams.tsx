@@ -11,6 +11,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -227,6 +229,10 @@ export const AvailableTeams = () => {
         setTeamOptions(phlTeamOptions);
         setConferenceOptions(phlConferenceOptions);
         break;
+      case SimCollegeBaseball:
+        break;
+      case SimMLB:
+        break;
     }
 
     setSelectedTeams([]);
@@ -319,6 +325,20 @@ export const AvailableTeams = () => {
                   onClick={() => selectSport(SimPHL)}
                 >
                   <Text variant="small">SimPHL</Text>
+                </PillButton>
+                <PillButton
+                  variant="primaryOutline"
+                  isSelected={selectedLeague === SimCollegeBaseball}
+                  onClick={() => selectSport(SimCollegeBaseball)}
+                >
+                  <Text variant="small">SimCollegeBaseball</Text>
+                </PillButton>
+                <PillButton
+                  variant="primaryOutline"
+                  isSelected={selectedLeague === SimMLB}
+                  onClick={() => selectSport(SimMLB)}
+                >
+                  <Text variant="small">SimMLB</Text>
                 </PillButton>
               </ButtonGroup>
             </div>

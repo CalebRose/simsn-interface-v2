@@ -1,8 +1,16 @@
-import React, { createContext, useContext, ReactNode } from "react";
-import { Timestamp as BaseballTimestamp,
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import {
+  Timestamp as BaseballTimestamp,
   BaseballOrganization,
-  BaseballTeam
- } from "../models/baseballModels";
+  BaseballTeam,
+} from "../models/baseballModels";
 import { useAuthStore } from "./AuthContext";
 import { BaseballService } from "../_services/baseballService";
 import { useEffect, useState } from "react";
@@ -17,7 +25,7 @@ interface SimBaseballContextProps {
   mlbOrganization?: BaseballOrganization | null;
   isCollegeOrgLoading?: boolean;
   isMlbOrgLoading?: boolean;
-  baseball_Timestamp?: BaseballTimestamp | null;
+  baseball_Timestamp: BaseballTimestamp | null;
   isLoading?: boolean;
 }
 
@@ -46,34 +54,83 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   children,
 }) => {
   const { currentUser } = useAuthStore();
-  const [organizations, setOrganizations] = useState<BaseballOrganization[]>([]);
-  const [mlbOrganization, setMlbOrganization] = useState<BaseballOrganization | null>(null);
+  // useRef to prevent multiple fetches
+  const isFetching = useRef(false);
+  // useState hooks for data that may update more often
+  const [organizations, setOrganizations] = useState<BaseballOrganization[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
-  const {baseball_Timestamp, setBaseball_Timestamp} = useWebSockets(baseball_ws, SimMLB)
-    // Load data when user logs in
+  const { baseball_Timestamp, setBaseball_Timestamp } = useWebSockets(
+    baseball_ws,
+    SimMLB
+  );
+
+  /*
+    // useMemo hooks
+  */
+
+  // When the organization data loads, find the user's org
+  // I suggest using useMemo for derived data like this, in the event that we're not updating or setting the data as often
+  // Meaning, any data that is derived from state or props that doesn't need to trigger a re-render should be memoized
+  // This improves performance by avoiding unnecessary calculations on each render
+  // I suggest using SimFBAContext.tsx as a reference for how we're using useMemo, useEffect, and useCallback :)
+  console.log({ organizations });
+  const mlbOrganization = useMemo(() => {
+    if (!currentUser || !organizations) return null;
+    return organizations.find((o) => o.id === currentUser.MLBOrgID) || null;
+  }, [currentUser, organizations]);
+
+  /*
+    // useEffects for fetching data on mount + bootstrap
+  */
+
+  // Load team data on mount.
   useEffect(() => {
-    const loadData = async () => {
-      if (!currentUser) return;
-      
-      setIsLoading(true);
-      try {
-        // Call the service → which calls the backend
-        const orgs = await BaseballService.GetAllOrganizations();
-        setOrganizations(orgs);
-        
-        // If user has a team, find their org
-        if (currentUser.MLBOrgID) {
-          const userOrg = orgs.find(o => o.id === currentUser.MLBOrgID);
-          setMlbOrganization(userOrg || null);
-        }
-      } catch (error) {
-        console.error("Failed to load organizations", error);
-      }
-      setIsLoading(false);
-    };
-    
-    loadData();
+    getBaseballOrgData();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser && !isFetching.current) {
+      isFetching.current = true;
+      // Landing page bootstrap function call here
+    }
   }, [currentUser]);
+
+  /*
+    // useCallbacks for functions
+  */
+  // Callback function for fetching organization data
+  // Setting up function outside of useEffect to avoid re-creation on each render
+  // But also so that we can use it elsewhere if needed :)
+  const getBaseballOrgData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Call the service → which calls the backend
+      const orgs = await BaseballService.GetAllOrganizations();
+      setOrganizations(orgs);
+    } catch (error) {
+      console.error("Failed to load organizations", error);
+    }
+    setIsLoading(false);
+  }, []);
+
+  // Empty bootstrap functions for later implementation
+  const getFaceData = useCallback(async () => {}, []);
+
+  const getBootstrapLandingData = useCallback(async () => {}, []);
+
+  const getBootstrapRosterData = useCallback(async () => {}, []);
+
+  const getBootstrapScheduleData = useCallback(async () => {}, []);
+
+  const getBootstrapFreeAgencyData = useCallback(async () => {}, []);
+
+  const getBootstrapRecruitingData = useCallback(async () => {}, []);
+
+  const getBootstrapPortalData = useCallback(async () => {}, []);
+
+  const getBootstrapStatsData = useCallback(async () => {}, []);
 
   return (
     <SimBaseballContext.Provider
@@ -83,7 +140,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         mlbOrganization: null, // Add real data later
         isCollegeOrgLoading: false,
         isMlbOrgLoading: false,
-        baseball_Timestamp, 
+        baseball_Timestamp,
       }}
     >
       {children}

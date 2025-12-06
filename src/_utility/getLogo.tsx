@@ -3,6 +3,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -21,6 +23,8 @@ export const getLogo = (
   if (league === SimNBA) return getNBALogo(id, retro);
   if (league === SimCHL) return getCHLLogo(id, retro);
   if (league === SimPHL) return getPHLLogo(id, retro);
+  if (league === SimCollegeBaseball) return getCollegeBaseballLogo(id, retro);
+  if (league === SimMLB) return getMLBLogo(id, retro);
   return "";
 };
 
@@ -2043,4 +2047,14 @@ export const getPHLLogo = (id: number, isRetro: boolean) => {
     default:
       return logoObj.Unknown;
   }
+};
+
+export const getCollegeBaseballLogo = (id: number, isRetro: boolean) => {
+  // View logos.tsx for baseball logo dictionary mappings
+  return "";
+};
+
+export const getMLBLogo = (id: number, isRetro: boolean) => {
+  // View logos.tsx for baseball logo dictionary mappings
+  return "";
 };

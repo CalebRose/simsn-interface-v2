@@ -1206,3 +1206,5 @@ export const HCKLogos = {
   ATL: `${baseUrl}/logos/Atlanta_Thrashers.png`,
   MNS: `${baseUrl}/logos/Minnesota_North_Stars.png`,
 };
+
+export const BaseballLogos = {};
