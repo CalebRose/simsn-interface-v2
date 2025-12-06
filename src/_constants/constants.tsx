@@ -7,6 +7,8 @@ export const SimPHL = "SimPHL";
 export const SimFBA = "SimFBA";
 export const SimBBA = "SimBBA";
 export const SimHCK = "SimHCK";
+export const SimCollegeBaseball = "SimCollegeBaseball";
+export const SimMLB = "SimMLB";
 export const AdminRole = "Admin";
 export type League =
   | typeof SimCFB
@@ -14,7 +16,10 @@ export type League =
   | typeof SimCBB
   | typeof SimNBA
   | typeof SimCHL
-  | typeof SimPHL;
+  | typeof SimPHL
+  | typeof SimCollegeBaseball 
+  | typeof SimMLB
+  ;
 
 export const CollegeRequests = "College Requests";
 export const ProRequests = "Pro Requests";

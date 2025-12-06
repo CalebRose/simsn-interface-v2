@@ -14,21 +14,25 @@ import {
   SimNBA,
   SimNFL,
   SimPHL,
+  SimMLB,
+  SimCollegeBaseball
 } from "../_constants/constants";
 import { GetLeagueTS } from "../_helper/teamHelper";
 import { Timestamp as FBTimeStamp } from "../models/footballModels";
 import { Timestamp as BKTimestamp } from "../models/basketballModels";
 import { Timestamp as HKTimestamp } from "../models/hockeyModels";
+import { Timestamp as BaseballTimestamp } from "../models/baseballModels";
 import { useAuthStore } from "./AuthContext";
 import { useSimHCKStore } from "./SimHockeyContext";
 import { useSimFBAStore } from "./SimFBAContext";
 import { useSimBBAStore } from "./SimBBAContext";
+import { useSimBaseballStore } from "./SimBaseballContext";
 import { teamByLeague } from "../_utility/useLeagueSelector";
 
 interface LeagueContextProps {
   selectedLeague: string;
   setSelectedLeague: React.Dispatch<React.SetStateAction<League>>;
-  ts: FBTimeStamp | BKTimestamp | HKTimestamp | null;
+  ts: FBTimeStamp | BKTimestamp | HKTimestamp | BaseballTimestamp | null;
   selectedTeam?: any;
   SetTeam: (league: League, team: any) => void;
 }
@@ -67,6 +71,13 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
     nbaTeam,
     isLoading: bkLoading,
   } = useSimBBAStore();
+  const {
+    baseball_Timestamp,
+    collegeOrganization,
+    mlbOrganization,
+    isLoading: baseballLoading,
+  } = useSimBaseballStore();
+  
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
   const [selectedLeague, setSelectedLeague] = useState<League>(() => {
     if (currentUser && currentUser.DefaultLeague) {
@@ -75,10 +86,10 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
     return SimCFB;
   });
 
-  const ts = useMemo<FBTimeStamp | BKTimestamp | HKTimestamp | null>(
+  const ts = useMemo<FBTimeStamp | BKTimestamp | HKTimestamp | BaseballTimestamp | null>(
     () =>
-      GetLeagueTS(selectedLeague, cfb_Timestamp, cbb_Timestamp, hck_Timestamp),
-    [selectedLeague, cfb_Timestamp, cbb_Timestamp, hck_Timestamp]
+      GetLeagueTS(selectedLeague, cfb_Timestamp, cbb_Timestamp, hck_Timestamp, baseball_Timestamp ),
+    [selectedLeague, cfb_Timestamp, cbb_Timestamp, hck_Timestamp, baseball_Timestamp]
   );
 
   useEffect(() => {
