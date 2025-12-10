@@ -100,7 +100,6 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
         chlTeam,
         phlTeam,
       });
-      console.log({ defaultLeague, defaultTeam });
       if (defaultTeam) {
         setSelectedLeague(defaultLeague);
         setSelectedTeam(defaultTeam);

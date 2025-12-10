@@ -32,8 +32,6 @@ export const Home = () => {
   const { cbbTeam, nbaTeam } = useSimBBAStore();
   const { chlTeam, phlTeam } = useSimHCKStore();
 
-  console.log({ selectedLeague, selectedTeam });
-
   // Check if selected team matches current league and correct it if needed
   useEffect(() => {
     if (!currentUser || !selectedTeam) return;
