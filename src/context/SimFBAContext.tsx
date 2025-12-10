@@ -74,7 +74,7 @@ import {
 } from "../_constants/constants";
 import { PlayerService } from "../_services/playerService";
 import { useSnackbar } from "notistack";
-import FBATeamHistoryService from "../_services/teamHistoryService";
+import { TeamHistoryService } from "../_services/teamHistoryService";
 import { RecruitService } from "../_services/recruitService";
 import { GenerateNumberFromRange } from "../_helper/utilHelper";
 import {
@@ -866,9 +866,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setIsLoading(false);
   };
 
-  const teamHistoryService = new FBATeamHistoryService();
   const fetchAllHistory = async () => {
-    const response = await teamHistoryService.GetCFBTeamHistory();
+    const response = await TeamHistoryService.GetCFBTeamHistory();
     setAllCFBTeamHistory(response);
   };
 
