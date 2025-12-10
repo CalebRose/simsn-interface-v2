@@ -812,7 +812,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
   const bootstrapAllData = async () => {
     await getLandingBootstrapData();
-    fetchAllHistory();
+    await fetchAllHistory();
     isFetching.current = false;
   };
 
@@ -842,7 +842,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       setCFBRosterMap(res.CollegeRosterMap);
       setPortalPlayers(res.PortalPlayers);
       setCollegeGameplanMap(res.CollegeGameplanMap);
-      setNFLGameplanMap(res.NFLGameplanMap);
       setCollegeDepthChart(res.CollegeDepthChart || null);
       setRecruitProfiles(res.RecruitProfiles);
       setAllCollegeGames(res.AllCollegeGames);
@@ -851,6 +850,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
     if (nflID > 0) {
       setNFLTeam(res.ProTeam);
+      setNFLGameplanMap(res.NFLGameplanMap);
       setProNotifications(res.ProNotifications);
       setTopNFLPassers(res.TopNFLPassers);
       setTopNFLRushers(res.TopNFLRushers);
