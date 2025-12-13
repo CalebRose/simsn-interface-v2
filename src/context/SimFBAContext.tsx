@@ -1290,12 +1290,18 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     const affinityOneValid =
       dto.PlayerRecruit.AffinityOne === CloseToHome
         ? ValidateCloseToHome(dto.PlayerRecruit, cfbTeam?.TeamAbbr)
-        : ValidateAffinity(dto.PlayerRecruit, teamProfileMap![cfbTeam!.ID]);
+        : ValidateAffinity(
+            dto.PlayerRecruit.AffinityOne,
+            teamProfileMap![cfbTeam!.ID]
+          );
 
     const affinityTwoValid =
-      dto.PlayerRecruit.AffinityOne === CloseToHome
+      dto.PlayerRecruit.AffinityTwo === CloseToHome
         ? ValidateCloseToHome(dto.PlayerRecruit, cfbTeam?.TeamAbbr)
-        : ValidateAffinity(dto.PlayerRecruit, teamProfileMap![cfbTeam!.ID]);
+        : ValidateAffinity(
+            dto.PlayerRecruit.AffinityTwo,
+            teamProfileMap![cfbTeam!.ID]
+          );
 
     // Add RES
     const apiDTO = {
