@@ -74,7 +74,7 @@ import {
 } from "../_constants/constants";
 import { PlayerService } from "../_services/playerService";
 import { useSnackbar } from "notistack";
-import FBATeamHistoryService from "../_services/teamHistoryService";
+import { TeamHistoryService } from "../_services/teamHistoryService";
 import { RecruitService } from "../_services/recruitService";
 import { GenerateNumberFromRange } from "../_helper/utilHelper";
 import {
@@ -812,7 +812,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
   const bootstrapAllData = async () => {
     await getLandingBootstrapData();
-    fetchAllHistory();
+    await fetchAllHistory();
     isFetching.current = false;
   };
 
@@ -842,7 +842,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       setCFBRosterMap(res.CollegeRosterMap);
       setPortalPlayers(res.PortalPlayers);
       setCollegeGameplanMap(res.CollegeGameplanMap);
-      setNFLGameplanMap(res.NFLGameplanMap);
       setCollegeDepthChart(res.CollegeDepthChart || null);
       setRecruitProfiles(res.RecruitProfiles);
       setAllCollegeGames(res.AllCollegeGames);
@@ -851,6 +850,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
     if (nflID > 0) {
       setNFLTeam(res.ProTeam);
+      setNFLGameplanMap(res.NFLGameplanMap);
       setProNotifications(res.ProNotifications);
       setTopNFLPassers(res.TopNFLPassers);
       setTopNFLRushers(res.TopNFLRushers);
@@ -866,9 +866,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setIsLoading(false);
   };
 
-  const teamHistoryService = new FBATeamHistoryService();
   const fetchAllHistory = async () => {
-    const response = await teamHistoryService.GetCFBTeamHistory();
+    const response = await TeamHistoryService.GetCFBTeamHistory();
     setAllCFBTeamHistory(response);
   };
 
@@ -1291,12 +1290,18 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     const affinityOneValid =
       dto.PlayerRecruit.AffinityOne === CloseToHome
         ? ValidateCloseToHome(dto.PlayerRecruit, cfbTeam?.TeamAbbr)
-        : ValidateAffinity(dto.PlayerRecruit, teamProfileMap![cfbTeam!.ID]);
+        : ValidateAffinity(
+            dto.PlayerRecruit.AffinityOne,
+            teamProfileMap![cfbTeam!.ID]
+          );
 
     const affinityTwoValid =
-      dto.PlayerRecruit.AffinityOne === CloseToHome
+      dto.PlayerRecruit.AffinityTwo === CloseToHome
         ? ValidateCloseToHome(dto.PlayerRecruit, cfbTeam?.TeamAbbr)
-        : ValidateAffinity(dto.PlayerRecruit, teamProfileMap![cfbTeam!.ID]);
+        : ValidateAffinity(
+            dto.PlayerRecruit.AffinityTwo,
+            teamProfileMap![cfbTeam!.ID]
+          );
 
     // Add RES
     const apiDTO = {

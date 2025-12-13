@@ -1,10 +1,18 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { PageContainer } from "../../_design/Container";
 import { Button } from "../../_design/Buttons";
 import { TeamLandingPage } from "../LandingPage/TeamLandingPage";
 import { Text } from "../../_design/Typography";
-import { League } from "../../_constants/constants";
+import {
+  League,
+  SimCFB,
+  SimNFL,
+  SimCBB,
+  SimNBA,
+  SimCHL,
+  SimPHL,
+} from "../../_constants/constants";
 import { useAuthStore } from "../../context/AuthContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
@@ -14,6 +22,7 @@ import { Border } from "../../_design/Borders";
 import { useNavigate } from "react-router-dom";
 import routes from "../../_constants/routes";
 import { LeagueSelector } from "../Common/LeagueSelector";
+import { teamByLeague } from "../../_utility/useLeagueSelector";
 
 export const Home = () => {
   const { currentUser } = useAuthStore();
@@ -22,6 +31,60 @@ export const Home = () => {
   const { cfbTeam, nflTeam } = useSimFBAStore();
   const { cbbTeam, nbaTeam } = useSimBBAStore();
   const { chlTeam, phlTeam } = useSimHCKStore();
+
+  // Check if selected team matches current league and correct it if needed
+  useEffect(() => {
+    if (!currentUser || !selectedTeam) return;
+
+    const getUserTeamIdForLeague = (league: League) => {
+      switch (league) {
+        case SimCFB:
+          return currentUser.teamId;
+        case SimNFL:
+          return currentUser.NFLTeamID;
+        case SimCBB:
+          return currentUser.cbb_id;
+        case SimNBA:
+          return currentUser.NBATeamID;
+        case SimCHL:
+          return currentUser.CHLTeamID;
+        case SimPHL:
+          return currentUser.PHLTeamID;
+        default:
+          return null;
+      }
+    };
+
+    const expectedTeamId = getUserTeamIdForLeague(selectedLeague as League);
+
+    // If the selected team doesn't match the expected team for this league, correct it
+    if (expectedTeamId && selectedTeam.ID !== expectedTeamId) {
+      const correctTeam = teamByLeague({
+        league: selectedLeague as League,
+        cfbTeam,
+        nflTeam,
+        cbbTeam,
+        nbaTeam,
+        chlTeam,
+        phlTeam,
+      });
+
+      if (correctTeam) {
+        SetTeam(selectedLeague as League, correctTeam);
+      }
+    }
+  }, [
+    selectedLeague,
+    selectedTeam,
+    currentUser,
+    cfbTeam,
+    nflTeam,
+    cbbTeam,
+    nbaTeam,
+    chlTeam,
+    phlTeam,
+    SetTeam,
+  ]);
 
   const isLoadingData = !selectedTeam;
 

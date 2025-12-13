@@ -1560,9 +1560,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     if (profile) {
       setTransferPortalProfiles((profiles) =>
         [...profiles].map((p) =>
-          p.CollegePlayerID === profile.CollegePlayerID
+          p.CollegePlayerID === dto.RecruitID
             ? new TransferPortalProfile({
-                ...profile,
+                ...p,
                 [dto.Attribute]: true,
               })
             : p
