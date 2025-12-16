@@ -1409,12 +1409,6 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
                       label: `Send Promise - ${item.FirstName} ${item.LastName}`,
                     },
                   ]),
-              ...[
-                {
-                  value: "promise",
-                  label: `Send Promise - ${item.FirstName} ${item.LastName}`,
-                },
-              ],
             ]}
             onChange={(selectedOption) => {
               if (selectedOption?.value === "cut") {
