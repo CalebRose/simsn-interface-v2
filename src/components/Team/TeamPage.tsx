@@ -1429,6 +1429,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     cutCBBPlayer,
     redshirtPlayer,
     promisePlayer,
+    getBootstrapRosterData,
   } = bbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1480,6 +1481,10 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     setModalAction(action);
     setModalPlayer(player);
   };
+
+  useEffect(() => {
+    getBootstrapRosterData();
+  }, []);
 
   return (
     <>
@@ -1594,6 +1599,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     teamProfileMap,
     cutNBAPlayer,
     proContractMap,
+    getBootstrapRosterData,
   } = bbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1645,6 +1651,10 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     setModalAction(action);
     setModalPlayer(player);
   };
+
+  useEffect(() => {
+    getBootstrapRosterData();
+  }, []);
 
   return (
     <>
