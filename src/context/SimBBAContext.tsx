@@ -45,6 +45,10 @@ import {
   NBATradePreferences,
   DraftPick,
   NBATradeProposalDTO,
+  NBATeamProposals,
+  CollegePromise,
+  ScoutingProfile,
+  NBAWarRoom,
 } from "../models/basketballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { BootstrapService } from "../_services/bootstrapService";
@@ -60,6 +64,7 @@ import { TeamService } from "../_services/teamService";
 import { TradeService } from "../_services/tradeService";
 import { CollegePollService } from "../_services/collegePollService";
 import FBAScheduleService from "../_services/scheduleService";
+import { FaceDataService } from "../_services/faceDataService";
 
 // ✅ Define Types for Context
 interface SimBBAContextProps {
@@ -156,11 +161,28 @@ interface SimBBAContextProps {
   collegePolls: CollegePollOfficial[];
   collegePollSubmission: CollegePollSubmission;
   nbaDraftees: NBADraftee[];
+  nbaTradeProposals: NBATeamProposals;
+  nbaTradeProposalsMap: NBATeamProposals;
   tradeProposalsMap: Record<number, NBATradeProposal[]>;
   tradePreferencesMap: Record<number, NBATradePreferences>;
   nbaDraftPicks: DraftPick[];
   nbaDraftPickMap: Record<number, DraftPick[]>;
   individualDraftPickMap: Record<number, DraftPick>;
+  freeAgents: NBAPlayer[];
+  waiverPlayers: NBAPlayer[];
+  collegePromises: CollegePromise[];
+  collegeGameplanMap: Record<number, Gameplan | null>;
+  nbaGameplanMap: Record<number, NBAGameplan | null>;
+  nbaWarRoomMap: Record<number, NBAWarRoom | null>;
+  nbaScoutingProfileMap: Record<number, ScoutingProfile | null>;
+  getLandingBootstrapData: () => void;
+  getBootstrapRosterData: () => void;
+  getBootstrapRecruitingData: () => void;
+  getBootstrapFreeAgencyData: () => void;
+  getBootstrapScheduleData: () => void;
+  getBootstrapDraftData: () => void;
+  getBootstrapPortalData: () => void;
+  getBootstrapGameplanData: () => void;
   getBootstrapNewsData: () => void;
 }
 
@@ -256,11 +278,28 @@ const defaultContext: SimBBAContextProps = {
   collegePolls: [],
   collegePollSubmission: {} as CollegePollSubmission,
   nbaDraftees: [],
+  nbaTradeProposals: {} as NBATeamProposals,
+  nbaTradeProposalsMap: {} as NBATeamProposals,
   tradeProposalsMap: {},
   tradePreferencesMap: {},
   nbaDraftPicks: [],
   nbaDraftPickMap: [],
   individualDraftPickMap: [],
+  freeAgents: [],
+  waiverPlayers: [],
+  collegePromises: [],
+  collegeGameplanMap: {},
+  nbaGameplanMap: {},
+  nbaWarRoomMap: {},
+  nbaScoutingProfileMap: {},
+  getLandingBootstrapData: async () => {},
+  getBootstrapRosterData: async () => {},
+  getBootstrapRecruitingData: async () => {},
+  getBootstrapFreeAgencyData: async () => {},
+  getBootstrapScheduleData: async () => {},
+  getBootstrapDraftData: async () => {},
+  getBootstrapPortalData: async () => {},
+  getBootstrapGameplanData: async () => {},
 };
 
 export const SimBBAContext = createContext<SimBBAContextProps>(defaultContext);
@@ -275,6 +314,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const scheduleService = new FBAScheduleService();
   const { cbb_Timestamp, setCBB_Timestamp } = useWebSockets(bba_ws, SimBBA);
   const isFetching = useRef(false);
+  const isScheduleDataFetching = useRef(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingTwo, setIsLoadingTwo] = useState<boolean>(true);
   const [isLoadingThree, setIsLoadingThree] = useState<boolean>(true);
@@ -390,13 +430,33 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [collegePolls, setCollegePolls] = useState<CollegePollOfficial[]>([]);
   const [collegePollSubmission, setCollegePollSubmission] =
     useState<CollegePollSubmission>({} as CollegePollSubmission);
+  const [nbaTradeProposals, setNBATradeProposals] = useState<NBATeamProposals>(
+    {} as NBATeamProposals
+  );
   const [tradeProposalsMap, setTradeProposalsMap] = useState<
     Record<number, NBATradeProposal[]>
-  >([]);
+  >({});
+  const [nbaTradeProposalsMap, setNBATradeProposalsMap] =
+    useState<NBATeamProposals>({} as NBATeamProposals);
   const [tradePreferencesMap, setTradePreferencesMap] = useState<
     Record<number, NBATradePreferences>
   >([]);
   const [nbaDraftPicks, setNBADraftPicks] = useState<DraftPick[]>([]);
+  const [freeAgents, setFreeAgents] = useState<NBAPlayer[]>([]);
+  const [waiverPlayers, setWaiverPlayers] = useState<NBAPlayer[]>([]);
+  const [collegePromises, setCollegePromises] = useState<CollegePromise[]>([]);
+  const [collegeGameplanMap, setCollegeGameplanMap] = useState<
+    Record<number, Gameplan | null>
+  >({});
+  const [nbaGameplanMap, setNBAGameplanMap] = useState<
+    Record<number, NBAGameplan | null>
+  >({});
+  const [nbaWarRoomMap, setNBAWarRoomMap] = useState<
+    Record<number, NBAWarRoom | null>
+  >({});
+  const [nbaScoutingProfileMap, setNBAScoutingProfileMap] = useState<
+    Record<number, ScoutingProfile | null>
+  >({});
 
   const nbaDraftPickMap = useMemo(() => {
     if (!nbaDraftPicks) return {};
@@ -424,6 +484,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   }, [nbaDraftPicks]);
 
   useEffect(() => {
+    getFaceData();
     getBootstrapTeamData();
   }, []);
 
@@ -491,6 +552,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
   };
 
+  const getFaceData = async () => {
+    const res = await FaceDataService.GetBBAFaceData();
+    setPlayerFaces(res);
+  };
+
   useEffect(() => {
     if (currentUser && !isFetching.current) {
       isFetching.current = true;
@@ -499,11 +565,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   }, [currentUser]);
 
   const bootstrapAllData = async () => {
-    await getFirstBootstrapData();
-    await new Promise((resolve) => setTimeout(resolve, 3500)); // Wait 5 seconds
-    await getSecondBootstrapData();
-    await new Promise((resolve) => setTimeout(resolve, 3500)); // Wait 5 seconds
-    await getThirdBootstrapData();
+    await getLandingBootstrapData();
     isFetching.current = false;
   };
 
@@ -530,7 +592,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
   }, [currentUser?.cbb_id, currentUser?.NBATeamID]);
 
-  const getFirstBootstrapData = async () => {
+  const getLandingBootstrapData = async () => {
     let cbbID = 0;
     let nbaID = 0;
     if (currentUser && currentUser.cbb_id) {
@@ -552,136 +614,162 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       setCollegeNotifications(res.CollegeNotifications);
       setCBBRosterMap(res.CollegeRosterMap);
       setPortalPlayers(res.PortalPlayers);
-      setCollegeGameplan(res.CollegeGameplan);
       setTopCBBPoints(res.TopCBBPoints);
       setTopCBBAssists(res.TopCBBAssists);
       setTopCBBRebounds(res.TopCBBRebounds);
+      setPortalPlayers(res.PortalPlayers);
+      setAllCollegeGames(res.AllCollegeGames);
+      setAllCBBStandings(res.CollegeStandings);
     }
     if (nbaID > 0) {
       setNBATeam(res.NBATeam);
       setProNotifications(res.ProNotifications);
-      setNBAGameplan(res.NBAGameplan);
-    }
-
-    setPlayerFaces(res.FaceData);
-    setIsLoading(false);
-  };
-
-  const getSecondBootstrapData = async () => {
-    let cbbID = 0;
-    let nbaID = 0;
-    if (currentUser && currentUser.cbb_id) {
-      cbbID = currentUser.cbb_id;
-    }
-    if (currentUser && currentUser.NBATeamID) {
-      nbaID = currentUser.NBATeamID;
-    }
-    // if the user has no basketball teams, skip BBA bootstrapping
-    if (cbbID === 0 && nbaID === 0) {
-      return;
-    }
-
-    const res = await BootstrapService.GetSecondBBABootstrapData(cbbID, nbaID);
-    if (cbbID > 0) {
-      setTeamProfileMap(res.TeamProfileMap);
-      setAllCBBStandings(res.CollegeStandings);
-      setCollegePolls(res.CollegePolls);
-    }
-    if (nbaID > 0) {
-      setTopNBAPoints(res.TopNBAPoints);
       setTopNBAAssists(res.TopNBAAssists);
+      setTopNBAPoints(res.TopNBAPoints);
       setTopNBARebounds(res.TopNBARebounds);
-      setCapsheetMap(res.CapsheetMap);
       setProRosterMap(res.ProRosterMap);
-      setGLeaguePlayers(res.GLeaguePlayers);
       setInternationalPlayers(res.InternationalPlayers);
+      setGLeaguePlayers(res.GLeaguePlayers);
+      setCapsheetMap(res.CapsheetMap);
       setProInjuryReport(res.ProInjuryReport);
       setAllProStandings(res.ProStandings);
-    }
-
-    if (
-      res.CollegeStandings &&
-      res.CollegeStandings.length > 0 &&
-      cbb_Timestamp
-    ) {
-      const currentSeasonStandings = res.CollegeStandings.filter(
-        (x) => x.SeasonID === cbb_Timestamp.SeasonID
-      );
-      const collegeStandingsMap = Object.fromEntries(
-        currentSeasonStandings.map((standings) => [standings.TeamID, standings])
-      );
-      setCurrentCBBStandings(currentSeasonStandings);
-      setCBBStandingsMap(collegeStandingsMap);
-    }
-
-    if (res.ProStandings && res.ProStandings.length > 0 && cbb_Timestamp) {
-      const currentSeasonStandings = res.ProStandings.filter(
-        (x) => x.SeasonID === cbb_Timestamp.SeasonID
-      );
-      const nbaStandingsMap = Object.fromEntries(
-        currentSeasonStandings.map((standings) => [standings.TeamID, standings])
-      );
-      setCurrentProStandings(currentSeasonStandings);
-      setProStandingsMap(nbaStandingsMap);
-    }
-    setIsLoadingTwo(false);
-  };
-
-  const getThirdBootstrapData = async () => {
-    let cbbID = 0;
-    let nbaID = 0;
-    if (currentUser && currentUser.cbb_id) {
-      cbbID = currentUser.cbb_id;
-    }
-    if (currentUser && currentUser.NBATeamID) {
-      nbaID = currentUser.NBATeamID;
-    }
-    // if the user has no basketball teams, skip BBA bootstrapping
-    if (cbbID === 0 && nbaID === 0) {
-      return;
-    }
-
-    const res = await BootstrapService.GetThirdBBABootstrapData(cbbID, nbaID);
-    if (cbbID > 0) {
-      setRecruits(res.Recruits);
-      setRecruitProfiles(res.RecruitProfiles);
-      setAllCollegeGames(res.AllCollegeGames);
-    }
-
-    if (nbaID > 0) {
-      setFreeAgentOffers(res.FreeAgentOffers);
-      setWaiverOffers(res.WaiverOffers);
-      setProContractMap(res.ContractMap);
-      setProExtensionMap(res.ExtensionMap);
       setAllProGames(res.AllProGames);
     }
 
-    if (
-      res.AllCollegeGames &&
-      res.AllCollegeGames.length > 0 &&
-      cbb_Timestamp
-    ) {
-      const currentSeasonGames = res.AllCollegeGames.filter(
-        (x) => x.SeasonID === cbb_Timestamp.SeasonID
-      );
-      setCurrentCollegeSeasonGames(currentSeasonGames);
-      const teamGames = currentSeasonGames.filter(
-        (x) => x.HomeTeamID === cbbID || x.AwayTeamID === cbbID
-      );
-      setCollegeTeamsGames(teamGames);
+    setIsLoading(false);
+  };
+
+  const getBootstrapRosterData = async () => {
+    let cbbID = 0;
+    let nbaID = 0;
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
+    }
+    if (currentUser && currentUser.NBATeamID) {
+      nbaID = currentUser.NBATeamID;
+    }
+    if (cbbID === 0 && nbaID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetBBARosterBootstrapData(cbbID, nbaID);
+    setNBATradeProposals(res.TradeProposals);
+    setTradePreferencesMap(res.TradePreferencesMap);
+    setProContractMap(res.ContractMap);
+    setProExtensionMap(res.ExtensionMap);
+    setNBADraftPicks(res.DraftPicks);
+  };
+
+  const getBootstrapRecruitingData = async () => {
+    let cbbID = 0;
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
+    }
+    if (cbbID === 0) {
+      return;
+    }
+    console.log("Fetching recruiting bootstrap data...");
+    const res = await BootstrapService.GetBBARecruitingBootstrapData(cbbID);
+    console.log({ res });
+    setRecruits(res.Recruits);
+    setTeamProfileMap(res.TeamProfileMap);
+    setRecruitProfiles(res.RecruitProfiles);
+  };
+
+  const getBootstrapFreeAgencyData = async () => {
+    let nbaID = 0;
+    if (currentUser && currentUser.NBATeamID) {
+      nbaID = currentUser.NBATeamID;
+    }
+    if (nbaID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetBBAFreeAgencyBootstrapData(nbaID);
+    setFreeAgentOffers(res.FreeAgentOffers);
+    setWaiverOffers(res.WaiverOffers);
+    setFreeAgents(res.FreeAgents);
+    setWaiverPlayers(res.WaiverPlayers);
+  };
+
+  const getBootstrapScheduleData = useCallback(async () => {
+    if (isScheduleDataFetching.current) {
+      console.log("Schedule data already fetching, skipping...");
+      return;
     }
 
-    if (res.AllProGames && res.AllProGames.length > 0 && cbb_Timestamp) {
-      const currentSeasonGames = res.AllProGames.filter(
-        (x) => x.SeasonID === cbb_Timestamp.SeasonID
-      );
-      setCurrentProSeasonGames(currentSeasonGames);
-      const teamGames = currentSeasonGames.filter(
-        (x) => x.HomeTeamID === nbaID || x.AwayTeamID === nbaID
-      );
-      setProTeamsGames(teamGames);
+    let cbbID = 0;
+    const seasonId = cbb_Timestamp?.SeasonID || 0;
+    const username = currentUser?.username || "";
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
     }
-    setIsLoadingThree(false);
+    if (cbbID === 0 || seasonId === 0 || username === "") {
+      return;
+    }
+
+    isScheduleDataFetching.current = true;
+    console.log("Starting bootstrap schedule data fetch...");
+
+    try {
+      const res = await BootstrapService.GetBBASchedulingBootstrapData(
+        username,
+        cbbID,
+        seasonId
+      );
+      setCollegePolls(res.CollegePolls);
+      setCollegePollSubmission(res.PollSubmission);
+    } finally {
+      isScheduleDataFetching.current = false;
+    }
+  }, [cbb_Timestamp?.SeasonID, currentUser?.username, currentUser?.teamId]);
+
+  // Use this once the draft page is finished
+  const getBootstrapDraftData = async () => {
+    let nbaID = 0;
+    if (currentUser && currentUser.NBATeamID) {
+      nbaID = currentUser.NBATeamID;
+    }
+    if (nbaID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetBBADraftBootstrapData(nbaID);
+    setNBADraftees(res.NBADraftees);
+    setNBAWarRoomMap(res.WarRoomMap);
+    setNBAScoutingProfileMap(res.ScoutingProfileMap);
+  };
+
+  // use this once the portal page is finished
+  const getBootstrapPortalData = async () => {
+    let cfbID = 0;
+    if (currentUser && currentUser.teamId) {
+      cfbID = currentUser.teamId;
+    }
+    if (cfbID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetBBAPortalBootstrapData(cfbID);
+    setPortalPlayers(res.PortalPlayers);
+    setTeamProfileMap(res.TeamProfileMap);
+    setCollegePromises(res.CollegePromises);
+  };
+
+  const getBootstrapGameplanData = async () => {
+    let cfbID = 0;
+    let nbaID = 0;
+    if (currentUser && currentUser.teamId) {
+      cfbID = currentUser.teamId;
+    }
+    if (currentUser && currentUser.NBATeamID) {
+      nbaID = currentUser.NBATeamID;
+    }
+    if (cfbID === 0 && nbaID === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetBBAGameplanBootstrapData(
+      cfbID,
+      nbaID
+    );
+    setCollegeGameplanMap(res.CollegeGameplanMap);
+    setNBAGameplanMap(res.ProGameplanMap);
   };
 
   const removeUserfromCBBTeamCall = useCallback(
@@ -1137,7 +1225,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   }, []);
 
   const acceptTrade = useCallback(async (dto: NBATradeProposal) => {
-    const res = await TradeService.FBAAcceptTradeProposal(dto.ID);
+    const res = await TradeService.BBAAcceptTradeProposal(dto.ID);
 
     setTradeProposalsMap((tp) => {
       const team = tp[dto.NBATeamID];
@@ -1287,7 +1375,24 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         nbaDraftPickMap,
         tradeProposalsMap,
         tradePreferencesMap,
+        nbaTradeProposals,
+        nbaTradeProposalsMap,
         nbaDraftees,
+        freeAgents,
+        waiverPlayers,
+        collegePromises,
+        collegeGameplanMap,
+        nbaGameplanMap,
+        nbaWarRoomMap,
+        nbaScoutingProfileMap,
+        getLandingBootstrapData,
+        getBootstrapRosterData,
+        getBootstrapRecruitingData,
+        getBootstrapFreeAgencyData,
+        getBootstrapScheduleData,
+        getBootstrapDraftData,
+        getBootstrapPortalData,
+        getBootstrapGameplanData,
         submitCollegePoll,
         proposeTrade,
         acceptTrade,

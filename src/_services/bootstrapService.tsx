@@ -94,6 +94,58 @@ export const BootstrapService = {
     );
   },
 
+  GetBBARosterBootstrapData: async (
+    collegeID: number,
+    proID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(
+      `${bbaUrl}bootstrap/roster/${collegeID}/${proID}`
+    );
+  },
+
+  GetBBARecruitingBootstrapData: async (
+    collegeID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(
+      `${bbaUrl}bootstrap/recruiting/${collegeID}`
+    );
+  },
+
+  GetBBAFreeAgencyBootstrapData: async (
+    proID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(`${bbaUrl}bootstrap/freeagency/${proID}`);
+  },
+
+  GetBBASchedulingBootstrapData: async (
+    username: string,
+    collegeID: number,
+    seasonID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(
+      `${bbaUrl}bootstrap/scheduling/${username}/${collegeID}/${seasonID}`
+    );
+  },
+
+  GetBBADraftBootstrapData: async (proID: number): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(`${bbaUrl}bootstrap/draft/${proID}`);
+  },
+
+  GetBBAPortalBootstrapData: async (
+    collegeID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(`${bbaUrl}bootstrap/portal/${collegeID}`);
+  },
+
+  GetBBAGameplanBootstrapData: async (
+    collegeID: number,
+    proID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(
+      `${bbaUrl}bootstrap/gameplan/${collegeID}/${proID}`
+    );
+  },
+
   GetBBANewsBootstrapData: async (
     collegeID: number,
     proID: number

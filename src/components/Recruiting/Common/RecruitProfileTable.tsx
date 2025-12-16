@@ -647,6 +647,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
 
   // 5) Leading teams (memo)
   const leadingTeams = useMemo(() => {
+    if (!croot) return "None";
     if (!croot.LeadingTeams?.length) return "None";
     if (croot.IsSigned) {
       return <Logo url={getLogo(SimCBB, croot.TeamID, false)} variant="tiny" />;
@@ -660,7 +661,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
         variant="tiny"
       />
     ));
-  }, [croot.LeadingTeams]);
+  }, [croot]);
 
   // 6) Buttons
   const toggleScholarship = () => {
@@ -673,11 +674,14 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
   };
 
   const nameColor = useMemo(() => {
+    if (!croot) return "";
     if (croot.IsCustomCroot) {
       return "text-blue-400";
     }
     return "";
   }, [croot]);
+
+  if (!croot) return null;
 
   return (
     <div
