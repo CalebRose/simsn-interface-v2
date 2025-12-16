@@ -51,6 +51,7 @@ import {
 import { SimNFL } from "../../_constants/constants";
 import {
   CollegePlayer as CBBPlayer,
+  CollegePromise as BasketballPromise,
   NBAContract,
   NBAPlayer,
 } from "../../models/basketballModels";
@@ -1236,7 +1237,9 @@ interface CBBRosterTableProps {
   team?: any;
   category?: string;
   openModal: (action: ModalAction, player: CBBPlayer) => void;
+  openPromiseModal: (player: CBBPlayer) => void;
   disable: boolean;
+  collegePromiseMap: Record<number, BasketballPromise>;
 }
 
 export const CBBRosterTable: FC<CBBRosterTableProps> = ({
@@ -1247,6 +1250,8 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
   team,
   category,
   openModal,
+  openPromiseModal,
+  collegePromiseMap,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -1404,6 +1409,12 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
                       label: `Send Promise - ${item.FirstName} ${item.LastName}`,
                     },
                   ]),
+              ...[
+                {
+                  value: "promise",
+                  label: `Send Promise - ${item.FirstName} ${item.LastName}`,
+                },
+              ],
             ]}
             onChange={(selectedOption) => {
               if (selectedOption?.value === "cut") {
@@ -1413,7 +1424,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
                 openModal(Redshirt, item);
               }
               if (selectedOption?.value === "promise") {
-                openModal(Promise, item);
+                openPromiseModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
               }

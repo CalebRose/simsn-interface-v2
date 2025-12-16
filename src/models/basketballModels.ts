@@ -1774,6 +1774,7 @@ export class NewsLog {
   }
 }
 export class CollegePromise {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

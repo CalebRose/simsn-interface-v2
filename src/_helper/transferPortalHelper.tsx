@@ -115,6 +115,54 @@ export const getHCKPromiseWeight = (promiseType: string, benchmark: number) => {
   return "None";
 };
 
+export const getBBAPromiseWeight = (promiseType: string, benchmark: number) => {
+  if (promiseType === "") {
+    return "None";
+  }
+  if (promiseType === "No Redshirt") {
+    return "Low";
+  }
+  if (promiseType === "Home State Game") {
+    return "Medium";
+  }
+  if (promiseType === "Minutes") {
+    if (benchmark < 1 || benchmark > 40) {
+      return "Invalid";
+    }
+    if (benchmark <= 5) return "Very Low";
+    if (benchmark <= 10) return "Low";
+    if (benchmark <= 20) return "Medium";
+    if (benchmark <= 25) return "High";
+    return "Very High";
+  }
+  if (promiseType === "Wins") {
+    if (benchmark === 0) return "Why even try?";
+    if (benchmark <= 5) return "Extremely Low";
+    if (benchmark <= 10) return "Very Low";
+    if (benchmark <= 15) return "Low";
+    if (benchmark <= 20) return "Medium";
+    if (benchmark <= 25) return "High";
+    if (benchmark < 30) return "Very High";
+    return "Extremely High";
+  }
+  if (promiseType === "Conference Championship") {
+    return "High";
+  }
+  if (promiseType === "Playoffs") {
+    return "Medium";
+  }
+  if (promiseType === "Sweet 16" || promiseType === "Elite 8") {
+    return "High";
+  }
+  if (promiseType === "Final Four") {
+    return "Very High";
+  }
+  if (promiseType === "National Championship") {
+    return "If you make this promise then you better win it!";
+  }
+  return "None";
+};
+
 export const getSimCHLTeamStateOptions = (chlTeams: HockeyTeam[]) => {
   const list: { label: string; value: string }[] = [];
   chlTeams.forEach((team) => {

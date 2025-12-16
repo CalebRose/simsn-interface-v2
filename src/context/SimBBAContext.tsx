@@ -65,6 +65,7 @@ import { TradeService } from "../_services/tradeService";
 import { CollegePollService } from "../_services/collegePollService";
 import FBAScheduleService from "../_services/scheduleService";
 import { FaceDataService } from "../_services/faceDataService";
+import { TransferPortalService } from "../_services/transferPortalService";
 
 // ✅ Define Types for Context
 interface SimBBAContextProps {
@@ -184,6 +185,8 @@ interface SimBBAContextProps {
   getBootstrapPortalData: () => void;
   getBootstrapGameplanData: () => void;
   getBootstrapNewsData: () => void;
+  createPromise: (dto: any) => Promise<void>;
+  cancelPromise: (dto: any) => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -300,6 +303,8 @@ const defaultContext: SimBBAContextProps = {
   getBootstrapDraftData: async () => {},
   getBootstrapPortalData: async () => {},
   getBootstrapGameplanData: async () => {},
+  createPromise: async () => {},
+  cancelPromise: async () => {},
 };
 
 export const SimBBAContext = createContext<SimBBAContextProps>(defaultContext);
@@ -1313,6 +1318,35 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const createPromise = useCallback(
+    async (dto: any) => {
+      const res = await TransferPortalService.BBACreatePromise(dto);
+      if (res) {
+        setCollegePromises((promises) => [...promises, dto]);
+        enqueueSnackbar("Promise Created!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      }
+    },
+    [collegePromises]
+  );
+
+  const cancelPromise = useCallback(
+    async (dto: any) => {
+      await TransferPortalService.BBACancelPromise(dto);
+
+      setCollegePromises((promises) =>
+        [...promises].filter((x) => x.CollegePlayerID !== dto.CollegePlayerID)
+      );
+      enqueueSnackbar("Promise Cancelled!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    },
+    [collegePromises]
+  );
+
   return (
     <SimBBAContext.Provider
       value={{
@@ -1428,6 +1462,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         ExportBasketballSchedule,
         ExportPlayByPlay,
         getBootstrapNewsData,
+        createPromise,
+        cancelPromise,
       }}
     >
       {children}

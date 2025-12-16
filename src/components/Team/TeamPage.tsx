@@ -39,7 +39,7 @@ import { Text } from "../../_design/Typography";
 import { useModal } from "../../_hooks/useModal";
 import {
   CollegePlayer as CHLPlayer,
-  CollegePromise,
+  CollegePromise as HockeyPromise,
   DraftPick,
   ProfessionalPlayer as PHLPlayer,
   TradeProposal,
@@ -57,7 +57,11 @@ import { getPHLShortenedValue } from "../../_utility/getPHLShortenedValue";
 import { darkenColor } from "../../_utility/getDarkerColor";
 import { useParams } from "react-router-dom";
 import { useSimBBAStore } from "../../context/SimBBAContext";
-import { CollegePlayer, NBAPlayer } from "../../models/basketballModels";
+import {
+  CollegePlayer,
+  CollegePromise as BasketballPromise,
+  NBAPlayer,
+} from "../../models/basketballModels";
 import { TradeBlockRow } from "./TeamPageTypes";
 import {
   ManageTradeModal,
@@ -172,6 +176,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     searchRef.current?.(dto);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   const [selectedTeam, setSelectedTeam] = useState(() => {
     if (teamId) {
       const id = Number(teamId);
@@ -187,7 +192,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
   }, [selectedTeam, collegePromises]);
 
   const collegePromiseMap = useMemo(() => {
-    const map: Record<number, CollegePromise> = {};
+    const map: Record<number, HockeyPromise> = {};
     selectedTeamPromises.forEach((promise) => {
       map[promise.CollegePlayerID] = promise;
     });
@@ -1426,12 +1431,15 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     cbbRosterMap,
     cbbTeamOptions,
     teamProfileMap,
+    collegePromises,
     cutCBBPlayer,
     redshirtPlayer,
     promisePlayer,
     getBootstrapRosterData,
+    createPromise,
   } = bbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const promiseModal = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<CollegePlayer | null>(null);
   const [selectedTeam, setSelectedTeam] = useState(() => {
@@ -1469,6 +1477,28 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     return null;
   }, [teamProfileMap, selectedTeam]);
 
+  const selectedTeamPromises = useMemo(() => {
+    if (!collegePromises || !selectedTeam) return [];
+    return collegePromises.filter(
+      (promise) => promise.TeamID === selectedTeam.ID
+    );
+  }, [selectedTeam, collegePromises]);
+
+  const collegePromiseMap = useMemo(() => {
+    const map: Record<number, BasketballPromise> = {};
+    selectedTeamPromises.forEach((promise) => {
+      map[promise.CollegePlayerID] = promise;
+    });
+    return map;
+  }, [selectedTeamPromises]);
+
+  const modalPlayerPromise = useMemo(() => {
+    if (!modalPlayer) {
+      return null;
+    }
+    return collegePromiseMap[modalPlayer.ID];
+  }, [modalPlayer, collegePromiseMap]);
+
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = cbbTeamMap ? cbbTeamMap[value] : null;
@@ -1479,6 +1509,11 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
   const openModal = (action: ModalAction, player: CollegePlayer) => {
     handleOpenModal();
     setModalAction(action);
+    setModalPlayer(player);
+  };
+
+  const openPromiseModal = (player: CollegePlayer) => {
+    promiseModal.handleOpenModal();
     setModalPlayer(player);
   };
 
@@ -1501,6 +1536,16 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
           cutPlayer={cutCBBPlayer}
           redshirtPlayer={redshirtPlayer}
           promisePlayer={promisePlayer}
+        />
+      )}
+      {modalPlayer && (
+        <PromiseModal
+          league={SimCBB}
+          isOpen={promiseModal.isModalOpen}
+          onClose={promiseModal.handleCloseModal}
+          player={modalPlayer}
+          promise={modalPlayerPromise}
+          promisePlayer={createPromise}
         />
       )}
       <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
@@ -1578,6 +1623,8 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            openPromiseModal={openPromiseModal}
+            collegePromiseMap={collegePromiseMap}
             disable={cbbTeam!.ID !== selectedTeam!.ID}
           />
         </Border>
