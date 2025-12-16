@@ -1,4 +1,4 @@
-import { hckUrl } from "../_constants/urls";
+import { bbaUrl, hckUrl } from "../_constants/urls";
 import {
   GetActionCall,
   GetCall,
@@ -34,5 +34,33 @@ export const TransferPortalService = {
 
   ExportHCKPortal: async () => {
     await GetExportCall(`${hckUrl}portal/export/players/`, "blob");
+  },
+
+  BBACreateTransferPortalProfile: async (
+    dto: any
+  ): Promise<TransferPortalProfile> => {
+    return await PostCall(`${bbaUrl}portal/profile/create`, dto);
+  },
+
+  BBARemoveProfileFromBoard: async (
+    dto: any
+  ): Promise<TransferPortalProfile> => {
+    return await GetCall(`${bbaUrl}portal/profile/remove/${dto.ProfileID}`);
+  },
+
+  BBASaveTransferPortalBoard: async (dto: any): Promise<void> => {
+    await PostCall(`${bbaUrl}portal/saveboard`, dto);
+  },
+
+  BBACreatePromise: async (dto: any): Promise<CollegePromise> => {
+    return await PostCall(`${bbaUrl}portal/promise/create`, dto);
+  },
+
+  BBACancelPromise: async (dto: any): Promise<void> => {
+    await GetActionCall(`${bbaUrl}portal/promise/cancel/${dto.ID}`);
+  },
+
+  ExportBBAPortal: async () => {
+    await GetExportCall(`${bbaUrl}portal/export/players/`, "blob");
   },
 };

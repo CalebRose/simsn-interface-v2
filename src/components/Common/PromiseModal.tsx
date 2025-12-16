@@ -17,6 +17,7 @@ import { CollegePlayerSeasonStats as BasketballPlayerSeasonStats } from "../../m
 import { CSSObjectWithLabel, SingleValue } from "react-select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
 import {
+  getBBAPromiseWeight,
   getHCKPromiseWeight,
   getSimCBBTeamStateOptions,
   getSimCFBTeamStateOptions,
@@ -81,7 +82,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
   const { chlTeams, chlTeam, chlPlayerSeasonStatsMap, hck_Timestamp } =
     useSimHCKStore();
   const { cfbTeams, cfbTeam } = useSimFBAStore();
-  const { cbbTeams, cbbTeam } = useSimBBAStore();
+  const { cbbTeams, cbbTeam, cbb_Timestamp } = useSimBBAStore();
 
   const [promiseType, setPromiseType] = useState(promise?.PromiseType || "");
   const [benchmark, setBenchmark] = useState(promise?.Benchmark || 0);
@@ -121,6 +122,9 @@ export const PromiseModal: FC<PromiseModalProps> = ({
     if (league === SimCHL) {
       return getHCKPromiseWeight(promiseType, benchmark);
     }
+    if (league === SimCBB) {
+      return getBBAPromiseWeight(promiseType, benchmark);
+    }
     return "";
   }, [league, promiseType, benchmark, promise, hasUserMadeChanges]);
 
@@ -129,21 +133,32 @@ export const PromiseModal: FC<PromiseModalProps> = ({
   }, []);
 
   const maxRange = useMemo(() => {
-    if (promiseType === "Wins") {
+    if (promiseType === "Wins" && league === SimCHL) {
       return 34;
+    }
+    if (promiseType === "Wins" && league === SimCBB) {
+      return 40;
     }
     if (promiseType === "Time on Ice") {
       return 20; // minutes per game
     }
+    if (promiseType === "Minutes") {
+      return 40; // minutes per game
+    }
     return 100;
-  }, [promiseType]);
+  }, [promiseType, league]);
 
   const errors: string[] = useMemo(() => {
     const list: string[] = [];
     if (promiseType === "") {
       list.push("Promise type must be selected.");
     }
-    if (promiseType === "Wins" || promiseType === "Time on Ice") {
+    if (
+      promiseType === "Wins" ||
+      promiseType === "Time on Ice" ||
+      promiseType === "Minutes" ||
+      promiseType === "Snap Count"
+    ) {
       if (benchmark < minRange || benchmark > maxRange) {
         list.push(`Benchmark must be between ${minRange} and ${maxRange}.`);
       }
@@ -385,6 +400,58 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                   </div>
                 </>
               )}
+              {league === SimCBB && seasonStats && (
+                <>
+                  <div>
+                    <Text>Games Played</Text>
+                    <Text>
+                      <strong>{seasonStats.GamesPlayed}</strong>
+                    </Text>
+                  </div>
+                  <div>
+                    <Text>Points</Text>
+                    <Text>
+                      <strong>{seasonStats.Points}</strong>
+                    </Text>
+                  </div>
+                  <div>
+                    <Text>Assists</Text>
+                    <Text>
+                      <strong>{seasonStats.Assists}</strong>
+                    </Text>
+                  </div>
+                  <div>
+                    <Text>Points</Text>
+                    <Text>
+                      <strong>{seasonStats.FGPercentage}</strong>
+                    </Text>
+                  </div>
+                  <div>
+                    <Text>Minutes</Text>
+                    <Text>
+                      <strong>{seasonStats.Minutes}</strong>
+                    </Text>
+                  </div>
+                  <div>
+                    <Text>Rebounds</Text>
+                    <Text>
+                      <strong>{seasonStats.TotalRebounds}</strong>
+                    </Text>
+                  </div>
+                  <div>
+                    <Text>Steals</Text>
+                    <Text>
+                      <strong>{seasonStats.Steals}</strong>
+                    </Text>
+                  </div>
+                  <div>
+                    <Text>Blocks</Text>
+                    <Text>
+                      <strong>{seasonStats.Blocks}</strong>
+                    </Text>
+                  </div>
+                </>
+              )}
             </div>
           </div>
           <div className="">
@@ -435,7 +502,10 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                 <Text variant="body-small">Benchmark</Text>
               </div>
               <div>
-                {(promiseType === "Wins" || promiseType === "Time on Ice") && (
+                {(promiseType === "Wins" ||
+                  promiseType === "Time on Ice" ||
+                  promiseType === "Minutes" ||
+                  promiseType === "Snap Count") && (
                   <Slider
                     value={benchmark}
                     onChange={ChangeBenchmark}
