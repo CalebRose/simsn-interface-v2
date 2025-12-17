@@ -12,6 +12,7 @@ import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
 import { usePagination } from "../../../_hooks/usePagination";
 import {
+  CBBPortalHelpContent,
   CBBRecruitingHelpContent,
   CFBRecruitingHelpContent,
   CHLPortalHelpContent,
@@ -108,7 +109,7 @@ export const PortalHelpModal: FC<HelpModalProps> = ({
       return CFBRecruitingHelpContent;
     }
     if (league === SimCBB) {
-      return CBBRecruitingHelpContent;
+      return CBBPortalHelpContent;
     }
     return [];
   }, [league]);

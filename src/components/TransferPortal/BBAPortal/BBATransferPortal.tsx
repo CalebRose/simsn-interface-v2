@@ -39,6 +39,7 @@ export const BBATransferPortal = () => {
     removeTransferPlayerFromBoard,
     cbbTeamMap,
     cbbPlayerMap,
+    portalPlayerMap,
     updatePointsOnPortalPlayer,
     createPromise,
     cancelPromise,
@@ -400,7 +401,7 @@ export const BBATransferPortal = () => {
                   colorThree={teamColors.TextColorThree}
                   team={cbbTeam}
                   transferPortalProfiles={teamTransferPortalProfiles}
-                  playerMap={cbbPlayerMap}
+                  playerMap={portalPlayerMap}
                   teamMap={cbbTeamMap}
                   league={SimCBB}
                   teamProfile={teamProfile!}

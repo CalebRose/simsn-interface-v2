@@ -768,7 +768,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
     console.log("Fetching recruiting bootstrap data...");
     const res = await BootstrapService.GetBBARecruitingBootstrapData(cbbID);
-    console.log({ res });
     setRecruits(res.Recruits);
     setTeamProfileMap(res.TeamProfileMap);
     setRecruitProfiles(res.RecruitProfiles);
@@ -838,14 +837,14 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
 
   // use this once the portal page is finished
   const getBootstrapPortalData = async () => {
-    let cfbID = 0;
-    if (currentUser && currentUser.teamId) {
-      cfbID = currentUser.teamId;
+    let cbbID = 0;
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
     }
-    if (cfbID === 0) {
+    if (cbbID === 0) {
       return;
     }
-    const res = await BootstrapService.GetBBAPortalBootstrapData(cfbID);
+    const res = await BootstrapService.GetBBAPortalBootstrapData(cbbID);
     setTransferPortalProfiles(res.TransferPortalProfiles);
     setTeamProfileMap(res.TeamProfileMap);
     setCollegePromises(res.CollegePromises);

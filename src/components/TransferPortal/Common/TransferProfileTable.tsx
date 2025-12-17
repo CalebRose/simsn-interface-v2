@@ -127,6 +127,58 @@ const getTransferProfileTableColumns = (
     ]);
     return columns;
   }
+  if (league === SimCBB) {
+    let columns: { header: string; accessor: string }[] = [
+      { header: "ID", accessor: "" },
+      { header: "Name", accessor: "LastName" },
+      { header: "Pos", accessor: "Position" },
+      { header: "Arch", accessor: "Archetype" },
+      { header: "⭐", accessor: "Stars" },
+      { header: "Country", accessor: "Country" },
+      { header: "Region", accessor: "State" },
+      { header: "Ovr", accessor: "OverallGrade" },
+    ];
+    if (!isMobile && category === Attributes) {
+      columns = columns.concat([
+        { header: "Ins", accessor: "Finishing" },
+        { header: "Mid", accessor: "Shooting2" },
+        { header: "3pt", accessor: "Shooting3" },
+        { header: "FT", accessor: "FreeThrow" },
+        { header: "BW", accessor: "Ballwork" },
+        { header: "RB", accessor: "Rebounding" },
+        { header: "Int. D", accessor: "InteriorDefense" },
+        { header: "Per. D", accessor: "PerimeterDefense" },
+        { header: "Pot", accessor: "PotentialGrade" },
+      ]);
+    } else if (category === Promises) {
+      columns = columns.concat([
+        { header: "Promise Type", accessor: "PromiseType" },
+        { header: "Promise Weight", accessor: "PromiseWeight" },
+        { header: "Benchmark", accessor: "Benchmark" },
+        { header: "Benchmark Two", accessor: "BenchmarkStr" },
+      ]);
+    } else if (!isMobile && category === Preferences) {
+      columns = columns.concat([
+        { header: "Program", accessor: "ProgramPref" },
+        { header: "Prof. Dev.", accessor: "ProfDevPref" },
+        { header: "Trad.", accessor: "TraditionsPref" },
+        { header: "Fac.", accessor: "FacilitiesPref" },
+        { header: "Atm.", accessor: "AtmospherePref" },
+        { header: "Aca.", accessor: "AcademicsPref" },
+        { header: "Conf.", accessor: "ConferencePref" },
+        { header: "Coach", accessor: "CoachPref" },
+        { header: "Season", accessor: "SeasonMomentumPref" },
+      ]);
+    }
+    columns = columns.concat([
+      { header: "Leaders", accessor: "lead" },
+      { header: "Add Points", accessor: "CurrentWeeksPoints" },
+      { header: "Mod.", accessor: "ModifiedPoints" },
+      { header: "Total", accessor: "TotalPoints" },
+      { header: "Actions", accessor: "actions" },
+    ]);
+    return columns;
+  }
   return [];
 };
 
@@ -436,6 +488,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
   openPromiseModal,
   backgroundColor,
 }) => {
+  if (!player) return <></>;
   const bbStore = useSimBBAStore();
   const { transferProfileMapByPlayerID, collegePromiseMap } = bbStore;
   const { isTablet } = useResponsive();
@@ -525,7 +578,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
     openModal(ScoutAttributeType, player);
   };
 
-  const canPlacePointsDown = player.TeamID === 0 || player.TeamID >= 75;
+  const canPlacePointsDown = player.TeamID === 0;
 
   return (
     <div
@@ -629,14 +682,11 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
         </>
       )}
       <TableCell>
-        <span className={`text-xs`}>{player.RecruitingStatus}</span>
-      </TableCell>
-      <TableCell>
         <div className="flex flex-row gap-x-2 text-xs">
           {player.TeamID > 0 && player.TeamID < 75 ? (
             <div key={player.TeamID}>
               <Logo
-                url={getLogo(SimCHL, player.TeamID, false)}
+                url={getLogo(SimCBB, player.TeamID, false)}
                 variant="small"
               />
             </div>
@@ -762,6 +812,7 @@ export const TransferPortalProfileTable: FC<
     }
     return (profile: BasketballPortalProfile, idx: number, bg: string) => {
       const player = playerMap[profile.CollegePlayerID] as BasketballPlayer;
+      console.log({ profile, player, playerMap });
       return (
         <CBBProfileRow
           profile={profile}

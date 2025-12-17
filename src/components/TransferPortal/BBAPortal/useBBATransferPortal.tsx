@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../_hooks/useModal";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
 import {
@@ -28,6 +28,7 @@ export const useBBATransferPortal = () => {
     transferPortalProfiles,
     cbbTeamOptions,
     cbb_Timestamp,
+    getBootstrapPortalData,
   } = bbaStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
@@ -95,6 +96,7 @@ export const useBBATransferPortal = () => {
     }
     return null;
   }, [cbbTeam, teamProfileMap]);
+
   const transferMap = useMemo(() => {
     const tpMap: any = {};
     for (let i = 0; i < portalPlayers.length; i++) {
@@ -112,6 +114,10 @@ export const useBBATransferPortal = () => {
     stars,
     previousTeams,
   });
+
+  useEffect(() => {
+    getBootstrapPortalData();
+  }, []);
 
   const pageSize = 100;
 

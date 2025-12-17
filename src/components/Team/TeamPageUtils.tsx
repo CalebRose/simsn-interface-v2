@@ -2435,38 +2435,38 @@ export const getAdditionalBBAPortalAttributes = (
 ) => {
   return [
     {
-      label: "Fin",
+      label: "Finishing",
       value: player.Finishing,
     },
     {
-      label: "SH2",
+      label: "Shooting2",
       value: player.Shooting2,
     },
     {
-      label: "SH3",
+      label: "Shooting3",
       value: player.Shooting3,
     },
     {
-      label: "FT",
+      label: "Free Throw",
       value: player.FreeThrow,
     },
     {
-      label: "BW",
+      label: "Ballwork",
       value: player.Ballwork,
     },
     {
-      label: "RB",
+      label: "Rebounding",
       value: player.Rebounding,
     },
     {
-      label: "ID",
+      label: "Interior Defense",
       value: player.InteriorDefense,
     },
     {
-      label: "PD",
+      label: "Perimeter Defense",
       value: player.PerimeterDefense,
     },
-    { label: "POT", value: player.PotentialGrade },
+    { label: "Potential", value: player.PotentialGrade },
   ];
 };
 
