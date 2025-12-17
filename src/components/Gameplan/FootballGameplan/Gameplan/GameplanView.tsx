@@ -12,7 +12,7 @@ import { useSimFBAStore } from "../../../../context/SimFBAContext";
 import { useAuthStore } from "../../../../context/AuthContext";
 import { SingleValue } from "react-select";
 import { GameplanData, transformGameplanForSave } from "./GameplanHelper";
-import { GameplanTab } from "../Constants/GameplanConstants";
+import { FormationMap, GameplanTab } from "../Constants/GameplanConstants";
 import { useGameplanValidation } from "./useGameplanValidation";
 import OffensiveFormationsPanel from "./OffensiveFormationsPanel";
 import OffensiveDistributionsPanel from "./OffensiveDistributionsPanel";
@@ -81,6 +81,14 @@ const GameplanView: React.FC<GameplanViewProps> = ({
     canModify,
   });
 
+  const offensiveFormations = useMemo(() => {
+    if (gameplan && gameplan.OffensiveScheme.length > 0) {
+      const forms = FormationMap[gameplan.OffensiveScheme].Formations;
+      return forms.length > 0 ? forms : [];
+    }
+    return [];
+  }, [gameplan]);
+
   const teamOptions = league === SimCFB ? cfbTeamOptions : nflTeamOptions;
   const handleTeamSelection = useCallback(
     (selectedOption: SingleValue<SelectOption>) => {
@@ -148,10 +156,16 @@ const GameplanView: React.FC<GameplanViewProps> = ({
       };
 
       if (league === SimCFB) {
-        dto.UpdatedGameplan = transformGameplanForSave(localGameplan);
+        dto.UpdatedGameplan = transformGameplanForSave(
+          localGameplan,
+          offensiveFormations
+        );
         result = await saveCFBGameplan(dto, { ...gameplan, ...localGameplan });
       } else {
-        dto.UpdatedNFLGameplan = transformGameplanForSave(localGameplan);
+        dto.UpdatedNFLGameplan = transformGameplanForSave(
+          localGameplan,
+          offensiveFormations
+        );
         result = await saveNFLGameplan(dto, { ...gameplan, ...localGameplan });
       }
 
