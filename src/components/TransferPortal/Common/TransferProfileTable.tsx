@@ -9,12 +9,13 @@ import {
   Promises,
   RemovePortalPlayerType,
   ScoutAttributeType,
+  SimCBB,
   SimCHL,
 } from "../../../_constants/constants";
 import { Table, TableCell } from "../../../_design/Table";
 import {
-  CollegePlayer,
-  TransferPortalProfile,
+  CollegePlayer as HockeyPlayer,
+  TransferPortalProfile as HockeyPortalProfile,
 } from "../../../models/hockeyModels";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { Input } from "../../../_design/Inputs";
@@ -27,6 +28,8 @@ import {
 import { Logo } from "../../../_design/Logo";
 import { getLogo } from "../../../_utility/getLogo";
 import {
+  getAdditionalBBAPortalAttributes,
+  getAdditionalBBAPortalPreferenceAttributes,
   getAdditionalHCKPortalAttributes,
   getAdditionalHCKPortalPotentialAttributes,
   getAdditionalHCKPortalPreferenceAttributes,
@@ -34,7 +37,15 @@ import {
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { getHockeyLetterGrade } from "../../../_utility/getLetterGrade";
-import { getHCKModifierValue } from "../../../_helper/transferPortalHelper";
+import {
+  getBBAModifierValue,
+  getHCKModifierValue,
+} from "../../../_helper/transferPortalHelper";
+import {
+  TransferPortalProfile as BasketballPortalProfile,
+  TransferPlayerResponse as BasketballPlayer,
+} from "../../../models/basketballModels";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
 
 const getTransferProfileTableColumns = (
   league: League,
@@ -120,13 +131,13 @@ const getTransferProfileTableColumns = (
 };
 
 interface CHLProfileRowProps {
-  profile: TransferPortalProfile;
-  player: CollegePlayer;
+  profile: HockeyPortalProfile;
+  player: HockeyPlayer;
   isMobile: boolean;
   category: string;
   ChangeInput: (id: number, name: string, points: number) => void;
-  openModal: (action: ModalAction, player: CollegePlayer) => void;
-  openPromiseModal: (player: CollegePlayer) => void;
+  openModal: (action: ModalAction, player: HockeyPlayer) => void;
+  openPromiseModal: (player: HockeyPlayer) => void;
   setAttribute: (attr: string) => void;
   backgroundColor: string;
 }
@@ -290,7 +301,286 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
         <>
           {attrList.map((attr: any) => (
             <TableCell key={attr.label}>
-              {profile[attr.label as keyof TransferPortalProfile] ? (
+              {profile[attr.label as keyof HockeyPortalProfile] ? (
+                <span className={`text-sm`}>{attr.value}</span>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute(attr.label)}
+                >
+                  ?
+                </Button>
+              )}
+            </TableCell>
+          ))}
+        </>
+      )}
+      {category === Promises && (
+        <>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.PromiseType : "N/A"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.PromiseWeight : "N/A"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.Benchmark : "N/A"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className="text-sm">
+              {promise ? promise.BenchmarkStr : "N/A"}
+            </span>
+          </TableCell>
+        </>
+      )}
+      {category === Preferences && (
+        <>
+          {prefList.map((attr, idx) => (
+            <TableCell key={idx}>
+              <span className="text-sm">{attr.value}</span>
+            </TableCell>
+          ))}
+        </>
+      )}
+      <TableCell>
+        <span className={`text-xs`}>{player.RecruitingStatus}</span>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-row gap-x-2 text-xs">
+          {player.TeamID > 0 && player.TeamID < 75 ? (
+            <div key={player.TeamID}>
+              <Logo
+                url={getLogo(SimCHL, player.TeamID, false)}
+                variant="small"
+              />
+            </div>
+          ) : (
+            leadingTeams
+          )}
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="w-[1rem]">
+          <Input
+            type="number"
+            key={profile.ID}
+            label=""
+            name="CurrentWeeksPoints"
+            value={profile.CurrentWeeksPoints as number}
+            classes="text-xs"
+            disabled={!canPlacePointsDown}
+            onChange={onPointsChange}
+          />
+        </div>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{modValue.toFixed(2)}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{profile.TotalPoints.toFixed(2)}</span>
+      </TableCell>
+      <TableCell>
+        <ButtonGroup classes="flex-nowrap">
+          <Button
+            variant="primary"
+            size="xs"
+            onClick={() => openPromiseModal(player)}
+            disabled={player.TeamID > 0 && player.TeamID < 75}
+          >
+            {player.TeamID > 0 && player.TeamID < 75 ? (
+              <ActionLock />
+            ) : (
+              <Handshake />
+            )}
+          </Button>
+          <Button
+            variant="danger"
+            size="xs"
+            onClick={() => openModal(RemovePortalPlayerType, player)}
+          >
+            <TrashCan />
+          </Button>
+        </ButtonGroup>
+      </TableCell>
+    </div>
+  );
+};
+
+interface CBBProfileRowProps {
+  profile: BasketballPortalProfile;
+  player: BasketballPlayer;
+  isMobile: boolean;
+  category: string;
+  ChangeInput: (id: number, name: string, points: number) => void;
+  openModal: (action: ModalAction, player: BasketballPlayer) => void;
+  openPromiseModal: (player: BasketballPlayer) => void;
+  setAttribute: (attr: string) => void;
+  backgroundColor: string;
+}
+
+export const CBBProfileRow: FC<CBBProfileRowProps> = ({
+  profile,
+  player,
+  isMobile,
+  category,
+  ChangeInput,
+  openModal,
+  setAttribute,
+  openPromiseModal,
+  backgroundColor,
+}) => {
+  const bbStore = useSimBBAStore();
+  const { transferProfileMapByPlayerID, collegePromiseMap } = bbStore;
+  const { isTablet } = useResponsive();
+  const transferProfiles = useMemo(() => {
+    if (!player) {
+      console.log("No player found for profile:", profile);
+      return [];
+    }
+    const profiles = transferProfileMapByPlayerID[player.ID];
+    if (!profiles) return [];
+    return profiles;
+  }, [transferProfileMapByPlayerID, player]);
+
+  // 1) Build attribute lists once
+  let attrList = getAdditionalBBAPortalAttributes(player);
+  const prefList = getAdditionalBBAPortalPreferenceAttributes(player);
+  const promise = collegePromiseMap[player.ID];
+  // 3) Compute modifier
+  let modValue = getBBAModifierValue(profile, promise);
+
+  // 4) Change handler
+  const onPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let val = Math.max(0, Math.min(20, Number(e.target.value)));
+    ChangeInput(profile.ID, e.target.name, val);
+  };
+
+  // 5) Leading teams (memo)
+  const leadingTeamsList = useMemo(() => {
+    const list = [];
+    // Descending sort for total points
+    const sortedProfiles = transferProfiles.sort(
+      (a, b) => b.TotalPoints - a.TotalPoints
+    );
+    let runningThreshold = 0;
+    let totalPoints = 0;
+    for (let i = 0; i < sortedProfiles.length; i++) {
+      if (sortedProfiles[i].RemovedFromBoard) continue;
+      if (runningThreshold === 0) {
+        runningThreshold = sortedProfiles[i].TotalPoints * 0.66;
+      }
+      if (sortedProfiles[i].TotalPoints >= runningThreshold) {
+        totalPoints += sortedProfiles[i].TotalPoints;
+      }
+    }
+    for (let i = 0; i < sortedProfiles.length; i++) {
+      if (sortedProfiles[i].RemovedFromBoard) continue;
+      if (sortedProfiles[i].TotalPoints < runningThreshold) continue;
+      let odds = 0;
+      if (runningThreshold > 0) {
+        odds = sortedProfiles[i].TotalPoints / totalPoints;
+      }
+      const obj = {
+        TeamID: sortedProfiles[i].ProfileID,
+        TeamAbbreviation: sortedProfiles[i].TeamAbbreviation,
+        Odds: odds,
+      };
+      list.push(obj);
+    }
+    return list;
+  }, [transferProfiles]);
+
+  const leadingTeams = useMemo(() => {
+    if (leadingTeamsList.length === 0) {
+      return "None";
+    }
+
+    const competingTeams = leadingTeamsList.filter((x, idx) => x.Odds > 0);
+    const topTeams = competingTeams.filter((x, idx) => idx <= 3);
+
+    if (topTeams.length === 0) {
+      return "None";
+    }
+    const competingIDs = topTeams.map((x) => x.TeamID);
+    return competingIDs.map((x) => {
+      const logo = getLogo(SimCBB, x, false);
+      return (
+        <div key={x}>
+          <Logo url={logo} variant="tiny" />
+        </div>
+      );
+    });
+  }, [leadingTeamsList, player]);
+
+  // 6) Buttons
+  const scoutAttribute = (attr: string) => {
+    setAttribute(attr);
+    openModal(ScoutAttributeType, player);
+  };
+
+  const canPlacePointsDown = player.TeamID === 0 || player.TeamID >= 75;
+
+  return (
+    <div
+      className="table-row border-b dark:border-gray-700 text-left"
+      style={{ backgroundColor }}
+    >
+      <TableCell>
+        <span className={`text-xs`}>{player.ID}</span>
+      </TableCell>{" "}
+      <TableCell>
+        <span
+          className={`text-xs cursor-pointer font-semibold`}
+          onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+            (e.target as HTMLElement).style.color = "#fcd53f";
+          }}
+          onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+            (e.target as HTMLElement).style.color = "";
+          }}
+          onClick={() => openModal(PortalInfoType, player)}
+        >
+          {player.FirstName} {player.LastName}
+        </span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{player.Position}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{player.Archetype}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{player.Stars}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{annotateCountry(player.Country)}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{annotateRegion(player.State)}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{player.OverallGrade}</span>
+      </TableCell>
+      {category === Attributes && !isMobile && (
+        <>
+          {attrList.map((attr) => (
+            <TableCell key={attr.label}>
+              <span className={`text-xs`}>{attr.value}</span>
+            </TableCell>
+          ))}
+        </>
+      )}
+      {category === Potentials && (
+        <>
+          {attrList.map((attr: any) => (
+            <TableCell key={attr.label}>
+              {profile[attr.label as keyof BasketballPortalProfile] ? (
                 <span className={`text-sm`}>{attr.value}</span>
               ) : (
                 <Button
@@ -406,7 +696,7 @@ interface TransferPortalProfileTableProps {
   colorOne?: string;
   colorTwo?: string;
   colorThree?: string;
-  transferPortalProfiles?: TransferPortalProfile[];
+  transferPortalProfiles?: HockeyPortalProfile[] | BasketballPortalProfile[];
   teamProfile?: any;
   playerMap: any;
   teamMap: any;
@@ -414,8 +704,11 @@ interface TransferPortalProfileTableProps {
   league: League;
   isMobile?: boolean;
   category: string;
-  openModal: (action: ModalAction, player: CollegePlayer) => void;
-  openPromiseModal: (player: CollegePlayer) => void;
+  openModal: (
+    action: ModalAction,
+    player: HockeyPlayer | BasketballPlayer
+  ) => void;
+  openPromiseModal: (player: HockeyPlayer | BasketballPlayer) => void;
   ChangeInput: (id: number, name: string, points: number) => void;
   setAttribute: Dispatch<SetStateAction<string>>;
 }
@@ -448,10 +741,29 @@ export const TransferPortalProfileTable: FC<
   const rowRenderer = (
     league: League
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
-    return (profile: TransferPortalProfile, idx: number, bg: string) => {
-      const player = playerMap[profile.CollegePlayerID] as CollegePlayer;
+    if (league === SimCHL) {
+      return (profile: HockeyPortalProfile, idx: number, bg: string) => {
+        const player = playerMap[profile.CollegePlayerID] as HockeyPlayer;
+        return (
+          <CHLProfileRow
+            profile={profile}
+            key={profile.ID}
+            player={player}
+            isMobile={isMobile}
+            backgroundColor={bg}
+            category={category}
+            ChangeInput={ChangeInput}
+            openModal={openModal}
+            openPromiseModal={openPromiseModal}
+            setAttribute={setAttribute}
+          />
+        );
+      };
+    }
+    return (profile: BasketballPortalProfile, idx: number, bg: string) => {
+      const player = playerMap[profile.CollegePlayerID] as BasketballPlayer;
       return (
-        <CHLProfileRow
+        <CBBProfileRow
           profile={profile}
           key={profile.ID}
           player={player}

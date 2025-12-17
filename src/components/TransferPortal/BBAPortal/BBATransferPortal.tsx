@@ -1,55 +1,53 @@
 import { useMemo } from "react";
-import {
-  Attributes,
-  CountryOptions,
-  Help1,
-  HockeyArchetypeOptions,
-  HockeyPositionOptions,
-  navyBlueColor,
-  Overview,
-  Potentials,
-  Preferences,
-  Promises,
-  RecruitingTeamBoard,
-  SimCHL,
-  StarOptions,
-} from "../../../_constants/constants";
-import { CHLRecruitLockedMessages } from "../../../_constants/loadMessages";
+import { CBBRecruitLockedMessages } from "../../../_constants/loadMessages";
 import { useLoadMessage } from "../../../_hooks/useLoadMessage";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { useModal } from "../../../_hooks/useModal";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
-import { useSimHCKStore } from "../../../context/SimHockeyContext";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
+import { useBBATransferPortal } from "./useBBATransferPortal";
+import { PromiseModal } from "../../Common/PromiseModal";
+import {
+  Attributes,
+  BasketballArchetypeOptions,
+  BasketballPositionOptions,
+  CountryOptions,
+  Help1,
+  navyBlueColor,
+  Overview,
+  Preferences,
+  Promises,
+  RecruitingTeamBoard,
+  SimCBB,
+  StarOptions,
+} from "../../../_constants/constants";
 import { ActionModal } from "../../Common/ActionModal";
+import { PortalHelpModal } from "../../Recruiting/Common/RecruitingHelpModal";
 import { TransferPortalSideBar } from "../Common/TransferPortalSideBar";
-import { useHCKTransferPortal } from "./useHCKTransferPortal";
-import { Text } from "../../../_design/Typography";
 import { Border } from "../../../_design/Borders";
 import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
+import { Text } from "../../../_design/Typography";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { TransferPlayerTable } from "../Common/TransferPlayerTable";
 import { TransferPortalProfileTable } from "../Common/TransferProfileTable";
-import { PortalHelpModal } from "../../Recruiting/Common/RecruitingHelpModal";
-import { PromiseModal } from "../../Common/PromiseModal";
 
-export const HCKTransferPortal = () => {
-  const hkStore = useSimHCKStore();
+export const BBATransferPortal = () => {
+  const bbaStore = useSimBBAStore();
   const {
-    chlTeam,
+    cbbTeam,
     addTransferPlayerToBoard,
     removeTransferPlayerFromBoard,
-    chlTeamMap,
-    chlPlayerMap,
-    scoutPortalAttribute,
+    cbbTeamMap,
+    cbbPlayerMap,
     updatePointsOnPortalPlayer,
     createPromise,
     cancelPromise,
     exportTransferPortalPlayers,
     saveTransferPortalBoard,
-    chlRosterMap,
+    cbbRosterMap,
     teamTransferPortalProfiles,
     collegePromiseMap,
-  } = hkStore;
+  } = bbaStore;
   const {
     teamProfile,
     recruitingCategory,
@@ -82,30 +80,30 @@ export const HCKTransferPortal = () => {
     promiseModal,
     openPromiseModal,
     currentSpentPoints,
-    chlTeamOptions,
+    cbbTeamOptions,
     SelectPrevTeamOptions,
-  } = useHCKTransferPortal();
+  } = useBBATransferPortal();
   const rosterCount = useMemo(() => {
-    if (!chlTeam) {
+    if (!cbbTeam) {
       return { rosterCount: 0 };
     }
     const rMap: Record<string, number> = {};
-    const roster = chlRosterMap[chlTeam.ID];
+    const roster = cbbRosterMap![cbbTeam.ID];
     for (let i = 0; i < roster.length; i++) {
       const p = roster[i];
       rMap[p.Position] = rMap[p.Position] + 1 || 1;
     }
     return { ...rMap, rosterCount: roster.length };
-  }, [chlTeam, chlRosterMap]);
+  }, [cbbTeam, cbbRosterMap]);
   const teamColors = useTeamColors(
-    chlTeam?.ColorOne,
-    chlTeam?.ColorTwo,
-    chlTeam?.ColorThree
+    cbbTeam?.ColorOne,
+    cbbTeam?.ColorTwo,
+    cbbTeam?.ColorThree
   );
   const { isMobile } = useResponsive();
   const helpModal = useModal();
   const aiSettingsModal = useModal();
-  const lockMessage = useLoadMessage(CHLRecruitLockedMessages, 5000);
+  const lockMessage = useLoadMessage(CBBRecruitLockedMessages, 5000);
   const portalExport = async () => {
     await exportTransferPortalPlayers();
   };
@@ -121,7 +119,7 @@ export const HCKTransferPortal = () => {
     <>
       {modalPlayer && (
         <PromiseModal
-          league={SimCHL}
+          league={SimCBB}
           isOpen={promiseModal.isModalOpen}
           onClose={promiseModal.handleCloseModal}
           player={modalPlayer}
@@ -135,11 +133,10 @@ export const HCKTransferPortal = () => {
           onClose={handleCloseModal}
           playerID={modalPlayer.ID}
           playerLabel={`${modalPlayer.Position} ${modalPlayer.Archetype} ${modalPlayer.FirstName} ${modalPlayer.LastName}`}
-          teamID={chlTeam!.ID}
-          league={SimCHL}
+          teamID={cbbTeam!.ID}
+          league={SimCBB}
           modalAction={modalAction}
           player={modalPlayer}
-          scoutAttribute={scoutPortalAttribute}
           addPlayerToBoard={addTransferPlayerToBoard}
           removePlayerFromBoard={removeTransferPlayerFromBoard}
           attribute={attribute}
@@ -148,16 +145,16 @@ export const HCKTransferPortal = () => {
       <PortalHelpModal
         isOpen={helpModal.isModalOpen}
         onClose={helpModal.handleCloseModal}
-        league={SimCHL}
+        league={SimCBB}
         modalAction={Help1}
       />
       {/* Add help modals here & setting modals if needed */}
       <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[2fr_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
         <TransferPortalSideBar
           teamColors={teamColors}
-          Team={chlTeam!!}
+          Team={cbbTeam!!}
           TeamProfile={teamProfile!!}
-          league={SimCHL}
+          league={SimCBB}
           rosterCount={rosterCount}
         />
         <div className="flex flex-col w-full max-[1024px]:gap-y-2">
@@ -206,17 +203,6 @@ export const HCKTransferPortal = () => {
                   <Button
                     type="button"
                     variant={
-                      tableViewType === Potentials ? "success" : "secondary"
-                    }
-                    onClick={() => setTableViewType(Potentials)}
-                  >
-                    Potentials
-                  </Button>
-                )}
-                {recruitingCategory === RecruitingTeamBoard && (
-                  <Button
-                    type="button"
-                    variant={
                       tableViewType === Promises ? "success" : "secondary"
                     }
                     onClick={() => setTableViewType(Promises)}
@@ -243,7 +229,7 @@ export const HCKTransferPortal = () => {
                 backgroundColor: navyBlueColor,
               }}
             >
-              <div className="sm:grid sm:grid-cols-2 w-full">
+              <div className="sm:grid sm:grid-cols-2 w-full px-6">
                 <div className="flex flex-row w-full gap-x-2 justify-center sm:justify-normal">
                   <div className="flex flex-col">
                     <Text variant="h6" classes="text-nowrap">
@@ -251,14 +237,6 @@ export const HCKTransferPortal = () => {
                     </Text>
                     <Text variant="body">
                       {currentSpentPoints} of {teamProfile?.WeeklyPoints}
-                    </Text>
-                  </div>
-                  <div className="flex flex-col">
-                    <Text variant="h6" classes="text-nowrap">
-                      Scouting Points
-                    </Text>
-                    <Text variant="body">
-                      {teamProfile?.WeeklyScoutingPoints}
                     </Text>
                   </div>
                 </div>
@@ -290,7 +268,9 @@ export const HCKTransferPortal = () => {
                   <Button
                     type="button"
                     variant={
-                      teamProfile!.SpentPoints <= 50 ? "primary" : "warning"
+                      teamProfile && teamProfile.SpentPoints <= 50
+                        ? "primary"
+                        : "warning"
                     }
                     size="md"
                     onClick={saveTransferPortalBoard}
@@ -315,14 +295,14 @@ export const HCKTransferPortal = () => {
                 <div className="flex flex-row flex-wrap gap-x-1 sm:gap-x-2 gap-y-2 px-2 w-full">
                   <CategoryDropdown
                     label="Positions"
-                    options={HockeyPositionOptions}
+                    options={BasketballPositionOptions}
                     change={SelectPositionOptions}
                     isMulti={true}
                     isMobile={isMobile}
                   />
                   <CategoryDropdown
                     label="Archetype"
-                    options={HockeyArchetypeOptions}
+                    options={BasketballArchetypeOptions}
                     change={SelectArchetypeOptions}
                     isMulti={true}
                     isMobile={isMobile}
@@ -352,7 +332,7 @@ export const HCKTransferPortal = () => {
                   />
                   <CategoryDropdown
                     label="Prev. Teams"
-                    options={chlTeamOptions}
+                    options={cbbTeamOptions}
                     change={SelectPrevTeamOptions}
                     isMulti={true}
                     isMobile={isMobile}
@@ -372,11 +352,11 @@ export const HCKTransferPortal = () => {
                   colorOne={teamColors.TextColorOne}
                   colorTwo={teamColors.TextColorTwo}
                   colorThree={teamColors.TextColorThree}
-                  teamMap={chlTeamMap}
-                  team={chlTeam}
+                  teamMap={cbbTeamMap}
+                  team={cbbTeam}
                   category={tableViewType}
                   openModal={openModal}
-                  league={SimCHL}
+                  league={SimCBB}
                   isMobile={isMobile}
                   transferOnBoardMap={transferOnBoardMap}
                   currentPage={currentPage}
@@ -418,11 +398,11 @@ export const HCKTransferPortal = () => {
                   colorOne={teamColors.TextColorOne}
                   colorTwo={teamColors.TextColorTwo}
                   colorThree={teamColors.TextColorThree}
-                  team={chlTeam}
+                  team={cbbTeam}
                   transferPortalProfiles={teamTransferPortalProfiles}
-                  playerMap={chlPlayerMap}
-                  teamMap={chlTeamMap}
-                  league={SimCHL}
+                  playerMap={cbbPlayerMap}
+                  teamMap={cbbTeamMap}
+                  league={SimCBB}
                   teamProfile={teamProfile!}
                   isMobile={isMobile}
                   category={tableViewType}

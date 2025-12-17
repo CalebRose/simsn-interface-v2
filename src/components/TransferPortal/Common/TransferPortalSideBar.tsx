@@ -74,9 +74,12 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
       break;
     case SimCBB:
       const cbbtp = TeamProfile as BasketballProfile;
+      console.log({ cbbtp });
       const cbbt = Team as BasketballTeam;
       teamLabel = cbbt.Team;
-      region = cbbtp.Region;
+      if (cbbtp) {
+        region = cbbtp.Region;
+      }
       break;
     case SimCFB:
       // Remove some of these as affinities aren't used in portal

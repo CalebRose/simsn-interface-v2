@@ -49,6 +49,7 @@ import {
   CollegePromise,
   ScoutingProfile,
   NBAWarRoom,
+  TransferPortalProfile,
 } from "../models/basketballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { BootstrapService } from "../_services/bootstrapService";
@@ -66,6 +67,7 @@ import { CollegePollService } from "../_services/collegePollService";
 import FBAScheduleService from "../_services/scheduleService";
 import { FaceDataService } from "../_services/faceDataService";
 import { TransferPortalService } from "../_services/transferPortalService";
+import { GenerateNumberFromRange } from "../_helper/utilHelper";
 
 // ✅ Define Types for Context
 interface SimBBAContextProps {
@@ -176,6 +178,13 @@ interface SimBBAContextProps {
   nbaGameplanMap: Record<number, NBAGameplan | null>;
   nbaWarRoomMap: Record<number, NBAWarRoom | null>;
   nbaScoutingProfileMap: Record<number, ScoutingProfile | null>;
+  transferPortalProfiles: TransferPortalProfile[];
+  teamTransferPortalProfiles: TransferPortalProfile[];
+  cbbPlayerMap: Record<number, CollegePlayer>;
+  portalPlayerMap: Record<number, TransferPlayerResponse>;
+  teamCollegePromises: CollegePromise[];
+  collegePromiseMap: Record<number, CollegePromise>;
+  transferProfileMapByPlayerID: Record<number, TransferPortalProfile[]>;
   getLandingBootstrapData: () => void;
   getBootstrapRosterData: () => void;
   getBootstrapRecruitingData: () => void;
@@ -187,6 +196,15 @@ interface SimBBAContextProps {
   getBootstrapNewsData: () => void;
   createPromise: (dto: any) => Promise<void>;
   cancelPromise: (dto: any) => Promise<void>;
+  updatePointsOnPortalPlayer: (
+    id: number,
+    name: string,
+    points: number
+  ) => void;
+  addTransferPlayerToBoard: (dto: any) => Promise<void>;
+  removeTransferPlayerFromBoard: (dto: any) => Promise<void>;
+  saveTransferPortalBoard: () => Promise<void>;
+  exportTransferPortalPlayers: () => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -295,6 +313,13 @@ const defaultContext: SimBBAContextProps = {
   nbaGameplanMap: {},
   nbaWarRoomMap: {},
   nbaScoutingProfileMap: {},
+  transferPortalProfiles: [],
+  teamTransferPortalProfiles: [],
+  cbbPlayerMap: {},
+  portalPlayerMap: {},
+  teamCollegePromises: [],
+  collegePromiseMap: {},
+  transferProfileMapByPlayerID: {},
   getLandingBootstrapData: async () => {},
   getBootstrapRosterData: async () => {},
   getBootstrapRecruitingData: async () => {},
@@ -305,6 +330,11 @@ const defaultContext: SimBBAContextProps = {
   getBootstrapGameplanData: async () => {},
   createPromise: async () => {},
   cancelPromise: async () => {},
+  updatePointsOnPortalPlayer: () => {},
+  addTransferPlayerToBoard: async () => {},
+  removeTransferPlayerFromBoard: async () => {},
+  saveTransferPortalBoard: async () => {},
+  exportTransferPortalPlayers: async () => {},
 };
 
 export const SimBBAContext = createContext<SimBBAContextProps>(defaultContext);
@@ -450,6 +480,9 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [freeAgents, setFreeAgents] = useState<NBAPlayer[]>([]);
   const [waiverPlayers, setWaiverPlayers] = useState<NBAPlayer[]>([]);
   const [collegePromises, setCollegePromises] = useState<CollegePromise[]>([]);
+  const [transferPortalProfiles, setTransferPortalProfiles] = useState<
+    TransferPortalProfile[]
+  >([]);
   const [collegeGameplanMap, setCollegeGameplanMap] = useState<
     Record<number, Gameplan | null>
   >({});
@@ -487,6 +520,67 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
 
     return pickMap;
   }, [nbaDraftPicks]);
+
+  const teamTransferPortalProfiles = useMemo(() => {
+    if (!cbbTeam) return [];
+    return transferPortalProfiles.filter(
+      (profile) => profile.ProfileID === cbbTeam.ID
+    );
+  }, [cbbTeam, transferPortalProfiles]);
+
+  const cbbPlayerMap = useMemo(() => {
+    const playerMap: Record<number, CollegePlayer> = {};
+    if (cbbRosterMap && cbbTeams) {
+      for (let i = 0; i < cbbTeams.length; i++) {
+        const team = cbbTeams[i];
+        const roster = cbbRosterMap[team.ID];
+        if (roster) {
+          for (let j = 0; j < roster.length; j++) {
+            const p = roster[j];
+            playerMap[p.ID] = p;
+          }
+        }
+      }
+    }
+    return playerMap;
+  }, [cbbRosterMap, cbbTeams, portalPlayers]);
+
+  const portalPlayerMap = useMemo(() => {
+    const playerMap: Record<number, TransferPlayerResponse> = {};
+    if (portalPlayers) {
+      for (let i = 0; i < portalPlayers.length; i++) {
+        const p = portalPlayers[i];
+        playerMap[p.ID] = p;
+      }
+    }
+    return playerMap;
+  }, [portalPlayers]);
+
+  const teamCollegePromises = useMemo(() => {
+    if (!cbbTeam || !collegePromises) return [];
+    return collegePromises.filter((promise) => promise.TeamID === cbbTeam.ID);
+  }, [cbbTeam, collegePromises]);
+
+  const collegePromiseMap = useMemo(() => {
+    const map: Record<number, CollegePromise> = {};
+    for (let i = 0; i < teamCollegePromises.length; i++) {
+      const promise = teamCollegePromises[i];
+      map[promise.CollegePlayerID] = promise;
+    }
+    return map;
+  }, [teamCollegePromises]);
+
+  const transferProfileMapByPlayerID = useMemo(() => {
+    const transferProfileMap: Record<number, TransferPortalProfile[]> = {};
+    for (let i = 0; i < portalPlayers.length; i++) {
+      const p = portalPlayers[i];
+      const profiles = transferPortalProfiles.filter(
+        (profile) => profile.CollegePlayerID === p.ID
+      );
+      transferProfileMap[p.ID] = profiles;
+    }
+    return transferProfileMap;
+  }, [portalPlayers, transferPortalProfiles]);
 
   useEffect(() => {
     getFaceData();
@@ -752,7 +846,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       return;
     }
     const res = await BootstrapService.GetBBAPortalBootstrapData(cfbID);
-    setPortalPlayers(res.PortalPlayers);
+    setTransferPortalProfiles(res.TransferPortalProfiles);
     setTeamProfileMap(res.TeamProfileMap);
     setCollegePromises(res.CollegePromises);
   };
@@ -1347,6 +1441,116 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     [collegePromises]
   );
 
+  const updatePointsOnPortalPlayer = (
+    id: number,
+    name: string,
+    points: number
+  ) => {
+    const profileIdx = transferPortalProfiles.findIndex((x) => x.ID === id);
+    if (profileIdx === -1) return;
+    // Profile Exists and there are already points allocated, return. Users cannot update the amount of points lower than what's already allocated.
+    const existingProfile = transferPortalProfiles[profileIdx];
+    if (
+      existingProfile.TotalPoints > 0 &&
+      existingProfile.PreviouslySpentPoints > points
+    ) {
+      return;
+    }
+    let pointsValue = points;
+    if (points > 10) {
+      pointsValue = 10;
+    } else if (points < 0) {
+      pointsValue = 0;
+    } else if (
+      points < existingProfile.CurrentWeeksPoints &&
+      existingProfile.TotalPoints > 0
+    ) {
+      pointsValue = existingProfile.CurrentWeeksPoints;
+    }
+
+    setTransferPortalProfiles((prevProfiles) => {
+      // Update the profiles and get the new profiles array.
+      const updatedProfiles = prevProfiles.map((profile) =>
+        profile.ID === id && profile.ID > 0
+          ? new TransferPortalProfile({ ...profile, [name]: pointsValue })
+          : profile
+      );
+
+      // Calculate the total points from the updated profiles.
+      const totalPoints = updatedProfiles.reduce(
+        (sum, profile) => sum + (profile.CurrentWeeksPoints || 0),
+        0
+      );
+
+      // Update the recruiting team profile based on the updated points.
+      setTeamProfileMap((prevTeamProfiles) => {
+        const currentProfile = prevTeamProfiles![cbbTeam!.ID];
+        if (!currentProfile) return prevTeamProfiles;
+        return {
+          ...prevTeamProfiles,
+          [cbbTeam!.ID]: new TeamRecruitingProfile({
+            ...currentProfile,
+            SpentPoints: totalPoints,
+          }),
+        };
+      });
+
+      return updatedProfiles;
+    });
+  };
+
+  const addTransferPlayerToBoard = useCallback(
+    async (dto: any) => {
+      const apiDTO = {
+        ...dto,
+        TeamAbbreviation: cbbTeam?.Abbr,
+        Recruiter: cbbTeam?.Coach,
+        SeasonID: cbb_Timestamp?.SeasonID,
+        ProfileID: cbbTeam?.ID,
+      };
+      const profile =
+        await TransferPortalService.BBACreateTransferPortalProfile(apiDTO);
+      if (profile) {
+        const newProfile = new TransferPortalProfile({
+          ...profile,
+          ID: GenerateNumberFromRange(500000, 1000000),
+        });
+        setTransferPortalProfiles((profiles) => [...profiles, newProfile]);
+      }
+    },
+    [transferPortalProfiles]
+  );
+
+  const removeTransferPlayerFromBoard = useCallback(
+    async (dto: any) => {
+      const profile = await TransferPortalService.BBARemoveProfileFromBoard(
+        dto
+      );
+
+      setTransferPortalProfiles((profiles) =>
+        [...profiles].filter((p) => p.CollegePlayerID != dto.CollegePlayerID)
+      );
+    },
+    [transferPortalProfiles]
+  );
+
+  const saveTransferPortalBoard = useCallback(async () => {
+    const dto = {
+      Profile: teamProfileMap![cbbTeam!.ID],
+      Players: teamTransferPortalProfiles,
+      TeamID: cbbTeam!.ID,
+    };
+    await TransferPortalService.BBASaveTransferPortalBoard(dto);
+    enqueueSnackbar("Transfer Portal Board Saved!", {
+      variant: "success",
+      autoHideDuration: 3000,
+    });
+  }, [teamProfileMap, transferPortalProfiles, cbbTeam]);
+
+  const exportTransferPortalPlayers = useCallback(async () => {
+    const res = await TransferPortalService.ExportBBAPortal();
+  }, []);
+
   return (
     <SimBBAContext.Provider
       value={{
@@ -1419,6 +1623,13 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         nbaGameplanMap,
         nbaWarRoomMap,
         nbaScoutingProfileMap,
+        transferPortalProfiles,
+        teamTransferPortalProfiles,
+        cbbPlayerMap,
+        portalPlayerMap,
+        teamCollegePromises,
+        collegePromiseMap,
+        transferProfileMapByPlayerID,
         getLandingBootstrapData,
         getBootstrapRosterData,
         getBootstrapRecruitingData,
@@ -1464,6 +1675,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         getBootstrapNewsData,
         createPromise,
         cancelPromise,
+        updatePointsOnPortalPlayer,
+        addTransferPlayerToBoard,
+        removeTransferPlayerFromBoard,
+        saveTransferPortalBoard,
+        exportTransferPortalPlayers,
       }}
     >
       {children}
