@@ -109,22 +109,11 @@ const GameplanView: React.FC<GameplanViewProps> = ({
     if (field === "DoubleTeam") {
       newValue = -1;
     }
-    if (field === "OffensiveScheme") {
-      setLocalGameplan((prev) => ({
-        ...prev,
-        [field]: newValue,
-        OffFormation1Name: offensiveFormations[0].name,
-        OffFormation2Name: offensiveFormations[1].name,
-        OffFormation3Name: offensiveFormations[2].name,
-        OffFormation4Name: offensiveFormations[3].name,
-        OffFormation5Name: offensiveFormations[4].name,
-      }));
-    } else {
-      setLocalGameplan((prev) => ({
-        ...prev,
-        [field]: newValue,
-      }));
-    }
+
+    setLocalGameplan((prev) => ({
+      ...prev,
+      [field]: newValue,
+    }));
   }, []);
 
   const handleToggleChange = useCallback((field: string) => {
