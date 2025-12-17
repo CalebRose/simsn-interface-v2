@@ -6,6 +6,7 @@ import { useSimBBAStore } from "../../context/SimBBAContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { PageContainer } from "../../_design/Container";
 import { HCKTransferPortal } from "./HCKPortal/HCKTransferPortal";
+import { BBATransferPortal } from "./BBAPortal/BBATransferPortal";
 
 interface TransferPortalPageProps {
   league: League;
@@ -44,7 +45,7 @@ export const TransferPortalPage: FC<TransferPortalPageProps> = ({ league }) => {
         title="Transfer Portal"
       >
         {selectedLeague === SimCHL && chlTeam && <HCKTransferPortal />}
-        {selectedLeague === SimCBB && cbbTeam && <>Not yet ready okay?</>}
+        {selectedLeague === SimCBB && cbbTeam && <BBATransferPortal />}
         {selectedLeague === SimCFB && cfbTeam && (
           <>This will be added once Guam joins the FCS.</>
         )}

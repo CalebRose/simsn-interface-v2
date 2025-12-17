@@ -4209,6 +4209,8 @@ export class CBBRosterResponse {
 }
 
 export class TransferPlayerResponse {
+  [key: string]: any;
+  ID: number;
   FirstName: string;
   LastName: string;
   Archetype: string;
@@ -4254,6 +4256,7 @@ export class TransferPlayerResponse {
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
+    this.ID = source["ID"];
     this.FirstName = source["FirstName"];
     this.LastName = source["LastName"];
     this.Archetype = source["Archetype"];

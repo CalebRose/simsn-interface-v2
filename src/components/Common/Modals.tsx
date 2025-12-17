@@ -38,6 +38,7 @@ import {
   getPriorityCBBAttributes,
   getPriorityNBAAttributes,
   getPriorityCBBCrootAttributes,
+  getAdditionalBBAPortalAttributes,
 } from "../Team/TeamPageUtils";
 import { HeightToFeetAndInches } from "../../_utility/getHeightByFeetAndInches";
 import { getYear } from "../../_utility/getYear";
@@ -48,6 +49,7 @@ import {
   CollegePlayer as CBBPlayer,
   Croot,
   NBAPlayer,
+  TransferPlayerResponse,
 } from "../../models/basketballModels";
 import { useSimBBAStore } from "../../context/SimBBAContext";
 import { GetRecruitingTendency } from "../../_utility/getRecruitingTendency";
@@ -2286,9 +2288,9 @@ export const PortalInfoModalBody: FC<PlayerInfoModalBodyProps> = ({
   // if (league === SimCFB) {
   //   return <CFBCrootInfoModalBody player={player as CFBCroot} />;
   // }
-  // if (league === SimCBB) {
-  //   return <CBBCrootInfoModalBody player={player as Croot} />;
-  // }
+  if (league === SimCBB) {
+    return <CBBPortalInfoModalBody player={player as TransferPlayerResponse} />;
+  }
 
   return <>Unsupported League.</>;
 };
@@ -2654,6 +2656,224 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
                     <Logo url={logo} variant="tiny" />{" "}
                     <span className="ms-4 font-semibold text-xs">
                       {team.TeamName}
+                    </span>
+                  </div>
+                  <Text variant="xs" classes="font-semibold">
+                    {(() => {
+                      // Handle both number and NullInt64 object types
+                      const promiseId =
+                        typeof contender.PromiseID === "object" &&
+                        contender.PromiseID !== null
+                          ? (contender.PromiseID as any).Int64
+                          : contender.PromiseID;
+                      return promiseId > 0 ? "Yes" : "No";
+                    })()}
+                  </Text>
+                  <Text variant="xs" classes="font-semibold">
+                    {displayStatus}
+                  </Text>
+                </>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </>
+  );
+};
+
+interface CBBPortalInfoModalBodyProps {
+  player: TransferPlayerResponse;
+}
+
+export const CBBPortalInfoModalBody: FC<CBBPortalInfoModalBodyProps> = ({
+  player,
+}) => {
+  const { currentUser } = useAuthStore();
+  const { cbbTeamMap, transferProfileMapByPlayerID } = useSimBBAStore();
+  const team = cbbTeamMap![player.TeamID];
+  const teamLogo = getLogo(SimCBB, player.TeamID, currentUser?.isRetro);
+
+  const transferProfiles = useMemo(() => {
+    if (!player) return [];
+    return transferProfileMapByPlayerID[player.ID] || [];
+  }, [player]);
+
+  const leadingTeamsList = useMemo(() => {
+    const list = [];
+    const sortedProfiles = transferProfiles.sort(
+      (a, b) => b.TotalPoints - a.TotalPoints
+    );
+    let runningThreshold = 0;
+    let totalPoints = 0;
+    for (let i = 0; i < sortedProfiles.length; i++) {
+      if (sortedProfiles[i].RemovedFromBoard) continue;
+      if (runningThreshold === 0) {
+        runningThreshold = sortedProfiles[i].TotalPoints * 0.66;
+      }
+      if (sortedProfiles[i].TotalPoints >= runningThreshold) {
+        totalPoints += sortedProfiles[i].TotalPoints;
+      }
+    }
+    for (let i = 0; i < sortedProfiles.length; i++) {
+      if (sortedProfiles[i].RemovedFromBoard) continue;
+      if (sortedProfiles[i].TotalPoints < runningThreshold) continue;
+      let odds = 0;
+      if (runningThreshold > 0) {
+        odds = sortedProfiles[i].TotalPoints / totalPoints;
+      }
+      const obj = {
+        TeamID: sortedProfiles[i].ProfileID,
+        TeamAbbreviation: sortedProfiles[i].TeamAbbreviation,
+        Odds: odds,
+        PromiseID: sortedProfiles[i].PromiseID,
+      };
+      list.push(obj);
+    }
+    return list;
+  }, [transferProfiles]);
+
+  const priorityAttributes = getAdditionalBBAPortalAttributes(player);
+
+  return (
+    <>
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+        <div className="row-span-3 flex flex-col items-center">
+          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+            <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
+          </div>
+          {team && (
+            <Logo
+              url={teamLogo}
+              label={team.Abbr}
+              classes="h-[5rem] max-h-[5rem]"
+              containerClass="p-4"
+              textClass="text-small"
+            />
+          )}
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Origin
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {player.Country.length > 0 && `${player.Country}`}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Youth
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {player.HighSchool && player.HighSchool.trim() !== ""
+              ? player.HighSchool
+              : "Unknown"}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Age
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {player.Age}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Height
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {player.Height}"
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Weight
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {player.Weight} lbs
+          </Text>
+        </div>
+        <div className="flex flex-col items-center">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Personality
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {player.Personality}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Overall
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {player.OverallGrade}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Year
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {getYear(player.Year, player.IsRedshirt)}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Stars
+          </Text>
+          <Text variant="xs" classes="whitespace-nowrap pt-0.5">
+            {player.Stars > 0
+              ? Array(player.Stars).fill("⭐").join("")
+              : player.Stars}
+          </Text>
+        </div>
+        <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
+          <div className="grid w-full grid-cols-4 gap-3">
+            {priorityAttributes.map((attr, idx) => (
+              <div key={idx} className="flex flex-col px-1 gap-1">
+                <Text
+                  variant="small"
+                  classes="mb-1 whitespace-nowrap font-semibold"
+                >
+                  {attr.label}
+                </Text>
+                <Text variant="small">{attr.value}</Text>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      {leadingTeamsList && (
+        <>
+          <div className="w-full border-t-[0.1em] justify-center mt-2 mb-2">
+            <Text variant="h6">Leading Teams</Text>
+          </div>
+          <div className={`w-full grid grid-cols-3 mb-1`}>
+            <Text variant="body-small" classes="font-semibold">
+              Team
+            </Text>
+            <Text variant="body-small" classes="font-semibold">
+              Promise
+            </Text>
+            <Text variant="body-small" classes="font-semibold">
+              Prediction
+            </Text>
+          </div>
+          <div
+            className={`w-full max-h-[6rem] overflow-y-auto grid grid-cols-3 gap-y-2 mb-2`}
+          >
+            {leadingTeamsList.map((contender) => {
+              const logo = getLogo(SimCBB, contender.TeamID, false);
+              const team = cbbTeamMap![contender.TeamID];
+              const fullOdds = Math.round(contender.Odds * 100);
+              const displayStatus = getDisplayStatus(fullOdds);
+              return (
+                <>
+                  <div className="flex flex-row justify-start px-2">
+                    <Logo url={logo} variant="tiny" />{" "}
+                    <span className="ms-4 font-semibold text-xs">
+                      {team.Team}
                     </span>
                   </div>
                   <Text variant="xs" classes="font-semibold">

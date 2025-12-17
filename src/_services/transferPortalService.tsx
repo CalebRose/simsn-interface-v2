@@ -45,7 +45,7 @@ export const TransferPortalService = {
   BBARemoveProfileFromBoard: async (
     dto: any
   ): Promise<TransferPortalProfile> => {
-    return await GetCall(`${bbaUrl}portal/profile/remove/${dto.ProfileID}`);
+    return await PostCall(`${bbaUrl}portal/profile/remove`, dto);
   },
 
   BBASaveTransferPortalBoard: async (dto: any): Promise<void> => {
