@@ -497,8 +497,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   >({});
 
   const nbaDraftPickMap = useMemo(() => {
-    if (!nbaDraftPicks) return {};
     const pickMap: Record<number, DraftPick[]> = {};
+    if (!nbaDraftPicks) return pickMap;
     for (let i = 0; i < nbaDraftPicks.length; i++) {
       const pick = nbaDraftPicks[i];
       if (!pickMap[pick.TeamID]) {
@@ -512,6 +512,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
 
   const individualDraftPickMap = useMemo(() => {
     const pickMap: Record<number, DraftPick> = {};
+    if (!nbaDraftPicks) return pickMap;
 
     for (let i = 0; i < nbaDraftPicks.length; i++) {
       const pick = nbaDraftPicks[i];

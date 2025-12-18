@@ -2,10 +2,7 @@ import { getLogo } from "../../_utility/getLogo";
 import { Text } from "../../_design/Typography";
 import { Logo } from "../../_design/Logo";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
-import { darkenColor } from "../../_utility/getDarkerColor";
 import {
-  GetBKCurrentWeek,
   RevealBBAResults,
   RevealHCKResults,
   RevealResults,
