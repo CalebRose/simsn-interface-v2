@@ -1,4 +1,8 @@
-import { FormationMap, SchemeData } from "../Constants/GameplanConstants";
+import {
+  Formation,
+  FormationMap,
+  SchemeData,
+} from "../Constants/GameplanConstants";
 
 export interface GameplanData {
   ID: number;
@@ -628,7 +632,10 @@ export const stringifyFocusPlays = (focusPlays: string[]): string => {
   return focusPlays.join(",");
 };
 
-export const transformGameplanForSave = (gameplan: GameplanData): any => {
+export const transformGameplanForSave = (
+  gameplan: GameplanData,
+  offensiveFormations: Formation[]
+): any => {
   const transformed = { ...gameplan };
   const offForm1Weight =
     transformed.OffForm1TraditionalRun +
@@ -662,6 +669,11 @@ export const transformGameplanForSave = (gameplan: GameplanData): any => {
     OffForm3Weight: offForm3Weight,
     OffForm4Weight: offForm4Weight,
     OffForm5Weight: offForm5Weight,
+    OffFormation1Name: offensiveFormations[0].name,
+    OffFormation2Name: offensiveFormations[1].name,
+    OffFormation3Name: offensiveFormations[2].name,
+    OffFormation4Name: offensiveFormations[3].name,
+    OffFormation5Name: offensiveFormations[4].name,
   };
 
   if (typeof transformed.LeftVsRight === "number") {
