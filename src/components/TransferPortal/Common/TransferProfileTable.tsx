@@ -812,7 +812,7 @@ export const TransferPortalProfileTable: FC<
     }
     return (profile: BasketballPortalProfile, idx: number, bg: string) => {
       const player = playerMap[profile.CollegePlayerID] as BasketballPlayer;
-      console.log({ profile, player, playerMap });
+
       return (
         <CBBProfileRow
           profile={profile}
