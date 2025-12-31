@@ -1984,7 +1984,7 @@ export const getPHLLogo = (id: number, isRetro: boolean) => {
     case 4:
       return HCKLogos.CBJ;
     case 5:
-      return HCKLogos.QUE;
+      return HCKLogos.MIN;
     case 6:
       return HCKLogos.NYR;
     case 7:
@@ -2012,11 +2012,11 @@ export const getPHLLogo = (id: number, isRetro: boolean) => {
     case 18:
       return HCKLogos.EDM;
     case 19:
-      return HCKLogos.ANA;
+      return HCKLogos.SEA;
     case 20:
       return HCKLogos.SJ;
     case 21:
-      return HCKLogos.SEA;
+      return HCKLogos.NJ;
     case 22:
       return HCKLogos.VAN;
     case 23:
@@ -2034,7 +2034,7 @@ export const getPHLLogo = (id: number, isRetro: boolean) => {
     case 29:
       return HCKLogos.CBJ;
     case 30:
-      return HCKLogos.NJ;
+      return HCKLogos.ANA;
     case 31:
       return HCKLogos.NYI;
     case 32:
