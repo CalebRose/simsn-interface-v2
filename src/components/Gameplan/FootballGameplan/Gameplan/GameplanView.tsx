@@ -98,7 +98,7 @@ const GameplanView: React.FC<GameplanViewProps> = ({
 
   const handleGameplanChange = useCallback((field: string, value: any) => {
     let newValue = value;
-    if (field === "DoubleTeam") {
+    if (field === "DoubleTeam" && value === "None") {
       newValue = -1;
     }
     setLocalGameplan((prev) => ({
