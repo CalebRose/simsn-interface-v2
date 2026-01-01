@@ -297,10 +297,12 @@ const CHLRow: React.FC<CHLRowProps> = ({
             disabled={
               recruitOnBoardMap[item.ID] ||
               item.IsSigned ||
+              item.Age < 18 ||
               item.PreviousTeamID === chlTeam?.ID
             }
           >
             {recruitOnBoardMap[item.ID] ||
+            item.Age < 18 ||
             item.IsSigned ||
             item.PreviousTeamID === chlTeam?.ID ? (
               <ActionLock />
