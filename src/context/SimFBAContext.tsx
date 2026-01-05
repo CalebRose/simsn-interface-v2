@@ -63,6 +63,7 @@ import {
   NFLWarRoom,
   ScoutingProfile,
   NFLTeamProposals,
+  AwardsList,
 } from "../models/footballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { fba_ws } from "../_constants/urls";
@@ -174,6 +175,7 @@ interface SimFBAContextProps {
   getBootstrapPortalData: () => void;
   getBootstrapGameplanData: () => void;
   getBootstrapNewsData: () => void;
+  getBootstrapStatsData: () => void;
   cutCFBPlayer: (playerID: number, teamID: number) => Promise<void>;
   cutNFLPlayer: (playerID: number, teamID: number) => Promise<void>;
   sendNFLPlayerToPracticeSquad: (
@@ -249,6 +251,7 @@ interface SimFBAContextProps {
   nflGameplanMap: Record<number, NFLGameplan | null>;
   nflWarRoomMap: Record<number, NFLWarRoom | null>;
   nflScoutingProfileMap: Record<number, ScoutingProfile | null>;
+  cfbPostSeasonAwards: AwardsList;
 }
 
 // ✅ Initial Context State
@@ -318,6 +321,7 @@ const defaultContext: SimFBAContextProps = {
   tradePreferencesMap: {},
   tradeProposalsMap: {},
   nflTradeProposals: {} as NFLTeamProposals,
+  cfbPostSeasonAwards: {} as AwardsList,
   removeUserfromCFBTeamCall: async () => {},
   removeUserfromNFLTeamCall: async () => {},
   addUserToCFBTeam: async () => {},
@@ -330,6 +334,7 @@ const defaultContext: SimFBAContextProps = {
   getBootstrapNewsData: async () => {},
   getBootstrapPortalData: async () => {},
   getBootstrapGameplanData: async () => {},
+  getBootstrapStatsData: async () => {},
   cutCFBPlayer: async () => {},
   cutNFLPlayer: async () => {},
   sendNFLPlayerToPracticeSquad: async () => {},
@@ -399,6 +404,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const { cfb_Timestamp, setCFB_Timestamp } = useWebSockets(fba_ws, SimFBA);
   const isFetching = useRef(false);
   const isScheduleDataFetching = useRef(false);
+  const isStatsDataFetching = useRef(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [cfbTeam, setCFBTeam] = useState<CollegeTeam | null>(null);
   const [cfbTeams, setCFBTeams] = useState<CollegeTeam[]>([]);
@@ -563,6 +569,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [nflScoutingProfileMap, setNFLScoutingProfileMap] = useState<
     Record<number, ScoutingProfile | null>
   >({});
+  const [cfbPostSeasonAwards, setCFBPostSeasonAwards] = useState<AwardsList>(
+    {} as AwardsList
+  );
 
   const nflDraftPickMap = useMemo(() => {
     if (!nflDraftPicks) return {};
@@ -955,6 +964,37 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     currentUser?.username,
     currentUser?.teamId,
   ]);
+
+  const getBootstrapStatsData = useCallback(async () => {
+    if (isStatsDataFetching.current) {
+      console.log("Stats data already fetching, skipping...");
+      return;
+    }
+
+    let cfbID = 0;
+    let nflID = 0;
+    const seasonId = cfb_Timestamp?.CollegeSeasonID || 0;
+    const username = currentUser?.username || "";
+    if (currentUser && currentUser.teamId) {
+      cfbID = currentUser.teamId;
+    }
+    if (currentUser && currentUser.NFLTeamID) {
+      nflID = currentUser.NFLTeamID;
+    }
+    if (cfbID === 0 || nflID === 0 || seasonId === 0 || username === "") {
+      return;
+    }
+
+    isStatsDataFetching.current = true;
+    console.log("Starting bootstrap stats data fetch...");
+
+    try {
+      const res = await BootstrapService.GetFBAStatsBootstrapData(cfbID, nflID);
+      setCFBPostSeasonAwards(res.PostSeasonAwards);
+    } finally {
+      isStatsDataFetching.current = false;
+    }
+  }, [currentUser?.teamId, currentUser?.NFLTeamID]);
 
   // Use this once the draft page is finished
   const getBootstrapDraftData = async () => {
@@ -1769,6 +1809,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     <SimFBAContext.Provider
       value={{
         cfb_Timestamp,
+        cfbPostSeasonAwards,
         cfbTeam,
         cfbTeams,
         cfbTeamMap,
@@ -1845,6 +1886,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         getBootstrapPortalData,
         getBootstrapGameplanData,
         getBootstrapNewsData,
+        getBootstrapStatsData,
         cutCFBPlayer,
         redshirtPlayer,
         promisePlayer,

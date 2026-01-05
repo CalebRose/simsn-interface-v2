@@ -165,6 +165,39 @@ export type FootballStatsType =
   | typeof SPECIAL_TEAMS
   | typeof OVERALL
   | typeof OFFENSE;
+export const HeismanTrophy = "HeismanList";
+export const DaveyOBrien = "DaveyOBrienList";
+export const CoachOfTheYear = "CoachOfTheYearList";
+export const DoakWalkerAward = "DoakWalkerList";
+export const BiletnikoffAward = "BiletnikoffList";
+export const MackeyAward = "MackeyList";
+export const RimingtonTrophy = "RimingtonList";
+export const OutlandTrophy = "OutlandList";
+export const JoeMoore = "JoeMooreList";
+export const NagurskiAward = "NagurskiList";
+export const HendricksAward = "HendricksList";
+export const ThorpeAward = "ThorpeList";
+export const ButkusAward = "ButkusList";
+export const LouGrozaAward = "LouGrozaList";
+export const RayGuyAward = "RayGuyList";
+export const JetAward = "JetList";
+export type CFBAward =
+  | typeof HeismanTrophy
+  | typeof DaveyOBrien
+  | typeof CoachOfTheYear
+  | typeof DoakWalkerAward
+  | typeof BiletnikoffAward
+  | typeof MackeyAward
+  | typeof RimingtonTrophy
+  | typeof OutlandTrophy
+  | typeof JoeMoore
+  | typeof NagurskiAward
+  | typeof HendricksAward
+  | typeof ThorpeAward
+  | typeof ButkusAward
+  | typeof LouGrozaAward
+  | typeof RayGuyAward
+  | typeof JetAward;
 
 export interface PositionStatsConfig {
   statsType: FootballStatsType;

@@ -42,6 +42,15 @@ export const BootstrapService = {
     );
   },
 
+  GetFBAStatsBootstrapData: async (
+    collegeID: number,
+    proID: number
+  ): Promise<FBBootstrap> => {
+    return await GetCall<FBBootstrap>(
+      `${fbaUrl}bootstrap/stats/${collegeID}/${proID}`
+    );
+  },
+
   GetFBARecruitingBootstrapData: async (
     collegeID: number
   ): Promise<FBBootstrap> => {
