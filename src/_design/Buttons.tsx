@@ -167,9 +167,13 @@ export const ButtonGrid: React.FC<ButtonGroupProps> = ({
   classes = "",
   columns,
 }) => {
+  // Only use grid-flow-col if no grid-cols-* classes are provided
+  const hasGridCols = classes.includes("grid-cols-");
+  const defaultFlow = hasGridCols ? "" : "grid-flow-col";
+
   return (
     <div
-      className={`grid grid-flow-col py-1 lg:py-0 gap-x-1 sm:gap-x-2 gap-y-2 ${classes}`}
+      className={`grid ${defaultFlow} py-1 lg:py-0 gap-x-1 sm:gap-x-2 gap-y-2 ${classes}`}
     >
       {children}
     </div>

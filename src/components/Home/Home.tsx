@@ -121,7 +121,7 @@ export const Home = () => {
         <>
           <Border
             direction="col"
-            classes="p-4 h-full mt-[20vh] md:w-[80vw] xl:w-[40vw]"
+            classes="p-[2vw] md:p-4 h-full mt-[20vh] md:w-[85vw] lg:w-[80vw] xl:w-[40vw]"
           >
             <div className="flex mb-2 justify-center">
               <img
@@ -152,7 +152,7 @@ export const Home = () => {
           </Border>
         </>
       )}
-      <div className="flex flex-col px-2 mt-1">
+      <div className="flex flex-col px-[1vw] md:px-2 mt-1">
         <div className="flex flex-row mb-1">
           <LeagueSelector
             selectedLeague={selectedLeague as League}

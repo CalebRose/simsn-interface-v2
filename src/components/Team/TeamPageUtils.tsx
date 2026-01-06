@@ -287,6 +287,8 @@ export const getPHLAttributes = (
 
 export const getPHLContracts = (contract: any) => {
   return [
+    { label: "Offensive Fit", value: 0 },
+    { label: "Defensive Fit", value: 0 },
     { label: "Y1S", value: contract.Y1BaseSalary },
     { label: "Y2S", value: contract.Y2BaseSalary },
     { label: "Y3S", value: contract.Y3BaseSalary },
