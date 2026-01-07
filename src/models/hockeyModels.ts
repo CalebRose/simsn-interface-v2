@@ -2923,6 +2923,7 @@ export class RecruitPlayerProfile {
   }
 }
 export class RecruitingTeamProfile {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
