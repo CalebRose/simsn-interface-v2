@@ -573,6 +573,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     {} as AwardsList
   );
 
+  // Loading states for double-click prevention
+  const [recruitingLoading, setRecruitingLoading] = useState<boolean>(false);
+  const [freeAgencyLoading, setFreeAgencyLoading] = useState<boolean>(false);
+
   const nflDraftPickMap = useMemo(() => {
     if (!nflDraftPicks) return {};
     const pickMap: Record<number, NFLDraftPick[]> = {};
@@ -1326,85 +1330,118 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   };
 
   const addRecruitToBoard = async (dto: any) => {
-    // Validate Affinities
-    const affinityOneValid =
-      dto.PlayerRecruit.AffinityOne === CloseToHome
-        ? ValidateCloseToHome(dto.PlayerRecruit, cfbTeam?.TeamAbbr)
-        : ValidateAffinity(
-            dto.PlayerRecruit.AffinityOne,
-            teamProfileMap![cfbTeam!.ID]
-          );
+    if (recruitingLoading) return;
+    setRecruitingLoading(true);
 
-    const affinityTwoValid =
-      dto.PlayerRecruit.AffinityTwo === CloseToHome
-        ? ValidateCloseToHome(dto.PlayerRecruit, cfbTeam?.TeamAbbr)
-        : ValidateAffinity(
-            dto.PlayerRecruit.AffinityTwo,
-            teamProfileMap![cfbTeam!.ID]
-          );
+    try {
+      // Validate Affinities
+      const affinityOneValid =
+        dto.PlayerRecruit.AffinityOne === CloseToHome
+          ? ValidateCloseToHome(dto.PlayerRecruit, cfbTeam?.TeamAbbr)
+          : ValidateAffinity(
+              dto.PlayerRecruit.AffinityOne,
+              teamProfileMap![cfbTeam!.ID]
+            );
 
-    // Add RES
-    const apiDTO = {
-      ...dto,
-      SeasonID: cfb_Timestamp?.CollegeSeasonID,
-      Team: cfbTeam?.TeamAbbr,
-      Recruiter: cfbTeam?.Coach,
-      RES: teamProfileMap![cfbTeam!.ID].RecruitingEfficiencyScore,
-      ProfileID: cfbTeam?.ID,
-      AffinityOneEligible: affinityOneValid,
-      AffinityTwoEligible: affinityTwoValid,
-    };
-    const profile = await RecruitService.FBACreateRecruitProfile(apiDTO);
-    if (profile) {
-      const newProfile = new RecruitPlayerProfile({
-        ...profile,
-        ID: GenerateNumberFromRange(500000, 1000000),
+      const affinityTwoValid =
+        dto.PlayerRecruit.AffinityTwo === CloseToHome
+          ? ValidateCloseToHome(dto.PlayerRecruit, cfbTeam?.TeamAbbr)
+          : ValidateAffinity(
+              dto.PlayerRecruit.AffinityTwo,
+              teamProfileMap![cfbTeam!.ID]
+            );
+
+      // Add RES
+      const apiDTO = {
+        ...dto,
+        SeasonID: cfb_Timestamp?.CollegeSeasonID,
+        Team: cfbTeam?.TeamAbbr,
+        Recruiter: cfbTeam?.Coach,
+        RES: teamProfileMap![cfbTeam!.ID].RecruitingEfficiencyScore,
+        ProfileID: cfbTeam?.ID,
+        AffinityOneEligible: affinityOneValid,
+        AffinityTwoEligible: affinityTwoValid,
+      };
+      enqueueSnackbar("Adding recruit...", {
+        variant: "info",
+        autoHideDuration: 1000,
       });
-      setRecruitProfiles((profiles) => [...profiles, newProfile]);
+      const profile = await RecruitService.FBACreateRecruitProfile(apiDTO);
+      if (profile) {
+        const newProfile = new RecruitPlayerProfile({
+          ...profile,
+          ID: GenerateNumberFromRange(500000, 1000000),
+        });
+        setRecruitProfiles((profiles) => [...profiles, newProfile]);
+        enqueueSnackbar("Recruit added to board!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      }
+    } finally {
+      setRecruitingLoading(false);
     }
   };
 
   const removeRecruitFromBoard = async (dto: any) => {
-    const profile = await RecruitService.FBARemovePlayerFromBoard(dto);
-    if (profile) {
-      setRecruitProfiles((profiles) =>
-        [...profiles].filter((p) => p.RecruitID != dto.RecruitID)
-      );
+    if (recruitingLoading) return;
+    setRecruitingLoading(true);
+
+    try {
+      const profile = await RecruitService.FBARemovePlayerFromBoard(dto);
+      if (profile) {
+        setRecruitProfiles((profiles) =>
+          [...profiles].filter((p) => p.RecruitID != dto.RecruitID)
+        );
+        enqueueSnackbar("Recruit removed from board!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      }
+    } finally {
+      setRecruitingLoading(false);
     }
   };
 
   const toggleScholarship = async (dto: any) => {
-    const profile = await RecruitService.FBAToggleScholarship(dto);
-    if (profile) {
-      setRecruitProfiles((profiles) =>
-        [...profiles].map((p) =>
-          p.RecruitID === profile.RecruitID
-            ? new RecruitPlayerProfile({
-                ...p,
-                Scholarship: profile.Scholarship,
-                ScholarshipRevoked: profile.ScholarshipRevoked,
-              })
-            : p
-        )
-      );
-      setTeamProfileMap((prev) => {
-        const currentProfile = prev![profile.ProfileID];
-        if (!currentProfile) return prev;
+    if (recruitingLoading) return;
+    setRecruitingLoading(true);
 
-        const adjustment = profile.Scholarship
-          ? -1
-          : profile.ScholarshipRevoked
-          ? 1
-          : 0;
-        return {
-          ...prev,
-          [profile.ProfileID]: new RecruitingTeamProfile({
-            ...currentProfile,
-            ScholarshipsAvailable:
-              currentProfile.ScholarshipsAvailable + adjustment,
-          }),
-        };
-      });
+    try {
+      const profile = await RecruitService.FBAToggleScholarship(dto);
+      if (profile) {
+        setRecruitProfiles((profiles) =>
+          [...profiles].map((p) =>
+            p.RecruitID === profile.RecruitID
+              ? new RecruitPlayerProfile({
+                  ...p,
+                  Scholarship: profile.Scholarship,
+                  ScholarshipRevoked: profile.ScholarshipRevoked,
+                })
+              : p
+          )
+        );
+        setTeamProfileMap((prev) => {
+          const currentProfile = prev![profile.ProfileID];
+          if (!currentProfile) return prev;
+
+          const adjustment = profile.Scholarship
+            ? -1
+            : profile.ScholarshipRevoked
+            ? 1
+            : 0;
+          return {
+            ...prev,
+            [profile.ProfileID]: new RecruitingTeamProfile({
+              ...currentProfile,
+              ScholarshipsAvailable:
+                currentProfile.ScholarshipsAvailable + adjustment,
+            }),
+          };
+        });
+      }
+    } finally {
+      setRecruitingLoading(false);
     }
   };
 
@@ -1441,41 +1478,55 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   };
 
   const SaveRecruitingBoard = useCallback(async () => {
-    const dto = {
-      Profile: teamProfileMap![cfbTeam!.ID],
-      Recruits: recruitProfiles,
-      TeamID: cfbTeam!.ID,
-    };
+    if (recruitingLoading) return;
+    setRecruitingLoading(true);
 
-    await RecruitService.FBASaveRecruitingBoard(dto);
-    enqueueSnackbar("Recruiting Board Saved!", {
-      variant: "success",
-      autoHideDuration: 3000,
-    });
-  }, [teamProfileMap, recruitProfiles, cfbTeam]);
+    try {
+      const dto = {
+        Profile: teamProfileMap![cfbTeam!.ID],
+        Recruits: recruitProfiles,
+        TeamID: cfbTeam!.ID,
+      };
+
+      await RecruitService.FBASaveRecruitingBoard(dto);
+      enqueueSnackbar("Recruiting Board Saved!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setRecruitingLoading(false);
+    }
+  }, [teamProfileMap, recruitProfiles, cfbTeam, recruitingLoading]);
 
   const SaveAIRecruitingSettings = useCallback(
     async (dto: UpdateRecruitingBoardDTO) => {
-      const res = await RecruitService.FBAToggleAIBehavior(dto);
-      if (res) {
-        enqueueSnackbar("AI Recruiting Settings Saved!", {
-          variant: "success",
-          autoHideDuration: 3000,
-        });
-        setTeamProfileMap((prevTeamProfiles) => {
-          let currentProfile = prevTeamProfiles![dto.TeamID];
-          if (!currentProfile) return prevTeamProfiles;
-          return {
-            ...prevTeamProfiles,
-            [cfbTeam!.ID]: new RecruitingTeamProfile({
-              ...currentProfile,
-              ...dto.Profile,
-            }),
-          };
-        });
+      if (recruitingLoading) return;
+      setRecruitingLoading(true);
+
+      try {
+        const res = await RecruitService.FBAToggleAIBehavior(dto);
+        if (res) {
+          enqueueSnackbar("AI Recruiting Settings Saved!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setTeamProfileMap((prevTeamProfiles) => {
+            let currentProfile = prevTeamProfiles![dto.TeamID];
+            if (!currentProfile) return prevTeamProfiles;
+            return {
+              ...prevTeamProfiles,
+              [cfbTeam!.ID]: new RecruitingTeamProfile({
+                ...currentProfile,
+                ...dto.Profile,
+              }),
+            };
+          });
+        }
+      } finally {
+        setRecruitingLoading(false);
       }
     },
-    [cfbTeamMap]
+    [cfbTeamMap, recruitingLoading]
   );
 
   const ExportCFBRecruits = useCallback(async () => {
@@ -1549,73 +1600,117 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const SaveFreeAgencyOffer = useCallback(async (dto: FreeAgencyOfferDTO) => {
-    const res = await FreeAgencyService.FBASaveFreeAgencyOffer(dto);
-    if (res) {
-      enqueueSnackbar("Free Agency Offer Created!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setFreeAgentOffers((prevOffers) => {
-        const offers = [...prevOffers];
-        const index = offers.findIndex((offer) => offer.ID === res.ID);
-        if (index > -1) {
-          offers[index] = new FreeAgencyOffer({ ...res });
-        } else {
-          offers.push(res);
+  const SaveFreeAgencyOffer = useCallback(
+    async (dto: FreeAgencyOfferDTO) => {
+      if (freeAgencyLoading) return;
+      setFreeAgencyLoading(true);
+
+      try {
+        const res = await FreeAgencyService.FBASaveFreeAgencyOffer(dto);
+        if (res) {
+          enqueueSnackbar("Free Agency Offer Created!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setFreeAgentOffers((prevOffers) => {
+            const offers = [...prevOffers];
+            const index = offers.findIndex((offer) => offer.ID === res.ID);
+            if (index > -1) {
+              offers[index] = new FreeAgencyOffer({ ...res });
+            } else {
+              offers.push(res);
+            }
+            return offers;
+          });
         }
-        return offers;
-      });
-    }
-  }, []);
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
 
-  const CancelFreeAgencyOffer = useCallback(async (dto: FreeAgencyOfferDTO) => {
-    const res = await FreeAgencyService.FBACancelFreeAgencyOffer(dto);
-    if (res) {
-      enqueueSnackbar("Free Agency Offer Cancelled!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setFreeAgentOffers((prevOffers) => {
-        const offers = [...prevOffers].filter((offer) => offer.ID !== dto.ID);
-        return offers;
-      });
-    }
-  }, []);
+  const CancelFreeAgencyOffer = useCallback(
+    async (dto: FreeAgencyOfferDTO) => {
+      if (freeAgencyLoading) return;
+      setFreeAgencyLoading(true);
 
-  const SaveWaiverWireOffer = useCallback(async (dto: NFLWaiverOffDTO) => {
-    const res = await FreeAgencyService.FBASaveWaiverWireOffer(dto);
-    if (res) {
-      enqueueSnackbar("Waiver Offer Created!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setWaiverOffers((prevOffers) => {
-        const offers = [...prevOffers];
-        const index = offers.findIndex((offer) => offer.ID === res.ID);
-        if (index > -1) {
-          offers[index] = new NFLWaiverOffer({ ...res });
-        } else {
-          offers.push(res);
+      try {
+        const res = await FreeAgencyService.FBACancelFreeAgencyOffer(dto);
+        if (res) {
+          enqueueSnackbar("Free Agency Offer Cancelled!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setFreeAgentOffers((prevOffers) => {
+            const offers = [...prevOffers].filter(
+              (offer) => offer.ID !== dto.ID
+            );
+            return offers;
+          });
         }
-        return offers;
-      });
-    }
-  }, []);
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
 
-  const CancelWaiverWireOffer = useCallback(async (dto: NFLWaiverOffDTO) => {
-    const res = await FreeAgencyService.FBACancelWaiverWireOffer(dto);
-    if (res) {
-      enqueueSnackbar("Waiver Offer Cancelled!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setWaiverOffers((prevOffers) => {
-        const offers = [...prevOffers].filter((offer) => offer.ID !== res.ID);
-        return offers;
-      });
-    }
-  }, []);
+  const SaveWaiverWireOffer = useCallback(
+    async (dto: NFLWaiverOffDTO) => {
+      if (freeAgencyLoading) return;
+      setFreeAgencyLoading(true);
+
+      try {
+        const res = await FreeAgencyService.FBASaveWaiverWireOffer(dto);
+        if (res) {
+          enqueueSnackbar("Waiver Offer Created!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setWaiverOffers((prevOffers) => {
+            const offers = [...prevOffers];
+            const index = offers.findIndex((offer) => offer.ID === res.ID);
+            if (index > -1) {
+              offers[index] = new NFLWaiverOffer({ ...res });
+            } else {
+              offers.push(res);
+            }
+            return offers;
+          });
+        }
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
+
+  const CancelWaiverWireOffer = useCallback(
+    async (dto: NFLWaiverOffDTO) => {
+      if (freeAgencyLoading) return;
+      setFreeAgencyLoading(true);
+
+      try {
+        const res = await FreeAgencyService.FBACancelWaiverWireOffer(dto);
+        if (res) {
+          enqueueSnackbar("Waiver Offer Cancelled!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setWaiverOffers((prevOffers) => {
+            const offers = [...prevOffers].filter(
+              (offer) => offer.ID !== res.ID
+            );
+            return offers;
+          });
+        }
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
 
   const removeUserfromCFBTeamCall = useCallback(
     async (teamID: number) => {
