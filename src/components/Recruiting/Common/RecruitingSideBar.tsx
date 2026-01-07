@@ -25,6 +25,10 @@ import {
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { TeamLabel } from "../../Common/Labels";
 import { getAffinityList } from "../../../_helper/recruitingHelper";
+import {
+  getDefensiveSystemFromMap,
+  getOffensiveSystemFromMap,
+} from "../../Gameplan/HockeyLineups/useLineupUtils";
 
 interface RecruitingSideBarProps {
   TeamProfile: BasketballTeamProfile | HockeyTeamProfile | FootballTeamProfile;
@@ -54,6 +58,8 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
   let affinities: any[] = [];
   let res = 0;
   let region = "";
+  let offensiveSystem = "";
+  let defensiveSystem = "";
   switch (league) {
     case SimCHL:
       const tp = TeamProfile as HockeyTeamProfile;
@@ -69,6 +75,8 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
       conf = t.ConferencePrestige;
       coach = t.CoachRating;
       season = t.SeasonMomentum;
+      offensiveSystem = getOffensiveSystemFromMap(tp.OffensiveSystem).label;
+      defensiveSystem = getDefensiveSystemFromMap(tp.DefensiveSystem).label;
       break;
     case SimCBB:
       const cbbtp = TeamProfile as TeamRecruitingProfile;
@@ -153,6 +161,8 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
               borderColor={teamColors.One}
               headerTextColorClass={headerTextColorClass}
             />
+            <Text variant="xs">Offense: {offensiveSystem}</Text>
+            <Text variant="xs">Defense: {defensiveSystem}</Text>
             <Text variant="xs">Program Development: {programDevelopment}</Text>
             <Text variant="xs">Professional Development: {profDev}</Text>
             <Text variant="xs">Traditions: {trad}</Text>
