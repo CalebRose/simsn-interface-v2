@@ -152,6 +152,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     createPromise,
     ExportHCKRoster,
     SearchHockeyStats,
+    chlGameplan,
   } = hkStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
@@ -378,6 +379,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
             borderColor={borderColor}
             openModal={openModal}
             openPromiseModal={openPromiseModal}
+            gameplan={chlGameplan}
             disable={selectedTeam!.ID !== chlTeam!.ID}
           />
         </Border>
@@ -405,6 +407,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     phlDraftPickMap,
     proPlayerMap,
     individualDraftPickMap,
+    phlGameplan,
     cutPHLPlayer,
     affiliatePlayer,
     PlacePHLPlayerOnTradeBlock,
@@ -844,6 +847,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
             openModal={openModal}
             openExtensionModal={openExtensionModal}
             disable={selectedTeam!.ID !== phlTeam!.ID}
+            gameplan={phlGameplan}
           />
         )}
         {category === TradeBlock && (

@@ -2959,8 +2959,8 @@ export class RecruitingTeamProfile {
   AIStarMin: number;
   AIStarMax: number;
   Recruiter: string;
-  OffensiveScheme: string;
-  DefensiveScheme: string;
+  OffensiveSystem: number;
+  DefensiveSystem: number;
   Recruits: RecruitPlayerProfile[];
 
   constructor(source: any = {}) {
@@ -3001,8 +3001,8 @@ export class RecruitingTeamProfile {
     this.AIStarMin = source["AIStarMin"];
     this.AIStarMax = source["AIStarMax"];
     this.Recruiter = source["Recruiter"];
-    this.OffensiveScheme = source["OffensiveScheme"];
-    this.DefensiveScheme = source["DefensiveScheme"];
+    this.OffensiveSystem = source["OffensiveSystem"];
+    this.DefensiveSystem = source["DefensiveSystem"];
     this.Recruits = this.convertValues(
       source["Recruits"],
       RecruitPlayerProfile
@@ -6521,6 +6521,10 @@ export class CollegeGameplan {
   DeletedAt: DeletedAt;
   TeamID: number;
   IsAI: boolean;
+  OffensiveSystem: number;
+  DefensiveSystem: number;
+  OffensiveIntensity: number;
+  DefensiveIntensity: number;
   ForwardShotPreference: number;
   DefenderShotPreference: number;
   ForwardCheckPreference: number;
@@ -6536,6 +6540,9 @@ export class CollegeGameplan {
   DefenderSortPreference3: number;
   GoalieSortPreference: number;
   LongerPassesEnabled: boolean;
+  ForeCheckTrigger: number;
+  SystemAdaptation: boolean;
+  SpecialSituationSystem: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -6545,6 +6552,10 @@ export class CollegeGameplan {
     this.DeletedAt = this.convertValues(source["DeletedAt"], DeletedAt);
     this.TeamID = source["TeamID"];
     this.IsAI = source["IsAI"];
+    this.OffensiveSystem = source["OffensiveSystem"];
+    this.DefensiveSystem = source["DefensiveSystem"];
+    this.OffensiveIntensity = source["OffensiveIntensity"];
+    this.DefensiveIntensity = source["DefensiveIntensity"];
     this.ForwardShotPreference = source["ForwardShotPreference"];
     this.DefenderShotPreference = source["DefenderShotPreference"];
     this.ForwardCheckPreference = source["ForwardCheckPreference"];
@@ -6560,6 +6571,9 @@ export class CollegeGameplan {
     this.DefenderSortPreference3 = source["DefenderSortPreference3"];
     this.GoalieSortPreference = source["GoalieSortPreference"];
     this.LongerPassesEnabled = source["LongerPassesEnabled"];
+    this.ForeCheckTrigger = source["ForeCheckTrigger"];
+    this.SystemAdaptation = source["SystemAdaptation"];
+    this.SpecialSituationSystem = source["SpecialSituationSystem"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -6588,6 +6602,10 @@ export class ProGameplan {
   DeletedAt: DeletedAt;
   TeamID: number;
   IsAI: boolean;
+  OffensiveSystem: number;
+  DefensiveSystem: number;
+  OffensiveIntensity: number;
+  DefensiveIntensity: number;
   ForwardShotPreference: number;
   DefenderShotPreference: number;
   ForwardCheckPreference: number;
@@ -6603,6 +6621,9 @@ export class ProGameplan {
   DefenderSortPreference3: number;
   GoalieSortPreference: number;
   LongerPassesEnabled: boolean;
+  ForeCheckTrigger: number;
+  SystemAdaptation: boolean;
+  SpecialSituationSystem: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -6612,6 +6633,10 @@ export class ProGameplan {
     this.DeletedAt = this.convertValues(source["DeletedAt"], DeletedAt);
     this.TeamID = source["TeamID"];
     this.IsAI = source["IsAI"];
+    this.OffensiveSystem = source["OffensiveSystem"];
+    this.DefensiveSystem = source["DefensiveSystem"];
+    this.OffensiveIntensity = source["OffensiveIntensity"];
+    this.DefensiveIntensity = source["DefensiveIntensity"];
     this.ForwardShotPreference = source["ForwardShotPreference"];
     this.DefenderShotPreference = source["DefenderShotPreference"];
     this.ForwardCheckPreference = source["ForwardCheckPreference"];
@@ -6627,6 +6652,9 @@ export class ProGameplan {
     this.DefenderSortPreference3 = source["DefenderSortPreference3"];
     this.GoalieSortPreference = source["GoalieSortPreference"];
     this.LongerPassesEnabled = source["LongerPassesEnabled"];
+    this.ForeCheckTrigger = source["ForeCheckTrigger"];
+    this.SystemAdaptation = source["SystemAdaptation"];
+    this.SpecialSituationSystem = source["SpecialSituationSystem"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -10,6 +10,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  TextGreen,
 } from "../../../_constants/constants";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import {
@@ -27,7 +28,14 @@ import {
   getCHLCrootAttributes,
 } from "../../Team/TeamPageUtils";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
-import { ActionLock, Info, Plus } from "../../../_design/Icons";
+import {
+  ActionLock,
+  CheckCircle,
+  CrossCircle,
+  DashCircle,
+  Info,
+  Plus,
+} from "../../../_design/Icons";
 import { Table, TableCell } from "../../../_design/Table";
 import { Text } from "../../../_design/Typography";
 import { getLogo } from "../../../_utility/getLogo";
@@ -127,7 +135,9 @@ const getRecruitingColumns = (
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
-        { header: "Program", accessor: "ProgramPref" },
+        { header: "Off", accessor: "" },
+        { header: "Def", accessor: "" },
+        { header: "Prog.", accessor: "ProgramPref" },
         { header: "Prof. Dev.", accessor: "ProfDevPref" },
         { header: "Trad.", accessor: "TraditionsPref" },
         { header: "Fac.", accessor: "FacilitiesPref" },
@@ -156,6 +166,8 @@ interface CHLRowProps {
   recruitOnBoardMap: Record<number, boolean>;
   isMobile: boolean;
   category: string;
+  offensiveSystemsInformation: any;
+  defensiveSystemsInformation: any;
 }
 
 const CHLRow: React.FC<CHLRowProps> = ({
@@ -166,6 +178,8 @@ const CHLRow: React.FC<CHLRowProps> = ({
   recruitOnBoardMap,
   isMobile,
   category,
+  offensiveSystemsInformation,
+  defensiveSystemsInformation,
 }) => {
   const selection = getCHLCrootAttributes(item, isMobile, category!);
   const actionVariant = !recruitOnBoardMap[item.ID] ? "success" : "secondary";
@@ -200,6 +214,46 @@ const CHLRow: React.FC<CHLRowProps> = ({
     return <Logo url={winningURL} variant="small" />;
   }, [item]);
 
+  const isGoodOffensiveFit = useMemo(() => {
+    if (!item || !offensiveSystemsInformation) return false;
+    const goodFits = offensiveSystemsInformation.GoodFits;
+    const idx = goodFits.findIndex((x: any) => x.archetype === item.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [item, offensiveSystemsInformation]);
+
+  const isBadOffensiveFit = useMemo(() => {
+    if (!item || !offensiveSystemsInformation) return false;
+    const badFits = offensiveSystemsInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [item, offensiveSystemsInformation]);
+
+  const isGoodDefensiveFit = useMemo(() => {
+    if (!item || !defensiveSystemsInformation) return false;
+    const goodFits = defensiveSystemsInformation.GoodFits;
+    const idx = goodFits.findIndex((x: any) => x.archetype === item.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [item, defensiveSystemsInformation]);
+
+  const isBadDefensiveFit = useMemo(() => {
+    if (!item || !defensiveSystemsInformation) return false;
+    const badFits = defensiveSystemsInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [item, defensiveSystemsInformation]);
+
   return (
     <div
       key={item.ID}
@@ -222,6 +276,34 @@ const CHLRow: React.FC<CHLRowProps> = ({
               onClick={() => openModal(RecruitInfoType, item)}
             >
               {attr.value}
+            </span>
+          ) : attr.label === "Off" ? (
+            <span className="text-xs">
+              {isGoodOffensiveFit && (
+                <CheckCircle
+                  textColorClass={`w-full text-center ${TextGreen}`}
+                />
+              )}
+              {isBadOffensiveFit && (
+                <CrossCircle textColorClass="w-full text-center text-red-500" />
+              )}
+              {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                <DashCircle textColorClass="w-full text-center text-gray-500" />
+              )}
+            </span>
+          ) : attr.label === "Def" ? (
+            <span className="text-xs">
+              {isGoodDefensiveFit && (
+                <CheckCircle
+                  textColorClass={`w-full text-center ${TextGreen}`}
+                />
+              )}
+              {isBadDefensiveFit && (
+                <CrossCircle textColorClass="w-full text-center text-red-500" />
+              )}
+              {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                <DashCircle textColorClass="w-full text-center text-gray-500" />
+              )}
             </span>
           ) : (
             <span className="text-xs">{attr.value}</span>
@@ -554,6 +636,8 @@ interface RecruitTableProps {
   recruitOnBoardMap: Record<number, boolean>;
   currentPage: number;
   teamProfile?: any;
+  offensiveSystemsInformation?: any;
+  defensiveSystemsInformation?: any;
 }
 
 export const RecruitTable: FC<RecruitTableProps> = ({
@@ -568,6 +652,8 @@ export const RecruitTable: FC<RecruitTableProps> = ({
   recruitOnBoardMap,
   currentPage,
   teamProfile,
+  offensiveSystemsInformation,
+  defensiveSystemsInformation,
 }) => {
   const backgroundColor = colorOne;
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -587,6 +673,8 @@ export const RecruitTable: FC<RecruitTableProps> = ({
           isMobile={isMobile}
           category={category}
           recruitOnBoardMap={recruitOnBoardMap}
+          offensiveSystemsInformation={offensiveSystemsInformation}
+          defensiveSystemsInformation={defensiveSystemsInformation}
         />
       );
     }
