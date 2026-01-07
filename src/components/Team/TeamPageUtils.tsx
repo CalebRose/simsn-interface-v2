@@ -629,6 +629,8 @@ export const getAdditionalCrootPotentialAttributes = (player: HockeyCroot) => {
 
 export const getAdditionalCrootPreferenceAttributes = (player: HockeyCroot) => {
   return [
+    { label: "Off", value: 0 },
+    { label: "Def", value: 0 },
     { label: "ProgramPref", value: player.ProgramPref },
     { label: "ProfDevPref", value: player.ProfDevPref },
     { label: "TraditionsPref", value: player.TraditionsPref },

@@ -2959,8 +2959,8 @@ export class RecruitingTeamProfile {
   AIStarMin: number;
   AIStarMax: number;
   Recruiter: string;
-  OffensiveScheme: string;
-  DefensiveScheme: string;
+  OffensiveSystem: number;
+  DefensiveSystem: number;
   Recruits: RecruitPlayerProfile[];
 
   constructor(source: any = {}) {
@@ -3001,8 +3001,8 @@ export class RecruitingTeamProfile {
     this.AIStarMin = source["AIStarMin"];
     this.AIStarMax = source["AIStarMax"];
     this.Recruiter = source["Recruiter"];
-    this.OffensiveScheme = source["OffensiveScheme"];
-    this.DefensiveScheme = source["DefensiveScheme"];
+    this.OffensiveSystem = source["OffensiveSystem"];
+    this.DefensiveSystem = source["DefensiveSystem"];
     this.Recruits = this.convertValues(
       source["Recruits"],
       RecruitPlayerProfile

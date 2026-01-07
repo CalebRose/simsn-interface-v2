@@ -85,6 +85,8 @@ export const CHLRecruiting = () => {
     recruitingLocked,
     filteredClass,
     SelectClass,
+    offensiveSystemsInformation,
+    defensiveSystemsInformation,
   } = useCHLRecruiting();
   const teamColors = useTeamColors(
     chlTeam?.ColorOne,
@@ -376,6 +378,8 @@ export const CHLRecruiting = () => {
                   isMobile={isMobile}
                   recruitOnBoardMap={recruitOnBoardMap}
                   currentPage={currentPage}
+                  offensiveSystemsInformation={offensiveSystemsInformation}
+                  defensiveSystemsInformation={defensiveSystemsInformation}
                 />
                 <div className="flex flex-row justify-center py-2">
                   <ButtonGroup>
@@ -423,6 +427,8 @@ export const CHLRecruiting = () => {
                   ChangeInput={updatePointsOnRecruit}
                   openModal={openModal}
                   setAttribute={setAttribute}
+                  offensiveSystemsInformation={offensiveSystemsInformation}
+                  defensiveSystemsInformation={defensiveSystemsInformation}
                 />
               </Border>
             </>
