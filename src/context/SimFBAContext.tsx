@@ -945,7 +945,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.teamId) {
       cfbID = currentUser.teamId;
     }
-    if (cfbID === 0 || seasonId === 0 || username === "") {
+    if (seasonId === 0 || username === "") {
       return;
     }
 
@@ -960,6 +960,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       );
       setCollegePolls(res.OfficialPolls);
       setCollegePollSubmission(res.CollegePollSubmission);
+      setHistoricCollegePlayers(res.HistoricCollegePlayers);
+      setNFLRetiredPlayers(res.RetiredPlayers);
     } finally {
       isScheduleDataFetching.current = false;
     }
@@ -995,6 +997,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     try {
       const res = await BootstrapService.GetFBAStatsBootstrapData(cfbID, nflID);
       setCFBPostSeasonAwards(res.PostSeasonAwards);
+      setHistoricCollegePlayers(res.HistoricCollegePlayers);
+      setNFLRetiredPlayers(res.RetiredPlayers);
     } finally {
       isStatsDataFetching.current = false;
     }
