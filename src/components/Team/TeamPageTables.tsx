@@ -134,8 +134,8 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "Morale", accessor: "PlayerMorale" },
         { header: "Redshirt", accessor: "isRedshirting" },
         { header: "Mood", accessor: "TransferStatus" },
-        { header: "Offensive Fit", accessor: "" },
-        { header: "Defensive Fit", accessor: "" },
+        { header: "Offensive Fit", accessor: "OffensiveFit" },
+        { header: "Defensive Fit", accessor: "DefensiveFit" },
       ]);
     }
 
@@ -201,7 +201,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     const collegePromise = collegePromiseMap[item.ID];
     const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
 
-    const isGoodOffensiveFit = useMemo(() => {
+    const isGoodOffensiveFit = (() => {
       if (!item || !offensiveSystemsInformation) return false;
       const goodFits = offensiveSystemsInformation.GoodFits;
       const idx = goodFits.findIndex(
@@ -211,9 +211,9 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         return true;
       }
       return false;
-    }, [item, offensiveSystemsInformation]);
+    })();
 
-    const isBadOffensiveFit = useMemo(() => {
+    const isBadOffensiveFit = (() => {
       if (!item || !offensiveSystemsInformation) return false;
       const badFits = offensiveSystemsInformation.BadFits;
       const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
@@ -221,9 +221,9 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         return true;
       }
       return false;
-    }, [item, offensiveSystemsInformation]);
+    })();
 
-    const isGoodDefensiveFit = useMemo(() => {
+    const isGoodDefensiveFit = (() => {
       if (!item || !defensiveSystemsInformation) return false;
       const goodFits = defensiveSystemsInformation.GoodFits;
       const idx = goodFits.findIndex(
@@ -233,9 +233,9 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         return true;
       }
       return false;
-    }, [item, defensiveSystemsInformation]);
+    })();
 
-    const isBadDefensiveFit = useMemo(() => {
+    const isBadDefensiveFit = (() => {
       if (!item || !defensiveSystemsInformation) return false;
       const badFits = defensiveSystemsInformation.BadFits;
       const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
@@ -243,7 +243,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         return true;
       }
       return false;
-    }, [item, defensiveSystemsInformation]);
+    })();
 
     return (
       <div
@@ -550,8 +550,8 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
 
     if (isDesktop && category === Contracts) {
       columns = columns.concat([
-        { header: "Offensive Fit", accessor: "" },
-        { header: "Defensive Fit", accessor: "" },
+        { header: "Offensive Fit", accessor: "OffensiveFit" },
+        { header: "Defensive Fit", accessor: "DefensiveFit" },
         { header: "Y1 S", accessor: "Y1BaseSalary" },
         { header: "Y2 S", accessor: "Y2BaseSalary" },
         { header: "Y3 S", accessor: "Y3BaseSalary" },
@@ -600,7 +600,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       playerContract
     );
 
-    const isGoodOffensiveFit = useMemo(() => {
+    const isGoodOffensiveFit = (() => {
       if (!item || !offensiveSystemsInformation) return false;
       const goodFits = offensiveSystemsInformation.GoodFits;
       const idx = goodFits.findIndex(
@@ -610,9 +610,9 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         return true;
       }
       return false;
-    }, [item, offensiveSystemsInformation]);
+    })();
 
-    const isBadOffensiveFit = useMemo(() => {
+    const isBadOffensiveFit = (() => {
       if (!item || !offensiveSystemsInformation) return false;
       const badFits = offensiveSystemsInformation.BadFits;
       const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
@@ -620,9 +620,9 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         return true;
       }
       return false;
-    }, [item, offensiveSystemsInformation]);
+    })();
 
-    const isGoodDefensiveFit = useMemo(() => {
+    const isGoodDefensiveFit = (() => {
       if (!item || !defensiveSystemsInformation) return false;
       const goodFits = defensiveSystemsInformation.GoodFits;
       const idx = goodFits.findIndex(
@@ -632,9 +632,9 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         return true;
       }
       return false;
-    }, [item, defensiveSystemsInformation]);
+    })();
 
-    const isBadDefensiveFit = useMemo(() => {
+    const isBadDefensiveFit = (() => {
       if (!item || !defensiveSystemsInformation) return false;
       const badFits = defensiveSystemsInformation.BadFits;
       const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
@@ -642,7 +642,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         return true;
       }
       return false;
-    }, [item, defensiveSystemsInformation]);
+    })();
 
     return (
       <div
