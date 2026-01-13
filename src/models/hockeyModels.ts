@@ -1482,6 +1482,8 @@ export class BaseTeam {
   OverallGrade: string;
   OffenseGrade: string;
   DefenseGrade: string;
+  GoalieGrade: string;
+  IsUserCoached: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -1506,6 +1508,8 @@ export class BaseTeam {
     this.OverallGrade = source["OverallGrade"];
     this.OffenseGrade = source["OffenseGrade"];
     this.DefenseGrade = source["DefenseGrade"];
+    this.GoalieGrade = source["GoalieGrade"];
+    this.IsUserCoached = source["IsUserCoached"];
   }
 }
 export class CollegeTeam {
@@ -1534,6 +1538,7 @@ export class CollegeTeam {
   OverallGrade: string;
   OffenseGrade: string;
   DefenseGrade: string;
+  GoalieGrade: string;
   IsUserCoached: boolean;
   IsClub: boolean;
   IsActive: boolean;
@@ -1575,6 +1580,7 @@ export class CollegeTeam {
     this.OverallGrade = source["OverallGrade"];
     this.OffenseGrade = source["OffenseGrade"];
     this.DefenseGrade = source["DefenseGrade"];
+    this.GoalieGrade = source["GoalieGrade"];
     this.IsUserCoached = source["IsUserCoached"];
     this.IsClub = source["IsClub"];
     this.IsActive = source["IsActive"];
@@ -1634,6 +1640,7 @@ export class ProfessionalTeam {
   OverallGrade: string;
   OffenseGrade: string;
   DefenseGrade: string;
+  GoalieGrade: string;
   Owner: string;
   GM: string;
   Scout: string;
@@ -1668,6 +1675,7 @@ export class ProfessionalTeam {
     this.OverallGrade = source["OverallGrade"];
     this.OffenseGrade = source["OffenseGrade"];
     this.DefenseGrade = source["DefenseGrade"];
+    this.GoalieGrade = source["GoalieGrade"];
     this.Owner = source["Owner"];
     this.GM = source["GM"];
     this.Scout = source["Scout"];
