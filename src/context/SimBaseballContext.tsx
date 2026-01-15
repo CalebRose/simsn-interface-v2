@@ -1,8 +1,16 @@
-import React, { createContext, useContext, ReactNode } from "react";
-import { Timestamp as BaseballTimestamp,
+import React, {
+  createContext,
+  useContext,
+  ReactNode,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
+import {
+  Timestamp as BaseballTimestamp,
   BaseballOrganization,
-  BaseballRosters
- } from "../models/baseballModels";
+  BaseballRosters,
+} from "../models/baseballModels";
 import { useAuthStore } from "./AuthContext";
 import { BaseballService } from "../_services/baseballService";
 import { useEffect, useState } from "react";
@@ -46,34 +54,63 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   children,
 }) => {
   const { currentUser } = useAuthStore();
-  const [organizations, setOrganizations] = useState<BaseballOrganization[]>([]);
-  const [mlbOrganization, setMlbOrganization] = useState<BaseballOrganization | null>(null);
+  const isFetching = useRef(false);
+  const [organizations, setOrganizations] = useState<BaseballOrganization[]>(
+    []
+  );
+
   const [rosters, setRosters] = useState<BaseballRosters[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const {baseball_Timestamp, setBaseball_Timestamp} = useWebSockets(baseball_ws, SimMLB)
-    // Load data when user logs in
+  const { baseball_Timestamp, setBaseball_Timestamp } = useWebSockets(
+    baseball_ws,
+    SimMLB
+  );
+
+  const mlbOrganization = useMemo(() => {
+    if (!currentUser || !organizations) return null;
+    return organizations.find((o) => o.id === currentUser.MLBOrgID) || null;
+  }, [currentUser, organizations]);
+
+  // Load data when user logs in
   useEffect(() => {
-    const loadData = async () => {
-      if (!currentUser) return;
-      
-      setIsLoading(true);
-      try {
-        // Call the service → which calls the backend
-        const orgs = await BaseballService.GetAllOrganizations();
-        setOrganizations(orgs);
-        console.log("Fetched Organizations:", orgs);
-        // If user has a team, find their org
-        if (currentUser.MLBOrgID) {
-          const userOrg = orgs.find(o => o.id === currentUser.MLBOrgID);
-          setMlbOrganization(userOrg || null);
-        }
-      } catch (error) {
-        console.error("Failed to load organizations", error);
-      }
-      setIsLoading(false);
-    };
-    loadData();
+    getBaseballOrgData();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser && !isFetching.current) {
+      isFetching.current = true;
+      // Landing page bootstrap function call here
+    }
   }, [currentUser]);
+
+  const getBaseballOrgData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Call the service → which calls the backend
+      const orgs = await BaseballService.GetAllOrganizations();
+      setOrganizations(orgs);
+    } catch (error) {
+      console.error("Failed to load organizations", error);
+    }
+    setIsLoading(false);
+  }, []);
+
+  // Empty bootstrap functions for later implementation
+  const getFaceData = useCallback(async () => {}, []);
+
+  const getBootstrapLandingData = useCallback(async () => {}, []);
+
+  const getBootstrapRosterData = useCallback(async () => {}, []);
+
+  const getBootstrapScheduleData = useCallback(async () => {}, []);
+
+  const getBootstrapFreeAgencyData = useCallback(async () => {}, []);
+
+  const getBootstrapRecruitingData = useCallback(async () => {}, []);
+
+  const getBootstrapPortalData = useCallback(async () => {}, []);
+
+  const getBootstrapStatsData = useCallback(async () => {}, []);
 
   return (
     <SimBaseballContext.Provider
@@ -83,7 +120,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         mlbOrganization: mlbOrganization, // Add real data later
         isCollegeOrgLoading: false,
         isMlbOrgLoading: isLoading,
-        baseball_Timestamp, 
+        baseball_Timestamp,
         isLoading: isLoading,
       }}
     >
