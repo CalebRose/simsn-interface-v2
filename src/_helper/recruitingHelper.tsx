@@ -11,6 +11,7 @@ import { FormationMap } from "../_utility/getFormationMap";
 import {
   Academics,
   BigCity,
+  Frontrunner,
   LargeCrowds,
   MediaSpotlight,
   Religion,
@@ -303,6 +304,9 @@ export const ValidateAffinity = (
     return true;
   }
   if (affinity === Service && teamProfile.ServiceAffinity) {
+    return true;
+  }
+  if (affinity === Frontrunner && teamProfile.FrontrunnerAffinity) {
     return true;
   }
   if (affinity === Religion && teamProfile.ReligionAffinity) {

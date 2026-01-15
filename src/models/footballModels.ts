@@ -1,5 +1,103 @@
 /* Do not change, this code is generated from Golang structs */
+export class AwardsModel {
+  PlayerID: number;
+  TeamID: number;
+  FirstName: string;
+  LastName: string;
+  Position: string;
+  Archetype: string;
+  School: string;
+  Score: number;
+  Games: number;
 
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.PlayerID = source["PlayerID"];
+    this.TeamID = source["TeamID"];
+    this.FirstName = source["FirstName"];
+    this.LastName = source["LastName"];
+    this.Position = source["Position"];
+    this.Archetype = source["Archetype"];
+    this.School = source["School"];
+    this.Score = source["Score"];
+    this.Games = source["Games"];
+  }
+}
+export class AwardsList {
+  [key: string]: AwardsModel[];
+  HeismanList: AwardsModel[];
+  CoachOfTheYearList: AwardsModel[];
+  DaveyOBrienList: AwardsModel[];
+  DoakWalkerList: AwardsModel[];
+  BiletnikoffList: AwardsModel[];
+  MackeyList: AwardsModel[];
+  RimingtonList: AwardsModel[];
+  OutlandList: AwardsModel[];
+  JoeMooreList: AwardsModel[];
+  NagurskiList: AwardsModel[];
+  HendricksList: AwardsModel[];
+  ThorpeList: AwardsModel[];
+  ButkusList: AwardsModel[];
+  LouGrozaList: AwardsModel[];
+  RayGuyList: AwardsModel[];
+  JetAward: AwardsModel[];
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.HeismanList = this.convertValues(source["HeismanList"], AwardsModel);
+    this.CoachOfTheYearList = this.convertValues(
+      source["CoachOfTheYearList"],
+      AwardsModel
+    );
+    this.DaveyOBrienList = this.convertValues(
+      source["DaveyOBrienList"],
+      AwardsModel
+    );
+    this.DoakWalkerList = this.convertValues(
+      source["DoakWalkerList"],
+      AwardsModel
+    );
+    this.BiletnikoffList = this.convertValues(
+      source["BiletnikoffList"],
+      AwardsModel
+    );
+    this.MackeyList = this.convertValues(source["MackeyList"], AwardsModel);
+    this.RimingtonList = this.convertValues(
+      source["RimingtonList"],
+      AwardsModel
+    );
+    this.OutlandList = this.convertValues(source["OutlandList"], AwardsModel);
+    this.JoeMooreList = this.convertValues(source["JoeMooreList"], AwardsModel);
+    this.NagurskiList = this.convertValues(source["NagurskiList"], AwardsModel);
+    this.HendricksList = this.convertValues(
+      source["HendricksList"],
+      AwardsModel
+    );
+    this.ThorpeList = this.convertValues(source["ThorpeList"], AwardsModel);
+    this.ButkusList = this.convertValues(source["ButkusList"], AwardsModel);
+    this.LouGrozaList = this.convertValues(source["LouGrozaList"], AwardsModel);
+    this.RayGuyList = this.convertValues(source["RayGuyList"], AwardsModel);
+    this.JetAward = this.convertValues(source["JetAward"], AwardsModel);
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
 export class NFLGame {
   ID: number;
   CreatedAt: Time;
@@ -5268,6 +5366,7 @@ export class BootstrapData {
   Recruits: Croot[];
   TeamProfileMap: { [key: string]: RecruitingTeamProfile } | null;
   PortalPlayers: CollegePlayer[];
+  PostSeasonAwards: AwardsList;
 
   CollegeInjuryReport: CollegePlayer[];
   CollegeNews: NewsLog[];
@@ -5316,7 +5415,10 @@ export class BootstrapData {
   NFLDraftPicks: NFLDraftPick[];
   constructor(source: any = {}) {
     if (typeof source === "string") source = JSON.parse(source);
-
+    this.PostSeasonAwards = this.convertValues(
+      source["PostSeasonAwards"],
+      AwardsList
+    );
     this.CollegeTeam =
       this.convertValues(source["CollegeTeam"], CollegeTeam) || null;
     this.AllCollegeTeams =

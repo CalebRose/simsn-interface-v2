@@ -5,6 +5,8 @@ import {
   CollegePlayer as CHLPlayer,
   ProfessionalPlayer as PHLPlayer,
   ProContract as PHLContract,
+  CollegeGameplan,
+  ProGameplan,
 } from "../../models/hockeyModels";
 import {
   CollegePlayer as CFBPlayer,
@@ -45,12 +47,14 @@ import { SelectDropdown } from "../../_design/Select";
 import {
   CheckCircle,
   CrossCircle,
+  DashCircle,
   ShieldCheck,
   User,
 } from "../../_design/Icons";
 import { SimNFL } from "../../_constants/constants";
 import {
   CollegePlayer as CBBPlayer,
+  CollegePromise as BasketballPromise,
   NBAContract,
   NBAPlayer,
 } from "../../models/basketballModels";
@@ -63,6 +67,10 @@ import {
   getHockeyLetterGrade,
 } from "../../_utility/getLetterGrade";
 import { useSimFBAStore } from "../../context/SimFBAContext";
+import {
+  defensiveSystemsInformationList,
+  offensiveSystemsInformationList,
+} from "../Gameplan/HockeyLineups/useLineupUtils";
 
 interface CHLRosterTableProps {
   roster: CHLPlayer[];
@@ -74,6 +82,7 @@ interface CHLRosterTableProps {
   openModal: (action: ModalAction, player: CHLPlayer) => void;
   openPromiseModal: (player: CHLPlayer) => void;
   disable: boolean;
+  gameplan: CollegeGameplan;
 }
 
 export const CHLRosterTable: FC<CHLRosterTableProps> = ({
@@ -86,6 +95,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
   openModal,
   openPromiseModal,
   disable,
+  gameplan,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const { isDesktop, isTablet } = useResponsive();
@@ -124,6 +134,8 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "Morale", accessor: "PlayerMorale" },
         { header: "Redshirt", accessor: "isRedshirting" },
         { header: "Mood", accessor: "TransferStatus" },
+        { header: "Offensive Fit", accessor: "OffensiveFit" },
+        { header: "Defensive Fit", accessor: "DefensiveFit" },
       ]);
     }
 
@@ -168,6 +180,18 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     return [...roster].sort((a, b) => b.Overall - a.Overall);
   }, [roster]);
 
+  const offensiveSystemsInformation = useMemo(() => {
+    return offensiveSystemsInformationList[
+      gameplan!.OffensiveSystem as keyof typeof offensiveSystemsInformationList
+    ];
+  }, [gameplan]);
+
+  const defensiveSystemsInformation = useMemo(() => {
+    return defensiveSystemsInformationList[
+      gameplan!.DefensiveSystem as keyof typeof defensiveSystemsInformationList
+    ];
+  }, [gameplan]);
+
   const rowRenderer = (
     item: CHLPlayer,
     index: number,
@@ -176,6 +200,51 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     const attributes = getCHLAttributes(item, !isDesktop, isTablet, category!);
     const collegePromise = collegePromiseMap[item.ID];
     const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
+
+    const isGoodOffensiveFit = (() => {
+      if (!item || !offensiveSystemsInformation) return false;
+      const goodFits = offensiveSystemsInformation.GoodFits;
+      const idx = goodFits.findIndex(
+        (x: any) => x.archetype === item.Archetype
+      );
+      if (idx > -1) {
+        return true;
+      }
+      return false;
+    })();
+
+    const isBadOffensiveFit = (() => {
+      if (!item || !offensiveSystemsInformation) return false;
+      const badFits = offensiveSystemsInformation.BadFits;
+      const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
+      if (idx > -1) {
+        return true;
+      }
+      return false;
+    })();
+
+    const isGoodDefensiveFit = (() => {
+      if (!item || !defensiveSystemsInformation) return false;
+      const goodFits = defensiveSystemsInformation.GoodFits;
+      const idx = goodFits.findIndex(
+        (x: any) => x.archetype === item.Archetype
+      );
+      if (idx > -1) {
+        return true;
+      }
+      return false;
+    })();
+
+    const isBadDefensiveFit = (() => {
+      if (!item || !defensiveSystemsInformation) return false;
+      const badFits = defensiveSystemsInformation.BadFits;
+      const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
+      if (idx > -1) {
+        return true;
+      }
+      return false;
+    })();
+
     return (
       <div
         key={item.ID}
@@ -226,7 +295,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
               </>
             ) : attr.label === "Name" ? (
               <span
-                className={`cursor-pointer font-semibold`}
+                className={`cursor-pointer font-semibold text-start`}
                 onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
                   (e.target as HTMLElement).style.color = "#fcd53f";
                 }}
@@ -244,6 +313,40 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             )}
           </div>
         ))}
+        {category === Overview && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodOffensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadOffensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodDefensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadDefensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+          </>
+        )}
         {category === Attributes && isDesktop && (
           <>
             <TableCell>
@@ -364,6 +467,7 @@ interface PHLRosterTableProps {
   openModal: (action: ModalAction, player: PHLPlayer) => void;
   openExtensionModal: (player: PHLPlayer) => void;
   disable: boolean;
+  gameplan: ProGameplan;
 }
 
 export const PHLRosterTable: FC<PHLRosterTableProps> = ({
@@ -378,6 +482,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
   openModal,
   openExtensionModal,
   disable,
+  gameplan,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const { isDesktop, isTablet } = useResponsive();
@@ -387,19 +492,19 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       {
-        header: !isDesktop && !isTablet ? "Pos" : "Position",
+        header: !isDesktop && !isTablet ? "Pos" : "Pos",
         accessor: "Position",
       },
       {
-        header: !isDesktop && !isTablet ? "Arch" : "Archetype",
+        header: !isDesktop && !isTablet ? "Arch" : "Arch",
         accessor: "Archetype",
       },
       {
-        header: !isDesktop && !isTablet ? "Exp" : "Experience",
+        header: !isDesktop && !isTablet ? "Exp" : "Exp",
         accessor: "Year",
       },
       {
-        header: !isDesktop && !isTablet ? "Ovr" : "Overall",
+        header: !isDesktop && !isTablet ? "Ovr" : "Ovr",
         accessor: "Overall",
       },
     ];
@@ -445,6 +550,8 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
 
     if (isDesktop && category === Contracts) {
       columns = columns.concat([
+        { header: "Offensive Fit", accessor: "OffensiveFit" },
+        { header: "Defensive Fit", accessor: "DefensiveFit" },
         { header: "Y1 S", accessor: "Y1BaseSalary" },
         { header: "Y2 S", accessor: "Y2BaseSalary" },
         { header: "Y3 S", accessor: "Y3BaseSalary" },
@@ -464,6 +571,18 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
     return [...roster].sort((a, b) => b.Overall - a.Overall);
   }, [roster]);
 
+  const offensiveSystemsInformation = useMemo(() => {
+    return offensiveSystemsInformationList[
+      gameplan!.OffensiveSystem as keyof typeof offensiveSystemsInformationList
+    ];
+  }, [gameplan]);
+
+  const defensiveSystemsInformation = useMemo(() => {
+    return defensiveSystemsInformationList[
+      gameplan!.DefensiveSystem as keyof typeof defensiveSystemsInformationList
+    ];
+  }, [gameplan]);
+
   const rowRenderer = (
     item: PHLPlayer,
     index: number,
@@ -480,6 +599,51 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       category!,
       playerContract
     );
+
+    const isGoodOffensiveFit = (() => {
+      if (!item || !offensiveSystemsInformation) return false;
+      const goodFits = offensiveSystemsInformation.GoodFits;
+      const idx = goodFits.findIndex(
+        (x: any) => x.archetype === item.Archetype
+      );
+      if (idx > -1) {
+        return true;
+      }
+      return false;
+    })();
+
+    const isBadOffensiveFit = (() => {
+      if (!item || !offensiveSystemsInformation) return false;
+      const badFits = offensiveSystemsInformation.BadFits;
+      const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
+      if (idx > -1) {
+        return true;
+      }
+      return false;
+    })();
+
+    const isGoodDefensiveFit = (() => {
+      if (!item || !defensiveSystemsInformation) return false;
+      const goodFits = defensiveSystemsInformation.GoodFits;
+      const idx = goodFits.findIndex(
+        (x: any) => x.archetype === item.Archetype
+      );
+      if (idx > -1) {
+        return true;
+      }
+      return false;
+    })();
+
+    const isBadDefensiveFit = (() => {
+      if (!item || !defensiveSystemsInformation) return false;
+      const badFits = defensiveSystemsInformation.BadFits;
+      const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
+      if (idx > -1) {
+        return true;
+      }
+      return false;
+    })();
+
     return (
       <div
         key={item.ID}
@@ -518,6 +682,34 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
                   <User textColorClass={`w-full text-center ${TextGreen}`} />
                 )}
               </>
+            ) : attr.label === "Offensive Fit" ? (
+              <>
+                {isGoodOffensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadOffensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </>
+            ) : attr.label === "Defensive Fit" ? (
+              <>
+                {isGoodDefensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadDefensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </>
             ) : attr.label === "TradeBlock" || attr.label === "Affiliate" ? (
               <>
                 {attr.value === "Yes" ? (
@@ -532,7 +724,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
               </>
             ) : attr.label === "Name" ? (
               <span
-                className={`cursor-pointer font-semibold`}
+                className={`cursor-pointer font-semibold text-start`}
                 onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
                   (e.target as HTMLElement).style.color = "#fcd53f";
                 }}
@@ -541,24 +733,25 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
                 }}
                 onClick={() => openModal(InfoType, item)}
               >
-                <Text variant="small">{attr.value}</Text>
+                <Text variant="xs">{attr.value}</Text>
               </span>
             ) : (
-              <Text variant="small" classes="text-start">
+              <Text variant="xs" classes="text-start">
                 {attr.value}
               </Text>
             )}
           </div>
         ))}
+
         {category === Attributes && isDesktop && (
           <>
             <TableCell>
-              <Text variant="small" classes="text-start">
+              <Text variant="xs" classes="text-start">
                 {item.Stamina}
               </Text>
             </TableCell>
             <TableCell>
-              <Text variant="small" classes="text-start">
+              <Text variant="xs" classes="text-start">
                 {item.InjuryRating}
               </Text>
             </TableCell>
@@ -1236,7 +1429,9 @@ interface CBBRosterTableProps {
   team?: any;
   category?: string;
   openModal: (action: ModalAction, player: CBBPlayer) => void;
+  openPromiseModal: (player: CBBPlayer) => void;
   disable: boolean;
+  collegePromiseMap: Record<number, BasketballPromise>;
 }
 
 export const CBBRosterTable: FC<CBBRosterTableProps> = ({
@@ -1247,6 +1442,8 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
   team,
   category,
   openModal,
+  openPromiseModal,
+  collegePromiseMap,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -1413,7 +1610,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
                 openModal(Redshirt, item);
               }
               if (selectedOption?.value === "promise") {
-                openModal(Promise, item);
+                openPromiseModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
               }

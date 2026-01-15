@@ -76,7 +76,11 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
       const cbbtp = TeamProfile as BasketballProfile;
       const cbbt = Team as BasketballTeam;
       teamLabel = cbbt.Team;
-      region = cbbtp.Region;
+      if (cbbtp) {
+        region = cbbtp.Region;
+      }
+      spotsRemaining = 15 - rosterCount.rosterCount;
+
       break;
     case SimCFB:
       // Remove some of these as affinities aren't used in portal

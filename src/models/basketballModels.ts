@@ -1774,6 +1774,7 @@ export class NewsLog {
   }
 }
 export class CollegePromise {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -3384,19 +3385,21 @@ export class BootstrapData {
   CollegeTeam: Team;
   CollegeRosterMap: { [key: number]: CollegePlayer[] };
   PortalPlayers: TransferPlayerResponse[];
+  HistoricCollegePlayers: HistoricCollegePlayer[];
+  RetiredPlayers: RetiredPlayer[];
   CollegeInjuryReport: CollegePlayer[];
   CollegeNotifications: Notification[];
-  CollegeGameplan: Gameplan[];
-  CollegePolls: CollegePollOfficial[];
-
+  CollegeGameplan: Gameplan;
   TopCBBPoints: CollegePlayer[];
   TopCBBAssists: CollegePlayer[];
   TopCBBRebounds: CollegePlayer[];
   NBATeam: NBATeam;
   AllProTeams: NBATeam[];
   ProNotifications: Notification[];
-  NBAGameplan: NBAGameplan[];
+  NBAGameplan: NBAGameplan;
+  FaceData: { [key: number]: FaceDataResponse };
   CollegeNews: NewsLog[];
+  CollegePolls: CollegePollOfficial[];
   TeamProfileMap: { [key: string]: TeamRecruitingProfile };
   CollegeStandings: CollegeStandings[];
   ProStandings: NBAStandings[];
@@ -3410,14 +3413,26 @@ export class BootstrapData {
   InternationalPlayers: NBAPlayer[];
   Recruits: Croot[];
   RecruitProfiles: PlayerRecruitProfile[];
+  FreeAgentOffers: NBAContractOffer[];
+  WaiverOffers: NBAWaiverOffer[];
   ProNews: NewsLog[];
   AllCollegeGames: Match[];
   AllProGames: NBAMatch[];
-  FaceData: { [key: number]: FaceDataResponse };
   ContractMap: { [key: number]: NBAContract };
   ExtensionMap: { [key: number]: NBAExtensionOffer };
-  FreeAgentOffers: NBAContractOffer[];
-  WaiverOffers: NBAWaiverOffer[];
+  CollegePromises: CollegePromise[];
+  TradeProposals: NBATeamProposals;
+  TradePreferencesMap: { [key: number]: NBATradePreferences };
+  DraftPicks: DraftPick[];
+  FreeAgents: NBAPlayer[];
+  WaiverPlayers: NBAPlayer[];
+  PollSubmission: CollegePollSubmission;
+  NBADraftees: NBADraftee[];
+  WarRoomMap: { [key: number]: NBAWarRoom };
+  ScoutingProfileMap: { [key: number]: ScoutingProfile };
+  TransferPortalProfiles: TransferPortalProfile[];
+  CollegeGameplanMap: { [key: number]: Gameplan };
+  ProGameplanMap: { [key: number]: NBAGameplan };
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -3428,6 +3443,14 @@ export class BootstrapData {
       source["PortalPlayers"],
       TransferPlayerResponse
     );
+    this.HistoricCollegePlayers = this.convertValues(
+      source["HistoricCollegePlayers"],
+      HistoricCollegePlayer
+    );
+    this.RetiredPlayers = this.convertValues(
+      source["RetiredPlayers"],
+      RetiredPlayer
+    );
     this.CollegeInjuryReport = this.convertValues(
       source["CollegeInjuryReport"],
       CollegePlayer
@@ -3436,11 +3459,6 @@ export class BootstrapData {
       source["CollegeNotifications"],
       Notification
     );
-    this.CollegePolls = this.convertValues(
-      source["CollegePolls"],
-      CollegePollOfficial
-    );
-
     this.CollegeGameplan = this.convertValues(
       source["CollegeGameplan"],
       Gameplan
@@ -3464,7 +3482,16 @@ export class BootstrapData {
       Notification
     );
     this.NBAGameplan = this.convertValues(source["NBAGameplan"], NBAGameplan);
+    this.FaceData = this.convertValues(
+      source["FaceData"],
+      FaceDataResponse,
+      true
+    );
     this.CollegeNews = this.convertValues(source["CollegeNews"], NewsLog);
+    this.CollegePolls = this.convertValues(
+      source["CollegePolls"],
+      CollegePollOfficial
+    );
     this.TeamProfileMap = source["TeamProfileMap"];
     this.CollegeStandings = this.convertValues(
       source["CollegeStandings"],
@@ -3514,11 +3541,6 @@ export class BootstrapData {
     this.ProNews = this.convertValues(source["ProNews"], NewsLog);
     this.AllCollegeGames = this.convertValues(source["AllCollegeGames"], Match);
     this.AllProGames = this.convertValues(source["AllProGames"], NBAMatch);
-    this.FaceData = this.convertValues(
-      source["FaceData"],
-      FaceDataResponse,
-      true
-    );
     this.ContractMap = this.convertValues(
       source["ContractMap"],
       NBAContract,
@@ -3527,6 +3549,51 @@ export class BootstrapData {
     this.ExtensionMap = this.convertValues(
       source["ExtensionMap"],
       NBAExtensionOffer,
+      true
+    );
+    this.CollegePromises = this.convertValues(
+      source["CollegePromises"],
+      CollegePromise
+    );
+    this.TradeProposals = this.convertValues(
+      source["TradeProposals"],
+      NBATeamProposals
+    );
+    this.TradePreferencesMap = this.convertValues(
+      source["TradePreferencesMap"],
+      NBATradePreferences,
+      true
+    );
+    this.DraftPicks = this.convertValues(source["DraftPicks"], DraftPick);
+    this.FreeAgents = this.convertValues(source["FreeAgents"], NBAPlayer);
+    this.WaiverPlayers = this.convertValues(source["WaiverPlayers"], NBAPlayer);
+    this.PollSubmission = this.convertValues(
+      source["PollSubmission"],
+      CollegePollSubmission
+    );
+    this.NBADraftees = this.convertValues(source["NBADraftees"], NBADraftee);
+    this.WarRoomMap = this.convertValues(
+      source["WarRoomMap"],
+      NBAWarRoom,
+      true
+    );
+    this.ScoutingProfileMap = this.convertValues(
+      source["ScoutingProfileMap"],
+      ScoutingProfile,
+      true
+    );
+    this.TransferPortalProfiles = this.convertValues(
+      source["TransferPortalProfiles"],
+      TransferPortalProfile
+    );
+    this.CollegeGameplanMap = this.convertValues(
+      source["CollegeGameplanMap"],
+      Gameplan,
+      true
+    );
+    this.ProGameplanMap = this.convertValues(
+      source["ProGameplanMap"],
+      NBAGameplan,
       true
     );
   }
@@ -4142,6 +4209,8 @@ export class CBBRosterResponse {
 }
 
 export class TransferPlayerResponse {
+  [key: string]: any;
+  ID: number;
   FirstName: string;
   LastName: string;
   Archetype: string;
@@ -4187,6 +4256,7 @@ export class TransferPlayerResponse {
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
+    this.ID = source["ID"];
     this.FirstName = source["FirstName"];
     this.LastName = source["LastName"];
     this.Archetype = source["Archetype"];

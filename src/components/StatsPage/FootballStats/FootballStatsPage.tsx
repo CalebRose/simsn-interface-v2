@@ -14,6 +14,8 @@ import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { FootballStatsTable } from "./FootballStatsTable";
 import { ToggleSwitch } from "../../../_design/Inputs";
 import { StatsPageHelpModal } from "../Common/StatsPageHelpModal";
+import { AwardsModal } from "../Common/AwardsModal";
+import { darkenColor } from "../../../_utility/getDarkerColor";
 
 export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
   const {
@@ -35,6 +37,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
     gameType,
     currentPage,
     leagueOptions,
+    cfbPostSeasonAwards,
     SelectLeagueOption,
     goToPreviousPage,
     goToNextPage,
@@ -51,8 +54,10 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
     Search,
     Export,
   } = useFootballStats();
+  console.log({ cfbPostSeasonAwards });
   const { isMobile, isDesktop } = useResponsive();
   const helpModal = useModal();
+  const awardsModal = useModal();
   const teamColors = useTeamColors(
     team?.ColorOne,
     team?.ColorTwo,
@@ -78,6 +83,15 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
         league={league}
         modalAction={Help1}
       />
+      <AwardsModal
+        isOpen={awardsModal.isModalOpen}
+        onClose={awardsModal.handleCloseModal}
+        league={league}
+        postSeasonAwards={cfbPostSeasonAwards}
+        borderColor={teamColors.Two}
+        backgroundColor="#1f2937"
+        darkerBackgroundColor={darkenColor("#1f2937", -5)}
+      />
       <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[minmax(200px,2fr)_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
         <StatsSidebar
           team={team!!}
@@ -90,6 +104,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
           ChangeFBStatsType={ChangeFBStatsType}
           footballStatsType={footballStatsType}
           HandleHelpModal={helpModal.handleOpenModal}
+          HandleAwardsModal={awardsModal.handleOpenModal}
           weekOptions={weekOptions}
           seasonOptions={seasonOptions}
           SelectWeekOption={SelectWeekOption}

@@ -66,14 +66,18 @@ export const Input: React.FC<InputProps> = ({
   return (
     <div className="w-full flex items-center gap-x-2">
       {label && (
-        <label className="w-[5rem] text-sm font-medium text-end text-white mb-1 whitespace-nowrap">
+        <label className="w-[20vw] sm:w-[15vw] md:w-[10vw] lg:w-[8vw] xl:w-[5vw] text-sm font-medium text-end text-white mb-1 whitespace-nowrap">
           {label}
         </label>
       )}
       <input
         {...props}
         className={`
-          flex-grow ${gameplan ? "max-w-[80px]" : "min-w-[5rem]"}
+          flex-grow ${
+            gameplan
+              ? "max-w-[80px]"
+              : "min-w-[20vw] sm:min-w-[15vw] md:min-w-[10vw] lg:min-w-[8vw] xl:min-w-[5vw]"
+          }
           px-4 py-2 border rounded-lg focus:outline-none 
           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
           text-base

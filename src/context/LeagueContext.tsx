@@ -96,6 +96,9 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
     // only run once all stores are done loading
     if (fbLoading || bkLoading || hkLoading) return;
 
+    // Only set team if we don't have a selected team yet
+    if (selectedTeam) return;
+
     // 1) Try the user's DefaultLeague
     const defaultLeague = currentUser?.DefaultLeague as League | undefined;
     if (defaultLeague) {
@@ -144,6 +147,7 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
     chlTeam,
     phlTeam,
     currentUser?.DefaultLeague,
+    selectedTeam,
     setSelectedLeague,
   ]);
 

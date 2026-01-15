@@ -65,6 +65,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     collegePollSubmission,
     submitCollegePoll,
     ExportBasketballSchedule,
+    getBootstrapScheduleData,
   } = bbStore;
 
   const [selectedTeam, setSelectedTeam] = useState(cbbTeam);
@@ -207,6 +208,10 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     };
     await ExportBasketballSchedule(dto);
   };
+
+  useEffect(() => {
+    getBootstrapScheduleData();
+  }, []);
 
   return (
     <>

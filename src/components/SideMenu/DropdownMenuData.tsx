@@ -178,7 +178,7 @@ export const useSideMenu = () => {
       {
         label: "Transfer Portal",
         isRoute: true,
-        route: "",
+        route: routes.CBB_TRANSFER,
         league: SimCBB,
         toggle: () => toggleMenu(),
       },

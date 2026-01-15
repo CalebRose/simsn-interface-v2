@@ -223,14 +223,14 @@ export const Table = <T,>({
               <div
                 key={col.accessor}
                 title={col.accessor}
-                className="table-cell border-b-2 px-2 py-2 font-semibold whitespace-nowrap cursor-pointer"
+                className="table-cell border-b-2 px-[0.6vw] py-[0.25vw] font-semibold whitespace-nowrap cursor-pointer"
                 style={{
                   backgroundColor: backgroundColor,
                   borderColor: borderColor,
                 }}
                 onClick={() => handleSort(col.accessor)}
               >
-                <div className="flex flex-row gap-x-2">
+                <div className="flex flex-row gap-x-[0.5vw]">
                   <Text variant="body-small">{col.header}</Text>
                   {sortState.key === col.accessor
                     ? sortState.order === "asc"
@@ -267,7 +267,7 @@ export const TableCell: FC<TableCellProps> = ({ children, classes }) => {
   const extraClasses = classes ? classes : "";
   return (
     <div
-      className={`table-cell align-middle ${extraClasses} flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
+      className={`table-cell align-middle ${extraClasses} flex-wrap sm:flex-nowrap sm:px-[0.3vw] pb-1 sm:py-[0.25vw] whitespace-nowrap`}
     >
       {children}
     </div>

@@ -381,6 +381,10 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const scheduleService = new FBAScheduleService();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [recruitingLoading, setRecruitingLoading] = useState<boolean>(false);
+  const [transferPortalLoading, setTransferPortalLoading] =
+    useState<boolean>(false);
+  const [freeAgencyLoading, setFreeAgencyLoading] = useState<boolean>(false);
   const [chlTeam, setCHLTeam] = useState<CollegeTeam | null>(null); // College Hockey
   const [phlTeam, setPHLTeam] = useState<ProfessionalTeam | null>(null); // Pro Hockey
   const [chlTeams, setCHLTeams] = useState<CollegeTeam[]>([]);
@@ -1122,91 +1126,130 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   };
 
   const addRecruitToBoard = async (dto: any) => {
-    const apiDTO = {
-      ...dto,
-      SeasonID: hck_Timestamp?.SeasonID,
-      Team: chlTeam,
-      Recruiter: chlTeam?.Coach,
-      ProfileID: chlTeam?.ID,
-    };
-    const profile = await RecruitService.HCKCreateRecruitProfile(apiDTO);
-    if (profile) {
-      const newProfile = new RecruitPlayerProfile({
-        ...profile,
-        ID: GenerateNumberFromRange(500000, 1000000),
+    if (recruitingLoading) return; // Prevent double clicks
+
+    setRecruitingLoading(true);
+    try {
+      const apiDTO = {
+        ...dto,
+        SeasonID: hck_Timestamp?.SeasonID,
+        Team: chlTeam,
+        Recruiter: chlTeam?.Coach,
+        ProfileID: chlTeam?.ID,
+      };
+      enqueueSnackbar("Adding recruit...", {
+        autoHideDuration: 1000,
       });
-      setRecruitProfiles((profiles) => [...profiles, newProfile]);
+      const profile = await RecruitService.HCKCreateRecruitProfile(apiDTO);
+      if (profile) {
+        const newProfile = new RecruitPlayerProfile({
+          ...profile,
+          ID: GenerateNumberFromRange(500000, 1000000),
+        });
+        setRecruitProfiles((profiles) => [...profiles, newProfile]);
+        enqueueSnackbar("Added recruit to board!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      }
+    } finally {
+      setRecruitingLoading(false);
     }
   };
 
   const removeRecruitFromBoard = async (dto: any) => {
-    const profile = await RecruitService.HCKRemoveCrootFromBoard(dto);
-    if (profile) {
-      setRecruitProfiles((profiles) =>
-        [...profiles].filter((p) => p.RecruitID != dto.RecruitID)
-      );
+    if (recruitingLoading) return; // Prevent double clicks
+
+    setRecruitingLoading(true);
+    try {
+      const profile = await RecruitService.HCKRemoveCrootFromBoard(dto);
+      if (profile) {
+        setRecruitProfiles((profiles) =>
+          [...profiles].filter((p) => p.RecruitID != dto.RecruitID)
+        );
+        enqueueSnackbar("Removed recruit from board!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      }
+    } finally {
+      setRecruitingLoading(false);
     }
   };
 
   const toggleScholarship = async (dto: any) => {
-    const profile = await RecruitService.HCKToggleScholarship(dto);
-    if (profile) {
-      setRecruitProfiles((profiles) =>
-        [...profiles].map((p) =>
-          p.RecruitID === profile.RecruitID
-            ? new RecruitPlayerProfile({
-                ...p,
-                Scholarship: profile.Scholarship,
-                ScholarshipRevoked: profile.ScholarshipRevoked,
-              })
-            : p
-        )
-      );
-      setTeamProfileMap((prev) => {
-        const currentProfile = prev[profile.ProfileID];
-        if (!currentProfile) return prev;
+    if (recruitingLoading) return; // Prevent double clicks
 
-        const adjustment = profile.Scholarship
-          ? -1
-          : profile.ScholarshipRevoked
-          ? 1
-          : 0;
-        return {
-          ...prev,
-          [profile.ProfileID]: new RecruitingTeamProfile({
-            ...currentProfile,
-            ScholarshipsAvailable:
-              currentProfile.ScholarshipsAvailable + adjustment,
-          }),
-        };
-      });
+    setRecruitingLoading(true);
+    try {
+      const profile = await RecruitService.HCKToggleScholarship(dto);
+      if (profile) {
+        setRecruitProfiles((profiles) =>
+          [...profiles].map((p) =>
+            p.RecruitID === profile.RecruitID
+              ? new RecruitPlayerProfile({
+                  ...p,
+                  Scholarship: profile.Scholarship,
+                  ScholarshipRevoked: profile.ScholarshipRevoked,
+                })
+              : p
+          )
+        );
+        setTeamProfileMap((prev) => {
+          const currentProfile = prev[profile.ProfileID];
+          if (!currentProfile) return prev;
+
+          const adjustment = profile.Scholarship
+            ? -1
+            : profile.ScholarshipRevoked
+            ? 1
+            : 0;
+          return {
+            ...prev,
+            [profile.ProfileID]: new RecruitingTeamProfile({
+              ...currentProfile,
+              ScholarshipsAvailable:
+                currentProfile.ScholarshipsAvailable + adjustment,
+            }),
+          };
+        });
+      }
+    } finally {
+      setRecruitingLoading(false);
     }
   };
 
   const scoutCrootAttribute = async (dto: any) => {
-    const profile = await RecruitService.HCKScoutRecruitingAttribute(dto);
-    if (profile) {
-      setRecruitProfiles((profiles) =>
-        [...profiles].map((p) =>
-          p.RecruitID === profile.RecruitID
-            ? new RecruitPlayerProfile({
-                ...profile,
-                [dto.Attribute]: true,
-              })
-            : p
-        )
-      );
-      setTeamProfileMap((prev) => {
-        const currentProfile = prev[profile.ProfileID];
-        if (!currentProfile) return prev;
-        return {
-          ...prev,
-          [profile.ProfileID]: new RecruitingTeamProfile({
-            ...currentProfile,
-            WeeklyScoutingPoints: currentProfile.WeeklyScoutingPoints - 1,
-          }),
-        };
-      });
+    if (recruitingLoading) return; // Prevent double clicks
+
+    setRecruitingLoading(true);
+    try {
+      const profile = await RecruitService.HCKScoutRecruitingAttribute(dto);
+      if (profile) {
+        setRecruitProfiles((profiles) =>
+          [...profiles].map((p) =>
+            p.RecruitID === profile.RecruitID
+              ? new RecruitPlayerProfile({
+                  ...profile,
+                  [dto.Attribute]: true,
+                })
+              : p
+          )
+        );
+        setTeamProfileMap((prev) => {
+          const currentProfile = prev[profile.ProfileID];
+          if (!currentProfile) return prev;
+          return {
+            ...prev,
+            [profile.ProfileID]: new RecruitingTeamProfile({
+              ...currentProfile,
+              WeeklyScoutingPoints: currentProfile.WeeklyScoutingPoints - 1,
+            }),
+          };
+        });
+      }
+    } finally {
+      setRecruitingLoading(false);
     }
   };
 
@@ -1243,18 +1286,28 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   };
 
   const SaveRecruitingBoard = useCallback(async () => {
-    const dto = {
-      Profile: teamProfileMap[chlTeam!.ID],
-      Recruits: recruitProfiles,
-      TeamID: chlTeam!.ID,
-    };
+    if (recruitingLoading) return; // Prevent double clicks
 
-    await RecruitService.HCKSaveRecruitingBoard(dto);
-    enqueueSnackbar("Recruiting Board Saved!", {
-      variant: "success",
-      autoHideDuration: 3000,
-    });
-  }, [teamProfileMap, recruitProfiles, chlTeam]);
+    setRecruitingLoading(true);
+    try {
+      const dto = {
+        Profile: teamProfileMap[chlTeam!.ID],
+        Recruits: recruitProfiles,
+        TeamID: chlTeam!.ID,
+      };
+      enqueueSnackbar("Saving...", {
+        variant: "info",
+        autoHideDuration: 1000,
+      });
+      await RecruitService.HCKSaveRecruitingBoard(dto);
+      enqueueSnackbar("Recruiting Board Saved!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setRecruitingLoading(false);
+    }
+  }, [teamProfileMap, recruitProfiles, chlTeam, recruitingLoading]);
 
   const SaveAIRecruitingSettings = useCallback(
     async (dto: UpdateRecruitingBoardDTO) => {
@@ -1280,103 +1333,167 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     [chlTeamMap]
   );
 
-  const SaveFreeAgencyOffer = useCallback(async (dto: FreeAgencyOfferDTO) => {
-    const res = await FreeAgencyService.HCKSaveFreeAgencyOffer(dto);
-    if (res) {
-      enqueueSnackbar("Free Agency Offer Created!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setFreeAgentOffers((prevOffers) => {
-        const offers = [...prevOffers];
-        const index = offers.findIndex((offer) => offer.ID === res.ID);
-        if (index > -1) {
-          offers[index] = new FreeAgencyOffer({ ...res });
-        } else {
-          offers.push(res);
+  const SaveFreeAgencyOffer = useCallback(
+    async (dto: FreeAgencyOfferDTO) => {
+      if (freeAgencyLoading) return; // Prevent double clicks
+
+      setFreeAgencyLoading(true);
+      try {
+        const res = await FreeAgencyService.HCKSaveFreeAgencyOffer(dto);
+        if (res) {
+          enqueueSnackbar("Free Agency Offer Created!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setFreeAgentOffers((prevOffers) => {
+            const offers = [...prevOffers];
+            const index = offers.findIndex((offer) => offer.ID === res.ID);
+            if (index > -1) {
+              offers[index] = new FreeAgencyOffer({ ...res });
+            } else {
+              offers.push(res);
+            }
+            return offers;
+          });
         }
-        return offers;
-      });
-    }
-  }, []);
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
 
-  const CancelFreeAgencyOffer = useCallback(async (dto: FreeAgencyOfferDTO) => {
-    const res = await FreeAgencyService.HCKCancelFreeAgencyOffer(dto);
-    if (res) {
-      enqueueSnackbar("Free Agency Offer Cancelled!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setFreeAgentOffers((prevOffers) => {
-        const offers = [...prevOffers].filter((offer) => offer.ID !== dto.ID);
-        return offers;
-      });
-    }
-  }, []);
+  const CancelFreeAgencyOffer = useCallback(
+    async (dto: FreeAgencyOfferDTO) => {
+      if (freeAgencyLoading) return; // Prevent double clicks
 
-  const SaveWaiverWireOffer = useCallback(async (dto: WaiverOfferDTO) => {
-    const res = await FreeAgencyService.HCKSaveWaiverWireOffer(dto);
-    if (res) {
-      enqueueSnackbar("Waiver Offer Created!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setWaiverOffers((prevOffers) => {
-        const offers = [...prevOffers];
-        const index = offers.findIndex((offer) => offer.ID === res.ID);
-        if (index > -1) {
-          offers[index] = new WaiverOffer({ ...res });
-        } else {
-          offers.push(res);
+      setFreeAgencyLoading(true);
+      try {
+        const res = await FreeAgencyService.HCKCancelFreeAgencyOffer(dto);
+        if (res) {
+          enqueueSnackbar("Free Agency Offer Cancelled!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setFreeAgentOffers((prevOffers) => {
+            const offers = [...prevOffers].filter(
+              (offer) => offer.ID !== dto.ID
+            );
+            return offers;
+          });
         }
-        return offers;
-      });
-    }
-  }, []);
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
 
-  const CancelWaiverWireOffer = useCallback(async (dto: WaiverOfferDTO) => {
-    const res = await FreeAgencyService.HCKCancelWaiverWireOffer(dto);
-    if (res) {
-      enqueueSnackbar("Waiver Offer Cancelled!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setWaiverOffers((prevOffers) => {
-        const offers = [...prevOffers].filter((offer) => offer.ID !== res.ID);
-        return offers;
-      });
-    }
-  }, []);
+  const SaveWaiverWireOffer = useCallback(
+    async (dto: WaiverOfferDTO) => {
+      if (freeAgencyLoading) return; // Prevent double clicks
 
-  const SaveExtensionOffer = useCallback(async (dto: ExtensionOffer) => {
-    const res = await FreeAgencyService.HCKSaveExtensionOffer(dto);
-    if (res) {
-      enqueueSnackbar("Extension Offer Created!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setProExtensionMap((prevOffers) => {
-        const offers = { ...prevOffers };
-        offers[res.PlayerID] = new ExtensionOffer({ ...res });
-        return offers;
-      });
-    }
-  }, []);
+      setFreeAgencyLoading(true);
+      try {
+        const res = await FreeAgencyService.HCKSaveWaiverWireOffer(dto);
+        if (res) {
+          enqueueSnackbar("Waiver Offer Created!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setWaiverOffers((prevOffers) => {
+            const offers = [...prevOffers];
+            const index = offers.findIndex((offer) => offer.ID === res.ID);
+            if (index > -1) {
+              offers[index] = new WaiverOffer({ ...res });
+            } else {
+              offers.push(res);
+            }
+            return offers;
+          });
+        }
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
 
-  const CancelExtensionOffer = useCallback(async (dto: ExtensionOffer) => {
-    const res = await FreeAgencyService.HCKCancelExtensionOffer(dto);
-    if (res) {
-      enqueueSnackbar("Extension Offer Cancelled!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
-      setProExtensionMap((prevOffers) => {
-        const offers = { ...prevOffers };
-        delete offers[dto.PlayerID];
-        return offers;
-      });
-    }
-  }, []);
+  const CancelWaiverWireOffer = useCallback(
+    async (dto: WaiverOfferDTO) => {
+      if (freeAgencyLoading) return; // Prevent double clicks
+
+      setFreeAgencyLoading(true);
+      try {
+        const res = await FreeAgencyService.HCKCancelWaiverWireOffer(dto);
+        if (res) {
+          enqueueSnackbar("Waiver Offer Cancelled!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setWaiverOffers((prevOffers) => {
+            const offers = [...prevOffers].filter(
+              (offer) => offer.ID !== res.ID
+            );
+            return offers;
+          });
+        }
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
+
+  const SaveExtensionOffer = useCallback(
+    async (dto: ExtensionOffer) => {
+      if (freeAgencyLoading) return; // Prevent double clicks
+
+      setFreeAgencyLoading(true);
+      try {
+        const res = await FreeAgencyService.HCKSaveExtensionOffer(dto);
+        if (res) {
+          enqueueSnackbar("Extension Offer Created!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setProExtensionMap((prevOffers) => {
+            const offers = { ...prevOffers };
+            offers[res.PlayerID] = new ExtensionOffer({ ...res });
+            return offers;
+          });
+        }
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
+
+  const CancelExtensionOffer = useCallback(
+    async (dto: ExtensionOffer) => {
+      if (freeAgencyLoading) return; // Prevent double clicks
+
+      setFreeAgencyLoading(true);
+      try {
+        const res = await FreeAgencyService.HCKCancelExtensionOffer(dto);
+        if (res) {
+          enqueueSnackbar("Extension Offer Cancelled!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setProExtensionMap((prevOffers) => {
+            const offers = { ...prevOffers };
+            delete offers[dto.PlayerID];
+            return offers;
+          });
+        }
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading]
+  );
 
   const SearchHockeyStats = useCallback(async (dto: any) => {
     if (dto.League === SimCHL) {
@@ -1560,9 +1677,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     if (profile) {
       setTransferPortalProfiles((profiles) =>
         [...profiles].map((p) =>
-          p.CollegePlayerID === profile.CollegePlayerID
+          p.CollegePlayerID === dto.RecruitID
             ? new TransferPortalProfile({
-                ...profile,
+                ...p,
                 [dto.Attribute]: true,
               })
             : p
@@ -1642,79 +1759,133 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
   const addTransferPlayerToBoard = useCallback(
     async (dto: any) => {
-      const apiDTO = {
-        ...dto,
-        TeamAbbreviation: chlTeam?.Abbreviation,
-        Recruiter: chlTeam?.Coach,
-        SeasonID: hck_Timestamp?.SeasonID,
-        ProfileID: chlTeam?.ID,
-      };
-      const profile =
-        await TransferPortalService.HCKCreateTransferPortalProfile(apiDTO);
-      if (profile) {
-        const newProfile = new TransferPortalProfile({
-          ...profile,
-          ID: GenerateNumberFromRange(500000, 1000000),
+      if (transferPortalLoading) return; // Prevent double clicks
+
+      setTransferPortalLoading(true);
+      try {
+        const apiDTO = {
+          ...dto,
+          TeamAbbreviation: chlTeam?.Abbreviation,
+          Recruiter: chlTeam?.Coach,
+          SeasonID: hck_Timestamp?.SeasonID,
+          ProfileID: chlTeam?.ID,
+        };
+        enqueueSnackbar("Adding transfer player...", {
+          variant: "info",
+          autoHideDuration: 1000,
         });
-        setTransferPortalProfiles((profiles) => [...profiles, newProfile]);
+        const profile =
+          await TransferPortalService.HCKCreateTransferPortalProfile(apiDTO);
+        if (profile) {
+          const newProfile = new TransferPortalProfile({
+            ...profile,
+            ID: GenerateNumberFromRange(500000, 1000000),
+          });
+          setTransferPortalProfiles((profiles) => [...profiles, newProfile]);
+          enqueueSnackbar("Added transfer player to board!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+        }
+      } finally {
+        setTransferPortalLoading(false);
       }
     },
-    [transferPortalProfiles]
+    [transferPortalProfiles, transferPortalLoading]
   );
 
   const removeTransferPlayerFromBoard = useCallback(
     async (dto: any) => {
-      const profile = await TransferPortalService.HCKRemoveProfileFromBoard(
-        dto
-      );
+      if (transferPortalLoading) return; // Prevent double clicks
 
-      setTransferPortalProfiles((profiles) =>
-        [...profiles].filter((p) => p.CollegePlayerID != dto.CollegePlayerID)
-      );
-    },
-    [transferPortalProfiles]
-  );
-
-  const saveTransferPortalBoard = useCallback(async () => {
-    const dto = {
-      Profile: teamProfileMap[chlTeam!.ID],
-      Players: teamTransferPortalProfiles,
-      TeamID: chlTeam!.ID,
-    };
-    await TransferPortalService.HCKSaveTransferPortalBoard(dto);
-    enqueueSnackbar("Transfer Portal Board Saved!", {
-      variant: "success",
-      autoHideDuration: 3000,
-    });
-  }, [teamProfileMap, transferPortalProfiles, chlTeam]);
-
-  const createPromise = useCallback(
-    async (dto: any) => {
-      const res = await TransferPortalService.HCKCreatePromise(dto);
-      if (res) {
-        setCollegePromises((promises) => [...promises, dto]);
-        enqueueSnackbar("Promise Created!", {
+      setTransferPortalLoading(true);
+      try {
+        enqueueSnackbar("Removing transfer player from board...", {
+          variant: "info",
+          autoHideDuration: 1000,
+        });
+        const profile = await TransferPortalService.HCKRemoveProfileFromBoard(
+          dto
+        );
+        enqueueSnackbar("Player removed from board!", {
           variant: "success",
           autoHideDuration: 3000,
         });
+        setTransferPortalProfiles((profiles) =>
+          [...profiles].filter((p) => p.CollegePlayerID != dto.CollegePlayerID)
+        );
+      } finally {
+        setTransferPortalLoading(false);
       }
     },
-    [collegePromises]
+    [transferPortalProfiles, transferPortalLoading]
+  );
+
+  const saveTransferPortalBoard = useCallback(async () => {
+    if (transferPortalLoading) return; // Prevent double clicks
+
+    setTransferPortalLoading(true);
+    try {
+      const dto = {
+        Profile: teamProfileMap[chlTeam!.ID],
+        Players: teamTransferPortalProfiles,
+        TeamID: chlTeam!.ID,
+      };
+      enqueueSnackbar("Saving...", {
+        variant: "info",
+        autoHideDuration: 1000,
+      });
+      await TransferPortalService.HCKSaveTransferPortalBoard(dto);
+      enqueueSnackbar("Transfer Portal Board Saved!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setTransferPortalLoading(false);
+    }
+  }, [teamProfileMap, transferPortalProfiles, chlTeam, transferPortalLoading]);
+
+  const createPromise = useCallback(
+    async (dto: any) => {
+      if (transferPortalLoading) return; // Prevent double clicks
+
+      setTransferPortalLoading(true);
+      try {
+        const res = await TransferPortalService.HCKCreatePromise(dto);
+        if (res) {
+          setCollegePromises((promises) => [...promises, dto]);
+          enqueueSnackbar("Promise Created!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+        }
+      } finally {
+        setTransferPortalLoading(false);
+      }
+    },
+    [collegePromises, transferPortalLoading]
   );
 
   const cancelPromise = useCallback(
     async (dto: any) => {
-      await TransferPortalService.HCKCancelPromise(dto);
+      if (transferPortalLoading) return; // Prevent double clicks
 
-      setCollegePromises((promises) =>
-        [...promises].filter((x) => x.CollegePlayerID !== dto.CollegePlayerID)
-      );
-      enqueueSnackbar("Promise Cancelled!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
+      setTransferPortalLoading(true);
+      try {
+        await TransferPortalService.HCKCancelPromise(dto);
+
+        setCollegePromises((promises) =>
+          [...promises].filter((x) => x.CollegePlayerID !== dto.CollegePlayerID)
+        );
+        enqueueSnackbar("Promise Cancelled!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      } finally {
+        setTransferPortalLoading(false);
+      }
     },
-    [collegePromises]
+    [collegePromises, transferPortalLoading]
   );
 
   const exportTransferPortalPlayers = useCallback(async () => {

@@ -27,6 +27,10 @@ import {
 import { Croot as FootballCroot } from "../../../models/footballModels";
 import { Croot as BasketballCroot } from "../../../models/basketballModels";
 import { useFilteredHockeyRecruits } from "../../../_helper/recruitingHelper";
+import {
+  defensiveSystemsInformationList,
+  offensiveSystemsInformationList,
+} from "../../Gameplan/HockeyLineups/useLineupUtils";
 
 export const useCHLRecruiting = () => {
   const hkStore = useSimHCKStore();
@@ -230,6 +234,20 @@ export const useCHLRecruiting = () => {
     }
   };
 
+  const offensiveSystemsInformation = useMemo(() => {
+    return offensiveSystemsInformationList[
+      teamProfile!
+        .OffensiveSystem as keyof typeof offensiveSystemsInformationList
+    ];
+  }, [teamProfile]);
+
+  const defensiveSystemsInformation = useMemo(() => {
+    return defensiveSystemsInformationList[
+      teamProfile!
+        .DefensiveSystem as keyof typeof defensiveSystemsInformationList
+    ];
+  }, [teamProfile]);
+
   return {
     teamProfile,
     recruitMap,
@@ -266,5 +284,7 @@ export const useCHLRecruiting = () => {
     filteredClass,
     SelectClass,
     updateRecruitingCategory,
+    offensiveSystemsInformation,
+    defensiveSystemsInformation,
   };
 };

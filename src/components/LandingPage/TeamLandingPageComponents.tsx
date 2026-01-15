@@ -2,10 +2,7 @@ import { getLogo } from "../../_utility/getLogo";
 import { Text } from "../../_design/Typography";
 import { Logo } from "../../_design/Logo";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
-import { darkenColor } from "../../_utility/getDarkerColor";
 import {
-  GetBKCurrentWeek,
   RevealBBAResults,
   RevealHCKResults,
   RevealResults,
@@ -165,7 +162,7 @@ export const GamesBar = ({
     return (
       <div
         key={index}
-        className={`flex flex-col rounded-lg items-center border pb-1 px-2 w-28 3xl:w-48 ${resultColor}`}
+        className={`flex flex-col rounded-lg items-center border pb-1 px-2 w-28 md:w-32 lg:w-36 3xl:w-48 ${resultColor}`}
         style={{ borderColor: headerColor }}
       >
         <div className="flex-col px-2 overflow-auto">
@@ -203,11 +200,11 @@ export const GamesBar = ({
 
   return (
     <div className="flex pb-1">
-      <div className="flex w-[90vw] sm:w-full max-w-[1600px] justify-center">
-        <div className="relative flex items-center w-[92vw] md:w-[72.6em] 3xl:w-full pb-1">
+      <div className="flex w-[95vw] sm:w-[90vw] md:w-full max-w-[1600px] justify-center">
+        <div className="relative flex items-center w-[92vw] md:w-[85vw] lg:w-[72.6em] 3xl:w-full pb-1">
           <button
             onClick={scrollLeft}
-            className="absolute left-0 z-10 p-2 rounded-full border-1"
+            className="absolute left-0 z-10 p-[0.5vw] md:p-2 rounded-full border-1"
             style={{
               backgroundColor: backgroundColor,
               color: borderColor,
@@ -221,14 +218,17 @@ export const GamesBar = ({
             className="flex flex-row overflow-hidden w-full"
           >
             {games.map((game, index) => (
-              <div key={index} className="flex flex-col items-center mx-2">
+              <div
+                key={index}
+                className="flex flex-col items-center mx-[1vw] md:mx-2"
+              >
                 {rowRenderer(game, index)}
               </div>
             ))}
           </div>
           <button
             onClick={scrollRight}
-            className="absolute right-0 z-10 p-2 rounded-full border-1"
+            className="absolute right-0 z-10 p-[0.5vw] md:p-2 rounded-full border-1"
             style={{
               backgroundColor: backgroundColor,
               color: borderColor,

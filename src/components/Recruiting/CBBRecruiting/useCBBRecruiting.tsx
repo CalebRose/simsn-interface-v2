@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../_hooks/useModal";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
 import {
@@ -29,6 +29,7 @@ export const useCBBRecruiting = () => {
     cbbTeamMap,
     recruitProfiles,
     cbb_Timestamp,
+    getBootstrapRecruitingData,
   } = bbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
 
@@ -51,6 +52,10 @@ export const useCBBRecruiting = () => {
     HockeyCroot | FootballCroot | BasketballCroot
   >({} as BasketballCroot);
   const [modalAction, setModalAction] = useState<ModalAction>(RecruitInfoType);
+
+  useEffect(() => {
+    getBootstrapRecruitingData();
+  }, []);
 
   const recruitingLocked = useMemo(() => {
     if (cbb_Timestamp) {

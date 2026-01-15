@@ -5,8 +5,8 @@ import {
   RecruitingTeamProfile as FootballTeamProfile,
 } from "../../../models/footballModels";
 import {
-  CollegePlayer as BasketballPlayer,
   TeamRecruitingProfile,
+  TransferPlayerResponse as BasketballPlayer,
 } from "../../../models/basketballModels";
 import {
   AddPortalPlayerType,
@@ -27,6 +27,7 @@ import { getLogo } from "../../../_utility/getLogo";
 import { Logo } from "../../../_design/Logo";
 import {
   getCBBAttributes,
+  getCBBPortalAttributes,
   getCHLAttributes,
   getCHLPortalAttributes,
 } from "../../Team/TeamPageUtils";
@@ -34,6 +35,7 @@ import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { ActionLock, Plus } from "../../../_design/Icons";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
 
 const getTableColumns = (
   league: League,
@@ -66,11 +68,12 @@ const getTableColumns = (
   if (league === SimCBB) {
     let columns: { header: string; accessor: string }[] = [
       { header: "ID", accessor: "" },
+      { header: "Prev. Team", accessor: "PreviousTeamID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch.", accessor: "Archetype" },
       { header: "⭐", accessor: "Stars" },
-      { header: "Ht", accessor: "Height" },
+      { header: "Yr", accessor: "Year" },
       { header: "State", accessor: "State" },
       { header: "Country", accessor: "Country" },
       { header: "Ovr", accessor: "OverallGrade" },
@@ -83,7 +86,6 @@ const getTableColumns = (
       { header: "Int. D", accessor: "InteriorDefense" },
       { header: "Per. D", accessor: "PerimeterDefense" },
       { header: "Pot", accessor: "PotentialGrade" },
-      { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
       { header: "Actions", accessor: "actions" },
     ];
@@ -295,10 +297,12 @@ const CHLRow: React.FC<CHLRowProps> = ({
             disabled={
               recruitOnBoardMap[item.ID] ||
               item.IsSigned ||
+              item.Age < 18 ||
               item.PreviousTeamID === chlTeam?.ID
             }
           >
             {recruitOnBoardMap[item.ID] ||
+            item.Age < 18 ||
             item.IsSigned ||
             item.PreviousTeamID === chlTeam?.ID ? (
               <ActionLock />
@@ -363,15 +367,139 @@ const CBBRow: React.FC<CBBRowProps> = ({
   category,
   teamProfile,
 }) => {
-  const selection = getCBBAttributes(item, isMobile, category!);
+  const { transferProfileMapByPlayerID, cbbTeam } = useSimBBAStore();
+  const selection = getCBBPortalAttributes(item, isMobile, category!);
   const actionVariant = !recruitOnBoardMap[item.ID] ? "success" : "secondary";
+  const { isTablet } = useResponsive();
 
+  const transferProfiles = useMemo(() => {
+    return transferProfileMapByPlayerID[item.ID];
+  }, [transferProfileMapByPlayerID, item]);
+
+  const leadingTeamsList = useMemo(() => {
+    const list = [];
+    const sortedProfiles = transferProfiles.sort(
+      (a, b) => b.TotalPoints - a.TotalPoints
+    );
+    let runningThreshold = 0;
+    let totalPoints = 0;
+    for (let i = 0; i < sortedProfiles.length; i++) {
+      if (sortedProfiles[i].RemovedFromBoard) continue;
+      if (runningThreshold === 0) {
+        runningThreshold = sortedProfiles[i].TotalPoints * 0.66;
+      }
+      if (sortedProfiles[i].TotalPoints >= runningThreshold) {
+        totalPoints += sortedProfiles[i].TotalPoints;
+      }
+    }
+    for (let i = 0; i < sortedProfiles.length; i++) {
+      if (sortedProfiles[i].RemovedFromBoard) continue;
+      if (sortedProfiles[i].TotalPoints < runningThreshold) continue;
+      let odds = 0;
+      if (runningThreshold > 0) {
+        odds = sortedProfiles[i].TotalPoints / totalPoints;
+      }
+      const obj = {
+        TeamID: sortedProfiles[i].ProfileID,
+        TeamAbbreviation: sortedProfiles[i].TeamAbbreviation,
+        Odds: odds,
+      };
+      list.push(obj);
+    }
+    return list;
+  }, [transferProfiles]);
+
+  const leadingTeams = useMemo(() => {
+    if (leadingTeamsList.length === 0) {
+      return "None";
+    }
+
+    const competingTeams = leadingTeamsList.filter((x, idx) => x.Odds > 0);
+    const topTeams = competingTeams.filter((x, idx) => idx <= 3);
+
+    if (topTeams.length === 0) {
+      return "None";
+    }
+    const competingIDs = topTeams.map((x) => x.TeamID);
+    return competingIDs.map((x) => {
+      const logo = getLogo(SimCBB, x, false);
+      return (
+        <div key={x}>
+          <Logo url={logo} variant="tiny" />
+        </div>
+      );
+    });
+  }, [leadingTeamsList]);
+
+  const previousTeamLogo = useMemo(() => {
+    if (item.PreviousTeamID === 0) {
+      return "";
+    }
+    let teamID = item.PreviousTeamID;
+    const previousURL = getLogo(SimCBB, teamID, false);
+    return <Logo url={previousURL} variant="small" />;
+  }, [item]);
   return (
     <div
       key={item.ID}
       className="table-row border-b dark:border-gray-700 text-left"
       style={{ backgroundColor }}
-    ></div>
+    >
+      <TableCell classes="text-xs">{item.ID}</TableCell>
+      <TableCell classes="text-xs">{previousTeamLogo}</TableCell>
+      {selection.map((attr, idx) => (
+        <TableCell key={attr.label}>
+          {attr.label === "Name" ? (
+            <span
+              className={`text-xs cursor-pointer font-semibold`}
+              onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+                (e.target as HTMLElement).style.color = "#fcd53f";
+              }}
+              onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+                (e.target as HTMLElement).style.color = "";
+              }}
+              onClick={() => openModal(PortalInfoType, item)}
+            >
+              {attr.value}
+            </span>
+          ) : (
+            <span className="text-xs">{attr.value}</span>
+          )}
+        </TableCell>
+      ))}
+      <TableCell>
+        <div className="flex flex-row gap-x-1 text-xs">
+          {item.TeamID > 0 && item.TeamID < 75 ? (
+            <div key={item.TeamID}>
+              <Logo url={getLogo(SimCBB, item.TeamID, false)} variant="small" />
+            </div>
+          ) : (
+            leadingTeams
+          )}
+        </div>
+      </TableCell>
+      <TableCell>
+        <ButtonGroup classes="flex-nowrap">
+          <Button
+            variant={actionVariant}
+            size="xs"
+            onClick={() =>
+              openModal(AddPortalPlayerType, item as BasketballPlayer)
+            }
+            disabled={
+              recruitOnBoardMap[item.ID] || item.PreviousTeamID === cbbTeam?.ID
+            }
+          >
+            {recruitOnBoardMap[item.ID] ||
+            item.PreviousTeamID === cbbTeam?.ID ? (
+              <ActionLock />
+            ) : (
+              <Plus />
+            )}
+          </Button>
+        </ButtonGroup>
+      </TableCell>
+    </div>
   );
 };
 
