@@ -2740,7 +2740,7 @@ export const CBBPortalInfoModalBody: FC<CBBPortalInfoModalBodyProps> = ({
       <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
+            <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
           </div>
           {team && (
             <Logo
@@ -2868,12 +2868,14 @@ export const CBBPortalInfoModalBody: FC<CBBPortalInfoModalBodyProps> = ({
               const team = cbbTeamMap![contender.TeamID];
               const fullOdds = Math.round(contender.Odds * 100);
               const displayStatus = getDisplayStatus(fullOdds);
+              const teamName = team ? team.Abbr : "Unknown";
+
               return (
                 <>
                   <div className="flex flex-row justify-start px-2">
                     <Logo url={logo} variant="tiny" />{" "}
                     <span className="ms-4 font-semibold text-xs">
-                      {team.Team}
+                      {teamName}
                     </span>
                   </div>
                   <Text variant="xs" classes="font-semibold">
