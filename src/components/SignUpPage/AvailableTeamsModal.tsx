@@ -12,6 +12,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -186,6 +188,22 @@ export const AvailableTeamsModal: FC<AvailableTeamsModalProps> = ({
               onClick={() => setSelectedLeague(SimPHL)}
             >
               {SimPHL}
+            </Button>
+            <Button
+              size="xs"
+              variant={
+                selectedLeague === SimCollegeBaseball ? "primary" : "secondary"
+              }
+              onClick={() => setSelectedLeague(SimCollegeBaseball)}
+            >
+              {SimCollegeBaseball}
+            </Button>
+            <Button
+              size="xs"
+              variant={selectedLeague === SimMLB ? "primary" : "secondary"}
+              onClick={() => setSelectedLeague(SimMLB)}
+            >
+              {SimMLB}
             </Button>
           </ButtonGrid>
         </div>
