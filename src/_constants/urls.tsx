@@ -21,3 +21,10 @@ const localHckWSUrl = "ws://localhost:8080/ws";
 const HCKWSURL = "wss://simhck-hqd2bme9gse5d7g9.westus-01.azurewebsites.net/ws";
 export const hckUrl = hckApiURL;
 export const hck_ws = HCKWSURL;
+
+const localBASEBALL = "https://localhost:6001/api/";
+const baseballApiURL = "https://simbaseballapi-production.up.railway.app/api/v1/";
+export const baseballUrl = baseballApiURL;
+const localBASEBALLWS = "ws://localhost:6001/ws";
+const baseballWSURL = "wss://simbaseballapi-production.up.railway.app/ws";
+export const baseball_ws = baseballWSURL;

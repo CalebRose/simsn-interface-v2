@@ -4,6 +4,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -325,6 +327,8 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
     ],
+    SimCollegeBaseball: [],
+    SimMLB: [],
   };
 
   return {

@@ -6,8 +6,9 @@ import {
   SimNBA,
   SimNFL,
   SimPHL,
+  SimMLB,
 } from "../_constants/constants";
-import { HCKLogos, ISLLogos, logos, retro_logos } from "../_constants/logos";
+import { BaseballLogos, HCKLogos, ISLLogos, logos, retro_logos } from "../_constants/logos";
 
 export const getLogo = (
   league: League,
@@ -21,6 +22,7 @@ export const getLogo = (
   if (league === SimNBA) return getNBALogo(id, retro);
   if (league === SimCHL) return getCHLLogo(id, retro);
   if (league === SimPHL) return getPHLLogo(id, retro);
+  if (league === SimMLB) return getMLBLogo(id, retro);
   return "";
 };
 
@@ -2039,6 +2041,75 @@ export const getPHLLogo = (id: number, isRetro: boolean) => {
       return HCKLogos.NYI;
     case 32:
       return HCKLogos.WAS;
+
+    default:
+      return logoObj.Unknown;
+  }
+};
+
+export const getMLBLogo = (id: number, isRetro: boolean) => {
+  const logoObj = isRetro ? retro_logos : logos;
+  switch (id) {
+    case 1:
+      return BaseballLogos.NYM;
+    case 2:
+      return BaseballLogos.TEX;
+    case 3:
+      return BaseballLogos.DET;
+    case 4:
+      return BaseballLogos.HOU;
+    case 5:
+      return BaseballLogos.NYY;
+    case 6:
+      return BaseballLogos.MIA;
+    case 7:
+      return BaseballLogos.PIT;
+    case 8:
+      return BaseballLogos.TOR;
+    case 9:
+      return BaseballLogos.ARI;
+    case 10:
+      return BaseballLogos.MIL;
+    case 11:
+      return BaseballLogos.TB;
+    case 12:
+      return BaseballLogos.LAA;
+    case 13:
+      return BaseballLogos.ATL;
+    case 14:
+      return BaseballLogos.OAK;
+    case 15:
+      return BaseballLogos.COL;
+    case 16:
+      return BaseballLogos.CWS;
+    case 17:
+      return BaseballLogos.SF;
+    case 18:
+      return BaseballLogos.KC;
+    case 19:
+      return BaseballLogos.MIN;
+    case 20:
+      return BaseballLogos.BOS;
+    case 21:
+      return BaseballLogos.CLE;
+    case 22:
+      return BaseballLogos.CHC;
+    case 23:
+      return BaseballLogos.PHI;
+    case 24:
+      return BaseballLogos.STL;
+    case 25:
+      return BaseballLogos.SEA;
+    case 26:
+      return BaseballLogos.BAL;
+    case 27:
+      return BaseballLogos.LAD;
+    case 28:
+      return BaseballLogos.SD;
+    case 29:
+      return BaseballLogos.CIN;
+    case 30:
+      return BaseballLogos.WAS;
 
     default:
       return logoObj.Unknown;

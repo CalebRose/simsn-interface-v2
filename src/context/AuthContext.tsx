@@ -16,6 +16,8 @@ interface AuthContextProps {
   isNBAUser: boolean;
   isCHLUser: boolean;
   isPHLUser: boolean;
+  isCollegeBaseballUser: boolean;
+  isMlbUser: boolean;
 }
 
 // ✅ Initial Context Values
@@ -33,6 +35,8 @@ const defaultAuthContext: AuthContextProps = {
   isCHLUser: false,
   isNBAUser: false,
   isPHLUser: false,
+  isCollegeBaseballUser: false,
+  isMlbUser: false,
 };
 
 // ✅ Create Auth Context
@@ -115,6 +119,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return false;
   }, [currentUser]);
 
+  const isCollegeBaseballUser = useMemo(() => {
+    if (currentUser && currentUser.CollegeBaseballOrgID) {
+      return currentUser.CollegeBaseballOrgID > 0;
+    }
+    return false;
+  }, [currentUser]);
+
+    const isMlbUser = useMemo(() => {
+    if (currentUser && currentUser.MLBOrgID) {
+      return currentUser.MLBOrgID > 0;
+    }
+    return false;
+  }, [currentUser]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -131,6 +149,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isNBAUser,
         isNFLUser,
         isPHLUser,
+        isCollegeBaseballUser,
+        isMlbUser
       }}
     >
       {children}
