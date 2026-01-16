@@ -82,6 +82,7 @@ import { TradeService } from "../_services/tradeService";
 import { CollegePollService } from "../_services/collegePollService";
 import FBAScheduleService from "../_services/scheduleService";
 import { TransferPortalService } from "../_services/transferPortalService";
+import { notificationService } from "../_services/notificationService";
 
 // ✅ Define the context props
 interface SimHCKContextProps {
@@ -204,6 +205,11 @@ interface SimHCKContextProps {
   ) => Promise<void>;
   submitCollegePoll: (dto: any) => Promise<void>;
   getBootstrapNewsData: () => Promise<void>;
+  toggleNotificationAsRead: (
+    notificationID: number,
+    isPro: boolean
+  ) => Promise<void>;
+  deleteNotification: (notificationID: number, isPro: boolean) => Promise<void>;
 
   playerFaces: {
     [key: number]: FaceDataResponse;
@@ -363,6 +369,8 @@ const defaultContext: SimHCKContextProps = {
   collegePollsBySeason: {},
   collegeStandingsMapBySeason: {},
   proStandingsMapBySeason: {},
+  toggleNotificationAsRead: async () => {},
+  deleteNotification: async () => {},
 };
 
 // ✅ Create the context
@@ -1904,6 +1912,60 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const toggleNotificationAsRead = useCallback(
+    async (notificationID: number, isPro: boolean) => {
+      const res = await notificationService.ToggleSimHCKNotification(
+        notificationID
+      );
+      if (!isPro) {
+        setCollegeNotifications((prevNotifications) => {
+          return prevNotifications.map((notification) =>
+            notification.ID === notificationID
+              ? new Notification({
+                  ...notification,
+                  IsRead: !notification.IsRead,
+                })
+              : notification
+          );
+        });
+      } else {
+        setProNotifications((prevNotifications) => {
+          return prevNotifications.map((notification) =>
+            notification.ID === notificationID
+              ? new Notification({
+                  ...notification,
+                  IsRead: !notification.IsRead,
+                })
+              : notification
+          );
+        });
+      }
+    },
+    [setCollegeNotifications, setProNotifications]
+  );
+
+  const deleteNotification = useCallback(
+    async (notificationID: number, isPro: boolean) => {
+      const res = await notificationService.DeleteSimHCKNotification(
+        notificationID
+      );
+      if (!isPro) {
+        setCollegeNotifications((prevNotifications) => {
+          return prevNotifications.filter(
+            (notification) => notification.ID !== notificationID
+          );
+        });
+      } else {
+        setProNotifications((prevNotifications) => {
+          return prevNotifications.filter(
+            (notification) => notification.ID !== notificationID
+          );
+        });
+      }
+    },
+    [setCollegeNotifications, setProNotifications]
+  );
+
   return (
     <SimHCKContext.Provider
       value={{
@@ -2039,6 +2101,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         collegePollsBySeason,
         collegeStandingsMapBySeason,
         proStandingsMapBySeason,
+        toggleNotificationAsRead,
+        deleteNotification,
       }}
     >
       {children}

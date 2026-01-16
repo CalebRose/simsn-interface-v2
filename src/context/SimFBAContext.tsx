@@ -93,6 +93,7 @@ import { TradeService } from "../_services/tradeService";
 import { CollegePollService } from "../_services/collegePollService";
 import { FaceDataService } from "../_services/faceDataService";
 import FBAScheduleService from "../_services/scheduleService";
+import { notificationService } from "../_services/notificationService";
 
 // ✅ Define Types for Context
 interface SimFBAContextProps {
@@ -252,6 +253,11 @@ interface SimFBAContextProps {
   nflWarRoomMap: Record<number, NFLWarRoom | null>;
   nflScoutingProfileMap: Record<number, ScoutingProfile | null>;
   cfbPostSeasonAwards: AwardsList;
+  toggleNotificationAsRead: (
+    notificationID: number,
+    isPro: boolean
+  ) => Promise<void>;
+  deleteNotification: (notificationID: number, isPro: boolean) => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -389,6 +395,8 @@ const defaultContext: SimFBAContextProps = {
   nflGameplanMap: {},
   nflWarRoomMap: {},
   nflScoutingProfileMap: {},
+  toggleNotificationAsRead: async () => {},
+  deleteNotification: async () => {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -1904,6 +1912,60 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const toggleNotificationAsRead = useCallback(
+    async (notificationID: number, isPro: boolean) => {
+      const res = await notificationService.ToggleSimFBANotification(
+        notificationID
+      );
+      if (!isPro) {
+        setCollegeNotifications((prevNotifications) => {
+          return prevNotifications.map((notification) =>
+            notification.ID === notificationID
+              ? new Notification({
+                  ...notification,
+                  IsRead: !notification.IsRead,
+                })
+              : notification
+          );
+        });
+      } else {
+        setProNotifications((prevNotifications) => {
+          return prevNotifications.map((notification) =>
+            notification.ID === notificationID
+              ? new Notification({
+                  ...notification,
+                  IsRead: !notification.IsRead,
+                })
+              : notification
+          );
+        });
+      }
+    },
+    [setCollegeNotifications, setProNotifications]
+  );
+
+  const deleteNotification = useCallback(
+    async (notificationID: number, isPro: boolean) => {
+      const res = await notificationService.DeleteSimFBANotification(
+        notificationID
+      );
+      if (!isPro) {
+        setCollegeNotifications((prevNotifications) => {
+          return prevNotifications.filter(
+            (notification) => notification.ID !== notificationID
+          );
+        });
+      } else {
+        setProNotifications((prevNotifications) => {
+          return prevNotifications.filter(
+            (notification) => notification.ID !== notificationID
+          );
+        });
+      }
+    },
+    [setCollegeNotifications, setProNotifications]
+  );
+
   return (
     <SimFBAContext.Provider
       value={{
@@ -2040,6 +2102,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         nflGameplanMap,
         nflWarRoomMap,
         nflScoutingProfileMap,
+        toggleNotificationAsRead,
+        deleteNotification,
       }}
     >
       {children}

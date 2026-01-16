@@ -68,6 +68,7 @@ import FBAScheduleService from "../_services/scheduleService";
 import { FaceDataService } from "../_services/faceDataService";
 import { TransferPortalService } from "../_services/transferPortalService";
 import { GenerateNumberFromRange } from "../_helper/utilHelper";
+import { notificationService } from "../_services/notificationService";
 
 // ✅ Define Types for Context
 interface SimBBAContextProps {
@@ -205,6 +206,11 @@ interface SimBBAContextProps {
   removeTransferPlayerFromBoard: (dto: any) => Promise<void>;
   saveTransferPortalBoard: () => Promise<void>;
   exportTransferPortalPlayers: () => Promise<void>;
+  toggleNotificationAsRead: (
+    notificationID: number,
+    isPro: boolean
+  ) => Promise<void>;
+  deleteNotification: (notificationID: number, isPro: boolean) => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -335,6 +341,8 @@ const defaultContext: SimBBAContextProps = {
   removeTransferPlayerFromBoard: async () => {},
   saveTransferPortalBoard: async () => {},
   exportTransferPortalPlayers: async () => {},
+  toggleNotificationAsRead: async () => {},
+  deleteNotification: async () => {},
 };
 
 export const SimBBAContext = createContext<SimBBAContextProps>(defaultContext);
@@ -1551,6 +1559,60 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     const res = await TransferPortalService.ExportBBAPortal();
   }, []);
 
+  const toggleNotificationAsRead = useCallback(
+    async (notificationID: number, isPro: boolean) => {
+      const res = await notificationService.ToggleSimBBANotification(
+        notificationID
+      );
+      if (!isPro) {
+        setCollegeNotifications((prevNotifications) => {
+          return prevNotifications.map((notification) =>
+            notification.ID === notificationID
+              ? new Notification({
+                  ...notification,
+                  IsRead: !notification.IsRead,
+                })
+              : notification
+          );
+        });
+      } else {
+        setProNotifications((prevNotifications) => {
+          return prevNotifications.map((notification) =>
+            notification.ID === notificationID
+              ? new Notification({
+                  ...notification,
+                  IsRead: !notification.IsRead,
+                })
+              : notification
+          );
+        });
+      }
+    },
+    [setCollegeNotifications, setProNotifications]
+  );
+
+  const deleteNotification = useCallback(
+    async (notificationID: number, isPro: boolean) => {
+      const res = await notificationService.DeleteSimBBANotification(
+        notificationID
+      );
+      if (!isPro) {
+        setCollegeNotifications((prevNotifications) => {
+          return prevNotifications.filter(
+            (notification) => notification.ID !== notificationID
+          );
+        });
+      } else {
+        setProNotifications((prevNotifications) => {
+          return prevNotifications.filter(
+            (notification) => notification.ID !== notificationID
+          );
+        });
+      }
+    },
+    [setCollegeNotifications, setProNotifications]
+  );
+
   return (
     <SimBBAContext.Provider
       value={{
@@ -1680,6 +1742,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         removeTransferPlayerFromBoard,
         saveTransferPortalBoard,
         exportTransferPortalPlayers,
+        toggleNotificationAsRead,
+        deleteNotification,
       }}
     >
       {children}

@@ -28,6 +28,7 @@ import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { darkenColor } from "../../_utility/getDarkerColor";
 import {
+  League,
   SimCBB,
   SimCFB,
   SimCHL,
@@ -36,7 +37,7 @@ import {
   SimPHL,
 } from "../../_constants/constants";
 import { useResponsive } from "../../_hooks/useMobile";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 interface TeamLandingPageProps {
   team: any;
@@ -75,6 +76,8 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topCFBRushers,
     isLoading,
     playerFaces,
+    toggleNotificationAsRead: toggleFBANotification,
+    deleteNotification: deleteFBANotification,
   } = useSimFBAStore();
   const {
     collegeNotifications: cbbNotifications,
@@ -95,6 +98,8 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topNBAPoints,
     topNBAAssists,
     topNBARebounds,
+    toggleNotificationAsRead: toggleBBANotification,
+    deleteNotification: deleteBBANotification,
   } = useSimBBAStore();
   const {
     collegeNotifications: chlNotifications,
@@ -115,10 +120,78 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topPHLGoals,
     topPHLAssists,
     topPHLSaves,
+    toggleNotificationAsRead: toggleHCKNotification,
+    deleteNotification: deleteHCKNotification,
   } = useSimHCKStore();
   const currentWeek = GetCurrentWeek(league, ts);
   const headers = Titles.headersMapping[league as LeagueType];
   const { isMobile } = useResponsive();
+
+  const toggleNotificationAsRead = useCallback(
+    (league: League, id: number) => {
+      switch (league) {
+        case SimCFB:
+          toggleFBANotification(id, false);
+          break;
+        case SimNFL:
+          toggleFBANotification(id, true);
+          break;
+        case SimCBB:
+          toggleBBANotification(id, false);
+          break;
+        case SimNBA:
+          toggleBBANotification(id, true);
+          break;
+        case SimCHL:
+          toggleHCKNotification(id, false);
+          break;
+        case SimPHL:
+          toggleHCKNotification(id, true);
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      league,
+      toggleFBANotification,
+      toggleBBANotification,
+      toggleHCKNotification,
+    ]
+  );
+
+  const deleteNotification = useCallback(
+    (league: League, id: number) => {
+      switch (league) {
+        case SimCFB:
+          deleteFBANotification(id, false);
+          break;
+        case SimNFL:
+          deleteFBANotification(id, true);
+          break;
+        case SimCBB:
+          deleteBBANotification(id, false);
+          break;
+        case SimNBA:
+          deleteBBANotification(id, true);
+          break;
+        case SimCHL:
+          deleteHCKNotification(id, false);
+          break;
+        case SimPHL:
+          deleteHCKNotification(id, true);
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      league,
+      deleteFBANotification,
+      deleteBBANotification,
+      deleteHCKNotification,
+    ]
+  );
 
   const playerMap = useMemo(() => {
     let rMap: Record<number, any[]> = {};
@@ -494,7 +567,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
               )}
               <div className="flex flex-row gap-[1vw] md:gap-2 h-[14em] w-full max-h-[14em] md:max-h-max lg:gap-0 lg:flex-col">
                 <Border
-                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[15vh] lg:max-h-[12em] 3xl:max-h-[16em]"
+                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[30vh] 3xl:max-h-[30vh]"
                   styles={{
                     backgroundColor: borderColor,
                     borderColor: backgroundColor,
@@ -509,6 +582,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
                     isLoading={isLoading}
+                    toggleNotificationAsRead={toggleNotificationAsRead}
+                    deleteNotification={deleteNotification}
+                    league={league}
                   />
                 </Border>
                 <Border

@@ -1,7 +1,7 @@
 import { getLogo } from "../../_utility/getLogo";
 import { Text } from "../../_design/Typography";
 import { Logo } from "../../_design/Logo";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import React, { FC, useEffect, useMemo, useRef, useState } from "react";
 import {
   RevealBBAResults,
   RevealHCKResults,
@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 import routes from "../../_constants/routes";
 import { useDeepLink } from "../../context/DeepLinkContext";
 import { ClickableGameLabel, ClickableTeamLabel } from "../Common/Labels";
-import { Medic } from "../../_design/Icons";
+import { CheckCircle, Medic, TrashCan } from "../../_design/Icons";
 import { useModal } from "../../_hooks/useModal";
 import { SchedulePageGameModal } from "../Schedule/Common/GameModal";
 import { Modal } from "../../_design/Modal";
@@ -756,6 +756,9 @@ interface TeamMailboxProps {
   textColorClass: string;
   darkerBackgroundColor: string;
   isLoading: boolean;
+  toggleNotificationAsRead: (league: League, notificationID: number) => void;
+  deleteNotification: (league: League, notificationID: number) => void;
+  league: League;
 }
 
 export const TeamMailbox = ({
@@ -767,6 +770,9 @@ export const TeamMailbox = ({
   textColorClass,
   darkerBackgroundColor,
   isLoading: isLoading,
+  toggleNotificationAsRead,
+  deleteNotification,
+  league,
 }: TeamMailboxProps) => {
   return (
     <SectionCards
@@ -779,28 +785,76 @@ export const TeamMailbox = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoading ? (
-        <div className="flex justify-center items-center">
-          <Text variant="small" classes={`${textColorClass}`}>
-            Loading...
-          </Text>
-        </div>
-      ) : notifications.length > 0 ? (
-        notifications.map((notification, index) => (
-          <div key={index} className="mb-2">
-            <Text variant="small" classes={`${textColorClass}`}>
-              {notification.Subject}
-            </Text>
-            <Text variant="small" classes={`${textColorClass}`}>
-              {notification.Message}
+      <div className="grid grid-cols-8">
+        <Text
+          variant="small"
+          classes={`${textColorClass} col-span-6 font-semibold text-start`}
+        >
+          Message
+        </Text>
+        <Text
+          variant="small"
+          classes={`${textColorClass} col-span-2 font-semibold text-start`}
+        >
+          Actions
+        </Text>
+      </div>
+      <div className="grid grid-cols-8 gap-y-1">
+        {isLoading ? (
+          <div className="col-span-8 flex justify-center items-center">
+            <Text variant="xs" classes={`${textColorClass} text-center`}>
+              Loading...
             </Text>
           </div>
-        ))
-      ) : (
-        <Text variant="small" classes={`${textColorClass} pt-2 pb-2`}>
-          Your Inbox is Empty
-        </Text>
-      )}
+        ) : notifications.length > 0 ? (
+          notifications.map((notification, index) => (
+            <div
+              key={`notification-${index}`}
+              className={`col-span-8 grid grid-cols-8 border-b border-opacity-30 pb-2 mb-1 ${
+                !notification.IsRead
+                  ? "border-l-4 border-l-blue-500 pl-2 bg-blue-50 bg-opacity-10"
+                  : ""
+              }`}
+              style={{ borderColor: headerColor }}
+            >
+              <Text
+                variant="xs"
+                classes={`${textColorClass} text-start col-span-6 p-1`}
+              >
+                {notification.Message}
+              </Text>
+              <div className="col-span-2 flex items-start justify-start gap-x-2 py-1">
+                <Button
+                  size="xs"
+                  onClick={() =>
+                    toggleNotificationAsRead(league, notification.ID)
+                  }
+                  classes="rounded bg-blue-600 hover:bg-blue-700 text-white"
+                  title="Mark as read"
+                  disabled={notification.IsRead}
+                >
+                  <CheckCircle textColorClass="text-white" />
+                </Button>
+                <Button
+                  size="xs"
+                  onClick={() => deleteNotification(league, notification.ID)}
+                  classes="rounded bg-red-600 hover:bg-red-700 text-white"
+                  title="Delete"
+                >
+                  <TrashCan textColorClass="text-white" />
+                </Button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <Text
+            variant="xs"
+            classes={`${textColorClass} col-span-8 pt-2 pb-2 text-center`}
+          >
+            Your Inbox is Empty
+          </Text>
+        )}
+      </div>
     </SectionCards>
   );
 };
