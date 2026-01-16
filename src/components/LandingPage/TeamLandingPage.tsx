@@ -26,7 +26,7 @@ import {
 } from "./TeamLandingPageComponents";
 import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
-import { darkenColor } from "../../_utility/getDarkerColor";
+import { getThemeAwareDarkenColor } from "../../_utility/getDarkerColor";
 import {
   League,
   SimCBB,
@@ -38,6 +38,7 @@ import {
 } from "../../_constants/constants";
 import { useResponsive } from "../../_hooks/useMobile";
 import { useCallback, useMemo } from "react";
+import { getThemeColors } from "../../_utility/themeHelpers";
 
 interface TeamLandingPageProps {
   team: any;
@@ -46,14 +47,18 @@ interface TeamLandingPageProps {
 }
 
 export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
-  const { currentUser } = useAuthStore();
-  let backgroundColor = "#1f2937";
-  let headerColor = team?.ColorOne || "#4B5563";
-  let borderColor = team?.ColorTwo || "#4B5563";
+  const { currentUser, isDarkMode } = useAuthStore();
+
+  // Theme-aware background colors
+  const themeColors = getThemeColors(isDarkMode);
+  let backgroundColor = themeColors.background;
+
+  let headerColor = team?.ColorOne || themeColors.border;
+  let borderColor = team?.ColorTwo || themeColors.border;
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  let darkerBackgroundColor = darkenColor(backgroundColor, -5);
+  let darkerBackgroundColor = getThemeAwareDarkenColor(backgroundColor, -5);
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const {
     collegeNotifications,

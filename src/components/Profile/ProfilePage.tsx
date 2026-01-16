@@ -11,6 +11,7 @@ import { Border } from "../../_design/Borders";
 import { ButtonGroup, PillButton } from "../../_design/Buttons";
 import { PageContainer } from "../../_design/Container";
 import { ToggleSwitch } from "../../_design/Inputs";
+import { SelectDropdown } from "../../_design/Select";
 import { Text } from "../../_design/Typography";
 import { CurrentUser } from "../../_hooks/useCurrentUser";
 import { useAuthStore } from "../../context/AuthContext";
@@ -32,7 +33,7 @@ export const ProfilePage = () => {
     updatedCurrentUser.DefaultLeague = league;
     setCurrentUser(updatedCurrentUser);
     const payload = {
-      DefaultLeague: league
+      DefaultLeague: league,
     };
     await updateUserByUsername(currentUser!.username, payload);
   };
@@ -43,21 +44,31 @@ export const ProfilePage = () => {
     updatedCurrentUser.isRetro = newRetro;
     const payload = {
       isRetro: newRetro,
-    }
+    };
     setCurrentUser(updatedCurrentUser);
     await updateUserByUsername(currentUser!.username, payload);
   };
 
-  const setTheme = () => {
-    const value = viewMode;
-    const isLight = value !== "dark";
-    let newValue = "light";
-    if (isLight) {
-      newValue = "dark";
-    }
-    if (value) setViewMode(newValue);
-    localStorage.setItem("theme", newValue);
+  const setTheme = (selectedOption: any) => {
+    const newTheme = selectedOption.value;
+    setViewMode(newTheme);
+    localStorage.setItem("theme", newTheme);
   };
+
+  const themeOptions = [
+    { label: "🌙 Dark", value: "dark" },
+    { label: "☀️ Light", value: "light" },
+    { label: "🔴 Red", value: "red" },
+    { label: "🔵 Blue", value: "blue" },
+    { label: "🌿 Sage Green", value: "sage" },
+    { label: "🟣 Purple", value: "purple" },
+    { label: "🟡 Gold", value: "gold" },
+    { label: "⚫ Steel", value: "steel" },
+    { label: "🔘 Grey", value: "grey" },
+  ];
+
+  const selectedTheme =
+    themeOptions.find((option) => option.value === viewMode) || themeOptions[0];
 
   return (
     <>
@@ -119,7 +130,7 @@ export const ProfilePage = () => {
             </ButtonGroup>
           </Border>
         </div>
-        <Border classes="w-full px-4">
+        <Border classes="w-full px-4 py-3">
           <Text variant="h6" classes="mb-2">
             Actions
           </Text>
@@ -134,10 +145,16 @@ export const ProfilePage = () => {
               />
             </div>
             <div className="flex flex-col">
-              <Text variant="body-small" className="text-start">
-                Dark Mode
+              <Text variant="body-small" className="text-start mb-2">
+                Theme
               </Text>
-              <ToggleSwitch checked={viewMode === "dark"} onChange={setTheme} />
+              <SelectDropdown
+                options={themeOptions}
+                value={selectedTheme}
+                onChange={setTheme}
+                isMulti={false}
+                className="min-w-[140px]"
+              />
             </div>
           </div>
         </Border>

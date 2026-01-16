@@ -8,8 +8,9 @@ import {
   SimCBB,
   SimNBA,
 } from "../../_constants/constants";
-import { PageContainer } from "../../_design/Container";
 import { useAuthStore } from "../../context/AuthContext";
+import { getThemeColors } from "../../_utility/themeHelpers";
+import { PageContainer } from "../../_design/Container";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";

@@ -32,6 +32,11 @@ import { useSimFBAStore } from "../../context/SimFBAContext";
 import { Border } from "../../_design/Borders";
 import { HeightToFeetAndInches } from "../../_utility/getHeightByFeetAndInches";
 import { usePagination } from "../../_hooks/usePagination";
+import {
+  getNotificationStyles,
+  getButtonStyles,
+} from "../../_utility/themeHelpers";
+import { useAuthStore } from "../../context/AuthContext";
 
 interface GamesBarProps {
   games: any[];
@@ -774,6 +779,8 @@ export const TeamMailbox = ({
   deleteNotification,
   league,
 }: TeamMailboxProps) => {
+  const { isDarkMode } = useAuthStore();
+
   return (
     <SectionCards
       team={team}
@@ -810,11 +817,10 @@ export const TeamMailbox = ({
           notifications.map((notification, index) => (
             <div
               key={`notification-${index}`}
-              className={`col-span-8 grid grid-cols-8 border-b border-opacity-30 pb-2 mb-1 ${
+              className={getNotificationStyles(
+                isDarkMode,
                 !notification.IsRead
-                  ? "border-l-4 border-l-blue-500 pl-2 bg-blue-50 bg-opacity-10"
-                  : ""
-              }`}
+              )}
               style={{ borderColor: headerColor }}
             >
               <Text
@@ -829,7 +835,7 @@ export const TeamMailbox = ({
                   onClick={() =>
                     toggleNotificationAsRead(league, notification.ID)
                   }
-                  classes="rounded bg-blue-600 hover:bg-blue-700 text-white"
+                  classes={getButtonStyles(isDarkMode, "primary")}
                   title="Mark as read"
                   disabled={notification.IsRead}
                 >
@@ -838,7 +844,7 @@ export const TeamMailbox = ({
                 <Button
                   size="xs"
                   onClick={() => deleteNotification(league, notification.ID)}
-                  classes="rounded bg-red-600 hover:bg-red-700 text-white"
+                  classes={getButtonStyles(isDarkMode, "error")}
                   title="Delete"
                 >
                   <TrashCan textColorClass="text-white" />

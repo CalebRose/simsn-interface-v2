@@ -3,11 +3,12 @@ import { StatsPageProps } from "../StatsPage";
 import { useFootballStats } from "./useFootballStatsPage";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { useModal } from "../../../_hooks/useModal";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { ActionModal } from "../../Common/ActionModal";
 import { StatsSidebar } from "../Common/StatsSidebar";
 import { Border } from "../../../_design/Borders";
-import { Help1, navyBlueColor, SimCFB } from "../../../_constants/constants";
+import { Help1, SimCFB } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
@@ -54,6 +55,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
     Search,
     Export,
   } = useFootballStats();
+  const { backgroundColor } = useBackgroundColor();
   console.log({ cfbPostSeasonAwards });
   const { isMobile, isDesktop } = useResponsive();
   const helpModal = useModal();
@@ -119,7 +121,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 flex-col lg:flex-row"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               {league === SimCFB && (
@@ -175,7 +177,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 overflow-y-auto max-h-[50vh] md:max-h-[70vh]"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <FootballStatsTable

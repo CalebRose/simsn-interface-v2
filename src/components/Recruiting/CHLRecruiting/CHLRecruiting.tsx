@@ -1,4 +1,5 @@
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useCHLRecruiting } from "./useCHLRecruiting";
 import { Border } from "../../../_design/Borders";
@@ -19,7 +20,6 @@ import {
   SimCHL,
   StarOptions,
   StatusOptions,
-  navyBlueColor,
   RecruitingClassView,
 } from "../../../_constants/constants";
 import { CategoryDropdown } from "../Common/RecruitingCategoryDropdown";
@@ -36,6 +36,7 @@ import { CHLRecruitLockedMessages } from "../../../_constants/loadMessages";
 import { RecruitingClassTable } from "../Common/RecruitingClassTable";
 
 export const CHLRecruiting = () => {
+  const { backgroundColor } = useBackgroundColor();
   const hkStore = useSimHCKStore();
   const {
     recruitProfiles,
@@ -146,7 +147,7 @@ export const CHLRecruiting = () => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center gap-x-2"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <ButtonGroup classes="sm:flex sm:flex-auto sm:flex-1">
@@ -230,7 +231,7 @@ export const CHLRecruiting = () => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center gap-x-8"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <div className="sm:grid sm:grid-cols-2 w-full">
@@ -307,7 +308,7 @@ export const CHLRecruiting = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <div className="flex flex-row flex-wrap gap-x-1 sm:gap-x-2 gap-y-2 px-2 w-full">
@@ -362,7 +363,7 @@ export const CHLRecruiting = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <RecruitTable
@@ -410,7 +411,7 @@ export const CHLRecruiting = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <RecruitProfileTable
@@ -440,7 +441,7 @@ export const CHLRecruiting = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <div className="flex flex-row flex-nowrap gap-x-1 sm:gap-x-2 gap-y-2 px-2 w-full">
@@ -465,7 +466,7 @@ export const CHLRecruiting = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <TeamRankingsTable
@@ -488,7 +489,7 @@ export const CHLRecruiting = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <div className="flex flex-row flex-wrap gap-x-1 sm:gap-x-2 gap-y-2 px-2 w-full">
@@ -506,7 +507,7 @@ export const CHLRecruiting = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <RecruitingClassTable
@@ -530,7 +531,7 @@ export const CHLRecruiting = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center h-[50vh]"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <Text variant="h2" classes="mb-6">

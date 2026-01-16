@@ -12,12 +12,13 @@ import {
   SimNBA,
 } from "../../_constants/constants";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
-import { darkenColor } from "../../_utility/getDarkerColor";
+import { getThemeAwareDarkenColor } from "../../_utility/getDarkerColor";
 import { getLogo } from "../../_utility/getLogo";
 import { Logo } from "../../_design/Logo";
 import { useResponsive } from "../../_hooks/useMobile";
 import { Button } from "../../_design/Buttons";
 import { Bell, ChatBubble } from "../../_design/Icons";
+import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 
 interface TeamInfoProps {
   id?: number;
@@ -76,8 +77,9 @@ export const TeamInfo: FC<TeamInfoProps> = ({
   openProposeTradeModal,
   draftPickCount = 0,
 }) => {
-  const sectionBg = darkenColor("#1f2937", -5);
-  const textColorClass = getTextColorBasedOnBg(backgroundColor);
+  const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
+  const sectionBg = getThemeAwareDarkenColor(themeBackgroundColor, -5);
+  const textColorClass = getTextColorBasedOnBg(themeBackgroundColor);
   const logo = getLogo(League, id!!, isRetro);
   const { isMobile } = useResponsive();
   return (
@@ -85,7 +87,7 @@ export const TeamInfo: FC<TeamInfoProps> = ({
       direction="row"
       classes="w-full p-4 justify-around gap-x-4"
       styles={{
-        backgroundColor,
+        background: themeBackgroundColor,
         borderColor: headerColor,
       }}
     >
@@ -116,7 +118,7 @@ export const TeamInfo: FC<TeamInfoProps> = ({
             <TeamGrades
               Team={Team}
               backgroundColor={sectionBg}
-              gradeColor={backgroundColor}
+              gradeColor={themeBackgroundColor}
               borderColor={headerColor}
             />
           </div>

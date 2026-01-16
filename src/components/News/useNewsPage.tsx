@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
-import { darkenColor } from "../../_utility/getDarkerColor";
+import { getThemeAwareDarkenColor } from "../../_utility/getDarkerColor";
 import { useAuthStore } from "../../context/AuthContext";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
@@ -64,7 +64,7 @@ export const useNewsPage = () => {
   } = useSimHCKStore();
   const isLoadingData = !selectedTeam;
   const backgroundColor = "#1f2937";
-  let darkerBackgroundColor = darkenColor(backgroundColor, -5);
+  let darkerBackgroundColor = getThemeAwareDarkenColor(backgroundColor, -5);
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,

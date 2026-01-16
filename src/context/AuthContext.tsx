@@ -1,4 +1,11 @@
-import { createContext, ReactNode, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+} from "react";
 import { CurrentUser, useCurrentUser } from "../_hooks/useCurrentUser";
 
 // ✅ Define Auth Context Props
@@ -18,6 +25,7 @@ interface AuthContextProps {
   isPHLUser: boolean;
   isCollegeBaseballUser: boolean;
   isMlbUser: boolean;
+  isDarkMode: boolean;
 }
 
 // ✅ Initial Context Values
@@ -37,6 +45,7 @@ const defaultAuthContext: AuthContextProps = {
   isPHLUser: false,
   isCollegeBaseballUser: false,
   isMlbUser: false,
+  isDarkMode: true,
 };
 
 // ✅ Create Auth Context
@@ -76,6 +85,55 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return "dark";
     }
   });
+
+  // Apply theme to HTML element when viewMode changes
+  useEffect(() => {
+    if (typeof window !== "undefined" && document.documentElement) {
+      // Remove all theme classes first
+      document.documentElement.classList.remove(
+        "light",
+        "dark",
+        "red",
+        "blue",
+        "sage",
+        "purple",
+        "gold",
+        "steel",
+        "grey"
+      );
+      // Add the current theme class
+      document.documentElement.classList.add(viewMode);
+
+      // Also save to localStorage safely
+      try {
+        if (window.localStorage) {
+          localStorage.setItem("theme", viewMode);
+        }
+      } catch (error) {
+        console.warn("Could not save theme to localStorage:", error);
+      }
+    }
+  }, [viewMode]);
+
+  // Apply initial theme on mount
+  useEffect(() => {
+    if (typeof window !== "undefined" && document.documentElement) {
+      // Remove all theme classes first
+      document.documentElement.classList.remove(
+        "light",
+        "dark",
+        "red",
+        "blue",
+        "sage",
+        "purple",
+        "gold",
+        "steel",
+        "grey"
+      );
+      // Add the current theme class
+      document.documentElement.classList.add(viewMode);
+    }
+  }, []);
 
   const isCFBUser = useMemo(() => {
     if (currentUser && currentUser.teamId) {
@@ -126,12 +184,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return false;
   }, [currentUser]);
 
-    const isMlbUser = useMemo(() => {
+  const isMlbUser = useMemo(() => {
     if (currentUser && currentUser.MLBOrgID) {
       return currentUser.MLBOrgID > 0;
     }
     return false;
   }, [currentUser]);
+
+  const isDarkMode = useMemo(() => {
+    if (viewMode === "light") {
+      return false;
+    } else if (viewMode === "grey") {
+      return false;
+    }
+    return true;
+  }, [viewMode]);
 
   return (
     <AuthContext.Provider
@@ -150,7 +217,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isNFLUser,
         isPHLUser,
         isCollegeBaseballUser,
-        isMlbUser
+        isMlbUser,
+        isDarkMode,
       }}
     >
       {children}

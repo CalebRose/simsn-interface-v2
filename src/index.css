@@ -13,35 +13,239 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* Default light theme variables */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-surface: #f1f5f9;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border-primary: #e5e7eb;
+  --border-secondary: #d1d5db;
+  --accent-primary: #2563eb;
+  --accent-success: #059669;
+  --accent-error: #dc2626;
+  --accent-warning: #d97706;
 }
 
 html.dark {
   color-scheme: dark;
+  --bg-primary: #242424;
+  --bg-secondary: #374151;
+  --bg-surface: #4b5563;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --border-primary: #6b7280;
+  --border-secondary: #4b5563;
+  --accent-primary: #3b82f6;
+  --accent-success: #10b981;
+  --accent-error: #ef4444;
+  --accent-warning: #f59e0b;
 }
+
 html.dark,
 html.dark body,
 html.dark #root {
-  background-color: #242424;
-  color: rgba(255, 255, 255, 0.87);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 html.light {
   color-scheme: light;
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-surface: #f1f5f9;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --border-primary: #e5e7eb;
+  --border-secondary: #d1d5db;
+  --accent-primary: #2563eb;
+  --accent-success: #059669;
+  --accent-error: #dc2626;
+  --accent-warning: #d97706;
 }
+
 html.light,
 html.light body,
 html.light #root {
-  background-color: #ffffff;
-  color: #213547;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Red Theme */
+html.red {
+  color-scheme: dark;
+  --bg-primary: #5a1e1e;
+  --bg-secondary: #6b2323;
+  --bg-surface: #7a2828;
+  --text-primary: #fef2f2;
+  --text-secondary: #fed7d7;
+  --text-muted: #fbb6b6;
+  --border-primary: #a84848;
+  --border-secondary: #8b3a3a;
+  --accent-primary: #dc2626;
+  --accent-success: #059669;
+  --accent-error: #b91c1c;
+  --accent-warning: #d97706;
+}
+
+html.red,
+html.red body,
+html.red #root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Blue Theme */
+html.blue {
+  color-scheme: dark;
+  --bg-primary: #1e2a4a;
+  --bg-secondary: #253356;
+  --bg-surface: #2d3e63;
+  --text-primary: #e8f2ff;
+  --text-secondary: #d1e7fe;
+  --text-muted: #a5c9ea;
+  --border-primary: #4b6b94;
+  --border-secondary: #3c5577;
+  --accent-primary: #3b82f6;
+  --accent-success: #059669;
+  --accent-error: #dc2626;
+  --accent-warning: #d97706;
+}
+
+html.blue,
+html.blue body,
+html.blue #root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Sage Green Theme */
+html.sage {
+  color-scheme: dark;
+  --bg-primary: #202d20;
+  --bg-secondary: #283328;
+  --bg-surface: #323e32;
+  --text-primary: #f0f4f0;
+  --text-secondary: #dfe7df;
+  --text-muted: #c1d1c1;
+  --border-primary: #758575;
+  --border-secondary: #627062;
+  --accent-primary: #10b981;
+  --accent-success: #047857;
+  --accent-error: #dc2626;
+  --accent-warning: #d97706;
+}
+
+html.sage,
+html.sage body,
+html.sage #root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Purple Theme */
+html.purple {
+  color-scheme: dark;
+  --bg-primary: #2a1a4a;
+  --bg-secondary: #352356;
+  --bg-surface: #422d63;
+  --text-primary: #f0ebff;
+  --text-secondary: #e0d6ff;
+  --text-muted: #c4b5ff;
+  --border-primary: #7c6b94;
+  --border-secondary: #665577;
+  --accent-primary: #8b5cf6;
+  --accent-success: #059669;
+  --accent-error: #dc2626;
+  --accent-warning: #d97706;
+}
+
+html.purple,
+html.purple body,
+html.purple #root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Gold Theme */
+html.gold {
+  color-scheme: dark;
+  --bg-primary: #4a3d1a;
+  --bg-secondary: #564723;
+  --bg-surface: #63522d;
+  --text-primary: #fff7eb;
+  --text-secondary: #ffefd6;
+  --text-muted: #ffdfb5;
+  --border-primary: #94886b;
+  --border-secondary: #776955;
+  --accent-primary: #f59e0b;
+  --accent-success: #059669;
+  --accent-error: #dc2626;
+  --accent-warning: #d97706;
+}
+
+html.gold,
+html.gold body,
+html.gold #root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Steel Theme */
+html.steel {
+  color-scheme: dark;
+  --bg-primary: #2a2a2a;
+  --bg-secondary: #353535;
+  --bg-surface: #424242;
+  --text-primary: #f5f5f5;
+  --text-secondary: #e0e0e0;
+  --text-muted: #bdbdbd;
+  --border-primary: #757575;
+  --border-secondary: #616161;
+  --accent-primary: #90a4ae;
+  --accent-success: #059669;
+  --accent-error: #dc2626;
+  --accent-warning: #d97706;
+}
+
+html.steel,
+html.steel body,
+html.steel #root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Grey Theme */
+html.grey {
+  color-scheme: light;
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #eeeeee;
+  --bg-surface: #e8e8e8;
+  --text-primary: #333333;
+  --text-secondary: #555555;
+  --text-muted: #757575;
+  --border-primary: #cccccc;
+  --border-secondary: #dddddd;
+  --accent-primary: #607d8b;
+  --accent-success: #4caf50;
+  --accent-error: #f44336;
+  --accent-warning: #ff9800;
+}
+
+html.grey,
+html.grey body,
+html.grey #root {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .table-header-group {
@@ -63,6 +267,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 h1 {
@@ -77,12 +283,14 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--accent-primary);
+  background-color: var(--bg-surface);
 }
 button:focus,
 button:focus-visible {
@@ -1091,6 +1299,108 @@ hr.solid {
 
 .w-86 {
   width: 86% !important;
+}
+
+/* ===== THEME-AWARE UTILITY CLASSES ===== */
+.bg-theme-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-theme-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.bg-theme-surface {
+  background-color: var(--bg-surface);
+}
+
+.text-theme-primary {
+  color: var(--text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--text-muted);
+}
+
+.border-theme-primary {
+  border-color: var(--border-primary);
+}
+
+.border-theme-secondary {
+  border-color: var(--border-secondary);
+}
+
+.accent-primary {
+  color: var(--accent-primary);
+}
+
+.accent-success {
+  color: var(--accent-success);
+}
+
+.accent-error {
+  color: var(--accent-error);
+}
+
+.accent-warning {
+  color: var(--accent-warning);
+}
+
+/* Enhanced notification styles */
+.notification-unread {
+  border-left: 4px solid var(--accent-primary);
+  background-color: var(--accent-primary);
+  background-opacity: 0.1;
+  padding-left: 0.5rem;
+}
+
+/* Enhanced button styles */
+.btn-theme-primary {
+  background-color: var(--accent-primary);
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.btn-theme-primary:hover {
+  background-color: var(--accent-primary);
+  filter: brightness(0.9);
+}
+
+.btn-theme-success {
+  background-color: var(--accent-success);
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.btn-theme-success:hover {
+  background-color: var(--accent-success);
+  filter: brightness(0.9);
+}
+
+.btn-theme-error {
+  background-color: var(--accent-error);
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.btn-theme-error:hover {
+  background-color: var(--accent-error);
+  filter: brightness(0.9);
+}
+
+/* Improved contrast for accessibility */
+.high-contrast {
+  --text-primary: #000000;
+  --text-secondary: #333333;
+}
+
+html.dark .high-contrast {
+  --text-primary: #ffffff;
+  --text-secondary: #e5e5e5;
 }
 
 .w-90 {

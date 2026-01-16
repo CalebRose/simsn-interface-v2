@@ -2,12 +2,12 @@ import { FC, ReactNode } from "react";
 import {
   League,
   ModalAction,
-  navyBlueColor,
   RecruitInfoType,
   SimCBB,
   SimCFB,
   SimCHL,
 } from "../../../_constants/constants";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import {
   Croot as HockeyCroot,
   RecruitingTeamProfile as HockeyTeamProfile,
@@ -97,10 +97,11 @@ export const RecruitingClassTable: FC<RecruitingClassTableProps> = ({
   isMobile = false,
   openModal,
 }) => {
+  const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const backgroundColor = colorOne;
   const borderColor = colorTwo;
   const secondaryBorderColor = colorThree;
-  const textColorClass = getTextColorBasedOnBg(navyBlueColor);
+  const textColorClass = getTextColorBasedOnBg(themeBackgroundColor);
   const columns = getClassColumns(league, isMobile);
 
   const CFBRowRenderer = (
