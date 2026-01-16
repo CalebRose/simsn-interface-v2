@@ -43,6 +43,7 @@ import { SubmitPollModal } from "../Common/SubmitPollModal";
 import { useModal } from "../../../_hooks/useModal";
 import { getFBAWeekID } from "../../../_helper/statsPageHelper";
 import FBAScheduleService from "../../../_services/scheduleService";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 
 interface SchedulePageProps {
   league: League;
@@ -83,7 +84,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  let backgroundColor = "#1f2937";
+  const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   const { isMobile } = useResponsive();
@@ -102,9 +103,13 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   useEffect(() => {
     const seasonID = (selectedSeason ?? 0) - 2020;
     if (!selectedSeason || seasonID <= 0) return;
-    const availableSeasons = new Set((allCFBGames || []).map((g: any) => g.SeasonID));
+    const availableSeasons = new Set(
+      (allCFBGames || []).map((g: any) => g.SeasonID)
+    );
     if (availableSeasons.has(seasonID)) {
-      const filtered = (allCFBGames || []).filter((g: any) => g.SeasonID === seasonID);
+      const filtered = (allCFBGames || []).filter(
+        (g: any) => g.SeasonID === seasonID
+      );
       setSeasonCFBGames(filtered);
       return;
     }
@@ -426,7 +431,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  let backgroundColor = "#1f2937";
+  const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   const { isMobile } = useResponsive();
@@ -441,9 +446,13 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   useEffect(() => {
     const seasonID = (selectedSeason ?? 0) - 2020;
     if (!selectedSeason || seasonID <= 0) return;
-    const availableSeasons = new Set((allNFLGames || []).map((g: any) => g.SeasonID));
+    const availableSeasons = new Set(
+      (allNFLGames || []).map((g: any) => g.SeasonID)
+    );
     if (availableSeasons.has(seasonID)) {
-      const filtered = (allNFLGames || []).filter((g: any) => g.SeasonID === seasonID);
+      const filtered = (allNFLGames || []).filter(
+        (g: any) => g.SeasonID === seasonID
+      );
       setSeasonNFLGames(filtered);
       return;
     }
@@ -515,7 +524,10 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const map: Record<number, string> = {};
     (allNFLStandings || []).forEach((s: any) => {
       if (s?.TeamID != null) {
-        const ties = typeof s.TotalTies === "number" && s.TotalTies > 0 ? `-${s.TotalTies}` : "";
+        const ties =
+          typeof s.TotalTies === "number" && s.TotalTies > 0
+            ? `-${s.TotalTies}`
+            : "";
         map[s.TeamID] = `${s.TotalWins}-${s.TotalLosses}${ties}`;
       }
     });

@@ -42,6 +42,7 @@ import { ToggleSwitch } from "../../../_design/Inputs";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { CollegePollModal } from "../Common/CollegePollModal";
 import { SubmitPollModal } from "../Common/SubmitPollModal";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 
 interface SchedulePageProps {
   league: League;
@@ -97,13 +98,13 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedTeam?.ColorThree
   );
 
-  let backgroundColor = "#1f2937";
+  const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   const { isMobile } = useResponsive();
 
-  if (isBrightColor(backgroundColor)) {
-    [backgroundColor, borderColor] = [borderColor, backgroundColor];
+  if (isBrightColor(headerColor)) {
+    [headerColor, borderColor] = [borderColor, headerColor];
   }
 
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -674,13 +675,13 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedTeam?.ColorThree
   );
 
-  let backgroundColor = "#1f2937";
+  const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   const { isMobile } = useResponsive();
 
   if (isBrightColor(backgroundColor)) {
-    [backgroundColor, borderColor] = [borderColor, backgroundColor];
+    [headerColor, borderColor] = [borderColor, headerColor];
   }
 
   const textColorClass = getTextColorBasedOnBg(backgroundColor);

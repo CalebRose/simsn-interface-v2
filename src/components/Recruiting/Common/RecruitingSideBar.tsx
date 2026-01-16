@@ -15,16 +15,11 @@ import {
   CollegeTeam as HockeyTeam,
   RecruitingTeamProfile as HockeyTeamProfile,
 } from "../../../models/hockeyModels";
-import {
-  League,
-  navyBlueColor,
-  SimCBB,
-  SimCFB,
-  SimCHL,
-} from "../../../_constants/constants";
+import { League, SimCBB, SimCFB, SimCHL } from "../../../_constants/constants";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { TeamLabel } from "../../Common/Labels";
 import { getAffinityList } from "../../../_helper/recruitingHelper";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import {
   getDefensiveSystemFromMap,
   getOffensiveSystemFromMap,
@@ -43,6 +38,7 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
   teamColors,
   league,
 }) => {
+  const { backgroundColor } = useBackgroundColor();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
   let teamLabel = "";
   let classRank = 0;
@@ -102,7 +98,7 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
         classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-full items-center justify-start"
         styles={{
           borderColor: teamColors.One,
-          backgroundColor: navyBlueColor,
+          backgroundColor: backgroundColor,
         }}
       >
         <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mb-2">

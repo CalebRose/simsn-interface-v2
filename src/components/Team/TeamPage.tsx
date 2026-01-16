@@ -69,6 +69,7 @@ import {
 } from "./Common/ManageTradesModal";
 import { PromiseModal } from "../Common/PromiseModal";
 import { ExtensionOfferModal } from "../Common/ExtensionOfferModal";
+import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 
 interface TeamPageProps {
   league: League;
@@ -213,7 +214,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  let backgroundColor = "#1f2937";
+  let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -364,7 +365,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
       </div>
       {selectedRoster && (
         <Border
-          classes="px-2 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
+          classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
@@ -436,7 +437,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  let backgroundColor = "#1f2937";
+  let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -828,7 +829,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
         </Border>
       </div>
       <Border
-        classes="px-2 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
+        classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
         styles={{
           backgroundColor: backgroundColor,
           borderColor: headerColor,
@@ -899,7 +900,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  let backgroundColor = "#1f2937";
+  let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -1022,7 +1023,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
       </div>
       {selectedRoster && (
         <Border
-          classes="px-2 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
+          classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
@@ -1089,7 +1090,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   );
   const manageTradesModal = useModal();
   const proposeTradeModal = useModal();
-  let backgroundColor = "#1f2937";
+  let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -1400,7 +1401,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       </div>
       {selectedRoster && (
         <Border
-          classes="px-2 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
+          classes="px-1 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
@@ -1459,7 +1460,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  let backgroundColor = "#1f2937";
+  let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -1613,7 +1614,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
       </div>
       {selectedRoster && (
         <Border
-          classes="px-2 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
+          classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
@@ -1668,7 +1669,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  let backgroundColor = "#1f2937";
+  let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -1783,7 +1784,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
       </div>
       {selectedRoster && (
         <Border
-          classes="px-2 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
+          classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,

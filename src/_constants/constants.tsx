@@ -17,9 +17,8 @@ export type League =
   | typeof SimNBA
   | typeof SimCHL
   | typeof SimPHL
-  | typeof SimCollegeBaseball 
-  | typeof SimMLB
-  ;
+  | typeof SimCollegeBaseball
+  | typeof SimMLB;
 
 export const CollegeRequests = "College Requests";
 export const ProRequests = "Pro Requests";
@@ -975,6 +974,7 @@ export const ScholarshipRevoked = "ScholarshipRevoked";
 
 export const ButtonGreen = "bg-[#189E5B]";
 export const TextGreen = "text-[#189E5B]";
+
 export const navyBlueColor = "#1f2937";
 
 export const MIN_SALARY = 0.75;

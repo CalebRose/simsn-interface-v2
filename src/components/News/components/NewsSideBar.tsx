@@ -1,10 +1,8 @@
 import { FC, useMemo } from "react";
 import { Border } from "../../../_design/Borders";
 import {
-  FootballWeeks,
   League,
   LeagueTypeOptions,
-  navyBlueColor,
   NewsTypeOptions,
   SimCBB,
   SimCFB,
@@ -32,6 +30,7 @@ import {
 } from "../../../_helper/statsPageHelper";
 import { BarsArrowDown, BarsArrowUp, Refresh } from "../../../_design/Icons";
 import { Text } from "../../../_design/Typography";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 
 interface NewsSideBarProps {
   teamColors: any;
@@ -70,6 +69,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   setSortByNewest,
   sortByNewest,
 }) => {
+  const { backgroundColor } = useBackgroundColor();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
 
   const teamLabel = useMemo(() => {
@@ -138,7 +138,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
         classes="w-full max-[768px]:px-1 max-[768px]:py-1 max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-fit items-center justify-start"
         styles={{
           borderColor: teamColors.One,
-          backgroundColor: navyBlueColor,
+          backgroundColor: backgroundColor,
         }}
       >
         <div className="flex flex-col gap-x-2 flex-wrap w-full text-start max-[768px]:mx-1 max-[768px]:mb-1 mx-2 mb-2">

@@ -42,6 +42,7 @@ import { useModal } from "../../../_hooks/useModal";
 import { SubmitPollModal } from "../Common/SubmitPollModal";
 import { CollegePollModal } from "../Common/CollegePollModal";
 import { getHCKWeekID } from "../../../_helper/statsPageHelper";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 
 interface SchedulePageProps {
   league: League;
@@ -94,7 +95,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  let backgroundColor = "#1f2937";
+  const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   const { isMobile } = useResponsive();
@@ -682,7 +683,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     selectedTeam?.ColorTwo,
     selectedTeam?.ColorThree
   );
-  let backgroundColor = "#1f2937";
+  const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   const { isMobile } = useResponsive();

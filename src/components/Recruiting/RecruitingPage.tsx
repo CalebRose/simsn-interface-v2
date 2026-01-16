@@ -1,5 +1,7 @@
 import { FC, useEffect, useMemo } from "react";
 import { League, SimCBB, SimCFB, SimCHL } from "../../_constants/constants";
+import { useAuthStore } from "../../context/AuthContext";
+import { getThemeColors } from "../../_utility/themeHelpers";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";

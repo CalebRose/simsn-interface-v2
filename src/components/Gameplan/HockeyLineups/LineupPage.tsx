@@ -31,7 +31,6 @@ import {
   LineupG2,
   LineupSO,
   ModalAction,
-  navyBlueColor,
   SimCHL,
   SimPHL,
   Zone,
@@ -52,6 +51,7 @@ import {
 } from "./LineupComponents";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useResponsive } from "../../../_hooks/useMobile";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 
 export const CHLLineupPage = () => {
   const hkStore = useSimHCKStore();
@@ -84,6 +84,7 @@ export const CHLLineupPage = () => {
     chlTeam?.ColorTwo,
     chlTeam?.ColorThree
   );
+  const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
 
@@ -230,7 +231,7 @@ export const CHLLineupPage = () => {
             classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full items-center justify-center"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <ButtonGrid classes="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 gap-x-2 w-full">
@@ -252,7 +253,7 @@ export const CHLLineupPage = () => {
             classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full items-center justify-center"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <ButtonGrid classes="grid grid-cols-3 gap-x-2 w-full justify-center">
@@ -277,7 +278,7 @@ export const CHLLineupPage = () => {
             classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full grid grid-rows-[1fr_auto] max-[768px]:gap-y-3 gap-y-2"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <Border classes="h-full max-h-[20vh] overflow-y-auto w-full">
@@ -295,7 +296,7 @@ export const CHLLineupPage = () => {
                 classes="w-full px-2 py-1 h-full items-center justify-center"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: themeBackgroundColor,
                 }}
               >
                 <div className="grid grid-cols-2 gap-x-4 w-full">
@@ -400,7 +401,7 @@ export const CHLLineupPage = () => {
           classes="w-full px-4 py-3 min-h-full"
           styles={{
             borderColor: teamColors.One,
-            backgroundColor: navyBlueColor,
+            backgroundColor: themeBackgroundColor,
           }}
         >
           <div className="flex flex-row mb-6 gap-x-2 justify-center w-full">
@@ -439,7 +440,7 @@ export const CHLLineupPage = () => {
             classes="w-full max-[1024px]:px-2 px-4 py-4"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <div className="flex flex-row w-full justify-start items-center gap-x-2 mb-6">
@@ -624,7 +625,7 @@ export const PHLLineupPage = () => {
     CollegePlayer | ProfessionalPlayer
   >({} as ProfessionalPlayer);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-
+  const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const teamColors = useTeamColors(
     phlTeam?.ColorOne,
     phlTeam?.ColorTwo,
@@ -775,7 +776,7 @@ export const PHLLineupPage = () => {
             classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full items-center justify-center"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <ButtonGrid classes="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 gap-x-2 w-full">
@@ -797,7 +798,7 @@ export const PHLLineupPage = () => {
             classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full items-center justify-center"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <ButtonGrid classes="grid grid-cols-3 gap-x-2 w-full justify-center">
@@ -822,7 +823,7 @@ export const PHLLineupPage = () => {
             classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full grid grid-rows-[1fr_auto] max-[768px]:gap-y-3 gap-y-2"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <Border classes="h-full max-h-[20vh] overflow-y-auto w-full">
@@ -840,7 +841,7 @@ export const PHLLineupPage = () => {
                 classes="w-full px-2 py-1 h-full items-center justify-center"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: themeBackgroundColor,
                 }}
               >
                 <div className="grid grid-cols-2 gap-x-4 w-full">
@@ -945,7 +946,7 @@ export const PHLLineupPage = () => {
           classes="w-full px-4 py-3 min-h-full"
           styles={{
             borderColor: teamColors.One,
-            backgroundColor: navyBlueColor,
+            backgroundColor: themeBackgroundColor,
           }}
         >
           <div className="flex flex-row mb-6 gap-x-2 justify-center w-full">
@@ -984,7 +985,7 @@ export const PHLLineupPage = () => {
             classes="w-full max-[1024px]:px-2 px-4 py-4"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <div className="flex flex-row w-full justify-start items-center gap-x-2 mb-6">

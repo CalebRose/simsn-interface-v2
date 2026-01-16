@@ -2,16 +2,17 @@ import React, {
   FC,
   ReactNode,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { getTextColorBasedOnBg } from "../_utility/getBorderClass";
-import { darkenColor } from "../_utility/getDarkerColor";
+import { getThemeAwareDarkenColor } from "../_utility/getDarkerColor";
 import { Text } from "./Typography";
 import { isBrightColor } from "../_utility/isBrightColor";
 import { League, SimNFL } from "../_constants/constants";
+import { useAuthStore } from "../context/AuthContext";
+import { getThemeColors } from "../_utility/themeHelpers";
 
 export interface SortState {
   key: string | null;
@@ -52,15 +53,24 @@ export const Table = <T,>({
   currentPage = 0,
   page = "",
 }: TableProps<T>): JSX.Element => {
-  let backgroundColor = "#1f2937";
-  let borderColor = team?.ColorTwo || "#4B5563";
-  let tableBgColor = rowBgColor || "#1f2937";
+  const { isDarkMode } = useAuthStore();
+  const themeColors = getThemeColors(isDarkMode);
+
+  // Use theme-aware colors instead of hardcoded dark colors
+  let backgroundColor = rowBgColor || themeColors.background;
+  let borderColor = team?.ColorTwo || themeColors.border;
+  let tableBgColor = rowBgColor || themeColors.background;
   let darkerTableBgColor =
-    darkerRowBgColor || darkenColor(tableBgColor, -5) || "#1f2937";
+    darkerRowBgColor ||
+    getThemeAwareDarkenColor(tableBgColor, -5) ||
+    themeColors.surface;
+
   if (isBrightColor(backgroundColor)) {
     [backgroundColor, borderColor] = [borderColor, backgroundColor];
   }
-  const darkerBackgroundColor = darkenColor(backgroundColor, -5) || "#4B5563";
+
+  const darkerBackgroundColor =
+    getThemeAwareDarkenColor(backgroundColor, -5) || themeColors.surface;
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
 
   // Sorting state and sorted data

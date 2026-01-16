@@ -8,7 +8,6 @@ import {
   FootballStatsType,
   GameDay,
   League,
-  navyBlueColor,
   OFFENSE,
   OLINE,
   OVERALL,
@@ -28,6 +27,7 @@ import {
   TEAM_VIEW,
   WEEK_VIEW,
 } from "../../../_constants/constants";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import {
   CollegeTeam as CHLTeam,
   ProfessionalTeam as PHLTeam,
@@ -87,6 +87,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
   Export,
   HandleAwardsModal,
 }) => {
+  const { backgroundColor } = useBackgroundColor();
   const { isMobile, isTablet, isDesktop } = useResponsive();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
   let teamLabel = "";
@@ -107,7 +108,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
           classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-full items-center justify-start mb-2"
           styles={{
             borderColor: teamColors.One,
-            backgroundColor: navyBlueColor,
+            backgroundColor: backgroundColor,
           }}
         >
           <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mb-2">

@@ -13,7 +13,6 @@ import {
   BasketballPositionOptions,
   CountryOptions,
   Help1,
-  navyBlueColor,
   Overview,
   Preferences,
   Promises,
@@ -30,6 +29,7 @@ import { Text } from "../../../_design/Typography";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { TransferPlayerTable } from "../Common/TransferPlayerTable";
 import { TransferPortalProfileTable } from "../Common/TransferProfileTable";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 
 export const BBATransferPortal = () => {
   const bbaStore = useSimBBAStore();
@@ -96,6 +96,7 @@ export const BBATransferPortal = () => {
     }
     return { ...rMap, rosterCount: roster.length };
   }, [cbbTeam, cbbRosterMap]);
+  const { backgroundColor } = useBackgroundColor();
   const teamColors = useTeamColors(
     cbbTeam?.ColorOne,
     cbbTeam?.ColorTwo,
@@ -165,7 +166,7 @@ export const BBATransferPortal = () => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center gap-x-2"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <ButtonGroup classes="sm:flex sm:flex-auto sm:flex-1">
@@ -227,7 +228,7 @@ export const BBATransferPortal = () => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center gap-x-8"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <div className="sm:grid sm:grid-cols-2 w-full px-6">
@@ -290,7 +291,7 @@ export const BBATransferPortal = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <div className="flex flex-row flex-wrap gap-x-1 sm:gap-x-2 gap-y-2 px-2 w-full">
@@ -345,7 +346,7 @@ export const BBATransferPortal = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <TransferPlayerTable
@@ -392,7 +393,7 @@ export const BBATransferPortal = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <TransferPortalProfileTable
@@ -422,7 +423,7 @@ export const BBATransferPortal = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center h-[50vh]"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <Text variant="h2" classes="mb-6">

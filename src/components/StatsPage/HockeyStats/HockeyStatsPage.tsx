@@ -4,7 +4,8 @@ import { useHockeyStats } from "./useHockeyStatsPage";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { ActionModal } from "../../Common/ActionModal";
 import { Border } from "../../../_design/Borders";
-import { Help1, navyBlueColor } from "../../../_constants/constants";
+import { Help1 } from "../../../_constants/constants";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { StatsSidebar } from "../Common/StatsSidebar";
 import { useModal } from "../../../_hooks/useModal";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
@@ -51,6 +52,7 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
     Search,
     Export,
   } = useHockeyStats();
+  const { backgroundColor } = useBackgroundColor();
   const { isMobile, isDesktop } = useResponsive();
   const helpModal = useModal();
   const teamColors = useTeamColors(
@@ -96,6 +98,7 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
           Export={Export}
           gameDay={gameDay}
           changeGameDay={ChangeGameDay}
+          HandleAwardsModal={() => {}}
         />
         <div className="flex flex-col w-full max-[1024px]:gap-y-2">
           <div className="flex flex-col sm:flex-row gap-x-2">
@@ -104,7 +107,7 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 flex-col lg:flex-row"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <div className="flex flex-col">
@@ -158,7 +161,7 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 overflow-y-auto max-h-[50vh] md:max-h-[70vh]"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <HockeyStatsTable
