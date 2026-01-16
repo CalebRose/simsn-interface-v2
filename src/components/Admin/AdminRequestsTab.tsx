@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   League,
   SimCBB,
@@ -296,11 +297,21 @@ export const NBARequestCard: React.FC<NBARequestCardProps> = ({
     request.NBATeamID,
     currentUser?.isRetro
   );
-  const teamColors = useTeamColors(
-    nbaTeam.ColorOne,
-    nbaTeam.ColorTwo,
-    nbaTeam.ColorThree
-  );
+  const teamColors = useMemo(() => {
+    if (!nbaTeam) {
+      return {
+        One: "#FFFFFF",
+        Two: "#000000",
+        Three: "#CCCCCC",
+      };
+    }
+
+    return useTeamColors(
+      nbaTeam.ColorOne,
+      nbaTeam.ColorTwo,
+      nbaTeam.ColorThree
+    );
+  }, [nbaTeam]);
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
   const { acceptNBARequest, rejectNBARequest } = useAdminPage();
@@ -311,9 +322,25 @@ export const NBARequestCard: React.FC<NBARequestCardProps> = ({
     await rejectNBARequest(request);
   };
 
+  const teamLabel = useMemo(() => {
+    if (!nbaTeam) {
+      return "Unknown Team";
+    }
+    return `${nbaTeam.Team} ${nbaTeam.Nickname}`;
+  }, [nbaTeam]);
+
+  const role = useMemo(() => {
+    if (!request) return "Unknown Role";
+    if (request.IsOwner) return "Owner";
+    if (request.IsManager) return "GM";
+    if (request.IsCoach) return "Coach";
+    if (request.IsAssistant) return "Scout";
+    return "Unknown Role";
+  }, [request]);
+
   return (
     <AdminRequestCard
-      teamLabel={`${nbaTeam.Team} ${nbaTeam.Nickname}`}
+      teamLabel={teamLabel}
       requestLogo={requestLogo}
       oneItem={oneItem}
       accept={accept}
@@ -321,6 +348,7 @@ export const NBARequestCard: React.FC<NBARequestCardProps> = ({
       backgroundColor={backgroundColor}
       borderColor={borderColor}
       username={request.Username}
+      role={role}
     />
   );
 };
@@ -409,6 +437,15 @@ export const NFLRequestCard: React.FC<NFLRequestCardProps> = ({
     await rejectNFLRequest(request);
   };
 
+  const role = useMemo(() => {
+    if (!request) return "Unknown Role";
+    if (request.IsOwner) return "Owner";
+    if (request.IsManager) return "GM";
+    if (request.IsCoach) return "Coach";
+    if (request.IsAssistant) return "Scout";
+    return "Unknown Role";
+  }, [request]);
+
   return (
     <AdminRequestCard
       teamLabel={`${nflTeam.TeamName} ${nflTeam.Mascot}`}
@@ -419,6 +456,7 @@ export const NFLRequestCard: React.FC<NFLRequestCardProps> = ({
       backgroundColor={backgroundColor}
       borderColor={borderColor}
       username={request.Username}
+      role={role}
     />
   );
 };
