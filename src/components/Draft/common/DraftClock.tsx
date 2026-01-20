@@ -1,20 +1,18 @@
-import React, { FC, useEffect, useState } from 'react';
-import { Border } from '../../../../_design/Borders';
-import { Text } from '../../../../_design/Typography';
-import { getLogo } from '../../../../_utility/getLogo';
-import { SimNFL } from '../../../../_constants/constants';
-import { NFLDraftPick } from '../../../../models/footballModels';
+import { FC, useEffect, useState } from 'react';
+import { Border } from '../../../_design/Borders';
+import { Text } from '../../../_design/Typography';
+import { getLogo } from '../../../_utility/getLogo';
+import { DraftLeague, DraftPick, TeamColors, getLeagueConstant, isNFLLeague } from './types';
 
 interface DraftClockProps {
-  currentPick: NFLDraftPick | null;
+  currentPick: DraftPick | null;
   currentRound: number;
   pickNumber: number;
   timeLeft: number;
   isPaused: boolean;
-  teamColors: {
-    primary: string;
-    secondary: string;
-  };
+  teamColors: TeamColors;
+  league: DraftLeague;
+  picksPerRound?: number;
 }
 
 export const DraftClock: FC<DraftClockProps> = ({
@@ -23,7 +21,8 @@ export const DraftClock: FC<DraftClockProps> = ({
   pickNumber,
   timeLeft,
   isPaused,
-  teamColors
+  teamColors,
+  league
 }) => {
   const [displayTime, setDisplayTime] = useState(timeLeft);
   const [isUrgent, setIsUrgent] = useState(false);
@@ -47,13 +46,20 @@ export const DraftClock: FC<DraftClockProps> = ({
   };
 
   const getProgressPercentage = () => {
-    const totalTime = currentRound === 1 ? 300 : currentRound <= 4 ? 180 : 120;
+    let totalTime: number;
+    if (isNFLLeague(league)) {
+      totalTime = currentRound === 1 ? 300 : currentRound <= 4 ? 180 : 120;
+    } else {
+      totalTime = currentRound === 1 ? 300 : currentRound <= 4 ? 180 : 120;
+    }
     return ((totalTime - displayTime) / totalTime) * 100;
   };
 
+  const leagueConstant = getLeagueConstant(league);
+
   if (!currentPick) {
     return (
-      <Border 
+      <Border
         classes="p-6 bg-gray-900 border-4"
         styles={{ borderColor: teamColors.primary }}
       >
@@ -69,21 +75,21 @@ export const DraftClock: FC<DraftClockProps> = ({
     );
   }
 
-  const teamLogo = getLogo(SimNFL, currentPick.TeamID, false);
+  const teamLogo = getLogo(leagueConstant, currentPick.TeamID, false);
 
   return (
-    <Border 
+    <Border
       classes={`p-4 bg-gradient-to-br from-gray-900 to-gray-800 relative overflow-hidden border-4 h-full ${isUrgent ? 'animate-pulse' : ''}`}
       styles={{ borderColor: teamColors.primary }}
     >
-      <div 
+      <div
         className="absolute inset-0 opacity-10"
         style={{
           background: `linear-gradient(135deg, ${teamColors.primary} 0%, transparent 50%)`,
         }}
       />
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
-        <div 
+        <div
           className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000"
           style={{ width: `${getProgressPercentage()}%` }}
         />
@@ -108,9 +114,9 @@ export const DraftClock: FC<DraftClockProps> = ({
           </div>
         </div>
         <div className="flex items-center justify-center space-x-4 mt-6">
-          <img 
-            src={teamLogo} 
-            alt={currentPick.Team} 
+          <img
+            src={teamLogo}
+            alt={currentPick.Team}
             className="w-20 h-20 object-contain drop-shadow-lg"
           />
           <div className="text-center">

@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
-import { Text } from '../../../../_design/Typography';
-import { getGradeColor } from '../../../Gameplan/FootballGameplan/Utils/UIUtils';
+import { Text } from '../../../_design/Typography';
+import { getGradeColor } from '../../Gameplan/FootballGameplan/Utils/UIUtils';
 
 interface AttributeDisplayProps {
   name: string;

@@ -321,7 +321,7 @@ export const useSideMenu = () => {
       {
         label: "Draft Page",
         isRoute: true,
-        route: "",
+        route: routes.PHL_DRAFT_ROOM,
         league: SimPHL,
         toggle: () => toggleMenu(),
       },

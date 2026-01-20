@@ -1,38 +1,39 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
-import { Border } from '../../../../_design/Borders';
-import { Text } from '../../../../_design/Typography';
-import { getLogo } from '../../../../_utility/getLogo';
-import { SimNFL } from '../../../../_constants/constants';
-import { NFLDraftPick, NFLDraftee } from '../../../../models/footballModels';
+import { FC, useEffect, useRef, useState } from 'react';
+import { Border } from '../../../_design/Borders';
+import { Text } from '../../../_design/Typography';
+import { getLogo } from '../../../_utility/getLogo';
+import { DraftLeague, DraftPick, Draftee, TeamColors, getLeagueConstant, isNFLLeague } from './types';
+
 
 interface DraftTickerProps {
   recentPicks: Array<{
-    pick: NFLDraftPick;
-    player?: NFLDraftee;
+    pick: DraftPick;
+    player?: Draftee;
   }>;
-  onPickClick?: (pick: NFLDraftPick) => void;
-  teamColors: {
-    primary: string;
-    secondary: string;
-  };
+  onPickClick?: (pick: DraftPick) => void;
+  teamColors: TeamColors;
   backgroundColor: string;
+  league: DraftLeague;
 }
 
 export const DraftTicker: FC<DraftTickerProps> = ({
   recentPicks,
   onPickClick,
   teamColors,
-  backgroundColor
+  backgroundColor,
+  league
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
   const [hoveredPick, setHoveredPick] = useState<number | null>(null);
 
+  const leagueConstant = getLeagueConstant(league);
+
   useEffect(() => {
     if (isAutoScrolling && scrollRef.current) {
       const scrollContainer = scrollRef.current;
       const scrollAmount = 1;
-      
+
       const scroll = () => {
         if (scrollContainer.scrollLeft >= scrollContainer.scrollWidth - scrollContainer.clientWidth) {
           scrollContainer.scrollLeft = 0;
@@ -49,10 +50,14 @@ export const DraftTicker: FC<DraftTickerProps> = ({
   const handleMouseEnter = () => setIsAutoScrolling(false);
   const handleMouseLeave = () => setIsAutoScrolling(true);
 
-  const PickCard: FC<{ pickData: { pick: NFLDraftPick; player?: NFLDraftee }, index: number }> = ({ pickData, index }) => {
+  const PickCard: FC<{ pickData: { pick: DraftPick; player?: Draftee }, index: number }> = ({ pickData, index }) => {
     const { pick, player } = pickData;
-    const teamLogo = getLogo(SimNFL, pick.TeamID, false);
+    const teamLogo = getLogo(leagueConstant, pick.TeamID, false);
     const isNew = index === 0;
+
+    const collegeOrTeam = isNFLLeague(league)
+      ? (player as any)?.College
+      : (player as any)?.Team;
 
     return (
       <div
@@ -83,8 +88,8 @@ export const DraftTicker: FC<DraftTickerProps> = ({
             </div>
 
             {/* Team logo */}
-            <img 
-              src={teamLogo} 
+            <img
+              src={teamLogo}
               alt={pick.Team}
               className="w-10 h-10 object-contain"
             />
@@ -100,10 +105,10 @@ export const DraftTicker: FC<DraftTickerProps> = ({
                     <span className="text-blue-400 font-semibold">{pick.SelectedPlayerPosition}</span>
                   </>
                 )}
-                {player?.College && (
+                {collegeOrTeam && (
                   <>
                     <span className="text-gray-500">•</span>
-                    <span className="text-gray-400 truncate">{player.College}</span>
+                    <span className="text-gray-400 truncate">{collegeOrTeam}</span>
                   </>
                 )}
               </div>
@@ -162,10 +167,10 @@ export const DraftTicker: FC<DraftTickerProps> = ({
           )}
           {recentPicks.length > 0 && recentPicks.length < 10 && (
             recentPicks.map((pickData, index) => (
-              <PickCard 
-                key={`dup-${pickData.pick.ID}`} 
-                pickData={pickData} 
-                index={recentPicks.length + index} 
+              <PickCard
+                key={`dup-${pickData.pick.ID}`}
+                pickData={pickData}
+                index={recentPicks.length + index}
               />
             ))
           )}
@@ -179,7 +184,7 @@ export const DraftTicker: FC<DraftTickerProps> = ({
         .scrollbar-hide::-webkit-scrollbar {
           display: none;
         }
-        
+
         @keyframes slideIn {
           from {
             opacity: 0;
@@ -190,7 +195,7 @@ export const DraftTicker: FC<DraftTickerProps> = ({
             transform: translateX(0);
           }
         }
-        
+
         .animate-slideIn {
           animation: slideIn 0.5s ease-out;
         }

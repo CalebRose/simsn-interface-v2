@@ -37,7 +37,6 @@ export const getUpcomingPicks = (
     }
   }
 
-  // Collect upcoming picks
   while (upcomingPicks.length < count && round <= 7) {
     const roundPicks = allDraftPicks[round] || [];
     for (const pick of roundPicks) {

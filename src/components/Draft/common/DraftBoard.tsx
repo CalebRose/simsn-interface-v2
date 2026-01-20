@@ -1,53 +1,41 @@
 import { FC, useState, useMemo } from 'react';
-import { Border } from '../../../../_design/Borders';
-import { Text } from '../../../../_design/Typography';
-import { Input } from '../../../../_design/Inputs';
-import { SelectDropdown } from '../../../../_design/Select';
-import { Button, ButtonGroup } from '../../../../_design/Buttons';
-import { Table, TableCell } from '../../../../_design/Table';
-import { NFLDraftee } from '../../../../models/footballModels';
-import { SelectOption } from '../../../../_hooks/useSelectStyles';
-import { usePagination } from '../../../../_hooks/usePagination';
+import { Border } from '../../../_design/Borders';
+import { Text } from '../../../_design/Typography';
+import { Input } from '../../../_design/Inputs';
+import { SelectDropdown } from '../../../_design/Select';
+import { Button, ButtonGroup } from '../../../_design/Buttons';
+import { Table, TableCell } from '../../../_design/Table';
+import { SelectOption } from '../../../_hooks/useSelectStyles';
+import { usePagination } from '../../../_hooks/usePagination';
 import { ScoutingTooltip } from './ScoutingTooltip';
-import { getGradeColor } from '../../../Gameplan/FootballGameplan/Utils/UIUtils';
-import PlayerPicture from '../../../../_utility/usePlayerFaces';
-import { SimCFB, SimNFL } from '../../../../_constants/constants';
-import { CheckCircle, Medic } from '../../../../_design/Icons';
-import { darkenColor } from '../../../../_utility/getDarkerColor';
+import { getGradeColor } from '../../Gameplan/FootballGameplan/Utils/UIUtils';
+import { CheckCircle, Medic } from '../../../_design/Icons';
+import { darkenColor } from '../../../_utility/getDarkerColor';
+import {
+  DraftLeague,
+  Draftee,
+  TeamColors,
+  getPositionsByLeague,
+  formatPlayerHeight,
+  getPlayerCollege,
+  getLeagueConstant,
+  isNFLLeague
+} from './types';
+import { getOverallGrade } from './draftHelpers';
 
 interface DraftBoardProps {
-  draftees: NFLDraftee[];
+  draftees: Draftee[];
   draftedPlayerIds: Set<number>;
   scoutedPlayerIds: Set<number>;
-  onAddToScoutBoard: (player: NFLDraftee) => void;
-  onDraftPlayer?: (player: NFLDraftee) => void;
+  onAddToScoutBoard: (player: Draftee) => void;
+  onDraftPlayer?: (player: Draftee) => void;
   isUserTurn?: boolean;
-  teamColors: {
-    primary: string;
-    secondary: string;
-  };
+  teamColors: TeamColors;
   backgroundColor: string;
-  scoutingPoints: any;
-  spentPoints: any;
+  scoutingPoints: number;
+  spentPoints: number;
+  league: DraftLeague;
 }
-
-const positions = [
-  { value: 'QB', label: 'Quarterback' },
-  { value: 'RB', label: 'Running Back' },
-  { value: 'WR', label: 'Wide Receiver' },
-  { value: 'TE', label: 'Tight End' },
-  { value: 'OT', label: 'Offensive Tackle' },
-  { value: 'OG', label: 'Offensive Guard' },
-  { value: 'C', label: 'Center' },
-  { value: 'DE', label: 'Defensive End' },
-  { value: 'DT', label: 'Defensive Tackle' },
-  { value: 'ILB', label: 'Inside Linebacker' },
-  { value: 'OLB', label: 'Outside Linebacker' },
-  { value: 'CB', label: 'Cornerback' },
-  { value: 'S', label: 'Safety' },
-  { value: 'K', label: 'Kicker' },
-  { value: 'P', label: 'Punter' },
-];
 
 export const DraftBoard: FC<DraftBoardProps> = ({
   draftees,
@@ -59,12 +47,15 @@ export const DraftBoard: FC<DraftBoardProps> = ({
   teamColors,
   backgroundColor,
   scoutingPoints,
-  spentPoints
+  spentPoints,
+  league
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [selectedArchetype, setSelectedArchetype] = useState<string>('');
   const [selectedCollege, setSelectedCollege] = useState<string>('');
+
+  const positions = useMemo(() => getPositionsByLeague(league), [league]);
 
   const archetypes = useMemo(() => {
     const uniqueArchetypes = new Set(draftees.map(d => d.Archetype).filter(Boolean));
@@ -72,9 +63,11 @@ export const DraftBoard: FC<DraftBoardProps> = ({
   }, [draftees]);
 
   const colleges = useMemo(() => {
-    const uniqueColleges = new Set(draftees.map(d => d.College).filter(Boolean));
+    const uniqueColleges = new Set(
+      draftees.map(d => getPlayerCollege(d, league)).filter(Boolean)
+    );
     return Array.from(uniqueColleges).sort().map(c => ({ value: c, label: c }));
-  }, [draftees]);
+  }, [draftees, league]);
 
   const filteredPlayers = useMemo(() => {
     let filtered = draftees.filter(player => {
@@ -82,8 +75,8 @@ export const DraftBoard: FC<DraftBoardProps> = ({
       if (searchTerm) {
         const search = searchTerm.toLowerCase();
         const fullName = `${player.FirstName} ${player.LastName}`.toLowerCase();
-        if (!fullName.includes(search) && 
-            !player.College?.toLowerCase().includes(search)) {
+        const college = getPlayerCollege(player, league).toLowerCase();
+        if (!fullName.includes(search) && !college.includes(search)) {
           return false;
         }
       }
@@ -96,7 +89,8 @@ export const DraftBoard: FC<DraftBoardProps> = ({
         return false;
       }
 
-      if (selectedCollege && player.College !== selectedCollege) {
+      const playerCollege = getPlayerCollege(player, league);
+      if (selectedCollege && playerCollege !== selectedCollege) {
         return false;
       }
 
@@ -104,14 +98,14 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     });
 
     return filtered;
-  }, [draftees, draftedPlayerIds, searchTerm, selectedPositions, selectedArchetype, selectedCollege]);
+  }, [draftees, draftedPlayerIds, searchTerm, selectedPositions, selectedArchetype, selectedCollege, league]);
 
-  const { 
-    currentPage, 
-    setCurrentPage, 
-    totalPages, 
-    goToPreviousPage, 
-    goToNextPage 
+  const {
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    goToPreviousPage,
+    goToNextPage
   } = usePagination(filteredPlayers.length, 25);
 
   const columns = [
@@ -127,61 +121,63 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     { header: 'Actions', accessor: 'actions' },
   ];
 
-  const rowRenderer = (player: NFLDraftee, index: number, rowBackgroundColor: string) => {
+  const rowRenderer = (player: Draftee, index: number, rowBackgroundColor: string) => {
     const isScouted = scoutedPlayerIds.has(player.ID);
-    
+    const overallGrade = getOverallGrade(player);
+    const playerCollege = getPlayerCollege(player, league);
+
     return (
       <div className="table-row border-b border-gray-800 hover:bg-gray-800/50 transition-colors text-left" style={{ backgroundColor: rowBackgroundColor }}>
-        <TableCell classes="py-2 px-3">
-          <Text variant="body" classes="text-gray-400">
-            {player.DraftedPick || index + 1}
+        <TableCell classes="py-2 px-1 sm:px-3">
+          <Text variant="small" classes="text-gray-400">
+            {(player as any).DraftedPick || index + 1}
           </Text>
         </TableCell>
-        <TableCell classes="py-2 px-3">
+        <TableCell classes="py-2 px-1 sm:px-3">
           <div className="flex items-center space-x-3">
             <div>
-              <Text variant="body" classes="text-white font-medium">
+              <Text variant="small" classes="text-white font-medium">
                 {player.FirstName} {player.LastName}
               </Text>
             </div>
           </div>
         </TableCell>
-        <TableCell classes="py-2 px-3">
-          <Text variant="body" classes="text-gray-300">
+        <TableCell classes="py-2 px-1 sm:px-3">
+          <Text variant="small" classes="text-gray-300">
             {player.Position}
           </Text>
         </TableCell>
-        <TableCell classes="py-2 px-3">
-          <Text variant="body" classes="text-gray-300">
+        <TableCell classes="py-2 px-1 sm:px-3">
+          <Text variant="small" classes="text-gray-300">
             {player.Archetype}
           </Text>
         </TableCell>
-        <TableCell classes="py-2 px-3">
-          <Text variant="body" classes="text-gray-300">
-            {player.College}
+        <TableCell classes="py-2 px-1 sm:px-3">
+          <Text variant="small" classes="text-gray-300">
+            {playerCollege}
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-3">
-          <Text variant="body" classes="text-gray-300">
+        <TableCell classes="text-center py-2 px-1 sm:px-3">
+          <Text variant="small" classes="text-gray-300">
             {player.Age}
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-3">
-          <Text variant="body" classes="text-gray-300">
-            {Math.floor(player.Height / 12)}'{player.Height % 12}"
+        <TableCell classes="text-center py-2 px-1 sm:px-3">
+          <Text variant="small" classes="text-gray-300">
+            {formatPlayerHeight(player.Height, league)}
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-3">
-          <Text variant="body" classes="text-gray-300">
+        <TableCell classes="text-center py-2 px-1 sm:px-3">
+          <Text variant="small" classes="text-gray-300">
             {player.Weight} lbs
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-3">
-          <Text variant="body" classes={`font-bold ${getGradeColor(player.OverallGrade)}`}>
-            {player.OverallGrade}
+        <TableCell classes="text-center py-2 px-1 sm:px-3">
+          <Text variant="small" classes={`font-bold ${getGradeColor(overallGrade)}`}>
+            {overallGrade}
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-3">
+        <TableCell classes="text-center py-2 px-1 sm:px-3">
           <div className="flex items-center justify-center space-x-2">
             {!isScouted && (
               <Button
@@ -219,10 +215,11 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     );
   };
 
+  const leagueConstant = getLeagueConstant(league);
 
   return (
-    <Border 
-      classes="p-4 border-2 min-w-[80em] max-h-[50em]"
+    <Border
+      classes="p-4 border-2 w-full lg:min-w-[80em] max-h-[50em] overflow-x-auto"
       styles={{ borderColor: teamColors.primary, backgroundColor }}
     >
       <div className="space-y-4 mb-4">
@@ -286,7 +283,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
               setSelectedCollege((selected as SelectOption)?.value || '');
               setCurrentPage(0);
             }}
-            placeholder="All Colleges"
+            placeholder={isNFLLeague(league) ? 'All Colleges' : 'All Teams'}
             isClearable
             className="text-sm"
           />
@@ -299,10 +296,9 @@ export const DraftBoard: FC<DraftBoardProps> = ({
         rowRenderer={rowRenderer}
         rowBgColor={backgroundColor}
         darkerRowBgColor={darkenColor(backgroundColor, -5)}
-        league={SimNFL}
+        league={leagueConstant}
         enablePagination={true}
         currentPage={currentPage}
-        pageSize={150}
       />
       <div className="flex flex-row justify-center py-2">
         <ButtonGroup>

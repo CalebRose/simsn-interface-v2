@@ -1,15 +1,16 @@
 import { FC } from 'react';
-import { NFLDraftee } from '../../../../models/footballModels';
-import { getGradeColor, getRatingColor } from '../../../Gameplan/FootballGameplan/Utils/UIUtils';
-import { getAttributeFieldName } from '../utils/draftHelpers';
+import { getGradeColor, getRatingColor } from '../../Gameplan/FootballGameplan/Utils/UIUtils';
+import { DraftLeague, Draftee } from './types';
+import { getAttributeFieldName, getOverallGrade, getPotentialGrade } from './draftHelpers';
 
 interface ScoutingAttributeBoxProps {
   attributeName: string;
-  player: NFLDraftee;
+  player: Draftee;
   cost: number;
   revealed: boolean;
   canAfford: boolean;
   onClick: () => void;
+  league: DraftLeague;
 }
 
 export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
@@ -18,22 +19,30 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
   cost,
   revealed,
   canAfford,
-  onClick
+  onClick,
+  league
 }) => {
-  const fieldName = getAttributeFieldName(attributeName);
+  const fieldName = getAttributeFieldName(attributeName, league);
   const isClickable = !revealed && canAfford;
+  const isOverallGrade = attributeName === 'Overall Grade';
   const isPotentialGrade = attributeName === 'Potential Grade';
   let displayValue: string;
   let valueColor: string = '';
-  
-  if (revealed) {
-    if (isPotentialGrade) {
-      displayValue = (player as any)[fieldName] || '?';
+
+  if (isOverallGrade) {
+    displayValue = getOverallGrade(player);
+    valueColor = getGradeColor(displayValue);
+  } else if (isPotentialGrade) {
+    if (revealed) {
+      displayValue = getPotentialGrade(player, league);
       valueColor = getGradeColor(displayValue);
     } else {
-      displayValue = (player as any)[fieldName]?.toString() || '0';
-      valueColor = getRatingColor(parseInt(displayValue));
+      displayValue = '?';
+      valueColor = getGradeColor(displayValue);
     }
+  } else if (revealed) {
+    displayValue = (player as any)[fieldName]?.toString() || '0';
+    valueColor = getRatingColor(parseInt(displayValue));
   } else {
     const grade = (player as any)[`${fieldName}Grade`];
     displayValue = grade || '?';
@@ -43,20 +52,20 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
   return (
     <div
       className={`
-        relative p-2 rounded border text-center cursor-pointer 
-        ${isPotentialGrade ? 'min-w-[60px] min-h-[50px]' : 'min-w-[80px] min-h-[60px]'}
+        relative p-2 rounded border text-center cursor-pointer
+        ${(isPotentialGrade || isOverallGrade) ? 'min-w-[60px] min-h-[50px]' : 'min-w-[80px] min-h-[60px]'}
         flex flex-col justify-center items-center
-        ${revealed 
-          ? 'bg-gray-700 border-gray-600' 
-          : isClickable 
-            ? 'bg-gray-700 border-gray-600 hover:bg-gray-600 hover:border-gray-500 hover:scale-105 transition-transform' 
+        ${revealed
+          ? 'bg-gray-700 border-gray-600 cursor-default'
+          : isClickable
+            ? 'bg-gray-700 border-gray-600 hover:bg-gray-600 hover:border-gray-500 hover:scale-105 transition-transform'
             : 'bg-gray-800 border-gray-700 cursor-not-allowed'
         }
       `}
       onClick={onClick}
       title={`${attributeName}${!revealed ? ` (${cost} points)` : ` - ${displayValue}`}`}
     >
-      {!isPotentialGrade && (
+      {!(isPotentialGrade || isOverallGrade) && (
         <div className="text-[10px] font-medium text-gray-400 mb-1 leading-tight">
           {attributeName}
         </div>

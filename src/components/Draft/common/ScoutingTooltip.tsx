@@ -1,5 +1,5 @@
 import React, { FC, ReactNode } from 'react';
-import { InformationCircle } from '../../../../_design/Icons';
+import { InformationCircle } from '../../../_design/Icons';
 
 interface ScoutingTooltipProps {
   children?: ReactNode;

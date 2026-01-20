@@ -23,6 +23,7 @@ import { StatsPage } from "../components/StatsPage/StatsPage";
 import { TeamProfilePage } from "../components/TeamProfile/TeamProfile";
 import { TransferPortalPage } from "../components/TransferPortal/TransferPortal";
 import { NewsPage } from "../components/News/NewsPage";
+import { DraftPage } from "../components/Draft/DraftPage";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
@@ -338,6 +339,15 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <StatsPage league={SimPHL} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="PHL DRAFT"
+    path={routes.PHL_DRAFT_ROOM}
+    element={
+      <AuthGuard>
+        <DraftPage league={SimPHL} />
       </AuthGuard>
     }
   />,

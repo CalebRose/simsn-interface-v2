@@ -1,19 +1,16 @@
 import React, { FC } from 'react';
-import { Border } from '../../../../_design/Borders';
-import { Text } from '../../../../_design/Typography';
-import { getLogo } from '../../../../_utility/getLogo';
-import { SimNFL } from '../../../../_constants/constants';
-import { NFLDraftPick } from '../../../../models/footballModels';
+import { Border } from '../../../_design/Borders';
+import { Text } from '../../../_design/Typography';
+import { getLogo } from '../../../_utility/getLogo';
+import { DraftLeague, DraftPick, TeamColors, getLeagueConstant } from './types';
 
 interface UpcomingPicksProps {
-  upcomingPicks: NFLDraftPick[];
-  currentPick: NFLDraftPick | null;
+  upcomingPicks: DraftPick[];
+  currentPick: DraftPick | null;
   userTeamId?: number;
-  teamColors: {
-    primary: string;
-    secondary: string;
-  };
+  teamColors: TeamColors;
   backgroundColor: string;
+  league: DraftLeague;
 }
 
 export const UpcomingPicks: FC<UpcomingPicksProps> = ({
@@ -21,11 +18,14 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
   currentPick,
   userTeamId,
   teamColors,
-  backgroundColor
+  backgroundColor,
+  league
 }) => {
-  const getPickStatus = (pick: NFLDraftPick, index: number) => {
-    if (currentPick && pick.ID === currentPick.ID) return 'current';
+  const leagueConstant = getLeagueConstant(league);
+
+  const getPickStatus = (pick: DraftPick, index: number) => {
     if (pick.TeamID === userTeamId) return 'user';
+    if (currentPick && pick.ID === currentPick.ID) return 'current';
     if (index === 0) return 'next';
     return 'upcoming';
   };
@@ -33,11 +33,11 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
   const getStatusStyles = (status: string) => {
     switch (status) {
       case 'current':
-        return 'bg-gradient-to-r from-blue-600 to-blue-500 border-blue-400 scale-105 shadow-lg shadow-blue-500/25';
+        return 'bg-gradient-to-r from-[#1f2937] to-blue-900 border-blue-400 scale-105 shadow-lg shadow-blue-500/25';
       case 'user':
-        return 'bg-gradient-to-r from-green-600 to-green-500 border-green-400';
+        return 'bg-gradient-to-r from-[#189E5B] to-green-900 border-green-400';
       case 'next':
-        return 'bg-gradient-to-r from-gray-700 to-gray-600 border-gray-500';
+        return 'bg-gradient-to-r from-gray-700 to-gray-900 border-gray-500';
       default:
         return 'bg-gray-800 border-gray-600 opacity-75';
     }
@@ -57,7 +57,7 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
   };
 
   return (
-    <Border 
+    <Border
       classes="p-4 border-2 h-full"
       styles={{ borderColor: teamColors.primary, backgroundColor }}
     >
@@ -74,8 +74,7 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
         {upcomingPicks.map((pick, index) => {
           const status = getPickStatus(pick, index);
           const statusLabel = getStatusLabel(status);
-          const teamLogo = getLogo(SimNFL, pick.TeamID, false);
-          const isTraded = pick.PreviousTeamID && pick.PreviousTeamID !== pick.TeamID;
+          const teamLogo = getLogo(leagueConstant, pick.TeamID, false);
 
           return (
             <div
@@ -86,7 +85,7 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
               `}
             >
               {statusLabel && (
-                <div className="absolute -top-3 left-3 px-2 py-0.5 bg-gray-900 rounded">
+                <div className="absolute -top-3 left-3 px-2 py-0.5 bg-gray-900 rounded z-10">
                   <Text variant="small" classes={`font-bold ${statusLabel.color}`}>
                     {statusLabel.text}
                   </Text>
@@ -101,17 +100,16 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
                     {pick.DraftNumber}
                   </div>
                 </div>
-                <img 
-                  src={teamLogo} 
+                <img
+                  src={teamLogo}
                   alt={pick.Team}
                   className={`
                     w-8 h-8 object-contain transition-all duration-300
-                    ${status === 'current' ? 'animate-pulse' : ''}
                   `}
                 />
                 <div className="flex-1">
-                  <Text 
-                    variant="body-small" 
+                  <Text
+                    variant="body-small"
                     classes={`
                       font-semibold text-left
                       ${status === 'current' || status === 'user' ? 'text-white' : 'text-gray-200'}
@@ -136,7 +134,12 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
               </div>
               {status === 'current' && (
                 <div className="absolute inset-0 rounded-lg pointer-events-none">
-                  <div className="absolute inset-0 rounded-lg animate-ping bg-blue-500 opacity-20" />
+                  <div className="absolute inset-0 rounded-lg animate-pulse bg-blue-800 opacity-5" />
+                </div>
+              )}
+              {status === 'user' && (
+                <div className="absolute inset-0 rounded-lg pointer-events-none">
+                  <div className="absolute inset-0 rounded-lg animate-ping bg-green-900 opacity-50" />
                 </div>
               )}
             </div>

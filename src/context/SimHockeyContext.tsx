@@ -58,6 +58,10 @@ import {
   CollegePollSubmission,
   TransferPortalProfile,
   CollegePromise,
+  DraftablePlayer,
+  ProDraftPageResponse,
+  ProWarRoom,
+  ScoutingProfile
 } from "../models/hockeyModels";
 import { TeamService } from "../_services/teamService";
 import {
@@ -82,6 +86,7 @@ import { TradeService } from "../_services/tradeService";
 import { CollegePollService } from "../_services/collegePollService";
 import FBAScheduleService from "../_services/scheduleService";
 import { TransferPortalService } from "../_services/transferPortalService";
+import { DraftService } from "../_services/draftService";
 
 // ✅ Define the context props
 interface SimHCKContextProps {
@@ -227,6 +232,17 @@ interface SimHCKContextProps {
   collegePollsBySeason: Record<number, CollegePollOfficial[]>;
   collegeStandingsMapBySeason: Record<number, CollegeStandings[]>;
   proStandingsMapBySeason: Record<number, ProfessionalStandings[]>;
+  proDraftablePlayers: DraftablePlayer[];
+  proWarRoom: Record<number, ProWarRoom | null>;
+  proScoutingProfile: Record<number, ScoutingProfile | null>;
+  phlScoutProfiles: ScoutingProfile[];
+  phlAllDraftPicks: DraftPick[];
+  getBootstrapDraftData: () => Promise<void>;
+  addPlayerToScoutBoard: (dto: any, playerData?: any) => Promise<void>;
+  revealScoutingAttribute: (dto: any) => Promise<void>;
+  removePlayerFromScoutBoard: (id: number) => Promise<void>;
+  exportDraftPicks: (dto: any) => Promise<void>;
+  bringUpCollegePlayer: (draftPickID: number) => Promise<void>;
 }
 
 // ✅ Default context value
@@ -363,6 +379,17 @@ const defaultContext: SimHCKContextProps = {
   collegePollsBySeason: {},
   collegeStandingsMapBySeason: {},
   proStandingsMapBySeason: {},
+  proDraftablePlayers: [],
+  proWarRoom: {},
+  proScoutingProfile: {},
+  phlScoutProfiles: [],
+  phlAllDraftPicks: [],
+  getBootstrapDraftData: async () => {},
+  addPlayerToScoutBoard: async () => {},
+  revealScoutingAttribute: async () => {},
+  removePlayerFromScoutBoard: async () => {},
+  exportDraftPicks: async () => {},
+  bringUpCollegePlayer: async () => {},
 };
 
 // ✅ Create the context
@@ -410,6 +437,13 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const [phlShootoutLineup, setPHLShootoutLineup] =
     useState<CollegeShootoutLineup>({} as ProfessionalShootoutLineup);
   const [recruits, setRecruits] = useState<Croot[]>([]);
+  const [proDraftablePlayers, setProDraftablePlayers] = useState<DraftablePlayer[]>([]);
+  const [proWarRoom, setProWarRoom] = useState<
+    Record<number, ProWarRoom | null>
+  >({});
+  const [proScoutingProfile, setProScoutingProfile] = useState<
+    Record<number, ScoutingProfile | null>
+  >({});
   const [recruitProfiles, setRecruitProfiles] = useState<
     RecruitPlayerProfile[]
   >([]);
@@ -517,6 +551,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     Record<number, TradePreferences>
   >([]);
   const [phlDraftPicks, setPHLDraftPicks] = useState<DraftPick[]>([]);
+  const [phlScoutProfiles, setPhlScoutProfiles] = useState<ScoutingProfile[]>([]);
+  const [phlAllDraftPicks, setPhlAllDraftPicks] = useState<DraftPick[]>([]);
 
   const phlDraftPickMap = useMemo(() => {
     if (!phlDraftPicks) return {};
@@ -864,6 +900,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setTopCHLAssists(res.TopCHLAssists);
       setTopCHLSaves(res.TopCHLSaves);
       setPortalPlayers(res.PortalPlayers);
+      setProDraftablePlayers(res.DraftablePlayers);
+      setProWarRoom({});
+      setProScoutingProfile({});
       setRecruits(res.Recruits);
       setRecruitProfiles(res.RecruitProfiles);
       setTeamProfileMap(res.TeamProfileMap);
@@ -1733,6 +1772,191 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const getBootstrapDraftData = useCallback(async () => {
+    let phlID = 0;
+    if (currentUser && currentUser.PHLTeamID) {
+      phlID = currentUser.PHLTeamID;
+    }
+    if (phlID === 0) {
+      return;
+    }
+    try {
+      const res = await DraftService.GetPHLDraftPageData(phlID);
+      if (res) {
+        const allPicks: DraftPick[] = [];
+        if (res.DraftPicks && Array.isArray(res.DraftPicks)) {
+          res.DraftPicks.forEach((roundPicks: any[]) => {
+            if (Array.isArray(roundPicks)) {
+              roundPicks.forEach((pickData: any) => {
+                allPicks.push(new DraftPick(pickData));
+              });
+            }
+          });
+        }
+        setPhlAllDraftPicks(allPicks);
+
+        if (res.DraftablePlayers) {
+          setProDraftablePlayers(res.DraftablePlayers);
+        }
+
+        if (res.WarRoomMap && res.WarRoomMap[phlID]) {
+          setProWarRoom(prev => ({
+            ...prev,
+            [phlID]: new ProWarRoom(res.WarRoomMap[phlID])
+          }));
+        }
+
+        if (res.ScoutingProfiles) {
+          const profiles = res.ScoutingProfiles.map((p: any) => new ScoutingProfile(p));
+          setPhlScoutProfiles(profiles);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load draft data:', error);
+    }
+  }, [currentUser?.PHLTeamID]);
+
+  const addPlayerToScoutBoard = useCallback(async (dto: any, playerData?: any) => {
+    // Create optimistic profile with temporary negative ID
+    const tempId = -Date.now();
+    const optimisticProfile = new ScoutingProfile({
+      ID: tempId,
+      PlayerID: dto.PlayerID,
+      TeamID: dto.TeamID,
+      FirstName: playerData?.FirstName || '',
+      LastName: playerData?.LastName || '',
+      Position: playerData?.Position || '',
+      Archetype: playerData?.Archetype || '',
+      College: playerData?.College || '',
+      Overall: playerData?.Overall || 0,
+      ShowCount: 0,
+    });
+
+    // Optimistic update - add immediately
+    setPhlScoutProfiles(prev => [...prev, optimisticProfile]);
+    enqueueSnackbar('Player added to scouting board!', {
+      variant: 'success',
+      autoHideDuration: 3000,
+    });
+
+    try {
+      const res = await DraftService.CreatePHLScoutingProfile(dto);
+      if (res) {
+        const newProfile = new ScoutingProfile(res);
+        setPhlScoutProfiles(prev =>
+          prev.map(p => p.ID === tempId ? newProfile : p)
+        );
+      }
+    } catch (error) {
+      console.error('Failed to add player to scouting board:', error);
+      setPhlScoutProfiles(prev => prev.filter(p => p.ID !== tempId));
+      enqueueSnackbar('Failed to add player to scouting board', {
+        variant: 'error',
+        autoHideDuration: 3000,
+      });
+    }
+  }, [enqueueSnackbar]);
+
+  const revealScoutingAttribute = useCallback(async (dto: any) => {
+    try {
+      const res = await DraftService.RevealPHLAttribute(dto);
+      if (res) {
+        setPhlScoutProfiles(prev =>
+          prev.map(p =>
+            p.ID === dto.ScoutProfileID
+              ? new ScoutingProfile({
+                  ...p,
+                  [dto.Attribute]: true,
+                  ShowCount: p.ShowCount + 1
+                })
+              : p
+          )
+        );
+        if (phlTeam) {
+          setProWarRoom(prev => {
+            const currentWarRoom = prev[phlTeam.ID];
+            if (!currentWarRoom) return prev;
+            return {
+              ...prev,
+              [phlTeam.ID]: new ProWarRoom({
+                ...currentWarRoom,
+                SpentPoints: currentWarRoom.SpentPoints + dto.Points
+              })
+            };
+          });
+        }
+        enqueueSnackbar('Attribute revealed!', {
+          variant: 'success',
+          autoHideDuration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to reveal attribute:', error);
+      enqueueSnackbar('Failed to reveal attribute', {
+        variant: 'error',
+        autoHideDuration: 3000,
+      });
+    }
+  }, [phlTeam, enqueueSnackbar]);
+
+  const removePlayerFromScoutBoard = useCallback(async (id: number) => {
+    const removedProfile = phlScoutProfiles.find(p => p.ID === id);
+
+    // Optimistic update
+    setPhlScoutProfiles(prev => prev.filter(p => p.ID !== id));
+    enqueueSnackbar('Player removed from scouting board!', {
+      variant: 'success',
+      autoHideDuration: 3000,
+    });
+
+    try {
+      await DraftService.RemovePHLPlayerFromBoard(id);
+    } catch (error) {
+      console.error('Failed to remove player from scouting board:', error);
+      if (removedProfile) {
+        setPhlScoutProfiles(prev => [...prev, removedProfile]);
+      }
+      enqueueSnackbar('Failed to remove player from scouting board', {
+        variant: 'error',
+        autoHideDuration: 3000,
+      });
+    }
+  }, [phlScoutProfiles, enqueueSnackbar]);
+
+  const exportDraftPicks = useCallback(async (dto: any) => {
+    try {
+      await DraftService.ExportPHLDraftPicks(dto);
+      enqueueSnackbar('Draft picks exported!', {
+        variant: 'success',
+        autoHideDuration: 3000,
+      });
+    } catch (error) {
+      console.error('Failed to export draft picks:', error);
+      enqueueSnackbar('Failed to export draft picks', {
+        variant: 'error',
+        autoHideDuration: 3000,
+      });
+    }
+  }, [enqueueSnackbar]);
+
+  const bringUpCollegePlayer = useCallback(async (draftPickID: number) => {
+    try {
+      const res = await DraftService.BringUpCollegePlayer(draftPickID);
+      if (res) {
+        enqueueSnackbar('Player brought up to pro roster!', {
+          variant: 'success',
+          autoHideDuration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to bring up player:', error);
+      enqueueSnackbar('Failed to bring up player', {
+        variant: 'error',
+        autoHideDuration: 3000,
+      });
+    }
+  }, [enqueueSnackbar]);
+
   return (
     <SimHCKContext.Provider
       value={{
@@ -1868,6 +2092,17 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         collegePollsBySeason,
         collegeStandingsMapBySeason,
         proStandingsMapBySeason,
+        proDraftablePlayers,
+        proWarRoom,
+        proScoutingProfile,
+        phlScoutProfiles,
+        phlAllDraftPicks,
+        getBootstrapDraftData,
+        addPlayerToScoutBoard,
+        revealScoutingAttribute,
+        removePlayerFromScoutBoard,
+        exportDraftPicks,
+        bringUpCollegePlayer
       }}
     >
       {children}
