@@ -40,10 +40,8 @@ export const NFL_POSITIONS = [
 
 export const PHL_POSITIONS = [
   { value: 'C', label: 'Center' },
-  { value: 'LW', label: 'Left Wing' },
-  { value: 'RW', label: 'Right Wing' },
-  { value: 'LD', label: 'Left Defenseman' },
-  { value: 'RD', label: 'Right Defenseman' },
+  { value: 'F', label: 'Forward' },
+  { value: 'D', label: 'Defenseman' },
   { value: 'G', label: 'Goalie' },
 ];
 
