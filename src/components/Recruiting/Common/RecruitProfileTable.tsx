@@ -19,6 +19,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  TextGreen,
   ToggleScholarshipType,
 } from "../../../_constants/constants";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
@@ -41,7 +42,14 @@ import {
   PlayerRecruitProfile as BasketballCrootProfile,
   TeamRecruitingProfile,
 } from "../../../models/basketballModels";
-import { SadFace, Scholarship, TrashCan } from "../../../_design/Icons";
+import {
+  CheckCircle,
+  CrossCircle,
+  DashCircle,
+  SadFace,
+  Scholarship,
+  TrashCan,
+} from "../../../_design/Icons";
 import {
   annotateCountry,
   annotateRegion,
@@ -108,7 +116,9 @@ const getRecruitProfileColumns = (
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
-        { header: "Program", accessor: "ProgramPref" },
+        { header: "Off.", accessor: "" },
+        { header: "Def.", accessor: "" },
+        { header: "Prog.", accessor: "ProgramPref" },
         { header: "Prof. Dev.", accessor: "ProfDevPref" },
         { header: "Trad.", accessor: "TraditionsPref" },
         { header: "Fac.", accessor: "FacilitiesPref" },
@@ -192,6 +202,8 @@ interface CHLProfileRowProps {
   openModal: (action: ModalAction, player: HockeyCroot) => void;
   setAttribute: (attr: string) => void;
   backgroundColor: string;
+  offensiveSystemsInformation: any;
+  defensiveSystemsInformation: any;
 }
 
 export const CHLProfileRow: FC<CHLProfileRowProps> = ({
@@ -203,6 +215,8 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
   openModal,
   setAttribute,
   backgroundColor,
+  offensiveSystemsInformation,
+  defensiveSystemsInformation,
 }) => {
   // 1) Build attribute lists once
   let attrList = getAdditionalHockeyCrootAttributes(croot);
@@ -255,6 +269,46 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
     setAttribute(attr);
     openModal(ScoutAttributeType, croot);
   };
+
+  const isGoodOffensiveFit = useMemo(() => {
+    if (!croot || !offensiveSystemsInformation) return false;
+    const goodFits = offensiveSystemsInformation.GoodFits;
+    const idx = goodFits.findIndex((x: any) => x.archetype === croot.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [croot, offensiveSystemsInformation]);
+
+  const isBadOffensiveFit = useMemo(() => {
+    if (!croot || !offensiveSystemsInformation) return false;
+    const badFits = offensiveSystemsInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === croot.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [croot, offensiveSystemsInformation]);
+
+  const isGoodDefensiveFit = useMemo(() => {
+    if (!croot || !defensiveSystemsInformation) return false;
+    const goodFits = defensiveSystemsInformation.GoodFits;
+    const idx = goodFits.findIndex((x: any) => x.archetype === croot.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [croot, defensiveSystemsInformation]);
+
+  const isBadDefensiveFit = useMemo(() => {
+    if (!croot || !defensiveSystemsInformation) return false;
+    const badFits = defensiveSystemsInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === croot.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [croot, defensiveSystemsInformation]);
 
   return (
     <div
@@ -328,11 +382,41 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
       )}
       {category === Preferences && (
         <>
-          {prefList.map((attr, idx) => (
-            <TableCell key={idx}>
-              <span className="text-sm">{attr.value}</span>
-            </TableCell>
-          ))}
+          {prefList.map((attr, idx) =>
+            attr.label === "Off" ? (
+              <TableCell classes="text-xs">
+                {isGoodOffensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadOffensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </TableCell>
+            ) : attr.label === "Def" ? (
+              <TableCell classes="text-xs">
+                {isGoodDefensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadDefensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </TableCell>
+            ) : (
+              <TableCell key={idx}>
+                <span className="text-sm">{attr.value}</span>
+              </TableCell>
+            )
+          )}
         </>
       )}
       <TableCell>
@@ -647,6 +731,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
 
   // 5) Leading teams (memo)
   const leadingTeams = useMemo(() => {
+    if (!croot) return "None";
     if (!croot.LeadingTeams?.length) return "None";
     if (croot.IsSigned) {
       return <Logo url={getLogo(SimCBB, croot.TeamID, false)} variant="tiny" />;
@@ -660,7 +745,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
         variant="tiny"
       />
     ));
-  }, [croot.LeadingTeams]);
+  }, [croot]);
 
   // 6) Buttons
   const toggleScholarship = () => {
@@ -673,11 +758,14 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
   };
 
   const nameColor = useMemo(() => {
+    if (!croot) return "";
     if (croot.IsCustomCroot) {
       return "text-blue-400";
     }
     return "";
   }, [croot]);
+
+  if (!croot) return null;
 
   return (
     <div
@@ -816,6 +904,8 @@ interface RecruitProfileTableProps {
   ) => void;
   ChangeInput: (id: number, name: string, points: number) => void;
   setAttribute: Dispatch<SetStateAction<string>>;
+  offensiveSystemsInformation?: any;
+  defensiveSystemsInformation?: any;
 }
 
 export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
@@ -833,6 +923,8 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
   ChangeInput,
   openModal,
   setAttribute,
+  offensiveSystemsInformation,
+  defensiveSystemsInformation,
 }) => {
   const backgroundColor = colorOne;
   const borderColor = colorTwo;
@@ -858,6 +950,8 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
             ChangeInput={ChangeInput}
             openModal={openModal}
             setAttribute={setAttribute}
+            offensiveSystemsInformation={offensiveSystemsInformation}
+            defensiveSystemsInformation={defensiveSystemsInformation}
           />
         );
       };

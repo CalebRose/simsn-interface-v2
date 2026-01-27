@@ -3,17 +3,20 @@ import { StatsPageProps } from "../StatsPage";
 import { useFootballStats } from "./useFootballStatsPage";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { useModal } from "../../../_hooks/useModal";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { ActionModal } from "../../Common/ActionModal";
 import { StatsSidebar } from "../Common/StatsSidebar";
 import { Border } from "../../../_design/Borders";
-import { Help1, navyBlueColor, SimCFB } from "../../../_constants/constants";
+import { Help1, SimCFB } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { FootballStatsTable } from "./FootballStatsTable";
 import { ToggleSwitch } from "../../../_design/Inputs";
 import { StatsPageHelpModal } from "../Common/StatsPageHelpModal";
+import { AwardsModal } from "../Common/AwardsModal";
+import { darkenColor } from "../../../_utility/getDarkerColor";
 
 export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
   const {
@@ -35,6 +38,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
     gameType,
     currentPage,
     leagueOptions,
+    cfbPostSeasonAwards,
     SelectLeagueOption,
     goToPreviousPage,
     goToNextPage,
@@ -51,8 +55,11 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
     Search,
     Export,
   } = useFootballStats();
+  const { backgroundColor } = useBackgroundColor();
+  console.log({ cfbPostSeasonAwards });
   const { isMobile, isDesktop } = useResponsive();
   const helpModal = useModal();
+  const awardsModal = useModal();
   const teamColors = useTeamColors(
     team?.ColorOne,
     team?.ColorTwo,
@@ -78,6 +85,15 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
         league={league}
         modalAction={Help1}
       />
+      <AwardsModal
+        isOpen={awardsModal.isModalOpen}
+        onClose={awardsModal.handleCloseModal}
+        league={league}
+        postSeasonAwards={cfbPostSeasonAwards}
+        borderColor={teamColors.Two}
+        backgroundColor="#1f2937"
+        darkerBackgroundColor={darkenColor("#1f2937", -5)}
+      />
       <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[minmax(200px,2fr)_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
         <StatsSidebar
           team={team!!}
@@ -90,6 +106,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
           ChangeFBStatsType={ChangeFBStatsType}
           footballStatsType={footballStatsType}
           HandleHelpModal={helpModal.handleOpenModal}
+          HandleAwardsModal={awardsModal.handleOpenModal}
           weekOptions={weekOptions}
           seasonOptions={seasonOptions}
           SelectWeekOption={SelectWeekOption}
@@ -104,7 +121,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 flex-col lg:flex-row"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               {league === SimCFB && (
@@ -160,7 +177,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 overflow-y-auto max-h-[50vh] md:max-h-[70vh]"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <FootballStatsTable

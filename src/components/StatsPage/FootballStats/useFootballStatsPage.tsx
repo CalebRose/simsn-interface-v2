@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FootballStatsType,
   GameDay,
@@ -56,8 +56,10 @@ export const useFootballStats = () => {
     cfb_Timestamp,
     cfbPlayerMap,
     nflPlayerMap,
+    cfbPostSeasonAwards,
     SearchFootballStats,
     ExportFootballStats,
+    getBootstrapStatsData,
   } = useSimFBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(InfoType);
@@ -83,6 +85,10 @@ export const useFootballStats = () => {
   ); // SEASON ID
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [selectedConferences, setSelectedConferences] = useState<string[]>([]);
+
+  useEffect(() => {
+    getBootstrapStatsData();
+  }, []);
 
   const team = useMemo(() => {
     if (selectedLeague === SimCFB) {
@@ -314,6 +320,7 @@ export const useFootballStats = () => {
     currentPage,
     footballStatsType,
     leagueOptions,
+    cfbPostSeasonAwards,
     SelectLeagueOption,
     goToPreviousPage,
     goToNextPage,

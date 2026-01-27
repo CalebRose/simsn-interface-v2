@@ -17,11 +17,11 @@ const mobileFriendlySelectStyles = {
   control: (base: CSSObjectWithLabel, state: any) => ({
     ...base,
     minHeight: "32px", // shorter control
-    fontSize: "0.75rem", // smaller text
+    fontSize: "1.5vh", // smaller text
     backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
     borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
     color: "#ffffff",
-    padding: "0.3rem",
+    padding: "0.6vh",
     boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
     borderRadius: "8px",
     transition: "all 0.2s ease",
@@ -34,12 +34,12 @@ const mobileFriendlySelectStyles = {
   }),
   singleValue: (base: CSSObjectWithLabel) => ({
     ...base,
-    fontSize: "0.75rem",
+    fontSize: "1.5vh",
     color: "#fff",
   }),
   placeholder: (base: CSSObjectWithLabel) => ({
     ...base,
-    fontSize: "0.75rem",
+    fontSize: "1.5vh",
     color: "#fff",
   }),
   option: (base: any, state: { isFocused: any }) => ({
@@ -52,7 +52,7 @@ const mobileFriendlySelectStyles = {
   }),
   menu: (base: CSSObjectWithLabel) => ({
     ...base,
-    fontSize: "0.75rem",
+    fontSize: "1.5vh",
     backgroundColor: "#1a202c",
     borderRadius: "8px",
   }),

@@ -7,6 +7,8 @@ export const SimPHL = "SimPHL";
 export const SimFBA = "SimFBA";
 export const SimBBA = "SimBBA";
 export const SimHCK = "SimHCK";
+export const SimCollegeBaseball = "SimCollegeBaseball";
+export const SimMLB = "SimMLB";
 export const AdminRole = "Admin";
 export type League =
   | typeof SimCFB
@@ -14,7 +16,9 @@ export type League =
   | typeof SimCBB
   | typeof SimNBA
   | typeof SimCHL
-  | typeof SimPHL;
+  | typeof SimPHL
+  | typeof SimCollegeBaseball
+  | typeof SimMLB;
 
 export const CollegeRequests = "College Requests";
 export const ProRequests = "Pro Requests";
@@ -165,6 +169,39 @@ export type FootballStatsType =
   | typeof SPECIAL_TEAMS
   | typeof OVERALL
   | typeof OFFENSE;
+export const HeismanTrophy = "HeismanList";
+export const DaveyOBrien = "DaveyOBrienList";
+export const CoachOfTheYear = "CoachOfTheYearList";
+export const DoakWalkerAward = "DoakWalkerList";
+export const BiletnikoffAward = "BiletnikoffList";
+export const MackeyAward = "MackeyList";
+export const RimingtonTrophy = "RimingtonList";
+export const OutlandTrophy = "OutlandList";
+export const JoeMoore = "JoeMooreList";
+export const NagurskiAward = "NagurskiList";
+export const HendricksAward = "HendricksList";
+export const ThorpeAward = "ThorpeList";
+export const ButkusAward = "ButkusList";
+export const LouGrozaAward = "LouGrozaList";
+export const RayGuyAward = "RayGuyList";
+export const JetAward = "JetList";
+export type CFBAward =
+  | typeof HeismanTrophy
+  | typeof DaveyOBrien
+  | typeof CoachOfTheYear
+  | typeof DoakWalkerAward
+  | typeof BiletnikoffAward
+  | typeof MackeyAward
+  | typeof RimingtonTrophy
+  | typeof OutlandTrophy
+  | typeof JoeMoore
+  | typeof NagurskiAward
+  | typeof HendricksAward
+  | typeof ThorpeAward
+  | typeof ButkusAward
+  | typeof LouGrozaAward
+  | typeof RayGuyAward
+  | typeof JetAward;
 
 export interface PositionStatsConfig {
   statsType: FootballStatsType;
@@ -937,6 +974,7 @@ export const ScholarshipRevoked = "ScholarshipRevoked";
 
 export const ButtonGreen = "bg-[#189E5B]";
 export const TextGreen = "text-[#189E5B]";
+
 export const navyBlueColor = "#1f2937";
 
 export const MIN_SALARY = 0.75;

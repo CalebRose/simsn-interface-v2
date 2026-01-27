@@ -12,6 +12,9 @@ import { ClickableGameLabel, ClickableTeamLabel } from "../../Common/Labels";
 import { useModal } from "../../../_hooks/useModal";
 import { SchedulePageGameModal } from "./GameModal";
 import { SimCFB, SimNFL } from "../../../_constants/constants";
+import { useAuthStore } from "../../../context/AuthContext";
+import { getThemeColors } from "../../../_utility/themeHelpers";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 
 interface TeamScheduleProps {
   team: any;
@@ -356,7 +359,9 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={`${homeTeamLabel}${homeRecord ? ` (${homeRecord})` : ""}`}
+                    label={`${homeTeamLabel}${
+                      homeRecord ? ` (${homeRecord})` : ""
+                    }`}
                     teamID={game.HomeTeamID}
                     textColorClass={textColorClass}
                     league={league}
@@ -371,7 +376,9 @@ export const WeeklySchedule = ({
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
-                    label={`${awayTeamLabel}${awayRecord ? ` (${awayRecord})` : ""}`}
+                    label={`${awayTeamLabel}${
+                      awayRecord ? ` (${awayRecord})` : ""
+                    }`}
                     teamID={game.AwayTeamID}
                     textColorClass={textColorClass}
                     league={league}

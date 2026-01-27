@@ -33,7 +33,6 @@ export const getZoneInputList = (zoneCategory: string) => {
   if (zoneCategory === DefendingZone) {
     return [
       { label: "Pass", key: "DZPass" },
-      { label: "Pass Back", key: "DZPassBack" },
       { label: "Agility", key: "DZAgility" },
       { label: "Body Check", key: "DZBodyCheck" },
       { label: "Stick Check", key: "DZStickCheck" },
@@ -239,10 +238,34 @@ export const getHCKAIGameplanOptionsOptions = () => {
     { label: "Stick Check", value: "3" },
   ];
 
+  const offensiveSystemOptions = [
+    { label: "1-2-2 Forecheck", value: "1" },
+    { label: "2-1-2 Forecheck", value: "2" },
+    { label: "1-3-1 Forecheck", value: "3" },
+    { label: "Cycle Game", value: "4" },
+    { label: "Quick Transition", value: "5" },
+    { label: "Umbrella", value: "6" },
+    { label: "East West Motion", value: "7" },
+    { label: "Crash the Net", value: "8" },
+  ];
+
+  const defensiveSystemOptions = [
+    { label: "Balanced", value: "1" },
+    { label: "Man to Man", value: "2" },
+    { label: "Zone", value: "3" },
+    { label: "Neutral Trap", value: "4" },
+    { label: "Left Wing Lock", value: "5" },
+    { label: "Aggressive Forecheck", value: "6" },
+    { label: "Collapsing", value: "7" },
+    { label: "Box", value: "8" },
+  ];
+
   return {
     shotPreferenceOptions,
     playerSortPreferenceOptions,
     goalieSortPreferenceOptions,
     defensePreferenceOptions,
+    offensiveSystemOptions,
+    defensiveSystemOptions,
   };
 };

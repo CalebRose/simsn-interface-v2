@@ -34,7 +34,7 @@ export const CategoryDropdown: FC<RecruitingCategoryDropdownProps> = ({
             backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
             borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
             color: "#ffffff",
-            minWidth: isMobile ? "10.5rem" : "13rem",
+            minWidth: isMobile ? "35vw" : "12vw",
             maxWidth: "100%",
             width: "auto",
             flexGrow: 1,

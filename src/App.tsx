@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { AdminPageProvider } from "./context/AdminPageContext";
 import { AuthProvider, useAuthStore } from "./context/AuthContext";
 import { LeagueProvider } from "./context/LeagueContext";
@@ -16,10 +17,17 @@ function App() {
 }
 
 const InnerApp = () => {
-  const { viewMode, isLoading } = useAuthStore();
+  const { viewMode, isLoading, isDarkMode } = useAuthStore();
+  const overallTheme = useMemo(() => {
+    if (isDarkMode) {
+      return "dark";
+    }
+    return "light";
+  }, [isDarkMode]);
+
   if (isLoading) return null;
   return (
-    <div className={viewMode}>
+    <div className={overallTheme}>
       <SimFBAProvider>
         <SimBBAProvider>
           <SimHCKProvider>

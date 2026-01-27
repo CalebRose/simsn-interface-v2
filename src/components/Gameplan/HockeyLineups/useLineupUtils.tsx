@@ -634,3 +634,322 @@ export const getHCKAICheckPreferenceObject = (value: number): any => {
   };
   return shotPrefMap[value];
 };
+
+export const getOffensiveSystemFromMap = (value: number): any => {
+  switch (value) {
+    case 1:
+      return { label: "1-2-2 Forecheck", value: "1" };
+    case 2:
+      return { label: "2-1-2 Forecheck", value: "2" };
+    case 3:
+      return { label: "1-3-1 Forecheck", value: "3" };
+    case 4:
+      return { label: "Cycle Game", value: "4" };
+    case 5:
+      return { label: "Quick Transition", value: "5" };
+    case 6:
+      return { label: "Umbrella", value: "6" };
+    case 7:
+      return { label: "East West Motion", value: "7" };
+    case 8:
+      return { label: "Crash the Net", value: "8" };
+    default:
+      return { label: "Unknown", value: "0" };
+  }
+};
+
+export const getDefensiveSystemFromMap = (value: number): any => {
+  switch (value) {
+    case 1:
+      return { label: "Balanced", value: "1" };
+    case 2:
+      return { label: "Man to Man", value: "2" };
+    case 4:
+      return { label: "Neutral Trap", value: "4" };
+    case 5:
+      return { label: "Left Wing Lock", value: "5" };
+    case 6:
+      return { label: "Aggressive Forecheck", value: "6" };
+    case 7:
+      return { label: "Collapsing", value: "7" };
+    case 8:
+      return { label: "Box", value: "8" };
+    case 3:
+      return { label: "Zone", value: "3" };
+    default:
+      return { label: "Unknown", value: "0" };
+  }
+};
+
+export const offensiveSystemsInformationList = {
+  1: {
+    Philosophy:
+      "Balanced forechecking with two forwards pressuring, one covering",
+    ZoneEffects: {
+      AZ: { ShotBonus: 2, PassBonus: 3, TurnoverChance: -1 },
+      N: { PassBonus: 2, AgilityBonus: 3 },
+    },
+    GoodFits: [
+      { archetype: "Grinder", bonus: 3 },
+      { archetype: "Two-Way", bonus: 4 },
+      { archetype: "Playmaker", bonus: 2 },
+      { archetype: "Defensive", bonus: 3 },
+    ],
+    BadFits: [{ archetype: "Power", penalty: -2 }],
+  },
+  2: {
+    Philosophy: "Aggressive two-forward pressure with one support",
+    ZoneEffects: {
+      AGZ: { TurnoverChance: 5 },
+      AZ: { ShotBonus: 4, StickCheckBonus: 2, TurnoverChance: 5 },
+      N: { AgilityBonus: 4, StickCheckBonus: 1, TurnoverChance: -2 },
+    },
+    GoodFits: [
+      { archetype: "Grinder", bonus: 4 },
+      { archetype: "Enforcer", bonus: 5 },
+      { archetype: "Playmaker", bonus: 3 },
+      { archetype: "Two-Way", bonus: 2 },
+      { archetype: "Defensive", bonus: 2 },
+    ],
+    BadFits: [{ archetype: "Sniper", penalty: -2 }],
+  },
+  3: {
+    Philosophy: "Offensive three-forward attack with minimal backchecking",
+    ZoneEffects: {
+      AZ: { ShotBonus: 6, PassBonus: 3, TurnoverChance: 3 },
+      N: { AgilityBonus: -2 },
+    },
+    GoodFits: [
+      { archetype: "Sniper", bonus: 5 },
+      { archetype: "Playmaker", bonus: 4 },
+      { archetype: "Power", bonus: 4 },
+    ],
+    BadFits: [
+      { archetype: "Grinder", penalty: -3 },
+      { archetype: "Defensive", penalty: -4 },
+    ],
+  },
+  4: {
+    Philosophy: "Possession-based offense with extended zone time",
+    ZoneEffects: {
+      AGZ: { ShotBonus: 5, PassBonus: 4, AgilityBonus: -3 },
+      AZ: { PassBonus: 5, ShotBonus: 3, AgilityBonus: -3 },
+    },
+    GoodFits: [
+      { archetype: "Playmaker", bonus: 5 },
+      { archetype: "Power", bonus: 4 },
+      { archetype: "Sniper", bonus: 4 },
+    ],
+    BadFits: [
+      { archetype: "Grinder", penalty: -3 },
+      { archetype: "Enforcer", penalty: -2 },
+    ],
+  },
+  5: {
+    Philosophy: "Fast breakouts and rapid zone transitions",
+    ZoneEffects: {
+      AZ: { PassBonus: -3, AgilityBonus: 3 },
+      N: { PassBonus: 5, AgilityBonus: 5 },
+      DZ: { PassBonus: 4, AgilityBonus: 3 },
+    },
+    GoodFits: [
+      { archetype: "Offensive", bonus: 5 },
+      { archetype: "Sniper", bonus: 4 },
+      { archetype: "Two-Way", bonus: 3 },
+    ],
+    BadFits: [
+      { archetype: "Enforcer", penalty: -3 },
+      { archetype: "Power", penalty: -6 },
+    ],
+  },
+  6: {
+    Philosophy: "Structured passing attack with D-man quarterback",
+    ZoneEffects: {
+      AGZ: { ShotBonus: 4, PassBonus: 5 },
+      AZ: { PassBonus: 6, ShotBonus: -4 },
+    },
+    GoodFits: [
+      { archetype: "Playmaker", bonus: 6 },
+      { archetype: "Offensive", bonus: 5 },
+      { archetype: "Sniper", bonus: 4 },
+      { archetype: "Two-Way", bonus: 3 },
+    ],
+    BadFits: [
+      { archetype: "Enforcer", penalty: -4 },
+      { archetype: "Grinder", penalty: -3 },
+    ],
+  },
+  7: {
+    Philosophy: "Lateral puck movement and constant player motion",
+    ZoneEffects: {
+      AGZ: { PassBonus: 5, AgilityBonus: 4 },
+      AZ: { PassBonus: 6, AgilityBonus: 5 },
+    },
+    GoodFits: [
+      { archetype: "Playmaker", bonus: 6 },
+      { archetype: "Sniper", bonus: 4 },
+      { archetype: "Two-Way", bonus: 3 },
+      { archetype: "Offensive", bonus: 3 },
+    ],
+    BadFits: [
+      { archetype: "Power", penalty: -3 },
+      { archetype: "Enforcer", penalty: -4 },
+    ],
+  },
+  8: {
+    Philosophy: "Physical, net-front presence and rebounds",
+    ZoneEffects: {
+      AGZ: {
+        ShotBonus: 6,
+        BodyCheckBonus: 3,
+        TurnoverChance: -2,
+        AgilityBonus: -3,
+        PassBonus: 1,
+      },
+      AZ: {
+        ShotBonus: -3,
+        BodyCheckBonus: 2,
+        TurnoverChance: -1,
+        PassBonus: -1,
+      },
+    },
+    GoodFits: [
+      { archetype: "Power", bonus: 6 },
+      { archetype: "Enforcer", bonus: 4 },
+      { archetype: "Grinder", bonus: 3 },
+    ],
+    BadFits: [
+      { archetype: "Playmaker", penalty: -3 },
+      { archetype: "Sniper", penalty: -3 },
+    ],
+  },
+};
+
+export const defensiveSystemsInformationList = {
+  1: {
+    Philosophy: "Neutral Defensive approach with versatility",
+    ZoneEffects: {
+      DZ: { StickCheckBonus: 2, BodyCheckBonus: 2 },
+      DGZ: { StickCheckBonus: 2, BodyCheckBonus: 2 },
+      N: { PassBonus: 1 },
+    },
+    GoodFits: [
+      { archetype: "Two-Way", bonus: 4 },
+      { archetype: "Defensive", bonus: 2 },
+      { archetype: "Grinder", bonus: 2 },
+      { archetype: "Offensive", bonus: 1 },
+    ],
+    BadFits: [{ archetype: "Enforcer", penalty: -1 }],
+  },
+  2: {
+    Philosophy: "Direct player assignment and coverage",
+    ZoneEffects: {
+      DZ: { StickCheckBonus: 3, BodyCheckBonus: 5 },
+      DGZ: { StickCheckBonus: 4, BodyCheckBonus: 6 },
+    },
+    GoodFits: [
+      { archetype: "Defensive", bonus: 4 },
+      { archetype: "Grinder", bonus: 3 },
+    ],
+    BadFits: [],
+  },
+  3: {
+    Philosophy: "Area coverage with structured positioning",
+    ZoneEffects: {
+      DZ: { StickCheckBonus: 3, PassBonus: 4 },
+      DGZ: { StickCheckBonus: 4, BodyCheckBonus: 3 },
+      N: { PassBonus: 3 },
+    },
+    GoodFits: [
+      { archetype: "Defensive", bonus: 4 },
+      { archetype: "Two-Way", bonus: 3 },
+      { archetype: "Grinder", bonus: 2 },
+      { archetype: "Playmaker", bonus: 2 },
+    ],
+    BadFits: [
+      { archetype: "Enforcer", penalty: -2 },
+      { archetype: "Power", penalty: -2 },
+    ],
+  },
+  4: {
+    Philosophy: "Clog neutral zone and force turnovers",
+    ZoneEffects: {
+      DGZ: { StickCheckBonus: 5, AgilityBonus: 4 },
+      AZ: { StickCheckBonus: 3 },
+      TurnoverChance: 4,
+    },
+    GoodFits: [
+      { archetype: "Grinder", bonus: 5 },
+      { archetype: "Defensive", bonus: 4 },
+      { archetype: "Two-Way", bonus: 3 },
+    ],
+    BadFits: [
+      { archetype: "Offensive", penalty: -3 },
+      { archetype: "Sniper", penalty: -2 },
+    ],
+  },
+  5: {
+    Philosophy: "Disciplined defensive structure with left-wing coverage",
+    ZoneEffects: {
+      DZ: { StickCheckBonus: 4, BodyCheckBonus: 3 },
+      DGZ: { StickCheckBonus: 3 },
+    },
+    GoodFits: [
+      { archetype: "Two-Way", bonus: 5 },
+      { archetype: "Defensive", bonus: 4 },
+      { archetype: "Grinder", bonus: 3 },
+    ],
+    BadFits: [
+      { archetype: "Offensive", penalty: -3 },
+      { archetype: "Power", penalty: -2 },
+    ],
+  },
+  6: {
+    Philosophy: "High-pressure defensive attack in all zones",
+    ZoneEffects: {
+      AZ: { BodyCheckBonus: 6, StickCheckBonus: 4 },
+      DGZ: { BodyCheckBonus: 5, AgilityBonus: 3 },
+      TurnoverChance: 5,
+    },
+    GoodFits: [
+      { archetype: "Enforcer", bonus: 5 },
+      { archetype: "Grinder", bonus: 4 },
+    ],
+    BadFits: [
+      { archetype: "Playmaker", penalty: -3 },
+      { archetype: "Sniper", penalty: -4 },
+    ],
+  },
+  7: {
+    Philosophy: "Protect goal area by collapsing towards net",
+    ZoneEffects: {
+      DGZ: { BodyCheckBonus: 4, StickCheckBonus: 3 },
+      DZ: { BodyCheckBonus: 3, StickCheckBonus: 3 },
+    },
+    GoodFits: [
+      { archetype: "Defensive", bonus: 5 },
+      { archetype: "Two-Way", bonus: 3 },
+      { archetype: "Enforcer", bonus: 2 },
+    ],
+    BadFits: [
+      { archetype: "Offensive", penalty: -4 },
+      { archetype: "Sniper", penalty: -3 },
+    ],
+  },
+  8: {
+    Philosophy: "Structured four-player box in defensive zone",
+    ZoneEffects: {
+      DGZ: { StickCheckBonus: 4, BodyCheckBonus: 3 },
+    },
+    GoodFits: [
+      { archetype: "Defensive", bonus: 4 },
+      { archetype: "Grinder", bonus: 3 },
+      { archetype: "Two-Way", bonus: 3 },
+      { archetype: "Enforcer", bonus: 2 },
+    ],
+    BadFits: [
+      { archetype: "Offensive", penalty: -3 },
+      { archetype: "Playmaker", penalty: -2 },
+    ],
+  },
+};

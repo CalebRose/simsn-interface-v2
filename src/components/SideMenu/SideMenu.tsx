@@ -18,6 +18,10 @@ import { NavDropdown, NavDropdownItem } from "../../_design/DropdownList";
 import { useAuthStore } from "../../context/AuthContext";
 import { useSideMenu } from "./DropdownMenuData";
 import { simLogos } from "../../_constants/logos";
+import { ThemeToggle } from "../Common/ThemeToggle";
+import { useResponsive } from "../../_hooks/useMobile";
+import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
+import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 
 export const SideMenu = ({}) => {
   const {
@@ -31,7 +35,10 @@ export const SideMenu = ({}) => {
   } = useAuthStore();
   const { isOpen, isDropdownOpen, toggleMenu, toggleDropdown, dropdowns } =
     useSideMenu();
+  const { isDesktop } = useResponsive();
   const [processing, setProcessing] = useState(false);
+  const { baseColor } = useBackgroundColor();
+  const textColor = getTextColorBasedOnBg(baseColor);
   const navigate = useNavigate();
   // ✅ Generate logos based on current user
   const { cfbLogo, nflLogo, cbbLogo, nbaLogo, chlLogo, phlLogo, logo } =
@@ -159,52 +166,60 @@ export const SideMenu = ({}) => {
                 className="h-8 mr-3"
                 alt="SimSNLogo"
               />
-              <span className="self-center text-xl font-semibold sm:text-2xl dark:text-white">
+              <span
+                className={`self-center text-xl font-semibold sm:text-2xl ${textColor}`}
+              >
                 SimSN
               </span>
             </button>
           </div>
           {/* User Dropdown */}
           {currentUser && (
-            <div className="relative">
-              <button
-                onClick={toggleDropdown}
-                className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-              >
-                <img
-                  className="w-8 h-8 rounded-full"
-                  src={logo}
-                  alt="User Avatar"
-                />
-              </button>
+            <div className="flex items-center gap-3">
+              {/* Theme Toggle */}
+              {isDesktop && <ThemeToggle />}
 
-              {isDropdownOpen && (
-                <div className="absolute right-0 z-50 mt-2 w-48 bg-white rounded-md shadow-lg dark:bg-gray-700">
-                  <div className="p-4">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {currentUser.username}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-300">
-                      {currentUser.email}
-                    </p>
-                  </div>
-                  <NavDropdown>
-                    <NavDropdownItem
-                      label="Profile"
-                      isRoute={true}
-                      route={routes.USER}
-                    />
-                    {currentUser.roleID === "Admin" && (
+              {/* User Avatar Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={toggleDropdown}
+                  className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
+                >
+                  <img
+                    className="w-8 h-8 rounded-full"
+                    src={logo}
+                    alt="User Avatar"
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute right-0 z-50 mt-2 w-48 bg-white rounded-md shadow-lg dark:bg-gray-700">
+                    <div className="p-4">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {currentUser.username}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-300">
+                        {currentUser.email}
+                      </p>
+                    </div>
+                    <NavDropdown>
                       <NavDropdownItem
-                        label="Admin"
+                        label="Profile"
                         isRoute={true}
-                        route="/admin"
+                        route={routes.USER}
                       />
-                    )}
-                    <NavDropdownItem label="Sign Out" click={logout} />
-                  </NavDropdown>
-                </div>
-              )}
+                      {currentUser.roleID === "Admin" && (
+                        <NavDropdownItem
+                          label="Admin"
+                          isRoute={true}
+                          route="/admin"
+                        />
+                      )}
+                      <NavDropdownItem label="Sign Out" click={logout} />
+                    </NavDropdown>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

@@ -42,6 +42,15 @@ export const BootstrapService = {
     );
   },
 
+  GetFBAStatsBootstrapData: async (
+    collegeID: number,
+    proID: number
+  ): Promise<FBBootstrap> => {
+    return await GetCall<FBBootstrap>(
+      `${fbaUrl}bootstrap/stats/${collegeID}/${proID}`
+    );
+  },
+
   GetFBARecruitingBootstrapData: async (
     collegeID: number
   ): Promise<FBBootstrap> => {
@@ -91,6 +100,58 @@ export const BootstrapService = {
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
       `${fbaUrl}bootstrap/news/${collegeID}/${proID}`
+    );
+  },
+
+  GetBBARosterBootstrapData: async (
+    collegeID: number,
+    proID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(
+      `${bbaUrl}bootstrap/roster/${collegeID}/${proID}`
+    );
+  },
+
+  GetBBARecruitingBootstrapData: async (
+    collegeID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(
+      `${bbaUrl}bootstrap/recruiting/${collegeID}`
+    );
+  },
+
+  GetBBAFreeAgencyBootstrapData: async (
+    proID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(`${bbaUrl}bootstrap/freeagency/${proID}`);
+  },
+
+  GetBBASchedulingBootstrapData: async (
+    username: string,
+    collegeID: number,
+    seasonID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(
+      `${bbaUrl}bootstrap/scheduling/${username}/${collegeID}/${seasonID}`
+    );
+  },
+
+  GetBBADraftBootstrapData: async (proID: number): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(`${bbaUrl}bootstrap/draft/${proID}`);
+  },
+
+  GetBBAPortalBootstrapData: async (
+    collegeID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(`${bbaUrl}bootstrap/portal/${collegeID}`);
+  },
+
+  GetBBAGameplanBootstrapData: async (
+    collegeID: number,
+    proID: number
+  ): Promise<BBBootstrap> => {
+    return await GetCall<BBBootstrap>(
+      `${bbaUrl}bootstrap/gameplan/${collegeID}/${proID}`
     );
   },
 

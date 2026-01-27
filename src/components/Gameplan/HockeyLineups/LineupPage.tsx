@@ -9,7 +9,14 @@ import {
   ProfessionalPlayer,
   ProfessionalShootoutLineup,
 } from "../../../models/hockeyModels";
-import { useCHLLineupUtils, usePHLLineupUtils } from "./useLineupUtils";
+import {
+  defensiveSystemsInformationList,
+  getDefensiveSystemFromMap,
+  getOffensiveSystemFromMap,
+  offensiveSystemsInformationList,
+  useCHLLineupUtils,
+  usePHLLineupUtils,
+} from "./useLineupUtils";
 import { Border } from "../../../_design/Borders";
 import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import {
@@ -24,7 +31,6 @@ import {
   LineupG2,
   LineupSO,
   ModalAction,
-  navyBlueColor,
   SimCHL,
   SimPHL,
   Zone,
@@ -45,6 +51,7 @@ import {
 } from "./LineupComponents";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useResponsive } from "../../../_hooks/useMobile";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 
 export const CHLLineupPage = () => {
   const hkStore = useSimHCKStore();
@@ -77,6 +84,7 @@ export const CHLLineupPage = () => {
     chlTeam?.ColorTwo,
     chlTeam?.ColorThree
   );
+  const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
 
@@ -193,6 +201,20 @@ export const CHLLineupPage = () => {
 
   const aiGameplanModal = useModal();
 
+  const offensiveSystemsInformation = useMemo(() => {
+    return offensiveSystemsInformationList[
+      chlGameplan!
+        .OffensiveSystem as keyof typeof offensiveSystemsInformationList
+    ];
+  }, [chlGameplan]);
+
+  const defensiveSystemsInformation = useMemo(() => {
+    return defensiveSystemsInformationList[
+      chlGameplan!
+        .DefensiveSystem as keyof typeof defensiveSystemsInformationList
+    ];
+  }, [chlGameplan]);
+
   return (
     <>
       <HCKAIGameplanModal
@@ -202,79 +224,134 @@ export const CHLLineupPage = () => {
         gameplan={chlGameplan}
         saveGameplan={saveCHLAIGameplan}
       />
-      <div className="w-full grid grid-flow-row max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[6fr_4fr] grid-auto-rows-fr h-full max-[1024px]:gap-x-1 gap-x-2 mb-2">
-        <div className="flex flex-col w-full h-full max-[1024px]:gap-y-2">
-          <div className="flex flex-row md:flex-col w-full h-full">
-            <Border
-              direction="col"
-              classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-full items-center justify-center"
-              styles={{
-                borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
-              }}
-            >
-              <ButtonGrid>
-                {lineupCategories.map((x) => (
-                  <Button
-                    key={x}
-                    size="sm"
-                    classes="lg:text-nowrap"
-                    isSelected={lineCategory === x}
-                    onClick={() => changeLineCategory(x as Lineup)}
-                  >
-                    <Text variant="small">{x}</Text>
-                  </Button>
-                ))}
-              </ButtonGrid>
-            </Border>
-          </div>
-          <div className="flex flex-row md:flex-col w-full h-full">
-            <Border
-              direction="col"
-              classes="w-full max-[1024px]:px-2 px-4 max-[1024px]:pb-4 py-2 h-full items-center justify-center"
-              styles={{
-                borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
-              }}
-            >
-              <ButtonGrid classes="justify-center">
-                {zoneCategories.map((x) => (
-                  <Button
-                    key={x}
-                    size="sm"
-                    classes="lg:text-nowrap"
-                    isSelected={zoneCategory === x}
-                    onClick={() => setZoneCategory(x as Zone)}
-                    disabled={isGoalieLineup && x !== DefendingGoalZone}
-                  >
-                    <Text variant="small">{x}</Text>
-                  </Button>
-                ))}
-              </ButtonGrid>
-            </Border>
-          </div>
-        </div>
-        <div className="flex flex-col w-full h-full">
+      <div className="w-full grid grid-flow-row max-[768px]:grid-cols-1 max-[768px]:gap-y-3 md:grid-cols-[6fr_4fr] grid-auto-rows-fr h-full max-[768px]:gap-x-1 gap-x-2 mb-2">
+        <div className="grid grid-rows-2 w-full h-full max-[768px]:gap-y-3 gap-y-2">
           <Border
-            direction="row"
-            classes="w-full max-[1024px]:px-2 px-4 py-2 h-full gap-x-2"
+            direction="col"
+            classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full items-center justify-center"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
-            <div className="flex flex-col min-h-full w-full">
-              <Border classes="h-full w-full">
-                {errors.length === 0 && "No Errors"}
-                {errors.length > 0 &&
-                  errors.map((err) => (
-                    <Text key={err} variant="small">
-                      {err}
+            <ButtonGrid classes="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 gap-x-2 w-full">
+              {lineupCategories.map((x) => (
+                <Button
+                  key={x}
+                  size={isMobile ? "xs" : "sm"}
+                  classes="max-[768px]:text-xs max-[768px]:px-2 max-[768px]:py-1 text-center"
+                  isSelected={lineCategory === x}
+                  onClick={() => changeLineCategory(x as Lineup)}
+                >
+                  <Text variant="small">{x}</Text>
+                </Button>
+              ))}
+            </ButtonGrid>
+          </Border>
+          <Border
+            direction="col"
+            classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full items-center justify-center"
+            styles={{
+              borderColor: teamColors.One,
+              backgroundColor: themeBackgroundColor,
+            }}
+          >
+            <ButtonGrid classes="grid grid-cols-3 gap-x-2 w-full justify-center">
+              {zoneCategories.map((x) => (
+                <Button
+                  key={x}
+                  size={isMobile ? "xs" : "sm"}
+                  classes="max-[768px]:text-xs max-[768px]:px-2 max-[768px]:py-1 text-center"
+                  isSelected={zoneCategory === x}
+                  onClick={() => setZoneCategory(x as Zone)}
+                  disabled={isGoalieLineup && x !== DefendingGoalZone}
+                >
+                  <Text variant="small">{x}</Text>
+                </Button>
+              ))}
+            </ButtonGrid>
+          </Border>
+        </div>
+        <div className="w-full h-full">
+          <Border
+            direction="col"
+            classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full grid grid-rows-[1fr_auto] max-[768px]:gap-y-3 gap-y-2"
+            styles={{
+              borderColor: teamColors.One,
+              backgroundColor: themeBackgroundColor,
+            }}
+          >
+            <Border classes="h-full max-h-[20vh] overflow-y-auto w-full">
+              {errors.length === 0 && "No Errors"}
+              {errors.length > 0 &&
+                errors.map((err) => (
+                  <Text key={err} variant="small">
+                    {err}
+                  </Text>
+                ))}
+            </Border>
+            {chlGameplan && (
+              <Border
+                direction="col"
+                classes="w-full px-2 py-1 h-full items-center justify-center"
+                styles={{
+                  borderColor: teamColors.One,
+                  backgroundColor: themeBackgroundColor,
+                }}
+              >
+                <div className="grid grid-cols-2 gap-x-4 w-full">
+                  <div className="gap-x-2 text-start">
+                    <Text variant="xs">
+                      <strong>Offensive System:</strong>{" "}
+                      {
+                        getOffensiveSystemFromMap(chlGameplan.OffensiveSystem)
+                          .label
+                      }
                     </Text>
-                  ))}
+                    <Text variant="xs">
+                      {offensiveSystemsInformation?.Philosophy}
+                    </Text>
+                    <Text variant="xs">
+                      <strong>Pros:</strong>{" "}
+                      {offensiveSystemsInformation?.GoodFits?.map(
+                        (fit: any) => `${fit.archetype} (+${fit.bonus})`
+                      ).join(", ") || "None"}
+                    </Text>
+                    <Text variant="xs">
+                      <strong>Cons:</strong>{" "}
+                      {offensiveSystemsInformation?.BadFits?.map(
+                        (fit: any) => `${fit.archetype} (${fit.penalty})`
+                      ).join(", ") || "None"}
+                    </Text>
+                  </div>
+                  <div className="gap-x-2 text-start">
+                    <Text variant="xs">
+                      <strong>Defensive System:</strong>{" "}
+                      {
+                        getDefensiveSystemFromMap(chlGameplan.DefensiveSystem)
+                          .label
+                      }
+                    </Text>
+                    <Text variant="xs">
+                      {defensiveSystemsInformation?.Philosophy}
+                    </Text>
+                    <Text variant="xs">
+                      <strong>Pros:</strong>{" "}
+                      {defensiveSystemsInformation?.GoodFits?.map(
+                        (fit: any) => `${fit.archetype} (+${fit.bonus})`
+                      ).join(", ") || "None"}
+                    </Text>
+                    <Text variant="xs">
+                      <strong>Cons:</strong>{" "}
+                      {defensiveSystemsInformation?.BadFits?.map(
+                        (fit: any) => `${fit.archetype} (${fit.penalty})`
+                      ).join(", ") || "None"}
+                    </Text>
+                  </div>
+                </div>
               </Border>
-            </div>
-            <ButtonGroup classes="mb-2 justify-end w-1/5">
+            )}
+            <div className="grid max-[768px]:grid-cols-2 max-[768px]:gap-2 md:flex md:justify-end gap-2">
               <Button
                 classes="w-full"
                 disabled={errors.length > 0}
@@ -291,7 +368,7 @@ export const CHLLineupPage = () => {
                 size="xs"
                 onClick={aiGameplanModal.handleOpenModal}
               >
-                <Text variant="small">AI</Text>
+                <Text variant="small">Settings</Text>
               </Button>
               <Button size="xs" classes="w-full" onClick={ResetLineups}>
                 <Text variant="small">Reset</Text>
@@ -306,7 +383,7 @@ export const CHLLineupPage = () => {
               >
                 <Text variant="small">Help</Text>
               </Button>
-            </ButtonGroup>
+            </div>
           </Border>
         </div>
       </div>
@@ -324,7 +401,7 @@ export const CHLLineupPage = () => {
           classes="w-full px-4 py-3 min-h-full"
           styles={{
             borderColor: teamColors.One,
-            backgroundColor: navyBlueColor,
+            backgroundColor: themeBackgroundColor,
           }}
         >
           <div className="flex flex-row mb-6 gap-x-2 justify-center w-full">
@@ -363,7 +440,7 @@ export const CHLLineupPage = () => {
             classes="w-full max-[1024px]:px-2 px-4 py-4"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <div className="flex flex-row w-full justify-start items-center gap-x-2 mb-6">
@@ -382,14 +459,16 @@ export const CHLLineupPage = () => {
               </Button>
             </div>
             <div className="flex flex-col">
-              <div className="grid grid-cols-1 max-[541px]:grid-cols-1 max-[768px]:grid-cols-2 max-[854px]:grid-cols-2 max-[1024px]:grid-cols-3 min-[1025px]:grid-cols-3 gap-4 px-4 w-full">
+              <div className="grid grid-cols-1 max-[541px]:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 w-full">
                 {lineCategory !== LineupSO && (
                   <>
                     {lineup.LineType === 1 && (
                       <>
                         <LineupPlayer
+                          league={SimCHL}
                           playerID={lineup.CenterID}
                           rosterMap={chlTeamRosterMap}
+                          zoneCategory={zoneCategory}
                           zoneInputList={zoneInputList}
                           lineCategory={lineCategory}
                           lineIDX={lineupIdx}
@@ -398,10 +477,14 @@ export const CHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="CenterID"
                           activatePlayer={activatePlayerModal}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                         <LineupPlayer
+                          league={SimCHL}
                           playerID={lineup.Forward1ID}
                           rosterMap={chlTeamRosterMap}
+                          zoneCategory={zoneCategory}
                           zoneInputList={zoneInputList}
                           lineCategory={lineCategory}
                           lineIDX={lineupIdx}
@@ -410,10 +493,14 @@ export const CHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="Forward1ID"
                           activatePlayer={activatePlayerModal}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                         <LineupPlayer
+                          league={SimCHL}
                           playerID={lineup.Forward2ID}
                           rosterMap={chlTeamRosterMap}
+                          zoneCategory={zoneCategory}
                           zoneInputList={zoneInputList}
                           lineCategory={lineCategory}
                           lineIDX={lineupIdx}
@@ -422,14 +509,18 @@ export const CHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="Forward2ID"
                           activatePlayer={activatePlayerModal}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                       </>
                     )}
                     {lineup.LineType === 2 && (
                       <>
                         <LineupPlayer
+                          league={SimCHL}
                           playerID={lineup.Defender1ID}
                           rosterMap={chlTeamRosterMap}
+                          zoneCategory={zoneCategory}
                           zoneInputList={zoneInputList}
                           lineCategory={lineCategory}
                           lineIDX={lineupIdx}
@@ -438,10 +529,14 @@ export const CHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="Defender1ID"
                           activatePlayer={activatePlayerModal}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                         <LineupPlayer
+                          league={SimCHL}
                           playerID={lineup.Defender2ID}
                           rosterMap={chlTeamRosterMap}
+                          zoneCategory={zoneCategory}
                           zoneInputList={zoneInputList}
                           lineCategory={lineCategory}
                           lineIDX={lineupIdx}
@@ -450,6 +545,8 @@ export const CHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="Defender2ID"
                           activatePlayer={activatePlayerModal}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                       </>
                     )}
@@ -467,6 +564,9 @@ export const CHLLineupPage = () => {
                           property="GoalieID"
                           activatePlayer={activatePlayerModal}
                           league={SimCHL}
+                          zoneCategory={zoneCategory}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                       </>
                     )}
@@ -476,6 +576,7 @@ export const CHLLineupPage = () => {
                   <>
                     {[1, 2, 3, 4, 5, 6].map((x) => (
                       <ShootoutPlayer
+                        league={SimCHL}
                         key={`${x}-${currentShootoutLineups[`Shooter${x}ID`]}`}
                         idx={x}
                         playerID={currentShootoutLineups[`Shooter${x}ID`]}
@@ -524,7 +625,7 @@ export const PHLLineupPage = () => {
     CollegePlayer | ProfessionalPlayer
   >({} as ProfessionalPlayer);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-
+  const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const teamColors = useTeamColors(
     phlTeam?.ColorOne,
     phlTeam?.ColorTwo,
@@ -645,6 +746,20 @@ export const PHLLineupPage = () => {
 
   const aiGameplanModal = useModal();
 
+  const offensiveSystemsInformation = useMemo(() => {
+    return offensiveSystemsInformationList[
+      phlGameplan!
+        .OffensiveSystem as keyof typeof offensiveSystemsInformationList
+    ];
+  }, [phlGameplan]);
+
+  const defensiveSystemsInformation = useMemo(() => {
+    return defensiveSystemsInformationList[
+      phlGameplan!
+        .DefensiveSystem as keyof typeof defensiveSystemsInformationList
+    ];
+  }, [phlGameplan]);
+
   return (
     <>
       <HCKAIGameplanModal
@@ -654,79 +769,134 @@ export const PHLLineupPage = () => {
         gameplan={phlGameplan}
         saveGameplan={savePHLAIGameplan}
       />
-      <div className="grid grid-flow-row max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[6fr_4fr] grid-auto-rows-fr h-full max-[1024px]:gap-x-1 gap-x-2 mb-2">
-        <div className="flex flex-col w-full h-full max-[1024px]:gap-y-2">
-          <div className="flex flex-row md:flex-col w-full h-full">
-            <Border
-              direction="col"
-              classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 px-3 py-2 h-full items-center justify-center"
-              styles={{
-                borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
-              }}
-            >
-              <ButtonGrid>
-                {lineupCategories.map((x) => (
-                  <Button
-                    key={x}
-                    size="sm"
-                    classes="lg:text-nowrap"
-                    isSelected={lineCategory === x}
-                    onClick={() => changeLineCategory(x as Lineup)}
-                  >
-                    <Text variant="small">{x}</Text>
-                  </Button>
-                ))}
-              </ButtonGrid>
-            </Border>
-          </div>
-          <div className="flex flex-row md:flex-col w-full h-full">
-            <Border
-              direction="col"
-              classes="w-full max-[1024px]:px-2 px-4 max-[1024px]:pb-4 py-2 h-full items-center justify-center"
-              styles={{
-                borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
-              }}
-            >
-              <ButtonGrid classes="justify-center">
-                {zoneCategories.map((x) => (
-                  <Button
-                    key={x}
-                    size="sm"
-                    classes="lg:text-nowrap"
-                    isSelected={zoneCategory === x}
-                    onClick={() => setZoneCategory(x as Zone)}
-                    disabled={isGoalieLineup && x !== DefendingGoalZone}
-                  >
-                    <Text variant="small">{x}</Text>
-                  </Button>
-                ))}
-              </ButtonGrid>
-            </Border>
-          </div>
-        </div>
-        <div className="flex flex-col w-full h-full">
+      <div className="w-full grid grid-flow-row max-[768px]:grid-cols-1 max-[768px]:gap-y-3 md:grid-cols-[6fr_4fr] grid-auto-rows-fr h-full max-[768px]:gap-x-1 gap-x-2 mb-2">
+        <div className="grid grid-rows-2 w-full h-full max-[768px]:gap-y-3 gap-y-2">
           <Border
-            direction="row"
-            classes="w-full max-[1024px]:px-2 px-4 py-2 h-full gap-x-2"
+            direction="col"
+            classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full items-center justify-center"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
-            <div className="flex flex-col min-h-full w-full">
-              <Border classes="h-full w-full">
-                {errors.length === 0 && "No Errors"}
-                {errors.length > 0 &&
-                  errors.map((err) => (
-                    <Text key={err} variant="small">
-                      {err}
+            <ButtonGrid classes="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 gap-x-2 w-full">
+              {lineupCategories.map((x) => (
+                <Button
+                  key={x}
+                  size={isMobile ? "xs" : "sm"}
+                  classes="max-[768px]:text-xs max-[768px]:px-2 max-[768px]:py-1 text-center"
+                  isSelected={lineCategory === x}
+                  onClick={() => changeLineCategory(x as Lineup)}
+                >
+                  <Text variant="small">{x}</Text>
+                </Button>
+              ))}
+            </ButtonGrid>
+          </Border>
+          <Border
+            direction="col"
+            classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full items-center justify-center"
+            styles={{
+              borderColor: teamColors.One,
+              backgroundColor: themeBackgroundColor,
+            }}
+          >
+            <ButtonGrid classes="grid grid-cols-3 gap-x-2 w-full justify-center">
+              {zoneCategories.map((x) => (
+                <Button
+                  key={x}
+                  size={isMobile ? "xs" : "sm"}
+                  classes="max-[768px]:text-xs max-[768px]:px-2 max-[768px]:py-1 text-center"
+                  isSelected={zoneCategory === x}
+                  onClick={() => setZoneCategory(x as Zone)}
+                  disabled={isGoalieLineup && x !== DefendingGoalZone}
+                >
+                  <Text variant="small">{x}</Text>
+                </Button>
+              ))}
+            </ButtonGrid>
+          </Border>
+        </div>
+        <div className="w-full h-full">
+          <Border
+            direction="col"
+            classes="w-full max-[768px]:px-3 max-[768px]:py-3 px-4 py-2 h-full grid grid-rows-[1fr_auto] max-[768px]:gap-y-3 gap-y-2"
+            styles={{
+              borderColor: teamColors.One,
+              backgroundColor: themeBackgroundColor,
+            }}
+          >
+            <Border classes="h-full max-h-[20vh] overflow-y-auto w-full">
+              {errors.length === 0 && "No Errors"}
+              {errors.length > 0 &&
+                errors.map((err) => (
+                  <Text key={err} variant="small">
+                    {err}
+                  </Text>
+                ))}
+            </Border>
+            {phlGameplan && (
+              <Border
+                direction="col"
+                classes="w-full px-2 py-1 h-full items-center justify-center"
+                styles={{
+                  borderColor: teamColors.One,
+                  backgroundColor: themeBackgroundColor,
+                }}
+              >
+                <div className="grid grid-cols-2 gap-x-4 w-full">
+                  <div className="gap-x-2 text-start">
+                    <Text variant="xs">
+                      <strong>Offensive System:</strong>{" "}
+                      {
+                        getOffensiveSystemFromMap(phlGameplan.OffensiveSystem)
+                          .label
+                      }
                     </Text>
-                  ))}
+                    <Text variant="xs">
+                      {offensiveSystemsInformation?.Philosophy}
+                    </Text>
+                    <Text variant="xs">
+                      <strong>Pros:</strong>{" "}
+                      {offensiveSystemsInformation?.GoodFits?.map(
+                        (fit: any) => `${fit.archetype} (+${fit.bonus})`
+                      ).join(", ") || "None"}
+                    </Text>
+                    <Text variant="xs">
+                      <strong>Cons:</strong>{" "}
+                      {offensiveSystemsInformation?.BadFits?.map(
+                        (fit: any) => `${fit.archetype} (${fit.penalty})`
+                      ).join(", ") || "None"}
+                    </Text>
+                  </div>
+                  <div className="gap-x-2 text-start">
+                    <Text variant="xs">
+                      <strong>Defensive System:</strong>{" "}
+                      {
+                        getDefensiveSystemFromMap(phlGameplan.DefensiveSystem)
+                          .label
+                      }
+                    </Text>
+                    <Text variant="xs">
+                      {defensiveSystemsInformation?.Philosophy}
+                    </Text>
+                    <Text variant="xs">
+                      <strong>Pros:</strong>{" "}
+                      {defensiveSystemsInformation?.GoodFits?.map(
+                        (fit: any) => `${fit.archetype} (+${fit.bonus})`
+                      ).join(", ") || "None"}
+                    </Text>
+                    <Text variant="xs">
+                      <strong>Cons:</strong>{" "}
+                      {defensiveSystemsInformation?.BadFits?.map(
+                        (fit: any) => `${fit.archetype} (${fit.penalty})`
+                      ).join(", ") || "None"}
+                    </Text>
+                  </div>
+                </div>
               </Border>
-            </div>
-            <ButtonGroup classes="mb-2 justify-end w-1/5">
+            )}
+            <div className="grid max-[768px]:grid-cols-2 max-[768px]:gap-2 md:flex md:justify-end gap-2">
               <Button
                 classes="w-full"
                 disabled={errors.length > 0}
@@ -743,22 +913,22 @@ export const PHLLineupPage = () => {
                 size="xs"
                 onClick={aiGameplanModal.handleOpenModal}
               >
-                <Text variant="small">AI</Text>
+                <Text variant="small">Settings</Text>
               </Button>
-              <Button classes="w-full" onClick={ResetLineups} size="xs">
+              <Button size="xs" classes="w-full" onClick={ResetLineups}>
                 <Text variant="small">Reset</Text>
               </Button>
               <Button
+                size="xs"
                 classes="w-full"
                 onClick={() => {
                   setModalAction(Help1);
                   handleOpenModal();
                 }}
-                size="xs"
               >
                 <Text variant="small">Help</Text>
               </Button>
-            </ButtonGroup>
+            </div>
           </Border>
         </div>
       </div>
@@ -776,7 +946,7 @@ export const PHLLineupPage = () => {
           classes="w-full px-4 py-3 min-h-full"
           styles={{
             borderColor: teamColors.One,
-            backgroundColor: navyBlueColor,
+            backgroundColor: themeBackgroundColor,
           }}
         >
           <div className="flex flex-row mb-6 gap-x-2 justify-center w-full">
@@ -815,7 +985,7 @@ export const PHLLineupPage = () => {
             classes="w-full max-[1024px]:px-2 px-4 py-4"
             styles={{
               borderColor: teamColors.One,
-              backgroundColor: navyBlueColor,
+              backgroundColor: themeBackgroundColor,
             }}
           >
             <div className="flex flex-row w-full justify-start items-center gap-x-2 mb-6">
@@ -834,7 +1004,7 @@ export const PHLLineupPage = () => {
               </Button>
             </div>
             <div className="flex flex-col">
-              <div className="grid grid-cols-1 max-[541px]:grid-cols-1 max-[768px]:grid-cols-2 max-[854px]:grid-cols-2 max-[1024px]:grid-cols-3 min-[1025px]:grid-cols-3 gap-4 px-4 w-full">
+              <div className="grid grid-cols-1 max-[541px]:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 w-full">
                 {lineCategory !== LineupSO && (
                   <>
                     {lineup.LineType === 1 && (
@@ -850,6 +1020,9 @@ export const PHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="CenterID"
                           activatePlayer={activatePlayerModal}
+                          zoneCategory={zoneCategory}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                         <LineupPlayer
                           playerID={lineup.Forward1ID}
@@ -862,6 +1035,9 @@ export const PHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="Forward1ID"
                           activatePlayer={activatePlayerModal}
+                          zoneCategory={zoneCategory}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                         <LineupPlayer
                           playerID={lineup.Forward2ID}
@@ -874,6 +1050,9 @@ export const PHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="Forward2ID"
                           activatePlayer={activatePlayerModal}
+                          zoneCategory={zoneCategory}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                       </>
                     )}
@@ -890,6 +1069,9 @@ export const PHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="Defender1ID"
                           activatePlayer={activatePlayerModal}
+                          zoneCategory={zoneCategory}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                         <LineupPlayer
                           playerID={lineup.Defender2ID}
@@ -902,6 +1084,9 @@ export const PHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="Defender2ID"
                           activatePlayer={activatePlayerModal}
+                          zoneCategory={zoneCategory}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                       </>
                     )}
@@ -918,6 +1103,9 @@ export const PHLLineupPage = () => {
                           ChangePlayerInput={ChangePlayerInput}
                           property="GoalieID"
                           activatePlayer={activatePlayerModal}
+                          zoneCategory={zoneCategory}
+                          offenseSystemInformation={offensiveSystemsInformation}
+                          defenseSystemInformation={defensiveSystemsInformation}
                         />
                       </>
                     )}
@@ -927,6 +1115,7 @@ export const PHLLineupPage = () => {
                   <>
                     {[1, 2, 3, 4, 5, 6].map((x) => (
                       <ShootoutPlayer
+                        league={SimPHL}
                         key={`${x}-${currentShootoutLineups[`Shooter${x}ID`]}`}
                         idx={x}
                         playerID={currentShootoutLineups[`Shooter${x}ID`]}

@@ -31,6 +31,7 @@ import {
   ArrowRightIcon,
   ArrowLeftIcon,
   BarsArrowUpIcon,
+  MinusCircleIcon,
 } from "@heroicons/react/16/solid";
 import {
   GiDiamondTrophy,
@@ -210,6 +211,12 @@ export const CrossCircle: React.FC<LockIconProps> = ({
   textColorClass = "text-black", // Default color is black
 }) => {
   return <XCircleIcon className={`size-5 ${textColorClass}`} />;
+};
+
+export const DashCircle: React.FC<LockIconProps> = ({
+  textColorClass = "text-black", // Default color is black
+}) => {
+  return <MinusCircleIcon className={`size-5 ${textColorClass}`} />;
 };
 
 export const BarsArrowDown: React.FC<LockIconProps> = ({

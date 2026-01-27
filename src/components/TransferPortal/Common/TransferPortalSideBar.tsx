@@ -1,11 +1,6 @@
 import { FC } from "react";
-import {
-  League,
-  navyBlueColor,
-  SimCBB,
-  SimCFB,
-  SimCHL,
-} from "../../../_constants/constants";
+import { League, SimCBB, SimCFB, SimCHL } from "../../../_constants/constants";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import {
   CollegeTeam as HockeyTeam,
   RecruitingTeamProfile as HockeyProfile,
@@ -39,6 +34,7 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
   league,
   rosterCount,
 }) => {
+  const { backgroundColor } = useBackgroundColor();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
   let teamLabel = "";
   let classRank = 0;
@@ -76,7 +72,11 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
       const cbbtp = TeamProfile as BasketballProfile;
       const cbbt = Team as BasketballTeam;
       teamLabel = cbbt.Team;
-      region = cbbtp.Region;
+      if (cbbtp) {
+        region = cbbtp.Region;
+      }
+      spotsRemaining = 15 - rosterCount.rosterCount;
+
       break;
     case SimCFB:
       // Remove some of these as affinities aren't used in portal
@@ -97,7 +97,7 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
         classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-full items-center justify-start"
         styles={{
           borderColor: teamColors.One,
-          backgroundColor: navyBlueColor,
+          backgroundColor: backgroundColor,
         }}
       >
         <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mx-2 mb-2">

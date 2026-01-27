@@ -4,6 +4,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -177,7 +179,7 @@ export const useSideMenu = () => {
       {
         label: "Transfer Portal",
         isRoute: true,
-        route: "",
+        route: routes.CBB_TRANSFER,
         league: SimCBB,
         toggle: () => toggleMenu(),
       },
@@ -326,6 +328,8 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
     ],
+    SimCollegeBaseball: [],
+    SimMLB: [],
   };
 
   return {

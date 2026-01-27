@@ -1,40 +1,35 @@
-import { useMemo, useState } from "react";
-import { useSimHCKStore } from "../../../context/SimHockeyContext";
+import { useEffect, useMemo, useState } from "react";
+import { useModal } from "../../../_hooks/useModal";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
 import {
   Attributes,
-  Canada,
-  CanadaRegionOptions,
   InfoType,
   ModalAction,
   Overview,
   Potentials,
   RecruitingCategory,
-  Russia,
-  RussiaRegionOptions,
-  Sweden,
-  SwedenRegionOptions,
   USA,
   USARegionOptions,
 } from "../../../_constants/constants";
+import { CollegePlayer as FootballPlayer } from "../../../models/footballModels";
+import { TransferPlayerResponse as BasketballPlayer } from "../../../models/basketballModels";
 import { CollegePlayer as HockeyPlayer } from "../../../models/hockeyModels";
-import { useFilteredHockeyTransferPlayers } from "../../../_helper/transferPortalHelper";
 import { usePagination } from "../../../_hooks/usePagination";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
-import { useModal } from "../../../_hooks/useModal";
-import { CollegePlayer as FootballPlayer } from "../../../models/footballModels";
-import { TransferPlayerResponse as BasketballPlayer } from "../../../models/basketballModels";
+import { useFilteredBasketballTransferPlayers } from "../../../_helper/transferPortalHelper";
 
-export const useHCKTransferPortal = () => {
-  const hkStore = useSimHCKStore();
+export const useBBATransferPortal = () => {
+  const bbaStore = useSimBBAStore();
   const {
     portalPlayers,
     teamProfileMap,
-    chlTeam,
+    cbbTeam,
     transferPortalProfiles,
-    chlTeamOptions,
-    hck_Timestamp,
-  } = hkStore;
+    cbbTeamOptions,
+    cbb_Timestamp,
+    getBootstrapPortalData,
+  } = bbaStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
 
@@ -54,21 +49,19 @@ export const useHCKTransferPortal = () => {
   const [modalAction, setModalAction] = useState<ModalAction>(InfoType);
 
   const recruitingLocked = useMemo(() => {
-    if (hck_Timestamp) {
-      return hck_Timestamp.IsRecruitingLocked;
+    if (cbb_Timestamp) {
+      return cbb_Timestamp.IsRecruitingLocked;
     }
     return false;
-  }, [hck_Timestamp]);
-
+  }, [cbb_Timestamp]);
   const teamTransferPortalProfiles = useMemo(() => {
-    if (chlTeam && transferPortalProfiles) {
+    if (cbbTeam && transferPortalProfiles) {
       return transferPortalProfiles.filter(
-        (profile) => profile.ProfileID === chlTeam.ID
+        (profile) => profile.ProfileID === cbbTeam.ID
       );
     }
     return [];
-  }, [chlTeam, transferPortalProfiles]);
-
+  }, [cbbTeam, transferPortalProfiles]);
   const currentSpentPoints = useMemo(() => {
     if (
       !teamTransferPortalProfiles ||
@@ -94,24 +87,15 @@ export const useHCKTransferPortal = () => {
     if (country === USA) {
       return USARegionOptions;
     }
-    if (country === Canada) {
-      return CanadaRegionOptions;
-    }
-    if (country === Sweden) {
-      return SwedenRegionOptions;
-    }
-    if (country === Russia) {
-      return RussiaRegionOptions;
-    }
     return [];
   }, [country]);
 
   const teamProfile = useMemo(() => {
-    if (chlTeam && teamProfileMap) {
-      return teamProfileMap[Number(chlTeam.ID)];
+    if (cbbTeam && teamProfileMap) {
+      return teamProfileMap[Number(cbbTeam.ID)];
     }
     return null;
-  }, [chlTeam, teamProfileMap]);
+  }, [cbbTeam, teamProfileMap]);
 
   const transferMap = useMemo(() => {
     const tpMap: any = {};
@@ -121,7 +105,7 @@ export const useHCKTransferPortal = () => {
     return tpMap;
   }, [portalPlayers]);
 
-  const filteredPlayers = useFilteredHockeyTransferPlayers({
+  const filteredPlayers = useFilteredBasketballTransferPlayers({
     portalPlayers,
     country,
     positions,
@@ -130,6 +114,10 @@ export const useHCKTransferPortal = () => {
     stars,
     previousTeams,
   });
+
+  useEffect(() => {
+    getBootstrapPortalData();
+  }, []);
 
   const pageSize = 100;
 
@@ -153,15 +141,15 @@ export const useHCKTransferPortal = () => {
     setCurrentPage(0);
   };
 
-  const SelectPrevTeamOptions = (opts: any) => {
-    const options = [...opts.map((x: any) => Number(x.value))];
-    setPreviousTeamIDs(options);
-    setCurrentPage(0);
-  };
-
   const SelectStarOptions = (opts: any) => {
     const options = [...opts.map((x: any) => Number(x.value))];
     setStars(options);
+    setCurrentPage(0);
+  };
+
+  const SelectPrevTeamOptions = (opts: any) => {
+    const options = [...opts.map((x: any) => Number(x.value))];
+    setPreviousTeamIDs(options);
     setCurrentPage(0);
   };
 
@@ -222,7 +210,6 @@ export const useHCKTransferPortal = () => {
     SelectRegionOptions,
     country,
     SelectStarOptions,
-    SelectPrevTeamOptions,
     tableViewType,
     setTableViewType,
     goToPreviousPage,
@@ -235,6 +222,7 @@ export const useHCKTransferPortal = () => {
     promiseModal,
     openPromiseModal,
     currentSpentPoints,
-    chlTeamOptions,
+    cbbTeamOptions,
+    SelectPrevTeamOptions,
   };
 };

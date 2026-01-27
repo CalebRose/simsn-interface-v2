@@ -1,5 +1,103 @@
 /* Do not change, this code is generated from Golang structs */
+export class AwardsModel {
+  PlayerID: number;
+  TeamID: number;
+  FirstName: string;
+  LastName: string;
+  Position: string;
+  Archetype: string;
+  School: string;
+  Score: number;
+  Games: number;
 
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.PlayerID = source["PlayerID"];
+    this.TeamID = source["TeamID"];
+    this.FirstName = source["FirstName"];
+    this.LastName = source["LastName"];
+    this.Position = source["Position"];
+    this.Archetype = source["Archetype"];
+    this.School = source["School"];
+    this.Score = source["Score"];
+    this.Games = source["Games"];
+  }
+}
+export class AwardsList {
+  [key: string]: any;
+  HeismanList: AwardsModel[];
+  CoachOfTheYearList: AwardsModel[];
+  DaveyOBrienList: AwardsModel[];
+  DoakWalkerList: AwardsModel[];
+  BiletnikoffList: AwardsModel[];
+  MackeyList: AwardsModel[];
+  RimingtonList: AwardsModel[];
+  OutlandList: AwardsModel[];
+  JoeMooreList: AwardsModel[];
+  NagurskiList: AwardsModel[];
+  HendricksList: AwardsModel[];
+  ThorpeList: AwardsModel[];
+  ButkusList: AwardsModel[];
+  LouGrozaList: AwardsModel[];
+  RayGuyList: AwardsModel[];
+  JetAward: AwardsModel[];
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.HeismanList = this.convertValues(source["HeismanList"], AwardsModel);
+    this.CoachOfTheYearList = this.convertValues(
+      source["CoachOfTheYearList"],
+      AwardsModel,
+    );
+    this.DaveyOBrienList = this.convertValues(
+      source["DaveyOBrienList"],
+      AwardsModel,
+    );
+    this.DoakWalkerList = this.convertValues(
+      source["DoakWalkerList"],
+      AwardsModel,
+    );
+    this.BiletnikoffList = this.convertValues(
+      source["BiletnikoffList"],
+      AwardsModel,
+    );
+    this.MackeyList = this.convertValues(source["MackeyList"], AwardsModel);
+    this.RimingtonList = this.convertValues(
+      source["RimingtonList"],
+      AwardsModel,
+    );
+    this.OutlandList = this.convertValues(source["OutlandList"], AwardsModel);
+    this.JoeMooreList = this.convertValues(source["JoeMooreList"], AwardsModel);
+    this.NagurskiList = this.convertValues(source["NagurskiList"], AwardsModel);
+    this.HendricksList = this.convertValues(
+      source["HendricksList"],
+      AwardsModel,
+    );
+    this.ThorpeList = this.convertValues(source["ThorpeList"], AwardsModel);
+    this.ButkusList = this.convertValues(source["ButkusList"], AwardsModel);
+    this.LouGrozaList = this.convertValues(source["LouGrozaList"], AwardsModel);
+    this.RayGuyList = this.convertValues(source["RayGuyList"], AwardsModel);
+    this.JetAward = this.convertValues(source["JetAward"], AwardsModel);
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
 export class NFLGame {
   ID: number;
   CreatedAt: Time;
@@ -270,11 +368,11 @@ export class WaiverWirePlayerResponse {
     this.IsPracticeSquad = source["IsPracticeSquad"];
     this.SeasonStats = this.convertValues(
       source["SeasonStats"],
-      NFLPlayerSeasonStats
+      NFLPlayerSeasonStats,
     );
     this.WaiverOffers = this.convertValues(
       source["WaiverOffers"],
-      NFLWaiverOffer
+      NFLWaiverOffer,
     );
     this.Contract = this.convertValues(source["Contract"], NFLContract);
   }
@@ -421,7 +519,7 @@ export class FreeAgentResponse {
     this.Shotgun = source["Shotgun"];
     this.SeasonStats = this.convertValues(
       source["SeasonStats"],
-      NFLPlayerSeasonStats
+      NFLPlayerSeasonStats,
     );
     this.Offers = this.convertValues(source["Offers"], FreeAgencyOffer);
   }
@@ -1574,17 +1672,17 @@ export class NFLPlayer {
     this.Stats = this.convertValues(source["Stats"], NFLPlayerStats);
     this.SeasonStats = this.convertValues(
       source["SeasonStats"],
-      NFLPlayerSeasonStats
+      NFLPlayerSeasonStats,
     );
     this.Contract = this.convertValues(source["Contract"], NFLContract);
     this.Offers = this.convertValues(source["Offers"], FreeAgencyOffer);
     this.WaiverOffers = this.convertValues(
       source["WaiverOffers"],
-      NFLWaiverOffer
+      NFLWaiverOffer,
     );
     this.Extensions = this.convertValues(
       source["Extensions"],
-      NFLExtensionOffer
+      NFLExtensionOffer,
     );
   }
 
@@ -1671,7 +1769,7 @@ export class NFLDepthChart {
     this.TeamID = source["TeamID"];
     this.DepthChartPlayers = this.convertValues(
       source["DepthChartPlayers"],
-      NFLDepthChartPosition
+      NFLDepthChartPosition,
     );
   }
 
@@ -2424,11 +2522,11 @@ export class NFLTeam {
     this.TeamStats = this.convertValues(source["TeamStats"], NFLTeamStats);
     this.TeamSeasonStats = this.convertValues(
       source["TeamSeasonStats"],
-      NFLTeamSeasonStats
+      NFLTeamSeasonStats,
     );
     this.TeamDepthChart = this.convertValues(
       source["TeamDepthChart"],
-      NFLDepthChart
+      NFLDepthChart,
     );
     this.TeamGameplan = this.convertValues(source["TeamGameplan"], NFLGameplan);
     this.Standings = this.convertValues(source["Standings"], NFLStandings);
@@ -2747,7 +2845,7 @@ export class Croot {
     this.TotalRank = source["TotalRank"];
     this.LeadingTeams = this.convertValues(
       source["LeadingTeams"],
-      LeadingTeams
+      LeadingTeams,
     );
   }
 
@@ -2955,7 +3053,7 @@ export class TransferPortalProfile {
     this.Recruiter = source["Recruiter"];
     this.CollegePlayer = this.convertValues(
       source["CollegePlayer"],
-      CollegePlayer
+      CollegePlayer,
     );
     this.Promise = this.convertValues(source["Promise"], CollegePromise);
   }
@@ -3481,14 +3579,14 @@ export class CollegePlayer {
     this.Stats = this.convertValues(source["Stats"], CollegePlayerStats);
     this.SeasonStats = this.convertValues(
       source["SeasonStats"],
-      CollegePlayerSeasonStats
+      CollegePlayerSeasonStats,
     );
     this.HasProgressed = source["HasProgressed"];
     this.WillDeclare = source["WillDeclare"];
     this.LegacyID = source["LegacyID"];
     this.Profiles = this.convertValues(
       source["Profiles"],
-      TransferPortalProfile
+      TransferPortalProfile,
     );
   }
 
@@ -3539,7 +3637,7 @@ export class CollegeDepthChartPosition {
     this.OriginalPosition = source["OriginalPosition"];
     this.CollegePlayer = this.convertValues(
       source["CollegePlayer"],
-      CollegePlayer
+      CollegePlayer,
     );
   }
 
@@ -3578,7 +3676,7 @@ export class CollegeTeamDepthChart {
     this.TeamID = source["TeamID"];
     this.DepthChartPlayers = this.convertValues(
       source["DepthChartPlayers"],
-      CollegeDepthChartPosition
+      CollegeDepthChartPosition,
     );
   }
 
@@ -4760,7 +4858,7 @@ export class Recruit {
     this.RecruitingStatus = source["RecruitingStatus"];
     this.RecruitPlayerProfiles = this.convertValues(
       source["RecruitPlayerProfiles"],
-      RecruitPlayerProfile
+      RecruitPlayerProfile,
     );
   }
 
@@ -4975,7 +5073,7 @@ export class RecruitingTeamProfile {
     this.Recruiter = source["Recruiter"];
     this.Recruits = this.convertValues(
       source["Recruits"],
-      RecruitPlayerProfile
+      RecruitPlayerProfile,
     );
     this.Affinities = this.convertValues(source["Affinities"], ProfileAffinity);
   }
@@ -5212,32 +5310,32 @@ export class CollegeTeam {
     this.RecruitsAdded = source["RecruitsAdded"];
     this.CollegeCoach = this.convertValues(
       source["CollegeCoach"],
-      CollegeCoach
+      CollegeCoach,
     );
     this.RecruitingProfile = this.convertValues(
       source["RecruitingProfile"],
-      RecruitingTeamProfile
+      RecruitingTeamProfile,
     );
     this.TeamStats = this.convertValues(source["TeamStats"], CollegeTeamStats);
     this.TeamSeasonStats = this.convertValues(
       source["TeamSeasonStats"],
-      CollegeTeamSeasonStats
+      CollegeTeamSeasonStats,
     );
     this.TeamRecord = this.convertValues(
       source["TeamRecord"],
-      CollegeTeamRecords
+      CollegeTeamRecords,
     );
     this.TeamGameplan = this.convertValues(
       source["TeamGameplan"],
-      CollegeGameplan
+      CollegeGameplan,
     );
     this.TeamDepthChart = this.convertValues(
       source["TeamDepthChart"],
-      CollegeTeamDepthChart
+      CollegeTeamDepthChart,
     );
     this.TeamStandings = this.convertValues(
       source["TeamStandings"],
-      CollegeStandings
+      CollegeStandings,
     );
   }
 
@@ -5268,6 +5366,7 @@ export class BootstrapData {
   Recruits: Croot[];
   TeamProfileMap: { [key: string]: RecruitingTeamProfile } | null;
   PortalPlayers: CollegePlayer[];
+  PostSeasonAwards: AwardsList;
 
   CollegeInjuryReport: CollegePlayer[];
   CollegeNews: NewsLog[];
@@ -5311,12 +5410,15 @@ export class BootstrapData {
   CollegePollSubmission: CollegePollSubmission;
   NFLWarRoomMap: { [key: number]: NFLWarRoom };
   NFLScoutingProfileMap: { [key: number]: ScoutingProfile };
-  TradeProposals: NFLTeamProposals;
+  TradeProposals: { [key: number]: NFLTradeProposal[] };
   TradePreferences: { [key: number]: NFLTradePreferences };
   NFLDraftPicks: NFLDraftPick[];
   constructor(source: any = {}) {
     if (typeof source === "string") source = JSON.parse(source);
-
+    this.PostSeasonAwards = this.convertValues(
+      source["PostSeasonAwards"],
+      AwardsList,
+    );
     this.CollegeTeam =
       this.convertValues(source["CollegeTeam"], CollegeTeam) || null;
     this.AllCollegeTeams =
@@ -5327,22 +5429,22 @@ export class BootstrapData {
     this.Recruits = this.convertValues(source["Recruits"], Croot) || [];
     this.RecruitProfiles = this.convertValues(
       source["RecruitProfiles"],
-      RecruitPlayerProfile
+      RecruitPlayerProfile,
     );
     this.RetiredPlayers = this.convertValues(
       source["RetiredPlayers"],
-      NFLRetiredPlayer
+      NFLRetiredPlayer,
     );
     this.HistoricCollegePlayers = this.convertValues(
       source["HistoricCollegePlayers"],
-      HistoricCollegePlayer
+      HistoricCollegePlayer,
     );
 
     this.TeamProfileMap =
       this.convertValues(
         source["TeamProfileMap"],
         RecruitingTeamProfile,
-        true
+        true,
       ) || null;
     this.PortalPlayers =
       this.convertValues(source["PortalPlayers"], CollegePlayer) || [];
@@ -5364,7 +5466,7 @@ export class BootstrapData {
       this.convertValues(
         source["CollegeDepthChartMap"],
         CollegeTeamDepthChart,
-        true
+        true,
       ) || null;
     this.CollegeGameplanMap =
       this.convertValues(source["CollegeGameplanMap"], CollegeGameplan, true) ||
@@ -5380,17 +5482,17 @@ export class BootstrapData {
       this.convertValues(source["CapsheetMap"], NFLCapsheet, true) || null;
     this.PracticeSquadPlayers = this.convertValues(
       source["PracticeSquadPlayers"],
-      NFLPlayer
+      NFLPlayer,
     );
     this.FreeAgents = this.convertValues(source["FreeAgents"], NFLPlayer);
     this.WaiverPlayers = this.convertValues(source["WaiverPlayers"], NFLPlayer);
     this.FreeAgentOffers = this.convertValues(
       source["FreeAgentOffers"],
-      FreeAgencyOffer
+      FreeAgencyOffer,
     );
     this.WaiverWireOffers = this.convertValues(
       source["WaiverWireOffers"],
-      NFLWaiverOffer
+      NFLWaiverOffer,
     );
     this.ProInjuryReport =
       this.convertValues(source["ProInjuryReport"], NFLPlayer) || [];
@@ -5407,63 +5509,64 @@ export class BootstrapData {
       null;
     this.TopCFBPassers = this.convertValues(
       source["TopCFBPassers"],
-      CollegePlayer
+      CollegePlayer,
     );
     this.TopCFBRushers = this.convertValues(
       source["TopCFBRushers"],
-      CollegePlayer
+      CollegePlayer,
     );
     this.TopCFBReceivers = this.convertValues(
       source["TopCFBReceivers"],
-      CollegePlayer
+      CollegePlayer,
     );
     this.TopNFLPassers = this.convertValues(source["TopNFLPassers"], NFLPlayer);
     this.TopNFLRushers = this.convertValues(source["TopNFLRushers"], NFLPlayer);
     this.TopNFLReceivers = this.convertValues(
       source["TopNFLReceivers"],
-      NFLPlayer
+      NFLPlayer,
     );
     this.ContractMap = this.convertValues(
       source["ContractMap"],
       NFLContract,
-      true
+      true,
     );
     this.ExtensionMap = this.convertValues(
       source["ExtensionMap"],
       NFLExtensionOffer,
-      true
+      true,
     );
     this.NFLDraftees = this.convertValues(source["NFLDraftees"], NFLDraftee);
     this.CollegePromises = this.convertValues(
       source["CollegePromises"],
-      CollegePromise
+      CollegePromise,
     );
     this.OfficialPolls = this.convertValues(
       source["OfficialPolls"],
-      CollegePollOfficial
+      CollegePollOfficial,
     );
     this.CollegePollSubmission = this.convertValues(
       source["CollegePollSubmission"],
-      CollegePollSubmission
+      CollegePollSubmission,
     );
     this.NFLWarRoomMap = this.convertValues(
       source["NFLWarRoomMap"],
       NFLWarRoom,
-      true
+      true,
     );
     this.NFLScoutingProfileMap = this.convertValues(
       source["NFLScoutingProfileMap"],
       ScoutingProfile,
-      true
+      true,
     );
     this.TradeProposals = this.convertValues(
       source["TradeProposals"],
-      NFLTeamProposals
+      NFLTradeProposal,
+      true,
     );
     this.TradePreferences = this.convertValues(
       source["TradePreferences"],
       NFLTradePreferences,
-      true
+      true,
     );
   }
 
@@ -5497,7 +5600,7 @@ export class TeamRequestsResponse {
     if ("string" === typeof source) source = JSON.parse(source);
     this.CollegeRequests = this.convertValues(
       source["CollegeRequests"],
-      TeamRequest
+      TeamRequest,
     );
     this.ProRequests = this.convertValues(source["ProRequests"], NFLRequest);
   }
@@ -5981,7 +6084,7 @@ export class UpdateRecruitingBoardDTO {
     this.Profile = this.convertValues(source["Profile"], RecruitingTeamProfile);
     this.Recruits = this.convertValues(
       source["Recruits"],
-      RecruitPlayerProfile
+      RecruitPlayerProfile,
     );
     this.TeamID = source["TeamID"];
   }
@@ -6209,12 +6312,12 @@ export class TransferPlayerResponse {
     this.LegacyID = source["LegacyID"];
     this.SeasonStats = this.convertValues(
       source["SeasonStats"],
-      CollegePlayerSeasonStats
+      CollegePlayerSeasonStats,
     );
     this.Stats = this.convertValues(source["Stats"], CollegePlayerStats);
     this.LeadingTeams = this.convertValues(
       source["LeadingTeams"],
-      LeadingTeams
+      LeadingTeams,
     );
   }
 
@@ -6274,7 +6377,7 @@ export class TransferPortalProfileResponse {
     this.Recruiter = source["Recruiter"];
     this.CollegePlayer = this.convertValues(
       source["CollegePlayer"],
-      TransferPlayerResponse
+      TransferPlayerResponse,
     );
     this.Promise = this.convertValues(source["Promise"], CollegePromise);
   }
@@ -6309,15 +6412,15 @@ export class TransferPortalResponse {
     this.Team = this.convertValues(source["Team"], RecruitingTeamProfile);
     this.TeamBoard = this.convertValues(
       source["TeamBoard"],
-      TransferPortalProfileResponse
+      TransferPortalProfileResponse,
     );
     this.TeamPromises = this.convertValues(
       source["TeamPromises"],
-      CollegePromise
+      CollegePromise,
     );
     this.Players = this.convertValues(
       source["Players"],
-      TransferPlayerResponse
+      TransferPlayerResponse,
     );
     this.TeamList = this.convertValues(source["TeamList"], CollegeTeam);
   }
@@ -6347,7 +6450,7 @@ export class TransferPortalBoardDto {
     if ("string" === typeof source) source = JSON.parse(source);
     this.Profiles = this.convertValues(
       source["Profiles"],
-      TransferPortalProfile
+      TransferPortalProfile,
     );
   }
 
@@ -6379,7 +6482,7 @@ export class UpdateTransferPortalBoard {
     this.Profile = this.convertValues(source["Profile"], SimTeamBoardResponse);
     this.Players = this.convertValues(
       source["Players"],
-      TransferPortalProfileResponse
+      TransferPortalProfileResponse,
     );
     this.TeamID = source["TeamID"];
   }
@@ -6852,7 +6955,7 @@ export class PollDataResponse {
     this.Standings = this.convertValues(source["Standings"], CollegeStandings);
     this.OfficialPolls = this.convertValues(
       source["OfficialPolls"],
-      CollegePollOfficial
+      CollegePollOfficial,
     );
   }
 
@@ -7172,7 +7275,7 @@ export class NFLWarRoom {
     this.DraftPicks = this.convertValues(source["DraftPicks"], NFLDraftPick);
     this.ScoutProfiles = this.convertValues(
       source["ScoutProfiles"],
-      ScoutingProfile
+      ScoutingProfile,
     );
   }
 
@@ -7206,12 +7309,12 @@ export class NFLDraftPageResponse {
     this.WarRoom = this.convertValues(source["WarRoom"], NFLWarRoom);
     this.DraftablePlayers = this.convertValues(
       source["DraftablePlayers"],
-      NFLDraftee
+      NFLDraftee,
     );
     this.NFLTeams = this.convertValues(source["NFLTeams"], NFLTeam);
     this.AllDraftPicks = this.convertValues(
       source["AllDraftPicks"],
-      NFLDraftPick
+      NFLDraftPick,
     );
     this.CollegeTeams = this.convertValues(source["CollegeTeams"], CollegeTeam);
   }
@@ -7253,11 +7356,11 @@ export class ScoutingDataResponse {
     if ("string" === typeof source) source = JSON.parse(source);
     this.DrafteeSeasonStats = this.convertValues(
       source["DrafteeSeasonStats"],
-      CollegePlayerSeasonStats
+      CollegePlayerSeasonStats,
     );
     this.TeamStandings = this.convertValues(
       source["TeamStandings"],
-      CollegeStandings
+      CollegeStandings,
     );
   }
 
@@ -7454,7 +7557,7 @@ export class CollegePlayerResponse {
     this.Stats = this.convertValues(source["Stats"], CollegePlayerStats);
     this.SeasonStats = this.convertValues(
       source["SeasonStats"],
-      CollegePlayerSeasonStats
+      CollegePlayerSeasonStats,
     );
   }
 
@@ -7613,7 +7716,7 @@ export class NFLPlayerResponse {
     this.Stats = this.convertValues(source["Stats"], NFLPlayerStats);
     this.SeasonStats = this.convertValues(
       source["SeasonStats"],
-      NFLPlayerSeasonStats
+      NFLPlayerSeasonStats,
     );
   }
 
@@ -7898,7 +8001,7 @@ export class HistoricCollegePlayer {
     this.Stats = this.convertValues(source["Stats"], CollegePlayerStats);
     this.SeasonStats = this.convertValues(
       source["SeasonStats"],
-      CollegePlayerSeasonStats
+      CollegePlayerSeasonStats,
     );
     this.HasProgressed = source["HasProgressed"];
     this.WillDeclare = source["WillDeclare"];
@@ -8085,11 +8188,11 @@ export class NFLTradeProposal {
     this.IsSynced = source["IsSynced"];
     this.NFLTeamTradeOptions = this.convertValues(
       source["NFLTeamTradeOptions"],
-      NFLTradeOption
+      NFLTradeOption,
     );
     this.RecepientTeamTradeOptions = this.convertValues(
       source["RecepientTeamTradeOptions"],
-      NFLTradeOption
+      NFLTradeOption,
     );
   }
 
@@ -8175,11 +8278,11 @@ export class NFLTradeProposalDTO {
     this.IsTradeRejected = source["IsTradeRejected"];
     this.NFLTeamTradeOptions = this.convertValues(
       source["NFLTeamTradeOptions"],
-      NFLTradeOptionObj
+      NFLTradeOptionObj,
     );
     this.RecepientTeamTradeOptions = this.convertValues(
       source["RecepientTeamTradeOptions"],
-      NFLTradeOptionObj
+      NFLTradeOptionObj,
     );
   }
 
@@ -8210,11 +8313,11 @@ export class NFLTeamProposals {
     if ("string" === typeof source) source = JSON.parse(source);
     this.SentTradeProposals = this.convertValues(
       source["SentTradeProposals"],
-      NFLTradeProposalDTO
+      NFLTradeProposalDTO,
     );
     this.ReceivedTradeProposals = this.convertValues(
       source["ReceivedTradeProposals"],
-      NFLTradeProposalDTO
+      NFLTradeProposalDTO,
     );
   }
 
@@ -8737,15 +8840,15 @@ export class GameResultsResponse {
     if ("string" === typeof source) source = JSON.parse(source);
     this.HomePlayers = this.convertValues(
       source["HomePlayers"],
-      GameResultsPlayer
+      GameResultsPlayer,
     );
     this.AwayPlayers = this.convertValues(
       source["AwayPlayers"],
-      GameResultsPlayer
+      GameResultsPlayer,
     );
     this.PlayByPlays = this.convertValues(
       source["PlayByPlays"],
-      PlayByPlayResponse
+      PlayByPlayResponse,
     );
     this.Score = this.convertValues(source["Score"], ScoreBoard);
   }
@@ -8846,11 +8949,11 @@ export class InboxResponse {
     if ("string" === typeof source) source = JSON.parse(source);
     this.CFBNotifications = this.convertValues(
       source["CFBNotifications"],
-      Notification
+      Notification,
     );
     this.NFLNotifications = this.convertValues(
       source["NFLNotifications"],
-      Notification
+      Notification,
     );
   }
 
@@ -8966,20 +9069,20 @@ export class CollegeTeamProfileData {
     if ("string" === typeof source) source = JSON.parse(source);
     this.CareerStats = this.convertValues(
       source["CareerStats"],
-      CollegePlayerSeasonStats
+      CollegePlayerSeasonStats,
     );
     this.CollegeStandings = this.convertValues(
       source["CollegeStandings"],
-      CollegeStandings
+      CollegeStandings,
     );
     this.Rivalries = this.convertValues(
       source["Rivalries"],
-      FlexComparisonModel
+      FlexComparisonModel,
     );
     this.PlayerMap = this.convertValues(
       source["PlayerMap"],
       CollegePlayer,
-      true
+      true,
     );
     this.CollegeGames = this.convertValues(source["CollegeGames"], CollegeGame);
   }
@@ -9186,35 +9289,35 @@ export class SearchStatsResponse {
     if ("string" === typeof source) source = JSON.parse(source);
     this.CFBPlayerGameStats = this.convertValues(
       source["CFBPlayerGameStats"],
-      CollegePlayerStats
+      CollegePlayerStats,
     );
     this.CFBPlayerSeasonStats = this.convertValues(
       source["CFBPlayerSeasonStats"],
-      CollegePlayerSeasonStats
+      CollegePlayerSeasonStats,
     );
     this.CFBTeamGameStats = this.convertValues(
       source["CFBTeamGameStats"],
-      CollegeTeamStats
+      CollegeTeamStats,
     );
     this.CFBTeamSeasonStats = this.convertValues(
       source["CFBTeamSeasonStats"],
-      CollegeTeamSeasonStats
+      CollegeTeamSeasonStats,
     );
     this.NFLPlayerGameStats = this.convertValues(
       source["NFLPlayerGameStats"],
-      NFLPlayerStats
+      NFLPlayerStats,
     );
     this.NFLPlayerSeasonStats = this.convertValues(
       source["NFLPlayerSeasonStats"],
-      NFLPlayerSeasonStats
+      NFLPlayerSeasonStats,
     );
     this.NFLTeamGameStats = this.convertValues(
       source["NFLTeamGameStats"],
-      NFLTeamStats
+      NFLTeamStats,
     );
     this.NFLTeamSeasonStats = this.convertValues(
       source["NFLTeamSeasonStats"],
-      NFLTeamSeasonStats
+      NFLTeamSeasonStats,
     );
   }
 
@@ -9425,17 +9528,17 @@ export class NFLRetiredPlayer {
     this.Stats = this.convertValues(source["Stats"], NFLPlayerStats);
     this.SeasonStats = this.convertValues(
       source["SeasonStats"],
-      NFLPlayerSeasonStats
+      NFLPlayerSeasonStats,
     );
     this.Contract = this.convertValues(source["Contract"], NFLContract);
     this.Offers = this.convertValues(source["Offers"], FreeAgencyOffer);
     this.WaiverOffers = this.convertValues(
       source["WaiverOffers"],
-      NFLWaiverOffer
+      NFLWaiverOffer,
     );
     this.Extensions = this.convertValues(
       source["Extensions"],
-      NFLExtensionOffer
+      NFLExtensionOffer,
     );
   }
 

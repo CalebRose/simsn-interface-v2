@@ -14,6 +14,8 @@ export interface CurrentUser {
   NBATeamID?: number;
   CHLTeamID?: number;
   PHLTeamID?: number;
+  MLBOrgID?: number;
+  CollegeBaseballOrgID?: number;
   isRetro?: boolean;
   roleID: string | null;
   email: string;

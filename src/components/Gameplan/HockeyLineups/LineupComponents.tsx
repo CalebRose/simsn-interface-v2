@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useMemo, useState, useEffect } from "react";
 import {
   CollegeGameplan,
   CollegePlayer,
@@ -10,6 +10,10 @@ import {
 import { Input, ToggleSwitch } from "../../../_design/Inputs";
 import { SelectDropdown } from "../../../_design/Select";
 import {
+  AttackingGoalZone,
+  AttackingZone,
+  DefendingGoalZone,
+  DefendingZone,
   Help1,
   Help2,
   Help3,
@@ -17,7 +21,9 @@ import {
   League,
   Lineup,
   ModalAction,
+  NeutralZone,
   SimCHL,
+  Zone,
 } from "../../../_constants/constants";
 import { CSSObjectWithLabel, SingleValue } from "react-select";
 import { SelectOption, selectStyles } from "../../../_hooks/useSelectStyles";
@@ -32,12 +38,15 @@ import { Modal } from "../../../_design/Modal";
 import { PlayerInfoModalBody } from "../../Common/Modals";
 import { Info } from "../../../_design/Icons";
 import {
+  getDefensiveSystemFromMap,
   getHCKAICheckPreferenceObject,
   getHCKAIShotPreferenceObject,
   getHCKAISortObject,
   getHCKGoalieSortObject,
+  getOffensiveSystemFromMap,
 } from "./useLineupUtils";
 import { getHockeyLetterGrade } from "../../../_utility/getLetterGrade";
+import Slider from "../../Common/Slider";
 
 interface LineupPlayerProps {
   playerID: number;
@@ -55,6 +64,9 @@ interface LineupPlayerProps {
   property: string;
   league?: League;
   activatePlayer: (player: CollegePlayer | ProfessionalPlayer) => void;
+  offenseSystemInformation?: any;
+  defenseSystemInformation?: any;
+  zoneCategory: Zone;
 }
 
 export const LineupPlayer: FC<LineupPlayerProps> = ({
@@ -69,6 +81,9 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
   property,
   activatePlayer,
   league,
+  offenseSystemInformation,
+  defenseSystemInformation,
+  zoneCategory,
 }) => {
   const player = rosterMap[playerID];
   const GetValue = useCallback(
@@ -113,8 +128,52 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
     return "";
   }, [player]);
 
+  const isGoodOffensiveFit = useMemo(() => {
+    if (!player || !offenseSystemInformation) return false;
+    const goodFits = offenseSystemInformation.GoodFits;
+    const idx = goodFits.findIndex(
+      (x: any) => x.archetype === player.Archetype
+    );
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [player, offenseSystemInformation]);
+
+  const isBadOffensiveFit = useMemo(() => {
+    if (!player || !offenseSystemInformation) return false;
+    const badFits = offenseSystemInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === player.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [player, offenseSystemInformation]);
+
+  const isGoodDefensiveFit = useMemo(() => {
+    if (!player || !defenseSystemInformation) return false;
+    const goodFits = defenseSystemInformation.GoodFits;
+    const idx = goodFits.findIndex(
+      (x: any) => x.archetype === player.Archetype
+    );
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [player, defenseSystemInformation]);
+
+  const isBadDefensiveFit = useMemo(() => {
+    if (!player || !defenseSystemInformation) return false;
+    const badFits = defenseSystemInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === player.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [player, defenseSystemInformation]);
+
   return (
-    <div className="flex flex-col px-4 h-full w-full max-w-[20rem]">
+    <div className="flex flex-col px-4 h-full w-full max-w-[85vw] sm:max-w-[40vw] md:max-w-[30vw] lg:max-w-[20vw] xl:max-w-[15vw]">
       <>
         <div className="flex flex-row mb-2 gap-x-1 justify-end w-full items-end">
           {playerID > 0 && player && (
@@ -137,11 +196,11 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
               control: (base, state) => ({
                 ...base,
                 minHeight: "32px", // shorter control
-                fontSize: "0.75rem", // smaller text
+                fontSize: "1.5vh", // smaller text
                 backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
                 borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
                 color: "#ffffff",
-                padding: "0.3rem",
+                padding: "0.6vh",
                 boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
                 borderRadius: "8px",
                 transition: "all 0.2s ease",
@@ -149,17 +208,17 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
               }),
               valueContainer: (base: CSSObjectWithLabel) => ({
                 ...base,
-                padding: "0 6px", // tighter padding
+                padding: "0 0.6vh", // tighter padding
                 width: "10rem",
               }),
               singleValue: (base: CSSObjectWithLabel) => ({
                 ...base,
-                fontSize: "0.75rem",
+                fontSize: "1.5vh",
                 color: "#fff",
               }),
               placeholder: (base: CSSObjectWithLabel) => ({
                 ...base,
-                fontSize: "0.75rem",
+                fontSize: "1.5vh",
                 color: "#fff",
               }),
               option: (base: any, state: { isFocused: any }) => ({
@@ -187,60 +246,215 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
           />
         </div>
         {playerID > 0 && player && (
-          <div className="flex flex-col gap-y-2 flex-1">
-            {property !== "GoalieID" &&
-              zoneInputList.map((x) => (
-                <Input
-                  type="number"
-                  key={x.key}
-                  label={x.label}
-                  name={x.key}
-                  value={player[x.key] as number}
-                  onChange={ChangeInput}
-                />
-              ))}
-            {property === "GoalieID" && (
-              <div className="mt-2 grid grid-cols-2 gap-y-2">
-                <Text variant="small">Agility</Text>
-                <Text variant="small" classes="font-semibold">
-                  {league === SimCHL
-                    ? getHockeyLetterGrade(player.Agility, player.Year)
-                    : player.Agility}
+          <>
+            <div className="grid grid-cols-2 gap-y-2 text-start mb-2">
+              <Text variant="xs">Archetype: {player.Archetype}</Text>
+              <Text variant="xs">
+                Overall: {getHockeyLetterGrade(player.Overall, player.Year)}
+              </Text>
+              {isGoodOffensiveFit && (
+                <Text variant="xs" className="text-green-400">
+                  Good Offensive Fit
                 </Text>
-                <Text variant="small">Strength</Text>
-                <Text variant="small" classes="font-semibold">
-                  {league === SimCHL
-                    ? getHockeyLetterGrade(player.Strength, player.Year)
-                    : player.Strength}
+              )}
+              {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                <Text variant="xs" className="text-yellow-400">
+                  Neutral Offensive Fit
                 </Text>
-                <Text variant="small">Goalie Vision</Text>
-                <Text variant="small" classes="font-semibold">
-                  {league === SimCHL
-                    ? getHockeyLetterGrade(player.GoalieVision, player.Year)
-                    : player.GoalieVision}
+              )}
+              {isBadOffensiveFit && (
+                <Text variant="xs" className="text-red-400">
+                  Bad Offensive Fit
                 </Text>
-                <Text variant="small">Goalkeeping</Text>
-                <Text variant="small" classes="font-semibold">
-                  {league === SimCHL
-                    ? getHockeyLetterGrade(player.Goalkeeping, player.Year)
-                    : player.Goalkeeping}
+              )}
+              {isGoodDefensiveFit && (
+                <Text variant="xs" className="text-green-400">
+                  Good Defensive Fit
                 </Text>
-                <Text variant="small" classes="border-t-[0.1em] pt-2">
-                  Current Stamina
+              )}
+              {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                <Text variant="xs" className="text-yellow-400">
+                  Neutral Defensive Fit
                 </Text>
-                <Text
-                  variant="small"
-                  classes={`font-semibold border-t-[0.1em] pt-2 ${staminaTextColor}`}
-                >
-                  {player.GoalieStamina}
+              )}
+              {isBadDefensiveFit && (
+                <Text variant="xs" className="text-red-400">
+                  Bad Defensive Fit
                 </Text>
-                <Text variant="small">Max Stamina</Text>
-                <Text variant="small" classes="font-semibold">
-                  100
-                </Text>
-              </div>
-            )}
-          </div>
+              )}
+              {player.Position != "G" &&
+                (zoneCategory === DefendingGoalZone ||
+                  zoneCategory === DefendingZone) && (
+                  <>
+                    <Text variant="xs">
+                      Body Check:{" "}
+                      {league === SimCHL
+                        ? getHockeyLetterGrade(player.BodyChecking, player.Year)
+                        : player.BodyChecking}
+                    </Text>
+                    <Text variant="xs">
+                      Stick Check:{" "}
+                      {league === SimCHL
+                        ? getHockeyLetterGrade(
+                            player.StickChecking,
+                            player.Year
+                          )
+                        : player.StickChecking}
+                    </Text>
+                    <Text variant="xs">
+                      Shot Block:{" "}
+                      {league === SimCHL
+                        ? getHockeyLetterGrade(player.ShotBlocking, player.Year)
+                        : player.ShotBlocking}
+                    </Text>
+                    <Text variant="xs">
+                      Agility:{" "}
+                      {league === SimCHL
+                        ? getHockeyLetterGrade(player.Agility, player.Year)
+                        : player.Agility}
+                    </Text>
+                  </>
+                )}
+              {player.Position != "G" && zoneCategory === NeutralZone && (
+                <>
+                  <Text variant="xs">
+                    Agility:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.Agility, player.Year)
+                      : player.Agility}
+                  </Text>
+                  <Text variant="xs">
+                    Passing:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.Passing, player.Year)
+                      : player.Passing}
+                  </Text>
+                  <Text variant="xs">
+                    Puck Handling:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.PuckHandling, player.Year)
+                      : player.PuckHandling}
+                  </Text>
+                </>
+              )}
+              {player.Position != "G" && zoneCategory === AttackingZone && (
+                <>
+                  <Text variant="xs">
+                    Agility:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.Agility, player.Year)
+                      : player.Agility}
+                  </Text>
+                  <Text variant="xs">
+                    Passing:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.Passing, player.Year)
+                      : player.Passing}
+                  </Text>
+                  <Text variant="xs">
+                    Long Shot Accuracy:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(
+                          player.LongShotAccuracy,
+                          player.Year
+                        )
+                      : player.LongShotAccuracy}
+                  </Text>
+                  <Text variant="xs">
+                    Long Shot Power:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.LongShotPower, player.Year)
+                      : player.LongShotPower}
+                  </Text>
+                </>
+              )}
+              {player.Position != "G" && zoneCategory === AttackingGoalZone && (
+                <>
+                  <Text variant="xs">
+                    Agility:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.Agility, player.Year)
+                      : player.Agility}
+                  </Text>
+                  <Text variant="xs">
+                    Passing:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.Passing, player.Year)
+                      : player.Passing}
+                  </Text>
+                  <Text variant="xs">
+                    Close Shot Accuracy:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(
+                          player.CloseShotAccuracy,
+                          player.Year
+                        )
+                      : player.CloseShotAccuracy}
+                  </Text>
+                  <Text variant="xs">
+                    Close Shot Power:{" "}
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.CloseShotPower, player.Year)
+                      : player.CloseShotPower}
+                  </Text>
+                </>
+              )}
+            </div>
+            <div className="flex flex-col gap-y-2 flex-1">
+              {property !== "GoalieID" &&
+                zoneInputList.map((x) => (
+                  <Input
+                    type="number"
+                    key={x.key}
+                    label={x.label}
+                    name={x.key}
+                    value={player[x.key] as number}
+                    onChange={ChangeInput}
+                  />
+                ))}
+              {property === "GoalieID" && (
+                <div className="mt-2 grid grid-cols-2 gap-y-2">
+                  <Text variant="small">Agility</Text>
+                  <Text variant="small" classes="font-semibold">
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.Agility, player.Year)
+                      : player.Agility}
+                  </Text>
+                  <Text variant="small">Strength</Text>
+                  <Text variant="small" classes="font-semibold">
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.Strength, player.Year)
+                      : player.Strength}
+                  </Text>
+                  <Text variant="small">Goalie Vision</Text>
+                  <Text variant="small" classes="font-semibold">
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.GoalieVision, player.Year)
+                      : player.GoalieVision}
+                  </Text>
+                  <Text variant="small">Goalkeeping</Text>
+                  <Text variant="small" classes="font-semibold">
+                    {league === SimCHL
+                      ? getHockeyLetterGrade(player.Goalkeeping, player.Year)
+                      : player.Goalkeeping}
+                  </Text>
+                  <Text variant="small" classes="border-t-[0.1em] pt-2">
+                    Current Stamina
+                  </Text>
+                  <Text
+                    variant="small"
+                    classes={`font-semibold border-t-[0.1em] pt-2 ${staminaTextColor}`}
+                  >
+                    {player.GoalieStamina}
+                  </Text>
+                  <Text variant="small">Max Stamina</Text>
+                  <Text variant="small" classes="font-semibold">
+                    100
+                  </Text>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </>
     </div>
@@ -248,6 +462,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
 };
 
 interface ShootoutPlayerProps {
+  league: League;
   playerID: number;
   idx: number;
   rosterMap: Record<number, CollegePlayer | ProfessionalPlayer>;
@@ -260,6 +475,7 @@ interface ShootoutPlayerProps {
 }
 
 export const ShootoutPlayer: FC<ShootoutPlayerProps> = ({
+  league,
   playerID,
   idx,
   rosterMap,
@@ -423,6 +639,32 @@ export const ShootoutPlayer: FC<ShootoutPlayerProps> = ({
             }),
           }}
         />
+      </div>
+      <div className="grid grid-cols-2 w-[80%]">
+        <Text variant="xs">
+          Close Shot Accuracy:{" "}
+          {league === SimCHL
+            ? getHockeyLetterGrade(player.CloseShotAccuracy, player.Year)
+            : player.CloseShotAccuracy}
+        </Text>
+        <Text variant="xs">
+          Close Shot Power:{" "}
+          {league === SimCHL
+            ? getHockeyLetterGrade(player.CloseShotPower, player.Year)
+            : player.CloseShotPower}
+        </Text>
+        <Text variant="xs">
+          Long Shot Accuracy:{" "}
+          {league === SimCHL
+            ? getHockeyLetterGrade(player.LongShotAccuracy, player.Year)
+            : player.LongShotAccuracy}
+        </Text>
+        <Text variant="xs">
+          Long Shot Power:{" "}
+          {league === SimCHL
+            ? getHockeyLetterGrade(player.LongShotPower, player.Year)
+            : player.LongShotPower}
+        </Text>
       </div>
     </div>
   );
@@ -604,10 +846,16 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
   gameplan,
   saveGameplan,
 }) => {
-  let title = "AI Gameplan Settings";
+  let title = `${league} Gameplan Settings`;
   const [currentGameplan, setCurrentGameplan] = useState<
     CollegeGameplan | ProGameplan
   >(gameplan);
+
+  // Sync currentGameplan with gameplan prop updates
+  useEffect(() => {
+    setCurrentGameplan(gameplan);
+  }, [gameplan]);
+
   const [selectedCenterSort, setSelectedCenterSort] = useState(() => {
     let list = [];
     if (gameplan.CenterSortPreference1 > 0) {
@@ -858,6 +1106,59 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
     await saveGameplan(gp);
   };
 
+  const GetOffensiveSystem = useCallback((opts: SingleValue<SelectOption>) => {
+    const val = Number(opts?.value);
+    if (opts) {
+      if (league === SimCHL) {
+        setCurrentGameplan((gp) => {
+          return new CollegeGameplan({ ...gp, OffensiveSystem: val });
+        });
+      } else {
+        setCurrentGameplan((gp) => {
+          return new ProGameplan({ ...gp, OffensiveSystem: val });
+        });
+      }
+    }
+  }, []);
+
+  const GetDefensiveSystem = useCallback((opts: SingleValue<SelectOption>) => {
+    const val = Number(opts?.value);
+    if (opts) {
+      if (league === SimCHL) {
+        setCurrentGameplan((gp) => {
+          return new CollegeGameplan({ ...gp, DefensiveSystem: val });
+        });
+      } else {
+        setCurrentGameplan((gp) => {
+          return new ProGameplan({ ...gp, DefensiveSystem: val });
+        });
+      }
+    }
+  }, []);
+
+  const offensiveSystem = useMemo(() => {
+    return getOffensiveSystemFromMap(currentGameplan.OffensiveSystem);
+  }, [currentGameplan]);
+  const defensiveSystem = useMemo(() => {
+    return getDefensiveSystemFromMap(currentGameplan.DefensiveSystem);
+  }, [currentGameplan]);
+
+  const setIntensity = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(event.target.value);
+    if (value < 1 || value > 10) {
+      return;
+    }
+    if (league === SimCHL) {
+      setCurrentGameplan((gp) => {
+        return new CollegeGameplan({ ...gp, [event.target.name]: value });
+      });
+    } else {
+      setCurrentGameplan((gp) => {
+        return new ProGameplan({ ...gp, [event.target.name]: value });
+      });
+    }
+  };
+
   return (
     <>
       <Modal
@@ -896,6 +1197,128 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 space-2 mb-2">
+            <div className="flex flex-col w-full">
+              <label className="flex items-center min-[1025px]:justify-start mr-2">
+                Offensive System
+              </label>
+              <SelectDropdown
+                value={offensiveSystem}
+                onChange={GetOffensiveSystem}
+                options={dropdownOptions.offensiveSystemOptions}
+                styles={{
+                  control: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                    borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                    color: "#ffffff",
+                    width: "100%",
+                    maxWidth: "300px",
+                    padding: "0.3rem",
+                    boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+                    borderRadius: "8px",
+                    transition: "all 0.2s ease",
+                  }),
+                  menu: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#1a202c",
+                    borderRadius: "8px",
+                  }),
+                  menuList: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#1a202c",
+                    padding: "0",
+                  }),
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                    color: "#ffffff",
+                    padding: "10px",
+                    cursor: "pointer",
+                  }),
+                  singleValue: (provided) => ({
+                    ...provided,
+                    color: "#ffffff",
+                  }),
+                  placeholder: (provided) => ({
+                    ...provided,
+                    color: "#ffffff",
+                  }),
+                }}
+              />
+            </div>
+            <div className="flex flex-col w-full">
+              <label className="flex items-center min-[1025px]:justify-start mr-2">
+                Defensive System
+              </label>
+              <SelectDropdown
+                value={defensiveSystem}
+                onChange={GetDefensiveSystem}
+                options={dropdownOptions.defensiveSystemOptions}
+                styles={{
+                  control: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                    borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                    color: "#ffffff",
+                    width: "100%",
+                    maxWidth: "300px",
+                    padding: "0.3rem",
+                    boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+                    borderRadius: "8px",
+                    transition: "all 0.2s ease",
+                  }),
+                  menu: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#1a202c",
+                    borderRadius: "8px",
+                  }),
+                  menuList: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#1a202c",
+                    padding: "0",
+                  }),
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                    color: "#ffffff",
+                    padding: "10px",
+                    cursor: "pointer",
+                  }),
+                  singleValue: (provided) => ({
+                    ...provided,
+                    color: "#ffffff",
+                  }),
+                  placeholder: (provided) => ({
+                    ...provided,
+                    color: "#ffffff",
+                  }),
+                }}
+              />
+            </div>
+            <div className="flex flex-col w-full">
+              <Slider
+                name="OffensiveIntensity"
+                label="Offensive Intensity"
+                value={currentGameplan.OffensiveIntensity}
+                onChange={(e) => setIntensity(e)}
+                min={1}
+                max={10}
+                valueLabel={`${currentGameplan.OffensiveIntensity}`}
+                className="max-w-[82%]"
+              />
+            </div>
+            <div className="flex flex-col w-full">
+              <Slider
+                name="DefensiveIntensity"
+                label="Defensive Intensity"
+                value={currentGameplan.DefensiveIntensity}
+                onChange={(e) => setIntensity(e)}
+                min={1}
+                max={10}
+                valueLabel={`${currentGameplan.DefensiveIntensity}`}
+                className="max-w-[82%]"
+              />
+            </div>
             <div className="flex flex-col w-full">
               <label className="flex items-center min-[1025px]:justify-start mr-2">
                 Forward Shot Preference

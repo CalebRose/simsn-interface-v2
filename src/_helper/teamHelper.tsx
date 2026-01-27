@@ -6,6 +6,8 @@ import {
   SimNBA,
   SimNFL,
   SimPHL,
+  SimMLB,
+  SimCollegeBaseball
 } from "../_constants/constants";
 import {
   Timestamp as BKTimestamp,
@@ -19,6 +21,13 @@ import {
   ProfessionalGame as PHLGame,
   CollegeGame,
 } from "../models/hockeyModels";
+
+import {
+  Timestamp as BaseballTimestamp,
+} from "../models/baseballModels";
+
+
+
 
 export const GetTeamLabel = (league: League, team: any): String => {
   if (league === SimCFB || league === SimNFL) {
@@ -40,6 +49,9 @@ export const GetCurrentWeek = (league: League, ts: any) => {
   if (league === SimCHL || league === SimPHL) {
     return GetHCKCurrentWeek(ts as HCKTimestamp);
   }
+  if (league === SimCollegeBaseball || league === SimMLB) {
+    return GetBaseballCurrentWeek(ts as BaseballTimestamp );
+  }  
 };
 
 export const GetFBCurrentWeek = (league: League, ts: FBTimestamp) => {
@@ -64,11 +76,16 @@ export const GetHCKCurrentWeek = (ts: HCKTimestamp) => {
   return ts.Week;
 };
 
+export const GetBaseballCurrentWeek = (ts: BaseballTimestamp) => {
+  return ts.Week;
+};
+
 export const GetLeagueTS = (
   league: League,
   cfb: FBTimestamp | null,
   cbb: BKTimestamp | null,
-  hck: HCKTimestamp | null
+  hck: HCKTimestamp | null,
+  base: BaseballTimestamp | null,
 ) => {
   if ([SimCFB, SimNFL].includes(league)) {
     return cfb;
@@ -79,6 +96,9 @@ export const GetLeagueTS = (
   if ([SimCHL, SimPHL].includes(league)) {
     return hck;
   }
+  if ([SimMLB, SimCollegeBaseball].includes(league)) {
+    return base;
+  }  
   return null;
 };
 

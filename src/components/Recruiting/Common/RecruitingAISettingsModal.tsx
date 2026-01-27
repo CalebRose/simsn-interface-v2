@@ -22,6 +22,11 @@ import {
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { TeamRecruitingProfile } from "../../../models/basketballModels";
+import {
+  getDefensiveSystemFromMap,
+  getOffensiveSystemFromMap,
+} from "../../Gameplan/HockeyLineups/useLineupUtils";
+import { getHCKAIGameplanOptionsOptions } from "../../Gameplan/HockeyLineups/lineupHelper";
 
 interface RecruitAISettingsProps {
   isOpen: boolean;
@@ -54,6 +59,13 @@ export const RecruitingAISettingsModal: FC<RecruitAISettingsProps> = ({
       numericValue = 0;
     }
     let rp = { ...configBoard };
+    if (league === SimCHL) {
+      rp = rp as HockeyTeamProfile;
+    } else if (league === SimCFB) {
+      rp = rp as FootballTeamProfile;
+    } else if (league === SimCBB) {
+      rp = rp as TeamRecruitingProfile;
+    }
     rp[name] = numericValue;
     if (league === SimCHL) {
       setConfigBoard(rp as HockeyTeamProfile);
@@ -166,6 +178,37 @@ export const RecruitingAISettingsModal: FC<RecruitAISettingsProps> = ({
     [configBoard]
   );
 
+  const GetOffensiveSystem = useCallback((opts: SingleValue<SelectOption>) => {
+    const val = Number(opts?.value);
+    if (opts) {
+      if (league === SimCHL) {
+        setConfigBoard((gp) => {
+          return new HockeyTeamProfile({ ...gp, OffensiveSystem: val });
+        });
+      }
+    }
+  }, []);
+
+  const GetDefensiveSystem = useCallback((opts: SingleValue<SelectOption>) => {
+    const val = Number(opts?.value);
+    if (opts) {
+      if (league === SimCHL) {
+        setConfigBoard((gp) => {
+          return new HockeyTeamProfile({ ...gp, DefensiveSystem: val });
+        });
+      }
+    }
+  }, []);
+
+  const offensiveSystem = useMemo(() => {
+    return getOffensiveSystemFromMap(configBoard.OffensiveSystem);
+  }, [configBoard]);
+  const defensiveSystem = useMemo(() => {
+    return getDefensiveSystemFromMap(configBoard.DefensiveSystem);
+  }, [configBoard]);
+
+  const chlDropdownOptions = getHCKAIGameplanOptionsOptions();
+
   return (
     <>
       <Modal
@@ -237,6 +280,118 @@ export const RecruitingAISettingsModal: FC<RecruitAISettingsProps> = ({
             </div>
           </div>
         </>
+        {league === SimCHL && (
+          <>
+            <div className="grid grid-cols-2 gap-x-4 mt-2">
+              <div>
+                <Text
+                  variant="body-small"
+                  classes="text-start font-semibold text-white mb-1"
+                >
+                  Offensive System
+                </Text>
+                <SelectDropdown
+                  value={offensiveSystem}
+                  onChange={GetOffensiveSystem}
+                  options={chlDropdownOptions.offensiveSystemOptions}
+                  placeholder={offensiveSystem.label}
+                  styles={{
+                    control: (provided, state) => ({
+                      ...provided,
+                      backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                      borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                      color: "#ffffff",
+                      width: "100%",
+                      maxWidth: "300px",
+                      padding: "0.3rem",
+                      boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease",
+                    }),
+                    menu: (provided) => ({
+                      ...provided,
+                      backgroundColor: "#1a202c",
+                      borderRadius: "8px",
+                    }),
+                    menuList: (provided) => ({
+                      ...provided,
+                      backgroundColor: "#1a202c",
+                      padding: "0",
+                    }),
+                    option: (provided, state) => ({
+                      ...provided,
+                      backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                      color: "#ffffff",
+                      padding: "10px",
+                      cursor: "pointer",
+                    }),
+                    singleValue: (provided) => ({
+                      ...provided,
+                      color: "#ffffff",
+                    }),
+                    placeholder: (provided) => ({
+                      ...provided,
+                      color: "#ffffff",
+                    }),
+                  }}
+                />
+              </div>
+              <div>
+                <Text
+                  variant="body-small"
+                  classes="text-start font-semibold text-white mb-1"
+                >
+                  Defensive System
+                </Text>
+                <SelectDropdown
+                  value={defensiveSystem}
+                  onChange={GetDefensiveSystem}
+                  options={chlDropdownOptions.defensiveSystemOptions}
+                  placeholder={defensiveSystem.label}
+                  styles={{
+                    control: (provided, state) => ({
+                      ...provided,
+                      backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                      borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                      color: "#ffffff",
+                      width: "100%",
+                      maxWidth: "300px",
+                      padding: "0.3rem",
+                      boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease",
+                    }),
+                    menu: (provided) => ({
+                      ...provided,
+                      backgroundColor: "#1a202c",
+                      borderRadius: "8px",
+                    }),
+                    menuList: (provided) => ({
+                      ...provided,
+                      backgroundColor: "#1a202c",
+                      padding: "0",
+                    }),
+                    option: (provided, state) => ({
+                      ...provided,
+                      backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                      color: "#ffffff",
+                      padding: "10px",
+                      cursor: "pointer",
+                    }),
+                    singleValue: (provided) => ({
+                      ...provided,
+                      color: "#ffffff",
+                    }),
+                    placeholder: (provided) => ({
+                      ...provided,
+                      color: "#ffffff",
+                    }),
+                  }}
+                />
+              </div>
+            </div>
+          </>
+        )}
         {league === SimCFB && (
           <>
             <div className="grid grid-cols-2 gap-x-4 mt-2">

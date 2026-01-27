@@ -1,11 +1,8 @@
 import { getLogo } from "../../_utility/getLogo";
 import { Text } from "../../_design/Typography";
 import { Logo } from "../../_design/Logo";
-import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
-import { darkenColor } from "../../_utility/getDarkerColor";
+import React, { FC, useEffect, useMemo, useRef, useState } from "react";
 import {
-  GetBKCurrentWeek,
   RevealBBAResults,
   RevealHCKResults,
   RevealResults,
@@ -27,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 import routes from "../../_constants/routes";
 import { useDeepLink } from "../../context/DeepLinkContext";
 import { ClickableGameLabel, ClickableTeamLabel } from "../Common/Labels";
-import { Medic } from "../../_design/Icons";
+import { CheckCircle, Medic, TrashCan } from "../../_design/Icons";
 import { useModal } from "../../_hooks/useModal";
 import { SchedulePageGameModal } from "../Schedule/Common/GameModal";
 import { Modal } from "../../_design/Modal";
@@ -35,6 +32,11 @@ import { useSimFBAStore } from "../../context/SimFBAContext";
 import { Border } from "../../_design/Borders";
 import { HeightToFeetAndInches } from "../../_utility/getHeightByFeetAndInches";
 import { usePagination } from "../../_hooks/usePagination";
+import {
+  getNotificationStyles,
+  getButtonStyles,
+} from "../../_utility/themeHelpers";
+import { useAuthStore } from "../../context/AuthContext";
 
 interface GamesBarProps {
   games: any[];
@@ -165,7 +167,7 @@ export const GamesBar = ({
     return (
       <div
         key={index}
-        className={`flex flex-col rounded-lg items-center border pb-1 px-2 w-28 3xl:w-48 ${resultColor}`}
+        className={`flex flex-col rounded-lg items-center border pb-1 px-2 w-28 md:w-32 lg:w-36 3xl:w-48 ${resultColor}`}
         style={{ borderColor: headerColor }}
       >
         <div className="flex-col px-2 overflow-auto">
@@ -203,11 +205,11 @@ export const GamesBar = ({
 
   return (
     <div className="flex pb-1">
-      <div className="flex w-[90vw] sm:w-full max-w-[1600px] justify-center">
-        <div className="relative flex items-center w-[92vw] md:w-[72.6em] 3xl:w-full pb-1">
+      <div className="flex w-[95vw] sm:w-[90vw] md:w-full max-w-[1600px] justify-center">
+        <div className="relative flex items-center w-[92vw] md:w-[85vw] lg:w-[72.6em] 3xl:w-full pb-1">
           <button
             onClick={scrollLeft}
-            className="absolute left-0 z-10 p-2 rounded-full border-1"
+            className="absolute left-0 z-10 p-[0.5vw] md:p-2 rounded-full border-1"
             style={{
               backgroundColor: backgroundColor,
               color: borderColor,
@@ -221,14 +223,17 @@ export const GamesBar = ({
             className="flex flex-row overflow-hidden w-full"
           >
             {games.map((game, index) => (
-              <div key={index} className="flex flex-col items-center mx-2">
+              <div
+                key={index}
+                className="flex flex-col items-center mx-[1vw] md:mx-2"
+              >
                 {rowRenderer(game, index)}
               </div>
             ))}
           </div>
           <button
             onClick={scrollRight}
-            className="absolute right-0 z-10 p-2 rounded-full border-1"
+            className="absolute right-0 z-10 p-[0.5vw] md:p-2 rounded-full border-1"
             style={{
               backgroundColor: backgroundColor,
               color: borderColor,
@@ -756,6 +761,9 @@ interface TeamMailboxProps {
   textColorClass: string;
   darkerBackgroundColor: string;
   isLoading: boolean;
+  toggleNotificationAsRead: (league: League, notificationID: number) => void;
+  deleteNotification: (league: League, notificationID: number) => void;
+  league: League;
 }
 
 export const TeamMailbox = ({
@@ -767,7 +775,12 @@ export const TeamMailbox = ({
   textColorClass,
   darkerBackgroundColor,
   isLoading: isLoading,
+  toggleNotificationAsRead,
+  deleteNotification,
+  league,
 }: TeamMailboxProps) => {
+  const { isDarkMode } = useAuthStore();
+
   return (
     <SectionCards
       team={team}
@@ -779,28 +792,75 @@ export const TeamMailbox = ({
       textColorClass={textColorClass}
       darkerBackgroundColor={darkerBackgroundColor}
     >
-      {isLoading ? (
-        <div className="flex justify-center items-center">
-          <Text variant="small" classes={`${textColorClass}`}>
-            Loading...
-          </Text>
-        </div>
-      ) : notifications.length > 0 ? (
-        notifications.map((notification, index) => (
-          <div key={index} className="mb-2">
-            <Text variant="small" classes={`${textColorClass}`}>
-              {notification.Subject}
-            </Text>
-            <Text variant="small" classes={`${textColorClass}`}>
-              {notification.Message}
+      <div className="grid grid-cols-8">
+        <Text
+          variant="small"
+          classes={`${textColorClass} col-span-6 font-semibold text-start`}
+        >
+          Message
+        </Text>
+        <Text
+          variant="small"
+          classes={`${textColorClass} col-span-2 font-semibold text-start`}
+        >
+          Actions
+        </Text>
+      </div>
+      <div className="grid grid-cols-8 gap-y-1">
+        {isLoading ? (
+          <div className="col-span-8 flex justify-center items-center">
+            <Text variant="xs" classes={`${textColorClass} text-center`}>
+              Loading...
             </Text>
           </div>
-        ))
-      ) : (
-        <Text variant="small" classes={`${textColorClass} pt-2 pb-2`}>
-          Your Inbox is Empty
-        </Text>
-      )}
+        ) : notifications.length > 0 ? (
+          notifications.map((notification, index) => (
+            <div
+              key={`notification-${index}`}
+              className={getNotificationStyles(
+                isDarkMode,
+                !notification.IsRead
+              )}
+              style={{ borderColor: headerColor }}
+            >
+              <Text
+                variant="xs"
+                classes={`${textColorClass} text-start col-span-6 p-1`}
+              >
+                {notification.Message}
+              </Text>
+              <div className="col-span-2 flex items-start justify-start gap-x-2 py-1">
+                <Button
+                  size="xs"
+                  onClick={() =>
+                    toggleNotificationAsRead(league, notification.ID)
+                  }
+                  classes={getButtonStyles(isDarkMode, "primary")}
+                  title="Mark as read"
+                  disabled={notification.IsRead}
+                >
+                  <CheckCircle textColorClass="text-white" />
+                </Button>
+                <Button
+                  size="xs"
+                  onClick={() => deleteNotification(league, notification.ID)}
+                  classes={getButtonStyles(isDarkMode, "error")}
+                  title="Delete"
+                >
+                  <TrashCan textColorClass="text-white" />
+                </Button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <Text
+            variant="xs"
+            classes={`${textColorClass} col-span-8 pt-2 pb-2 text-center`}
+          >
+            Your Inbox is Empty
+          </Text>
+        )}
+      </div>
     </SectionCards>
   );
 };

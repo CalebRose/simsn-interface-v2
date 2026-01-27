@@ -1,11 +1,9 @@
 import {
-  Affiliate,
   Contracts,
   FootballArchetypeOptions,
   FootballPositionOptions,
   FreeAgent,
   Help1,
-  navyBlueColor,
   Overview,
   PracticeSquad,
   SimNFL,
@@ -14,6 +12,7 @@ import {
 import { Border } from "../../../_design/Borders";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { useModal } from "../../../_hooks/useModal";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
@@ -71,6 +70,7 @@ export const NFLFreeAgency = () => {
     offerModal,
     handleOfferModal,
   } = useNFLFreeAgency();
+  const { backgroundColor } = useBackgroundColor();
   const { isMobile } = useResponsive();
   const teamColors = useTeamColors(
     nflTeam?.ColorOne,
@@ -131,7 +131,7 @@ export const NFLFreeAgency = () => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center gap-x-2"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <ButtonGroup classes="sm:flex sm:flex-auto sm:flex-1">
@@ -189,7 +189,7 @@ export const NFLFreeAgency = () => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <div className="flex flex-row flex-wrap gap-x-1 sm:gap-x-2 gap-y-2 px-2 w-full">
@@ -225,7 +225,7 @@ export const NFLFreeAgency = () => {
               classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
               styles={{
                 borderColor: teamColors.One,
-                backgroundColor: navyBlueColor,
+                backgroundColor: backgroundColor,
               }}
             >
               <FreeAgentTable
@@ -270,7 +270,7 @@ export const NFLFreeAgency = () => {
                 classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
-                  backgroundColor: navyBlueColor,
+                  backgroundColor: backgroundColor,
                 }}
               >
                 <OfferTable

@@ -70,6 +70,7 @@ import {
   CollegePlayer as CBBPlayer,
   Croot as BasketballCroot,
   NBAPlayer,
+  TransferPlayerResponse,
 } from "../../models/basketballModels";
 import { TradeBlockRow } from "./TeamPageTypes";
 
@@ -286,6 +287,8 @@ export const getPHLAttributes = (
 
 export const getPHLContracts = (contract: any) => {
   return [
+    { label: "Offensive Fit", value: 0 },
+    { label: "Defensive Fit", value: 0 },
     { label: "Y1S", value: contract.Y1BaseSalary },
     { label: "Y2S", value: contract.Y2BaseSalary },
     { label: "Y3S", value: contract.Y3BaseSalary },
@@ -626,6 +629,8 @@ export const getAdditionalCrootPotentialAttributes = (player: HockeyCroot) => {
 
 export const getAdditionalCrootPreferenceAttributes = (player: HockeyCroot) => {
   return [
+    { label: "Off", value: 0 },
+    { label: "Def", value: 0 },
     { label: "ProgramPref", value: player.ProgramPref },
     { label: "ProfDevPref", value: player.ProfDevPref },
     { label: "TraditionsPref", value: player.TraditionsPref },
@@ -2331,6 +2336,54 @@ export const getCBBAttributes = (
   return [...attributes, ...overviewAttributes, ...additionalAttributes];
 };
 
+export const getCBBPortalAttributes = (
+  player: TransferPlayerResponse,
+  isMobile: boolean,
+  category: string
+) => {
+  const attributes = [
+    { label: "Name", value: `${player.FirstName} ${player.LastName}` },
+    {
+      label: "Pos",
+      value: `${player.Position}`,
+    },
+    { label: "Arch", value: `${player.Archetype}` },
+    { label: "Stars", value: player.Stars },
+    { label: "Yr", value: getYear(player.Year, player.IsRedshirt) },
+    { label: "State", value: annotateRegion(player.State) },
+    { label: "Country", value: player.Country },
+    { label: "Ovr", value: player.OverallGrade },
+  ];
+
+  const overviewAttributes =
+    !isMobile && category === Overview
+      ? [
+          { label: "Pot", value: player.PotentialGrade },
+          { label: "Health", value: player.IsInjured },
+          {
+            label: "Injury",
+            value: player.InjuryType
+              ? player.WeeksOfRecovery && player.WeeksOfRecovery > 0
+                ? `${player.InjuryType}, ${player.WeeksOfRecovery} wks`
+                : `None`
+              : "None",
+          },
+          { label: "Personality", value: player.Personality },
+          { label: "WorkEthic", value: player.WorkEthic },
+          { label: "AcademicBias", value: player.AcademicBias },
+          { label: "Redshirt", value: player.IsRedshirting },
+          { label: "TransferStatus", value: player.TransferStatus },
+        ]
+      : [];
+
+  const additionalAttributes =
+    !isMobile && category === Attributes
+      ? getAdditionalBBAPortalAttributes(player)
+      : [];
+
+  return [...attributes, ...overviewAttributes, ...additionalAttributes];
+};
+
 export const getAdditionalCBBAttributes = (player: CBBPlayer) => {
   return [
     { label: "POT", value: player.PotentialGrade },
@@ -2378,6 +2431,46 @@ export const getAdditionalCBBAttributes = (player: CBBPlayer) => {
       label: "Min",
       value: player.Minutes,
     },
+  ];
+};
+
+export const getAdditionalBBAPortalAttributes = (
+  player: TransferPlayerResponse
+) => {
+  return [
+    {
+      label: "Finishing",
+      value: player.Finishing,
+    },
+    {
+      label: "Shooting2",
+      value: player.Shooting2,
+    },
+    {
+      label: "Shooting3",
+      value: player.Shooting3,
+    },
+    {
+      label: "Free Throw",
+      value: player.FreeThrow,
+    },
+    {
+      label: "Ballwork",
+      value: player.Ballwork,
+    },
+    {
+      label: "Rebounding",
+      value: player.Rebounding,
+    },
+    {
+      label: "Interior Defense",
+      value: player.InteriorDefense,
+    },
+    {
+      label: "Perimeter Defense",
+      value: player.PerimeterDefense,
+    },
+    { label: "Potential", value: player.PotentialGrade },
   ];
 };
 
@@ -2721,6 +2814,22 @@ export const getAdditionalHCKPortalPotentialAttributes = (
 
 export const getAdditionalHCKPortalPreferenceAttributes = (
   player: CollegePlayer
+) => {
+  return [
+    { label: "ProgramPref", value: player.ProgramPref },
+    { label: "ProfDevPref", value: player.ProfDevPref },
+    { label: "TraditionsPref", value: player.TraditionsPref },
+    { label: "FacilitiesPref", value: player.FacilitiesPref },
+    { label: "AtmospherePref", value: player.AtmospherePref },
+    { label: "AcademicsPref", value: player.AcademicsPref },
+    { label: "ConferencePref", value: player.ConferencePref },
+    { label: "CoachPref", value: player.CoachPref },
+    { label: "SeasonMomentumPref", value: player.SeasonMomentumPref },
+  ];
+};
+
+export const getAdditionalBBAPortalPreferenceAttributes = (
+  player: TransferPlayerResponse
 ) => {
   return [
     { label: "ProgramPref", value: player.ProgramPref },

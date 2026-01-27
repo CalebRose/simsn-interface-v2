@@ -8,7 +8,6 @@ import {
   FootballStatsType,
   GameDay,
   League,
-  navyBlueColor,
   OFFENSE,
   OLINE,
   OVERALL,
@@ -28,6 +27,7 @@ import {
   TEAM_VIEW,
   WEEK_VIEW,
 } from "../../../_constants/constants";
+import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import {
   CollegeTeam as CHLTeam,
   ProfessionalTeam as PHLTeam,
@@ -60,6 +60,7 @@ interface StatsSidebarProps {
   ChangeStatsType: (newView: StatsType) => void;
   ChangeFBStatsType?: (newStatsType: FootballStatsType) => void;
   HandleHelpModal: () => void;
+  HandleAwardsModal: () => void;
   Search: () => Promise<void>;
   Export: () => Promise<void>;
   // ts: HCKTimestamp;
@@ -84,7 +85,9 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
   SelectSeasonOption,
   Search,
   Export,
+  HandleAwardsModal,
 }) => {
+  const { backgroundColor } = useBackgroundColor();
   const { isMobile, isTablet, isDesktop } = useResponsive();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
   let teamLabel = "";
@@ -105,7 +108,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
           classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 px-4 py-2 h-full items-center justify-start mb-2"
           styles={{
             borderColor: teamColors.One,
-            backgroundColor: navyBlueColor,
+            backgroundColor: backgroundColor,
           }}
         >
           <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mb-2">
@@ -171,12 +174,22 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
               </Button>
               <Button
                 type="button"
-                size="sm"
+                size="xs"
                 variant="primary"
                 onClick={HandleHelpModal}
               >
                 Help
               </Button>
+              {league === SimCFB && (
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="primary"
+                  onClick={HandleAwardsModal}
+                >
+                  Awards
+                </Button>
+              )}
             </ButtonGroup>
           </div>
           {isDesktop && (

@@ -26,8 +26,9 @@ import {
 } from "./TeamLandingPageComponents";
 import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
-import { darkenColor } from "../../_utility/getDarkerColor";
+import { getThemeAwareDarkenColor } from "../../_utility/getDarkerColor";
 import {
+  League,
   SimCBB,
   SimCFB,
   SimCHL,
@@ -36,7 +37,8 @@ import {
   SimPHL,
 } from "../../_constants/constants";
 import { useResponsive } from "../../_hooks/useMobile";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { getThemeColors } from "../../_utility/themeHelpers";
 
 interface TeamLandingPageProps {
   team: any;
@@ -45,14 +47,18 @@ interface TeamLandingPageProps {
 }
 
 export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
-  const { currentUser } = useAuthStore();
-  let backgroundColor = "#1f2937";
-  let headerColor = team?.ColorOne || "#4B5563";
-  let borderColor = team?.ColorTwo || "#4B5563";
+  const { currentUser, isDarkMode } = useAuthStore();
+
+  // Theme-aware background colors
+  const themeColors = getThemeColors(isDarkMode);
+  let backgroundColor = themeColors.background;
+
+  let headerColor = team?.ColorOne || themeColors.border;
+  let borderColor = team?.ColorTwo || themeColors.border;
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  let darkerBackgroundColor = darkenColor(backgroundColor, -5);
+  let darkerBackgroundColor = getThemeAwareDarkenColor(backgroundColor, -5);
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const {
     collegeNotifications,
@@ -75,6 +81,8 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topCFBRushers,
     isLoading,
     playerFaces,
+    toggleNotificationAsRead: toggleFBANotification,
+    deleteNotification: deleteFBANotification,
   } = useSimFBAStore();
   const {
     collegeNotifications: cbbNotifications,
@@ -95,6 +103,8 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topNBAPoints,
     topNBAAssists,
     topNBARebounds,
+    toggleNotificationAsRead: toggleBBANotification,
+    deleteNotification: deleteBBANotification,
   } = useSimBBAStore();
   const {
     collegeNotifications: chlNotifications,
@@ -115,10 +125,78 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topPHLGoals,
     topPHLAssists,
     topPHLSaves,
+    toggleNotificationAsRead: toggleHCKNotification,
+    deleteNotification: deleteHCKNotification,
   } = useSimHCKStore();
   const currentWeek = GetCurrentWeek(league, ts);
   const headers = Titles.headersMapping[league as LeagueType];
   const { isMobile } = useResponsive();
+
+  const toggleNotificationAsRead = useCallback(
+    (league: League, id: number) => {
+      switch (league) {
+        case SimCFB:
+          toggleFBANotification(id, false);
+          break;
+        case SimNFL:
+          toggleFBANotification(id, true);
+          break;
+        case SimCBB:
+          toggleBBANotification(id, false);
+          break;
+        case SimNBA:
+          toggleBBANotification(id, true);
+          break;
+        case SimCHL:
+          toggleHCKNotification(id, false);
+          break;
+        case SimPHL:
+          toggleHCKNotification(id, true);
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      league,
+      toggleFBANotification,
+      toggleBBANotification,
+      toggleHCKNotification,
+    ]
+  );
+
+  const deleteNotification = useCallback(
+    (league: League, id: number) => {
+      switch (league) {
+        case SimCFB:
+          deleteFBANotification(id, false);
+          break;
+        case SimNFL:
+          deleteFBANotification(id, true);
+          break;
+        case SimCBB:
+          deleteBBANotification(id, false);
+          break;
+        case SimNBA:
+          deleteBBANotification(id, true);
+          break;
+        case SimCHL:
+          deleteHCKNotification(id, false);
+          break;
+        case SimPHL:
+          deleteHCKNotification(id, true);
+          break;
+        default:
+          break;
+      }
+    },
+    [
+      league,
+      deleteFBANotification,
+      deleteBBANotification,
+      deleteHCKNotification,
+    ]
+  );
 
   const playerMap = useMemo(() => {
     let rMap: Record<number, any[]> = {};
@@ -390,7 +468,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
 
   return (
     <>
-      <div className="flex-col w-[90vw] md:w-full md:mb-6">
+      <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6">
         <GamesBar
           games={teamSchedule}
           league={league}
@@ -401,10 +479,10 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           headerColor={headerColor}
           borderColor={borderColor}
         />
-        <div className="flex-col md:flex md:flex-row gap-4 items-start w-full justify-center">
-          <div className="flex md:gap-4 flex-col-reverse md:flex-row">
+        <div className="flex-col lg:flex lg:flex-row gap-[1vw] md:gap-4 items-start w-full justify-center">
+          <div className="flex md:gap-[2vw] lg:gap-4 flex-col-reverse md:flex-row">
             <Border
-              classes="border-4 py-0 px-0 h-[90vw] max-h-[90vh] w-full md:max-w-[30rem] md:h-auto"
+              classes="border-4 py-0 px-0 h-[90vw] max-h-[90vh] w-full md:max-w-[45vw] lg:max-w-[30rem] md:h-auto"
               styles={{
                 backgroundColor: borderColor,
                 borderColor: backgroundColor,
@@ -425,9 +503,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                 />
               )}
             </Border>
-            <div className="flex flex-col items-center md:h-auto w-full md:w-[32em] 3xl:w-[40em]">
+            <div className="flex flex-col items-center md:h-auto w-full md:w-[50vw] lg:w-[32em] 3xl:w-[40em]">
               <Border
-                classes="border-4 py-[0px] px-[0px] w-full md:h-auto md:max-h-[24em] 3xl:max-h-[36em]"
+                classes="border-4 py-[0px] px-[0px] w-full md:h-auto md:max-h-[30vh] lg:max-h-[24em] 3xl:max-h-[36em]"
                 styles={{
                   backgroundColor: borderColor,
                   borderColor: backgroundColor,
@@ -454,7 +532,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
               </Border>
               {isMobile && (
                 <Border
-                  classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] w-full md:min-w-[18em] md:max-w-[30em] md:max-h-[40em]"
+                  classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] w-full md:min-w-[18em] md:max-w-[45vw] lg:max-w-[30em] md:max-h-[40em]"
                   styles={{
                     backgroundColor: borderColor,
                     borderColor: backgroundColor,
@@ -475,7 +553,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
               )}
               {isMobile && (
                 <Border
-                  classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] w-full max-w-full md:w-full md:min-w-[18em] md:max-w-[30em] md:max-h-[35em]"
+                  classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] w-full max-w-full md:w-full md:min-w-[18em] md:max-w-[45vw] lg:max-w-[30em] md:max-h-[35em]"
                   styles={{
                     backgroundColor: borderColor,
                     borderColor: backgroundColor,
@@ -492,9 +570,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   />
                 </Border>
               )}
-              <div className="flex flex-row gap-2 h-[14em] w-full max-h-[14em] md:max-h-max md:gap-0 md:flex-col">
+              <div className="flex flex-row gap-[1vw] md:gap-2 h-[14em] w-full max-h-[14em] md:max-h-max lg:gap-0 lg:flex-col">
                 <Border
-                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[32em] md:max-h-[12em] 3xl:max-h-[16em]"
+                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[30vh] 3xl:max-h-[30vh]"
                   styles={{
                     backgroundColor: borderColor,
                     borderColor: backgroundColor,
@@ -509,10 +587,13 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
                     isLoading={isLoading}
+                    toggleNotificationAsRead={toggleNotificationAsRead}
+                    deleteNotification={deleteNotification}
+                    league={league}
                   />
                 </Border>
                 <Border
-                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[32em] md:h-[22em] md:max-h-[22em] 3xl:h-[30em] 3xl:max-h-[30em]"
+                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:h-[25vh] lg:h-[22em] md:max-h-[25vh] lg:max-h-[22em] 3xl:h-[30em] 3xl:max-h-[30em]"
                   styles={{
                     backgroundColor: borderColor,
                     borderColor: backgroundColor,
@@ -532,10 +613,10 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-start pt-1 md:pt-0 h-full md:h-auto md:w-[32em] md:min-w-[20em] md:max-w-[30em] 3xl:min-w-[20em] 3xl:max-w-[42em] justify-center">
+          <div className="flex flex-col items-start pt-1 md:pt-0 h-full md:h-auto md:w-[30vw] lg:w-[32em] md:min-w-[20em] lg:min-w-[20em] md:max-w-[35vw] lg:max-w-[30em] 3xl:min-w-[20em] 3xl:max-w-[42em] justify-center">
             {!isMobile && (
               <Border
-                classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] w-full max-w-full md:w-full md:min-w-[18em] md:max-w-[30em] md:max-h-[35em]"
+                classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] w-full max-w-full md:w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[35em]"
                 styles={{
                   backgroundColor: borderColor,
                   borderColor: backgroundColor,
@@ -554,7 +635,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
             )}
             {!isMobile && (
               <Border
-                classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] md:w-full md:min-w-[18em] md:max-w-[30em] md:max-h-[40em]"
+                classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] md:w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[40em]"
                 styles={{
                   backgroundColor: borderColor,
                   borderColor: backgroundColor,
@@ -575,7 +656,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
             )}
             <div className="flex flex-row md:flex-none md:flex-col w-full">
               <Border
-                classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-full md:min-w-[18em] md:max-w-[30em] md:max-h-[40em]"
+                classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[40em]"
                 styles={{
                   backgroundColor: borderColor,
                   borderColor: backgroundColor,
