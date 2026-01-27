@@ -215,7 +215,6 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
               </>
             )}
             {cleanReceivedTrades.map((trade) => {
-              console.log({ trade });
               let otherTeam = null;
               if (league === SimPHL) {
                 const phlTeamID = (trade as HCKTradeProposal).TeamID;
@@ -302,11 +301,19 @@ const TradeSection: FC<TradeSectionProps> = ({
             let playerID = 0;
             let draftPickID = 0;
             if (league === SimPHL) {
-              playerID = (item as HCKTradeOption).PlayerID;
-              draftPickID = (item as HCKTradeOption).DraftPickID;
+              item = item as HCKTradeOption;
+              if (item.TeamID !== trade.RecepientTeamID) {
+                return;
+              }
+              playerID = item.PlayerID;
+              draftPickID = item.DraftPickID;
             } else if (league === SimNFL) {
-              playerID = (item as NFLTradeOption).NFLPlayerID;
-              draftPickID = (item as NFLTradeOption).NFLDraftPickID;
+              item = item as NFLTradeOption;
+              if (item.NFLTeamID !== trade.RecepientTeamID) {
+                return;
+              }
+              playerID = item.NFLPlayerID;
+              draftPickID = item.NFLDraftPickID;
             }
             return (
               <ManageOption
@@ -323,11 +330,19 @@ const TradeSection: FC<TradeSectionProps> = ({
             let playerID = 0;
             let draftPickID = 0;
             if (league === SimPHL) {
-              playerID = (item as HCKTradeOption).PlayerID;
-              draftPickID = (item as HCKTradeOption).DraftPickID;
+              item = item as HCKTradeOption;
+              if (item.TeamID === trade.RecepientTeamID) {
+                return;
+              }
+              playerID = item.PlayerID;
+              draftPickID = item.DraftPickID;
             } else if (league === SimNFL) {
-              playerID = (item as NFLTradeOption).NFLPlayerID;
-              draftPickID = (item as NFLTradeOption).NFLDraftPickID;
+              item = item as NFLTradeOption;
+              if (item.NFLTeamID === trade.RecepientTeamID) {
+                return;
+              }
+              playerID = item.NFLPlayerID;
+              draftPickID = item.NFLDraftPickID;
             }
             return (
               <ManageOption
