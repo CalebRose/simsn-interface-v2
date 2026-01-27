@@ -195,7 +195,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
   const rowRenderer = (
     item: CHLPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const attributes = getCHLAttributes(item, !isDesktop, isTablet, category!);
     const collegePromise = collegePromiseMap[item.ID];
@@ -205,7 +205,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
       if (!item || !offensiveSystemsInformation) return false;
       const goodFits = offensiveSystemsInformation.GoodFits;
       const idx = goodFits.findIndex(
-        (x: any) => x.archetype === item.Archetype
+        (x: any) => x.archetype === item.Archetype,
       );
       if (idx > -1) {
         return true;
@@ -227,7 +227,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
       if (!item || !defensiveSystemsInformation) return false;
       const goodFits = defensiveSystemsInformation.GoodFits;
       const idx = goodFits.findIndex(
-        (x: any) => x.archetype === item.Archetype
+        (x: any) => x.archetype === item.Archetype,
       );
       if (idx > -1) {
         return true;
@@ -261,8 +261,8 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
           category === Overview && idx === 7
             ? "text-left"
             : idx !== 0
-            ? "text-center"
-            : ""
+              ? "text-center"
+              : ""
         }`}
           >
             {attr.label === "Redshirt" ? (
@@ -586,10 +586,10 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
   const rowRenderer = (
     item: PHLPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const playerContract = contracts?.find(
-      (contract) => contract.PlayerID === item.ID
+      (contract) => contract.PlayerID === item.ID,
     );
     item.Contract = playerContract!!;
     const attributes = getPHLAttributes(
@@ -597,14 +597,14 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       !isDesktop,
       isTablet,
       category!,
-      playerContract
+      playerContract,
     );
 
     const isGoodOffensiveFit = (() => {
       if (!item || !offensiveSystemsInformation) return false;
       const goodFits = offensiveSystemsInformation.GoodFits;
       const idx = goodFits.findIndex(
-        (x: any) => x.archetype === item.Archetype
+        (x: any) => x.archetype === item.Archetype,
       );
       if (idx > -1) {
         return true;
@@ -626,7 +626,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       if (!item || !defensiveSystemsInformation) return false;
       const goodFits = defensiveSystemsInformation.GoodFits;
       const idx = goodFits.findIndex(
-        (x: any) => x.archetype === item.Archetype
+        (x: any) => x.archetype === item.Archetype,
       );
       if (idx > -1) {
         return true;
@@ -660,8 +660,8 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
           category === Overview && idx === 6
             ? "text-left"
             : idx !== 0
-            ? "text-center"
-            : ""
+              ? "text-center"
+              : ""
         }`}
           >
             {attr.label === "NTC" || attr.label === "NMC" ? (
@@ -957,7 +957,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
   const rowRenderer = (
     item: CFBPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const attributes = getCFBAttributes(item, !isDesktop, category!);
     return (
@@ -976,8 +976,8 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
           category === Overview && idx === 8
             ? "text-left"
             : idx !== 0
-            ? "text-center"
-            : ""
+              ? "text-center"
+              : ""
         }`}
           >
             {attr.label === "Redshirt" ? (
@@ -1247,10 +1247,10 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
   const rowRenderer = (
     item: NFLPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const playerContract = contracts?.find(
-      (contract) => contract.PlayerID === item.ID
+      (contract) => contract.PlayerID === item.ID,
     );
     item.Contract = playerContract!!;
     const attributes = getNFLAttributes(
@@ -1258,7 +1258,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
       !isDesktop,
       category!,
       item.ShowLetterGrade,
-      playerContract
+      playerContract,
     );
     return (
       <div
@@ -1276,8 +1276,8 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
             category === Overview && idx === 7
               ? "text-left"
               : idx !== 0
-              ? "text-center"
-              : ""
+                ? "text-center"
+                : ""
           }`}
           >
             {attr.label === "Is Tagged" ||
@@ -1299,6 +1299,14 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
                 ) : (
                   <User textColorClass={`w-full text-center ${TextGreen}`} />
                 )}
+              </>
+            ) : attr.label === "Injury" ||
+              attr.label === "Personality" ||
+              attr.label === "Work Ethic" ? (
+              <>
+                <Text variant="xs" classes="text-start">
+                  {attr.value}
+                </Text>
               </>
             ) : attr.label === "Name" ? (
               <span
@@ -1506,7 +1514,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
   const rowRenderer = (
     item: CBBPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const attributes = getCBBAttributes(item, !isDesktop, category!);
     return (
@@ -1525,8 +1533,8 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
           category === Overview && idx === 8
             ? "text-left"
             : idx !== 0
-            ? "text-center"
-            : ""
+              ? "text-center"
+              : ""
         }`}
           >
             {attr.label === "Redshirt" ? (
@@ -1762,7 +1770,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
   const rowRenderer = (
     item: NBAPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const contract = contracts[item.ID];
     if (!contract) return <></>;
@@ -1784,8 +1792,8 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
           category === Overview && idx === 8
             ? "text-left"
             : idx !== 0
-            ? "text-center"
-            : ""
+              ? "text-center"
+              : ""
         }`}
           >
             {attr.label === "Redshirt" ? (
@@ -1997,14 +2005,14 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
   const rowRenderer = (
     item: TradeBlockRow,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const attributes = getTradeBlockAttributes(
       item,
       item.isPlayer,
       !isDesktop,
       isTablet,
-      category!
+      category!,
     );
     return (
       <div
@@ -2022,8 +2030,8 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
           category === Overview && idx === 6
             ? "text-left"
             : idx !== 0
-            ? "text-center"
-            : ""
+              ? "text-center"
+              : ""
         }`}
           >
             {attr.label === "Name" ? (
@@ -2151,14 +2159,14 @@ export const NFLTradeBlockTable: FC<NFLTradeBlockTableProps> = ({
   const rowRenderer = (
     item: TradeBlockRow,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const attributes = getTradeBlockAttributes(
       item,
       item.isPlayer,
       !isDesktop,
       isTablet,
-      category!
+      category!,
     );
     return (
       <div
@@ -2176,8 +2184,8 @@ export const NFLTradeBlockTable: FC<NFLTradeBlockTableProps> = ({
           category === Overview && idx === 6
             ? "text-left"
             : idx !== 0
-            ? "text-center"
-            : ""
+              ? "text-center"
+              : ""
         }`}
           >
             {attr.label === "Name" ? (

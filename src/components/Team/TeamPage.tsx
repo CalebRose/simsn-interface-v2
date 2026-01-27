@@ -47,6 +47,7 @@ import {
 import {
   CollegePlayer as CFBPlayer,
   NFLPlayer,
+  NFLTradeProposal,
 } from "../../models/footballModels";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { useSimFBAStore } from "../../context/SimFBAContext";
@@ -189,7 +190,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
   const selectedTeamPromises = useMemo(() => {
     if (!collegePromises || !selectedTeam) return [];
     return collegePromises.filter(
-      (promise) => promise.TeamID === selectedTeam.ID
+      (promise) => promise.TeamID === selectedTeam.ID,
     );
   }, [selectedTeam, collegePromises]);
 
@@ -212,7 +213,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
@@ -435,7 +436,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
@@ -509,7 +510,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
   const selectedTeamTradeBlock = useMemo(() => {
     const tradeBlockSet: TradeBlockRow[] = [];
     const tradeBlockPlayers = selectedRoster?.filter(
-      (player) => player.IsOnTradeBlock
+      (player) => player.IsOnTradeBlock,
     );
     if (tradeBlockPlayers) {
       for (let i = 0; i < tradeBlockPlayers!.length; i++) {
@@ -898,7 +899,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
@@ -1053,6 +1054,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   const fbStore = useSimFBAStore();
   const {
     nflTeam,
+    nflTeams,
     proTeamMap: nflTeamMap,
     proRosterMap: nflRosterMap,
     nflTeamOptions,
@@ -1062,7 +1064,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     placeNFLPlayerOnTradeBlock,
     capsheetMap: nflCapsheetMap,
     proContractMap: nflContractMap,
-    nflTradeProposals,
+    tradeProposalsMap,
     proPlayerMap,
     nflDraftPickMap,
     individualDraftPickMap,
@@ -1086,7 +1088,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   const manageTradesModal = useModal();
   const proposeTradeModal = useModal();
@@ -1219,7 +1221,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     const tradeBlockSet: TradeBlockRow[] = [];
     if (!selectedRoster || !nflContractMap) return tradeBlockSet;
     const tradeBlockPlayers = selectedRoster?.filter(
-      (player) => player.IsOnTradeBlock
+      (player) => player.IsOnTradeBlock,
     );
     if (tradeBlockPlayers) {
       for (let i = 0; i < tradeBlockPlayers!.length; i++) {
@@ -1266,14 +1268,40 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   }, [selectedRoster, selectedTeamDraftPicks, nflContractMap]);
 
   const sentTradeProposals = useMemo(() => {
-    if (!nflTradeProposals) return [];
-    return nflTradeProposals.SentTradeProposals || [];
-  }, [nflTradeProposals]);
+    const proposals: NFLTradeProposal[] = [];
+    for (let i = 0; i < nflTeams.length; i++) {
+      const team = nflTeams[i];
+      const proposalsList = tradeProposalsMap[team.ID];
+      if (proposalsList) {
+        for (let j = 0; j < proposalsList.length; j++) {
+          const proposal = proposalsList[j];
+          if (proposal.IsTradeAccepted || proposal.IsTradeRejected) continue;
+          if (proposal.NFLTeamID === nflTeam!.ID) {
+            proposals.push(proposal);
+          }
+        }
+      }
+    }
+    return proposals;
+  }, [nflTeam, nflTeams, tradeProposalsMap]);
 
   const receivedTradeProposals = useMemo(() => {
-    if (!nflTradeProposals) return [];
-    return nflTradeProposals.ReceivedTradeProposals || [];
-  }, [nflTradeProposals]);
+    const proposals: NFLTradeProposal[] = [];
+    for (let i = 0; i < nflTeams.length; i++) {
+      const team = nflTeams[i];
+      const proposalsList = tradeProposalsMap[team.ID];
+      if (proposalsList) {
+        for (let j = 0; j < proposalsList.length; j++) {
+          const proposal = proposalsList[j];
+          if (proposal.IsTradeAccepted || proposal.IsTradeRejected) continue;
+          if (proposal.RecepientTeamID === nflTeam!.ID) {
+            proposals.push(proposal);
+          }
+        }
+      }
+    }
+    return proposals;
+  }, [nflTeam, nflTeams, tradeProposalsMap]);
 
   return (
     <>
@@ -1458,7 +1486,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
@@ -1485,7 +1513,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
   const selectedTeamPromises = useMemo(() => {
     if (!collegePromises || !selectedTeam) return [];
     return collegePromises.filter(
-      (promise) => promise.TeamID === selectedTeam.ID
+      (promise) => promise.TeamID === selectedTeam.ID,
     );
   }, [selectedTeam, collegePromises]);
 
@@ -1667,7 +1695,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;

@@ -14,7 +14,9 @@ import {
   NFLDraftPick,
   NFLPlayer,
   NFLTeam,
+  NFLTradeOption,
   NFLTradeOptionObj,
+  NFLTradeProposal,
   NFLTradeProposalDTO,
 } from "../../../models/footballModels";
 import {
@@ -54,11 +56,11 @@ interface ManageTradeModalProps {
   league: League;
   sentTradeProposals:
     | HCKTradeProposal[]
-    | NFLTradeProposalDTO[]
+    | NFLTradeProposal[]
     | NBATradeProposal[];
   receivedTradeProposals:
     | HCKTradeProposal[]
-    | NFLTradeProposalDTO[]
+    | NFLTradeProposal[]
     | NBATradeProposal[];
   backgroundColor?: string;
   borderColor?: string;
@@ -105,12 +107,12 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     if (league === SimPHL) {
       return mapHCKTradeProposals(
         sentTradeProposals as HCKTradeProposal[],
-        team.ID
+        team.ID,
       );
     }
     return mapFBATradeProposals(
-      sentTradeProposals as NFLTradeProposalDTO[],
-      team.ID
+      sentTradeProposals as NFLTradeProposal[],
+      team.ID,
     );
   }, [sentTradeProposals, league]);
 
@@ -118,24 +120,24 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     if (league === SimPHL) {
       return mapHCKTradeProposals(
         receivedTradeProposals as HCKTradeProposal[],
-        team.ID
+        team.ID,
       );
     }
     return mapFBATradeProposals(
-      receivedTradeProposals as NFLTradeProposalDTO[],
-      team.ID
+      receivedTradeProposals as NFLTradeProposal[],
+      team.ID,
     );
   }, [receivedTradeProposals, league]);
 
-  const cancel = async (dto: HCKTradeProposal | NFLTradeProposalDTO) => {
+  const cancel = async (dto: HCKTradeProposal | NFLTradeProposal) => {
     return await cancelTrade(dto);
   };
 
-  const accept = async (dto: HCKTradeProposal | NFLTradeProposalDTO) => {
+  const accept = async (dto: HCKTradeProposal | NFLTradeProposal) => {
     return await acceptTrade(dto);
   };
 
-  const reject = async (dto: HCKTradeProposal | NFLTradeProposalDTO) => {
+  const reject = async (dto: HCKTradeProposal | NFLTradeProposal) => {
     return await rejectTrade(dto);
   };
 
@@ -203,7 +205,7 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
               if (league === SimPHL) {
                 key = (trade as HCKTradeProposal).TeamID;
               } else if (league === SimNFL) {
-                key = (trade as NFLTradeProposalDTO).NFLTeamID;
+                key = (trade as NFLTradeProposal).NFLTeamID;
               }
               return (
                 <TradeSection
@@ -226,7 +228,7 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
 };
 
 interface TradeSectionProps {
-  trade: HCKTradeProposal | NFLTradeProposalDTO;
+  trade: HCKTradeProposal | NFLTradeProposal;
   otherTeam: ProfessionalTeam | NFLTeam;
   league: League;
   individualDraftPickMap:
@@ -265,7 +267,7 @@ const TradeSection: FC<TradeSectionProps> = ({
     if (league === SimPHL) {
       return (trade as HCKTradeProposal).TeamTradeOptions;
     } else if (league === SimNFL) {
-      return (trade as NFLTradeProposalDTO).NFLTeamTradeOptions;
+      return (trade as NFLTradeProposal).NFLTeamTradeOptions;
     }
     return [];
   }, [league, trade]);
@@ -285,8 +287,8 @@ const TradeSection: FC<TradeSectionProps> = ({
               playerID = (item as HCKTradeOption).PlayerID;
               draftPickID = (item as HCKTradeOption).DraftPickID;
             } else if (league === SimNFL) {
-              playerID = (item as NFLTradeOptionObj).NFLPlayerID;
-              draftPickID = (item as NFLTradeOptionObj).NFLDraftPickID;
+              playerID = (item as NFLTradeOption).NFLPlayerID;
+              draftPickID = (item as NFLTradeOption).NFLDraftPickID;
             }
             return (
               <ManageOption
@@ -306,8 +308,8 @@ const TradeSection: FC<TradeSectionProps> = ({
               playerID = (item as HCKTradeOption).PlayerID;
               draftPickID = (item as HCKTradeOption).DraftPickID;
             } else if (league === SimNFL) {
-              playerID = (item as NFLTradeOptionObj).NFLPlayerID;
-              draftPickID = (item as NFLTradeOptionObj).NFLDraftPickID;
+              playerID = (item as NFLTradeOption).NFLPlayerID;
+              draftPickID = (item as NFLTradeOption).NFLDraftPickID;
             }
             return (
               <ManageOption
@@ -340,7 +342,7 @@ const TradeSection: FC<TradeSectionProps> = ({
 };
 
 interface ManageOptionProps {
-  item: HCKTradeOption | NFLTradeOptionObj;
+  item: HCKTradeOption | NFLTradeOption;
   player: ProfessionalPlayer | NFLPlayer;
   pick: HCKDraftPick | NFLDraftPick;
 }
@@ -473,7 +475,7 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
   proposeTrade,
 }) => {
   const [selectedUserItems, setSelectedUserItems] = useState<TradeBlockRow[]>(
-    []
+    [],
   );
   const [selectedRecipientItems, setSelectedRecipientItems] = useState<
     TradeBlockRow[]
@@ -531,7 +533,7 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
     const key = itemToRemove.isPlayer ? itemToRemove.player!.ID : 0;
 
     setSelectedUserItems((items: any[]) =>
-      items.filter((items, index) => index !== idx)
+      items.filter((items, index) => index !== idx),
     );
 
     // Remove salary percentage when item is removed
@@ -547,7 +549,7 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
     const key = itemToRemove.isPlayer ? itemToRemove.player!.ID : 0;
 
     setSelectedRecipientItems((items: any[]) =>
-      items.filter((items, index) => index !== idx)
+      items.filter((items, index) => index !== idx),
     );
 
     // Remove salary percentage when item is removed
@@ -561,7 +563,7 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
   const updateSalaryPercentage = (
     itemKey: number,
     percentage: number,
-    isUserTeam: boolean
+    isUserTeam: boolean,
   ) => {
     if (isUserTeam) {
       setUserItemSalaryPercentages((prev) => ({
@@ -580,12 +582,12 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
     const userOptions = mapSelectedOptionsToTradeOptions(
       selectedUserItems,
       userTeam.ID,
-      userItemSalaryPercentages
+      userItemSalaryPercentages,
     );
     const recepientOptions = mapSelectedOptionsToTradeOptions(
       selectedRecipientItems,
       recipientTeam.ID,
-      recipientItemSalaryPercentages
+      recipientItemSalaryPercentages,
     );
     const dto = {
       TeamID: userTeam.ID,

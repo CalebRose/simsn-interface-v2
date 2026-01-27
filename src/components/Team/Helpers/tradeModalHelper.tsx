@@ -1,4 +1,7 @@
-import { NFLTradeProposalDTO } from "../../../models/footballModels";
+import {
+  NFLTradeProposal,
+  NFLTradeProposalDTO,
+} from "../../../models/footballModels";
 import { TradeOption, TradeProposal } from "../../../models/hockeyModels";
 import { TradeBlockRow } from "../TeamPageTypes";
 
@@ -23,7 +26,7 @@ export const getTradeOptionsList = (rows: TradeBlockRow[]) => {
 export const mapSelectedOptionsToTradeOptions = (
   rows: TradeBlockRow[],
   teamID: number,
-  salaryPercentages?: Record<number, number>
+  salaryPercentages?: Record<number, number>,
 ): any[] => {
   const list = [];
 
@@ -50,7 +53,7 @@ export const mapSelectedOptionsToTradeOptions = (
 
 export const mapHCKTradeProposals = (
   proposals: TradeProposal[],
-  teamID: number
+  teamID: number,
 ): TradeProposal[] => {
   const list: TradeProposal[] = [];
   if (!proposals || proposals.length === 0) return list;
@@ -59,10 +62,10 @@ export const mapHCKTradeProposals = (
     const obj = new TradeProposal({
       ...item,
       TeamTradeOptions: item.TeamTradeOptions.filter(
-        (x) => x.TeamID === teamID
+        (x) => x.TeamID === teamID,
       ),
       RecepientTeamTradeOptions: item.TeamTradeOptions.filter(
-        (x) => x.TeamID !== teamID
+        (x) => x.TeamID !== teamID,
       ),
     });
     list.push(obj);
@@ -71,20 +74,20 @@ export const mapHCKTradeProposals = (
 };
 
 export const mapFBATradeProposals = (
-  proposals: NFLTradeProposalDTO[],
-  teamID: number
-): NFLTradeProposalDTO[] => {
-  const list: NFLTradeProposalDTO[] = [];
+  proposals: NFLTradeProposal[],
+  teamID: number,
+): NFLTradeProposal[] => {
+  const list: NFLTradeProposal[] = [];
   if (!proposals || proposals.length === 0) return list;
   for (let i = 0; i < proposals.length; i++) {
     const item = proposals[i];
-    const obj = new NFLTradeProposalDTO({
+    const obj = new NFLTradeProposal({
       ...item,
       TeamTradeOptions: item.NFLTeamTradeOptions.filter(
-        (x) => x.NFLTeamID === teamID
+        (x) => x.NFLTeamID === teamID,
       ),
       RecepientTeamTradeOptions: item.RecepientTeamTradeOptions.filter(
-        (x) => x.NFLTeamID !== teamID
+        (x) => x.NFLTeamID !== teamID,
       ),
     });
     list.push(obj);
@@ -94,7 +97,7 @@ export const mapFBATradeProposals = (
 
 export const mapTradeOptions = (
   options: TradeOption[],
-  teamID: number
+  teamID: number,
 ): TradeOption[] => {
   const list: TradeOption[] = [];
   if (!options || options.length === 0) return list;
