@@ -1797,7 +1797,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         NFLTeamID: dto.TeamID,
         NFLTeam: proTeamMap![dto.TeamID].TeamName,
         RecepientTeamID: dto.RecepientTeamID,
-        ReceipientTeam: proTeamMap![dto.RecepientTeamID].TeamName,
+        RecepientTeam: proTeamMap![dto.RecepientTeamID].TeamName,
         IsTradeAccepted: dto.IsTradeAccepted,
         IsTradeRejected: dto.IsTradeRejected,
         NFLTeamTradeOptions:

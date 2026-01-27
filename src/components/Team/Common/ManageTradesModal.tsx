@@ -48,6 +48,7 @@ import { Logo } from "../../../_design/Logo";
 import { getLogo } from "../../../_utility/getLogo";
 import { useLeagueStore } from "../../../context/LeagueContext";
 import GameplanInput from "../../Gameplan/FootballGameplan/Gameplan/GameplanInput";
+import { useSimFBAStore } from "../../../context/SimFBAContext";
 
 interface ManageTradeModalProps {
   isOpen: boolean;
@@ -95,6 +96,7 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
   rejectTrade,
 }) => {
   const { phlTeamMap } = useSimHCKStore();
+  const { proTeamMap } = useSimFBAStore();
   const sectionBg = darkenColor("#1f2937", -5);
   let title = "";
   let teamName = "";
@@ -103,6 +105,7 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     teamName = phlTeam.TeamName;
     title = `Manage ${teamName} Trades`;
   }
+
   const cleanSentTrades = useMemo(() => {
     if (league === SimPHL) {
       return mapHCKTradeProposals(
@@ -128,6 +131,8 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
       team.ID,
     );
   }, [receivedTradeProposals, league]);
+
+  console.log({ cleanReceivedTrades });
 
   const cancel = async (dto: HCKTradeProposal | NFLTradeProposal) => {
     return await cancelTrade(dto);
@@ -175,19 +180,28 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
                 </Border>
               </>
             )}
-            {cleanSentTrades.map((trade) => (
-              <TradeSection
-                otherTeam={phlTeamMap[trade.RecepientTeamID]}
-                trade={trade}
-                league={league}
-                individualDraftPickMap={individualDraftPickMap}
-                proPlayerMap={proPlayerMap}
-                cancel={cancel}
-                accept={accept}
-                reject={reject}
-                isSentTrade
-              />
-            ))}
+            {cleanSentTrades.map((trade) => {
+              let otherTeam = null;
+              if (league === SimPHL) {
+                otherTeam = phlTeamMap[trade.RecepientTeamID];
+              } else if (league === SimNFL) {
+                otherTeam = proTeamMap![trade.RecepientTeamID];
+              }
+              return (
+                <TradeSection
+                  key={trade.ID}
+                  otherTeam={otherTeam!!}
+                  trade={trade}
+                  league={league}
+                  individualDraftPickMap={individualDraftPickMap}
+                  proPlayerMap={proPlayerMap}
+                  cancel={cancel}
+                  accept={accept}
+                  reject={reject}
+                  isSentTrade
+                />
+              );
+            })}
           </div>
           <div className="flex  flex-col">
             <Text as="h4" classes="mb-2">
@@ -201,15 +215,19 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
               </>
             )}
             {cleanReceivedTrades.map((trade) => {
-              let key = 0;
+              console.log({ trade });
+              let otherTeam = null;
               if (league === SimPHL) {
-                key = (trade as HCKTradeProposal).TeamID;
+                const phlTeamID = (trade as HCKTradeProposal).TeamID;
+                otherTeam = phlTeamMap[phlTeamID];
               } else if (league === SimNFL) {
-                key = (trade as NFLTradeProposal).NFLTeamID;
+                const nflTeamID = (trade as NFLTradeProposal).NFLTeamID;
+                otherTeam = proTeamMap![nflTeamID];
               }
               return (
                 <TradeSection
-                  otherTeam={phlTeamMap[key]}
+                  key={trade.ID}
+                  otherTeam={otherTeam!!}
                   trade={trade}
                   league={league}
                   individualDraftPickMap={individualDraftPickMap}
