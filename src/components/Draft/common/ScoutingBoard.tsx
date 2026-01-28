@@ -1,13 +1,18 @@
-import React, { FC, useState, useMemo } from 'react';
-import { Border } from '../../../_design/Borders';
-import { Text } from '../../../_design/Typography';
-import { Button } from '../../../_design/Buttons';
-import { SelectDropdown } from '../../../_design/Select';
-import { SelectOption } from '../../../_hooks/useSelectStyles';
-import PlayerPicture from '../../../_utility/usePlayerFaces';
-import { ScoutingAttributeBox } from './ScoutingAttributeBox';
-import { Handshake, TrashCan as Trash } from '../../../_design/Icons';
-import { darkenColor } from '../../../_utility/getDarkerColor';
+import React, { FC, useState, useMemo } from "react";
+import { Border } from "../../../_design/Borders";
+import { Text } from "../../../_design/Typography";
+import { Button } from "../../../_design/Buttons";
+import { SelectDropdown } from "../../../_design/Select";
+import { SelectOption } from "../../../_hooks/useSelectStyles";
+import PlayerPicture from "../../../_utility/usePlayerFaces";
+import { ScoutingAttributeBox } from "./ScoutingAttributeBox";
+import {
+  ActionLock,
+  Handshake,
+  LockIcon,
+  TrashCan as Trash,
+} from "../../../_design/Icons";
+import { darkenColor } from "../../../_utility/getDarkerColor";
 import {
   DraftLeague,
   Draftee,
@@ -17,13 +22,13 @@ import {
   getPlayerCollege,
   isNFLScoutingProfile,
   getCollegeLeagueConstant,
-  isNFLLeague
-} from './types';
+  isNFLLeague,
+} from "./types";
 import {
   getScoutableAttributes,
   getAttributeShowProperty,
-  getScoutingCost
-} from './draftHelpers';
+  getScoutingCost,
+} from "./draftHelpers";
 
 interface ScoutingBoardProps {
   scoutProfiles: ScoutingProfile[];
@@ -31,7 +36,11 @@ interface ScoutingBoardProps {
   onRemoveFromBoard: (profile: ScoutingProfile) => void;
   onDraftPlayer?: (player: Draftee) => void;
   onViewDetails: (profile: ScoutingProfile) => void;
-  onRevealAttribute: (profileId: number, showAttribute: string, cost: number) => void;
+  onRevealAttribute: (
+    profileId: number,
+    showAttribute: string,
+    cost: number,
+  ) => void;
   isUserTurn?: boolean;
   teamColors: TeamColors;
   backgroundColor: string;
@@ -39,6 +48,8 @@ interface ScoutingBoardProps {
   spentPoints: number;
   league: DraftLeague;
   draftablePlayers?: Draftee[];
+  offensiveSystemsInformation: any;
+  defensiveSystemsInformation: any;
 }
 
 export const ScoutingBoard: FC<ScoutingBoardProps> = ({
@@ -54,7 +65,9 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
   teamScoutingPoints,
   spentPoints,
   league,
-  draftablePlayers = []
+  draftablePlayers = [],
+  offensiveSystemsInformation,
+  defensiveSystemsInformation,
 }) => {
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
 
@@ -63,7 +76,7 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
 
   const draftablePlayerMap = useMemo(() => {
     const map: Record<number, Draftee> = {};
-    draftablePlayers.forEach(player => {
+    draftablePlayers.forEach((player) => {
       map[player.ID] = player;
     });
     return map;
@@ -91,14 +104,16 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
   };
 
   const filteredProfiles = useMemo(() => {
-    let filtered = scoutProfiles.filter(profile => {
+    let filtered = scoutProfiles.filter((profile) => {
       if (draftedPlayerIds.has(profile.PlayerID)) return false;
 
       const player = getPlayerFromProfile(profile);
       if (!player) return false;
 
-      if (selectedPositions.length > 0 &&
-          !selectedPositions.includes(player.Position)) {
+      if (
+        selectedPositions.length > 0 &&
+        !selectedPositions.includes(player.Position)
+      ) {
         return false;
       }
 
@@ -110,7 +125,10 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
 
   const availablePoints = teamScoutingPoints - spentPoints;
 
-  const handleAttributeClick = (profile: ScoutingProfile, attributeName: string) => {
+  const handleAttributeClick = (
+    profile: ScoutingProfile,
+    attributeName: string,
+  ) => {
     const cost = getScoutingCost(attributeName, league);
     const showProperty = getAttributeShowProperty(attributeName, league);
     const revealed = (profile as any)[showProperty];
@@ -124,7 +142,7 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
     profile: ScoutingProfile,
     player: Draftee,
     attributeName: string,
-    isClickable: boolean = true
+    isClickable: boolean = true,
   ) => {
     const showProperty = getAttributeShowProperty(attributeName, league);
     const revealed = (profile as any)[showProperty];
@@ -139,7 +157,9 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
         cost={cost}
         revealed={revealed}
         canAfford={canAfford}
-        onClick={() => isClickable ? handleAttributeClick(profile, attributeName) : undefined}
+        onClick={() =>
+          isClickable ? handleAttributeClick(profile, attributeName) : undefined
+        }
         league={league}
       />
     );
@@ -147,7 +167,7 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
 
   return (
     <Border
-      classes="p-4 border-2 w-full lg:min-w-[80em] overflow-x-auto"
+      classes="p-4 border-2 w-full overflow-x-auto"
       styles={{ borderColor: teamColors.primary, backgroundColor }}
     >
       <div className="flex items-center justify-between mb-4">
@@ -161,9 +181,10 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
       <div className="mb-4">
         <SelectDropdown
           options={positions}
-          value={positions.filter(p => selectedPositions.includes(p.value))}
+          value={positions.filter((p) => selectedPositions.includes(p.value))}
           onChange={(selected) => {
-            const values = (selected as SelectOption[])?.map(s => s.value) || [];
+            const values =
+              (selected as SelectOption[])?.map((s) => s.value) || [];
             setSelectedPositions(values);
           }}
           placeholder="All Positions"
@@ -178,8 +199,11 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
 
           const revealedCount = getRevealedCount(profile);
           const isDrafted = draftedPlayerIds.has(player.ID);
-          const scoutableAttributes = getScoutableAttributes(player.Position, player.Archetype, league)
-            .filter(attr => attr !== 'Potential Grade');
+          const scoutableAttributes = getScoutableAttributes(
+            player.Position,
+            player.Archetype,
+            league,
+          ).filter((attr) => attr !== "Potential Grade");
           const playerCollege = getPlayerCollege(player, league);
 
           const picturePlayerId = isNFLLeague(league)
@@ -189,82 +213,187 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
             ? (player as any).CollegeID
             : (player as any).TeamID;
 
+          const isGoodOffensiveFit = (() => {
+            if (!player || !offensiveSystemsInformation) return false;
+            const goodFits = offensiveSystemsInformation.GoodFits;
+            const idx = goodFits.findIndex(
+              (x: any) => x.archetype === player.Archetype,
+            );
+            if (idx > -1) {
+              return true;
+            }
+            return false;
+          })();
+
+          const isBadOffensiveFit = (() => {
+            if (!player || !offensiveSystemsInformation) return false;
+            const badFits = offensiveSystemsInformation.BadFits;
+            const idx = badFits.findIndex(
+              (x: any) => x.archetype === player.Archetype,
+            );
+            if (idx > -1) {
+              return true;
+            }
+            return false;
+          })();
+
+          const isGoodDefensiveFit = (() => {
+            if (!player || !defensiveSystemsInformation) return false;
+            const goodFits = defensiveSystemsInformation.GoodFits;
+            const idx = goodFits.findIndex(
+              (x: any) => x.archetype === player.Archetype,
+            );
+            if (idx > -1) {
+              return true;
+            }
+            return false;
+          })();
+
+          const isBadDefensiveFit = (() => {
+            if (!player || !defensiveSystemsInformation) return false;
+            const badFits = defensiveSystemsInformation.BadFits;
+            const idx = badFits.findIndex(
+              (x: any) => x.archetype === player.Archetype,
+            );
+            if (idx > -1) {
+              return true;
+            }
+            return false;
+          })();
+
           return (
             <Border
               key={profile.ID}
-              classes={`p-4 rounded-lg ${isDrafted ? 'opacity-50' : ''}`}
+              classes={`p-4 rounded-lg ${isDrafted ? "opacity-50" : ""}`}
               styles={{
-                backgroundColor: index % 2 === 1 ? backgroundColor : darkenColor(backgroundColor, -5),
-                borderColor: darkenColor(backgroundColor, 5)
+                backgroundColor:
+                  index % 2 === 1
+                    ? backgroundColor
+                    : darkenColor(backgroundColor, -5),
+                borderColor: darkenColor(backgroundColor, 5),
               }}
             >
               <div className="grid grid-cols-5 gap-6">
                 <div className="flex flex-col col-span-1 items-center space-y-2">
                   <div className="w-24 h-24 flex items-center justify-center">
-                    <PlayerPicture playerID={picturePlayerId} team={pictureTeamId} league={collegeLeague} />
+                    <PlayerPicture
+                      playerID={picturePlayerId}
+                      team={pictureTeamId}
+                      league={collegeLeague}
+                    />
                   </div>
                   <div className="text-center">
                     <Text variant="body" classes="text-white font-semibold">
                       {player.FirstName} {player.LastName}
                     </Text>
-                    <Text variant="xs" classes="text-gray-400 mt-1">
-                      {playerCollege}
-                    </Text>
                     <div className="flex items-center justify-center space-x-2 mt-1">
+                      <span className="px-2 py-1 text-gray-300 bg-gray-500/20 rounded text-xs font-medium">
+                        {playerCollege}
+                      </span>
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
                         {player.Position}
                       </span>
-                    </div>
-                    <div className="flex items-center justify-center space-x-2 mt-1">
                       <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs font-medium">
                         {player.Archetype}
                       </span>
+                      {isGoodOffensiveFit && (
+                        <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-medium">
+                          Offensive Fit
+                        </span>
+                      )}
+                      {isGoodDefensiveFit && (
+                        <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs font-medium">
+                          Defensive Fit
+                        </span>
+                      )}
+                      {isBadOffensiveFit && (
+                        <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-medium">
+                          Offensive Misfit
+                        </span>
+                      )}
+                      {isBadDefensiveFit && (
+                        <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs font-medium">
+                          Defensive Misfit
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-col col-span-1 items-center space-y-3">
-                  <div className="text-center">
-                    <Text variant="xs" classes="text-gray-500 mb-1">Overall</Text>
-                    <ScoutingAttributeBox
-                      attributeName="Overall Grade"
-                      player={player}
-                      cost={0}
-                      revealed={true}
-                      canAfford={false}
-                      onClick={() => {}}
-                      league={league}
-                    />
+                  <div className="grid grid-flow-col space-x-4 justify-center items-center my-auto">
+                    <div className="text-center">
+                      <Text variant="xs" classes="text-gray-500 mb-1">
+                        Overall
+                      </Text>
+                      <ScoutingAttributeBox
+                        attributeName="Overall Grade"
+                        player={player}
+                        cost={0}
+                        revealed={true}
+                        canAfford={false}
+                        onClick={() => {}}
+                        league={league}
+                      />
+                    </div>
+                    <div className="text-center">
+                      <Text variant="xs" classes="text-gray-500 mb-1">
+                        Potential
+                      </Text>
+                      {renderScoutingAttributeBox(
+                        profile,
+                        player,
+                        "Potential Grade",
+                      )}
+                    </div>
+                    <div className="text-center flex flex-col items-center justify-center h-full">
+                      <Text variant="xs" classes="text-gray-500">
+                        {revealedCount}/
+                        {
+                          getScoutableAttributes(
+                            player.Position,
+                            player.Archetype,
+                            league,
+                          ).length
+                        }{" "}
+                        attributes revealed
+                      </Text>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <Text variant="xs" classes="text-gray-500 mb-1">Potential</Text>
-                    {renderScoutingAttributeBox(profile, player, 'Potential Grade')}
-                  </div>
-
-                  <Text variant="xs" classes="text-gray-500">
-                    {revealedCount}/{getScoutableAttributes(player.Position, player.Archetype, league).length} revealed
-                  </Text>
                 </div>
                 <div className="flex flex-col col-span-2">
-                  <Text variant="xs" classes="text-gray-500 mb-2">Attributes</Text>
-                  <div className="grid grid-cols-3 gap-2">
-                    {scoutableAttributes.map(attributeName =>
-                      renderScoutingAttributeBox(profile, player, attributeName)
+                  <Text variant="xs" classes="text-gray-500 mb-2">
+                    Attributes
+                  </Text>
+                  <div className="grid grid-cols-4 gap-2">
+                    {scoutableAttributes.map((attributeName) =>
+                      renderScoutingAttributeBox(
+                        profile,
+                        player,
+                        attributeName,
+                      ),
                     )}
                   </div>
                 </div>
                 <div className="flex flex-col h-full justify-center col-span-1 items-center gap-2">
-                  {!isDrafted && onDraftPlayer && (
-                    <Button
-                      variant="secondaryOutline"
-                      size="sm"
-                      onClick={() => onDraftPlayer(player)}
-                      className={`min-w-[10em] p-2 flex justify-center gap-2 items-center ${isUserTurn ? 'bg-green-700' : 'bg-red-800'}`}
-                      disabled={!isUserTurn}
-                    >
-                      <Handshake />
-                      Draft
-                    </Button>
-                  )}
+                  <Button
+                    variant="secondaryOutline"
+                    size="sm"
+                    // onClick={() => onDraftPlayer(player)}
+                    className={`min-w-[10em] p-2 flex justify-center gap-2 items-center ${isUserTurn ? "bg-green-700" : "bg-red-800"}`}
+                    disabled={!isUserTurn || isDrafted}
+                  >
+                    {isDrafted ? (
+                      <>
+                        <ActionLock /> Drafted
+                      </>
+                    ) : (
+                      <>
+                        <Handshake />
+                        Draft {player.FirstName}
+                      </>
+                    )}
+                  </Button>
+
                   <Button
                     variant="secondaryOutline"
                     size="sm"

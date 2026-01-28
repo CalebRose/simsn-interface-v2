@@ -1,9 +1,15 @@
-import { FC, useEffect, useRef, useState } from 'react';
-import { Border } from '../../../_design/Borders';
-import { Text } from '../../../_design/Typography';
-import { getLogo } from '../../../_utility/getLogo';
-import { DraftLeague, DraftPick, Draftee, TeamColors, getLeagueConstant, isNFLLeague } from './types';
-
+import { FC, useEffect, useRef, useState } from "react";
+import { Border } from "../../../_design/Borders";
+import { Text } from "../../../_design/Typography";
+import { getLogo } from "../../../_utility/getLogo";
+import {
+  DraftLeague,
+  DraftPick,
+  Draftee,
+  TeamColors,
+  getLeagueConstant,
+  isNFLLeague,
+} from "./types";
 
 interface DraftTickerProps {
   recentPicks: Array<{
@@ -21,7 +27,7 @@ export const DraftTicker: FC<DraftTickerProps> = ({
   onPickClick,
   teamColors,
   backgroundColor,
-  league
+  league,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
@@ -35,7 +41,10 @@ export const DraftTicker: FC<DraftTickerProps> = ({
       const scrollAmount = 1;
 
       const scroll = () => {
-        if (scrollContainer.scrollLeft >= scrollContainer.scrollWidth - scrollContainer.clientWidth) {
+        if (
+          scrollContainer.scrollLeft >=
+          scrollContainer.scrollWidth - scrollContainer.clientWidth
+        ) {
           scrollContainer.scrollLeft = 0;
         } else {
           scrollContainer.scrollLeft += scrollAmount;
@@ -50,7 +59,10 @@ export const DraftTicker: FC<DraftTickerProps> = ({
   const handleMouseEnter = () => setIsAutoScrolling(false);
   const handleMouseLeave = () => setIsAutoScrolling(true);
 
-  const PickCard: FC<{ pickData: { pick: DraftPick; player?: Draftee }, index: number }> = ({ pickData, index }) => {
+  const PickCard: FC<{
+    pickData: { pick: DraftPick; player?: Draftee };
+    index: number;
+  }> = ({ pickData, index }) => {
     const { pick, player } = pickData;
     const teamLogo = getLogo(leagueConstant, pick.TeamID, false);
     const isNew = index === 0;
@@ -62,10 +74,15 @@ export const DraftTicker: FC<DraftTickerProps> = ({
     return (
       <div
         className={`
-          flex-shrink-0 w-80 mx-2 cursor-pointer transform transition-all duration-300
-          ${hoveredPick === pick.ID ? 'scale-105' : 'scale-100'}
-          ${isNew ? 'animate-slideIn' : ''}
+          flex-shrink-0 w-80 mx-2 cursor-pointer transition-all duration-300
+          ${hoveredPick === pick.ID ? "transform scale-105" : ""}
+          ${isNew ? "animate-slideIn" : ""}
         `}
+        style={{
+          transformOrigin: "center",
+          willChange: hoveredPick === pick.ID ? "transform" : "auto",
+          contain: "layout style",
+        }}
         onClick={() => onPickClick?.(pick)}
         onMouseEnter={() => setHoveredPick(pick.ID)}
         onMouseLeave={() => setHoveredPick(null)}
@@ -73,16 +90,21 @@ export const DraftTicker: FC<DraftTickerProps> = ({
         <Border
           classes={`
             p-4 bg-gradient-to-r from-gray-800 to-gray-700 border-2
-            ${isNew ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}
+            ${isNew ? "ring-2 ring-blue-500 ring-opacity-50" : ""}
           `}
-          styles={{ borderColor: hoveredPick === pick.ID ? teamColors.primary : '#374151' }}
+          styles={{
+            borderColor:
+              hoveredPick === pick.ID ? teamColors.primary : "#374151",
+          }}
         >
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
-              <div className={`
+              <div
+                className={`
                 w-12 h-12 rounded-full flex items-center justify-center font-bold
-                ${isNew ? 'bg-blue-500 text-white animate-pulse' : 'bg-gray-600 text-gray-300'}
-              `}>
+                ${isNew ? "bg-blue-500 text-white animate-pulse" : "bg-gray-600 text-gray-300"}
+              `}
+              >
                 {pick.DraftNumber}
               </div>
             </div>
@@ -95,20 +117,24 @@ export const DraftTicker: FC<DraftTickerProps> = ({
             />
             <div className="flex-1 min-w-0">
               <Text variant="body" classes="text-white font-semibold truncate">
-                {pick.SelectedPlayerName || 'Selecting...'}
+                {pick.SelectedPlayerName || "Selecting..."}
               </Text>
               <div className="flex items-center space-x-2 text-xs">
                 <span className="text-gray-400">{pick.Team}</span>
                 {pick.SelectedPlayerPosition && (
                   <>
                     <span className="text-gray-500">•</span>
-                    <span className="text-blue-400 font-semibold">{pick.SelectedPlayerPosition}</span>
+                    <span className="text-blue-400 font-semibold">
+                      {pick.SelectedPlayerPosition}
+                    </span>
                   </>
                 )}
                 {collegeOrTeam && (
                   <>
                     <span className="text-gray-500">•</span>
-                    <span className="text-gray-400 truncate">{collegeOrTeam}</span>
+                    <span className="text-gray-400 truncate">
+                      {collegeOrTeam}
+                    </span>
                   </>
                 )}
               </div>
@@ -132,7 +158,10 @@ export const DraftTicker: FC<DraftTickerProps> = ({
   };
 
   return (
-    <div className="relative rounded-lg p-4 border-2 h-full" style={{ backgroundColor, borderColor: teamColors.primary }}>
+    <div
+      className="relative rounded-lg p-4 border-2 h-full"
+      style={{ backgroundColor, borderColor: teamColors.primary }}
+    >
       <div className="flex items-center justify-between mb-2 px-4">
         <Text variant="h5" classes="text-white font-semibold">
           Recent Picks
@@ -144,19 +173,36 @@ export const DraftTicker: FC<DraftTickerProps> = ({
           </Text>
         </div>
       </div>
-      <div className="relative overflow-hidden rounded-lg">
-        <div className="absolute left-0 top-0 bottom-0 w-full bg-gradient-to-r from-gray-900 to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-900 to-transparent z-10 pointer-events-none" />
+      <div
+        className="relative overflow-hidden rounded-lg"
+        style={{ contain: "layout style" }}
+      >
+        <div
+          className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-900 to-transparent z-10 pointer-events-none"
+          style={{ contain: "strict" }}
+        />
+        <div
+          className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-900 to-transparent z-10 pointer-events-none"
+          style={{ contain: "strict" }}
+        />
         <div
           ref={scrollRef}
           className="flex overflow-x-auto scrollbar-hide py-2"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          style={{ scrollBehavior: 'smooth' }}
+          style={{
+            scrollBehavior: "smooth",
+            contain: "layout style",
+            willChange: isAutoScrolling ? "scroll-position" : "auto",
+          }}
         >
           {recentPicks.length > 0 ? (
             recentPicks.map((pickData, index) => (
-              <PickCard key={pickData.pick.ID} pickData={pickData} index={index} />
+              <PickCard
+                key={pickData.pick.ID}
+                pickData={pickData}
+                index={index}
+              />
             ))
           ) : (
             <div className="w-full text-center py-8">
@@ -165,15 +211,15 @@ export const DraftTicker: FC<DraftTickerProps> = ({
               </Text>
             </div>
           )}
-          {recentPicks.length > 0 && recentPicks.length < 10 && (
+          {recentPicks.length > 0 &&
+            recentPicks.length < 10 &&
             recentPicks.map((pickData, index) => (
               <PickCard
                 key={`dup-${pickData.pick.ID}`}
                 pickData={pickData}
                 index={recentPicks.length + index}
               />
-            ))
-          )}
+            ))}
         </div>
       </div>
       <style>{`
@@ -198,6 +244,8 @@ export const DraftTicker: FC<DraftTickerProps> = ({
 
         .animate-slideIn {
           animation: slideIn 0.5s ease-out;
+          contain: layout style;
+          will-change: transform, opacity;
         }
       `}</style>
     </div>

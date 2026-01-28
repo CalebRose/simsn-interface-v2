@@ -108,6 +108,8 @@ interface SimHCKContextProps {
   chlLineups: CollegeLineup[];
   chlShootoutLineup: CollegeShootoutLineup;
   phlGameplan: ProGameplan;
+  chlGameplanMap: Record<number, CollegeGameplan>;
+  phlGameplanMap: Record<number, ProGameplan>;
   phlLineups: ProfessionalLineup[];
   phlShootoutLineup: ProfessionalShootoutLineup;
   recruits: Croot[]; // Replace with a more specific type if available
@@ -267,9 +269,11 @@ const defaultContext: SimHCKContextProps = {
   chlRosterMap: {},
   chlPlayerMap: {},
   chlGameplan: {} as CollegeGameplan,
+  chlGameplanMap: {},
   chlLineups: [],
   chlShootoutLineup: {} as CollegeShootoutLineup,
   phlGameplan: {} as ProGameplan,
+  phlGameplanMap: {},
   phlLineups: [],
   phlShootoutLineup: {} as ProfessionalShootoutLineup,
   recruits: [],
@@ -436,15 +440,15 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const [chlRosterMap, setCHLRosterMap] = useState<
     Record<number, CollegePlayer[]>
   >({});
-  const [chlGameplan, setCHLGameplan] = useState<CollegeGameplan>(
-    {} as CollegeGameplan,
-  );
+  const [chlGameplanMap, setCHLGameplanMap] = useState<
+    Record<number, CollegeGameplan>
+  >({});
   const [chlLineups, setCHLLineups] = useState<CollegeLineup[]>([]);
   const [chlShootoutLineup, setCHLShootoutLineup] =
     useState<CollegeShootoutLineup>({} as CollegeShootoutLineup);
-  const [phlGameplan, setPHLGameplan] = useState<ProGameplan>(
-    {} as CollegeGameplan,
-  );
+  const [phlGameplanMap, setPHLGameplanMap] = useState<
+    Record<number, ProGameplan>
+  >({});
   const [phlLineups, setPHLLineups] = useState<ProfessionalLineup[]>([]);
   const [phlShootoutLineup, setPHLShootoutLineup] =
     useState<CollegeShootoutLineup>({} as ProfessionalShootoutLineup);
@@ -569,6 +573,16 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     [],
   );
   const [phlAllDraftPicks, setPhlAllDraftPicks] = useState<DraftPick[]>([]);
+
+  const chlGameplan = useMemo(() => {
+    if (!chlTeam) return {} as CollegeGameplan;
+    return chlGameplanMap[chlTeam.ID];
+  }, [chlTeam, chlGameplanMap]);
+
+  const phlGameplan = useMemo(() => {
+    if (!phlTeam) return {} as ProGameplan;
+    return phlGameplanMap[phlTeam.ID];
+  }, [phlTeam, phlGameplanMap]);
 
   const phlDraftPickMap = useMemo(() => {
     if (!phlDraftPicks) return {};
@@ -908,7 +922,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setCollegePollSubmission(res.CollegePoll);
       setCollegeNotifications(res.CollegeNotifications);
       setAllCHLStandings(res.CollegeStandings);
-      setCHLGameplan(res.CHLGameplan);
+      setCHLGameplanMap(res.CHLGameplanMap);
       setCHLLineups(res.CollegeTeamLineups);
       setCHLShootoutLineup(res.CollegeTeamShootoutLineup);
       setCHLRosterMap(res.CollegeRosterMap);
@@ -931,7 +945,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setProInjuryReport(res.ProInjuryReport);
       setPHLTeam(res.ProTeam);
       setPHLLineups(res.ProTeamLineups);
-      setPHLGameplan(res.PHLGameplan);
+      setPHLGameplanMap(res.PHLGameplanMap);
       setPHLShootoutLineup(res.ProTeamShootoutLineup);
       setAllProStandings(res.ProStandings);
       setProRosterMap(res.ProRosterMap);
@@ -1160,7 +1174,12 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
   const saveCHLAIGameplan = async (dto: any) => {
     const res = await GameplanService.SaveCHLAIGameplan(dto);
-    setCHLGameplan(dto);
+    setCHLGameplanMap((prev) => {
+      return {
+        ...prev,
+        [dto.TeamID]: dto,
+      };
+    });
     enqueueSnackbar("AI Gameplan saved!", {
       variant: "success",
       autoHideDuration: 3000,
@@ -1169,7 +1188,12 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
   const savePHLAIGameplan = async (dto: any) => {
     const res = await GameplanService.SavePHLAIGameplan(dto);
-    setPHLGameplan(dto);
+    setPHLGameplanMap((prev) => {
+      return {
+        ...prev,
+        [dto.TeamID]: dto,
+      };
+    });
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,
@@ -2227,6 +2251,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         chlRosterMap,
         chlPlayerMap,
         chlGameplan,
+        chlGameplanMap,
+        phlGameplanMap,
         chlLineups,
         chlShootoutLineup,
         phlGameplan,

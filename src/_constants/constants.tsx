@@ -38,6 +38,7 @@ export const Promise = "Promise";
 export const Redshirt = "Redshirt";
 export const InfoType = "Info";
 export const RecruitInfoType = "Recruit Info";
+export const DrafteeInfoType = "Draftee Info";
 export const PortalInfoType = "Portal Info";
 export const AddRecruitType = "Add Recruit";
 export const AddFreeAgentType = "Add Free Agent";
@@ -76,6 +77,7 @@ export type ModalAction =
   | typeof InfoType
   | typeof RecruitInfoType
   | typeof PortalInfoType
+  | typeof DrafteeInfoType
   | typeof AddRecruitType
   | typeof AddFreeAgentType
   | typeof AddPortalPlayerType
@@ -1029,7 +1031,7 @@ export const FootballWeeks: { label: string; value: string }[] = Array.from(
   (_, i) => ({
     label: i.toString(),
     value: i.toString(),
-  })
+  }),
 );
 
 export const CHLWeeks: { label: string; value: string }[] = Array.from(
@@ -1037,7 +1039,7 @@ export const CHLWeeks: { label: string; value: string }[] = Array.from(
   (_, i) => [
     { label: `${i + 1}A`, value: `${i + 1}A` },
     { label: `${i + 1}B`, value: `${i + 1}B` },
-  ]
+  ],
 ).flat();
 
 export const PHLWeeks: { label: string; value: string }[] = Array.from(
@@ -1046,7 +1048,7 @@ export const PHLWeeks: { label: string; value: string }[] = Array.from(
     { label: `${i + 1}A`, value: `${i + 1}A` },
     { label: `${i + 1}B`, value: `${i + 1}B` },
     { label: `${i + 1}C`, value: `${i + 1}C` },
-  ]
+  ],
 ).flat();
 
 export const LeagueTypeOptions = [
@@ -1097,3 +1099,15 @@ export const BigCity = "Big City";
 export const RisingStars = "Rising Stars";
 export const MediaSpotlight = "Media Spotlight";
 export const NoAffinity = "";
+
+export const DraftBoardStr = "board";
+export const ScoutBoard = "scout";
+export const AdminBoard = "admin";
+export const WarRoomBoard = "war room";
+export const BigBoard = "big board";
+export type DraftBoardType =
+  | typeof DraftBoardStr
+  | typeof ScoutBoard
+  | typeof AdminBoard
+  | typeof WarRoomBoard
+  | typeof BigBoard;

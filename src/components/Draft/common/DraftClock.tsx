@@ -1,8 +1,14 @@
-import { FC, useEffect, useState } from 'react';
-import { Border } from '../../../_design/Borders';
-import { Text } from '../../../_design/Typography';
-import { getLogo } from '../../../_utility/getLogo';
-import { DraftLeague, DraftPick, TeamColors, getLeagueConstant, isNFLLeague } from './types';
+import { FC, useEffect, useState } from "react";
+import { Border } from "../../../_design/Borders";
+import { Text } from "../../../_design/Typography";
+import { getLogo } from "../../../_utility/getLogo";
+import {
+  DraftLeague,
+  DraftPick,
+  TeamColors,
+  getLeagueConstant,
+  isNFLLeague,
+} from "./types";
 
 interface DraftClockProps {
   currentPick: DraftPick | null;
@@ -22,7 +28,7 @@ export const DraftClock: FC<DraftClockProps> = ({
   timeLeft,
   isPaused,
   teamColors,
-  league
+  league,
 }) => {
   const [displayTime, setDisplayTime] = useState(timeLeft);
   const [isUrgent, setIsUrgent] = useState(false);
@@ -35,14 +41,14 @@ export const DraftClock: FC<DraftClockProps> = ({
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const getTimerColor = () => {
-    if (isPaused) return 'text-gray-400';
-    if (isUrgent) return 'text-red-500 animate-pulse';
-    if (displayTime <= 60) return 'text-yellow-500';
-    return 'text-green-500';
+    if (isPaused) return "text-gray-400";
+    if (isUrgent) return "text-red-500 animate-pulse";
+    if (displayTime <= 60) return "text-yellow-500";
+    return "text-green-500";
   };
 
   const getProgressPercentage = () => {
@@ -79,8 +85,12 @@ export const DraftClock: FC<DraftClockProps> = ({
 
   return (
     <Border
-      classes={`p-4 bg-gradient-to-br from-gray-900 to-gray-800 relative overflow-hidden border-4 h-full ${isUrgent ? 'animate-pulse' : ''}`}
-      styles={{ borderColor: teamColors.primary }}
+      classes={`p-4 bg-gradient-to-br from-gray-900 to-gray-800 relative overflow-hidden border-4 h-full ${isUrgent ? "animate-pulse" : ""}`}
+      styles={{
+        borderColor: teamColors.primary,
+        contain: "layout style",
+        willChange: isUrgent ? "opacity" : "auto",
+      }}
     >
       <div
         className="absolute inset-0 opacity-10"
@@ -97,7 +107,10 @@ export const DraftClock: FC<DraftClockProps> = ({
       <div className="relative z-10">
         <div className="flex justify-between items-start mb-4">
           <div>
-            <Text variant="body" classes="text-gray-400 uppercase tracking-wider text-xs">
+            <Text
+              variant="body"
+              classes="text-gray-400 uppercase tracking-wider text-xs"
+            >
               On The Clock
             </Text>
             <Text variant="h4" classes="text-white font-bold">
@@ -105,10 +118,16 @@ export const DraftClock: FC<DraftClockProps> = ({
             </Text>
           </div>
           <div className="text-right">
-            <Text variant="body" classes="text-gray-400 uppercase tracking-wider text-xs">
+            <Text
+              variant="body"
+              classes="text-gray-400 uppercase tracking-wider text-xs"
+            >
               Time Remaining
             </Text>
-            <Text variant="h2" classes={`font-mono font-bold ${getTimerColor()}`}>
+            <Text
+              variant="h2"
+              classes={`font-mono font-bold ${getTimerColor()}`}
+            >
               {formatTime(displayTime)}
             </Text>
           </div>
@@ -124,7 +143,7 @@ export const DraftClock: FC<DraftClockProps> = ({
               {currentPick.Team}
             </Text>
             <Text variant="body" classes="text-gray-400">
-              {currentPick.Notes || 'Making selection...'}
+              {currentPick.Notes || "Making selection..."}
             </Text>
           </div>
         </div>

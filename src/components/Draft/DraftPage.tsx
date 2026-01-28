@@ -1,10 +1,5 @@
 import { FC, useEffect, useMemo } from "react";
-import { 
-  League, 
-  SimPHL,
-  SimNFL,
-  SimNBA
-} from "../../_constants/constants";
+import { League, SimPHL, SimNFL, SimNBA } from "../../_constants/constants";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
@@ -30,10 +25,10 @@ export const DraftPage: FC<DraftPageProps> = ({ league }) => {
   }, [selectedLeague]);
 
   const isLoading = useMemo(() => {
-    if (selectedLeague === SimNFL && nflTeam) {
+    if (selectedLeague === SimPHL && phlTeam) {
       return false;
     }
-    if (selectedLeague === SimPHL && phlTeam) {
+    if (selectedLeague === SimNFL && nflTeam) {
       return false;
     }
     if (selectedLeague === SimNBA && nbaTeam) {
@@ -59,8 +54,10 @@ export const DraftPage: FC<DraftPageProps> = ({ league }) => {
     <>
       <PageContainer direction="col" isLoading={isLoading} title={title}>
         {/* {selectedLeague === SimNFL && nflTeam && <NFLDraftPage league={league} team={nflTeam} />} */}
-        {selectedLeague === SimPHL && phlTeam && <PHLDraftPage league={SimPHL} team={phlTeam} />}
-       {/* {selectedLeague === SimNBA && nbaTeam && <NBADraftPage />} */}
+        {selectedLeague === SimPHL && phlTeam && (
+          <PHLDraftPage league={SimPHL} />
+        )}
+        {/* {selectedLeague === SimNBA && nbaTeam && <NBADraftPage />} */}
       </PageContainer>
     </>
   );

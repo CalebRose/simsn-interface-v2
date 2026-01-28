@@ -44,7 +44,7 @@ export const PlayerService = {
     await GetActionCall(`${fbaUrl}nflplayers/cut/player/${playerID}/`);
   },
 
-  SendNFLPLayerToPracticeSquad: async (playerID: number): Promise<void> => {
+  SendNFLPlayerToPracticeSquad: async (playerID: number): Promise<void> => {
     await GetActionCall(`${fbaUrl}nflplayers/place/player/squad/${playerID}/`);
   },
 
