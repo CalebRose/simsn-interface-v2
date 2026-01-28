@@ -1184,7 +1184,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
   const placeNFLPlayerOnTradeBlock = useCallback(
     async (playerID: number, teamID: number) => {
-      const res = await PlayerService.SendPHLPlayerToTradeBlock(playerID);
+      const res = await PlayerService.SendNFLPlayerToTradeBlock(playerID);
       setProRosterMap((prevMap) => {
         const teamRoster = prevMap![teamID];
         if (!teamRoster) return prevMap;
