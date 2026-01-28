@@ -3304,6 +3304,7 @@ export class CollegeStandings {
 }
 
 export class DraftablePlayer {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

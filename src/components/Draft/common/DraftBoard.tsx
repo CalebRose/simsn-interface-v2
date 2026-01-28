@@ -143,14 +143,14 @@ export const DraftBoard: FC<DraftBoardProps> = ({
 
   const columns = [
     { header: "Rank", accessor: "rank" },
-    { header: "Player", accessor: "player" },
+    { header: "Player", accessor: "LastName" },
     { header: "Position", accessor: "Position" },
     { header: "Archetype", accessor: "Archetype" },
     { header: "College", accessor: "College" },
     { header: "Age", accessor: "Age" },
-    { header: "Height", accessor: "height" },
+    { header: "Height", accessor: "Height" },
     { header: "Weight", accessor: "Weight" },
-    { header: "Overall", accessor: "OverallGrade" },
+    { header: "Overall", accessor: "Overall" },
     { header: "Offensive Fit", accessor: "OffensiveFit" },
     { header: "Defensive Fit", accessor: "DefensiveFit" },
     { header: "Actions", accessor: "actions" },
@@ -211,6 +211,12 @@ export const DraftBoard: FC<DraftBoardProps> = ({
       }
       return false;
     })();
+
+    player.IsGoodOffensiveFit = isGoodOffensiveFit;
+    player.IsGoodDefensiveFit = isGoodDefensiveFit;
+    player.IsBadOffensiveFit = isBadOffensiveFit;
+    player.IsBadDefensiveFit = isBadDefensiveFit;
+
     return (
       <div
         className="table-row border-b border-gray-800 hover:bg-gray-800/50 transition-colors text-left"
@@ -433,6 +439,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
         league={leagueConstant}
         enablePagination={true}
         currentPage={currentPage}
+        page={`${league}DraftPage`}
       />
       <div className="flex flex-row justify-center py-2">
         <ButtonGroup>

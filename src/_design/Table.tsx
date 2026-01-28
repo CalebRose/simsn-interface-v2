@@ -129,12 +129,17 @@ export const Table = <T,>({
           "D-",
           "F",
         ];
-        const ai = gradeOrder.indexOf(a[key] ?? "");
-        const bi = gradeOrder.indexOf(b[key] ?? "");
+
+        // Clean and normalize the grade values
+        const aGrade = (a[key] ?? "").toString().trim();
+        const bGrade = (b[key] ?? "").toString().trim();
+
+        const ai = gradeOrder.indexOf(aGrade);
+        const bi = gradeOrder.indexOf(bGrade);
         // if either grade isn’t found, fallback to string compare
         if (ai === -1 || bi === -1) {
-          if (a[key] < b[key]) return order === "asc" ? -1 : 1;
-          if (a[key] > b[key]) return order === "asc" ? 1 : -1;
+          if (aGrade < bGrade) return order === "asc" ? -1 : 1;
+          if (aGrade > bGrade) return order === "asc" ? 1 : -1;
           return 0;
         }
         if (ai < bi) return order === "asc" ? -1 : 1;
@@ -189,6 +194,36 @@ export const Table = <T,>({
           if (!a.Croot || !b.Croot) return 0;
           if (a.Croot[key] > b.Croot[key]) return order === "asc" ? -1 : 1;
           if (a.Croot[key] < b.Croot[key]) return order === "asc" ? 1 : -1;
+          return 0;
+        }
+      }
+      if (page === "SimPHLDraftPage") {
+        if (key.includes("College")) {
+          if (!a.Team || !b.Team) return 0;
+          if (a.Team > b.Team) return order === "asc" ? -1 : 1;
+          if (a.Team < b.Team) return order === "asc" ? 1 : -1;
+          return 0;
+        }
+        if (key.includes("OffensiveFit")) {
+          let aFitValue = 0;
+          if (a.IsGoodOffensiveFit) aFitValue = 1;
+          else if (a.IsBadOffensiveFit) aFitValue = -1;
+          let bFitValue = 0;
+          if (b.IsGoodOffensiveFit) bFitValue = 1;
+          else if (b.IsBadOffensiveFit) bFitValue = -1;
+          if (aFitValue > bFitValue) return order === "asc" ? -1 : 1;
+          if (aFitValue < bFitValue) return order === "asc" ? 1 : -1;
+          return 0;
+        }
+        if (key.includes("DefensiveFit")) {
+          let aFitValue = 0;
+          if (a.IsGoodDefensiveFit) aFitValue = 1;
+          else if (a.IsBadDefensiveFit) aFitValue = -1;
+          let bFitValue = 0;
+          if (b.IsGoodDefensiveFit) bFitValue = 1;
+          else if (b.IsBadDefensiveFit) bFitValue = -1;
+          if (aFitValue > bFitValue) return order === "asc" ? -1 : 1;
+          if (aFitValue < bFitValue) return order === "asc" ? 1 : -1;
           return 0;
         }
       }
