@@ -1161,7 +1161,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
   const sendNFLPlayerToPracticeSquad = useCallback(
     async (playerID: number, teamID: number) => {
-      const res = await PlayerService.SendNFLPLayerToPracticeSquad(playerID);
+      const res = await PlayerService.SendNFLPlayerToPracticeSquad(playerID);
       setProRosterMap((prevMap) => {
         const teamRoster = prevMap![teamID];
         if (!teamRoster) return prevMap;
@@ -1372,10 +1372,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
           ID: GenerateNumberFromRange(500000, 1000000),
         });
         setRecruitProfiles((profiles) => [...profiles, newProfile]);
-        enqueueSnackbar("Recruit added to board!", {
-          variant: "success",
-          autoHideDuration: 3000,
-        });
       }
     } finally {
       setRecruitingLoading(false);

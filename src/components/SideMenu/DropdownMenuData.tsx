@@ -130,8 +130,9 @@ export const useSideMenu = () => {
       {
         label: "Draft Page",
         isRoute: true,
-        route: "",
+        route: routes.NFL_DRAFT_ROOM,
         league: SimNFL,
+        click: () => navigate(routes.NFL_DRAFT_ROOM),
         toggle: () => toggleMenu(),
       },
     ],
@@ -322,7 +323,7 @@ export const useSideMenu = () => {
       {
         label: "Draft Page",
         isRoute: true,
-        route: "",
+        route: routes.PHL_DRAFT_ROOM,
         league: SimPHL,
         toggle: () => toggleMenu(),
       },

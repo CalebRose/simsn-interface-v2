@@ -157,6 +157,7 @@ export const TeamInfo: FC<TeamInfoProps> = ({
               openProposeTradeModal={openProposeTradeModal}
               draftPickCount={draftPickCount}
               teamProfile={TeamProfile}
+              team={Team}
               lineColor={borderColor}
             />
           </div>
@@ -434,8 +435,8 @@ export const FrontOfficeInfo = ({
         .map(({ role }) => role)
         .join(", ") || "None"
     : !coach || coach === "AI"
-    ? "Coach"
-    : "None";
+      ? "Coach"
+      : "None";
 
   const filledPersonnel = [...personnelRoles];
   while (
@@ -549,8 +550,8 @@ export const RosterInfo = ({
             ? league === SimNFL
               ? "Practice Squad:"
               : league === SimPHL
-              ? "Reserves:"
-              : "Unknown"
+                ? "Reserves:"
+                : "Unknown"
             : "Redshirts"}
         </Text>
         <Text variant="xs" classes={`${textColorClass}`}>
@@ -576,6 +577,7 @@ export const AdditionalTeamInfo = ({
   draftPickCount,
   teamProfile,
   lineColor,
+  team,
 }: any) => {
   const { isMobile, isDesktop, isTablet } = useResponsive();
   const home = league === SimCFB || league === SimNFL ? "Stadium" : "Arena";
@@ -656,8 +658,8 @@ export const AdditionalTeamInfo = ({
               ? league === SimNFL
                 ? "Practice Squad"
                 : league === SimPHL
-                ? "Reserves"
-                : "Unknown"
+                  ? "Reserves"
+                  : "Unknown"
               : "Redshirts"}
           </Text>
           <Text variant="xs" classes={`${textColorClass}`}>
@@ -702,7 +704,11 @@ export const AdditionalTeamInfo = ({
             <Text variant="small" classes={`${textColorClass} font-semibold`}>
               Manage Trades
             </Text>
-            <Button size="sm" disabled={!isUserTeam} onClick={openTradeModal}>
+            <Button
+              size="sm"
+              disabled={!isUserTeam || team.TeamName === "Denver"}
+              onClick={openTradeModal}
+            >
               <Bell />
             </Button>
           </div>
@@ -713,7 +719,7 @@ export const AdditionalTeamInfo = ({
             <Button
               size="sm"
               classes="text-center justify-center"
-              disabled={isUserTeam}
+              disabled={isUserTeam || team.TeamName === "Denver"}
               onClick={openProposeTradeModal}
             >
               <ChatBubble />
@@ -845,7 +851,7 @@ export const TeamAffinities: FC<TeamAffinitiesProps> = ({
   textColorClass,
 }) => {
   const activeAffinities = AFFINITY_CONFIG.filter(
-    (affinity) => teamProfile[affinity.key]
+    (affinity) => teamProfile[affinity.key],
   );
 
   if (activeAffinities.length === 0) {

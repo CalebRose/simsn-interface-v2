@@ -18,7 +18,7 @@ import {
   usePHLLineupUtils,
 } from "./useLineupUtils";
 import { Border } from "../../../_design/Borders";
-import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
+import { Button, ButtonGrid } from "../../../_design/Buttons";
 import {
   DefendingGoalZone,
   Help1,
@@ -82,7 +82,7 @@ export const CHLLineupPage = () => {
   const teamColors = useTeamColors(
     chlTeam?.ColorOne,
     chlTeam?.ColorTwo,
-    chlTeam?.ColorThree
+    chlTeam?.ColorThree,
   );
   const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const backgroundColor = teamColors.One;
@@ -105,7 +105,7 @@ export const CHLLineupPage = () => {
 
   const zoneInputList = useMemo(
     () => getZoneInputList(zoneCategory),
-    [zoneCategory]
+    [zoneCategory],
   );
 
   const lineupIdx = useMemo(() => {
@@ -141,7 +141,7 @@ export const CHLLineupPage = () => {
       setCurrentShootoutLineups,
       CollegeShootoutLineup,
       key,
-      value
+      value,
     );
   };
 
@@ -157,11 +157,11 @@ export const CHLLineupPage = () => {
         prevLineups.map((lineup, index) =>
           index === lineupIdx
             ? new CollegeLineup({ ...lineup, [key]: value })
-            : lineup
-        )
+            : lineup,
+        ),
       );
     },
-    [lineupIdx]
+    [lineupIdx],
   );
 
   const ChangePlayerInput = useCallback(
@@ -169,7 +169,7 @@ export const CHLLineupPage = () => {
       const updatedRosterMap = { ...chlRosterMap };
       updatedRosterMap[chlTeam!.ID] = [...updatedRosterMap[chlTeam!.ID]];
       const playerIdx = updatedRosterMap[chlTeam!.ID]?.findIndex(
-        (x) => x.ID === playerID
+        (x) => x.ID === playerID,
       );
       if (playerIdx > -1) {
         updatedRosterMap[chlTeam!.ID][playerIdx] = new CollegePlayer({
@@ -179,7 +179,7 @@ export const CHLLineupPage = () => {
         updateCHLRosterMap(updatedRosterMap);
       }
     },
-    [chlRosterMap, updateCHLRosterMap, chlTeam]
+    [chlRosterMap, updateCHLRosterMap, chlTeam],
   );
 
   const activatePlayerModal = (player: CollegePlayer | ProfessionalPlayer) => {
@@ -314,13 +314,13 @@ export const CHLLineupPage = () => {
                     <Text variant="xs">
                       <strong>Pros:</strong>{" "}
                       {offensiveSystemsInformation?.GoodFits?.map(
-                        (fit: any) => `${fit.archetype} (+${fit.bonus})`
+                        (fit: any) => `${fit.archetype} (+${fit.bonus})`,
                       ).join(", ") || "None"}
                     </Text>
                     <Text variant="xs">
                       <strong>Cons:</strong>{" "}
                       {offensiveSystemsInformation?.BadFits?.map(
-                        (fit: any) => `${fit.archetype} (${fit.penalty})`
+                        (fit: any) => `${fit.archetype} (${fit.penalty})`,
                       ).join(", ") || "None"}
                     </Text>
                   </div>
@@ -338,13 +338,13 @@ export const CHLLineupPage = () => {
                     <Text variant="xs">
                       <strong>Pros:</strong>{" "}
                       {defensiveSystemsInformation?.GoodFits?.map(
-                        (fit: any) => `${fit.archetype} (+${fit.bonus})`
+                        (fit: any) => `${fit.archetype} (+${fit.bonus})`,
                       ).join(", ") || "None"}
                     </Text>
                     <Text variant="xs">
                       <strong>Cons:</strong>{" "}
                       {defensiveSystemsInformation?.BadFits?.map(
-                        (fit: any) => `${fit.archetype} (${fit.penalty})`
+                        (fit: any) => `${fit.archetype} (${fit.penalty})`,
                       ).join(", ") || "None"}
                     </Text>
                   </div>
@@ -629,7 +629,7 @@ export const PHLLineupPage = () => {
   const teamColors = useTeamColors(
     phlTeam?.ColorOne,
     phlTeam?.ColorTwo,
-    phlTeam?.ColorThree
+    phlTeam?.ColorThree,
   );
 
   const {
@@ -649,7 +649,7 @@ export const PHLLineupPage = () => {
 
   const zoneInputList = useMemo(
     () => getZoneInputList(zoneCategory),
-    [zoneCategory]
+    [zoneCategory],
   );
 
   const lineupIdx = useMemo(() => {
@@ -685,7 +685,7 @@ export const PHLLineupPage = () => {
       setCurrentShootoutLineups,
       ProfessionalShootoutLineup,
       key,
-      value
+      value,
     );
   };
 
@@ -701,11 +701,11 @@ export const PHLLineupPage = () => {
         prevLineups.map((lineup, index) =>
           index === lineupIdx
             ? new ProfessionalLineup({ ...lineup, [key]: value })
-            : lineup
-        )
+            : lineup,
+        ),
       );
     },
-    [lineupIdx]
+    [lineupIdx],
   );
 
   const ChangePlayerInput = useCallback(
@@ -713,7 +713,7 @@ export const PHLLineupPage = () => {
       const updatedRosterMap = { ...proRosterMap };
       updatedRosterMap[phlTeam!.ID] = [...updatedRosterMap[phlTeam!.ID]];
       const playerIdx = updatedRosterMap[phlTeam!.ID]?.findIndex(
-        (x) => x.ID === playerID
+        (x) => x.ID === playerID,
       );
 
       if (playerIdx > -1) {
@@ -724,7 +724,7 @@ export const PHLLineupPage = () => {
         updateProRosterMap(updatedRosterMap);
       }
     },
-    [proRosterMap, updateProRosterMap, phlTeam]
+    [proRosterMap, updateProRosterMap, phlTeam],
   );
 
   const activatePlayerModal = (player: CollegePlayer | ProfessionalPlayer) => {
@@ -859,13 +859,13 @@ export const PHLLineupPage = () => {
                     <Text variant="xs">
                       <strong>Pros:</strong>{" "}
                       {offensiveSystemsInformation?.GoodFits?.map(
-                        (fit: any) => `${fit.archetype} (+${fit.bonus})`
+                        (fit: any) => `${fit.archetype} (+${fit.bonus})`,
                       ).join(", ") || "None"}
                     </Text>
                     <Text variant="xs">
                       <strong>Cons:</strong>{" "}
                       {offensiveSystemsInformation?.BadFits?.map(
-                        (fit: any) => `${fit.archetype} (${fit.penalty})`
+                        (fit: any) => `${fit.archetype} (${fit.penalty})`,
                       ).join(", ") || "None"}
                     </Text>
                   </div>
@@ -883,13 +883,13 @@ export const PHLLineupPage = () => {
                     <Text variant="xs">
                       <strong>Pros:</strong>{" "}
                       {defensiveSystemsInformation?.GoodFits?.map(
-                        (fit: any) => `${fit.archetype} (+${fit.bonus})`
+                        (fit: any) => `${fit.archetype} (+${fit.bonus})`,
                       ).join(", ") || "None"}
                     </Text>
                     <Text variant="xs">
                       <strong>Cons:</strong>{" "}
                       {defensiveSystemsInformation?.BadFits?.map(
-                        (fit: any) => `${fit.archetype} (${fit.penalty})`
+                        (fit: any) => `${fit.archetype} (${fit.penalty})`,
                       ).join(", ") || "None"}
                     </Text>
                   </div>

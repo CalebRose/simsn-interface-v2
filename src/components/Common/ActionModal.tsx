@@ -5,6 +5,7 @@ import {
   Affiliate,
   CancelOffer,
   Cut,
+  DrafteeInfoType,
   InfoType,
   League,
   ModalAction,
@@ -31,6 +32,7 @@ import {
   RecruitInfoModalBody,
 } from "./Modals";
 import { useSnackbar } from "notistack";
+import { DrafteeInfoModalBody } from "./DraftModals";
 
 interface ActionModalProps {
   isOpen: boolean;
@@ -173,7 +175,7 @@ export const ActionModal: FC<ActionModalProps> = ({
             {
               variant: "success",
               autoHideDuration: 3000,
-            }
+            },
           );
         }
         break;
@@ -189,7 +191,7 @@ export const ActionModal: FC<ActionModalProps> = ({
             {
               variant: "success",
               autoHideDuration: 3000,
-            }
+            },
           );
         }
         break;
@@ -205,7 +207,7 @@ export const ActionModal: FC<ActionModalProps> = ({
             {
               variant: "success",
               autoHideDuration: 3000,
-            }
+            },
           );
         }
         break;
@@ -221,7 +223,7 @@ export const ActionModal: FC<ActionModalProps> = ({
             {
               variant: "success",
               autoHideDuration: 3000,
-            }
+            },
           );
         }
         break;
@@ -239,7 +241,7 @@ export const ActionModal: FC<ActionModalProps> = ({
             {
               variant: "success",
               autoHideDuration: 3000,
-            }
+            },
           );
         }
         break;
@@ -256,7 +258,7 @@ export const ActionModal: FC<ActionModalProps> = ({
             {
               variant: "success",
               autoHideDuration: 3000,
-            }
+            },
           );
         }
         break;
@@ -296,6 +298,7 @@ export const ActionModal: FC<ActionModalProps> = ({
     case InfoType:
     case RecruitInfoType:
     case PortalInfoType:
+    case DrafteeInfoType:
       title = `${playerID} ${playerLabel}`;
       break;
     case AddRecruitType:
@@ -443,7 +446,7 @@ export const ActionModal: FC<ActionModalProps> = ({
                 {playerID} {playerLabel}
               </strong>{" "}
               will be {player.IsOnTradeBlock ? "placed on" : "taken off"} your
-              team's roster.
+              team's trade block.
             </Text>
             <Text className="mb4 text-start">
               Are you sure you want to change the trade block status of this
@@ -583,6 +586,9 @@ export const ActionModal: FC<ActionModalProps> = ({
         )}
         {modalAction === PortalInfoType && (
           <PortalInfoModalBody league={league} player={player} />
+        )}
+        {modalAction === DrafteeInfoType && (
+          <DrafteeInfoModalBody league={league} player={player} />
         )}
       </Modal>
     </>

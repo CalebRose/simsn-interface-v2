@@ -6979,6 +6979,7 @@ export class PollDataResponse {
 }
 
 export class NFLDraftee {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

@@ -333,6 +333,99 @@ h2 {
   font-size: 1.6vh !important;
 }
 
+/* Animation for revealing attributes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 50% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.2, 0, 0.2, 0.2) infinite;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.grade-hover:hover {
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+
+.reveal-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.reveal-button:hover::before {
+  left: 100%;
+}
+
+.key-attribute {
+  position: relative;
+}
+
+.key-attribute::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+  border-radius: 4px;
+  opacity: 0.2;
+  z-index: -1;
+}
+
+@keyframes ping {
+  75%, 50% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+.animate-ping {
+  animation: ping 1.5s cubic-bezier(0, 0, 0.5, 1) infinite;
+}
+
 .dark {
   /* background-color: #202020; */
   color: #fff;
