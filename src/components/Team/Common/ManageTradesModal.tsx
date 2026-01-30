@@ -132,8 +132,6 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     );
   }, [receivedTradeProposals, league]);
 
-  console.log({ cleanReceivedTrades });
-
   const cancel = async (dto: HCKTradeProposal | NFLTradeProposal) => {
     return await cancelTrade(dto);
   };

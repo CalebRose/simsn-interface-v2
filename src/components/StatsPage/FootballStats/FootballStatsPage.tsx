@@ -56,14 +56,13 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
     Export,
   } = useFootballStats();
   const { backgroundColor } = useBackgroundColor();
-  console.log({ cfbPostSeasonAwards });
   const { isMobile, isDesktop } = useResponsive();
   const helpModal = useModal();
   const awardsModal = useModal();
   const teamColors = useTeamColors(
     team?.ColorOne,
     team?.ColorTwo,
-    team?.ColorThree
+    team?.ColorThree,
   );
   return (
     <>

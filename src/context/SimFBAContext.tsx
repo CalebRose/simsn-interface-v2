@@ -982,7 +982,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NFLTeamID) {
       nflID = currentUser.NFLTeamID;
     }
-    if (cfbID === 0 || nflID === 0 || seasonId === 0 || username === "") {
+    if ((cfbID === 0 && nflID === 0) || seasonId === 0 || username === "") {
       return;
     }
 
@@ -997,7 +997,12 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     } finally {
       isStatsDataFetching.current = false;
     }
-  }, [currentUser?.teamId, currentUser?.NFLTeamID]);
+  }, [
+    currentUser?.teamId,
+    currentUser?.NFLTeamID,
+    cfb_Timestamp?.CollegeSeasonID,
+    currentUser?.username,
+  ]);
 
   // Use this once the draft page is finished
   const getBootstrapDraftData = async () => {
@@ -1823,7 +1828,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       };
 
       const thisDTO = new NFLTradeProposalDTO({ ...transformedDTO });
-      console.log({ thisDTO, dto, transformedDTO });
       const res = await TradeService.FBACreateTradeProposal(thisDTO);
       enqueueSnackbar(
         `Sent trade proposal to ${proTeamMap![dto.RecepientTeamID].TeamName}!`,

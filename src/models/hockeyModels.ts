@@ -3804,7 +3804,7 @@ export class BootstrapData {
   ExtensionMap: { [key: number]: ExtensionOffer };
   ProTradeProposalMap: { [key: number]: TradeProposal[] };
   ProTradePreferenceMap: { [key: number]: TradePreferences };
-  DraftPicks: DraftPick[];
+  DraftPicks: { [key: number]: DraftPick[] };
   CHLGameplanMap: { [key: number]: CollegeGameplan };
   PHLGameplanMap: { [key: number]: ProGameplan };
   CollegePoll: CollegePollSubmission;
@@ -3950,7 +3950,7 @@ export class BootstrapData {
       TradePreferences,
       true,
     );
-    this.DraftPicks = this.convertValues(source["DraftPicks"], DraftPick);
+    this.DraftPicks = this.convertValues(source["DraftPicks"], DraftPick, true);
     this.CHLGameplanMap = this.convertValues(
       source["CHLGameplanMap"],
       CollegeGameplan,

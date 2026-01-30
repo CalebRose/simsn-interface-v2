@@ -69,7 +69,7 @@ export const useNewsPage = () => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   const [selectedWeek, setSelectedWeek] = useState<number>(() => {
     if (selectedLeague === SimCHL || selectedLeague === SimPHL) {
@@ -118,7 +118,7 @@ export const useNewsPage = () => {
     (() => void) | null
   >(null);
   const [currentPageNewsIds, setCurrentPageNewsIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   useEffect(() => {
@@ -171,7 +171,6 @@ export const useNewsPage = () => {
   const filterNewsData = () => {
     return useMemo(() => {
       let source = selectedLeagueNews;
-      console.log({ selectedNewsType, selectedSeason, selectedWeek });
       return source
         .filter((news) => {
           // news type filter - empty string means show all
@@ -251,7 +250,7 @@ export const useNewsPage = () => {
 
       // Track current page news IDs
       const newsIds = new Set(
-        newsItems.map((item) => item.ID?.toString()).filter(Boolean)
+        newsItems.map((item) => item.ID?.toString()).filter(Boolean),
       );
       setCurrentPageNewsIds(newsIds);
 
@@ -276,7 +275,7 @@ export const useNewsPage = () => {
         firestore,
         "newsEngagement",
         selectedLeague,
-        "messages"
+        "messages",
       );
 
       const unsubscribe = onSnapshot(
@@ -320,15 +319,15 @@ export const useNewsPage = () => {
         (error) => {
           console.error(
             `Error listening to engagement collection for ${selectedLeague}:`,
-            error
+            error,
           );
-        }
+        },
       );
 
       setCollectionListener(() => unsubscribe);
       setLastEngagementFetch(Date.now());
     },
-    [selectedLeague]
+    [selectedLeague],
   );
 
   // Fetch engagement data for current page of news items (fallback method)
@@ -345,7 +344,7 @@ export const useNewsPage = () => {
             "newsEngagement",
             selectedLeague,
             "messages",
-            newsItem.ID.toString()
+            newsItem.ID.toString(),
           );
           const docSnap = await getDoc(docRef);
 
@@ -374,7 +373,7 @@ export const useNewsPage = () => {
         } catch (error) {
           console.error(
             `Error fetching engagement for news ${newsItem.ID}:`,
-            error
+            error,
           );
           return null;
         }
@@ -392,7 +391,7 @@ export const useNewsPage = () => {
       setEngagementData((prev) => ({ ...prev, ...newEngagementData }));
       setLastEngagementFetch(Date.now());
     },
-    [selectedLeague]
+    [selectedLeague],
   );
 
   // Update engagement data when user interacts with buttons
@@ -400,7 +399,7 @@ export const useNewsPage = () => {
     async (
       newsId: string,
       type: "heart" | "wow" | "sad" | "happy" | "angry" | "hug" | "eyes",
-      userTeamId: number
+      userTeamId: number,
     ) => {
       if (!selectedLeague || !newsId || !userTeamId) return;
 
@@ -416,7 +415,7 @@ export const useNewsPage = () => {
           "newsEngagement",
           selectedLeague,
           "messages",
-          newsId
+          newsId,
         );
 
         let updates: any = {};
@@ -478,7 +477,7 @@ export const useNewsPage = () => {
           // User is switching - decrease old, increase new
           optimisticUpdates[currentUserEngagement] = Math.max(
             0,
-            currentData[currentUserEngagement] - 1
+            currentData[currentUserEngagement] - 1,
           );
           optimisticUpdates[type] = currentData[type] + 1;
         } else {
@@ -498,7 +497,7 @@ export const useNewsPage = () => {
         console.error("Error updating engagement:", error);
       }
     },
-    [selectedLeague, engagementData]
+    [selectedLeague, engagementData],
   );
 
   // Set up collection listener when paged data changes

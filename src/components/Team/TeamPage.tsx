@@ -406,7 +406,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     proExtensionMap: phlExtensionMap,
     tradeProposalsMap,
     tradePreferencesMap,
-    phlDraftPickMap,
+    phlDraftPicks,
     proPlayerMap,
     individualDraftPickMap,
     phlGameplan,
@@ -455,9 +455,9 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
   }, [phlRosterMap, selectedTeam]);
 
   const selectedTeamDraftPicks = useMemo(() => {
-    if (!selectedTeam || !phlDraftPickMap) return [];
-    return phlDraftPickMap[selectedTeam.ID];
-  }, [selectedTeam, phlDraftPickMap]);
+    if (!selectedTeam || !phlDraftPicks) return [];
+    return phlDraftPicks[selectedTeam.ID];
+  }, [selectedTeam, phlDraftPicks]);
 
   const teamTradeBlock = useMemo(() => {
     const roster = phlRosterMap[phlTeam!.ID];
@@ -483,7 +483,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
         tradeBlockSet.push(block);
       }
     }
-    const userTeamPicks = phlDraftPickMap[phlTeam!.ID];
+    const userTeamPicks = phlDraftPicks[phlTeam!.ID];
     if (userTeamPicks) {
       for (let i = 0; i < userTeamPicks.length; i++) {
         const pick = userTeamPicks[i];
@@ -505,7 +505,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
       }
     }
     return tradeBlockSet;
-  }, [phlRosterMap, phlTeam, phlDraftPickMap, phlContractMap]);
+  }, [phlRosterMap, phlTeam, phlDraftPicks, phlContractMap]);
 
   const selectedTeamTradeBlock = useMemo(() => {
     const tradeBlockSet: TradeBlockRow[] = [];

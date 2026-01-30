@@ -83,8 +83,6 @@ export const AwardsModal: FC<AwardsModalProps> = ({
     return [];
   }, [league, postSeasonAwards, selectedAward]);
 
-  console.log({ awardsList });
-
   return (
     <>
       <Modal
@@ -142,7 +140,7 @@ export const AwardsModal: FC<AwardsModalProps> = ({
               </Text>
             )}
             {awardsList.length > 0 &&
-              awardsList.map((award, idx) => (
+              awardsList.map((award: any, idx: number) => (
                 <AwardsRow
                   key={idx}
                   award={award}

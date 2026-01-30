@@ -231,8 +231,8 @@ interface SimHCKContextProps {
   phlPlayerSeasonStatsMap: Record<number, ProfessionalPlayerSeasonStats[]>;
   phlTeamGameStatsMap: Record<number, ProfessionalTeamGameStats[]>;
   phlTeamSeasonStatsMap: Record<number, ProfessionalTeamSeasonStats[]>;
-  phlDraftPicks: DraftPick[];
-  phlDraftPickMap: Record<number, DraftPick[]>;
+  phlDraftPicks: Record<number, DraftPick[]>; // MAP BY TEAM ID
+  phlDraftPickMap: Record<number, DraftPick[]>; // FOR DRAFT PAGE
   individualDraftPickMap: Record<number, DraftPick>;
   proPlayerMap: Record<number, ProfessionalPlayer>;
   collegeGamesMapBySeason: Record<number, CollegeGame[]>;
@@ -306,7 +306,7 @@ const defaultContext: SimHCKContextProps = {
   proNotifications: [],
   tradeProposalsMap: {},
   tradePreferencesMap: {},
-  phlDraftPicks: [],
+  phlDraftPicks: {},
   phlDraftPickMap: {},
   collegePolls: [],
   collegePollSubmission: {} as CollegePollSubmission,
@@ -568,7 +568,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const [tradePreferencesMap, setTradePreferencesMap] = useState<
     Record<number, TradePreferences>
   >([]);
-  const [phlDraftPicks, setPHLDraftPicks] = useState<DraftPick[]>([]);
+  const [phlDraftPicks, setPHLDraftPicks] = useState<
+    Record<number, DraftPick[]>
+  >({});
   const [phlScoutProfiles, setPhlScoutProfiles] = useState<ScoutingProfile[]>(
     [],
   );
@@ -587,15 +589,21 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   }, [phlTeam, phlGameplanMap]);
 
   const individualDraftPickMap = useMemo(() => {
+    if (!phlDraftPicks || !phlTeams) return {};
     const pickMap: Record<number, DraftPick> = {};
 
-    for (let i = 0; i < phlDraftPicks.length; i++) {
-      const pick = phlDraftPicks[i];
-      pickMap[pick.ID] = pick;
+    for (let i = 0; i < phlTeams.length; i++) {
+      const teamID = phlTeams[i].ID;
+      const draftPicks = phlDraftPicks[teamID];
+      if (!draftPicks) continue;
+      for (let i = 0; i < draftPicks.length; i++) {
+        const pick = draftPicks[i];
+        pickMap[pick.ID] = pick;
+      }
     }
 
     return pickMap;
-  }, [phlDraftPicks]);
+  }, [phlDraftPicks, phlTeams]);
 
   const proPlayerMap = useMemo(() => {
     const playerMap: Record<number, ProfessionalPlayer> = {};
