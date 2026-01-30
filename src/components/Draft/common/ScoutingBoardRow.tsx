@@ -237,20 +237,20 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
         borderColor: darkenColor(backgroundColor, 5),
       }}
     >
-      <div className="grid grid-cols-4 gap-3">
-        <div className="flex flex-col items-center space-y-2">
-          <div className="w-20 h-20 flex items-center justify-center">
+      <div className="flex flex-col space-y-4 md:grid md:grid-cols-4 md:gap-3 md:space-y-0">
+        <div className="flex flex-row md:flex-col items-center md:items-center space-x-4 md:space-x-0 md:space-y-2">
+          <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center flex-shrink-0">
             <PlayerPicture
               playerID={picturePlayerId}
               team={pictureTeamId}
               league={collegeLeague}
             />
           </div>
-          <div className="text-center">
+          <div className="flex-1 md:text-center">
             <Text variant="body-small" classes="text-white font-semibold">
               {player.FirstName} {player.LastName}
             </Text>
-            <div className="flex flex-wrap gap-1 items-center justify-center max-w-xs mt-1">
+            <div className="flex flex-wrap gap-1 items-start md:items-center md:justify-center max-w-xs md:max-w-none mt-1">
               <Tag variant="gray" size="xs">
                 {playerCollege}
               </Tag>
@@ -286,12 +286,12 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
             </div>
           </div>
         </div>
-        <div className="col-span-2 space-y-2 items-center justify-center flex flex-col">
-          <Text variant="xs" classes="text-gray-300">
+        <div className="md:col-span-2 space-y-3 md:space-y-2 md:items-center md:justify-center md:flex md:flex-col">
+          <Text variant="xs" classes="text-gray-300 text-center md:text-center">
             Attributes
           </Text>
-          <div className="flex gap-3">
-            <div className="flex flex-row gap-2">
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="flex flex-row gap-2 justify-center md:justify-start">
               <div className="text-center">
                 <Text variant="xs" classes="text-gray-300 text-[10px]">
                   Overall
@@ -328,7 +328,7 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
               </div>
             </div>
             <div className="flex-1">
-              <div className="grid grid-cols-8 gap-1">
+              <div className="grid grid-cols-4 gap-2 md:grid-cols-8 md:gap-1">
                 {scoutableAttributes.map((attributeName, idx) => {
                   return renderScoutingAttributeBox(
                     profile,
@@ -351,22 +351,23 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
             attributes revealed
           </Text>
         </div>
-        <div className="flex flex-col justify-center items-center gap-2">
+        <div className="flex flex-row md:flex-col gap-2 md:justify-center md:items-center">
           <Button
             variant="secondaryOutline"
             size="sm"
             onClick={() => onDraftPlayer && onDraftPlayer(player)}
-            className={`min-w-[10em] p-2 flex justify-center gap-2 items-center ${isUserTurn ? "bg-green-700" : "bg-red-800"}`}
+            className={`flex-1 md:min-w-[10em] p-3 md:p-2 flex justify-center gap-2 items-center ${isUserTurn ? "bg-green-700" : "bg-red-800"}`}
             disabled={!isUserTurn || isDrafted}
           >
             {isDrafted ? (
               <>
-                <ActionLock /> Drafted
+                <ActionLock /> <span className="hidden sm:inline">Drafted</span>
               </>
             ) : (
               <>
                 <Handshake />
-                Draft {player.FirstName}
+                <span className="hidden sm:inline">Draft</span>{" "}
+                {player.FirstName}
               </>
             )}
           </Button>
@@ -375,10 +376,10 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
             variant="secondaryOutline"
             size="sm"
             onClick={() => onRemoveFromBoard(profile)}
-            className="min-w-[10em] p-2 flex justify-center gap-2 items-center"
+            className="flex-1 md:min-w-[10em] p-3 md:p-2 flex justify-center gap-2 items-center"
           >
             <Trash />
-            Remove
+            <span className="hidden sm:inline">Remove</span>
           </Button>
         </div>
       </div>
