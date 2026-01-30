@@ -3620,7 +3620,14 @@ export class ScoutingProfile {
   ShowAttribute6: boolean;
   ShowAttribute7: boolean;
   ShowAttribute8: boolean;
-  ShowPotential: boolean;
+  ShowPotAttribute1: boolean;
+  ShowPotAttribute2: boolean;
+  ShowPotAttribute3: boolean;
+  ShowPotAttribute4: boolean;
+  ShowPotAttribute5: boolean;
+  ShowPotAttribute6: boolean;
+  ShowPotAttribute7: boolean;
+  ShowPotAttribute8: boolean;
   RemovedFromBoard: boolean;
   ShowCount: number;
 
@@ -3640,7 +3647,14 @@ export class ScoutingProfile {
     this.ShowAttribute6 = source["ShowAttribute6"];
     this.ShowAttribute7 = source["ShowAttribute7"];
     this.ShowAttribute8 = source["ShowAttribute8"];
-    this.ShowPotential = source["ShowPotential"];
+    this.ShowPotAttribute1 = source["ShowPotAttribute1"];
+    this.ShowPotAttribute2 = source["ShowPotAttribute2"];
+    this.ShowPotAttribute3 = source["ShowPotAttribute3"];
+    this.ShowPotAttribute4 = source["ShowPotAttribute4"];
+    this.ShowPotAttribute5 = source["ShowPotAttribute5"];
+    this.ShowPotAttribute6 = source["ShowPotAttribute6"];
+    this.ShowPotAttribute7 = source["ShowPotAttribute7"];
+    this.ShowPotAttribute8 = source["ShowPotAttribute8"];
     this.RemovedFromBoard = source["RemovedFromBoard"];
     this.ShowCount = source["ShowCount"];
   }

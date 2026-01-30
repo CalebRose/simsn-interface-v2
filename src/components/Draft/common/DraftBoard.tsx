@@ -146,6 +146,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     { header: "Player", accessor: "LastName" },
     { header: "Position", accessor: "Position" },
     { header: "Archetype", accessor: "Archetype" },
+    { header: "Type", accessor: "DraftablePlayerType" },
     { header: "College", accessor: "College" },
     { header: "Age", accessor: "Age" },
     { header: "Height", accessor: "Height" },
@@ -212,6 +213,23 @@ export const DraftBoard: FC<DraftBoardProps> = ({
       return false;
     })();
 
+    const draftPlayerType = (() => {
+      const typing = player.DraftablePlayerType;
+      if (typing === 0) {
+        return "College";
+      }
+      if (typing === 1) {
+        return "Graduate";
+      }
+      if (typing === 2) {
+        return "International";
+      }
+      if (typing === 3) {
+        return "Canadian";
+      }
+      return "Unknown";
+    })();
+
     player.IsGoodOffensiveFit = isGoodOffensiveFit;
     player.IsGoodDefensiveFit = isGoodDefensiveFit;
     player.IsBadOffensiveFit = isBadOffensiveFit;
@@ -253,6 +271,11 @@ export const DraftBoard: FC<DraftBoardProps> = ({
         <TableCell classes="py-2 px-1 sm:px-3">
           <Text variant="small" classes="text-gray-300">
             {player.Archetype}
+          </Text>
+        </TableCell>
+        <TableCell classes="py-2 px-1 sm:px-3">
+          <Text variant="small" classes="text-gray-300">
+            {draftPlayerType}
           </Text>
         </TableCell>
         <TableCell classes="py-2 px-1 sm:px-3">

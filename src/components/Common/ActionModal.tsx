@@ -298,6 +298,7 @@ export const ActionModal: FC<ActionModalProps> = ({
     case InfoType:
     case RecruitInfoType:
     case PortalInfoType:
+    case DrafteeInfoType:
       title = `${playerID} ${playerLabel}`;
       break;
     case AddRecruitType:

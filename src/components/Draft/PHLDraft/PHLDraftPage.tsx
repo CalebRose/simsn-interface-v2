@@ -72,7 +72,6 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
   } = usePHLDraft();
 
   const isAdmin = useMemo(() => {
-    console.log("Current User:", currentUser);
     return currentUser?.roleID === "Admin";
   }, [currentUser]);
 

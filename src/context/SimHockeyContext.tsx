@@ -572,7 +572,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const [phlScoutProfiles, setPhlScoutProfiles] = useState<ScoutingProfile[]>(
     [],
   );
-  const [phlAllDraftPicks, setPhlAllDraftPicks] = useState<DraftPick[]>([]);
+  const [phlDraftPickMap, setPhlDraftPickMap] = useState<
+    Record<number, DraftPick[]>
+  >({});
 
   const chlGameplan = useMemo(() => {
     if (!chlTeam) return {} as CollegeGameplan;
@@ -583,20 +585,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     if (!phlTeam) return {} as ProGameplan;
     return phlGameplanMap[phlTeam.ID];
   }, [phlTeam, phlGameplanMap]);
-
-  const phlDraftPickMap = useMemo(() => {
-    if (!phlDraftPicks) return {};
-    const pickMap: Record<number, DraftPick[]> = {};
-    for (let i = 0; i < phlDraftPicks.length; i++) {
-      const pick = phlDraftPicks[i];
-      if (!pickMap[pick.TeamID]) {
-        pickMap[pick.TeamID] = [pick];
-      } else {
-        pickMap[pick.TeamID].push(pick);
-      }
-    }
-    return pickMap;
-  }, [phlDraftPicks]);
 
   const individualDraftPickMap = useMemo(() => {
     const pickMap: Record<number, DraftPick> = {};
@@ -876,6 +864,13 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     return map;
   }, [collegePolls]);
 
+  const phlAllDraftPicks = useMemo(() => {
+    const list = Object.values(phlDraftPickMap)
+      .flat()
+      .sort((a, b) => a.DraftNumber - b.DraftNumber);
+    return list;
+  }, [phlDraftPickMap]);
+
   const getBootstrapNewsData = useCallback(async () => {
     let chlid = 0;
     let phlid = 0;
@@ -930,8 +925,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setTopCHLAssists(res.TopCHLAssists);
       setTopCHLSaves(res.TopCHLSaves);
       setPortalPlayers(res.PortalPlayers);
-      setProDraftablePlayers(res.DraftablePlayers);
-      setProWarRoom({});
       setProScoutingProfile({});
       setRecruits(res.Recruits);
       setRecruitProfiles(res.RecruitProfiles);
@@ -1991,27 +1984,14 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     try {
       const res = await DraftService.GetPHLDraftPageData(phlID);
       if (res) {
-        const allPicks: DraftPick[] = [];
-        if (res.DraftPicks && Array.isArray(res.DraftPicks)) {
-          res.DraftPicks.forEach((roundPicks: any[]) => {
-            if (Array.isArray(roundPicks)) {
-              roundPicks.forEach((pickData: any) => {
-                allPicks.push(new DraftPick(pickData));
-              });
-            }
-          });
-        }
-        setPhlAllDraftPicks(allPicks);
+        setPhlDraftPickMap(res.DraftPicks);
 
         if (res.DraftablePlayers) {
           setProDraftablePlayers(res.DraftablePlayers);
         }
 
         if (res.WarRoomMap && res.WarRoomMap[phlID]) {
-          setProWarRoom((prev) => ({
-            ...prev,
-            [phlID]: new ProWarRoom(res.WarRoomMap[phlID]),
-          }));
+          setProWarRoom(res.WarRoomMap);
         }
 
         if (res.ScoutingProfiles) {
