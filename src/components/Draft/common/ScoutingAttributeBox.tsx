@@ -69,13 +69,13 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
     <div
       className={`
         relative p-2 rounded border text-center cursor-pointer
-        ${isPotentialGrade || isOverallGrade ? "min-w-[50px] min-h-[50px] max-w-[80px] max-h-[80px]" : "min-w-[60px] min-h-[60px] max-w-[80px] max-h-[80px]"}
+        ${isPotentialGrade || isOverallGrade ? "min-w-[50px] min-h-[50px] sm:min-w-[60px] sm:min-h-[60px] max-w-[80px] max-h-[80px]" : "min-w-[60px] min-h-[60px] sm:min-w-[70px] sm:min-h-[70px] max-w-[80px] max-h-[80px]"}
         flex flex-col justify-center items-center
         ${
           revealed
             ? "bg-gray-700 border-gray-600 cursor-default"
             : isClickable
-              ? "bg-gray-700 border-gray-600 hover:bg-gray-600 hover:border-gray-500 hover:scale-105 transition-transform"
+              ? "bg-gray-700 border-gray-600 hover:bg-gray-600 hover:border-gray-500 hover:scale-105 active:scale-95 active:bg-gray-600 transition-transform touch-manipulation"
               : "bg-gray-800 border-gray-700 cursor-not-allowed"
         }
       `}

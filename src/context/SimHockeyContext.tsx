@@ -2062,6 +2062,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     async (dto: any) => {
       try {
         const res = await DraftService.RevealPHLAttribute(dto);
+        // Testing purposes
+        // console.log({ dto });
+        // const res = true;
         if (res) {
           setPhlScoutProfiles((prev) =>
             prev.map((p) =>
