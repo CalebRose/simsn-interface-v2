@@ -330,3 +330,24 @@ export const getHockeyTimeForPick = (
   if (round <= 4) return 180;
   return 120;
 };
+
+export const getNextState = (draftState: any, picksPerRound: number) => {
+  let round = draftState.currentRound;
+  let curr = draftState.currentPick;
+  let next = draftState.nextPick;
+  let draftComplete = draftState.isDraftComplete();
+  if (next > 24 && draftState.currentRound < 7) {
+    // Move up to next round
+    round += 1;
+    curr = 1;
+    next = 2;
+  } else if (next > 24 && draftState.currentRound === 7) {
+    // Draft is complete
+    curr = 25; // Set to an invalid pick number to indicate completion
+  } else {
+    curr = next;
+    next += 1;
+  }
+
+  return { curr, next, round, draftComplete };
+};
