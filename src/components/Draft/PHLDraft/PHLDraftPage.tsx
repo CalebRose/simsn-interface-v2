@@ -11,6 +11,7 @@ import {
   DraftBoardStr,
   League,
   ScoutBoard,
+  SimPHL,
   WarRoomBoard,
 } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
@@ -24,12 +25,14 @@ import {
   ScoutingProfile as CommonScoutingProfile,
   Draftee as CommonDraftee,
 } from "../common";
-import { usePHLDraft } from "./usePHLDraft";
+import { PHL_PICKS_PER_ROUND, usePHLDraft } from "./usePHLDraft";
 import { Border } from "../../../_design/Borders";
 import { useAuthStore } from "../../../context/AuthContext";
 import { TeamLabel } from "../../Common/Labels";
 import { SelectDropdown } from "../../../_design/Select";
 import { ActionModal } from "../../Common/ActionModal";
+import { DraftAdminBoard } from "../common/AdminBoard";
+import { getNextState } from "./utils/draftHelpers";
 
 interface PHLDraftPageProps {
   league: League;
@@ -69,6 +72,10 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     handlePlayerModal,
     modalAction,
     isModalOpen,
+    resyncDraftData,
+    handleManualDraftStateUpdate,
+    formattedTime,
+    isDraftComplete,
   } = usePHLDraft();
 
   const isAdmin = useMemo(() => {
@@ -105,7 +112,21 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     handleViewScoutDetails(profile);
   };
 
-  const onDraftPlayer = async (player: DraftablePlayer) => {};
+  const onDraftPlayer = async (player: DraftablePlayer) => {
+    const { curr, round, next, draftComplete } = getNextState(
+      draftState,
+      PHL_PICKS_PER_ROUND,
+    );
+
+    await handleManualDraftStateUpdate({
+      currentPick: curr,
+      currentRound: round,
+      nextPick: next,
+      draftComplete,
+    });
+  };
+
+  console.log({ draftState });
 
   if (isLoading) {
     return (
@@ -290,7 +311,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 <DraftClock
                   currentPick={currentPick}
                   currentRound={draftState.currentRound}
-                  pickNumber={draftState.currentPickNumber}
+                  pickNumber={draftState.currentPick}
                   timeLeft={draftState.timeLeft}
                   isPaused={draftState.isPaused}
                   teamColors={teamColors}
@@ -318,7 +339,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
             </div>
           </div>
           <div>
-            {activeTab === "board" && (
+            {activeTab === DraftBoardStr && (
               <DraftBoard
                 draftees={proDraftablePlayers as unknown as CommonDraftee[]}
                 draftedPlayerIds={draftedPlayerIds}
@@ -343,7 +364,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 defensiveSystemsInformation={defensiveSystemsInformation}
               />
             )}
-            {activeTab === "scout" && (
+            {activeTab === ScoutBoard && (
               <ScoutingBoard
                 scoutProfiles={
                   teamScoutProfiles as unknown as CommonScoutingProfile[]
@@ -374,6 +395,21 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 offensiveSystemsInformation={offensiveSystemsInformation}
                 defensiveSystemsInformation={defensiveSystemsInformation}
               />
+            )}
+            {activeTab === WarRoomBoard && <></>}
+            {activeTab === BigBoard && <></>}
+            {activeTab === AdminBoard && (
+              <>
+                <DraftAdminBoard
+                  draftState={draftState}
+                  resyncDraftData={resyncDraftData}
+                  handleManualDraftStateUpdate={handleManualDraftStateUpdate}
+                  league={SimPHL}
+                  backgroundColor={backgroundColor}
+                  formattedTime={formattedTime}
+                  isDraftComplete={isDraftComplete}
+                />
+              </>
             )}
           </div>
         </div>

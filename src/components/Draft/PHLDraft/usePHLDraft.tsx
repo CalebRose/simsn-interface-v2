@@ -23,8 +23,9 @@ import {
 } from "../../Gameplan/HockeyLineups/useLineupUtils";
 import { useModal } from "../../../_hooks/useModal";
 import { Draftee } from "../common";
+import { useDraftState } from "../hooks/useDraftState";
 
-const PICKS_PER_ROUND = 24;
+export const PHL_PICKS_PER_ROUND = 24;
 
 export interface PHLDraftState {
   currentPickNumber: number;
@@ -35,8 +36,8 @@ export interface PHLDraftState {
 }
 
 export const getTimeForPick = (pickNumber: number): number => {
-  if (pickNumber <= PICKS_PER_ROUND) return 300;
-  if (pickNumber <= PICKS_PER_ROUND * 4) return 180;
+  if (pickNumber <= PHL_PICKS_PER_ROUND) return 300;
+  if (pickNumber <= PHL_PICKS_PER_ROUND * 4) return 180;
   return 120;
 };
 
@@ -59,6 +60,24 @@ export const usePHLDraft = () => {
     bringUpCollegePlayer,
   } = useSimHCKStore();
 
+  const {
+    draftState,
+    updateDraftState,
+    isLoading: isDraftStateLoading,
+    allDraftPicks,
+    currentPick: draftCurrentPick,
+    currentRound: draftCurrentRound,
+    isPaused: draftIsPaused,
+    seconds: draftSeconds,
+    endTime: draftEndTime,
+    nextPick: draftNextPick,
+    formattedTime,
+    isDraftComplete,
+  } = useDraftState({
+    CollectionName: "phldraftstate",
+    DocName: "FHDIzvDUiO2OrG9aIvof",
+  });
+
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(DrafteeInfoType);
 
@@ -72,14 +91,23 @@ export const usePHLDraft = () => {
   const [selectedScoutProfile, setSelectedScoutProfile] =
     useState<ScoutingProfile | null>(null);
   const [isScoutingModalOpen, setIsScoutingModalOpen] = useState(false);
+  const [seconds, setSeconds] = useState<number>(300);
+  const [isPaused, setIsPaused] = useState<boolean>(true);
+  const [isManualUpdate, setIsManualUpdate] = useState(false);
 
-  const [draftState, setDraftState] = useState<PHLDraftState>({
-    currentPickNumber: 1,
-    currentRound: 1,
-    isPaused: true,
-    timeLeft: 300,
-    exportComplete: false,
-  });
+  const draftPicksFromState = useMemo(() => {
+    // Transform the allDraftPicks map into a flat array
+    let picks: DraftPick[] = [];
+
+    const draftStatePicks = allDraftPicks;
+    if (!draftStatePicks) return picks;
+    for (const round in draftStatePicks) {
+      for (const pick of draftStatePicks[round]) {
+        picks.push(pick as DraftPick);
+      }
+    }
+    return picks;
+  }, [allDraftPicks]);
 
   useEffect(() => {
     const loadDraftData = async () => {
@@ -99,58 +127,66 @@ export const usePHLDraft = () => {
     loadDraftData();
   }, []);
 
-  const getOverallPickNumber = (pick: DraftPick) => {
-    return (pick.DraftRound - 1) * PICKS_PER_ROUND + pick.DraftNumber;
-  };
-
   useEffect(() => {
-    if (phlAllDraftPicks.length > 0) {
-      const sortedPicks = [...phlAllDraftPicks].sort((a, b) => {
-        if (a.DraftRound !== b.DraftRound) return a.DraftRound - b.DraftRound;
-        return a.DraftNumber - b.DraftNumber;
-      });
-      const nextPick = sortedPicks.find((pick) => pick.SelectedPlayerID === 0);
-      if (nextPick) {
-        const overallPickNumber = getOverallPickNumber(nextPick);
-        setDraftState((prev) => ({
-          ...prev,
-          currentPickNumber: overallPickNumber,
-          currentRound: nextPick.DraftRound,
-          timeLeft: getTimeForPick(overallPickNumber),
-        }));
-      }
+    if (!draftEndTime) return;
+    setIsPaused(draftIsPaused);
+    setSeconds(draftSeconds);
+  }, [draftEndTime, draftIsPaused, draftSeconds]);
+
+  // Reset manual update flag after a short delay
+  useEffect(() => {
+    if (isManualUpdate) {
+      const timeout = setTimeout(() => {
+        setIsManualUpdate(false);
+      }, 1000); // Allow manual update to persist for 1 second
+      return () => clearTimeout(timeout);
     }
-  }, [phlAllDraftPicks]);
+  }, [isManualUpdate]);
 
+  // Optimize timer to reduce Firestore calls
   useEffect(() => {
-    if (draftState.isPaused || draftState.timeLeft <= 0) return;
+    if (draftIsPaused || draftSeconds <= 0) return;
 
     const interval = setInterval(() => {
-      setDraftState((prev) => ({
-        ...prev,
-        timeLeft: Math.max(0, prev.timeLeft - 1),
-      }));
+      const now = new Date();
+      const endTimeJS =
+        draftEndTime instanceof Date ? draftEndTime : new Date(draftEndTime);
+      const secondsLeft = Math.round(
+        (endTimeJS.getTime() - now.getTime()) / 1000,
+      );
+      const newSeconds = secondsLeft >= 0 ? secondsLeft : 0;
+
+      setSeconds(newSeconds);
+
+      // Only update Firestore when time runs out (not every second)
+      if (secondsLeft <= 0) {
+        updateDraftState({
+          isPaused: true,
+          seconds: 0,
+        });
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [draftState.isPaused, draftState.timeLeft]);
+  }, [draftIsPaused, draftSeconds, draftEndTime, updateDraftState]);
 
   const currentPick = useMemo(() => {
     return (
-      phlAllDraftPicks.find((pick) => {
-        const overallNum =
-          (pick.DraftRound - 1) * PICKS_PER_ROUND + pick.DraftNumber;
-        return overallNum === draftState.currentPickNumber;
+      draftPicksFromState.find((pick) => {
+        return (
+          pick.DraftRound === draftCurrentRound &&
+          pick.DraftNumber === draftCurrentPick
+        );
       }) || null
     );
-  }, [phlAllDraftPicks, draftState.currentPickNumber]);
+  }, [draftPicksFromState, draftCurrentRound, draftCurrentPick]);
 
   const upcomingPicks = useMemo(() => {
-    const result = phlAllDraftPicks
+    const result = draftPicksFromState
       .filter((pick) => {
         const pickOverall =
-          (pick.DraftRound - 1) * PICKS_PER_ROUND + pick.DraftNumber;
-        return pickOverall >= draftState.currentPickNumber;
+          (pick.DraftRound - 1) * PHL_PICKS_PER_ROUND + pick.DraftNumber;
+        return pickOverall >= draftCurrentPick;
       })
       .sort((a, b) => {
         if (a.DraftRound !== b.DraftRound) {
@@ -160,33 +196,30 @@ export const usePHLDraft = () => {
       })
       .slice(0, 15);
     return result;
-  }, [phlAllDraftPicks, draftState.currentPickNumber]);
+  }, [draftPicksFromState, draftCurrentPick]);
 
   const recentPicks = useMemo(() => {
-    return phlAllDraftPicks
+    return draftPicksFromState
       .filter((pick) => {
         const pickOverall =
-          (pick.DraftRound - 1) * PICKS_PER_ROUND + pick.DraftNumber;
-        return (
-          pickOverall < draftState.currentPickNumber &&
-          pick.SelectedPlayerID > 0
-        );
+          (pick.DraftRound - 1) * PHL_PICKS_PER_ROUND + pick.DraftNumber;
+        return pickOverall < draftCurrentPick && pick.SelectedPlayerID > 0;
       })
       .sort((a, b) => {
-        const aOverall = (a.DraftRound - 1) * PICKS_PER_ROUND + a.DraftNumber;
-        const bOverall = (b.DraftRound - 1) * PICKS_PER_ROUND + b.DraftNumber;
+        const aOverall = a.DraftNumber;
+        const bOverall = b.DraftNumber;
         return bOverall - aOverall;
       })
       .slice(0, 20);
-  }, [phlAllDraftPicks, draftState.currentPickNumber]);
+  }, [draftPicksFromState, draftCurrentPick]);
 
   const draftedPlayerIds = useMemo(() => {
     return new Set(
-      phlAllDraftPicks
+      draftPicksFromState
         .filter((pick) => pick.SelectedPlayerID > 0)
         .map((pick) => pick.SelectedPlayerID),
     );
-  }, [phlAllDraftPicks]);
+  }, [draftPicksFromState]);
 
   const teamScoutProfiles = useMemo(() => {
     if (!selectedTeam) return [];
@@ -433,8 +466,10 @@ export const usePHLDraft = () => {
     if (!selectedTeam) return;
     const dto = { TeamID: selectedTeam.ID };
     await exportDraftPicks(dto);
-    setDraftState((prev) => ({ ...prev, exportComplete: true }));
-  }, [selectedTeam, exportDraftPicks]);
+    updateDraftState({
+      exportComplete: true,
+    });
+  }, [selectedTeam, exportDraftPicks, updateDraftState]);
 
   const refreshDraftData = useCallback(async () => {
     try {
@@ -446,7 +481,7 @@ export const usePHLDraft = () => {
 
   const formatDraftPosition = useCallback((pick: DraftPick): string => {
     const round = pick.DraftRound;
-    const pickInRound = pick.DraftNumber - (round - 1) * PICKS_PER_ROUND;
+    const pickInRound = pick.DraftNumber - (round - 1) * PHL_PICKS_PER_ROUND;
 
     const suffix = (n: number) => {
       if (n % 10 === 1 && n % 100 !== 11) return "st";
@@ -475,6 +510,30 @@ export const usePHLDraft = () => {
     handleOpenModal();
   };
 
+  const resyncDraftData = useCallback(async () => {
+    const draftMap: Record<number, DraftPick[]> = {};
+
+    phlAllDraftPicks.forEach((pick) => {
+      if (!draftMap[pick.DraftRound]) {
+        draftMap[pick.DraftRound] = [];
+      }
+      draftMap[pick.DraftRound].push(pick);
+    });
+
+    updateDraftState({
+      allDraftPicks: draftMap,
+    });
+  }, [phlAllDraftPicks, updateDraftState]);
+
+  // Enhanced update function that can handle manual updates
+  const handleManualDraftStateUpdate = useCallback(
+    (newState: any) => {
+      setIsManualUpdate(true);
+      updateDraftState(newState);
+    },
+    [updateDraftState],
+  );
+
   return {
     selectedTeam,
     proDraftablePlayers,
@@ -485,7 +544,8 @@ export const usePHLDraft = () => {
     isLoading,
     error,
     draftState,
-    setDraftState,
+    updateDraftState,
+    handleManualDraftStateUpdate,
     selectedScoutProfile,
     isScoutingModalOpen,
     currentPick,
@@ -505,7 +565,7 @@ export const usePHLDraft = () => {
     bringUpCollegePlayer,
     formatDraftPosition,
     getTimeForPick,
-    PICKS_PER_ROUND,
+    PICKS_PER_ROUND: PHL_PICKS_PER_ROUND,
     selectTeamOption,
     phlTeamOptions,
     teamNeedsList,
@@ -518,6 +578,13 @@ export const usePHLDraft = () => {
     handlePlayerModal,
     modalAction,
     isModalOpen,
+    isPaused,
+    seconds,
+    draftPicksFromState,
+    resyncDraftData,
+    isDraftStateLoading,
+    formattedTime,
+    isDraftComplete,
   };
 };
 
