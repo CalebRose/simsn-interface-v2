@@ -401,7 +401,6 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   handleManualDraftStateUpdate={handleManualDraftStateUpdate}
                   league={SimPHL}
                   backgroundColor={backgroundColor}
-                  formattedTime={formattedTime}
                   isDraftComplete={isDraftComplete}
                 />
               </>

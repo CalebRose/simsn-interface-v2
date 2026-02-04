@@ -26,7 +26,7 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
   const getPickStatus = (pick: DraftPick, index: number) => {
     if (pick.TeamID === userTeamId) return "user";
     if (currentPick && pick.ID === currentPick.ID) return "current";
-    if (index === 0) return "next";
+    if (index === 1) return "next";
     return "upcoming";
   };
 

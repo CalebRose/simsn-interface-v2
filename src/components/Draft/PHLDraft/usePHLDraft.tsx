@@ -136,7 +136,6 @@ export const usePHLDraft = () => {
   // Optimize timer to reduce Firestore calls and ensure multi-user sync
   useEffect(() => {
     if (isPaused || seconds <= 0) return;
-    console.log("PING!");
     const interval = setInterval(() => {
       const now = new Date();
 
@@ -169,7 +168,6 @@ export const usePHLDraft = () => {
         (endTimeJS.getTime() - now.getTime()) / 1000,
       );
       const newSeconds = secondsLeft >= 0 ? secondsLeft : 0;
-      console.log({ newSeconds, secondsLeft, endTimeJS, draftEndTime });
       setSeconds(newSeconds);
 
       // Only update Firestore when time runs out (not every second)
@@ -199,7 +197,9 @@ export const usePHLDraft = () => {
       .filter((pick) => {
         const pickOverall =
           (pick.DraftRound - 1) * PHL_PICKS_PER_ROUND + pick.DraftNumber;
-        return pickOverall >= draftCurrentPick;
+        const draftPickOverall =
+          (draftCurrentRound - 1) * PHL_PICKS_PER_ROUND + draftCurrentPick;
+        return pickOverall >= draftPickOverall;
       })
       .sort((a, b) => {
         if (a.DraftRound !== b.DraftRound) {
