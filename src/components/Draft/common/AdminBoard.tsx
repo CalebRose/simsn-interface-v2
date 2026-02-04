@@ -13,7 +13,7 @@ import { SelectOption } from "../../../_hooks/useSelectStyles";
 
 interface DraftAdminBoardProps {
   draftState: DraftStateObj;
-  handleManualDraftStateUpdate: (newState: any) => void;
+  handleManualDraftStateUpdate: (newState: any) => Promise<void>;
   resyncDraftData: () => void;
   backgroundColor: string;
   league: League;
@@ -33,21 +33,21 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
   const draftPickOptions = getDraftPickOptions();
   const draftRoundOptions = getDraftRoundOptions();
 
-  const selectDraftPickOption = (opt: SingleValue<SelectOption>) => {
+  const selectDraftPickOption = async (opt: SingleValue<SelectOption>) => {
     const { value } = opt as SelectOption;
     const pickNumber = parseInt(value, 10);
 
-    handleManualDraftStateUpdate({
+    await handleManualDraftStateUpdate({
       currentPick: pickNumber,
       nextPick: pickNumber + 1,
     });
   };
 
-  const selectDraftRoundOption = (opt: SingleValue<SelectOption>) => {
+  const selectDraftRoundOption = async (opt: SingleValue<SelectOption>) => {
     const { value } = opt as SelectOption;
     const roundNumber = parseInt(value, 10);
 
-    handleManualDraftStateUpdate({ currentRound: roundNumber });
+    await handleManualDraftStateUpdate({ currentRound: roundNumber });
   };
 
   return (

@@ -24,6 +24,7 @@ import {
 import { useModal } from "../../../_hooks/useModal";
 import { Draftee } from "../common";
 import { useDraftState } from "../hooks/useDraftState";
+import { getSecondsByRound } from "./utils/draftHelpers";
 
 export const PHL_PICKS_PER_ROUND = 24;
 
@@ -93,7 +94,6 @@ export const usePHLDraft = () => {
   const [isScoutingModalOpen, setIsScoutingModalOpen] = useState(false);
   const [seconds, setSeconds] = useState<number>(300);
   const [isPaused, setIsPaused] = useState<boolean>(true);
-  const [isManualUpdate, setIsManualUpdate] = useState(false);
 
   const draftPicksFromState = useMemo(() => {
     // Transform the allDraftPicks map into a flat array
@@ -133,42 +133,55 @@ export const usePHLDraft = () => {
     setSeconds(draftSeconds);
   }, [draftEndTime, draftIsPaused, draftSeconds]);
 
-  // Reset manual update flag after a short delay
+  // Optimize timer to reduce Firestore calls and ensure multi-user sync
   useEffect(() => {
-    if (isManualUpdate) {
-      const timeout = setTimeout(() => {
-        setIsManualUpdate(false);
-      }, 1000); // Allow manual update to persist for 1 second
-      return () => clearTimeout(timeout);
-    }
-  }, [isManualUpdate]);
-
-  // Optimize timer to reduce Firestore calls
-  useEffect(() => {
-    if (draftIsPaused || draftSeconds <= 0) return;
-
+    if (isPaused || seconds <= 0) return;
+    console.log("PING!");
     const interval = setInterval(() => {
       const now = new Date();
-      const endTimeJS =
-        draftEndTime instanceof Date ? draftEndTime : new Date(draftEndTime);
+
+      // Handle Firestore Timestamp object properly
+      let endTimeJS: Date;
+      if (draftEndTime instanceof Date) {
+        endTimeJS = draftEndTime;
+      } else if (
+        draftEndTime &&
+        typeof draftEndTime === "object" &&
+        "seconds" in draftEndTime
+      ) {
+        // Firestore Timestamp object
+        const timestamp = draftEndTime as {
+          seconds: number;
+          nanoseconds?: number;
+        };
+        endTimeJS = new Date(
+          timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000,
+        );
+      } else if (draftEndTime) {
+        // String or other format
+        endTimeJS = new Date(draftEndTime);
+      } else {
+        // No end time set
+        return;
+      }
+
       const secondsLeft = Math.round(
         (endTimeJS.getTime() - now.getTime()) / 1000,
       );
       const newSeconds = secondsLeft >= 0 ? secondsLeft : 0;
-
+      console.log({ newSeconds, secondsLeft, endTimeJS, draftEndTime });
       setSeconds(newSeconds);
 
       // Only update Firestore when time runs out (not every second)
       if (secondsLeft <= 0) {
         updateDraftState({
           isPaused: true,
-          seconds: 0,
         });
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [draftIsPaused, draftSeconds, draftEndTime, updateDraftState]);
+  }, [isPaused, seconds, draftEndTime, updateDraftState]);
 
   const currentPick = useMemo(() => {
     return (
@@ -510,6 +523,53 @@ export const usePHLDraft = () => {
     handleOpenModal();
   };
 
+  // Enhanced update function that can handle manual updates
+  const handleManualDraftStateUpdate = useCallback(
+    async (newState: any) => {
+      await updateDraftState(newState);
+    },
+    [updateDraftState],
+  );
+
+  const startDraft = useCallback(async () => {
+    const newEndTime = new Date(Date.now() + draftSeconds * 1000);
+
+    await handleManualDraftStateUpdate({
+      isPaused: false,
+      endTime: newEndTime,
+    });
+  }, [handleManualDraftStateUpdate, draftSeconds, draftIsPaused]);
+
+  const togglePause = useCallback(async () => {
+    if (draftIsPaused) {
+      // Resuming - create new endTime based on current remaining seconds
+      const newEndTime = new Date(Date.now() + seconds * 1000);
+      await handleManualDraftStateUpdate({
+        isPaused: false,
+        endTime: newEndTime,
+        seconds: seconds, // Preserve current countdown
+      });
+    } else {
+      // Pausing - save current remaining time
+      await handleManualDraftStateUpdate({
+        isPaused: true,
+        seconds: seconds, // Save current countdown value
+      });
+    }
+  }, [handleManualDraftStateUpdate, draftIsPaused, seconds]);
+
+  const resetTimer = useCallback(async () => {
+    const newSeconds = getSecondsByRound(draftCurrentRound);
+    const newEndTime = new Date(Date.now() + newSeconds * 1000);
+    await handleManualDraftStateUpdate({
+      isPaused: true,
+      endTime: newEndTime,
+      seconds: newSeconds, // Reset to original timer value
+    });
+    setSeconds(newSeconds);
+    setIsPaused(true);
+  }, [handleManualDraftStateUpdate, draftCurrentRound]);
+
   const resyncDraftData = useCallback(async () => {
     const draftMap: Record<number, DraftPick[]> = {};
 
@@ -520,19 +580,10 @@ export const usePHLDraft = () => {
       draftMap[pick.DraftRound].push(pick);
     });
 
-    updateDraftState({
+    handleManualDraftStateUpdate({
       allDraftPicks: draftMap,
     });
-  }, [phlAllDraftPicks, updateDraftState]);
-
-  // Enhanced update function that can handle manual updates
-  const handleManualDraftStateUpdate = useCallback(
-    (newState: any) => {
-      setIsManualUpdate(true);
-      updateDraftState(newState);
-    },
-    [updateDraftState],
-  );
+  }, [phlAllDraftPicks, handleManualDraftStateUpdate]);
 
   return {
     selectedTeam,
@@ -585,6 +636,9 @@ export const usePHLDraft = () => {
     isDraftStateLoading,
     formattedTime,
     isDraftComplete,
+    togglePause,
+    startDraft,
+    resetTimer,
   };
 };
 

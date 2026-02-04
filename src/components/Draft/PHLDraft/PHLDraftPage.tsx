@@ -28,11 +28,9 @@ import {
 import { PHL_PICKS_PER_ROUND, usePHLDraft } from "./usePHLDraft";
 import { Border } from "../../../_design/Borders";
 import { useAuthStore } from "../../../context/AuthContext";
-import { TeamLabel } from "../../Common/Labels";
 import { SelectDropdown } from "../../../_design/Select";
 import { ActionModal } from "../../Common/ActionModal";
 import { DraftAdminBoard } from "../common/AdminBoard";
-import { getNextState } from "./utils/draftHelpers";
 
 interface PHLDraftPageProps {
   league: League;
@@ -74,8 +72,13 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     isModalOpen,
     resyncDraftData,
     handleManualDraftStateUpdate,
+    handleExportDraftPicks,
     formattedTime,
     isDraftComplete,
+    togglePause,
+    resetTimer,
+    startDraft,
+    seconds,
   } = usePHLDraft();
 
   const isAdmin = useMemo(() => {
@@ -113,20 +116,21 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
   };
 
   const onDraftPlayer = async (player: DraftablePlayer) => {
-    const { curr, round, next, draftComplete } = getNextState(
-      draftState,
-      PHL_PICKS_PER_ROUND,
-    );
+    const newDraftState = draftState;
+    newDraftState.advanceToNextPick();
+    const curr = newDraftState.currentPick;
+    const round = newDraftState.currentRound;
+    const next = newDraftState.nextPick;
+    const draftComplete = newDraftState.isDraftComplete?.() || false;
 
     await handleManualDraftStateUpdate({
       currentPick: curr,
       currentRound: round,
       nextPick: next,
       draftComplete,
+      recentlyDraftedPlayerID: player.ID,
     });
   };
-
-  console.log({ draftState });
 
   if (isLoading) {
     return (
@@ -237,29 +241,20 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 <div className="mt-2">
                   <ButtonGrid>
                     <Button
-                      variant={
-                        activeTab === AdminBoard ? "primary" : "secondary"
-                      }
-                      onClick={() => setActiveTab(AdminBoard)}
+                      variant={draftState.isPaused ? "primary" : "warning"}
+                      onClick={togglePause}
                       size="xs"
                     >
                       Pause
                     </Button>
-                    <Button
-                      variant={
-                        activeTab === AdminBoard ? "primary" : "secondary"
-                      }
-                      onClick={() => setActiveTab(AdminBoard)}
-                      size="xs"
-                    >
+                    <Button variant="secondary" onClick={resetTimer} size="xs">
                       Reset
                     </Button>
                     <Button
-                      variant={
-                        activeTab === AdminBoard ? "primary" : "secondary"
-                      }
-                      onClick={() => setActiveTab(AdminBoard)}
+                      variant={isDraftComplete ? "primary" : "secondary"}
+                      onClick={handleExportDraftPicks}
                       size="xs"
+                      disabled={!isDraftComplete}
                     >
                       Export
                     </Button>
@@ -312,7 +307,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   currentPick={currentPick}
                   currentRound={draftState.currentRound}
                   pickNumber={draftState.currentPick}
-                  timeLeft={draftState.timeLeft}
+                  timeLeft={seconds}
                   isPaused={draftState.isPaused}
                   teamColors={teamColors}
                   league={league}

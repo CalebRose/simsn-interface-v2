@@ -1,6 +1,7 @@
 import { useMemo, useRef, useCallback } from "react";
 import { useFirestore } from "../../../firebase/firebase";
 import { DraftPick } from "../common";
+import { getSecondsByRound } from "../PHLDraft/utils/draftHelpers";
 
 interface DraftStateProps {
   CollectionName: string;
@@ -61,13 +62,7 @@ export class DraftStateObj {
     this.currentRound = Math.ceil(this.currentPick / 24);
 
     // Reset timer based on round
-    if (this.currentPick <= 24) {
-      this.seconds = 300; // 5 minutes for round 1
-    } else if (this.currentPick <= 96) {
-      this.seconds = 180; // 3 minutes for rounds 2-4
-    } else {
-      this.seconds = 120; // 2 minutes for rounds 5-7
-    }
+    this.seconds = getSecondsByRound(this.currentRound);
 
     // Set new end time
     this.endTime = new Date(Date.now() + this.seconds * 1000);
@@ -101,8 +96,13 @@ export const useDraftState = ({ CollectionName, DocName }: DraftStateProps) => {
 
   // Memoize the update function to prevent unnecessary re-renders of consumers
   const memoizedUpdateDraftState = useCallback(
-    (newState: any) => {
-      updateDraftState(newState);
+    async (newState: any) => {
+      try {
+        await updateDraftState(newState);
+      } catch (error) {
+        console.error("Failed to update draft state:", error);
+        throw error; // Re-throw to allow caller to handle
+      }
     },
     [updateDraftState],
   );
