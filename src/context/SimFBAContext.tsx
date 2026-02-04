@@ -724,9 +724,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         a.TeamName.localeCompare(b.TeamName),
       );
       const nflTeamOptions = sortedNFLTeams.map((team) => ({
-        label: `${team.TeamName}${
-          [4, 16, 18, 30].includes(team.ID) ? ` ${team.Mascot}` : ""
-        }`,
+        label: `${team.TeamName} ${team.Mascot}`,
         value: team.ID.toString(),
       }));
       const nflConferenceOptions = Array.from(
