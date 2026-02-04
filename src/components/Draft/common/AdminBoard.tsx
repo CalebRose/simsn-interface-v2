@@ -114,7 +114,9 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
           <div className="flex flex-col">
             <Text variant="body-small">Last Drafted Player</Text>
             <Text variant="xs" classes="mt-8">
-              {draftState.recentlyDraftedPlayerID}
+              {draftState.recentlyDraftedPlayerID === 0
+                ? "None"
+                : draftState.recentlyDraftedPlayerID}
             </Text>
           </div>
           <div className="flex flex-col">
