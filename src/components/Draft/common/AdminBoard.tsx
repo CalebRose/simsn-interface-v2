@@ -79,9 +79,6 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
     );
     if (currentPickIndex === -1) return; // Pick not found
     draftPickMap[roundKey][currentPickIndex].DrafteeID = 0;
-    draftPickMap[roundKey][currentPickIndex].SelectedPlayerID = 0;
-    draftPickMap[roundKey][currentPickIndex].SelectedPlayerName = "";
-    draftPickMap[roundKey][currentPickIndex].SelectedPlayerPosition = "";
 
     await handleManualDraftStateUpdate({ allDraftPicks: draftPickMap });
   }, [draftState, handleManualDraftStateUpdate]);

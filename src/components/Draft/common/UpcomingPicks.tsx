@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { DraftLeague, DraftPick, TeamColors, getLeagueConstant } from "./types";
-import { UpcomingPick } from "./DraftPick";
+import { DraftPickCard } from "./DraftPick";
 
 interface UpcomingPicksProps {
   upcomingPicks: DraftPick[];
@@ -50,7 +50,7 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
 
       <div className="space-y-2">
         {upcomingPicks.map((pick, index) => (
-          <UpcomingPick
+          <DraftPickCard
             key={pick.ID}
             pick={pick}
             index={index}

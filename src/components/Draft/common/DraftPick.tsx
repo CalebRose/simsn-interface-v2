@@ -17,7 +17,7 @@ export const WarRoomDraftPick: React.FC<WarRoomDraftPickProps> = ({
 }) => {
   const pickNumber = (pick.DraftRound - 1) * 24 + pick.DraftNumber;
   const teamLogo = getLogo(league, pick.TeamID, false);
-  const draftee = draftablePlayerMap[pick.SelectedPlayerID];
+  const draftee = draftablePlayerMap[pick.DrafteeID];
 
   const drafteeLabel = (() => {
     if (!draftee) return "";
@@ -77,7 +77,7 @@ export const WarRoomDraftPick: React.FC<WarRoomDraftPickProps> = ({
   );
 };
 
-export const UpcomingPick: React.FC<{
+export const DraftPickCard: React.FC<{
   pick: DraftPickType;
   index: number;
   currentPick: DraftPickType | null;
@@ -128,7 +128,7 @@ export const UpcomingPick: React.FC<{
   };
 
   const draftee = draftablePlayerMap
-    ? draftablePlayerMap[pick.SelectedPlayerID]
+    ? draftablePlayerMap[pick.DrafteeID]
     : undefined;
 
   const drafteeLabel = (() => {
@@ -149,7 +149,7 @@ export const UpcomingPick: React.FC<{
     <div
       key={pick.ID}
       className={`
-        relative rounded-lg border p-1 transition-colors duration-300
+        relative rounded-lg border p-1 ${view !== "bigboard" ? "transition-colors duration-300" : ""}
         ${getStatusStyles(status)}
       `}
       style={{
@@ -181,7 +181,7 @@ export const UpcomingPick: React.FC<{
           src={teamLogo}
           alt={pick.Team}
           className={`
-            w-8 h-8 object-contain transition-all duration-300
+            w-8 h-8 object-contain ${view !== "bigboard" ? "transition-all duration-300" : ""}
           `}
         />
         <div className="flex-1">
@@ -215,7 +215,7 @@ export const UpcomingPick: React.FC<{
           </div>
         </div>
       </div>
-      {status === "current" && (
+      {status === "current" && view !== "bigboard" && (
         <div
           className="absolute inset-0 rounded-lg pointer-events-none"
           style={{ contain: "strict" }}
@@ -229,7 +229,7 @@ export const UpcomingPick: React.FC<{
           />
         </div>
       )}
-      {status === "user" && (
+      {status === "user" && view !== "bigboard" && (
         <div
           className="absolute inset-0 rounded-lg pointer-events-none"
           style={{ contain: "strict" }}

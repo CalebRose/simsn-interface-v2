@@ -2,7 +2,7 @@ import React from "react";
 import { Draftee, DraftPick } from "./types";
 import { League } from "../../../_constants/constants";
 import { ProfessionalTeam } from "../../../models/hockeyModels";
-import { UpcomingPick } from "./DraftPick";
+import { DraftPickCard } from "./DraftPick";
 
 interface BigDraftBoardProps {
   league: League;
@@ -28,7 +28,7 @@ export const BigDraftBoard: React.FC<BigDraftBoardProps> = ({
     >
       <div className="grid grid-cols-4 gap-4">
         {draftPicks.map((pick, index: number) => (
-          <UpcomingPick
+          <DraftPickCard
             pick={pick}
             index={index}
             userTeamId={selectedTeam?.ID}

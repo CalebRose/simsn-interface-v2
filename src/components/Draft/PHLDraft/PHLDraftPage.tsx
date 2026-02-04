@@ -119,6 +119,17 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
   };
 
   const onDraftPlayer = async (player: DraftablePlayer) => {
+    // Logic to draft player from the current pick
+    const draftPickMap = { ...draftState.allDraftPicks };
+    const roundKey = draftState.currentRound;
+    const picksInRound = draftPickMap[roundKey] || [];
+    if (picksInRound.length === 0) return; // No picks in this round
+    const currentPickIndex = picksInRound.findIndex(
+      (pick) => pick.ID === draftState.currentPick,
+    );
+    if (currentPickIndex === -1) return; // Pick not found
+    draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
+
     const newDraftState = draftState;
     newDraftState.advanceToNextPick();
     const curr = newDraftState.currentPick;
@@ -126,12 +137,15 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     const next = newDraftState.nextPick;
     const draftComplete = newDraftState.isDraftComplete?.() || false;
 
+    console.log({ draftPickMap, curr, round, next, draftComplete, player });
+
     await handleManualDraftStateUpdate({
       currentPick: curr,
       currentRound: round,
       nextPick: next,
       draftComplete,
       recentlyDraftedPlayerID: player.ID,
+      allDraftPicks: draftPickMap,
     });
   };
 

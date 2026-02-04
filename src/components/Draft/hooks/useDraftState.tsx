@@ -85,9 +85,19 @@ export const useDraftState = ({ CollectionName, DocName }: DraftStateProps) => {
       return fallbackDraftState.current;
     }
 
-    // If we have data, return it
+    // If we have data, create a proper DraftStateObj instance
     if (draftStateData) {
-      return draftStateData as DraftStateObj;
+      return new DraftStateObj(
+        draftStateData.currentPick,
+        draftStateData.currentRound,
+        draftStateData.isPaused,
+        draftStateData.seconds,
+        draftStateData.endTime,
+        draftStateData.nextPick,
+        draftStateData.recentlyDraftedPlayerID,
+        draftStateData.allDraftPicks,
+        draftStateData.exportComplete,
+      );
     }
 
     // If not loading and no data, create new instance (first load complete)
