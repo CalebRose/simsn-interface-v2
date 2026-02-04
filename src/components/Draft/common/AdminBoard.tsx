@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { League } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { DraftStateObj } from "../hooks/useDraftState";
@@ -55,6 +55,24 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
 
   const secondsRound = getSecondsByRound(draftState.currentRound);
   const formattedTime = formatDraftTime(secondsRound);
+
+  const removePlayerFromPick = useCallback(async () => {
+    // Logic to remove player from the current pick
+    const draftPickMap = { ...draftState.allDraftPicks };
+    const roundKey = draftState.currentRound;
+    const picksInRound = draftPickMap[roundKey] || [];
+    if (picksInRound.length === 0) return; // No picks in this round
+    const currentPickIndex = picksInRound.findIndex(
+      (pick) => pick.ID === draftState.currentPick,
+    );
+    if (currentPickIndex === -1) return; // Pick not found
+    draftPickMap[roundKey][currentPickIndex].DrafteeID = 0;
+    draftPickMap[roundKey][currentPickIndex].SelectedPlayerID = 0;
+    draftPickMap[roundKey][currentPickIndex].SelectedPlayerName = "";
+    draftPickMap[roundKey][currentPickIndex].SelectedPlayerPosition = "";
+
+    await handleManualDraftStateUpdate({ allDraftPicks: draftPickMap });
+  }, [draftState, handleManualDraftStateUpdate]);
 
   return (
     <>
@@ -123,7 +141,10 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
           </div>
           <div className="flex flex-col">
             <Text variant="body-small">Remove Player from Pick</Text>
-            <Button disabled={!(isDraftComplete && draftState.exportComplete)}>
+            <Button
+              disabled={!draftState.isPaused}
+              onClick={removePlayerFromPick}
+            >
               Remove
             </Button>
           </div>
