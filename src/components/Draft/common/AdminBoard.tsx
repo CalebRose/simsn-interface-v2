@@ -89,8 +89,8 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
         <Text variant="h2" className="mb-4">
           Admin Board - {league}
         </Text>
-        <div className="grid grid-cols-4 mb-4 gap-4">
-          <div className="flex flex-col">
+        <div className="grid grid-cols-2 xl:grid-cols-4 mb-4 gap-4">
+          <div className="flex flex-col col-span-2 xl:col-span-1">
             <Text variant="body-small">
               Current Round: {draftState.currentRound}
             </Text>
@@ -103,7 +103,7 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
               />
             </div>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col col-span-2 xl:col-span-1">
             <Text variant="body-small">
               Current Pick: {draftState.currentPick}
             </Text>
@@ -115,7 +115,7 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
               />
             </div>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col col-span-2 xl:col-span-1">
             <Text variant="body-small">Team View</Text>
             <div className="flex justify-center p-2 mt-2">
               <SelectDropdown

@@ -26,7 +26,7 @@ export const BigDraftBoard: React.FC<BigDraftBoardProps> = ({
       className="w-full overflow-y-auto max-h-[85vh] p-4 shadow-md rounded-lg"
       style={{ backgroundColor }}
     >
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
         {draftPicks.map((pick, index: number) => (
           <DraftPickCard
             pick={pick}

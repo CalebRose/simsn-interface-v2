@@ -41,7 +41,7 @@ export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
         <Text variant="body-small" className="mb-4">
           {draftPickCount}
         </Text>
-        <div className="grid grid-cols-4 mb-4 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-4 mb-4 gap-4">
           {teamDraftPicks.map((pick) => (
             <WarRoomDraftPick
               key={pick.ID}
