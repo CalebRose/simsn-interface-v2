@@ -57,14 +57,18 @@ export const ProfilePage = () => {
 
   const themeOptions = [
     { label: "🌙 Dark", value: "dark" },
-    { label: "☀️ Light", value: "light" },
-    { label: "🔴 Red", value: "red" },
-    { label: "🔵 Blue", value: "blue" },
-    { label: "🌿 Sage Green", value: "sage" },
-    { label: "🟣 Purple", value: "purple" },
-    { label: "🟡 Gold", value: "gold" },
     { label: "⚫ Steel", value: "steel" },
     { label: "🔘 Grey", value: "grey" },
+    { label: "☀️ Light", value: "light" },
+    { label: "🟡 Gold", value: "gold" },
+    { label: "🔴 Red", value: "red" },
+    { label: "🟣 Purple", value: "purple" },
+    { label: "🔵 Blue", value: "blue" },
+    { label: "🌊 Ocean Blue", value: "oceanblue" },
+    { label: "🐚 Teal", value: "teal" },
+    { label: "🌿 Deep Sea Green", value: "deepsea" },
+    { label: "🍃 Castleton Green", value: "castleton" },
+    { label: "🌲 Sage Green", value: "sage" },
   ];
 
   const selectedTheme =

@@ -42,9 +42,9 @@ interface ScoutingBoardProps {
   teamScoutingPoints: number;
   spentPoints: number;
   league: DraftLeague;
-  draftablePlayers?: Draftee[];
   offensiveSystemsInformation: any;
   defensiveSystemsInformation: any;
+  draftablePlayerMap: Record<number, Draftee>;
 }
 
 export const ScoutingBoard: FC<ScoutingBoardProps> = ({
@@ -60,22 +60,14 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
   teamScoutingPoints,
   spentPoints,
   league,
-  draftablePlayers = [],
   offensiveSystemsInformation,
   defensiveSystemsInformation,
+  draftablePlayerMap,
 }) => {
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
 
   const positions = useMemo(() => getPositionsByLeague(league), [league]);
   const collegeLeague = getCollegeLeagueConstant(league);
-
-  const draftablePlayerMap = useMemo(() => {
-    const map: Record<number, Draftee> = {};
-    draftablePlayers.forEach((player) => {
-      map[player.ID] = player;
-    });
-    return map;
-  }, [draftablePlayers]);
 
   const getPlayerFromProfile = (profile: ScoutingProfile): Draftee | null => {
     if (isNFLScoutingProfile(profile)) {

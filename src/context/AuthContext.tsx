@@ -99,7 +99,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         "purple",
         "gold",
         "steel",
-        "grey"
+        "grey",
+        "teal",
+        "oceanblue",
+        "castleton",
+        "deepsea",
       );
       // Add the current theme class
       document.documentElement.classList.add(viewMode);
@@ -128,7 +132,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         "purple",
         "gold",
         "steel",
-        "grey"
+        "grey",
+        "teal",
+        "oceanblue",
+        "castleton",
+        "deepsea",
       );
       // Add the current theme class
       document.documentElement.classList.add(viewMode);

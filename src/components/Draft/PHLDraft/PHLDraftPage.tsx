@@ -4,13 +4,13 @@ import {
   ProfessionalTeam as PHLTeam,
   ScoutingProfile,
 } from "../../../models/hockeyModels";
-import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import {
   AdminBoard,
   BigBoard,
   DraftBoardStr,
   League,
   ScoutBoard,
+  SimPHL,
   WarRoomBoard,
 } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
@@ -23,13 +23,15 @@ import {
   ScoutingBoard,
   ScoutingProfile as CommonScoutingProfile,
   Draftee as CommonDraftee,
+  DraftPick,
 } from "../common";
 import { usePHLDraft } from "./usePHLDraft";
-import { Border } from "../../../_design/Borders";
 import { useAuthStore } from "../../../context/AuthContext";
-import { TeamLabel } from "../../Common/Labels";
-import { SelectDropdown } from "../../../_design/Select";
 import { ActionModal } from "../../Common/ActionModal";
+import { DraftAdminBoard } from "../common/AdminBoard";
+import { DraftSidebar } from "../common/DraftSidebar";
+import { DraftWarRoom } from "../common/WarRoom";
+import { BigDraftBoard } from "../common/BigBoard";
 
 interface PHLDraftPageProps {
   league: League;
@@ -69,6 +71,17 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     handlePlayerModal,
     modalAction,
     isModalOpen,
+    resyncDraftData,
+    handleManualDraftStateUpdate,
+    handleExportDraftPicks,
+    isDraftComplete,
+    togglePause,
+    resetTimer,
+    startDraft,
+    seconds,
+    teamDraftPicks,
+    draftablePlayerMap,
+    draftPicksFromState,
   } = usePHLDraft();
 
   const isAdmin = useMemo(() => {
@@ -105,7 +118,36 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     handleViewScoutDetails(profile);
   };
 
-  const onDraftPlayer = async (player: DraftablePlayer) => {};
+  const onDraftPlayer = async (player: DraftablePlayer) => {
+    // Logic to draft player from the current pick
+    const draftPickMap = { ...draftState.allDraftPicks };
+    const roundKey = draftState.currentRound;
+    const picksInRound = draftPickMap[roundKey] || [];
+    if (picksInRound.length === 0) return; // No picks in this round
+    const currentPickIndex = picksInRound.findIndex(
+      (pick) => pick.ID === draftState.currentPick,
+    );
+    if (currentPickIndex === -1) return; // Pick not found
+    draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
+
+    const newDraftState = draftState;
+    newDraftState.advanceToNextPick();
+    const curr = newDraftState.currentPick;
+    const round = newDraftState.currentRound;
+    const next = newDraftState.nextPick;
+    const draftComplete = newDraftState.isDraftComplete?.() || false;
+
+    console.log({ draftPickMap, curr, round, next, draftComplete, player });
+
+    await handleManualDraftStateUpdate({
+      currentPick: curr,
+      currentRound: round,
+      nextPick: next,
+      draftComplete,
+      recentlyDraftedPlayerID: player.ID,
+      allDraftPicks: draftPickMap,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -157,168 +199,55 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
         />
       )}
       <div className="grid sm:grid-flow-row grid-auto-rows-auto grid-cols-1 sm:grid-cols-[2fr_10fr] w-full h-full gap-y-2 gap-x-2 mb-2">
-        <div className="flex flex-col mb-4">
-          <Border
-            classes="p-4 bg-gray-900 border-4"
-            direction="col"
-            styles={{ borderColor: teamColors.primary }}
-          >
-            <Text variant="h4" classes="text-white mb-4">
-              {selectedTeam?.TeamName || "View"}
-            </Text>
-            <ButtonGrid>
-              <Button
-                variant={activeTab === DraftBoardStr ? "primary" : "secondary"}
-                onClick={() => setActiveTab(DraftBoardStr)}
-                size="xs"
-              >
-                Draft Board
-              </Button>
-              <Button
-                variant={activeTab === ScoutBoard ? "primary" : "secondary"}
-                onClick={() => setActiveTab(ScoutBoard)}
-                size="xs"
-              >
-                Scouting Board
-              </Button>
-              <Button
-                variant={activeTab === WarRoomBoard ? "primary" : "secondary"}
-                onClick={() => setActiveTab(WarRoomBoard)}
-                size="xs"
-              >
-                War Room
-              </Button>
-              <Button
-                variant={activeTab === BigBoard ? "primary" : "secondary"}
-                onClick={() => setActiveTab(BigBoard)}
-                size="xs"
-              >
-                Big Mode
-              </Button>
-              {isAdmin && (
-                <Button
-                  variant={activeTab === AdminBoard ? "primary" : "secondary"}
-                  onClick={() => setActiveTab(AdminBoard)}
-                  size="xs"
-                >
-                  Admin
-                </Button>
-              )}
-            </ButtonGrid>
-            {isAdmin && (
-              <>
-                <hr className="border-gray-700 my-2" />
-                <div className="mt-2">
-                  <Text variant="body" classes="text-gray-200">
-                    Admin Controls
-                  </Text>
-                </div>
-                <div className="mt-2">
-                  <ButtonGrid>
-                    <Button
-                      variant={
-                        activeTab === AdminBoard ? "primary" : "secondary"
-                      }
-                      onClick={() => setActiveTab(AdminBoard)}
-                      size="xs"
-                    >
-                      Pause
-                    </Button>
-                    <Button
-                      variant={
-                        activeTab === AdminBoard ? "primary" : "secondary"
-                      }
-                      onClick={() => setActiveTab(AdminBoard)}
-                      size="xs"
-                    >
-                      Reset
-                    </Button>
-                    <Button
-                      variant={
-                        activeTab === AdminBoard ? "primary" : "secondary"
-                      }
-                      onClick={() => setActiveTab(AdminBoard)}
-                      size="xs"
-                    >
-                      Export
-                    </Button>
-                  </ButtonGrid>
-                </div>
-                <hr className="border-gray-700 my-2" />
-                <div className="mt-2">
-                  <Text variant="body" classes="text-gray-200">
-                    Select Team
-                  </Text>
-                </div>
-                <div className="mt-2">
-                  <SelectDropdown
-                    options={phlTeamOptions}
-                    onChange={selectTeamOption}
+        <DraftSidebar
+          selectedTeam={selectedTeam}
+          teamColors={teamColors}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isAdmin={isAdmin}
+          offensiveSystem={offensiveSystem}
+          defensiveSystem={defensiveSystem}
+          teamNeedsList={teamNeedsList}
+          league={SimPHL}
+        />
+        <div className="flex flex-col gap-2">
+          {activeTab !== BigBoard && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-2 h-full">
+              <div className="lg:col-span-2 flex flex-col space-y-4 h-full">
+                <div className="flex-1">
+                  <DraftClock
+                    currentPick={currentPick}
+                    currentRound={draftState.currentRound}
+                    pickNumber={draftState.currentPick}
+                    timeLeft={seconds}
+                    isPaused={draftState.isPaused}
+                    teamColors={teamColors}
+                    league={league}
                   />
                 </div>
-              </>
-            )}
-            <hr className="border-gray-700 my-2" />
-            <div className="mt-2">
-              <Text variant="body" classes="text-gray-200">
-                Team Needs
-              </Text>
-            </div>
-            <div className="mt-2">
-              <Text variant="xs" classes="text-gray-200">
-                Offensive System: {offensiveSystem}
-              </Text>
-            </div>
-            <div className="">
-              <Text variant="xs" classes="text-gray-200">
-                Defensive System: {defensiveSystem}
-              </Text>
-            </div>
-            <div className="mt-2">
-              {teamNeedsList.map((need) => (
-                <Text key={need} variant="xs" classes="text-gray-400">
-                  {need}
-                </Text>
-              ))}
-            </div>
-          </Border>
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-2 h-full">
-            <div className="lg:col-span-2 flex flex-col space-y-4 h-full">
-              <div className="flex-1">
-                <DraftClock
-                  currentPick={currentPick}
-                  currentRound={draftState.currentRound}
-                  pickNumber={draftState.currentPickNumber}
-                  timeLeft={draftState.timeLeft}
-                  isPaused={draftState.isPaused}
-                  teamColors={teamColors}
-                  league={league}
-                />
+                <div className="flex-1">
+                  <DraftTicker
+                    recentPicks={recentPicks.map((pick) => ({ pick }))}
+                    teamColors={teamColors}
+                    backgroundColor={backgroundColor}
+                    league={league}
+                  />
+                </div>
               </div>
-              <div className="flex-1">
-                <DraftTicker
-                  recentPicks={recentPicks.map((pick) => ({ pick }))}
+              <div className="h-full">
+                <UpcomingPicks
+                  upcomingPicks={upcomingPicks.slice(0, 5)}
+                  currentPick={currentPick}
+                  userTeamId={selectedTeam?.ID}
                   teamColors={teamColors}
                   backgroundColor={backgroundColor}
                   league={league}
                 />
               </div>
             </div>
-            <div className="h-full">
-              <UpcomingPicks
-                upcomingPicks={upcomingPicks.slice(0, 5)}
-                currentPick={currentPick}
-                userTeamId={selectedTeam?.ID}
-                teamColors={teamColors}
-                backgroundColor={backgroundColor}
-                league={league}
-              />
-            </div>
-          </div>
+          )}
           <div>
-            {activeTab === "board" && (
+            {activeTab === DraftBoardStr && (
               <DraftBoard
                 draftees={proDraftablePlayers as unknown as CommonDraftee[]}
                 draftedPlayerIds={draftedPlayerIds}
@@ -343,7 +272,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 defensiveSystemsInformation={defensiveSystemsInformation}
               />
             )}
-            {activeTab === "scout" && (
+            {activeTab === ScoutBoard && (
               <ScoutingBoard
                 scoutProfiles={
                   teamScoutProfiles as unknown as CommonScoutingProfile[]
@@ -368,12 +297,51 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 teamScoutingPoints={teamWarRoom?.ScoutingPoints || 0}
                 spentPoints={teamWarRoom?.SpentPoints || 0}
                 league={league}
-                draftablePlayers={
-                  proDraftablePlayers as unknown as CommonDraftee[]
-                }
+                draftablePlayerMap={draftablePlayerMap}
                 offensiveSystemsInformation={offensiveSystemsInformation}
                 defensiveSystemsInformation={defensiveSystemsInformation}
               />
+            )}
+            {activeTab === WarRoomBoard && (
+              <>
+                <DraftWarRoom
+                  league={SimPHL}
+                  backgroundColor={backgroundColor}
+                  teamDraftPicks={teamDraftPicks as DraftPick[]}
+                  selectedTeam={selectedTeam as PHLTeam | null}
+                  draftablePlayerMap={draftablePlayerMap}
+                />
+              </>
+            )}
+            {activeTab === BigBoard && (
+              <>
+                <BigDraftBoard
+                  draftPicks={draftPicksFromState as DraftPick[]}
+                  selectedTeam={selectedTeam as PHLTeam | null}
+                  draftablePlayerMap={draftablePlayerMap}
+                  league={SimPHL}
+                  backgroundColor={backgroundColor}
+                  currentPick={currentPick}
+                />
+              </>
+            )}
+            {activeTab === AdminBoard && (
+              <>
+                <DraftAdminBoard
+                  draftState={draftState}
+                  resyncDraftData={resyncDraftData}
+                  handleManualDraftStateUpdate={handleManualDraftStateUpdate}
+                  league={SimPHL}
+                  backgroundColor={backgroundColor}
+                  isDraftComplete={isDraftComplete}
+                  teamOptions={phlTeamOptions}
+                  selectTeamOption={selectTeamOption}
+                  resetTimer={resetTimer}
+                  startDraft={startDraft}
+                  pauseDraft={togglePause}
+                  handleExportDraft={handleExportDraftPicks}
+                />
+              </>
             )}
           </div>
         </div>

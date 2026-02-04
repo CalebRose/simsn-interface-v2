@@ -641,10 +641,6 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
     title = `Propose Trade With ${recipientTeamName}`;
   }
 
-  /*
-    -- Confirm should send up the proposal
-  */
-
   return (
     <>
       <Modal

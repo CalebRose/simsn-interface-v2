@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { getLogo } from "../../../_utility/getLogo";
@@ -9,6 +9,7 @@ import {
   getLeagueConstant,
   isNFLLeague,
 } from "./types";
+import { formatDraftTime } from "../PHLDraft/utils/draftHelpers";
 
 interface DraftClockProps {
   currentPick: DraftPick | null;
@@ -30,24 +31,18 @@ export const DraftClock: FC<DraftClockProps> = ({
   teamColors,
   league,
 }) => {
-  const [displayTime, setDisplayTime] = useState(timeLeft);
-  const [isUrgent, setIsUrgent] = useState(false);
+  const isUrgent = useMemo(() => {
+    return !isPaused && timeLeft <= 30 && timeLeft > 0;
+  }, [timeLeft, isPaused]);
 
-  useEffect(() => {
-    setDisplayTime(timeLeft);
-    setIsUrgent(timeLeft <= 30 && timeLeft > 0);
+  const formattedTime = useMemo(() => {
+    return formatDraftTime(timeLeft);
   }, [timeLeft]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
 
   const getTimerColor = () => {
     if (isPaused) return "text-gray-400";
     if (isUrgent) return "text-red-500 animate-pulse";
-    if (displayTime <= 60) return "text-yellow-500";
+    if (timeLeft <= 60) return "text-yellow-500";
     return "text-green-500";
   };
 
@@ -58,7 +53,7 @@ export const DraftClock: FC<DraftClockProps> = ({
     } else {
       totalTime = currentRound === 1 ? 300 : currentRound <= 4 ? 180 : 120;
     }
-    return ((totalTime - displayTime) / totalTime) * 100;
+    return ((totalTime - timeLeft) / totalTime) * 100;
   };
 
   const leagueConstant = getLeagueConstant(league);
@@ -128,7 +123,7 @@ export const DraftClock: FC<DraftClockProps> = ({
               variant="h2"
               classes={`font-mono font-bold ${getTimerColor()}`}
             >
-              {formatTime(displayTime)}
+              {formattedTime}
             </Text>
           </div>
         </div>

@@ -1,6 +1,5 @@
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { AuthService } from "../_services/auth";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
 import { firestore, useFirestore } from "../firebase/firebase";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 
@@ -24,7 +23,7 @@ export interface CurrentUser {
 type UseCurrentUserReturn = [
   CurrentUser | null,
   React.Dispatch<React.SetStateAction<CurrentUser | null>>,
-  boolean
+  boolean,
 ];
 
 export const useCurrentUser = (): UseCurrentUserReturn => {
@@ -59,7 +58,7 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
         }
 
         setIsLoading(false);
-      }
+      },
     );
 
     return () => unsubscribeAuth();
