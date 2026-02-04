@@ -109,6 +109,22 @@ export const usePHLDraft = () => {
     return picks;
   }, [allDraftPicks]);
 
+  const teamDraftPicks = useMemo(() => {
+    if (!draftPicksFromState || !selectedTeam) return [];
+
+    return draftPicksFromState.filter(
+      (pick) => pick.TeamID === selectedTeam.ID,
+    );
+  }, [draftPicksFromState, selectedTeam]);
+
+  const draftablePlayerMap = useMemo(() => {
+    const map: Record<number, Draftee> = {};
+    proDraftablePlayers.forEach((player) => {
+      map[player.ID] = player;
+    });
+    return map;
+  }, [proDraftablePlayers]);
+
   useEffect(() => {
     const loadDraftData = async () => {
       setError(null);
@@ -639,6 +655,8 @@ export const usePHLDraft = () => {
     togglePause,
     startDraft,
     resetTimer,
+    teamDraftPicks,
+    draftablePlayerMap,
   };
 };
 

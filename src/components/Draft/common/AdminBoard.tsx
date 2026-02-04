@@ -20,6 +20,12 @@ interface DraftAdminBoardProps {
   backgroundColor: string;
   league: League;
   isDraftComplete: boolean;
+  teamOptions: { value: string; label: string }[];
+  selectTeamOption: (opt: SingleValue<SelectOption>) => void;
+  resetTimer: () => Promise<void>;
+  startDraft: () => Promise<void>;
+  pauseDraft: () => Promise<void>;
+  handleExportDraft: () => Promise<void>;
 }
 
 export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
@@ -29,6 +35,12 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
   backgroundColor,
   league,
   isDraftComplete,
+  teamOptions,
+  selectTeamOption,
+  resetTimer,
+  startDraft,
+  pauseDraft,
+  handleExportDraft,
 }) => {
   const draftPickOptions = getDraftPickOptions();
   const draftRoundOptions = getDraftRoundOptions();
@@ -82,8 +94,10 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
         </Text>
         <div className="grid grid-cols-4 mb-4 gap-4">
           <div className="flex flex-col">
-            <Text variant="body-small">Current Round</Text>
-            <Text variant="xs">{draftState.currentRound}</Text>
+            <Text variant="body-small">
+              Current Round: {draftState.currentRound}
+            </Text>
+
             <div className="flex justify-center p-2 mt-2">
               <SelectDropdown
                 options={draftRoundOptions}
@@ -93,8 +107,9 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
             </div>
           </div>
           <div className="flex flex-col">
-            <Text variant="body-small">Current Pick</Text>
-            <Text variant="xs">{draftState.currentPick}</Text>
+            <Text variant="body-small">
+              Current Pick: {draftState.currentPick}
+            </Text>
             <div className="flex justify-center p-2 mt-2">
               <SelectDropdown
                 options={draftPickOptions}
@@ -103,17 +118,27 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
               />
             </div>
           </div>
+          <div className="flex flex-col">
+            <Text variant="body-small">Team View</Text>
+            <div className="flex justify-center p-2 mt-2">
+              <SelectDropdown
+                options={teamOptions}
+                onChange={selectTeamOption}
+                placeholder="Select War Room..."
+              />
+            </div>
+          </div>
 
           <div className="flex flex-col">
             <Text variant="body-small">Time Per Round</Text>
-            <Text variant="small" classes="mt-8">
+            <Text variant="small" classes="mt-6">
               {formattedTime}
             </Text>
           </div>
 
           <div className="flex flex-col">
             <Text variant="body-small">Last Drafted Player</Text>
-            <Text variant="xs" classes="mt-8">
+            <Text variant="xs" classes="mt-4">
               {draftState.recentlyDraftedPlayerID === 0
                 ? "None"
                 : draftState.recentlyDraftedPlayerID}
@@ -131,19 +156,33 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
           </div>
           <div className="flex flex-col">
             <Text variant="body-small">Start Draft</Text>
-            <Button variant="warning">Start</Button>
+            <Button
+              variant={
+                draftState.currentRound === 1 && draftState.currentPick === 1
+                  ? "success"
+                  : "danger"
+              }
+              onClick={startDraft}
+            >
+              Start
+            </Button>
           </div>
           <div className="flex flex-col">
             <Text variant="body-small">Pause Draft</Text>
-            <Button variant="warning">Pause</Button>
+            <Button variant="primary" onClick={pauseDraft}>
+              Pause
+            </Button>
           </div>
           <div className="flex flex-col">
             <Text variant="body-small">Reset Timer</Text>
-            <Button variant="danger">Reset</Button>
+            <Button variant="danger" onClick={resetTimer}>
+              Reset
+            </Button>
           </div>
           <div className="flex flex-col">
             <Text variant="body-small">Remove Player from Pick</Text>
             <Button
+              variant="sort"
               disabled={!draftState.isPaused}
               onClick={removePlayerFromPick}
             >
@@ -152,7 +191,10 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
           </div>
           <div className="flex flex-col">
             <Text variant="body-small">Export Draft</Text>
-            <Button disabled={!(isDraftComplete && draftState.exportComplete)}>
+            <Button
+              disabled={!(isDraftComplete && draftState.exportComplete)}
+              onClick={handleExportDraft}
+            >
               Export
             </Button>
           </div>
