@@ -94,10 +94,15 @@ export const DraftPickCard: React.FC<{
   view = "",
   draftablePlayerMap,
 }) => {
+  const pickNumber = (pick.DraftRound - 1) * 24 + pick.DraftNumber;
+  const currentPickNumber = currentPick
+    ? (currentPick.DraftRound - 1) * 24 + currentPick.DraftNumber
+    : 0;
+
   const getPickStatus = (pick: DraftPickType, index: number) => {
     if (pick.TeamID === userTeamId) return "user";
     if (currentPick && pick.ID === currentPick.ID) return "current";
-    if (index === 1) return "next";
+    if (pickNumber === currentPickNumber + 1) return "next";
     return "upcoming";
   };
 
