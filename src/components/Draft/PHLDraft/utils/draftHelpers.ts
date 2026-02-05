@@ -262,6 +262,7 @@ export const getHockeyAttributeFieldName = (displayName: string): string => {
     "Goalie Vision Potential": "GoalieVisionPotential",
     "Goalie Rebound Control Potential": "GoalieReboundControlPotential",
     "Goalie Stamina Potential": "GoalieStaminaPotential",
+    "Agility Potential": "AgilityPotential",
   };
 
   return attributeMap[displayName] || displayName;
