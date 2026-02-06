@@ -24,13 +24,13 @@ import {
 
 export const RecruitService = {
   HCKCreateRecruitProfile: async (
-    dto: any
+    dto: any,
   ): Promise<HCKRecruitPlayerProfile> => {
     return await PostCall(`${hckUrl}recruiting/add/recruit/`, dto);
   },
 
   HCKRemoveCrootFromBoard: async (
-    dto: any
+    dto: any,
   ): Promise<HCKUpdateRecruitProfileDto> => {
     return await PostCall(`${hckUrl}recruiting/remove/recruit/`, dto);
   },
@@ -40,7 +40,7 @@ export const RecruitService = {
   },
 
   HCKScoutRecruitingAttribute: async (
-    dto: any
+    dto: any,
   ): Promise<HCKRecruitPlayerProfile> => {
     return await PostCall(`${hckUrl}recruiting/scout/attribute/`, dto);
   },
@@ -50,7 +50,7 @@ export const RecruitService = {
   },
 
   HCKSaveRecruitingBoard: async (
-    dto: any
+    dto: any,
   ): Promise<HCKUpdateRecruitingBoardDTO> => {
     return await PostCall(`${hckUrl}recruiting/save/board/`, dto);
   },
@@ -60,13 +60,13 @@ export const RecruitService = {
   },
 
   BBACreateRecruitProfile: async (
-    dto: any
+    dto: any,
   ): Promise<BBAPlayerRecruitProfile> => {
     return await PostCall(`${bbaUrl}recruiting/add/recruit/`, dto);
   },
 
   BBARemoveCrootFromBoard: async (
-    dto: any
+    dto: any,
   ): Promise<BBAPlayerRecruitProfile> => {
     return await PostCall(`${bbaUrl}recruit/remove/recruit/v2`, dto);
   },
@@ -88,11 +88,15 @@ export const RecruitService = {
   },
 
   ExportCHLRecruits: async () => {
-    await GetExportCall(`${hckUrl}export/college/recruits/all`, "blob");
+    await GetExportCall(
+      `${hckUrl}export/college/recruits/all`,
+      "blob",
+      "chl_recruits_export",
+    );
   },
 
   FBACreateRecruitProfile: async (
-    dto: any
+    dto: any,
   ): Promise<FBARecruitPlayerProfile> => {
     return await PostCall(`${fbaUrl}recruiting/addrecruit/`, dto);
   },
@@ -102,19 +106,19 @@ export const RecruitService = {
   },
 
   FBARemovePlayerFromBoard: async (
-    dto: any
+    dto: any,
   ): Promise<FBARecruitPlayerProfile> => {
     return await PUTCall(`${fbaUrl}recruiting/removecrootfromboard/`, dto);
   },
 
   FBASaveRecruitingBoard: async (
-    dto: any
+    dto: any,
   ): Promise<FBAUpdateRecruitingBoardDTO> => {
     return await PostCall(`${fbaUrl}recruiting/savecrootboard/`, dto);
   },
 
   FBAToggleAIBehavior: async (
-    dto: any
+    dto: any,
   ): Promise<FBAUpdateRecruitingBoardDTO> => {
     return await PostCall(`${fbaUrl}recruiting/save/ai/`, dto);
   },

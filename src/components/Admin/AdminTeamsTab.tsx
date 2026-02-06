@@ -167,6 +167,11 @@ export const AdminCHLTeamCard: React.FC<AdminCHLTeamCardProps> = ({
     return teamProfile.WeeksMissed;
   }, [teamProfile]);
 
+  const isAIInRecruiting = useMemo(() => {
+    if (!teamProfile) return false;
+    return teamProfile.IsAI;
+  }, [teamProfile]);
+
   return (
     <>
       <AdminTeamCard
@@ -180,6 +185,7 @@ export const AdminCHLTeamCard: React.FC<AdminCHLTeamCardProps> = ({
         lastLogin={lastLoginLabel}
         isInGoodStanding={isInGoodStanding}
         weeksMissed={weeksMissedInRecruiting}
+        isAIInRecruiting={isAIInRecruiting}
       />
       <RemoveUserModal
         isOpen={isModalOpen}
@@ -403,6 +409,11 @@ export const AdminCFBTeamCard: React.FC<AdminCFBTeamCardProps> = ({
     return teamProfile.WeeksMissed;
   }, [teamProfile]);
 
+  const isAIInRecruiting = useMemo(() => {
+    if (!teamProfile) return false;
+    return teamProfile.IsAI;
+  }, [teamProfile]);
+
   return (
     <>
       <AdminTeamCard
@@ -416,6 +427,7 @@ export const AdminCFBTeamCard: React.FC<AdminCFBTeamCardProps> = ({
         lastLogin={lastLoginLabel}
         isInGoodStanding={isInGoodStanding}
         weeksMissed={weeksMissedInRecruiting}
+        isAIInRecruiting={isAIInRecruiting}
       />
       <RemoveUserModal
         isOpen={isModalOpen}
@@ -640,6 +652,11 @@ export const AdminCBBTeamCard: React.FC<AdminCBBTeamCardProps> = ({
     return teamProfile.WeeksMissed;
   }, [teamProfile]);
 
+  const isAIInRecruiting = useMemo(() => {
+    if (!teamProfile) return false;
+    return teamProfile.IsAI;
+  }, [teamProfile]);
+
   return (
     <>
       <AdminTeamCard
@@ -653,6 +670,7 @@ export const AdminCBBTeamCard: React.FC<AdminCBBTeamCardProps> = ({
         lastLogin={lastLoginLabel}
         isInGoodStanding={isInGoodStanding}
         weeksMissed={weeksMissedInRecruiting}
+        isAIInRecruiting={isAIInRecruiting}
       />
       <RemoveUserModal
         isOpen={isModalOpen}

@@ -21,6 +21,7 @@ interface AdminTeamCardProps {
   isInGoodStanding?: boolean;
   penaltyMarks?: number;
   weeksMissed?: number;
+  isAIInRecruiting?: boolean;
 }
 
 export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
@@ -39,6 +40,7 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
   isInGoodStanding,
   penaltyMarks,
   weeksMissed,
+  isAIInRecruiting,
 }) => {
   return (
     <Border classes="w-full p-2">
@@ -112,7 +114,7 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
                 Weeks Missed
               </Text>
               <Text variant="xs" classes="mb-2">
-                {weeksMissed}
+                {weeksMissed} {isAIInRecruiting ? "(AI Active)" : ""}
               </Text>
             </>
           )}

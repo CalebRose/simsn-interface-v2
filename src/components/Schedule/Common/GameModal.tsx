@@ -171,7 +171,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
       SpecialTeamStats: [],
       OLineStats: [],
       ReturnStats: [],
-    }
+    },
   );
 
   const homeTeam = useMemo(() => {
@@ -190,7 +190,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
       SpecialTeamStats: [],
       OLineStats: [],
       ReturnStats: [],
-    }
+    },
   );
   const [playByPlays, setPlayByPlays] = useState<PlayByPlay[]>([]);
   const [view, setView] = useState<string>(BoxScore);
@@ -258,7 +258,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
             ? play.LineOfScrimmage.replace(
                 /(\d+)\s(.+)/,
                 (_, yardLine, teamName) =>
-                  `${yardLine} ${getTeamAbbrFromName(teamName)}`
+                  `${yardLine} ${getTeamAbbrFromName(teamName)}`,
               )
             : play.LineOfScrimmage,
         }))
@@ -295,8 +295,8 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
       obj.DefenseStats = dataSet
         .filter((x) =>
           ["ILB", "OLB", "DT", "DE", "CB", "FS", "SS", "ATH"].includes(
-            x.Position
-          )
+            x.Position,
+          ),
         )
         .map((player) => ({
           ...player,
@@ -371,10 +371,12 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
       const dto = {
         League: league,
         GameID: game.ID,
+        Home: game.HomeTeam,
+        Away: game.AwayTeam,
       };
       await ExportPlayByPlay(dto);
     }
-  }, []);
+  }, [game, league]);
 
   return (
     <>
@@ -1124,6 +1126,8 @@ export const HockeyGameModal = ({
       const dto = {
         League: league,
         GameID: game.ID,
+        Home: game.HomeTeam,
+        Away: game.AwayTeam,
       };
       await ExportPlayByPlay(dto);
     }
@@ -1562,7 +1566,7 @@ export const HockeyGameModal = ({
                                   <Text variant="xs">{faceoff}</Text>
                                 </div>
                               );
-                            }
+                            },
                           )}
                         </div>
                       </div>
@@ -1651,7 +1655,7 @@ export const HockeyGameModal = ({
                                   <Text variant="xs">{faceoff}</Text>
                                 </div>
                               );
-                            }
+                            },
                           )}
                         </div>
                       </div>
@@ -1742,7 +1746,7 @@ export const HockeyGameModal = ({
                                   <Text variant="xs">{faceoff}</Text>
                                 </div>
                               );
-                            }
+                            },
                           )}
                         </div>
                       </div>
@@ -1831,7 +1835,7 @@ export const HockeyGameModal = ({
                                   <Text variant="xs">{faceoff}</Text>
                                 </div>
                               );
-                            }
+                            },
                           )}
                         </div>
                       </div>
@@ -1907,7 +1911,7 @@ export const HockeyGameModal = ({
                                   <Text variant="xs">{toi}</Text>
                                 </div>
                               );
-                            }
+                            },
                           )}
                         </div>
                       </div>
@@ -1981,7 +1985,7 @@ export const HockeyGameModal = ({
                                   <Text variant="xs">{toi}</Text>
                                 </div>
                               );
-                            }
+                            },
                           )}
                         </div>
                       </div>
@@ -2024,8 +2028,8 @@ export const HockeyGameModal = ({
                     const bgColor = isScoreChange
                       ? "#189E5B"
                       : index % 2 === 0
-                      ? backgroundColor
-                      : "transparent";
+                        ? backgroundColor
+                        : "transparent";
                     const textColor = isScoreChange
                       ? { color: backgroundColor, fontWeight: "700" }
                       : { color: "inherit" };
@@ -2111,10 +2115,10 @@ export const BasketBallGameModal = ({
   const [awayPlayers, setAwayPlayers] = useState<MatchResultsPlayer[]>([]);
   const homeTeam = teamMap[game.HomeTeamID];
   const [homeStats, setHomeStats] = useState<MatchResultsTeam>(
-    {} as MatchResultsTeam
+    {} as MatchResultsTeam,
   );
   const [awayStats, setAwayStats] = useState<MatchResultsTeam>(
-    {} as MatchResultsTeam
+    {} as MatchResultsTeam,
   );
   const [view, setView] = useState<string>(BoxScore);
   const [header, setHeader] = useState<string>("Box Score");
@@ -2179,7 +2183,7 @@ export const BasketBallGameModal = ({
   const playerRenderer = (
     item: MatchResultsPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const values = GetBasketballResultsValues(item);
 
@@ -2200,11 +2204,11 @@ export const BasketBallGameModal = ({
     );
   };
   const rowRenderer = (
-    league: League
+    league: League,
   ): ((
     item: MatchResultsPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => ReactNode) => {
     return playerRenderer;
   };

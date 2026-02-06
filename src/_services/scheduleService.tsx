@@ -7,14 +7,14 @@ import { GameResultsResponse as HockeyGameResults } from "../models/hockeyModels
 export default class FBAScheduleService {
   async GetCollegeGamesByTeamAndSeason(
     TeamID: number,
-    SeasonID: number
+    SeasonID: number,
   ): Promise<any> {
     return await GetCall(`${fbaUrl}games/college/team/${TeamID}/${SeasonID}/`);
   }
 
   async GetNFLGamesByTeamAndSeason(
     TeamID: number,
-    SeasonID: number
+    SeasonID: number,
   ): Promise<any> {
     return await GetCall(`${fbaUrl}games/nfl/team/${TeamID}/${SeasonID}/`);
   }
@@ -50,35 +50,37 @@ export default class FBAScheduleService {
   async FBATimeslotExport(dto: any): Promise<void> {
     await GetExportCall(
       `${fbaUrl}games/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.WeekID}/${dto.Timeslot}/`,
-      "blob"
+      "blob",
     );
   }
 
   async BBATimeslotExport(dto: any): Promise<void> {
     await GetExportCall(
       `${bbaUrl}match/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.WeekID}/${dto.Timeslot}/`,
-      "blob"
+      "blob",
     );
   }
 
   async HCKTimeslotExport(dto: any): Promise<void> {
     await GetExportCall(
       `${hckUrl}games/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.Timeslot}/`,
-      "blob"
+      "blob",
     );
   }
 
   async HCKExportCHLPlayByPlay(dto: any): Promise<void> {
     await GetExportCall(
       `${hckUrl}games/result/export/chl/${dto.GameID}/`,
-      "blob"
+      "blob",
+      `${dto.GameID}_${dto.Home}_vs_${dto.Away}_play_by_play`,
     );
   }
 
   async HCKExportPHLPlayByPlay(dto: any): Promise<void> {
     await GetExportCall(
       `${hckUrl}games/result/export/phl/${dto.GameID}/`,
-      "blob"
+      "blob",
+      `${dto.GameID}_${dto.Home}_vs_${dto.Away}_play_by_play`,
     );
   }
 
@@ -91,16 +93,19 @@ export default class FBAScheduleService {
   }
 
   async FBAExportCFBPlayByPlay(dto: any): Promise<void> {
+    console.log({ dto });
     await GetExportCall(
       `${fbaUrl}statistics/cfb/export/play/by/play/${dto.GameID}/`,
-      "blob"
+      "blob",
+      `${dto.GameID}_${dto.Home}_vs_${dto.Away}_play_by_play`,
     );
   }
 
   async FBAExportNFLPlayByPlay(dto: any): Promise<void> {
     await GetExportCall(
       `${fbaUrl}statistics/nfl/export/play/by/play/${dto.GameID}/`,
-      "blob"
+      "blob",
+      `${dto.GameID}_${dto.Home}_vs_${dto.Away}_play_by_play`,
     );
   }
 
