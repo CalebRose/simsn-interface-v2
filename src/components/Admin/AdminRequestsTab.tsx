@@ -118,6 +118,7 @@ export const AdminRequestsTab = () => {
 
       {selectedLeague === SimNFL &&
         !fbLoading &&
+        fbaNFLRequests &&
         fbaNFLRequests.map((request) => (
           <NFLRequestCard
             request={request}
@@ -148,12 +149,12 @@ export const CHLRequestCard: React.FC<CHLRequestCardProps> = ({
   const requestLogo = getLogo(
     selectedLeague as League,
     request.TeamID,
-    currentUser?.isRetro
+    currentUser?.isRetro,
   );
   const teamColors = useTeamColors(
     chlTeam.ColorOne,
     chlTeam.ColorTwo,
-    chlTeam.ColorThree
+    chlTeam.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -195,12 +196,12 @@ export const PHLRequestCard: React.FC<PHLRequestCardProps> = ({
   const requestLogo = getLogo(
     SimPHL as League,
     request.TeamID,
-    currentUser?.isRetro
+    currentUser?.isRetro,
   );
   const teamColors = useTeamColors(
     phlTeam.ColorOne,
     phlTeam.ColorTwo,
-    phlTeam.ColorThree
+    phlTeam.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -248,12 +249,12 @@ export const CBBRequestCard: React.FC<CBBRequestCardProps> = ({
   const requestLogo = getLogo(
     SimCBB as League,
     request.TeamID,
-    currentUser?.isRetro
+    currentUser?.isRetro,
   );
   const teamColors = useTeamColors(
     cbbTeam.ColorOne,
     cbbTeam.ColorTwo,
-    cbbTeam.ColorThree
+    cbbTeam.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -295,7 +296,7 @@ export const NBARequestCard: React.FC<NBARequestCardProps> = ({
   const requestLogo = getLogo(
     SimNBA as League,
     request.NBATeamID,
-    currentUser?.isRetro
+    currentUser?.isRetro,
   );
   const teamColors = useMemo(() => {
     if (!nbaTeam) {
@@ -309,7 +310,7 @@ export const NBARequestCard: React.FC<NBARequestCardProps> = ({
     return useTeamColors(
       nbaTeam.ColorOne,
       nbaTeam.ColorTwo,
-      nbaTeam.ColorThree
+      nbaTeam.ColorThree,
     );
   }, [nbaTeam]);
   const backgroundColor = teamColors.One;
@@ -373,12 +374,12 @@ export const CFBRequestCard: React.FC<CFBRequestCardProps> = ({
   const requestLogo = getLogo(
     SimCFB as League,
     request.TeamID,
-    currentUser?.isRetro
+    currentUser?.isRetro,
   );
   const teamColors = useTeamColors(
     cfbTeam.ColorOne,
     cfbTeam.ColorTwo,
-    cfbTeam.ColorThree
+    cfbTeam.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -420,13 +421,22 @@ export const NFLRequestCard: React.FC<NFLRequestCardProps> = ({
   const requestLogo = getLogo(
     SimNFL as League,
     request.NFLTeamID,
-    currentUser?.isRetro
+    currentUser?.isRetro,
   );
-  const teamColors = useTeamColors(
-    nflTeam.ColorOne,
-    nflTeam.ColorTwo,
-    nflTeam.ColorThree
-  );
+  const teamColors = useMemo(() => {
+    if (!nflTeam) {
+      return {
+        One: "#FFFFFF",
+        Two: "#000000",
+        Three: "#CCCCCC",
+      };
+    }
+    return useTeamColors(
+      nflTeam.ColorOne,
+      nflTeam.ColorTwo,
+      nflTeam.ColorThree,
+    );
+  }, [nflTeam]);
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
   const { acceptNFLRequest, rejectNFLRequest } = useAdminPage();
@@ -446,9 +456,14 @@ export const NFLRequestCard: React.FC<NFLRequestCardProps> = ({
     return "Unknown Role";
   }, [request]);
 
+  const teamLabel = useMemo(() => {
+    if (!nflTeam) return "Unknown Team";
+    return `${nflTeam.TeamName} ${nflTeam.Mascot}`;
+  }, [nflTeam]);
+
   return (
     <AdminRequestCard
-      teamLabel={`${nflTeam.TeamName} ${nflTeam.Mascot}`}
+      teamLabel={teamLabel}
       requestLogo={requestLogo}
       oneItem={oneItem}
       accept={accept}

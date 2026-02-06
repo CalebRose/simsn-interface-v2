@@ -122,7 +122,7 @@ export const AvailableTeams = () => {
   const GetViewTeamData = async () => {
     const res = await TeamService.ViewTeamFromAvailableTeamsPage(
       selectedLeague as League,
-      selectedTeam.ID
+      selectedTeam.ID,
     );
     setSelectedTeamData(() => res);
   };
@@ -138,7 +138,7 @@ export const AvailableTeams = () => {
       (league === SimMLB && sentRequestMLB)
     ) {
       alert(
-        `It appears you've already requested a team within the ${league}. Please wait for an admin to approve the request.`
+        `It appears you've already requested a team within the ${league}. Please wait for an admin to approve the request.`,
       );
       return;
     }
@@ -156,14 +156,17 @@ export const AvailableTeams = () => {
         setSentRequestCFB(true);
         break;
       case SimNFL:
-        requestDTO = {
-          ...requestDTO,
+        const nflRequestDTO = {
+          Username: currentUser!.username,
+          NFLTeamID: team.ID,
+          Role: role,
+          IsApproved: false,
           IsOwner: role === "o",
           IsManager: role === "gm",
           IsCoach: role === "hc",
           IsAssistant: role === "a",
         };
-        await RequestService.CreateNFLTeamRequest(requestDTO as any);
+        await RequestService.CreateNFLTeamRequest(nflRequestDTO as any);
         setSentRequestNFL(true);
         break;
       case SimCBB:
@@ -171,14 +174,17 @@ export const AvailableTeams = () => {
         setSentRequestCBB(true);
         break;
       case SimNBA:
-        requestDTO = {
-          ...requestDTO,
+        const nbaRequestDTO = {
+          Username: currentUser!.username,
+          NBATeamID: team.ID,
+          Role: role,
+          IsApproved: false,
           IsOwner: role === "o",
           IsManager: role === "gm",
           IsCoach: role === "hc",
           IsAssistant: role === "a",
         };
-        await RequestService.CreateNBATeamRequest(requestDTO as any);
+        await RequestService.CreateNBATeamRequest(nbaRequestDTO as any);
         setSentRequestNBA(true);
         break;
       case SimCHL:

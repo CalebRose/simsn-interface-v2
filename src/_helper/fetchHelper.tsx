@@ -10,7 +10,10 @@ import {
 
 // 🔥 Custom Error for API Calls
 class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -19,7 +22,7 @@ class ApiError extends Error {
 // ✅ POST Request with Type Safety (Simplified)
 export const PostCall = async <TRequest, TResponse>(
   url: string,
-  dto: TRequest
+  dto: TRequest,
 ): Promise<TResponse> => {
   try {
     const token = getSafeToken();
@@ -46,7 +49,7 @@ export const PostCall = async <TRequest, TResponse>(
 
 export const DELETECall = async <TRequest, TResponse>(
   url: string,
-  dto: TRequest
+  dto: TRequest,
 ): Promise<TResponse> => {
   try {
     const token = getSafeToken();
@@ -73,7 +76,7 @@ export const DELETECall = async <TRequest, TResponse>(
 
 export const PUTCall = async <TRequest, TResponse>(
   url: string,
-  dto: TRequest
+  dto: TRequest,
 ): Promise<TResponse> => {
   try {
     const token = getSafeToken();
@@ -101,7 +104,7 @@ export const PUTCall = async <TRequest, TResponse>(
 // ✅ PUT Request without JSON Response (for void endpoints)
 export const PUTCallNoResponse = async (
   url: string,
-  dto: any
+  dto: any,
 ): Promise<void> => {
   try {
     const token = getSafeToken();
@@ -126,7 +129,7 @@ export const PUTCallNoResponse = async (
 // ✅ POST Request without JSON Response (for void endpoints)
 export const PostCallNoResponse = async (
   url: string,
-  dto: any
+  dto: any,
 ): Promise<void> => {
   try {
     const token = getSafeToken();
@@ -205,13 +208,15 @@ type ResponseType = "json" | "blob";
  *
  * @param url            The endpoint to call
  * @param responseType   "json" to parse JSON, "blob" to download a file
+ * @param filename       Optional custom filename for downloads (only used when responseType is "blob")
  * @returns              If "json", returns the parsed JSON as T;
  *                       if "blob", kicks off a download in the browser
  *                       and returns the Blob (in case you want to do more).
  */
 export async function GetExportCall<T>(
   url: string,
-  responseType: ResponseType = "json"
+  responseType: ResponseType = "json",
+  filename?: string,
 ): Promise<T | Blob> {
   const token = getSafeToken();
   const response = await fetch(url, {
@@ -236,20 +241,24 @@ export async function GetExportCall<T>(
   // Otherwise, we expect a file download
   const blob = await response.blob();
 
-  // Try to get filename from Content-Disposition header
-  let filename = url.split("/").pop() || "download";
-  const cd = response.headers.get("Content-Disposition");
-  if (cd) {
-    const match = /filename="?([^"]+)"?/.exec(cd);
-    if (match?.[1]) {
-      filename = match[1];
+  // Use provided filename or try to get filename from Content-Disposition header or URL
+  let downloadFilename = filename || url.split("/").pop() || "download";
+
+  // If no custom filename provided, check Content-Disposition header
+  if (!filename) {
+    const cd = response.headers.get("Content-Disposition");
+    if (cd) {
+      const match = /filename="?([^"]+)"?/.exec(cd);
+      if (match?.[1]) {
+        downloadFilename = match[1];
+      }
     }
   }
 
   // Create a temporary <a> to trigger the download
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = filename;
+  link.download = downloadFilename;
   document.body.appendChild(link);
   link.click();
   link.remove();

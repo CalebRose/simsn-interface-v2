@@ -56,6 +56,8 @@ export interface RequestDTO {
   IsActive?: boolean;
   IsApproved: boolean;
   IsMarketing?: boolean;
+  NFLTeamID?: number;
+  NBATeamID?: number;
 }
 
 export const RequestService = {
@@ -97,7 +99,7 @@ export const RequestService = {
   },
 
   AssignCFBTeam: async (
-    payload: CreateTeamRequest
+    payload: CreateTeamRequest,
   ): Promise<CFBTeamRequest> => {
     return await PostCall(`${fbaUrl}teams/assign/${payload.teamId}`, {
       TeamID: payload.teamId,
@@ -108,7 +110,7 @@ export const RequestService = {
 
   CreateCFBTeamRequest: async (
     team: CFBTeam,
-    username: string
+    username: string,
   ): Promise<void> => {
     await PostCall(`${fbaUrl}requests/create/`, {
       TeamID: team.ID,
@@ -119,7 +121,7 @@ export const RequestService = {
 
   CreateCHLTeamRequest: async (
     team: CHLTeam,
-    username: string
+    username: string,
   ): Promise<CollegeTeamRequest> => {
     return await PostCall(`${hckUrl}chl/requests/create`, {
       TeamID: team.ID,
@@ -130,13 +132,13 @@ export const RequestService = {
   },
 
   CreatePHLTeamRequest: async (
-    payload: CreateTeamRequest
+    payload: CreateTeamRequest,
   ): Promise<ProTeamRequest> => {
     return await PostCall(`${hckUrl}phl/requests/create`, payload);
   },
 
   CreateNFLTeamRequest: async (
-    payload: CreateTeamRequest
+    payload: CreateTeamRequest,
   ): Promise<NFLRequest> => {
     return await PostCall(`${fbaUrl}nfl/requests/create/`, payload);
   },
@@ -184,7 +186,7 @@ export const RequestService = {
 
   CreateCBBTeamRequest: async (
     team: CBBTeam,
-    username: string
+    username: string,
   ): Promise<CBBRequest> => {
     return await PostCall(`${bbaUrl}requests/createTeamRequest`, {
       TeamID: team.ID,
@@ -226,7 +228,7 @@ export const RequestService = {
   },
 
   CreateNBATeamRequest: async (
-    payload: CreateTeamRequest
+    payload: CreateTeamRequest,
   ): Promise<NBARequest> => {
     return await PostCall(`${bbaUrl}nba/requests/create/`, payload);
   },
@@ -243,24 +245,24 @@ export const RequestService = {
     return await PostCall(`${bbaUrl}nba/requests/revoke/`, payload);
   },
   ApproveCHLRequest: async (
-    payload: CollegeTeamRequest
+    payload: CollegeTeamRequest,
   ): Promise<CollegeTeamRequest> => {
     return await PostCall(`${hckUrl}chl/requests/approve`, payload);
   },
 
   RejectCHLRequest: async (
-    payload: CollegeTeamRequest
+    payload: CollegeTeamRequest,
   ): Promise<CollegeTeamRequest> => {
     return await PostCall(`${hckUrl}chl/requests/reject`, payload);
   },
   ApprovePHLRequest: async (
-    payload: ProTeamRequest
+    payload: ProTeamRequest,
   ): Promise<ProTeamRequest> => {
     return await PostCall(`${hckUrl}phl/requests/approve`, payload);
   },
 
   RejectPHLRequest: async (
-    payload: ProTeamRequest
+    payload: ProTeamRequest,
   ): Promise<ProTeamRequest> => {
     return await PostCall(`${hckUrl}phl/requests/reject`, payload);
   },

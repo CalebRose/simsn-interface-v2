@@ -1484,6 +1484,7 @@ export class BaseTeam {
   DefenseGrade: string;
   GoalieGrade: string;
   IsUserCoached: boolean;
+  LastLogin: Time;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -1510,6 +1511,24 @@ export class BaseTeam {
     this.DefenseGrade = source["DefenseGrade"];
     this.GoalieGrade = source["GoalieGrade"];
     this.IsUserCoached = source["IsUserCoached"];
+    this.LastLogin = this.convertValues(source["LastLogin"], Time);
+  }
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
   }
 }
 export class CollegeTeam {
@@ -1552,6 +1571,7 @@ export class CollegeTeam {
   ConferencePrestige: number;
   CoachRating: number;
   SeasonMomentum: number;
+  LastLogin: Time;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -1594,6 +1614,7 @@ export class CollegeTeam {
     this.ConferencePrestige = source["ConferencePrestige"];
     this.CoachRating = source["CoachRating"];
     this.SeasonMomentum = source["SeasonMomentum"];
+    this.LastLogin = this.convertValues(source["LastLogin"], Time);
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1647,6 +1668,7 @@ export class ProfessionalTeam {
   Marketing: string;
   DivisionID: number;
   Division: string;
+  LastLogin: Time;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -1682,6 +1704,7 @@ export class ProfessionalTeam {
     this.Marketing = source["Marketing"];
     this.DivisionID = source["DivisionID"];
     this.Division = source["Division"];
+    this.LastLogin = this.convertValues(source["LastLogin"], Time);
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

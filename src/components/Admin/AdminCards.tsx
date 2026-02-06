@@ -17,6 +17,10 @@ interface AdminTeamCardProps {
   borderColor?: string;
   onClick?: () => void;
   disable: boolean;
+  lastLogin: string;
+  isInGoodStanding?: boolean;
+  penaltyMarks?: number;
+  weeksMissed?: number;
 }
 
 export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
@@ -31,10 +35,14 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
   borderColor = "",
   onClick,
   disable,
+  lastLogin,
+  isInGoodStanding,
+  penaltyMarks,
+  weeksMissed,
 }) => {
   return (
     <Border classes="w-full p-2">
-      <div className="flex flex-row flex-grow h-[8rem] w-full">
+      <div className="flex flex-row items-start w-full">
         <Border
           classes="items-center justify-center mt-1"
           styles={{ backgroundColor, borderColor }}
@@ -43,37 +51,73 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
             <Logo url={logo} variant="normal" classes="" containerClass="p-4" />
           </div>
         </Border>
-        <div className="flex flex-col justify-center p-2 mx-auto mr-[1rem] flex-grow">
+        <div className="flex flex-col pt-2 px-2 mx-auto flex-grow">
           <Text variant="small" classes="mb-2">
             {teamLabel}
           </Text>
           {owner && (
-            <Text variant="small" classes="mb-2">
+            <Text variant="xs" classes="mb-2">
               Owner: {owner.length > 0 ? owner : "Open"}
             </Text>
           )}
           {gm && (
-            <Text variant="small" classes="mb-2">
+            <Text variant="xs" classes="mb-2">
               GM: {gm.length > 0 ? gm : "Open"}
             </Text>
           )}
           {coach && (
-            <Text variant="small" classes="mb-2">
+            <Text variant="xs" classes="mb-2">
               Coach: {coach.length > 0 ? coach : "Open"}
             </Text>
           )}
           {scout && (
-            <Text variant="small" classes="mb-2">
+            <Text variant="xs" classes="mb-2">
               Scout: {scout.length > 0 ? scout : "Open"}
             </Text>
           )}
           {marketing && (
-            <Text variant="small" classes="mb-2">
+            <Text variant="xs" classes="mb-2">
               Marketing: {marketing.length > 0 ? marketing : "Open"}
             </Text>
           )}
         </div>
-        <div className="flex flex-col justify-center">
+        <div className="flex flex-col pt-2 px-2 min-w-[120px]">
+          <Text variant="xs" classes="mb-2">
+            Last Activity
+          </Text>
+          <Text variant="xs" classes="mb-2">
+            {lastLogin}
+          </Text>
+          <Text
+            variant="xs"
+            className={isInGoodStanding ? "text-green-500" : "text-red-500"}
+          >
+            {isInGoodStanding ? "In Good Standing" : "Inactive"}
+          </Text>
+        </div>
+        <div className="flex flex-col pt-2 px-2 min-w-[100px]">
+          {penaltyMarks && (
+            <>
+              <Text variant="xs" classes="mb-2">
+                Penalty Marks
+              </Text>
+              <Text variant="xs" classes="mb-2">
+                {penaltyMarks}
+              </Text>
+            </>
+          )}
+          {weeksMissed !== undefined && (
+            <>
+              <Text variant="xs" classes="mb-2">
+                Weeks Missed
+              </Text>
+              <Text variant="xs" classes="mb-2">
+                {weeksMissed}
+              </Text>
+            </>
+          )}
+        </div>
+        <div className="flex flex-col pt-2 px-2 my-auto">
           <Button variant="danger" onClick={onClick} disabled={disable}>
             Remove
           </Button>

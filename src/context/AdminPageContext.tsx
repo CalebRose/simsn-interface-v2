@@ -68,7 +68,7 @@ interface AdminPageContextType {
 }
 
 const AdminPageContext = createContext<AdminPageContextType | undefined>(
-  undefined
+  undefined,
 );
 
 interface AdminPageProviderProps {
@@ -82,11 +82,11 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   const { selectedLeague } = leagueStore;
   const [selectedTab, setSelectedTab] = useState(Requests);
   const [hckCHLRequests, setHCKCHLRequests] = useState<CollegeTeamRequest[]>(
-    []
+    [],
   );
   const [hckPHLRequests, setHCKPHLRequests] = useState<ProTeamRequest[]>([]);
   const [hckTradeProposals, setHCKTradePropsals] = useState<HCKTradeProposal[]>(
-    []
+    [],
   );
   const [fbaCFBRequests, setFBACFBRequests] = useState<CFBRequest[]>([]);
   const [fbaNFLRequests, setFBANFLRequests] = useState<NFLRequest[]>([]);
@@ -122,7 +122,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
 
   const getHockeyRequests = async () => {
     const res = await RequestService.GetLeagueRequests(
-      selectedLeague as League
+      selectedLeague as League,
     );
     const model = res as HCKRequestResponse;
     setHCKCHLRequests(model.CollegeRequests);
@@ -131,12 +131,13 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   };
   const getFootballRequests = async () => {
     const res = await RequestService.GetLeagueRequests(
-      selectedLeague as League
+      selectedLeague as League,
     );
     const model = res as FBARequestResponse;
     const filteredCFBRequests = model.CollegeRequests.filter(
-      (req) => req.TeamID > 0
+      (req) => req.TeamID > 0,
     );
+    console.log({ model });
     setFBACFBRequests(filteredCFBRequests);
     setFBANFLRequests(model.ProRequests);
   };
@@ -156,7 +157,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       const res = await RequestService.ApproveCHLRequest(request);
 
       setHCKCHLRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
       const payload = {
         username: request.Username,
@@ -165,24 +166,24 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       addUserToCHLTeam(request.TeamID, request.Username);
       await updateUserByUsername(request.Username, payload);
     },
-    [hckCHLRequests]
+    [hckCHLRequests],
   );
 
   const rejectCHLRequest = useCallback(
     async (request: CollegeTeamRequest) => {
       const res = await RequestService.RejectCHLRequest(request);
       setHCKCHLRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
     },
-    [hckCHLRequests]
+    [hckCHLRequests],
   );
 
   const acceptPHLRequest = useCallback(
     async (request: ProTeamRequest) => {
       const res = await RequestService.ApprovePHLRequest(request);
       setHCKPHLRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
       const payload = {
         username: request.Username,
@@ -192,17 +193,17 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       addUserToPHLTeam(request.TeamID, request.Username, request.Role);
       await updateUserByUsername(request.Username, payload);
     },
-    [hckPHLRequests]
+    [hckPHLRequests],
   );
 
   const rejectPHLRequest = useCallback(
     async (request: ProTeamRequest) => {
       const res = await RequestService.RejectPHLRequest(request);
       setHCKPHLRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
     },
-    [hckPHLRequests]
+    [hckPHLRequests],
   );
 
   const acceptCBBRequest = useCallback(
@@ -215,7 +216,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       const res = await RequestService.ApproveCBBRequest(request);
 
       setBBACBBRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
       const payload = {
         username: request.Username,
@@ -226,17 +227,17 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       addUserToCBBTeam(request.TeamID, request.Username);
       await updateUserByUsername(request.Username, payload);
     },
-    [bbaCBBRequests, cbbTeamMap]
+    [bbaCBBRequests, cbbTeamMap],
   );
 
   const rejectCBBRequest = useCallback(
     async (request: CBBRequest) => {
       const res = await RequestService.RejectCBBTeamRequest(request);
       setBBACBBRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
     },
-    [bbaCBBRequests]
+    [bbaCBBRequests],
   );
 
   const acceptNBARequest = useCallback(
@@ -244,13 +245,13 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       const team = nbaTeamMap![request.NBATeamID];
       if (!team) {
         console.error(
-          `Team with ID ${request.NBATeamID} not found in nbaTeamMap`
+          `Team with ID ${request.NBATeamID} not found in nbaTeamMap`,
         );
         return;
       }
       const res = await RequestService.ApproveNBARequest(request);
       setBBANBARequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
       let role = "Owner";
       if (request.IsManager) {
@@ -270,17 +271,17 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       addUserToNBATeam(request.NBATeamID, request.Username, role);
       await updateUserByUsername(request.Username, payload);
     },
-    [bbaNBARequests, nbaTeamMap]
+    [bbaNBARequests, nbaTeamMap],
   );
 
   const rejectNBARequest = useCallback(
     async (request: NBARequest) => {
       const res = await RequestService.RejectNBARequest(request);
       setBBANBARequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
     },
-    [bbaNBARequests]
+    [bbaNBARequests],
   );
 
   const acceptCFBRequest = useCallback(
@@ -293,7 +294,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       const res = await RequestService.ApproveCFBRequest(request);
 
       setFBACFBRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
       const payload = {
         username: request.Username,
@@ -304,17 +305,17 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       addUserToCFBTeam(request.TeamID, request.Username);
       await updateUserByUsername(request.Username, payload);
     },
-    [fbaCFBRequests, cfbTeamMap]
+    [fbaCFBRequests, cfbTeamMap],
   );
 
   const rejectCFBRequest = useCallback(
     async (request: CFBRequest) => {
       const res = await RequestService.RejectCFBRequest(request);
       setFBACFBRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
     },
-    [fbaCFBRequests]
+    [fbaCFBRequests],
   );
 
   const acceptNFLRequest = useCallback(
@@ -322,13 +323,13 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       const team = proTeamMap![request.NFLTeamID];
       if (!team) {
         console.error(
-          `Team with ID ${request.NFLTeamID} not found in proTeamMap`
+          `Team with ID ${request.NFLTeamID} not found in proTeamMap`,
         );
         return;
       }
       const res = await RequestService.ApproveNFLRequest(request);
       setFBANFLRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
       let role = "Owner";
       if (request.IsManager) {
@@ -348,17 +349,17 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       addUserToNFLTeam(request.NFLTeamID, request.Username, role);
       await updateUserByUsername(request.Username, payload);
     },
-    [fbaNFLRequests, proTeamMap]
+    [fbaNFLRequests, proTeamMap],
   );
 
   const rejectNFLRequest = useCallback(
     async (request: NFLRequest) => {
       const res = await RequestService.RejectNFLRequest(request);
       setFBANFLRequests((prevRequests) =>
-        prevRequests.filter((req) => req.ID !== request.ID)
+        prevRequests.filter((req) => req.ID !== request.ID),
       );
     },
-    [fbaNFLRequests]
+    [fbaNFLRequests],
   );
 
   const RefreshRequests = useCallback(async () => {
@@ -369,7 +370,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
 
   const refreshHCKTradeProposals = useCallback((id: number) => {
     setHCKTradePropsals((proposals) =>
-      proposals.filter((item) => item.ID !== id)
+      proposals.filter((item) => item.ID !== id),
     );
   }, []);
 
@@ -410,7 +411,7 @@ export const useAdminPage = () => {
   const context = useContext(AdminPageContext);
   if (!context) {
     throw new Error(
-      "useAdminPageContext must be used within an AdminPageProvider"
+      "useAdminPageContext must be used within an AdminPageProvider",
     );
   }
   return context;

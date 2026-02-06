@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   Coach,
   GM,
@@ -34,6 +35,7 @@ import {
 } from "../../models/hockeyModels";
 import { RemoveUserModal } from "../AvailableTeams/RemoveUserModal";
 import { AdminTeamCard } from "./AdminCards";
+import { calculateStanding } from "./helper/cardHelper";
 
 export const AdminTeamsTab = () => {
   const { selectedLeague } = useLeagueStore();
@@ -119,10 +121,11 @@ export const AdminCHLTeamCard: React.FC<AdminCHLTeamCardProps> = ({
   removeUser,
 }) => {
   const { currentUser, setCurrentUser } = useAuthStore();
+  const { teamProfileMap } = useSimHCKStore();
   const teamColors = useTeamColors(
     team.ColorOne,
     team.ColorTwo,
-    team.ColorThree
+    team.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -140,6 +143,30 @@ export const AdminCHLTeamCard: React.FC<AdminCHLTeamCardProps> = ({
     await updateUserByUsername(userName, payload);
   };
 
+  const teamProfile = useMemo(() => {
+    if (!teamProfileMap) return null;
+    return teamProfileMap[team.ID];
+  }, [teamProfileMap, team.ID]);
+
+  const lastLoginLabel = useMemo(() => {
+    const lastLoginDate = new Date(team.LastLogin.toString());
+    // Change to MM/DD/YYYY format
+    // This is the current time format 2026-02-06T03:08:19.637Z
+    // getMonth() does not exist on type Time, so we need to convert it to a Date object
+    return `${lastLoginDate.getMonth() + 1}/${lastLoginDate.getDate()}/${lastLoginDate.getFullYear()}`;
+  }, [team.LastLogin]);
+
+  // Checks whether the user is inactive by seeing if they have logged in within the last 4 weeks, or if they have received at least 3 penalty marks.
+  const isInGoodStanding = useMemo(() => {
+    if (!team.IsUserCoached) return true;
+    return calculateStanding(team);
+  }, [team, teamProfile]);
+
+  const weeksMissedInRecruiting = useMemo(() => {
+    if (!teamProfile) return 0;
+    return teamProfile.WeeksMissed;
+  }, [teamProfile]);
+
   return (
     <>
       <AdminTeamCard
@@ -150,6 +177,9 @@ export const AdminCHLTeamCard: React.FC<AdminCHLTeamCardProps> = ({
         borderColor={borderColor}
         onClick={handleOpenModal}
         disable={team.Coach.length === 0 || team.Coach === "AI"}
+        lastLogin={lastLoginLabel}
+        isInGoodStanding={isInGoodStanding}
+        weeksMissed={weeksMissedInRecruiting}
       />
       <RemoveUserModal
         isOpen={isModalOpen}
@@ -196,7 +226,7 @@ export const AdminPHLTeamCard: React.FC<AdminPHLTeamCardProps> = ({
   const teamColors = useTeamColors(
     team.ColorOne,
     team.ColorTwo,
-    team.ColorThree
+    team.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -226,6 +256,19 @@ export const AdminPHLTeamCard: React.FC<AdminPHLTeamCardProps> = ({
     handleCloseModal();
     return await removeUser(dto);
   };
+
+  const lastLoginLabel = useMemo(() => {
+    const lastLoginDate = new Date(team.LastLogin.toString());
+    // Change to MM/DD/YYYY format
+    // This is the current time format 2026-02-06T03:08:19.637Z
+    // getMonth() does not exist on type Time, so we need to convert it to a Date object
+    return `${lastLoginDate.getMonth() + 1}/${lastLoginDate.getDate()}/${lastLoginDate.getFullYear()}`;
+  }, [team.LastLogin]);
+
+  // Checks whether the user is inactive by seeing if they have logged in within the last 4 weeks, or if they have received at least 3 penalty marks.
+  const isInGoodStanding = useMemo(() => {
+    return calculateStanding(team);
+  }, [team]);
   return (
     <>
       <AdminTeamCard
@@ -240,6 +283,8 @@ export const AdminPHLTeamCard: React.FC<AdminPHLTeamCardProps> = ({
         borderColor={borderColor}
         onClick={handleOpenModal}
         disable={team.Owner.length === 0}
+        lastLogin={lastLoginLabel}
+        isInGoodStanding={isInGoodStanding}
       />
       <RemoveUserModal
         isOpen={isModalOpen}
@@ -311,11 +356,13 @@ export const AdminCFBTeamCard: React.FC<AdminCFBTeamCardProps> = ({
   removeUser,
 }) => {
   const { currentUser, setCurrentUser } = useAuthStore();
+  const { teamProfileMap } = useSimFBAStore();
   const teamColors = useTeamColors(
     team.ColorOne,
     team.ColorTwo,
-    team.ColorThree
+    team.ColorThree,
   );
+
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
   const textColorClass = teamColors.TextColorOne;
@@ -332,6 +379,30 @@ export const AdminCFBTeamCard: React.FC<AdminCFBTeamCardProps> = ({
     await updateUserByUsername(userName, payload);
   };
 
+  const teamProfile = useMemo(() => {
+    if (!teamProfileMap) return null;
+    return teamProfileMap[team.ID];
+  }, [teamProfileMap, team.ID]);
+
+  const lastLoginLabel = useMemo(() => {
+    const lastLoginDate = new Date(team.LastLogin.toString());
+    // Change to MM/DD/YYYY format
+    // This is the current time format 2026-02-06T03:08:19.637Z
+    // getMonth() does not exist on type Time, so we need to convert it to a Date object
+    return `${lastLoginDate.getMonth() + 1}/${lastLoginDate.getDate()}/${lastLoginDate.getFullYear()}`;
+  }, [team.LastLogin]);
+
+  // Checks whether the user is inactive by seeing if they have logged in within the last 4 weeks, or if they have received at least 3 penalty marks.
+  const isInGoodStanding = useMemo(() => {
+    if (team.Coach.length === 0 || team.Coach === "AI") return true;
+    return calculateStanding(team);
+  }, [team, teamProfile]);
+
+  const weeksMissedInRecruiting = useMemo(() => {
+    if (!teamProfile) return 0;
+    return teamProfile.WeeksMissed;
+  }, [teamProfile]);
+
   return (
     <>
       <AdminTeamCard
@@ -342,6 +413,9 @@ export const AdminCFBTeamCard: React.FC<AdminCFBTeamCardProps> = ({
         borderColor={borderColor}
         onClick={handleOpenModal}
         disable={team.Coach.length === 0 || team.Coach === "AI"}
+        lastLogin={lastLoginLabel}
+        isInGoodStanding={isInGoodStanding}
+        weeksMissed={weeksMissedInRecruiting}
       />
       <RemoveUserModal
         isOpen={isModalOpen}
@@ -388,7 +462,7 @@ export const AdminNFLTeamCard: React.FC<AdminNFLTeamCardProps> = ({
   const teamColors = useTeamColors(
     team.ColorOne,
     team.ColorTwo,
-    team.ColorThree
+    team.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -420,6 +494,20 @@ export const AdminNFLTeamCard: React.FC<AdminNFLTeamCardProps> = ({
     handleCloseModal();
     return await removeUser(dto);
   };
+
+  const lastLoginLabel = useMemo(() => {
+    const lastLoginDate = new Date(team.LastLogin.toString());
+    // Change to MM/DD/YYYY format
+    // This is the current time format 2026-02-06T03:08:19.637Z
+    // getMonth() does not exist on type Time, so we need to convert it to a Date object
+    return `${lastLoginDate.getMonth() + 1}/${lastLoginDate.getDate()}/${lastLoginDate.getFullYear()}`;
+  }, [team.LastLogin]);
+
+  // Checks whether the user is inactive by seeing if they have logged in within the last 4 weeks, or if they have received at least 3 penalty marks.
+  const isInGoodStanding = useMemo(() => {
+    return calculateStanding(team);
+  }, [team]);
+
   return (
     <>
       <AdminTeamCard
@@ -433,6 +521,9 @@ export const AdminNFLTeamCard: React.FC<AdminNFLTeamCardProps> = ({
         borderColor={borderColor}
         onClick={handleOpenModal}
         disable={team.NFLOwnerName.length === 0}
+        lastLogin={lastLoginLabel}
+        isInGoodStanding={isInGoodStanding}
+        penaltyMarks={team.PenaltyMarks}
       />
       <RemoveUserModal
         isOpen={isModalOpen}
@@ -503,10 +594,11 @@ export const AdminCBBTeamCard: React.FC<AdminCBBTeamCardProps> = ({
   removeUser,
 }) => {
   const { currentUser, setCurrentUser } = useAuthStore();
+  const { teamProfileMap } = useSimBBAStore();
   const teamColors = useTeamColors(
     team.ColorOne,
     team.ColorTwo,
-    team.ColorThree
+    team.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -524,6 +616,30 @@ export const AdminCBBTeamCard: React.FC<AdminCBBTeamCardProps> = ({
     await updateUserByUsername(userName, payload);
   };
 
+  const teamProfile = useMemo(() => {
+    if (!teamProfileMap) return null;
+    return teamProfileMap[team.ID];
+  }, [teamProfileMap, team.ID]);
+
+  const lastLoginLabel = useMemo(() => {
+    const lastLoginDate = new Date(team.LastLogin.toString());
+    // Change to MM/DD/YYYY format
+    // This is the current time format 2026-02-06T03:08:19.637Z
+    // getMonth() does not exist on type Time, so we need to convert it to a Date object
+    return `${lastLoginDate.getMonth() + 1}/${lastLoginDate.getDate()}/${lastLoginDate.getFullYear()}`;
+  }, [team.LastLogin]);
+
+  // Checks whether the user is inactive by seeing if they have logged in within the last 4 weeks, or if they have received at least 3 penalty marks.
+  const isInGoodStanding = useMemo(() => {
+    if (!team.IsUserCoached) return true;
+    return calculateStanding(team);
+  }, [team, teamProfile]);
+
+  const weeksMissedInRecruiting = useMemo(() => {
+    if (!teamProfile) return 0;
+    return teamProfile.WeeksMissed;
+  }, [teamProfile]);
+
   return (
     <>
       <AdminTeamCard
@@ -534,6 +650,9 @@ export const AdminCBBTeamCard: React.FC<AdminCBBTeamCardProps> = ({
         borderColor={borderColor}
         onClick={handleOpenModal}
         disable={team.Coach.length === 0 || team.Coach === "AI"}
+        lastLogin={lastLoginLabel}
+        isInGoodStanding={isInGoodStanding}
+        weeksMissed={weeksMissedInRecruiting}
       />
       <RemoveUserModal
         isOpen={isModalOpen}
@@ -580,7 +699,7 @@ export const AdminNBATeamCard: React.FC<AdminNBATeamCardProps> = ({
   const teamColors = useTeamColors(
     team.ColorOne,
     team.ColorTwo,
-    team.ColorThree
+    team.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -613,6 +732,20 @@ export const AdminNBATeamCard: React.FC<AdminNBATeamCardProps> = ({
     handleCloseModal();
     return await removeUser(dto);
   };
+
+  const lastLoginLabel = useMemo(() => {
+    const lastLoginDate = new Date(team.LastLogin.toString());
+    // Change to MM/DD/YYYY format
+    // This is the current time format 2026-02-06T03:08:19.637Z
+    // getMonth() does not exist on type Time, so we need to convert it to a Date object
+    return `${lastLoginDate.getMonth() + 1}/${lastLoginDate.getDate()}/${lastLoginDate.getFullYear()}`;
+  }, [team.LastLogin]);
+
+  // Checks whether the user is inactive by seeing if they have logged in within the last 4 weeks, or if they have received at least 3 penalty marks.
+  const isInGoodStanding = useMemo(() => {
+    return calculateStanding(team);
+  }, [team]);
+
   return (
     <>
       <AdminTeamCard
@@ -626,6 +759,8 @@ export const AdminNBATeamCard: React.FC<AdminNBATeamCardProps> = ({
         borderColor={borderColor}
         onClick={handleOpenModal}
         disable={team.NBAOwnerName.length === 0}
+        isInGoodStanding={isInGoodStanding}
+        lastLogin={lastLoginLabel}
       />
       <RemoveUserModal
         isOpen={isModalOpen}
