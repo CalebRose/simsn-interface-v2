@@ -65,6 +65,11 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
     valueColor = getGradeColor(displayValue);
   }
 
+  const clickIt = () => {
+    if (revealed) return;
+    onClick();
+  };
+
   return (
     <div
       className={`
@@ -79,7 +84,7 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
               : "bg-gray-800 border-gray-700 cursor-not-allowed"
         }
       `}
-      onClick={onClick}
+      onClick={clickIt}
       title={`${attributeName}${!revealed ? ` (${cost} points)` : ` - ${displayValue}`}`}
     >
       {!(isPotentialGrade || isOverallGrade) && (
