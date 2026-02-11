@@ -8,12 +8,18 @@ import {
   SimPHL,
   SimMLB,
 } from "../_constants/constants";
-import { BaseballLogos, HCKLogos, ISLLogos, logos, retro_logos } from "../_constants/logos";
+import {
+  BaseballLogos,
+  HCKLogos,
+  ISLLogos,
+  logos,
+  retro_logos,
+} from "../_constants/logos";
 
 export const getLogo = (
   league: League,
   id: number,
-  isRetro: boolean | undefined
+  isRetro: boolean | undefined,
 ) => {
   const retro = isRetro || false;
   if (league === SimCFB) return getCFBLogo(id, retro);
@@ -1984,7 +1990,7 @@ export const getPHLLogo = (id: number, isRetro: boolean) => {
     case 3:
       return HCKLogos.TOR;
     case 4:
-      return HCKLogos.CBJ;
+      return HCKLogos.NYI;
     case 5:
       return HCKLogos.MIN;
     case 6:
@@ -2038,7 +2044,7 @@ export const getPHLLogo = (id: number, isRetro: boolean) => {
     case 30:
       return HCKLogos.ANA;
     case 31:
-      return HCKLogos.NYI;
+      return HCKLogos.CBJ;
     case 32:
       return HCKLogos.WAS;
 
