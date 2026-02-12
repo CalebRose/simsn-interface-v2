@@ -1384,6 +1384,24 @@ export const getCBBLogo = (id: number, isRetro: boolean) => {
       return logoObj.Seattle;
     case 179:
       return logoObj.Evansville;
+    case 370:
+      return logoObj.New_Haven;
+    case 371:
+      return logoObj.GuamState;
+    case 372:
+      return logoObj.HawaiiHilo;
+    case 373:
+      return logoObj.JRU;
+    case 374:
+      return logoObj.SanBeda;
+    case 375:
+      return logoObj.Tuvalu;
+    case 376:
+      return logoObj.HawaiiPacific;
+    case 377:
+      return logoObj.USP_Fiji;
+    case 378:
+      return logoObj.West_Florida;
 
     default:
       return logoObj.Unknown;

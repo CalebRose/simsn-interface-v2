@@ -67,7 +67,7 @@ import {
 const getRecruitProfileColumns = (
   league: League,
   category: string,
-  isMobile: boolean
+  isMobile: boolean,
 ) => {
   if (league === SimCHL) {
     let columns: { header: string; accessor: string }[] = [
@@ -229,8 +229,8 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
     profile.Scholarship && !profile.ScholarshipRevoked
       ? "success"
       : !profile.Scholarship && profile.ScholarshipRevoked
-      ? "danger"
-      : "secondary";
+        ? "danger"
+        : "secondary";
 
   // 3) Compute modifier
   let modValue = profile.CurrentWeeksPoints * profile.Modifier;
@@ -415,7 +415,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
               <TableCell key={idx}>
                 <span className="text-sm">{attr.value}</span>
               </TableCell>
-            )
+            ),
           )}
         </>
       )}
@@ -496,8 +496,8 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
     profile.Scholarship && !profile.ScholarshipRevoked
       ? "success"
       : !profile.Scholarship && profile.ScholarshipRevoked
-      ? "danger"
-      : "secondary";
+        ? "danger"
+        : "secondary";
 
   // 3) Compute modifier
   let modifier = CalculateAdjustedCFBPoints(profile, teamProfile, croot);
@@ -530,7 +530,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
     setAttribute(
       profile.Scholarship && !profile.ScholarshipRevoked
         ? ScholarshipRevoked
-        : ScholarshipOffered
+        : ScholarshipOffered,
     );
     openModal(ToggleScholarshipType, croot);
   };
@@ -540,7 +540,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
       teamProfile.OffensiveScheme,
       teamProfile.DefensiveScheme,
       croot.Position,
-      croot.Archetype
+      croot.Archetype,
     );
   }, [teamProfile]);
 
@@ -549,7 +549,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
       teamProfile.OffensiveScheme,
       teamProfile.DefensiveScheme,
       croot.Position,
-      croot.Archetype
+      croot.Archetype,
     );
   }, [teamProfile]);
 
@@ -710,8 +710,8 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
     profile.Scholarship && !profile.ScholarshipRevoked
       ? "success"
       : !profile.Scholarship && profile.ScholarshipRevoked
-      ? "danger"
-      : "secondary";
+        ? "danger"
+        : "secondary";
 
   // 3) Compute modifier
   let modifier = 1.0;
@@ -752,7 +752,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
     setAttribute(
       profile.Scholarship && !profile.ScholarshipRevoked
         ? ScholarshipRevoked
-        : ScholarshipOffered
+        : ScholarshipOffered,
     );
     openModal(ToggleScholarshipType, croot);
   };
@@ -900,7 +900,7 @@ interface RecruitProfileTableProps {
   category: string;
   openModal: (
     action: ModalAction,
-    player: HockeyCroot | FootballCroot | BasketballCroot
+    player: HockeyCroot | FootballCroot | BasketballCroot,
   ) => void;
   ChangeInput: (id: number, name: string, points: number) => void;
   setAttribute: Dispatch<SetStateAction<string>>;
@@ -933,7 +933,7 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
   const columns = getRecruitProfileColumns(league, category, isMobile);
 
   const rowRenderer = (
-    league: League
+    league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimCHL) {
       return (profile: HockeyCrootProfile, idx: number, bg: string) => {
