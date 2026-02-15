@@ -42,6 +42,7 @@ import {
   GenerateNBAFAErrorList,
   GenerateNFLFAErrorList,
   GeneratePHLFAErrorList,
+  GetNBAContractValue,
   GetNFLAAVValue,
   GetNFLContractValue,
   getNFLSalaryData,
@@ -240,6 +241,9 @@ export const OfferModal: FC<OfferModalProps> = ({
     }
     if (isNFL && player.Age) {
       return GetNFLContractValue(player.Age, offer as NFLFreeAgencyOffer);
+    }
+    if (isNBA) {
+      return GetNBAContractValue(offer as NBAContractOffer);
     }
     return 0;
   }, [offer, player]);

@@ -784,6 +784,35 @@ export const GetNFLContractValue = (
   return total;
 };
 
+export const GetNBAContractValue = (
+  offer: NBAContractOffer | NBAExtensionOffer,
+) => {
+  const { Year1Total, Year2Total, Year3Total, Year4Total, Year5Total } = offer;
+  let total = 0;
+  if (Year1Total) {
+    const y1Total = Year1Total;
+    total += y1Total;
+  }
+  if (Year2Total) {
+    const y2Total = Year2Total;
+    total += y2Total;
+  }
+  if (Year3Total) {
+    const y3Total = Year3Total;
+    total += y3Total;
+  }
+  if (Year4Total) {
+    const y4Total = Year4Total;
+    total += y4Total;
+  }
+  if (Year5Total) {
+    const y5Total = Year5Total;
+    total += y5Total;
+  }
+
+  return total;
+};
+
 export const GetNFLAAVValue = (total: number, length: number) => {
   return total / length;
 };
