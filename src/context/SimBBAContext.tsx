@@ -174,6 +174,7 @@ interface SimBBAContextProps {
   nbaDraftPicks: DraftPick[];
   nbaDraftPickMap: Record<number, DraftPick[]>;
   individualDraftPickMap: Record<number, DraftPick>;
+  proPlayerMap: Record<number, NBAPlayer>;
   freeAgents: NBAPlayer[];
   waiverPlayers: NBAPlayer[];
   collegePromises: CollegePromise[];
@@ -248,6 +249,7 @@ const defaultContext: SimBBAContextProps = {
   allProStandings: [],
   currentProStandings: [],
   proRosterMap: {},
+  proPlayerMap: {},
   freeAgentOffers: [],
   waiverOffers: [],
   gLeaguePlayers: [],
@@ -540,6 +542,32 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       (profile) => profile.ProfileID === cbbTeam.ID,
     );
   }, [cbbTeam, transferPortalProfiles]);
+
+  const proPlayerMap = useMemo(() => {
+    const playerMap: Record<number, NBAPlayer> = {};
+
+    if (proRosterMap && nbaTeams) {
+      for (let i = 0; i < nbaTeams.length; i++) {
+        const team = nbaTeams[i];
+        const roster = proRosterMap[team.ID];
+        if (roster) {
+          for (let j = 0; j < roster.length; j++) {
+            const p = roster[j];
+            playerMap[p.ID] = p;
+          }
+        }
+      }
+      const freeAgents = proRosterMap[0];
+      if (freeAgents) {
+        for (let i = 0; i < freeAgents.length; i++) {
+          const p = freeAgents[i];
+          playerMap[p.ID] = p;
+        }
+      }
+    }
+
+    return playerMap;
+  }, [proRosterMap, nbaTeams]);
 
   const cbbPlayerMap = useMemo(() => {
     const playerMap: Record<number, CollegePlayer> = {};
@@ -1690,6 +1718,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         allProStandings,
         currentProStandings,
         proRosterMap,
+        proPlayerMap,
         freeAgentOffers,
         waiverOffers,
         gLeaguePlayers,

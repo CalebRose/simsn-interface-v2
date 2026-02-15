@@ -12,7 +12,12 @@ import {
   SimPHL,
   Values,
 } from "../../../_constants/constants";
-import { NBAContractOffer, NBAPlayer } from "../../../models/basketballModels";
+import {
+  NBAContractOffer,
+  NBAPlayer,
+  NBAWaiverOffer,
+  Timestamp as BBATimestamp,
+} from "../../../models/basketballModels";
 import {
   FreeAgencyOffer as NFLFreeAgencyOffer,
   NFLPlayer,
@@ -57,7 +62,9 @@ interface OfferTableProps {
     | Record<number, PHLWaiverOffer[]>
     | Record<number, PHLFreeAgencyOffer[]>
     | Record<number, NFLFreeAgencyOffer[]>
-    | Record<number, NFLWaiverOffer[]>;
+    | Record<number, NFLWaiverOffer[]>
+    | Record<number, NBAContractOffer[]>
+    | Record<number, NBAWaiverOffer[]>;
   colorOne?: string;
   colorTwo?: string;
   colorThree?: string;
@@ -66,15 +73,15 @@ interface OfferTableProps {
   category?: string;
   openModal: (
     action: ModalAction,
-    player: PHLPlayer | NFLPlayer | NBAPlayer
+    player: PHLPlayer | NFLPlayer | NBAPlayer,
   ) => void;
   handleOfferModal: (
     action: OfferAction,
-    player: PHLPlayer | NFLPlayer | NBAPlayer
+    player: PHLPlayer | NFLPlayer | NBAPlayer,
   ) => void;
   league: League;
   isMobile?: boolean;
-  ts: HCKTimestamp | FBTimestamp;
+  ts: HCKTimestamp | FBTimestamp | BBATimestamp;
 }
 
 export const OfferTable: FC<OfferTableProps> = ({
@@ -162,7 +169,7 @@ export const OfferTable: FC<OfferTableProps> = ({
   const NFLRowRenderer = (
     item: NFLFreeAgencyOffer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const player = playerMap[item.NFLPlayerID] as NFLPlayer;
     if (!player) return <></>;
@@ -184,7 +191,7 @@ export const OfferTable: FC<OfferTableProps> = ({
       !isDesktop,
       category!,
       player.ShowLetterGrade,
-      item
+      item,
     );
 
     return (
@@ -270,13 +277,13 @@ export const OfferTable: FC<OfferTableProps> = ({
   const NBARowRenderer = (
     item: NBAContractOffer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => <></>;
 
   const PHLRowRenderer = (
     item: PHLFreeAgencyOffer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const player = playerMap[item.PlayerID] as PHLPlayer;
     const attributes = getPHLAttributes(
@@ -284,7 +291,7 @@ export const OfferTable: FC<OfferTableProps> = ({
       isMobile,
       isTablet,
       category!,
-      null
+      null,
     ) as {
       label: string;
       value: number;
@@ -329,8 +336,8 @@ export const OfferTable: FC<OfferTableProps> = ({
             category === Attributes && idx === 6
               ? "text-left"
               : idx !== 0
-              ? "text-center"
-              : ""
+                ? "text-center"
+                : ""
           }`}
           >
             {attr.label === "Name" ? (
@@ -416,7 +423,7 @@ export const OfferTable: FC<OfferTableProps> = ({
   };
 
   const rowRenderer = (
-    league: League
+    league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimPHL) {
       return PHLRowRenderer;

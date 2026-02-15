@@ -7,6 +7,7 @@ import { useSimBBAStore } from "../../context/SimBBAContext";
 import { PageContainer } from "../../_design/Container";
 import { PHLFreeAgency } from "./PHLFreeAgency/PHLFreeAgency";
 import { NFLFreeAgency } from "./NFLFreeAgency/NFLFreeAgency";
+import { NBAFreeAgency } from "./NBAFreeAgency/NBAFreeAgency";
 
 interface FreeAgencyPageProps {
   league: League;
@@ -39,13 +40,21 @@ export const FreeAgencyPage: FC<FreeAgencyPageProps> = ({ league }) => {
 
   return (
     <>
-      <PageContainer direction="col" isLoading={isFreeAgencyLoading} title="Free Agency">
+      <PageContainer
+        direction="col"
+        isLoading={isFreeAgencyLoading}
+        title="Free Agency"
+      >
         {selectedLeague === SimPHL && phlTeam && (
           <>
             <PHLFreeAgency />
           </>
         )}
-        {selectedLeague === SimNBA && nbaTeam && <></>}
+        {selectedLeague === SimNBA && nbaTeam && (
+          <>
+            <NBAFreeAgency />
+          </>
+        )}
         {selectedLeague === SimNFL && nflTeam && (
           <>
             <NFLFreeAgency />

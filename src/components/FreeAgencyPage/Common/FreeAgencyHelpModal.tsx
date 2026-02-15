@@ -1,7 +1,8 @@
 import { FC, useMemo } from "react";
 import { HelpModalProps } from "../../Recruiting/Common/RecruitingHelpModal";
-import { Help1, SimNFL, SimPHL } from "../../../_constants/constants";
+import { Help1, SimNBA, SimNFL, SimPHL } from "../../../_constants/constants";
 import {
+  NBAFreeAgencyHelpContent,
   NFLFreeAgencyHelpContent,
   PHLFreeAgencyHelpContent,
 } from "../../../_constants/helpContent";
@@ -23,12 +24,20 @@ export const FreeAgencyHelpModal: FC<HelpModalProps> = ({
     if (league === SimNFL) {
       return NFLFreeAgencyHelpContent;
     }
+    if (league === SimNBA) {
+      return NBAFreeAgencyHelpContent;
+    }
     return [];
   }, [league]);
   const { currentPage, totalPages, goToNextPage, goToPreviousPage } =
     usePagination(helpContent.length, 1);
 
-  const contentForPage = helpContent[currentPage];
+  const contentForPage = useMemo(() => {
+    if (helpContent.length === 0) {
+      return [];
+    }
+    return helpContent[currentPage];
+  }, [currentPage, helpContent]);
 
   return (
     <>
