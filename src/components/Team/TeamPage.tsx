@@ -1685,7 +1685,6 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
 
 const NBATeamPage = ({ league, ts }: TeamPageProps) => {
   const { teamId } = useParams<{ teamId?: string }>();
-
   const { currentUser } = useAuthStore();
   const bbStore = useSimBBAStore();
   const {
@@ -1697,7 +1696,12 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     cutNBAPlayer,
     proContractMap,
     getBootstrapRosterData,
+    proExtensionMap,
+    capsheetMap,
+    SaveExtensionOffer,
+    CancelExtensionOffer,
   } = bbStore;
+  const extensionModal = useModal();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<NBAPlayer | null>(null);
@@ -1729,6 +1733,13 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     return null;
   }, [proRosterMap, selectedTeam]);
 
+  const nbaCapsheet = useMemo(() => {
+    if (selectedTeam && capsheetMap) {
+      return capsheetMap[selectedTeam.ID];
+    }
+    return null;
+  }, [capsheetMap, selectedTeam]);
+
   const selectedTeamProfile = useMemo(() => {
     if (selectedTeam && teamProfileMap) {
       return teamProfileMap[selectedTeam.ID];
@@ -1755,6 +1766,19 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
 
   return (
     <>
+      {modalPlayer && (
+        <ExtensionOfferModal
+          isOpen={extensionModal.isModalOpen}
+          onClose={extensionModal.handleCloseModal}
+          player={modalPlayer!!}
+          league={SimNBA}
+          ts={ts}
+          capsheet={nbaCapsheet!!}
+          existingOffer={proExtensionMap![modalPlayer!.ID]}
+          confirmOffer={SaveExtensionOffer}
+          cancelOffer={CancelExtensionOffer}
+        />
+      )}
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
