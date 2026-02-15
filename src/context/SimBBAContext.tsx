@@ -148,6 +148,8 @@ interface SimBBAContextProps {
   CancelFreeAgencyOffer: (dto: any) => Promise<void>;
   SaveWaiverWireOffer: (dto: any) => Promise<void>;
   CancelWaiverWireOffer: (dto: any) => Promise<void>;
+  SaveExtensionOffer: (dto: any) => Promise<void>;
+  CancelExtensionOffer: (dto: any) => Promise<void>;
   SaveRecruitingBoard: () => Promise<void>;
   SaveAIRecruitingSettings: (dto: TeamRecruitingProfile) => Promise<void>;
   SearchBasketballStats: (dto: any) => Promise<void>;
@@ -200,7 +202,7 @@ interface SimBBAContextProps {
   updatePointsOnPortalPlayer: (
     id: number,
     name: string,
-    points: number
+    points: number,
   ) => void;
   addTransferPlayerToBoard: (dto: any) => Promise<void>;
   removeTransferPlayerFromBoard: (dto: any) => Promise<void>;
@@ -208,7 +210,7 @@ interface SimBBAContextProps {
   exportTransferPortalPlayers: () => Promise<void>;
   toggleNotificationAsRead: (
     notificationID: number,
-    isPro: boolean
+    isPro: boolean,
   ) => Promise<void>;
   deleteNotification: (notificationID: number, isPro: boolean) => Promise<void>;
 }
@@ -289,6 +291,8 @@ const defaultContext: SimBBAContextProps = {
   CancelFreeAgencyOffer: async () => {},
   SaveWaiverWireOffer: async () => {},
   CancelWaiverWireOffer: async () => {},
+  SaveExtensionOffer: async () => {},
+  CancelExtensionOffer: async () => {},
   SearchBasketballStats: async () => {},
   ExportBasketballStats: async () => {},
   ExportCBBRecruits: async () => {},
@@ -378,7 +382,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     { label: string; value: string }[]
   >([]);
   const [allCBBStandings, setAllCBBStandings] = useState<CollegeStandings[]>(
-    []
+    [],
   );
   const [currentCBBStandings, setCurrentCBBStandings] = useState<
     CollegeStandings[]
@@ -400,7 +404,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     TeamRecruitingProfile
   > | null>({});
   const [portalPlayers, setPortalPlayers] = useState<TransferPlayerResponse[]>(
-    []
+    [],
   );
   const [collegeInjuryReport, setCollegeInjuryReport] = useState<
     CollegePlayer[]
@@ -416,7 +420,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   >([]);
   const [cbbTeamMap, setCBBTeamMap] = useState<Record<number, Team>>({});
   const [nbaTeamMap, setProTeamMap] = useState<Record<number, NBATeam> | null>(
-    {}
+    {},
   );
   const [allProStandings, setAllProStandings] = useState<NBAStandings[]>([]);
   const [currentProStandings, setCurrentProStandings] = useState<
@@ -430,12 +434,12 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     [key: number]: NBAPlayer[];
   } | null>({});
   const [freeAgentOffers, setFreeAgentOffers] = useState<NBAContractOffer[]>(
-    []
+    [],
   );
   const [waiverOffers, setWaiverOffers] = useState<NBAWaiverOffer[]>([]);
   const [gLeaguePlayers, setGLeaguePlayers] = useState<NBAPlayer[]>([]);
   const [internationalPlayers, setInternationalPlayers] = useState<NBAPlayer[]>(
-    []
+    [],
   );
   const [nbaDraftees, setNBADraftees] = useState<NBADraftee[]>([]);
 
@@ -474,7 +478,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [collegePollSubmission, setCollegePollSubmission] =
     useState<CollegePollSubmission>({} as CollegePollSubmission);
   const [nbaTradeProposals, setNBATradeProposals] = useState<NBATeamProposals>(
-    {} as NBATeamProposals
+    {} as NBATeamProposals,
   );
   const [tradeProposalsMap, setTradeProposalsMap] = useState<
     Record<number, NBATradeProposal[]>
@@ -533,7 +537,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const teamTransferPortalProfiles = useMemo(() => {
     if (!cbbTeam) return [];
     return transferPortalProfiles.filter(
-      (profile) => profile.ProfileID === cbbTeam.ID
+      (profile) => profile.ProfileID === cbbTeam.ID,
     );
   }, [cbbTeam, transferPortalProfiles]);
 
@@ -584,7 +588,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     for (let i = 0; i < portalPlayers.length; i++) {
       const p = portalPlayers[i];
       const profiles = transferPortalProfiles.filter(
-        (profile) => profile.CollegePlayerID === p.ID
+        (profile) => profile.CollegePlayerID === p.ID,
       );
       transferProfileMap[p.ID] = profiles;
     }
@@ -608,12 +612,12 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     const res = await BootstrapService.GetBBABootstrapTeamData();
     setCBBTeams(res.AllCollegeTeams);
     const sortedProTeams = res.AllProTeams.sort(
-      (a, b) => a.ConferenceID - b.ConferenceID
+      (a, b) => a.ConferenceID - b.ConferenceID,
     );
     setNBATeams(sortedProTeams);
     if (res.AllCollegeTeams.length > 0) {
       const sortedCollegeTeams = res.AllCollegeTeams.sort((a, b) =>
-        a.Team.localeCompare(b.Team)
+        a.Team.localeCompare(b.Team),
       );
       const teamOptionsList = sortedCollegeTeams.map((team) => ({
         label: `${team.Team} | ${team.Abbr}`,
@@ -624,20 +628,20 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
           sortedCollegeTeams.map((team) => [
             team.ConferenceID,
             { label: team.Conference, value: team.ConferenceID.toString() },
-          ])
-        ).values()
+          ]),
+        ).values(),
       ).sort((a, b) => a.label.localeCompare(b.label));
       setCBBTeamOptions(teamOptionsList);
       setCBBConferenceOptions(conferenceOptions);
       const collegeTeamMap = Object.fromEntries(
-        sortedCollegeTeams.map((team) => [team.ID, team])
+        sortedCollegeTeams.map((team) => [team.ID, team]),
       );
       setCBBTeamMap(collegeTeamMap);
     }
     if (res.AllProTeams.length > 0) {
       const sortedNBATeams = sortedProTeams.sort(
         (a, b) =>
-          a.Team.localeCompare(b.Team) && a.ConferenceID - b.ConferenceID
+          a.Team.localeCompare(b.Team) && a.ConferenceID - b.ConferenceID,
       );
       const nbaTeamOptions = sortedNBATeams.map((team) => ({
         label: team.Team,
@@ -648,13 +652,13 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
           sortedNBATeams.map((team) => [
             team.ConferenceID,
             { label: team.Conference, value: team.ConferenceID.toString() },
-          ])
-        ).values()
+          ]),
+        ).values(),
       ).sort((a, b) => a.label.localeCompare(b.label));
       setNBATeamOptions(nbaTeamOptions);
       setNBAConferenceOptions(nbaConferenceOptions);
       const nbaTeamMap = Object.fromEntries(
-        sortedNBATeams.map((team) => [team.ID, team])
+        sortedNBATeams.map((team) => [team.ID, team]),
       );
       setProTeamMap(nbaTeamMap);
     }
@@ -820,7 +824,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       const res = await BootstrapService.GetBBASchedulingBootstrapData(
         username,
         cbbID,
-        seasonId
+        seasonId,
       );
       setCollegePolls(res.CollegePolls);
       setCollegePollSubmission(res.PollSubmission);
@@ -873,7 +877,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
     const res = await BootstrapService.GetBBAGameplanBootstrapData(
       cfbID,
-      nbaID
+      nbaID,
     );
     setCollegeGameplanMap(res.CollegeGameplanMap);
     setNBAGameplanMap(res.ProGameplanMap);
@@ -890,14 +894,14 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       }
       setCBBTeams(CBBTeamsList);
     },
-    [cbbTeams]
+    [cbbTeams],
   );
 
   const removeUserfromNBATeamCall = useCallback(
     async (request: NBARequest) => {
       const res = await TeamService.RemoveUserFromNBATeam(
         request.NBATeamID,
-        request
+        request,
       );
       const NBATeamsList = [...nbaTeams];
       const teamIDX = NBATeamsList.findIndex((x) => x.ID === request.NBATeamID);
@@ -912,7 +916,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       }
       setNBATeams(NBATeamsList);
     },
-    [nbaTeams]
+    [nbaTeams],
   );
 
   const addUserToCBBTeam = useCallback(
@@ -926,12 +930,12 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
           {
             variant: "success",
             autoHideDuration: 3000,
-          }
+          },
         );
       }
       setCBBTeams(teams);
     },
-    [cbbTeams]
+    [cbbTeams],
   );
 
   const addUserToNBATeam = useCallback(
@@ -953,12 +957,12 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
           {
             variant: "success",
             autoHideDuration: 3000,
-          }
+          },
         );
       }
       setNBATeams(teams);
     },
-    [nbaTeams]
+    [nbaTeams],
   );
 
   const cutCBBPlayer = useCallback(
@@ -966,40 +970,40 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       const res = await PlayerService.CutCBBPlayer(playerID);
       const rosterMap = { ...cbbRosterMap };
       rosterMap[teamID] = rosterMap[teamID].filter(
-        (player) => player.ID !== playerID
+        (player) => player.ID !== playerID,
       );
       setCBBRosterMap(rosterMap);
     },
-    [cbbRosterMap]
+    [cbbRosterMap],
   );
   const redshirtPlayer = useCallback(
     async (playerID: number, teamID: number) => {
       const res = await PlayerService.RedshirtCBBPlayer(playerID);
       const rosterMap = { ...cbbRosterMap };
       const playerIDX = rosterMap[teamID].findIndex(
-        (player) => player.ID === playerID
+        (player) => player.ID === playerID,
       );
       if (playerIDX > -1) {
         rosterMap[teamID][playerIDX].IsRedshirting = true;
         setCBBRosterMap(rosterMap);
       }
     },
-    [cbbRosterMap]
+    [cbbRosterMap],
   );
   const promisePlayer = useCallback(
     async (playerID: number, teamID: number) => {},
-    [cbbRosterMap]
+    [cbbRosterMap],
   );
   const cutNBAPlayer = useCallback(
     async (playerID: number, teamID: number) => {
       const res = await PlayerService.CutNBAPlayer(playerID);
       const rosterMap = { ...proRosterMap };
       rosterMap[teamID] = rosterMap[teamID].filter(
-        (player) => player.ID !== playerID
+        (player) => player.ID !== playerID,
       );
       setProRosterMap(rosterMap);
     },
-    [proRosterMap]
+    [proRosterMap],
   );
 
   const updateCBBRosterMap = (newMap: Record<number, CollegePlayer[]>) => {
@@ -1034,7 +1038,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     if (profile) {
       setRecruitProfiles((profiles) => {
         const profileIDX = profiles.findIndex(
-          (x) => x.RecruitID === apiDTO.RecruitID
+          (x) => x.RecruitID === apiDTO.RecruitID,
         );
         if (profileIDX < 0) {
           return [...profiles, profile];
@@ -1050,7 +1054,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     const profile = await RecruitService.BBARemoveCrootFromBoard(dto);
     if (profile) {
       setRecruitProfiles((profiles) =>
-        [...profiles].filter((p) => p.RecruitID != dto.RecruitID)
+        [...profiles].filter((p) => p.RecruitID != dto.RecruitID),
       );
     }
   };
@@ -1066,8 +1070,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
                 Scholarship: profile.Scholarship,
                 ScholarshipRevoked: profile.ScholarshipRevoked,
               })
-            : p
-        )
+            : p,
+        ),
       );
       setTeamProfileMap((prev) => {
         const currentProfile = prev!![profile.ProfileID];
@@ -1076,8 +1080,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         const adjustment = profile.Scholarship
           ? -1
           : profile.ScholarshipRevoked
-          ? 1
-          : 0;
+            ? 1
+            : 0;
         return {
           ...prev,
           [profile.ProfileID]: new TeamRecruitingProfile({
@@ -1096,13 +1100,13 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       const updatedProfiles = prevProfiles.map((profile) =>
         profile.ID === id
           ? new PlayerRecruitProfile({ ...profile, [name]: points })
-          : profile
+          : profile,
       );
 
       // Calculate the total points from the updated profiles.
       const totalPoints = updatedProfiles.reduce(
         (sum, profile) => sum + (profile.CurrentWeeksPoints || 0),
-        0
+        0,
       );
 
       // Update the recruiting team profile based on the updated points.
@@ -1164,7 +1168,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         });
       }
     },
-    [cbbTeamMap]
+    [cbbTeamMap],
   );
 
   const SaveFreeAgencyOffer = useCallback(async (dto: NBAContractOfferDTO) => {
@@ -1201,7 +1205,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         });
       }
     },
-    []
+    [],
   );
 
   const SaveWaiverWireOffer = useCallback(async (dto: NBAWaiverOfferDTO) => {
@@ -1319,7 +1323,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       {
         variant: "success",
         autoHideDuration: 3000,
-      }
+      },
     );
     setTradeProposalsMap((tp) => {
       const team = tp[dto.NBATeamID];
@@ -1431,7 +1435,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         });
       }
     },
-    [collegePromises]
+    [collegePromises],
   );
 
   const cancelPromise = useCallback(
@@ -1439,20 +1443,20 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       await TransferPortalService.BBACancelPromise(dto);
 
       setCollegePromises((promises) =>
-        [...promises].filter((x) => x.CollegePlayerID !== dto.CollegePlayerID)
+        [...promises].filter((x) => x.CollegePlayerID !== dto.CollegePlayerID),
       );
       enqueueSnackbar("Promise Cancelled!", {
         variant: "success",
         autoHideDuration: 3000,
       });
     },
-    [collegePromises]
+    [collegePromises],
   );
 
   const updatePointsOnPortalPlayer = (
     id: number,
     name: string,
-    points: number
+    points: number,
   ) => {
     const profileIdx = transferPortalProfiles.findIndex((x) => x.ID === id);
     if (profileIdx === -1) return;
@@ -1481,13 +1485,13 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       const updatedProfiles = prevProfiles.map((profile) =>
         profile.ID === id && profile.ID > 0
           ? new TransferPortalProfile({ ...profile, [name]: pointsValue })
-          : profile
+          : profile,
       );
 
       // Calculate the total points from the updated profiles.
       const totalPoints = updatedProfiles.reduce(
         (sum, profile) => sum + (profile.CurrentWeeksPoints || 0),
-        0
+        0,
       );
 
       // Update the recruiting team profile based on the updated points.
@@ -1526,20 +1530,19 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         setTransferPortalProfiles((profiles) => [...profiles, newProfile]);
       }
     },
-    [transferPortalProfiles]
+    [transferPortalProfiles],
   );
 
   const removeTransferPlayerFromBoard = useCallback(
     async (dto: any) => {
-      const profile = await TransferPortalService.BBARemoveProfileFromBoard(
-        dto
-      );
+      const profile =
+        await TransferPortalService.BBARemoveProfileFromBoard(dto);
 
       setTransferPortalProfiles((profiles) =>
-        [...profiles].filter((p) => p.CollegePlayerID != dto.CollegePlayerID)
+        [...profiles].filter((p) => p.CollegePlayerID != dto.CollegePlayerID),
       );
     },
-    [transferPortalProfiles]
+    [transferPortalProfiles],
   );
 
   const saveTransferPortalBoard = useCallback(async () => {
@@ -1561,9 +1564,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
 
   const toggleNotificationAsRead = useCallback(
     async (notificationID: number, isPro: boolean) => {
-      const res = await notificationService.ToggleSimBBANotification(
-        notificationID
-      );
+      const res =
+        await notificationService.ToggleSimBBANotification(notificationID);
       if (!isPro) {
         setCollegeNotifications((prevNotifications) => {
           return prevNotifications.map((notification) =>
@@ -1572,7 +1574,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
                   ...notification,
                   IsRead: !notification.IsRead,
                 })
-              : notification
+              : notification,
           );
         });
       } else {
@@ -1583,34 +1585,75 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
                   ...notification,
                   IsRead: !notification.IsRead,
                 })
-              : notification
+              : notification,
           );
         });
       }
     },
-    [setCollegeNotifications, setProNotifications]
+    [setCollegeNotifications, setProNotifications],
   );
 
   const deleteNotification = useCallback(
     async (notificationID: number, isPro: boolean) => {
-      const res = await notificationService.DeleteSimBBANotification(
-        notificationID
-      );
+      const res =
+        await notificationService.DeleteSimBBANotification(notificationID);
       if (!isPro) {
         setCollegeNotifications((prevNotifications) => {
           return prevNotifications.filter(
-            (notification) => notification.ID !== notificationID
+            (notification) => notification.ID !== notificationID,
           );
         });
       } else {
         setProNotifications((prevNotifications) => {
           return prevNotifications.filter(
-            (notification) => notification.ID !== notificationID
+            (notification) => notification.ID !== notificationID,
           );
         });
       }
     },
-    [setCollegeNotifications, setProNotifications]
+    [setCollegeNotifications, setProNotifications],
+  );
+
+  const SaveExtensionOffer = useCallback(
+    async (dto: NBAExtensionOffer) => {
+      try {
+        const res = await FreeAgencyService.BBASaveExtensionOffer(dto);
+        if (res) {
+          enqueueSnackbar("Extension Offer Created!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setProExtensionMap((prevOffers) => {
+            const offers = { ...prevOffers };
+            offers[res.PlayerID] = new NBAExtensionOffer({ ...res });
+            return offers;
+          });
+        }
+      } finally {
+      }
+    },
+    [proExtensionMap, setProExtensionMap],
+  );
+
+  const CancelExtensionOffer = useCallback(
+    async (dto: NBAExtensionOffer) => {
+      try {
+        const res = await FreeAgencyService.BBACancelExtensionOffer(dto);
+        if (res) {
+          enqueueSnackbar("Extension Offer Cancelled!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setProExtensionMap((prevOffers) => {
+            const offers = { ...prevOffers };
+            delete offers[dto.PlayerID];
+            return offers;
+          });
+        }
+      } finally {
+      }
+    },
+    [proExtensionMap, setProExtensionMap],
   );
 
   return (
@@ -1729,6 +1772,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         CancelFreeAgencyOffer,
         SaveWaiverWireOffer,
         CancelWaiverWireOffer,
+        SaveExtensionOffer,
+        CancelExtensionOffer,
         SearchBasketballStats,
         ExportBasketballStats,
         ExportCBBRecruits,

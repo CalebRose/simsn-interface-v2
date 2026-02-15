@@ -1073,6 +1073,9 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     acceptTrade,
     rejectTrade,
     getBootstrapRosterData,
+    proExtensionMap: nflExtensionMap,
+    SaveExtensionOffer,
+    CancelExtensionOffer,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1092,6 +1095,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   );
   const manageTradesModal = useModal();
   const proposeTradeModal = useModal();
+  const extensionModal = useModal();
   let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
@@ -1305,6 +1309,19 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
 
   return (
     <>
+      {modalPlayer && (
+        <ExtensionOfferModal
+          isOpen={extensionModal.isModalOpen}
+          onClose={extensionModal.handleCloseModal}
+          player={modalPlayer!!}
+          league={SimPHL}
+          ts={ts}
+          capsheet={nflCapsheet!!}
+          existingOffer={nflExtensionMap![modalPlayer!.ID]}
+          confirmOffer={SaveExtensionOffer}
+          cancelOffer={CancelExtensionOffer}
+        />
+      )}
       <ManageTradeModal
         isOpen={manageTradesModal.isModalOpen}
         onClose={manageTradesModal.handleCloseModal}
