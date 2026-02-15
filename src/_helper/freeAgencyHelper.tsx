@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import {
   Affiliate,
   GLeague,
+  International,
   PracticeSquad,
   Waivers,
 } from "../_constants/constants";
@@ -147,6 +148,7 @@ export const useFilteredNBAFreeAgents = ({
   freeAgents,
   waiverPlayers,
   gLeaguePlayers,
+  internationalPlayers,
   playerType,
   country,
   positions,
@@ -156,6 +158,7 @@ export const useFilteredNBAFreeAgents = ({
   freeAgents: NBAPlayer[];
   waiverPlayers: NBAPlayer[];
   gLeaguePlayers: NBAPlayer[];
+  internationalPlayers: NBAPlayer[];
   playerType: string;
   country: string;
   positions: string[];
@@ -174,6 +177,10 @@ export const useFilteredNBAFreeAgents = ({
       let source = freeAgents;
       if (playerType === Waivers) source = waiverPlayers;
       else if (playerType === GLeague) source = gLeaguePlayers;
+      else if (playerType === International)
+        source = internationalPlayers.filter(
+          (p) => p.TeamID > 32 || (p.IsIntGenerated && p.TeamID === 0),
+        );
 
       return source.filter((fa) => {
         // country filter (allow “All” as wildcard)
@@ -204,6 +211,7 @@ export const useFilteredNBAFreeAgents = ({
       freeAgents,
       waiverPlayers,
       gLeaguePlayers,
+      internationalPlayers,
       playerType,
       positionSet,
       archSet,

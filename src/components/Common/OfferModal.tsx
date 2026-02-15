@@ -39,6 +39,7 @@ import { Input } from "../../_design/Inputs";
 import { Button, ButtonGroup } from "../../_design/Buttons";
 import {
   createOffer,
+  GenerateNBAFAErrorList,
   GenerateNFLFAErrorList,
   GeneratePHLFAErrorList,
   GetNFLAAVValue,
@@ -276,7 +277,7 @@ export const OfferModal: FC<OfferModalProps> = ({
       return GeneratePHLFAErrorList(
         offer as PHLFreeAgencyOffer,
         ts as HCKTimestamp,
-        capsheet as ProCapsheet
+        capsheet as ProCapsheet,
       );
     }
     if (league === SimNFL) {
@@ -285,7 +286,16 @@ export const OfferModal: FC<OfferModalProps> = ({
         ts as Timestamp,
         capsheet as NFLCapsheet,
         Number(playerAAV),
-        aavValue
+        aavValue,
+      );
+    }
+    if (league === SimNBA) {
+      return GenerateNBAFAErrorList(
+        offer as NBAContractOffer,
+        ts as BKTimestamp,
+        capsheet as NBACapsheet,
+        0,
+        0,
       );
     }
     return list;
@@ -324,13 +334,13 @@ export const OfferModal: FC<OfferModalProps> = ({
         return prev;
       });
     },
-    [league]
+    [league],
   );
 
   const Confirm = useCallback(async () => {
     if (league === SimPHL) {
       const { totalComp, ContractLength } = getPHLSalaryData(
-        offer as PHLFreeAgencyOffer
+        offer as PHLFreeAgencyOffer,
       );
       if (totalComp === 0 && ContractLength === 0) {
         onClose();
@@ -345,7 +355,7 @@ export const OfferModal: FC<OfferModalProps> = ({
     }
     if (league === SimNFL) {
       const { totalComp, ContractLength } = getNFLSalaryData(
-        offer as NFLFreeAgencyOffer
+        offer as NFLFreeAgencyOffer,
       );
       if (totalComp === 0 && ContractLength === 0) {
         onClose();
@@ -458,6 +468,16 @@ export const OfferModal: FC<OfferModalProps> = ({
                 onChange={ChangeInput}
               />
             )}
+            {offer instanceof NBAContractOffer && (
+              <Input
+                type="number"
+                label="Length"
+                name="TotalYears"
+                value={offer.TotalYears || 0}
+                max={5}
+                onChange={ChangeInput}
+              />
+            )}
           </div>
           <div className="flex">
             {isNFL && (
@@ -564,7 +584,7 @@ export const OfferModal: FC<OfferModalProps> = ({
           </div>
         )}
         {isNBA && (
-          <div className="grid grid-cols-6 space-x-2 mb-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 mb-2">
             <div className="flex flex-col">
               <Input
                 type="number"

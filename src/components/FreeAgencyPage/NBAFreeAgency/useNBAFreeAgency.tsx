@@ -36,6 +36,7 @@ export const useNBAFreeAgency = () => {
     proPlayerMap,
     freeAgents,
     waiverPlayers,
+    internationalPlayers,
     getBootstrapFreeAgencyData,
   } = useSimBBAStore();
 
@@ -195,6 +196,7 @@ export const useNBAFreeAgency = () => {
     freeAgents,
     waiverPlayers,
     gLeaguePlayers,
+    internationalPlayers,
     playerType,
     country,
     positions,

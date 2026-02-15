@@ -14,6 +14,7 @@ import {
   FreeAgent,
   GLeague,
   Help1,
+  International,
   Overview,
   Preferences,
   SimNBA,
@@ -177,6 +178,7 @@ export const NBAFreeAgency = () => {
                     variant={
                       tableViewType === Preferences ? "success" : "secondary"
                     }
+                    disabled
                     onClick={() => setTableViewType(Preferences)}
                   >
                     Preferences
@@ -201,6 +203,16 @@ export const NBAFreeAgency = () => {
                     onClick={() => setPlayerType(GLeague)}
                   >
                     {GLeague}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={
+                      playerType === International ? "success" : "secondary"
+                    }
+                    disabled={cbb_Timestamp?.IsDraftTime}
+                    onClick={() => setPlayerType(International)}
+                  >
+                    {International}
                   </Button>
                 </ButtonGroup>
               )}

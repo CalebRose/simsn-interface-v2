@@ -156,7 +156,6 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
         { header: "ID", accessor: "InteriorDefense" },
         { header: "PD", accessor: "PerimeterDefense" },
         { header: "IR", accessor: "InjuryRating" },
-        { header: "PTE", accessor: "PlaytimeExpectations" },
       ]);
     }
 
@@ -421,10 +420,14 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
         style={{ backgroundColor }}
       >
         <>
-          {attributes.map((attr, idx) => (
-            <TableCell
-              key={idx}
-              classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+          {attributes.map((attr, idx) => {
+            if (attr.label === "Min") return <></>;
+            if (attr.label === "PTE") return <></>;
+
+            return (
+              <TableCell
+                key={idx}
+                classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
         text-wrap sm:max-w-full ${
           category === Attributes && idx === 6
             ? "text-left"
@@ -432,35 +435,31 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
               ? "text-center"
               : ""
         }`}
-            >
-              {attr.label === "Name" ? (
-                <span
-                  className={`cursor-pointer font-semibold`}
-                  onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
-                    (e.target as HTMLElement).style.color = "#fcd53f";
-                  }}
-                  onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
-                    (e.target as HTMLElement).style.color = "";
-                  }}
-                  onClick={() => openModal(InfoType, item)}
-                >
+              >
+                {attr.label === "Name" ? (
+                  <span
+                    className={`cursor-pointer font-semibold text-start`}
+                    onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+                      (e.target as HTMLElement).style.color = "#fcd53f";
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+                      (e.target as HTMLElement).style.color = "";
+                    }}
+                    onClick={() => openModal(InfoType, item)}
+                  >
+                    <Text variant="small">{attr.value}</Text>
+                  </span>
+                ) : (
                   <Text variant="small">{attr.value}</Text>
-                </span>
-              ) : attr.label === "Sta" || attr.label === "Inj" ? (
-                <Text variant="small">{attr.letter}</Text>
-              ) : (
-                <Text variant="small">{attr.value}</Text>
-              )}
-            </TableCell>
-          ))}
-          <TableCell>
-            <Text variant="small">{item.Stamina}</Text>
-          </TableCell>
+                )}
+              </TableCell>
+            );
+          })}
         </>
         <TableCell>{item.MinimumValue}</TableCell>
         <TableCell classes="w-[5em] min-[430px]:w-[10em]">
           <div className="flex flex-row">
-            {!offers || (offers.length === 0 && "None")}
+            {!offers || offers === undefined || (offers.length === 0 && "None")}
             {logos.length > 0 &&
               logos.map((url) => (
                 <Logo url={url} variant="tiny" containerClass="px-1 py-2" />
@@ -472,7 +471,10 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
             variant={actionVariant}
             size="xs"
             onClick={() => handleOfferModal(FreeAgentOffer, item as NBAPlayer)}
-            disabled={!!teamOfferMap[item.ID]}
+            disabled={
+              !!teamOfferMap[item.ID] ||
+              (item.IsIntGenerated && !item.IsIntDeclared)
+            }
           >
             {teamOfferMap[item.ID] ? <ActionLock /> : <Plus />}
           </Button>
