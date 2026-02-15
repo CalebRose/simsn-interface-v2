@@ -8,6 +8,7 @@ import { PageContainer } from "../../_design/Container";
 import { PHLFreeAgency } from "./PHLFreeAgency/PHLFreeAgency";
 import { NFLFreeAgency } from "./NFLFreeAgency/NFLFreeAgency";
 import { NBAFreeAgency } from "./NBAFreeAgency/NBAFreeAgency";
+import { Text } from "../../_design/Typography";
 
 interface FreeAgencyPageProps {
   league: League;
@@ -17,7 +18,7 @@ export const FreeAgencyPage: FC<FreeAgencyPageProps> = ({ league }) => {
   const { selectedLeague, setSelectedLeague } = useLeagueStore();
   const { phlTeam } = useSimHCKStore();
   const { nflTeam, isLoading } = useSimFBAStore();
-  const { nbaTeam } = useSimBBAStore();
+  const { nbaTeam, cbb_Timestamp } = useSimBBAStore();
 
   useEffect(() => {
     if (selectedLeague !== league) {
@@ -52,7 +53,16 @@ export const FreeAgencyPage: FC<FreeAgencyPageProps> = ({ league }) => {
         )}
         {selectedLeague === SimNBA && nbaTeam && (
           <>
-            <NBAFreeAgency />
+            {cbb_Timestamp?.IsDraftTime ? (
+              <>
+                <Text variant="h5" classes="mt-10">
+                  Please wait until the next SimNBA Draft is complete before
+                  proceeding.
+                </Text>
+              </>
+            ) : (
+              <NBAFreeAgency />
+            )}
           </>
         )}
         {selectedLeague === SimNFL && nflTeam && (
