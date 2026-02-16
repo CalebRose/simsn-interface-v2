@@ -1153,6 +1153,12 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     setModalAction(action);
     setModalPlayer(player);
   };
+
+  const openExtensionModal = (player: NFLPlayer) => {
+    extensionModal.handleOpenModal();
+    setModalPlayer(player);
+  };
+
   const nflCapsheet = useMemo(() => {
     if (selectedTeam && nflCapsheetMap) {
       return nflCapsheetMap[selectedTeam.ID];
@@ -1462,6 +1468,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            openExtensionModal={openExtensionModal}
             disable={selectedTeam!.ID !== nflTeam!.ID}
           />
         </Border>
@@ -1760,6 +1767,11 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     setModalPlayer(player);
   };
 
+  const openExtensionModal = (player: NBAPlayer) => {
+    extensionModal.handleOpenModal();
+    setModalPlayer(player);
+  };
+
   useEffect(() => {
     getBootstrapRosterData();
   }, []);
@@ -1867,6 +1879,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            openExtensionModal={openExtensionModal}
             contracts={proContractMap!!}
             ts={ts}
             disable={nbaTeam!.ID !== selectedTeam!.ID}

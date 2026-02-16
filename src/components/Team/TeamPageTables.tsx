@@ -1132,6 +1132,7 @@ interface NFLRosterTableProps {
   team?: any;
   category?: string;
   openModal: (action: ModalAction, player: NFLPlayer) => void;
+  openExtensionModal: (player: NFLPlayer) => void;
   disable: boolean;
 }
 
@@ -1145,6 +1146,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
   team,
   category,
   openModal,
+  openExtensionModal,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -1368,6 +1370,8 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
                 openModal(PracticeSquad, item);
               } else if (selectedOption?.value === "tradeBlock") {
                 openModal(TradeBlock, item);
+              } else if (selectedOption?.value === "extension") {
+                openExtensionModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
               }
@@ -1689,6 +1693,8 @@ interface NBARosterTableProps {
   ts: any;
   category?: string;
   openModal: (action: ModalAction, player: NBAPlayer) => void;
+  openExtensionModal: (player: NBAPlayer) => void;
+
   disable: boolean;
 }
 
@@ -1702,6 +1708,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
   ts,
   category,
   openModal,
+  openExtensionModal,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -1872,9 +1879,10 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
             onChange={(selectedOption) => {
               if (selectedOption?.value === "cut") {
                 openModal(Cut, item);
-              }
-              if (selectedOption?.value === "redshirt") {
+              } else if (selectedOption?.value === "redshirt") {
                 openModal(Redshirt, item);
+              } else if (selectedOption?.value === "extension") {
+                openExtensionModal(item);
               }
               if (selectedOption?.value === "promise") {
                 openModal(Promise, item);
