@@ -68,6 +68,18 @@ export const FreeAgencySidebar: FC<FreeAgencySideBarProps> = ({
       coach = t.Coach;
       break;
     case SimNBA:
+      const nbaTeam = Team as NBATeam;
+      const tsb = ts as BBATimestamp;
+      season1 = tsb.Season;
+      season2 = tsb.Season + 1;
+      season3 = tsb.Season + 2;
+      season4 = tsb.Season + 3;
+      season5 = tsb.Season + 4;
+      teamLabel = nbaTeam.Team;
+      owner = nbaTeam.NBAOwnerName;
+      gm = nbaTeam.NBAGMName;
+      coach = nbaTeam.NBACoachName;
+      scout = nbaTeam.NBAAssistantName;
       break;
     case SimNFL:
       break;

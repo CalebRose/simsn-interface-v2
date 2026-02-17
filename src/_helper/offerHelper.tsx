@@ -12,13 +12,15 @@ import {
   NBAContractOffer,
   NBAWaiverOffer,
   NBAExtensionOffer,
+  NBACapsheet,
+  Timestamp,
 } from "../models/basketballModels";
 import {
   NFLCapsheet,
   FreeAgencyOffer as NFLFreeAgencyOffer,
   NFLExtensionOffer,
   NFLWaiverOffer,
-  Timestamp,
+  Timestamp as FBTimestamp,
 } from "../models/footballModels";
 import {
   FreeAgencyOffer as PHLFreeAgencyOffer,
@@ -36,7 +38,7 @@ type ContractEvaluatorMap = {
 const NFLContractChecker: ContractEvaluatorMap = NFLContractEvaluator;
 
 export const getPHLSalaryData = (
-  offer: PHLFreeAgencyOffer | PHLExtensionOffer
+  offer: PHLFreeAgencyOffer | PHLExtensionOffer,
 ) => {
   const {
     Y1BaseSalary,
@@ -64,7 +66,7 @@ export const getPHLSalaryData = (
 };
 
 export const getNFLSalaryData = (
-  offer: NFLFreeAgencyOffer | NFLExtensionOffer
+  offer: NFLFreeAgencyOffer | NFLExtensionOffer,
 ) => {
   const {
     Y1BaseSalary,
@@ -121,9 +123,47 @@ export const getNFLSalaryData = (
   };
 };
 
+export const getNBASalaryData = (
+  offer: NBAContractOffer | NBAExtensionOffer,
+) => {
+  const {
+    Year1Total,
+    Year2Total,
+    Year3Total,
+    Year4Total,
+    Year5Total,
+    TotalYears,
+    ContractValue,
+  } = offer;
+
+  const salaries: number[] = [
+    Year1Total ?? 0,
+    Year2Total ?? 0,
+    Year3Total ?? 0,
+    Year4Total ?? 0,
+    Year5Total ?? 0,
+  ].map((s) => (isNaN(s) ? 0 : s));
+
+  const totalComp = salaries.reduce((sum, val, i) => {
+    return i < TotalYears ? sum + val : sum;
+  }, 0);
+
+  return {
+    Year1Total,
+    Year2Total,
+    Year3Total,
+    Year4Total,
+    Year5Total,
+    TotalYears,
+    ContractValue,
+    totalSalaries: totalComp,
+    salaries,
+  };
+};
+
 const getFirstHalfAAV = (
   salaries: number[],
-  contractLength: number
+  contractLength: number,
 ): number => {
   if (contractLength === 0) return 0;
 
@@ -146,7 +186,7 @@ const getFirstHalfAAV = (
 const validateYearlySalaryRange = (
   salaries: number[],
   min: number,
-  max: number
+  max: number,
 ): string[] => {
   const errs: string[] = [];
   salaries.forEach((salary, index) => {
@@ -169,7 +209,7 @@ const validateYearCap = (
   year: number,
   salary: number,
   teamCap: number,
-  capLimit: number
+  capLimit: number,
 ): string | null => {
   const total = salary + teamCap;
   if (total > capLimit) {
@@ -184,7 +224,7 @@ export const ValidateNFLRule2 = (
   y2: number,
   y3: number,
   y4: number,
-  y5: number
+  y5: number,
 ): boolean => {
   if (len === 1) return true;
   const diffs = [y2 - y1, y3 - y2, y4 - y3, y5 - y4].slice(0, len - 1);
@@ -197,7 +237,7 @@ export const ValidateNFLRule3 = (
   y2: number,
   y3: number,
   y4: number,
-  y5: number
+  y5: number,
 ): boolean => {
   if (len === 1) return true;
   const ys = [y1, y2, y3, y4, y5];
@@ -216,7 +256,7 @@ export const ValidateNFLRule4 = (
   y2: number,
   y3: number,
   y4: number,
-  y5: number
+  y5: number,
 ): boolean => {
   if (len === 1) return true;
   const ys = [y1, y2, y3, y4, y5].slice(0, len);
@@ -233,7 +273,7 @@ export const ValidateNFLRule4 = (
 export const ValidateNFLRule5 = (
   bonus: number,
   total: number,
-  isOffseason: boolean
+  isOffseason: boolean,
 ): boolean => {
   if (!isOffseason) {
     if (total > 5) {
@@ -250,7 +290,7 @@ export const ValidateNFLRule6 = (
   s3: number,
   s4: number,
   s5: number,
-  len: number
+  len: number,
 ): boolean => {
   const sats = [s1, s2, s3, s4, s5];
   for (let i = 0; i < len; i++) {
@@ -262,10 +302,106 @@ export const ValidateNFLRule6 = (
   return true;
 };
 
+export const ValidateNBARule1 = (
+  totalYears: number,
+  playerYear: number,
+): boolean => {
+  if (playerYear < 4) {
+    return totalYears > 0 && totalYears < 4;
+  }
+  return totalYears > 0 && totalYears < 6;
+};
+
+export const ValidateNBARule2 = (
+  len: number,
+  y1: number,
+  y2: number,
+  y3: number,
+  y4: number,
+  y5: number,
+): boolean => {
+  if (len === 5) return true;
+  if (len === 4 && y5 === 0) return true;
+  if (len === 3 && y4 === 0 && y5 === 0) return true;
+  if (len === 2 && y3 === 0 && y4 === 0 && y5 === 0) return true;
+  if (len === 1 && y2 === 0 && y3 === 0 && y4 === 0 && y5 === 0) return true;
+  return false;
+};
+
+export const ValidateNBARule3 = (
+  len: number,
+  y1: number,
+  y2: number,
+  y3: number,
+  y4: number,
+  y5: number,
+): boolean => {
+  if (len === 1 && !y2 && !y3 && !y4 && !y5) return true;
+  if (len === 2 && !y3 && !y4 && !y5 && !y1) return true;
+  if (len === 3 && !y2 && !y4 && !y5 && !y1) return true;
+  if (len === 4 && !y2 && !y3 && !y5 && !y1) return true;
+  if (len === 5 && !y2 && !y4 && !y4 && !y1) return true;
+  return false;
+};
+
+export const ValidateNBARule4 = (
+  len: number,
+  y1: number,
+  y2: number,
+  y3: number,
+  y4: number,
+  y5: number,
+  min: number,
+): boolean => {
+  if (len === 1) return y1 >= min;
+  if (len === 2) return y2 >= min && y1 >= min;
+  if (len === 3) return y3 >= min && y2 >= min && y1 >= min;
+  if (len === 4) return y4 >= min && y3 >= min && y2 >= min && y1 >= min;
+  if (len === 5)
+    return y5 >= min && y4 >= min && y3 >= min && y2 >= min && y1 >= min;
+  return false;
+};
+
+export const ValidateNBARule5 = (
+  len: number,
+  y1: number,
+  y2: number,
+  y3: number,
+  y4: number,
+  y5: number,
+  ovr: number,
+  maxQualified: boolean,
+): boolean => {
+  if (len === 1) return true;
+  let check2 = true;
+  let check3 = true;
+  let check4 = true;
+  let check5 = true;
+  if (len > 4 && !maxQualified) {
+    check5 = checkYearlyRange(y4, y5, ovr);
+  }
+  if (len > 3 && !maxQualified) {
+    check4 = checkYearlyRange(y3, y4, ovr);
+  }
+  if (len > 2 && !maxQualified) {
+    check3 = checkYearlyRange(y2, y3, ovr);
+  }
+  if (len > 1 && !maxQualified) {
+    check2 = checkYearlyRange(y1, y2, ovr);
+  }
+
+  return check2 && check3 && check4 && check5;
+};
+
+const checkYearlyRange = (val1: number, val2: number, ovr: number): boolean => {
+  const minRaise = 1.05 * val1;
+  return val2 >= minRaise;
+};
+
 export const GeneratePHLFAErrorList = (
   offer: PHLFreeAgencyOffer | PHLExtensionOffer,
   ts: HCKTimestamp,
-  capsheet: ProCapsheet
+  capsheet: ProCapsheet,
 ): string[] => {
   const errors: string[] = [];
   const { salaries, ContractLength, ContractValue, totalComp, Y1BaseSalary } =
@@ -290,7 +426,7 @@ export const GeneratePHLFAErrorList = (
         errors.push(
           `Year ${
             i + 1
-          } compensation (${current}) is less than 60% of the highest compensated year (${maxYear}).`
+          } compensation (${current}) is less than 60% of the highest compensated year (${maxYear}).`,
         );
       }
 
@@ -302,7 +438,7 @@ export const GeneratePHLFAErrorList = (
           errors.push(
             `Year-to-year compensation change from Year ${i} to ${
               i + 1
-            } (${diff}) exceeds 25% of Year 1 (${maxDiff}).`
+            } (${diff}) exceeds 25% of Year 1 (${maxDiff}).`,
           );
         }
       }
@@ -327,15 +463,15 @@ export const GeneratePHLFAErrorList = (
         errors.push(
           `Year ${
             i + 1
-          } increase (${increase}) exceeds the allowed limit based on Year 1 and 2 (${minY1Y2}).`
+          } increase (${increase}) exceeds the allowed limit based on Year 1 and 2 (${minY1Y2}).`,
         );
       }
 
       if (increase < 0 && Math.abs(increase) > minY1Y2 * 0.5) {
         errors.push(
           `Year ${i + 1} decrease (${Math.abs(
-            increase
-          )}) exceeds 50% of min(Year 1, 2): ${minY1Y2 * 0.5}.`
+            increase,
+          )}) exceeds 50% of min(Year 1, 2): ${minY1Y2 * 0.5}.`,
         );
       }
     }
@@ -347,13 +483,13 @@ export const GeneratePHLFAErrorList = (
 
   if (isSalaryBeyondLength) {
     errors.push(
-      "Contract has salary allocated beyond the specified length of contract."
+      "Contract has salary allocated beyond the specified length of contract.",
     );
   }
 
   if (ContractLength > 0 && totalComp === 0) {
     errors.push(
-      "Contract length is greater than 0, but no yearly salary has been entered."
+      "Contract length is greater than 0, but no yearly salary has been entered.",
     );
   }
 
@@ -363,7 +499,7 @@ export const GeneratePHLFAErrorList = (
     1,
     Y1BaseSalary,
     capsheet.Y1Salary,
-    ts.Y1Capspace
+    ts.Y1Capspace,
   );
   if (capError) errors.push(capError);
 
@@ -372,10 +508,10 @@ export const GeneratePHLFAErrorList = (
 
 export const GenerateNFLFAErrorList = (
   offer: NFLExtensionOffer | NFLFreeAgencyOffer,
-  ts: Timestamp,
+  ts: FBTimestamp,
   capsheet: NFLCapsheet,
   playerAAV: number,
-  offerAAV: number
+  offerAAV: number,
 ): string[] => {
   const errors: string[] = [];
   const {
@@ -399,19 +535,19 @@ export const GenerateNFLFAErrorList = (
 
   if (isSalaryBeyondLength) {
     errors.push(
-      "Contract has salary allocated beyond the specified length of contract."
+      "Contract has salary allocated beyond the specified length of contract.",
     );
   }
 
   if (isBonusBeyondLength) {
     errors.push(
-      "Contract has bonus allocated beyond the specified length of contract."
+      "Contract has bonus allocated beyond the specified length of contract.",
     );
   }
 
   if (ContractLength > 0 && totalComp === 0) {
     errors.push(
-      "Contract length is greater than 0, but no yearly salary has been entered."
+      "Contract length is greater than 0, but no yearly salary has been entered.",
     );
   }
 
@@ -419,7 +555,7 @@ export const GenerateNFLFAErrorList = (
     1,
     Y1BaseSalary,
     capsheet.Y1Salary,
-    ts.Y1Capspace
+    ts.Y1Capspace,
   );
   if (capError) errors.push(capError);
 
@@ -439,7 +575,7 @@ export const GenerateNFLFAErrorList = (
   // 6) Rule4: highest year cannot be more than 100% of lowest (or $6M)
   if (!ValidateNFLRule4(ContractLength, y1, y2, y3, y4, y5)) {
     errors.push(
-      "Highest year cannot exceed 100% of the lowest year (or $6 million difference)."
+      "Highest year cannot exceed 100% of the lowest year (or $6 million difference).",
     );
   }
 
@@ -450,7 +586,7 @@ export const GenerateNFLFAErrorList = (
 
   if (playerAAV > offerAAV) {
     errors.push(
-      `The offered AAV (${offerAAV}) is lower than the player's expected AAV (${playerAAV})`
+      `The offered AAV (${offerAAV}) is lower than the player's expected AAV (${playerAAV})`,
     );
   }
 
@@ -459,13 +595,77 @@ export const GenerateNFLFAErrorList = (
   if (!ValidateNFLRule5(totalBonus, totalComp, isOffseason)) {
     if (isOffseason) {
       errors.push(
-        "Before the NFL Draft, at least 30% of any contract must be bonus money."
+        "Before the NFL Draft, at least 30% of any contract must be bonus money.",
       );
     } else {
       errors.push(
-        "After the NFL Draft, if total compensation is over $5 million, at least 30% must be bonus money."
+        "After the NFL Draft, if total compensation is over $5 million, at least 30% must be bonus money.",
       );
     }
+  }
+
+  return errors;
+};
+
+export const GenerateNBAFAErrorList = (
+  offer: NBAExtensionOffer | NBAContractOffer,
+  ts: Timestamp,
+  capsheet: NBACapsheet,
+  playerAAV: number,
+  offerAAV: number,
+): string[] => {
+  const errors: string[] = [];
+  const { salaries, TotalYears, ContractValue, totalSalaries, Year1Total } =
+    getNBASalaryData(offer);
+
+  const isSalaryBeyondLength = salaries
+    .slice(TotalYears)
+    .some((salary) => salary > 0);
+
+  if (isSalaryBeyondLength) {
+    errors.push(
+      "Contract has salary allocated beyond the specified length of contract.",
+    );
+  }
+
+  if (TotalYears > 0 && totalSalaries === 0) {
+    errors.push(
+      "Contract length is greater than 0, but no yearly salary has been entered.",
+    );
+  }
+
+  const capError = validateYearCap(
+    1,
+    Year1Total,
+    capsheet.Year1Total,
+    ts.Y1Capspace,
+  );
+  if (capError) errors.push(capError);
+
+  // shortcut references
+  const [y1, y2, y3, y4, y5] = salaries;
+
+  // 4) Rule2: salary can’t decrease year-over-year
+  if (!ValidateNBARule2(TotalYears, y1, y2, y3, y4, y5)) {
+    errors.push("Salary cannot decrease (but can remain flat) year-over-year.");
+  }
+
+  // 5) Rule3: no huge jumps (>50% or >$3M)
+  if (!ValidateNBARule3(TotalYears, y1, y2, y3, y4, y5)) {
+    errors.push("Year-to-year increases must be ≤50% or ≤$3 million.");
+  }
+
+  // 6) Rule4: highest year cannot be more than 100% of lowest (or $6M)
+  if (!ValidateNBARule4(TotalYears, y1, y2, y3, y4, y5, 0.5)) {
+    errors.push(
+      "Highest year cannot exceed 100% of the lowest year (or $6 million difference).",
+    );
+  }
+
+  if (playerAAV > offerAAV) {
+    errors.push(
+      `The offered AAV (${offerAAV}) is lower than the player's expected AAV (${playerAAV})`,
+    );
   }
 
   return errors;
@@ -480,7 +680,7 @@ export const createOffer = (
     | NFLFreeAgencyOffer
     | NFLWaiverOffer
     | NBAContractOffer
-    | NBAWaiverOffer
+    | NBAWaiverOffer,
 ) => {
   const props = existingOffer ? { ...existingOffer } : undefined;
 
@@ -504,7 +704,7 @@ export const createOffer = (
 
 export const createExtensionOffer = (
   league: League,
-  existingOffer?: PHLExtensionOffer | NFLExtensionOffer | NBAExtensionOffer
+  existingOffer?: PHLExtensionOffer | NFLExtensionOffer | NBAExtensionOffer,
 ) => {
   const props = existingOffer ? { ...existingOffer } : undefined;
 
@@ -522,7 +722,7 @@ export const createExtensionOffer = (
 
 export const GetNFLContractValue = (
   age: number,
-  offer: NFLFreeAgencyOffer | NFLExtensionOffer
+  offer: NFLFreeAgencyOffer | NFLExtensionOffer,
 ) => {
   const {
     Y1Bonus,
@@ -579,6 +779,35 @@ export const GetNFLContractValue = (
   if (Y5BaseSalary) {
     const y5Salary = offer.Y5BaseSalary * Y5S;
     total += y5Salary;
+  }
+
+  return total;
+};
+
+export const GetNBAContractValue = (
+  offer: NBAContractOffer | NBAExtensionOffer,
+) => {
+  const { Year1Total, Year2Total, Year3Total, Year4Total, Year5Total } = offer;
+  let total = 0;
+  if (Year1Total) {
+    const y1Total = Year1Total;
+    total += y1Total;
+  }
+  if (Year2Total) {
+    const y2Total = Year2Total;
+    total += y2Total;
+  }
+  if (Year3Total) {
+    const y3Total = Year3Total;
+    total += y3Total;
+  }
+  if (Year4Total) {
+    const y4Total = Year4Total;
+    total += y4Total;
+  }
+  if (Year5Total) {
+    const y5Total = Year5Total;
+    total += y5Total;
   }
 
   return total;

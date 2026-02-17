@@ -249,7 +249,7 @@ export const CHLPlayerInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
                     <Text variant="small">
                       {getHockeyLetterGrade(
                         player.LongShotAccuracy,
-                        player.Year
+                        player.Year,
                       )}
                     </Text>
                     <Text variant="xs">Acc</Text>
@@ -274,7 +274,7 @@ export const CHLPlayerInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
                     <Text variant="small">
                       {getHockeyLetterGrade(
                         player.CloseShotAccuracy,
-                        player.Year
+                        player.Year,
                       )}
                     </Text>
                     <Text variant="xs">Acc</Text>
@@ -412,7 +412,7 @@ export const PHLPlayerInfoModalBody: FC<PHLPlayerInfoModalBodyProps> = ({
   if (contract) {
     Array.from(
       { length: contract.ContractLength },
-      (_, index) => contract[`Y${index + 1}BaseSalary`] || 0
+      (_, index) => contract[`Y${index + 1}BaseSalary`] || 0,
     ).reduce((sum, salary) => sum + salary, 0);
     totalValue = `${rawValue.toFixed(2)}M`;
   }
@@ -889,7 +889,7 @@ export const NFLPlayerInfoModalBody: FC<NFLPlayerInfoModalBodyProps> = ({
   const heightObj = HeightToFeetAndInches(player.Height);
   const priorityAttributes = setPriorityNFLAttributes(
     player,
-    player.ShowLetterGrade
+    player.ShowLetterGrade,
   );
   const rawValue = useMemo(() => {
     if (!contract) return 0;
@@ -897,7 +897,7 @@ export const NFLPlayerInfoModalBody: FC<NFLPlayerInfoModalBodyProps> = ({
       { length: contract.ContractLength },
       (_, index) =>
         (contract[`Y${index + 1}BaseSalary`] || 0) +
-        (contract[`Y${index + 1}Bonus`] || 0)
+        (contract[`Y${index + 1}Bonus`] || 0),
     ).reduce((sum, salary) => sum + salary, 0);
   }, [contract]);
   const currentYearValue = useMemo(() => {
@@ -1106,7 +1106,7 @@ export const NFLDepthChartInfoModalBody: FC<
   const heightObj = HeightToFeetAndInches(player.Height);
   const priorityAttributes = setPriorityNFLAttributes(
     player,
-    player.ShowLetterGrade
+    player.ShowLetterGrade,
   );
 
   return (
@@ -2121,21 +2121,49 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
 }) => {
   const { currentUser } = useAuthStore();
   const { nbaTeamMap, proContractMap, cbbTeamMap } = useSimBBAStore();
-  const team = nbaTeamMap ? nbaTeamMap[player.TeamID] : null;
-  const teamLogo = getLogo(SimNBA, player.TeamID, currentUser?.isRetro);
-  const cbbTeam = player.IsIntGenerated
-    ? nbaTeamMap!![player.CollegeID]
-    : cbbTeamMap?.[player.CollegeID];
 
-  const contract = proContractMap!![player.ID];
-  player.Contract = contract;
-  const priorityAttributes = getPriorityNBAAttributes(player);
-  const rawValue = Array.from(
-    { length: contract.YearsRemaining },
-    (_, index) => contract[`Year${index + 1}Total`] || 0
-  ).reduce((sum, salary) => sum + salary, 0);
-  const currentYearValue = (contract.Year1Total || 0).toFixed(2);
-  const totalValue = `${rawValue.toFixed(2)}`;
+  const team = useMemo(() => {
+    return nbaTeamMap ? nbaTeamMap[player.TeamID] : null;
+  }, [nbaTeamMap, player.TeamID]);
+
+  const teamLogo = useMemo(() => {
+    return getLogo(SimNBA, player.TeamID, currentUser?.isRetro);
+  }, [player.TeamID, currentUser?.isRetro]);
+
+  const cbbTeam = useMemo(() => {
+    return player.IsIntGenerated
+      ? nbaTeamMap!![player.CollegeID]
+      : cbbTeamMap?.[player.CollegeID];
+  }, [player.IsIntGenerated, player.CollegeID, nbaTeamMap, cbbTeamMap]);
+
+  const contract = useMemo(() => {
+    return proContractMap!![player.ID];
+  }, [proContractMap, player.ID]);
+
+  const priorityAttributes = useMemo(() => {
+    return getPriorityNBAAttributes(player);
+  }, [player]);
+
+  const rawValue = useMemo(() => {
+    if (!contract) return 0;
+    return Array.from(
+      { length: contract.YearsRemaining },
+      (_, index) => contract[`Year${index + 1}Total`] || 0,
+    ).reduce((sum, salary) => sum + salary, 0);
+  }, [contract]);
+
+  const currentYearValue = useMemo(() => {
+    return (contract?.Year1Total || 0).toFixed(2);
+  }, [contract]);
+
+  const totalValue = useMemo(() => {
+    return `${rawValue.toFixed(2)}`;
+  }, [rawValue]);
+
+  // Set contract on player (side effect)
+  if (contract) {
+    player.Contract = contract;
+  }
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
@@ -2235,30 +2263,34 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
           </>
         )}
       </div>
-      <div className="flex flex-col">
-        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
-          Contract
-        </Text>
-        <Text variant="small" classes="whitespace-nowrap">
-          {contract.ContractLength} years
-        </Text>
-      </div>
-      <div className="flex flex-col">
-        <Text variant="body" classes="mb-1  font-semibold">
-          Total Value
-        </Text>
-        <Text variant="small" classes="whitespace-nowrap">
-          {`${totalValue}M`}
-        </Text>
-      </div>
-      <div className="flex flex-col">
-        <Text variant="body" classes="mb-1 font-semibold">
-          Current Year
-        </Text>
-        <Text variant="small" classes="whitespace-nowrap">
-          {`${currentYearValue}M`}
-        </Text>
-      </div>
+      {contract && (
+        <>
+          <div className="flex flex-col">
+            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+              Contract
+            </Text>
+            <Text variant="small" classes="whitespace-nowrap">
+              {contract.ContractLength} years
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="body" classes="mb-1  font-semibold">
+              Total Value
+            </Text>
+            <Text variant="small" classes="whitespace-nowrap">
+              {`${totalValue}M`}
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="body" classes="mb-1 font-semibold">
+              Current Year
+            </Text>
+            <Text variant="small" classes="whitespace-nowrap">
+              {`${currentYearValue}M`}
+            </Text>
+          </div>{" "}
+        </>
+      )}
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
         <div className="grid w-full grid-cols-4 gap-3">
           {priorityAttributes.map((attr, idx) => (
@@ -2312,7 +2344,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
   const leadingTeamsList = useMemo(() => {
     const list = [];
     const sortedProfiles = transferProfiles.sort(
-      (a, b) => b.TotalPoints - a.TotalPoints
+      (a, b) => b.TotalPoints - a.TotalPoints,
     );
     let runningThreshold = 0;
     let totalPoints = 0;
@@ -2474,7 +2506,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
                       <Text variant="small">
                         {getHockeyLetterGrade(
                           player.LongShotPower,
-                          player.Year
+                          player.Year,
                         )}
                       </Text>
                       <Text variant="xs">Pow</Text>
@@ -2483,7 +2515,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
                       <Text variant="small">
                         {getHockeyLetterGrade(
                           player.LongShotAccuracy,
-                          player.Year
+                          player.Year,
                         )}
                       </Text>
                       <Text variant="xs">Acc</Text>
@@ -2502,7 +2534,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
                       <Text variant="small">
                         {getHockeyLetterGrade(
                           player.CloseShotPower,
-                          player.Year
+                          player.Year,
                         )}
                       </Text>
                       <Text variant="xs">Pow</Text>
@@ -2511,7 +2543,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
                       <Text variant="small">
                         {getHockeyLetterGrade(
                           player.CloseShotAccuracy,
-                          player.Year
+                          player.Year,
                         )}
                       </Text>
                       <Text variant="xs">Acc</Text>
@@ -2702,7 +2734,7 @@ export const CBBPortalInfoModalBody: FC<CBBPortalInfoModalBodyProps> = ({
   const leadingTeamsList = useMemo(() => {
     const list = [];
     const sortedProfiles = transferProfiles.sort(
-      (a, b) => b.TotalPoints - a.TotalPoints
+      (a, b) => b.TotalPoints - a.TotalPoints,
     );
     let runningThreshold = 0;
     let totalPoints = 0;

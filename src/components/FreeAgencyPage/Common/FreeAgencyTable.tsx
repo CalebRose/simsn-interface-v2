@@ -9,7 +9,11 @@ import {
   NFLPlayer,
   NFLWaiverOffer,
 } from "../../../models/footballModels";
-import { NBAPlayer } from "../../../models/basketballModels";
+import {
+  NBAContractOffer,
+  NBAPlayer,
+  NBAWaiverOffer,
+} from "../../../models/basketballModels";
 import {
   Attributes,
   FreeAgentOffer,
@@ -18,12 +22,17 @@ import {
   ModalAction,
   OfferAction,
   Preferences,
+  SimNBA,
   SimNFL,
   SimPHL,
 } from "../../../_constants/constants";
 import { Table, TableCell } from "../../../_design/Table";
 import { Text } from "../../../_design/Typography";
-import { getNFLAttributes, getPHLAttributes } from "../../Team/TeamPageUtils";
+import {
+  getNBAAttributes,
+  getNFLAttributes,
+  getPHLAttributes,
+} from "../../Team/TeamPageUtils";
 import { Button } from "../../../_design/Buttons";
 import { ActionLock, Plus } from "../../../_design/Icons";
 import { getLogo } from "../../../_utility/getLogo";
@@ -41,12 +50,16 @@ interface FreeAgentTableProps {
     | Record<number, PHLWaiverOffer[]>
     | Record<number, PHLFreeAgencyOffer[]>
     | Record<number, FreeAgencyOffer[]>
-    | Record<number, NFLWaiverOffer[]>;
+    | Record<number, NFLWaiverOffer[]>
+    | Record<number, NBAContractOffer[]>
+    | Record<number, NBAWaiverOffer[]>;
   teamOfferMap:
     | Record<number, PHLWaiverOffer>
     | Record<number, PHLFreeAgencyOffer>
     | Record<number, FreeAgencyOffer>
-    | Record<number, NFLWaiverOffer>;
+    | Record<number, NFLWaiverOffer>
+    | Record<number, NBAContractOffer>
+    | Record<number, NBAWaiverOffer>;
   colorOne?: string;
   colorTwo?: string;
   colorThree?: string;
@@ -55,11 +68,11 @@ interface FreeAgentTableProps {
   category?: string;
   openModal: (
     action: ModalAction,
-    player: PHLPlayer | NFLPlayer | NBAPlayer
+    player: PHLPlayer | NFLPlayer | NBAPlayer,
   ) => void;
   handleOfferModal: (
     action: OfferAction,
-    player: PHLPlayer | NFLPlayer | NBAPlayer
+    player: PHLPlayer | NFLPlayer | NBAPlayer,
   ) => void;
   league: League;
   currentPage: number;
@@ -119,6 +132,33 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
       ]);
     }
 
+    if (league === SimNBA && isDesktop && category === Attributes) {
+      columns = [
+        { header: "ID", accessor: "ID" },
+        { header: "Name", accessor: "LastName" },
+        { header: "Pos", accessor: "Position" },
+        { header: !isDesktop ? "Arch" : "Archetype", accessor: "Archetype" },
+        { header: "Age", accessor: "Age" },
+        { header: "Exp", accessor: "Year" },
+        { header: "Ovr", accessor: "Overall" },
+      ];
+      columns = columns.concat([
+        {
+          header: !isDesktop ? "Pot" : "Potential",
+          accessor: "PotentialGrade",
+        },
+        { header: "Fin", accessor: "Finishing" },
+        { header: "SH2", accessor: "Shooting2" },
+        { header: "SH3", accessor: "Shooting3" },
+        { header: "FT", accessor: "Freethrow" },
+        { header: "BW", accessor: "Ballwork" },
+        { header: "RB", accessor: "Rebounding" },
+        { header: "ID", accessor: "InteriorDefense" },
+        { header: "PD", accessor: "PerimeterDefense" },
+        { header: "IR", accessor: "InjuryRating" },
+      ]);
+    }
+
     if (league === SimPHL && isDesktop && category === Preferences) {
       columns = columns.concat([
         { header: "Market", accessor: "MarketPreference" },
@@ -134,19 +174,19 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
     columns.push({ header: "Interest", accessor: "LeadingTeams" });
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, category, league]);
 
   const NFLRowRenderer = (
     item: NFLPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const attributes = getNFLAttributes(
       item,
       !isDesktop,
       category!,
       item.ShowLetterGrade,
-      null
+      null,
     ) as {
       label: string;
       value: number;
@@ -180,8 +220,8 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
           category === Attributes && idx === 6
             ? "text-left"
             : idx !== 0
-            ? "text-center"
-            : ""
+              ? "text-center"
+              : ""
         }`}
           >
             {attr.label === "Name" ? (
@@ -243,14 +283,14 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
   const PHLRowRenderer = (
     item: PHLPlayer,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const attributes = getPHLAttributes(
       item,
       !isDesktop,
       isTablet,
       category!,
-      null
+      null,
     ) as {
       label: string;
       value: number;
@@ -280,8 +320,8 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
           category === Attributes && idx === 6
             ? "text-left"
             : idx !== 0
-            ? "text-center"
-            : ""
+              ? "text-center"
+              : ""
         }`}
             >
               {attr.label === "Name" ? (
@@ -354,11 +394,103 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
     );
   };
 
+  const NBARowRenderer = (
+    item: NBAPlayer,
+    index: number,
+    backgroundColor: string,
+  ) => {
+    const attributes = getNBAAttributes(item, !isDesktop, category!) as {
+      label: string;
+      value: number;
+      letter: string;
+    }[];
+    const offers = offersByPlayer[item.ID];
+    let offerIds = [];
+    let logos: string[] = [];
+    if (offers) {
+      offerIds = offers && offers.map((x) => x.TeamID);
+      logos = offers && offerIds.map((id) => getLogo(SimNBA, id, false));
+    }
+    const actionVariant = !teamOfferMap[item.ID] ? "success" : "secondary";
+
+    return (
+      <div
+        key={item.ID}
+        className={`table-row border-b dark:border-gray-700 text-left`}
+        style={{ backgroundColor }}
+      >
+        <>
+          {attributes.map((attr, idx) => {
+            if (attr.label === "Min") return <></>;
+            if (attr.label === "PTE") return <></>;
+
+            return (
+              <TableCell
+                key={idx}
+                classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        text-wrap sm:max-w-full ${
+          category === Attributes && idx === 6
+            ? "text-left"
+            : idx !== 0
+              ? "text-center"
+              : ""
+        }`}
+              >
+                {attr.label === "Name" ? (
+                  <span
+                    className={`cursor-pointer font-semibold text-start`}
+                    onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+                      (e.target as HTMLElement).style.color = "#fcd53f";
+                    }}
+                    onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+                      (e.target as HTMLElement).style.color = "";
+                    }}
+                    onClick={() => openModal(InfoType, item)}
+                  >
+                    <Text variant="small">{attr.value}</Text>
+                  </span>
+                ) : (
+                  <Text variant="small">{attr.value}</Text>
+                )}
+              </TableCell>
+            );
+          })}
+        </>
+        <TableCell>{item.MinimumValue}</TableCell>
+        <TableCell classes="w-[5em] min-[430px]:w-[10em]">
+          <div className="flex flex-row">
+            {!offers || offers === undefined || (offers.length === 0 && "None")}
+            {logos.length > 0 &&
+              logos.map((url) => (
+                <Logo url={url} variant="tiny" containerClass="px-1 py-2" />
+              ))}
+          </div>
+        </TableCell>
+        <TableCell classes="w-[5em] min-[430px]:w-[6em] sm:w-[6SSSem]">
+          <Button
+            variant={actionVariant}
+            size="xs"
+            onClick={() => handleOfferModal(FreeAgentOffer, item as NBAPlayer)}
+            disabled={
+              !!teamOfferMap[item.ID] ||
+              (item.IsIntGenerated && !item.IsIntDeclared)
+            }
+          >
+            {teamOfferMap[item.ID] ? <ActionLock /> : <Plus />}
+          </Button>
+        </TableCell>
+      </div>
+    );
+  };
+
   const rowRenderer = (
-    league: League
+    league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimPHL) {
       return PHLRowRenderer;
+    }
+    if (league === SimNBA) {
+      return NBARowRenderer;
     }
     return NFLRowRenderer;
   };

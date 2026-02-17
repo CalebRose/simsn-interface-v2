@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Border } from "../../_design/Borders";
 import { Text } from "../../_design/Typography";
 import {
@@ -209,19 +209,30 @@ export const CapsheetInfo = ({
   textColorClass,
 }: any) => {
   const isNFL = league === SimNFL;
-  const rows = [1, 2, 3, 4, 5].map((yearOffset) => {
-    const year = ts.Season + (yearOffset - 1);
-    const salaryKey = `Y${yearOffset}Salary`;
-    const bonusKey = `Y${yearOffset}Bonus`;
-    const deadCapKey = `Y${yearOffset}CapHit`;
-    const capspaceKey = `Y${yearOffset}Capspace`;
-    const salary = capsheet[salaryKey] || 0;
-    const bonus = isNFL ? capsheet[bonusKey] || 0 : 0;
-    const deadCap = capsheet[deadCapKey] || 0;
-    const capSpace = ts[capspaceKey] || 0;
-    const space = capSpace - salary - bonus - deadCap;
-    return { year, salary, bonus, space };
-  });
+  const isNBA = league === SimNBA;
+  const rows = useMemo(() => {
+    return [1, 2, 3, 4, 5].map((yearOffset) => {
+      const year = ts.Season + (yearOffset - 1);
+      const salaryKey = isNBA
+        ? `Year${yearOffset}Total`
+        : `Y${yearOffset}Salary`;
+      const bonusKey = `Y${yearOffset}Bonus`;
+      const deadCapKey = `Y${yearOffset}CapHit`;
+      const capspaceKey = `Y${yearOffset}Capspace`;
+      const salary = capsheet[salaryKey] || 0;
+      const bonus = isNFL ? capsheet[bonusKey] || 0 : 0;
+      const deadCap = capsheet[deadCapKey] || 0;
+      const capSpace = ts[capspaceKey] || 0;
+      const space = capSpace - salary - bonus - deadCap;
+      return { year, salary, bonus, space };
+    });
+  }, [ts, capsheet, isNFL]);
+
+  const deadCap = useMemo(() => {
+    if (!capsheet) return 0;
+    if (league === SimNBA) return capsheet.Year1Cap.toFixed(2) || 0;
+    return capsheet.Y1CapHit.toFixed(2) || 0;
+  }, [league, capsheet]);
 
   return (
     <div
@@ -286,7 +297,7 @@ export const CapsheetInfo = ({
           </div>
           <div className="flex justify-center">
             <Text variant="xs" classes={`${textColorClass} font-semibold`}>
-              {`Dead Cap: ${capsheet.Y1CapHit.toFixed(2)}`}
+              {`Dead Cap: ${deadCap}`}
             </Text>
           </div>
         </div>

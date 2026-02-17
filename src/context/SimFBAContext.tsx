@@ -227,7 +227,8 @@ interface SimFBAContextProps {
   vetoTrade: (dto: NFLTradeProposal) => Promise<void>;
   ExportFootballSchedule: (dto: any) => Promise<void>;
   ExportPlayByPlay: (dto: any) => Promise<void>;
-
+  SaveExtensionOffer: (dto: any) => Promise<void>;
+  CancelExtensionOffer: (dto: any) => Promise<void>;
   playerFaces: {
     [key: number]: FaceDataResponse;
   };
@@ -370,6 +371,8 @@ const defaultContext: SimFBAContextProps = {
   cancelTrade: async () => {},
   syncAcceptedTrade: async () => {},
   vetoTrade: async () => {},
+  SaveExtensionOffer: async () => {},
+  CancelExtensionOffer: async () => {},
   ExportFootballSchedule: async () => {},
   ExportPlayByPlay: async () => {},
   playerFaces: {},
@@ -1988,6 +1991,56 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     [setCollegeNotifications, setProNotifications],
   );
 
+  const SaveExtensionOffer = useCallback(
+    async (dto: NFLExtensionOffer) => {
+      if (freeAgencyLoading) return; // Prevent double clicks
+
+      setFreeAgencyLoading(true);
+      try {
+        const res = await FreeAgencyService.FBASaveExtensionOffer(dto);
+        if (res) {
+          enqueueSnackbar("Extension Offer Created!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setProExtensionMap((prevOffers) => {
+            const offers = { ...prevOffers };
+            offers[res.NFLPlayerID] = new NFLExtensionOffer({ ...res });
+            return offers;
+          });
+        }
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading],
+  );
+
+  const CancelExtensionOffer = useCallback(
+    async (dto: NFLExtensionOffer) => {
+      if (freeAgencyLoading) return; // Prevent double clicks
+
+      setFreeAgencyLoading(true);
+      try {
+        const res = await FreeAgencyService.FBACancelExtensionOffer(dto);
+        if (res) {
+          enqueueSnackbar("Extension Offer Cancelled!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          setProExtensionMap((prevOffers) => {
+            const offers = { ...prevOffers };
+            delete offers[dto.NFLPlayerID];
+            return offers;
+          });
+        }
+      } finally {
+        setFreeAgencyLoading(false);
+      }
+    },
+    [freeAgencyLoading],
+  );
+
   return (
     <SimFBAContext.Provider
       value={{
@@ -2095,6 +2148,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         addUserToNFLTeam,
         removeUserfromCFBTeamCall,
         removeUserfromNFLTeamCall,
+        SaveExtensionOffer,
+        CancelExtensionOffer,
         ExportFootballSchedule,
         ExportPlayByPlay,
         playerFaces,

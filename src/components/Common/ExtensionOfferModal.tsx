@@ -39,6 +39,7 @@ import { Button, ButtonGroup } from "../../_design/Buttons";
 import {
   createExtensionOffer,
   createOffer,
+  GenerateNBAFAErrorList,
   GenerateNFLFAErrorList,
   GeneratePHLFAErrorList,
   GetNFLAAVValue,
@@ -236,7 +237,7 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
       return GeneratePHLFAErrorList(
         offer as PHLExtensionOffer,
         ts as HCKTimestamp,
-        capsheet as ProCapsheet
+        capsheet as ProCapsheet,
       );
     }
     if (league === SimNFL) {
@@ -245,7 +246,16 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
         ts as Timestamp,
         capsheet as NFLCapsheet,
         Number(playerAAV),
-        aavValue
+        aavValue,
+      );
+    }
+    if (league === SimNBA) {
+      return GenerateNBAFAErrorList(
+        offer as NBAExtensionOffer,
+        ts as BKTimestamp,
+        capsheet as NBACapsheet,
+        0,
+        0,
       );
     }
     return list;
@@ -284,13 +294,13 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
         return prev;
       });
     },
-    [league]
+    [league],
   );
 
   const Confirm = useCallback(async () => {
     if (league === SimPHL) {
       const { totalComp, ContractLength } = getPHLSalaryData(
-        offer as PHLExtensionOffer
+        offer as PHLExtensionOffer,
       );
       if (totalComp === 0 && ContractLength === 0) {
         onClose();
@@ -305,7 +315,7 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
     }
     if (league === SimNFL) {
       const { totalComp, ContractLength } = getNFLSalaryData(
-        offer as NFLExtensionOffer
+        offer as NFLExtensionOffer,
       );
       if (totalComp === 0 && ContractLength === 0) {
         onClose();
@@ -327,7 +337,7 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
   const Cancel = useCallback(async () => {
     if (league === SimPHL) {
       const { totalComp, ContractLength } = getPHLSalaryData(
-        offer as PHLExtensionOffer
+        offer as PHLExtensionOffer,
       );
       if (totalComp === 0 && ContractLength === 0) {
         onClose();
@@ -342,7 +352,7 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
     }
     if (league === SimNFL) {
       const { totalComp, ContractLength } = getNFLSalaryData(
-        offer as NFLExtensionOffer
+        offer as NFLExtensionOffer,
       );
       if (totalComp === 0 && ContractLength === 0) {
         onClose();

@@ -1073,6 +1073,9 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     acceptTrade,
     rejectTrade,
     getBootstrapRosterData,
+    proExtensionMap: nflExtensionMap,
+    SaveExtensionOffer,
+    CancelExtensionOffer,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1092,6 +1095,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   );
   const manageTradesModal = useModal();
   const proposeTradeModal = useModal();
+  const extensionModal = useModal();
   let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
@@ -1149,6 +1153,12 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     setModalAction(action);
     setModalPlayer(player);
   };
+
+  const openExtensionModal = (player: NFLPlayer) => {
+    extensionModal.handleOpenModal();
+    setModalPlayer(player);
+  };
+
   const nflCapsheet = useMemo(() => {
     if (selectedTeam && nflCapsheetMap) {
       return nflCapsheetMap[selectedTeam.ID];
@@ -1305,6 +1315,19 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
 
   return (
     <>
+      {modalPlayer && (
+        <ExtensionOfferModal
+          isOpen={extensionModal.isModalOpen}
+          onClose={extensionModal.handleCloseModal}
+          player={modalPlayer!!}
+          league={SimPHL}
+          ts={ts}
+          capsheet={nflCapsheet!!}
+          existingOffer={nflExtensionMap![modalPlayer!.ID]}
+          confirmOffer={SaveExtensionOffer}
+          cancelOffer={CancelExtensionOffer}
+        />
+      )}
       <ManageTradeModal
         isOpen={manageTradesModal.isModalOpen}
         onClose={manageTradesModal.handleCloseModal}
@@ -1445,6 +1468,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            openExtensionModal={openExtensionModal}
             disable={selectedTeam!.ID !== nflTeam!.ID}
           />
         </Border>
@@ -1668,7 +1692,6 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
 
 const NBATeamPage = ({ league, ts }: TeamPageProps) => {
   const { teamId } = useParams<{ teamId?: string }>();
-
   const { currentUser } = useAuthStore();
   const bbStore = useSimBBAStore();
   const {
@@ -1680,7 +1703,12 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     cutNBAPlayer,
     proContractMap,
     getBootstrapRosterData,
+    proExtensionMap,
+    capsheetMap,
+    SaveExtensionOffer,
+    CancelExtensionOffer,
   } = bbStore;
+  const extensionModal = useModal();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<NBAPlayer | null>(null);
@@ -1712,6 +1740,13 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     return null;
   }, [proRosterMap, selectedTeam]);
 
+  const nbaCapsheet = useMemo(() => {
+    if (selectedTeam && capsheetMap) {
+      return capsheetMap[selectedTeam.ID];
+    }
+    return null;
+  }, [capsheetMap, selectedTeam]);
+
   const selectedTeamProfile = useMemo(() => {
     if (selectedTeam && teamProfileMap) {
       return teamProfileMap[selectedTeam.ID];
@@ -1732,12 +1767,30 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     setModalPlayer(player);
   };
 
+  const openExtensionModal = (player: NBAPlayer) => {
+    extensionModal.handleOpenModal();
+    setModalPlayer(player);
+  };
+
   useEffect(() => {
     getBootstrapRosterData();
   }, []);
 
   return (
     <>
+      {modalPlayer && (
+        <ExtensionOfferModal
+          isOpen={extensionModal.isModalOpen}
+          onClose={extensionModal.handleCloseModal}
+          player={modalPlayer!!}
+          league={SimNBA}
+          ts={ts}
+          capsheet={nbaCapsheet!!}
+          existingOffer={proExtensionMap![modalPlayer!.ID]}
+          confirmOffer={SaveExtensionOffer}
+          cancelOffer={CancelExtensionOffer}
+        />
+      )}
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
@@ -1826,6 +1879,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            openExtensionModal={openExtensionModal}
             contracts={proContractMap!!}
             ts={ts}
             disable={nbaTeam!.ID !== selectedTeam!.ID}
