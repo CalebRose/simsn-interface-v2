@@ -408,6 +408,57 @@ export const getCFBModifierValue = (
   return 1;
 };
 
+export const getCFBPromiseWeight = (promiseType: string, benchmark: number) => {
+  if (promiseType === "") {
+    return "None";
+  }
+  if (promiseType === "Good Gameplan Fit") {
+    return "Medium";
+  }
+  if (promiseType === "Not Bad Gameplan Fit") {
+    return "Medium";
+  }
+  if (promiseType === "No Redshirt") {
+    return "Low";
+  }
+  if (promiseType === "Home State Game") {
+    return "Low";
+  }
+  if (promiseType === "Bowl Game") {
+    return "Medium";
+  }
+  if (promiseType === "Snaps") {
+    if (benchmark < 1 || benchmark > 60) {
+      return "Invalid";
+    }
+    if (benchmark <= 5) return "Very Low";
+    if (benchmark <= 15) return "Low";
+    if (benchmark <= 30) return "Medium";
+    if (benchmark <= 45) return "High";
+    return "Very High";
+  }
+  if (promiseType === "Wins") {
+    if (benchmark === 0) return "Why even try?";
+    if (benchmark <= 2) return "Extremely Low";
+    if (benchmark <= 4) return "Very Low";
+    if (benchmark <= 6) return "Low";
+    if (benchmark <= 8) return "Medium";
+    if (benchmark <= 12) return "High";
+    if (benchmark < 14) return "Very High";
+    return "Extremely High";
+  }
+  if (promiseType === "Conference Championship") {
+    return "High";
+  }
+  if (promiseType === "Playoffs") {
+    return "Very High";
+  }
+  if (promiseType === "National Championship") {
+    return "If you make this promise then you better win it!";
+  }
+  return "None";
+};
+
 export const useFilteredFootballTransferPlayers = ({
   portalPlayers,
   positions,

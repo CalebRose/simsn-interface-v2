@@ -10,9 +10,7 @@ import {
 } from "../../../models/basketballModels";
 import {
   AddPortalPlayerType,
-  AddRecruitType,
   Attributes,
-  InfoType,
   League,
   ModalAction,
   PortalInfoType,
@@ -26,9 +24,7 @@ import { Table, TableCell } from "../../../_design/Table";
 import { getLogo } from "../../../_utility/getLogo";
 import { Logo } from "../../../_design/Logo";
 import {
-  getCBBAttributes,
   getCBBPortalAttributes,
-  getCHLAttributes,
   getCHLPortalAttributes,
 } from "../../Team/TeamPageUtils";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
