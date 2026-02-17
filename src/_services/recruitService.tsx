@@ -45,10 +45,6 @@ export const RecruitService = {
     return await PostCall(`${hckUrl}recruiting/scout/attribute/`, dto);
   },
 
-  HCKScoutPortalAttribute: async (dto: any): Promise<TransferPortalProfile> => {
-    return await PostCall(`${hckUrl}portal/scout/attribute/`, dto);
-  },
-
   HCKSaveRecruitingBoard: async (
     dto: any,
   ): Promise<HCKUpdateRecruitingBoardDTO> => {

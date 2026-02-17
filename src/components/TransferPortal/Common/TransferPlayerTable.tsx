@@ -36,29 +36,30 @@ import { ActionLock, Plus } from "../../../_design/Icons";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
+import { useSimFBAStore } from "../../../context/SimFBAContext";
+import { getPlayerOverall } from "../../Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
+import { getYear } from "../../../_utility/getYear";
 
 const getTableColumns = (
   league: League,
   category: string,
-  isMobile: boolean
+  isMobile: boolean,
 ) => {
   if (league === SimCFB) {
     let columns: { header: string; accessor: string }[] = [
       { header: "ID", accessor: "" },
+      { header: "Prev. Team", accessor: "PreviousTeamID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch.", accessor: "Archetype" },
+      { header: "Yr", accessor: "Year" },
       { header: "⭐", accessor: "Stars" },
       { header: "Ht", accessor: "Height" },
       { header: "Wt", accessor: "Weight" },
       { header: "City", accessor: "City" },
-      { header: "HS", accessor: "HighSchool" },
       { header: "State", accessor: "State" },
       { header: "Ovr", accessor: "OverallGrade" },
       { header: "Pot", accessor: "PotentialGrade" },
-      { header: "AF1", accessor: "AffinityOne" },
-      { header: "AF2", accessor: "AffinityTwo" },
-      { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
       { header: "Actions", accessor: "actions" },
     ];
@@ -181,9 +182,14 @@ const CHLRow: React.FC<CHLRowProps> = ({
   }, [transferProfileMapByPlayerID, item]);
 
   const leadingTeamsList = useMemo(() => {
-    const list = [];
+    const list: {
+      TeamID: number;
+      TeamAbbreviation: string;
+      Odds: number;
+    }[] = [];
+    if (!transferProfiles) return list;
     const sortedProfiles = transferProfiles.sort(
-      (a, b) => b.TotalPoints - a.TotalPoints
+      (a, b) => b.TotalPoints - a.TotalPoints,
     );
     let runningThreshold = 0;
     let totalPoints = 0;
@@ -337,12 +343,145 @@ const CFBRow: React.FC<CFBRowProps> = ({
   category,
   teamProfile,
 }) => {
+  const hkStore = useSimFBAStore();
+  const { transferProfileMapByPlayerID, cfbTeam } = hkStore;
+  const { isTablet } = useResponsive();
+  const actionVariant =
+    !recruitOnBoardMap[item.ID] && item.PreviousTeamID !== cfbTeam?.ID
+      ? "success"
+      : "secondary";
+
+  const transferProfiles = useMemo(() => {
+    return transferProfileMapByPlayerID[item.ID];
+  }, [transferProfileMapByPlayerID, item]);
+
+  const leadingTeamsList = useMemo(() => {
+    const list = [];
+    const sortedProfiles = transferProfiles.sort(
+      (a, b) => b.TotalPoints - a.TotalPoints,
+    );
+    let runningThreshold = 0;
+    let totalPoints = 0;
+    for (let i = 0; i < sortedProfiles.length; i++) {
+      if (sortedProfiles[i].RemovedFromBoard) continue;
+      if (runningThreshold === 0) {
+        runningThreshold = sortedProfiles[i].TotalPoints * 0.66;
+      }
+      if (sortedProfiles[i].TotalPoints >= runningThreshold) {
+        totalPoints += sortedProfiles[i].TotalPoints;
+      }
+    }
+    for (let i = 0; i < sortedProfiles.length; i++) {
+      if (sortedProfiles[i].RemovedFromBoard) continue;
+      if (sortedProfiles[i].TotalPoints < runningThreshold) continue;
+      let odds = 0;
+      if (runningThreshold > 0) {
+        odds = sortedProfiles[i].TotalPoints / totalPoints;
+      }
+      const obj = {
+        TeamID: sortedProfiles[i].ProfileID,
+        TeamAbbreviation: sortedProfiles[i].TeamAbbreviation,
+        Odds: odds,
+      };
+      list.push(obj);
+    }
+    return list;
+  }, [transferProfiles]);
+
+  const leadingTeams = useMemo(() => {
+    if (leadingTeamsList.length === 0) {
+      return "None";
+    }
+
+    const competingTeams = leadingTeamsList.filter((x, idx) => x.Odds > 0);
+    const topTeams = competingTeams.filter((x, idx) => idx <= 3);
+
+    if (topTeams.length === 0) {
+      return "None";
+    }
+    const competingIDs = topTeams.map((x) => x.TeamID);
+    return competingIDs.map((x) => {
+      const logo = getLogo(SimCFB, x, false);
+      return (
+        <div key={x}>
+          <Logo url={logo} variant="tiny" />
+        </div>
+      );
+    });
+  }, [leadingTeamsList]);
+
+  const previousTeamLogo = useMemo(() => {
+    if (item.PreviousTeamID === 0) {
+      return "";
+    }
+    let teamID = item.PreviousTeamID;
+    const previousURL = getLogo(SimCFB, teamID, false);
+    return <Logo url={previousURL} variant="small" />;
+  }, [item]);
+
   return (
     <div
       key={item.ID}
       className="table-row border-b dark:border-gray-700 text-left"
       style={{ backgroundColor }}
-    ></div>
+    >
+      <TableCell classes="text-xs">{item.ID}</TableCell>
+      <TableCell classes="text-xs">{previousTeamLogo}</TableCell>
+      <TableCell classes="text-xs">
+        <span
+          className={`text-xs cursor-pointer font-semibold`}
+          onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+            (e.target as HTMLElement).style.color = "#fcd53f";
+          }}
+          onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+            (e.target as HTMLElement).style.color = "";
+          }}
+          onClick={() => openModal(PortalInfoType, item)}
+        >
+          {item.FirstName} {item.LastName}
+        </span>
+      </TableCell>
+      <TableCell classes="text-xs">
+        {item.Position}
+        {item.PositionTwo.length > 0 ? `/${item.PositionTwo}` : ""}
+      </TableCell>
+      <TableCell classes="text-xs">
+        {item.Archetype}
+        {item.ArchetypeTwo.length > 0 ? `/${item.ArchetypeTwo}` : ""}
+      </TableCell>
+      <TableCell classes="text-xs">
+        {getYear(item.Year, item.IsRedshirt)}
+      </TableCell>
+      <TableCell classes="text-xs">{item.Stars}</TableCell>
+      <TableCell classes="text-xs">{item.Height}</TableCell>
+      <TableCell classes="text-xs">{item.Weight}</TableCell>
+      <TableCell classes="text-xs">{item.City}</TableCell>
+      <TableCell classes="text-xs">{item.State}</TableCell>
+      <TableCell classes="text-xs">{getPlayerOverall(item, SimCFB)}</TableCell>
+      <TableCell classes="text-xs">{item.PotentialGrade}</TableCell>
+      <TableCell classes="text-xs">{leadingTeams}</TableCell>
+      <TableCell>
+        <ButtonGroup classes="flex-nowrap">
+          <Button
+            variant={actionVariant}
+            size="xs"
+            onClick={() =>
+              openModal(AddPortalPlayerType, item as FootballPlayer)
+            }
+            disabled={
+              recruitOnBoardMap[item.ID] || item.PreviousTeamID === cfbTeam?.ID
+            }
+          >
+            {recruitOnBoardMap[item.ID] ||
+            item.PreviousTeamID === cfbTeam?.ID ? (
+              <ActionLock />
+            ) : (
+              <Plus />
+            )}
+          </Button>
+        </ButtonGroup>
+      </TableCell>
+    </div>
   );
 };
 
@@ -379,7 +518,7 @@ const CBBRow: React.FC<CBBRowProps> = ({
   const leadingTeamsList = useMemo(() => {
     const list = [];
     const sortedProfiles = transferProfiles.sort(
-      (a, b) => b.TotalPoints - a.TotalPoints
+      (a, b) => b.TotalPoints - a.TotalPoints,
     );
     let runningThreshold = 0;
     let totalPoints = 0;
@@ -513,7 +652,7 @@ interface TransferTableProps {
   category: string;
   openModal: (
     action: ModalAction,
-    player: HockeyPlayer | FootballPlayer | BasketballPlayer
+    player: HockeyPlayer | FootballPlayer | BasketballPlayer,
   ) => void;
   league: League;
   isMobile?: boolean;
@@ -540,7 +679,7 @@ export const TransferPlayerTable: FC<TransferTableProps> = ({
   const columns = getTableColumns(league, category, isMobile);
 
   const rowRenderer = (
-    league: League
+    league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimCHL) {
       return (item, index, bg) => (
@@ -594,6 +733,7 @@ export const TransferPlayerTable: FC<TransferTableProps> = ({
       team={team}
       enablePagination
       currentPage={currentPage}
+      page={`${league}Portal`}
     />
   );
 };

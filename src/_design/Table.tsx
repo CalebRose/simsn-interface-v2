@@ -10,9 +10,10 @@ import { getTextColorBasedOnBg } from "../_utility/getBorderClass";
 import { getThemeAwareDarkenColor } from "../_utility/getDarkerColor";
 import { Text } from "./Typography";
 import { isBrightColor } from "../_utility/isBrightColor";
-import { League, SimNFL } from "../_constants/constants";
+import { League, SimCFB, SimNFL } from "../_constants/constants";
 import { useAuthStore } from "../context/AuthContext";
 import { getThemeColors } from "../_utility/themeHelpers";
+import { getPlayerOverall } from "../components/Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
 
 export interface SortState {
   key: string | null;
@@ -131,8 +132,12 @@ export const Table = <T,>({
         ];
 
         // Clean and normalize the grade values
-        const aGrade = (a[key] ?? "").toString().trim();
-        const bGrade = (b[key] ?? "").toString().trim();
+        let aGrade = (a[key] ?? "").toString().trim();
+        let bGrade = (b[key] ?? "").toString().trim();
+        if (page === "SimCFBPortal" && key === "OverallGrade") {
+          aGrade = getPlayerOverall(a, SimCFB).toString();
+          bGrade = getPlayerOverall(b, SimCFB).toString();
+        }
 
         const ai = gradeOrder.indexOf(aGrade);
         const bi = gradeOrder.indexOf(bGrade);

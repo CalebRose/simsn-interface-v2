@@ -137,7 +137,6 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
     const filteredCFBRequests = model.CollegeRequests.filter(
       (req) => req.TeamID > 0,
     );
-    console.log({ model });
     setFBACFBRequests(filteredCFBRequests);
     setFBANFLRequests(model.ProRequests);
   };

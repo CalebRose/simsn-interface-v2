@@ -1,14 +1,19 @@
 import { useMemo } from "react";
 import {
-  CollegePromise,
+  CollegePromise as HCKCollegePromise,
   CollegePlayer as HockeyPlayer,
   CollegeTeam as HockeyTeam,
   TransferPortalProfile as HockeyPortalProfile,
 } from "../models/hockeyModels";
-import { CollegeTeam } from "../models/footballModels";
+import {
+  CollegePlayer as FBPlayer,
+  CollegeTeam,
+  TransferPortalProfile,
+  CollegePromise,
+} from "../models/footballModels";
 import {
   Team,
-  TransferPlayerResponse,
+  TransferPlayerResponse as CBBTransferPlayer,
   TransferPortalProfile as BasketballPortalProfile,
 } from "../models/basketballModels";
 
@@ -36,7 +41,7 @@ export const useFilteredHockeyTransferPlayers = ({
   const starsSet = useMemo(() => new Set(stars), [stars]);
   const previousTeamsSet = useMemo(
     () => new Set(previousTeams),
-    [previousTeams]
+    [previousTeams],
   );
   // 2) filter in one pass, rejecting any row that fails an active filter
   return useMemo(
@@ -87,7 +92,7 @@ export const useFilteredHockeyTransferPlayers = ({
       regionSet,
       starsSet,
       previousTeamsSet,
-    ]
+    ],
   );
 };
 
@@ -148,7 +153,7 @@ export const useFilteredBasketballTransferPlayers = ({
   stars,
   previousTeams,
 }: {
-  portalPlayers: TransferPlayerResponse[];
+  portalPlayers: CBBTransferPlayer[];
   country: string;
   positions: string[];
   archetype: string[];
@@ -163,7 +168,7 @@ export const useFilteredBasketballTransferPlayers = ({
   const starsSet = useMemo(() => new Set(stars), [stars]);
   const previousTeamsSet = useMemo(
     () => new Set(previousTeams),
-    [previousTeams]
+    [previousTeams],
   );
 
   // 2) filter in one pass, rejecting any row that fails an active filter
@@ -216,7 +221,7 @@ export const useFilteredBasketballTransferPlayers = ({
       regionSet,
       starsSet,
       previousTeamsSet,
-    ]
+    ],
   );
 };
 
@@ -300,7 +305,7 @@ export const getSimCBBTeamStateOptions = (cbbTeams: Team[]) => {
 
 export const getHCKModifierValue = (
   profile: HockeyPortalProfile,
-  promise: CollegePromise
+  promise: HCKCollegePromise,
 ) => {
   if (!promise || !profile) {
     return 1;
@@ -335,7 +340,7 @@ export const getHCKModifierValue = (
 
 export const getBBAModifierValue = (
   profile: BasketballPortalProfile,
-  promise: CollegePromise
+  promise: HCKCollegePromise,
 ) => {
   if (!promise || !profile) {
     return 1;
@@ -366,4 +371,129 @@ export const getBBAModifierValue = (
       return 2.25;
   }
   return 1;
+};
+
+export const getCFBModifierValue = (
+  profile: TransferPortalProfile,
+  promise: CollegePromise,
+) => {
+  if (!promise || !profile) {
+    return 1;
+  }
+  if (promise.ID === 0 || !promise.IsActive) {
+    return 1;
+  }
+
+  const weight = promise.PromiseWeight;
+  switch (weight) {
+    case "Why even try?":
+      return 0.5;
+    case "Extremely Low":
+      return 1.01;
+    case "Very Low":
+      return 1.05;
+    case "Low":
+      return 1.1;
+    case "Medium":
+      return 1.3;
+    case "High":
+      return 1.5;
+    case "Very High":
+      return 1.75;
+    case "Extremely High":
+      return 2.0;
+    case "If you make this promise then you better win it!":
+      return 2.25;
+  }
+  return 1;
+};
+
+export const useFilteredFootballTransferPlayers = ({
+  portalPlayers,
+  positions,
+  archetype,
+  regions,
+  stars,
+  years,
+  previousTeams,
+}: {
+  portalPlayers: FBPlayer[];
+  positions: string[];
+  archetype: string[];
+  regions: string[];
+  stars: number[];
+  years: number[];
+  previousTeams: number[];
+}) => {
+  // 1) build Sets once per-change
+  const positionSet = useMemo(() => new Set(positions), [positions]);
+  const archSet = useMemo(() => new Set(archetype), [archetype]);
+  const regionSet = useMemo(() => new Set(regions), [regions]);
+  const starsSet = useMemo(() => new Set(stars), [stars]);
+  const yearsSet = useMemo(() => new Set(years), [years]);
+  const previousTeamsSet = useMemo(
+    () => new Set(previousTeams),
+    [previousTeams],
+  );
+
+  // 2) filter in one pass, rejecting any row that fails an active filter
+  return useMemo(
+    () => {
+      if (!portalPlayers) {
+        return [];
+      }
+      return portalPlayers.filter((p) => {
+        // position
+        if (positionSet.size > 0 && !positionSet.has(p.Position)) {
+          return false;
+        }
+
+        // archetype
+        if (archSet.size > 0 && !archSet.has(p.Archetype)) {
+          return false;
+        }
+
+        // region (state)
+        if (regionSet.size > 0 && !regionSet.has(p.State)) {
+          return false;
+        }
+
+        // stars
+        if (starsSet.size > 0 && !starsSet.has(p.Stars)) {
+          return false;
+        }
+
+        // years
+        if (yearsSet.size > 0) {
+          // We need to put in case for whether the player is a redshirt or not. If so, we subtract year by 1
+          if (p.IsRedshirt && !yearsSet.has(p.Year - 1)) {
+            return false;
+          } else if (!p.IsRedshirt && !yearsSet.has(p.Year)) {
+            return false;
+          }
+        }
+
+        // previous teams
+        if (
+          previousTeamsSet.size > 0 &&
+          !previousTeamsSet.has(p.PreviousTeamID)
+        ) {
+          return false;
+        }
+
+        // passed all active filters
+        return true;
+      });
+    },
+    // depend on the raw list plus the Sets
+    [
+      portalPlayers,
+      positionSet,
+      archSet,
+      regionSet,
+      starsSet,
+      yearsSet,
+      previousTeamsSet,
+    ],
+  );
 };

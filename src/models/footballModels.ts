@@ -5412,6 +5412,7 @@ export class BootstrapData {
   NFLScoutingProfileMap: { [key: number]: ScoutingProfile };
   TradeProposals: { [key: number]: NFLTradeProposal[] };
   TradePreferences: { [key: number]: NFLTradePreferences };
+  TransferPortalProfiles: TransferPortalProfile[];
   NFLDraftPicks: NFLDraftPick[];
   constructor(source: any = {}) {
     if (typeof source === "string") source = JSON.parse(source);
@@ -5439,6 +5440,12 @@ export class BootstrapData {
       source["HistoricCollegePlayers"],
       HistoricCollegePlayer,
     );
+
+    this.TransferPortalProfiles =
+      this.convertValues(
+        source["TransferPortalProfiles"],
+        TransferPortalProfile,
+      ) || [];
 
     this.TeamProfileMap =
       this.convertValues(

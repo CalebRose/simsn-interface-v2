@@ -78,7 +78,7 @@ export const getCHLAttributes = (
   player: CHLPlayer,
   isMobile: boolean,
   isTablet: boolean,
-  category: string
+  category: string,
 ) => {
   const heightObj = HeightToFeetAndInches(player.Height);
   const attributes = [
@@ -143,7 +143,7 @@ export const getCHLPortalAttributes = (
   player: CHLPlayer,
   isMobile: boolean,
   isTablet: boolean,
-  category: string
+  category: string,
 ) => {
   const heightObj = HeightToFeetAndInches(player.Height);
   const attributes = [
@@ -198,7 +198,7 @@ export const getPHLAttributes = (
   isMobile: boolean,
   isTablet: boolean,
   category: string,
-  contract?: any
+  contract?: any,
 ) => {
   const phlContract = contract as PHLContract;
   const attributes = [
@@ -305,7 +305,7 @@ export const getTradeBlockAttributes = (
   isPlayer: boolean,
   isMobile: boolean,
   isTablet: boolean,
-  category: string
+  category: string,
 ) => {
   const attributes = [
     { label: "Type", value: isPlayer ? "Player" : "Pick" },
@@ -325,7 +325,7 @@ export const getTradeBlockAttributes = (
 export const getCHLCrootAttributes = (
   player: HockeyCroot,
   isMobile: boolean,
-  category: string
+  category: string,
 ) => {
   const heightObj = HeightToFeetAndInches(player.Height);
   let list = [
@@ -400,7 +400,7 @@ export const getAdditionalHockeyAttributeGrades = (player: HockeyCroot) => {
 };
 
 export const getAdditionalHockeyAttributes = (
-  player: CHLPlayer | PHLPlayer
+  player: CHLPlayer | PHLPlayer,
 ) => {
   return [
     {
@@ -477,7 +477,7 @@ export const getAdditionalHockeyAttributes = (
 };
 
 export const getAdditionalPotentialAttributes = (
-  player: CHLPlayer | PHLPlayer
+  player: CHLPlayer | PHLPlayer,
 ) => {
   return [
     { label: "Agi", value: getGeneralLetterGrade(player.AgilityPotential) },
@@ -646,7 +646,7 @@ export const getAdditionalCrootPreferenceAttributes = (player: HockeyCroot) => {
 export const getCFBCrootAttributes = (
   player: FBCroot,
   isMobile: boolean,
-  category: string
+  category: string,
 ) => {
   const heightObj = HeightToFeetAndInches(player.Height);
   let list = [
@@ -671,7 +671,7 @@ export const getCFBCrootAttributes = (
 export const getCBBCrootAttributes = (
   player: BasketballCroot,
   isMobile: boolean,
-  category: string
+  category: string,
 ) => {
   let list = [
     { label: "ID", value: player.ID },
@@ -745,19 +745,19 @@ export const getNFLAttributes = (
   isMobile: boolean,
   category: string,
   showLetterGrade: boolean,
-  contract?: any
+  contract?: any,
 ) => {
   const nflPlayer = player as NFLPlayer;
   const nflContract = contract as NFLContract;
   const arch1 = getArchetypeValue(
     nflPlayer.Archetype,
-    isMobile || player.ArchetypeTwo.length > 0
+    isMobile || player.ArchetypeTwo.length > 0,
   );
   let arch2 = "";
   if (nflPlayer.ArchetypeTwo.length > 0) {
     arch2 = getArchetypeValue(
       nflPlayer.ArchetypeTwo,
-      isMobile || player.ArchetypeTwo.length > 0
+      isMobile || player.ArchetypeTwo.length > 0,
     );
   }
   const nflPlayerAttributes = [
@@ -901,18 +901,18 @@ export const GetNFLOverall = (ovr: number, showLetterGrade: boolean) => {
 export const getCFBAttributes = (
   player: CFBPlayer,
   isMobile: boolean,
-  category: string
+  category: string,
 ) => {
   const heightObj = HeightToFeetAndInches(player.Height);
   const arch1 = getArchetypeValue(
     player.Archetype,
-    isMobile || player.ArchetypeTwo.length > 0
+    isMobile || player.ArchetypeTwo.length > 0,
   );
   let arch2 = "";
   if (player.ArchetypeTwo.length > 0) {
     arch2 = getArchetypeValue(
       player.ArchetypeTwo,
-      isMobile || player.ArchetypeTwo.length > 0
+      isMobile || player.ArchetypeTwo.length > 0,
     );
   }
   const attributes = [
@@ -968,7 +968,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "FootballIQ",
         player.Position,
         player.FootballIQ,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -977,7 +977,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         Speed,
         player.Position,
         player.Speed,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -986,7 +986,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         Agility,
         player.Position,
         player.Agility,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -995,7 +995,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         Carrying,
         player.Position,
         player.Carrying,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1004,7 +1004,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         Catching,
         player.Position,
         player.Catching,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1013,7 +1013,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "RouteRunning",
         player.Position,
         player.RouteRunning,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1022,7 +1022,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "ThrowPower",
         player.Position,
         player.ThrowPower,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1031,7 +1031,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "ThrowAccuracy",
         player.Position,
         player.ThrowAccuracy,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1040,7 +1040,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "PassBlock",
         player.Position,
         player.PassBlock,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1049,7 +1049,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "RunBlock",
         player.Position,
         player.RunBlock,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1058,7 +1058,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         Strength,
         player.Position,
         player.Strength,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1067,7 +1067,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         Tackle,
         player.Position,
         player.Tackle,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1076,7 +1076,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "ZoneCoverage",
         player.Position,
         player.ZoneCoverage,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1085,7 +1085,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "ManCoverage",
         player.Position,
         player.ManCoverage,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1094,7 +1094,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "PassRush",
         player.Position,
         player.PassRush,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1103,7 +1103,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "RunDefense",
         player.Position,
         player.RunDefense,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1112,7 +1112,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "KickPower",
         player.Position,
         player.KickPower,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1121,7 +1121,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "KickAccuracy",
         player.Position,
         player.KickAccuracy,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1130,7 +1130,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "PuntPower",
         player.Position,
         player.PuntPower,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1139,7 +1139,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "PuntAccuracy",
         player.Position,
         player.PuntAccuracy,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1148,7 +1148,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "Stamina",
         player.Position,
         player.Stamina,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -1157,7 +1157,7 @@ export const getAdditionalCFBAttributes = (player: CFBPlayer) => {
         "Injury",
         player.Position,
         player.Injury,
-        player.Year
+        player.Year,
       ),
     },
   ];
@@ -1175,7 +1175,7 @@ interface PriorityAttribute {
 }
 
 export const setPriorityCFBAttributes = (
-  player: CFBPlayer
+  player: CFBPlayer,
 ): PriorityAttribute[] => {
   let priorityAttributes: PriorityAttribute[] = [];
 
@@ -1189,7 +1189,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1199,7 +1199,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1209,7 +1209,7 @@ export const setPriorityCFBAttributes = (
             Carrying,
             player.Position,
             player.Carrying,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1219,7 +1219,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1229,7 +1229,7 @@ export const setPriorityCFBAttributes = (
             "ThrowPower",
             player.Position,
             player.ThrowPower,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1239,7 +1239,7 @@ export const setPriorityCFBAttributes = (
             "ThrowAccuracy",
             player.Position,
             player.ThrowAccuracy,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1259,7 +1259,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1269,7 +1269,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1279,7 +1279,7 @@ export const setPriorityCFBAttributes = (
             Carrying,
             player.Position,
             player.Carrying,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1289,7 +1289,7 @@ export const setPriorityCFBAttributes = (
             Catching,
             player.Position,
             player.Catching,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1299,7 +1299,7 @@ export const setPriorityCFBAttributes = (
             "PassBlock",
             player.Position,
             player.PassBlock,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1309,7 +1309,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1324,7 +1324,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1334,7 +1334,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1344,7 +1344,7 @@ export const setPriorityCFBAttributes = (
             Carrying,
             player.Position,
             player.Carrying,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1354,7 +1354,7 @@ export const setPriorityCFBAttributes = (
             Catching,
             player.Position,
             player.Catching,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1364,7 +1364,7 @@ export const setPriorityCFBAttributes = (
             "PassBlock",
             player.Position,
             player.PassBlock,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1374,7 +1374,7 @@ export const setPriorityCFBAttributes = (
             "RunBlock",
             player.Position,
             player.RunBlock,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1384,7 +1384,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1399,7 +1399,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1409,7 +1409,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1419,7 +1419,7 @@ export const setPriorityCFBAttributes = (
             Carrying,
             player.Position,
             player.Carrying,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1429,7 +1429,7 @@ export const setPriorityCFBAttributes = (
             Catching,
             player.Position,
             player.Catching,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1439,7 +1439,7 @@ export const setPriorityCFBAttributes = (
             "RouteRunning",
             player.Position,
             player.RouteRunning,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1449,7 +1449,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1464,7 +1464,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1474,7 +1474,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1484,7 +1484,7 @@ export const setPriorityCFBAttributes = (
             Carrying,
             player.Position,
             player.Carrying,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1494,7 +1494,7 @@ export const setPriorityCFBAttributes = (
             Catching,
             player.Position,
             player.Catching,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1504,7 +1504,7 @@ export const setPriorityCFBAttributes = (
             "RouteRunning",
             player.Position,
             player.RouteRunning,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1514,7 +1514,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1524,7 +1524,7 @@ export const setPriorityCFBAttributes = (
             "PassBlock",
             player.Position,
             player.PassBlock,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1534,7 +1534,7 @@ export const setPriorityCFBAttributes = (
             "RunBlock",
             player.Position,
             player.RunBlock,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1551,7 +1551,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1561,7 +1561,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1571,7 +1571,7 @@ export const setPriorityCFBAttributes = (
             "PassBlock",
             player.Position,
             player.PassBlock,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1581,7 +1581,7 @@ export const setPriorityCFBAttributes = (
             "RunBlock",
             player.Position,
             player.RunBlock,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1597,7 +1597,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1607,7 +1607,7 @@ export const setPriorityCFBAttributes = (
             Tackle,
             player.Position,
             player.Tackle,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1617,7 +1617,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1627,7 +1627,7 @@ export const setPriorityCFBAttributes = (
             "PassRush",
             player.Position,
             player.PassRush,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1637,7 +1637,7 @@ export const setPriorityCFBAttributes = (
             "RunDefense",
             player.Position,
             player.RunDefense,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1653,7 +1653,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1663,7 +1663,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1673,7 +1673,7 @@ export const setPriorityCFBAttributes = (
             Tackle,
             player.Position,
             player.Tackle,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1683,7 +1683,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1693,7 +1693,7 @@ export const setPriorityCFBAttributes = (
             "PassRush",
             player.Position,
             player.PassRush,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1703,7 +1703,7 @@ export const setPriorityCFBAttributes = (
             "RunDefense",
             player.Position,
             player.RunDefense,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1713,7 +1713,7 @@ export const setPriorityCFBAttributes = (
             "ZoneCoverage",
             player.Position,
             player.ZoneCoverage,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1723,7 +1723,7 @@ export const setPriorityCFBAttributes = (
             "ManCoverage",
             player.Position,
             player.ManCoverage,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1738,7 +1738,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1748,7 +1748,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1758,7 +1758,7 @@ export const setPriorityCFBAttributes = (
             Tackle,
             player.Position,
             player.Tackle,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1768,7 +1768,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1778,7 +1778,7 @@ export const setPriorityCFBAttributes = (
             "ZoneCoverage",
             player.Position,
             player.ZoneCoverage,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1788,7 +1788,7 @@ export const setPriorityCFBAttributes = (
             "ManCoverage",
             player.Position,
             player.ManCoverage,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1798,7 +1798,7 @@ export const setPriorityCFBAttributes = (
             Catching,
             player.Position,
             player.Catching,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1814,7 +1814,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1824,7 +1824,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1834,7 +1834,7 @@ export const setPriorityCFBAttributes = (
             Tackle,
             player.Position,
             player.Tackle,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1844,7 +1844,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1854,7 +1854,7 @@ export const setPriorityCFBAttributes = (
             "RunDefense",
             player.Position,
             player.RunDefense,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1864,7 +1864,7 @@ export const setPriorityCFBAttributes = (
             "ZoneCoverage",
             player.Position,
             player.ZoneCoverage,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1874,7 +1874,7 @@ export const setPriorityCFBAttributes = (
             "ManCoverage",
             player.Position,
             player.ManCoverage,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1884,7 +1884,7 @@ export const setPriorityCFBAttributes = (
             Catching,
             player.Position,
             player.Catching,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1899,7 +1899,7 @@ export const setPriorityCFBAttributes = (
             "KickAccuracy",
             player.Position,
             player.KickAccuracy,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1909,7 +1909,7 @@ export const setPriorityCFBAttributes = (
             "KickPower",
             player.Position,
             player.KickPower,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1924,7 +1924,7 @@ export const setPriorityCFBAttributes = (
             "PuntAccuracy",
             player.Position,
             player.PuntAccuracy,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1934,7 +1934,7 @@ export const setPriorityCFBAttributes = (
             "PuntPower",
             player.Position,
             player.PuntPower,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1949,7 +1949,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1959,7 +1959,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1969,7 +1969,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -1979,7 +1979,7 @@ export const setPriorityCFBAttributes = (
             Tackle,
             player.Position,
             player.Tackle,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -1994,7 +1994,7 @@ export const setPriorityCFBAttributes = (
             "KickAccuracy",
             player.Position,
             player.KickAccuracy,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -2004,7 +2004,7 @@ export const setPriorityCFBAttributes = (
             "KickPower",
             player.Position,
             player.KickPower,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -2020,7 +2020,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -2030,7 +2030,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -2040,7 +2040,7 @@ export const setPriorityCFBAttributes = (
             Carrying,
             player.Position,
             player.Carrying,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -2050,7 +2050,7 @@ export const setPriorityCFBAttributes = (
             Catching,
             player.Position,
             player.Catching,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -2065,7 +2065,7 @@ export const setPriorityCFBAttributes = (
             Agility,
             player.Position,
             player.Agility,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -2075,7 +2075,7 @@ export const setPriorityCFBAttributes = (
             Speed,
             player.Position,
             player.Speed,
-            player.Year
+            player.Year,
           ),
         },
         {
@@ -2085,7 +2085,7 @@ export const setPriorityCFBAttributes = (
             Strength,
             player.Position,
             player.Strength,
-            player.Year
+            player.Year,
           ),
         },
       ];
@@ -2103,7 +2103,7 @@ export const setPriorityCFBAttributes = (
         "FootballIQ",
         player.Position,
         player.FootballIQ,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -2113,7 +2113,7 @@ export const setPriorityCFBAttributes = (
         "Stamina",
         player.Position,
         player.Stamina,
-        player.Year
+        player.Year,
       ),
     },
     {
@@ -2123,9 +2123,9 @@ export const setPriorityCFBAttributes = (
         "Injury",
         player.Position,
         player.Injury,
-        player.Year
+        player.Year,
       ),
-    }
+    },
   );
 
   return priorityAttributes;
@@ -2237,7 +2237,7 @@ const priorityAttributesMap: { [key: string]: string[] } = {
 
 export const setPriorityNFLAttributes = (
   player: NFLPlayer,
-  showLetterGrade: boolean
+  showLetterGrade: boolean,
 ): PriorityAttribute[] => {
   const position = player.Position;
   const attributesForPosition = priorityAttributesMap[position] || [];
@@ -2274,7 +2274,7 @@ export const setPriorityNFLAttributes = (
       Value: showLetterGrade
         ? GetNFLOverall(player.Injury, true)
         : player.Injury,
-    }
+    },
   );
 
   return priorityAttributes;
@@ -2292,7 +2292,7 @@ export const getShotgunRating = (player: CFBPlayer | NFLPlayer) => {
 export const getCBBAttributes = (
   player: CBBPlayer,
   isMobile: boolean,
-  category: string
+  category: string,
 ) => {
   const attributes = [
     { label: "ID", value: `${player.ID}` },
@@ -2339,7 +2339,7 @@ export const getCBBAttributes = (
 export const getCBBPortalAttributes = (
   player: TransferPlayerResponse,
   isMobile: boolean,
-  category: string
+  category: string,
 ) => {
   const attributes = [
     { label: "Name", value: `${player.FirstName} ${player.LastName}` },
@@ -2435,7 +2435,7 @@ export const getAdditionalCBBAttributes = (player: CBBPlayer) => {
 };
 
 export const getAdditionalBBAPortalAttributes = (
-  player: TransferPlayerResponse
+  player: TransferPlayerResponse,
 ) => {
   return [
     {
@@ -2563,7 +2563,7 @@ export const getPriorityCBBCrootAttributes = (player: BasketballCroot) => {
 export const getNBAAttributes = (
   player: NBAPlayer,
   isMobile: boolean,
-  category: string
+  category: string,
 ) => {
   const attributes = [
     { label: "ID", value: `${player.ID}` },
@@ -2756,7 +2756,7 @@ export const getAdditionalHCKPortalAttributes = (player: CollegePlayer) => {
 };
 
 export const getAdditionalHCKPortalPotentialAttributes = (
-  player: CollegePlayer
+  player: CollegePlayer,
 ) => {
   return [
     { label: "Agility", value: getGeneralLetterGrade(player.AgilityPotential) },
@@ -2813,7 +2813,7 @@ export const getAdditionalHCKPortalPotentialAttributes = (
 };
 
 export const getAdditionalHCKPortalPreferenceAttributes = (
-  player: CollegePlayer
+  player: CollegePlayer,
 ) => {
   return [
     { label: "ProgramPref", value: player.ProgramPref },
@@ -2829,7 +2829,7 @@ export const getAdditionalHCKPortalPreferenceAttributes = (
 };
 
 export const getAdditionalBBAPortalPreferenceAttributes = (
-  player: TransferPlayerResponse
+  player: TransferPlayerResponse,
 ) => {
   return [
     { label: "ProgramPref", value: player.ProgramPref },
@@ -2841,5 +2841,21 @@ export const getAdditionalBBAPortalPreferenceAttributes = (
     { label: "ConferencePref", value: player.ConferencePref },
     { label: "CoachPref", value: player.CoachPref },
     { label: "SeasonMomentumPref", value: player.SeasonMomentumPref },
+  ];
+};
+
+export const getAdditionalCFBPortalPreferenceAttributes = (
+  player: CFBPlayer,
+) => {
+  return [
+    { label: "ProgramPref", value: 0 },
+    { label: "ProfDevPref", value: 0 },
+    { label: "TraditionsPref", value: 0 },
+    { label: "FacilitiesPref", value: 0 },
+    { label: "AtmospherePref", value: 0 },
+    { label: "AcademicsPref", value: 0 },
+    { label: "ConferencePref", value: 0 },
+    { label: "CoachPref", value: 0 },
+    { label: "SeasonMomentumPref", value: 0 },
   ];
 };

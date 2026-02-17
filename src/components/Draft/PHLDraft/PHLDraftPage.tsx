@@ -137,8 +137,6 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     const next = newDraftState.nextPick;
     const draftComplete = newDraftState.isDraftComplete?.() || false;
 
-    console.log({ draftPickMap, curr, round, next, draftComplete, player });
-
     await handleManualDraftStateUpdate({
       currentPick: curr,
       currentRound: round,

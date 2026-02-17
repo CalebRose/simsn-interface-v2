@@ -64,6 +64,7 @@ import {
   ScoutingProfile,
   NFLTeamProposals,
   AwardsList,
+  TransferPortalProfile,
 } from "../models/footballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { fba_ws } from "../_constants/urls";
@@ -94,6 +95,7 @@ import { CollegePollService } from "../_services/collegePollService";
 import { FaceDataService } from "../_services/faceDataService";
 import FBAScheduleService from "../_services/scheduleService";
 import { notificationService } from "../_services/notificationService";
+import { TransferPortalService } from "../_services/transferPortalService";
 
 // ✅ Define Types for Context
 interface SimFBAContextProps {
@@ -112,8 +114,13 @@ interface SimFBAContextProps {
   recruits: Croot[];
   recruitProfiles: RecruitPlayerProfile[];
   collegePromises: CollegePromise[];
+  collegePromiseMap: Record<number, CollegePromise>;
+  transferProfileMapByPlayerID: Record<number, TransferPortalProfile[]>;
+  transferPortalProfiles: TransferPortalProfile[];
+  teamTransferPortalProfiles: TransferPortalProfile[];
   teamProfileMap: Record<number, RecruitingTeamProfile> | null;
   portalPlayers: CollegePlayer[];
+  portalPlayerMap: Record<number, CollegePlayer>;
   historicCollegePlayers: HistoricCollegePlayer[];
   nflRetiredPlayers: NFLRetiredPlayer[];
   collegeInjuryReport: CollegePlayer[];
@@ -187,7 +194,7 @@ interface SimFBAContextProps {
     teamID: number,
   ) => Promise<void>;
   redshirtPlayer: (playerID: number, teamID: number) => Promise<void>;
-  promisePlayer: (playerID: number, teamID: number) => Promise<void>;
+  promisePlayer: (dto: any) => Promise<void>;
   updateCFBRosterMap: (newMap: Record<number, CollegePlayer[]>) => void;
   saveCFBDepthChart: (
     dto: any,
@@ -229,6 +236,17 @@ interface SimFBAContextProps {
   ExportPlayByPlay: (dto: any) => Promise<void>;
   SaveExtensionOffer: (dto: any) => Promise<void>;
   CancelExtensionOffer: (dto: any) => Promise<void>;
+  cancelPromise: (dto: any) => Promise<void>;
+  addTransferPlayerToBoard: (dto: any) => Promise<void>;
+  removeTransferPlayerFromBoard: (dto: any) => Promise<void>;
+  saveTransferPortalBoard: () => Promise<void>;
+  exportTransferPortalPlayers: () => Promise<void>;
+  updatePointsOnPortalPlayer: (
+    id: number,
+    name: string,
+    points: number,
+  ) => void;
+  scoutPortalAttribute: (dto: any) => Promise<void>;
   playerFaces: {
     [key: number]: FaceDataResponse;
   };
@@ -276,12 +294,17 @@ const defaultContext: SimFBAContextProps = {
   recruits: [],
   recruitProfiles: [],
   collegePromises: [],
+  collegePromiseMap: {},
+  transferPortalProfiles: [],
+  teamTransferPortalProfiles: [],
+  transferProfileMapByPlayerID: {},
   teamProfileMap: {},
   portalPlayers: [],
   historicCollegePlayers: [],
   nflRetiredPlayers: [],
   cfbPlayerMap: {},
   nflPlayerMap: {},
+  portalPlayerMap: {},
   collegeInjuryReport: [],
   currentCollegeSeasonGames: [],
   collegeTeamsGames: [],
@@ -345,7 +368,14 @@ const defaultContext: SimFBAContextProps = {
   sendNFLPlayerToPracticeSquad: async () => {},
   placeNFLPlayerOnTradeBlock: async () => {},
   redshirtPlayer: async () => {},
+  addTransferPlayerToBoard: async () => {},
+  removeTransferPlayerFromBoard: async () => {},
+  saveTransferPortalBoard: async () => {},
   promisePlayer: async () => {},
+  cancelPromise: async () => {},
+  exportTransferPortalPlayers: async () => {},
+  updatePointsOnPortalPlayer: () => {},
+  scoutPortalAttribute: async () => {},
   updateCFBRosterMap: () => {},
   saveCFBDepthChart: async () => {},
   saveNFLDepthChart: async () => {},
@@ -414,6 +444,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const isFetching = useRef(false);
   const isScheduleDataFetching = useRef(false);
   const isStatsDataFetching = useRef(false);
+  const [transferPortalLoading, setTransferPortalLoading] =
+    useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [cfbTeam, setCFBTeam] = useState<CollegeTeam | null>(null);
   const [cfbTeams, setCFBTeams] = useState<CollegeTeam[]>([]);
@@ -578,6 +610,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [cfbPostSeasonAwards, setCFBPostSeasonAwards] = useState<AwardsList>(
     {} as AwardsList,
   );
+  const [transferPortalProfiles, setTransferPortalProfiles] = useState<
+    TransferPortalProfile[]
+  >([]);
 
   // Loading states for double-click prevention
   const [recruitingLoading, setRecruitingLoading] = useState<boolean>(false);
@@ -688,6 +723,51 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     );
     return standingsMap;
   }, [allCFBStandings]);
+
+  const teamTransferPortalProfiles = useMemo(() => {
+    if (!cfbTeam) return [];
+    return transferPortalProfiles.filter(
+      (profile) => profile.ProfileID === cfbTeam.ID,
+    );
+  }, [cfbTeam, transferPortalProfiles]);
+
+  const transferProfileMapByPlayerID = useMemo(() => {
+    if (!portalPlayers || !transferPortalProfiles) return {};
+    const transferProfileMap: Record<number, TransferPortalProfile[]> = {};
+    for (let i = 0; i < portalPlayers.length; i++) {
+      const p = portalPlayers[i];
+      const profiles = transferPortalProfiles.filter(
+        (profile) => profile.CollegePlayerID === p.ID,
+      );
+      transferProfileMap[p.ID] = profiles;
+    }
+    return transferProfileMap;
+  }, [portalPlayers, transferPortalProfiles]);
+
+  const teamCollegePromises = useMemo(() => {
+    if (!cfbTeam || !collegePromises) return [];
+    return collegePromises.filter((promise) => promise.TeamID === cfbTeam.ID);
+  }, [cfbTeam, collegePromises]);
+
+  const collegePromiseMap = useMemo(() => {
+    const map: Record<number, CollegePromise> = {};
+    for (let i = 0; i < teamCollegePromises.length; i++) {
+      const promise = teamCollegePromises[i];
+      map[promise.CollegePlayerID] = promise;
+    }
+    return map;
+  }, [teamCollegePromises]);
+
+  const portalPlayerMap = useMemo(() => {
+    const playerMap: Record<number, CollegePlayer> = {};
+    if (portalPlayers) {
+      for (let i = 0; i < portalPlayers.length; i++) {
+        const p = portalPlayers[i];
+        playerMap[p.ID] = p;
+      }
+    }
+    return playerMap;
+  }, [portalPlayers]);
 
   useEffect(() => {
     getFaceData();
@@ -1033,6 +1113,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setPortalPlayers(res.PortalPlayers);
     setTeamProfileMap(res.TeamProfileMap);
     setCollegePromises(res.CollegePromises);
+    setTransferPortalProfiles(res.TransferPortalProfiles);
   };
 
   const getBootstrapGameplanData = async () => {
@@ -1104,6 +1185,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     },
     [cfbRosterMap],
   );
+
   const redshirtPlayer = useCallback(
     async (playerID: number, teamID: number) => {
       const rosterMap = { ...cfbRosterMap };
@@ -1149,10 +1231,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     },
     [cfbRosterMap],
   );
-  const promisePlayer = useCallback(
-    async (playerID: number, teamID: number) => {},
-    [cfbRosterMap],
-  );
+
   const cutNFLPlayer = useCallback(
     async (playerID: number, teamID: number) => {
       const res = await PlayerService.CutNFLPlayer(playerID);
@@ -2041,6 +2120,228 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     [freeAgencyLoading],
   );
 
+  const addTransferPlayerToBoard = useCallback(
+    async (dto: any) => {
+      if (transferPortalLoading) return; // Prevent double clicks
+
+      setTransferPortalLoading(true);
+      try {
+        const apiDTO = {
+          ...dto,
+          TeamAbbreviation: cfbTeam?.TeamAbbr,
+          Recruiter: cfbTeam?.Coach,
+          SeasonID: cfb_Timestamp?.CollegeSeasonID,
+          ProfileID: cfbTeam?.ID,
+        };
+        enqueueSnackbar("Adding transfer player...", {
+          variant: "info",
+          autoHideDuration: 1000,
+        });
+        const profile =
+          await TransferPortalService.FBACreateTransferPortalProfile(apiDTO);
+        if (profile) {
+          const newProfile = new TransferPortalProfile({
+            ...profile,
+            ID: GenerateNumberFromRange(500000, 1000000),
+          });
+          setTransferPortalProfiles((profiles) => [...profiles, newProfile]);
+          enqueueSnackbar("Added transfer player to board!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+        }
+      } finally {
+        setTransferPortalLoading(false);
+      }
+    },
+    [transferPortalProfiles, transferPortalLoading],
+  );
+
+  const removeTransferPlayerFromBoard = useCallback(
+    async (dto: any) => {
+      if (transferPortalLoading) return; // Prevent double clicks
+
+      setTransferPortalLoading(true);
+      try {
+        enqueueSnackbar("Removing transfer player from board...", {
+          variant: "info",
+          autoHideDuration: 1000,
+        });
+        const profile =
+          await TransferPortalService.FBARemoveProfileFromBoard(dto);
+        enqueueSnackbar("Player removed from board!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+        setTransferPortalProfiles((profiles) =>
+          [...profiles].filter((p) => p.CollegePlayerID != dto.CollegePlayerID),
+        );
+      } finally {
+        setTransferPortalLoading(false);
+      }
+    },
+    [transferPortalProfiles, transferPortalLoading],
+  );
+
+  const saveTransferPortalBoard = useCallback(async () => {
+    if (transferPortalLoading) return; // Prevent double clicks
+
+    setTransferPortalLoading(true);
+    try {
+      const dto = {
+        Profile: teamProfileMap![cfbTeam!.ID],
+        Players: teamTransferPortalProfiles,
+        TeamID: cfbTeam!.ID,
+      };
+      enqueueSnackbar("Saving...", {
+        variant: "info",
+        autoHideDuration: 1000,
+      });
+      await TransferPortalService.FBASaveTransferPortalBoard(dto);
+      enqueueSnackbar("Transfer Portal Board Saved!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    } finally {
+      setTransferPortalLoading(false);
+    }
+  }, [teamProfileMap, transferPortalProfiles, cfbTeam, transferPortalLoading]);
+
+  const promisePlayer = useCallback(
+    async (dto: any) => {
+      if (transferPortalLoading) return; // Prevent double clicks
+
+      setTransferPortalLoading(true);
+      try {
+        const res = await TransferPortalService.FBACreatePromise(dto);
+        if (res) {
+          setCollegePromises((promises) => [...promises, dto]);
+          enqueueSnackbar("Promise Created!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+        }
+      } finally {
+        setTransferPortalLoading(false);
+      }
+    },
+    [collegePromises, transferPortalLoading],
+  );
+
+  const cancelPromise = useCallback(
+    async (dto: any) => {
+      if (transferPortalLoading) return; // Prevent double clicks
+
+      setTransferPortalLoading(true);
+      try {
+        await TransferPortalService.FBACancelPromise(dto);
+
+        setCollegePromises((promises) =>
+          [...promises].filter(
+            (x) => x.CollegePlayerID !== dto.CollegePlayerID,
+          ),
+        );
+        enqueueSnackbar("Promise Cancelled!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      } finally {
+        setTransferPortalLoading(false);
+      }
+    },
+    [collegePromises, transferPortalLoading],
+  );
+
+  const scoutPortalAttribute = async (dto: any) => {
+    // const profile = await RecruitService.FBAScoutPortalAttribute(dto);
+    const profile = true;
+    if (profile) {
+      setTransferPortalProfiles((profiles) =>
+        [...profiles].map((p) =>
+          p.CollegePlayerID === dto.RecruitID
+            ? new TransferPortalProfile({
+                ...p,
+                [dto.Attribute]: true,
+              })
+            : p,
+        ),
+      );
+      // setTeamProfileMap((prev) => {
+      //   const currentProfile = prev![profile.ProfileID];
+      //   if (!currentProfile) return prev;
+      //   return {
+      //     ...prev,
+      //     [profile.ProfileID]: new RecruitingTeamProfile({
+      //       ...currentProfile,
+      //       WeeklyScoutingPoints: currentProfile.WeeklyScoutingPoints - 1,
+      //     }),
+      //   };
+      // });
+    }
+  };
+
+  const updatePointsOnPortalPlayer = (
+    id: number,
+    name: string,
+    points: number,
+  ) => {
+    const profileIdx = transferPortalProfiles.findIndex((x) => x.ID === id);
+    if (profileIdx === -1) return;
+    // Profile Exists and there are already points allocated, return. Users cannot update the amount of points lower than what's already allocated.
+    const existingProfile = transferPortalProfiles[profileIdx];
+    if (
+      existingProfile.TotalPoints > 0 &&
+      existingProfile.PreviouslySpentPoints > points
+    ) {
+      return;
+    }
+    let pointsValue = points;
+    if (points > 10) {
+      pointsValue = 10;
+    } else if (points < 0) {
+      pointsValue = 0;
+    } else if (
+      points < existingProfile.CurrentWeeksPoints &&
+      existingProfile.TotalPoints > 0
+    ) {
+      pointsValue = existingProfile.CurrentWeeksPoints;
+    }
+
+    setTransferPortalProfiles((prevProfiles) => {
+      // Update the profiles and get the new profiles array.
+      const updatedProfiles = prevProfiles.map((profile) =>
+        profile.ID === id && profile.ID > 0
+          ? new TransferPortalProfile({ ...profile, [name]: pointsValue })
+          : profile,
+      );
+
+      // Calculate the total points from the updated profiles.
+      const totalPoints = updatedProfiles.reduce(
+        (sum, profile) => sum + (profile.CurrentWeeksPoints || 0),
+        0,
+      );
+
+      // Update the recruiting team profile based on the updated points.
+      setTeamProfileMap((prevTeamProfiles) => {
+        const currentProfile = prevTeamProfiles![cfbTeam!.ID];
+        if (!currentProfile) return prevTeamProfiles;
+        return {
+          ...prevTeamProfiles,
+          [cfbTeam!.ID]: new RecruitingTeamProfile({
+            ...currentProfile,
+            SpentPoints: totalPoints,
+          }),
+        };
+      });
+
+      return updatedProfiles;
+    });
+  };
+
+  const exportTransferPortalPlayers = useCallback(async () => {
+    const res = await TransferPortalService.ExportCFBPortal();
+  }, []);
+
   return (
     <SimFBAContext.Provider
       value={{
@@ -2124,7 +2425,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         getBootstrapStatsData,
         cutCFBPlayer,
         redshirtPlayer,
-        promisePlayer,
         cutNFLPlayer,
         sendNFLPlayerToPracticeSquad,
         placeNFLPlayerOnTradeBlock,
@@ -2178,8 +2478,21 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         nflGameplanMap,
         nflWarRoomMap,
         nflScoutingProfileMap,
+        collegePromiseMap,
+        transferProfileMapByPlayerID,
+        teamTransferPortalProfiles,
+        transferPortalProfiles,
+        portalPlayerMap,
         toggleNotificationAsRead,
         deleteNotification,
+        addTransferPlayerToBoard,
+        removeTransferPlayerFromBoard,
+        saveTransferPortalBoard,
+        promisePlayer,
+        cancelPromise,
+        scoutPortalAttribute,
+        updatePointsOnPortalPlayer,
+        exportTransferPortalPlayers,
       }}
     >
       {children}

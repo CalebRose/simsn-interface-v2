@@ -14,6 +14,7 @@ import { usePagination } from "../../../_hooks/usePagination";
 import {
   CBBPortalHelpContent,
   CBBRecruitingHelpContent,
+  CFBPortalHelpContent,
   CFBRecruitingHelpContent,
   CHLPortalHelpContent,
   CHLRecruitingHelpContent,
@@ -106,7 +107,7 @@ export const PortalHelpModal: FC<HelpModalProps> = ({
       return CHLPortalHelpContent;
     }
     if (league === SimCFB) {
-      return CFBRecruitingHelpContent;
+      return CFBPortalHelpContent;
     }
     if (league === SimCBB) {
       return CBBPortalHelpContent;
@@ -127,7 +128,7 @@ export const PortalHelpModal: FC<HelpModalProps> = ({
         classes="h-[60vh]"
       >
         <div className="flex-1 flex flex-col justify-between h-[75%]">
-          <div className="overflow-y-auto">
+          <div className="overflow-y-auto space-y-2">
             {modalAction === Help1 && (
               <>
                 {contentForPage.map((line, index) => (

@@ -1,4 +1,4 @@
-import { bbaUrl, hckUrl } from "../_constants/urls";
+import { bbaUrl, fbaUrl, hckUrl } from "../_constants/urls";
 import {
   GetActionCall,
   GetCall,
@@ -9,15 +9,19 @@ import { CollegePromise, TransferPortalProfile } from "../models/hockeyModels";
 
 export const TransferPortalService = {
   HCKCreateTransferPortalProfile: async (
-    dto: any
+    dto: any,
   ): Promise<TransferPortalProfile> => {
     return await PostCall(`${hckUrl}portal/profile/create`, dto);
   },
 
   HCKRemoveProfileFromBoard: async (
-    dto: any
+    dto: any,
   ): Promise<TransferPortalProfile> => {
     return await PostCall(`${hckUrl}portal/profile/remove`, dto);
+  },
+
+  HCKScoutPortalAttribute: async (dto: any): Promise<TransferPortalProfile> => {
+    return await PostCall(`${hckUrl}portal/scout/attribute/`, dto);
   },
 
   HCKSaveTransferPortalBoard: async (dto: any): Promise<void> => {
@@ -37,13 +41,13 @@ export const TransferPortalService = {
   },
 
   BBACreateTransferPortalProfile: async (
-    dto: any
+    dto: any,
   ): Promise<TransferPortalProfile> => {
     return await PostCall(`${bbaUrl}portal/profile/create`, dto);
   },
 
   BBARemoveProfileFromBoard: async (
-    dto: any
+    dto: any,
   ): Promise<TransferPortalProfile> => {
     return await PostCall(`${bbaUrl}portal/profile/remove`, dto);
   },
@@ -62,5 +66,37 @@ export const TransferPortalService = {
 
   ExportBBAPortal: async () => {
     await GetExportCall(`${bbaUrl}portal/export/players/`, "blob");
+  },
+
+  FBACreateTransferPortalProfile: async (
+    dto: any,
+  ): Promise<TransferPortalProfile> => {
+    return await PostCall(`${fbaUrl}portal/profile/create`, dto);
+  },
+
+  FBARemoveProfileFromBoard: async (
+    dto: any,
+  ): Promise<TransferPortalProfile> => {
+    return await PostCall(`${fbaUrl}portal/profile/remove`, dto);
+  },
+
+  FBASaveTransferPortalBoard: async (dto: any): Promise<void> => {
+    await PostCall(`${fbaUrl}portal/saveboard`, dto);
+  },
+
+  FBACreatePromise: async (dto: any): Promise<CollegePromise> => {
+    return await PostCall(`${fbaUrl}portal/promise/create`, dto);
+  },
+
+  FBACancelPromise: async (dto: any): Promise<void> => {
+    await GetActionCall(`${fbaUrl}portal/promise/cancel/${dto.ID}`);
+  },
+
+  FBAScoutPortalAttribute: async (dto: any): Promise<TransferPortalProfile> => {
+    return await PostCall(`${hckUrl}portal/scout/attribute/`, dto);
+  },
+
+  ExportCFBPortal: async () => {
+    await GetExportCall(`${fbaUrl}portal/export/players/`, "blob");
   },
 };
