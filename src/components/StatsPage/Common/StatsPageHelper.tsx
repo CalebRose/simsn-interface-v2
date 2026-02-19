@@ -49,7 +49,7 @@ export const GetStatsColumns = (
   statsType: StatsType,
   statsView: StatsView,
   isMobile: boolean,
-  isGoalie: boolean
+  isGoalie: boolean,
 ) => {
   if (league === SimCHL || league === SimPHL) {
     return GetHockeyStatsColumns(
@@ -57,7 +57,7 @@ export const GetStatsColumns = (
       statsType,
       statsView,
       isMobile,
-      isGoalie
+      isGoalie,
     );
   }
   if (league === SimCBB || league === SimNBA) {
@@ -72,7 +72,7 @@ export const GetFootballStatsColumns = (
   statsType: StatsType,
   footballStatsType: FootballStatsType,
   statsView: StatsView,
-  isMobile: boolean
+  isMobile: boolean,
 ) => {
   let columns = [{ header: "", accessor: "" }];
   if (statsType === TEAM_VIEW) {
@@ -269,7 +269,7 @@ export const GetBasketballStatsColumns = (
   league: League,
   statsType: StatsType,
   statsView: StatsView,
-  isMobile: boolean
+  isMobile: boolean,
 ) => {
   return [];
 };
@@ -279,7 +279,7 @@ export const GetHockeyStatsColumns = (
   statsType: StatsType,
   statsView: StatsView,
   isMobile: boolean,
-  isGoalie: boolean
+  isGoalie: boolean,
 ) => {
   let columns = [{ header: "", accessor: "" }];
   if (statsType === TEAM_VIEW) {
@@ -385,7 +385,7 @@ export const GetHockeyPlayerStatsValues = (
     | ProfessionalPlayerGameStats
     | ProfessionalPlayerSeasonStats,
   statsView: StatsView,
-  isGoalie: boolean
+  isGoalie: boolean,
 ) => {
   let values: any[] = [];
   if (statsView === SEASON_VIEW && isSeasonStats(stats)) {
@@ -410,10 +410,13 @@ export const GetHockeyPlayerStatsValues = (
       { label: "OTG", value: stats.OvertimeGoals },
       { label: "GWG", value: stats.GameWinningGoals },
       { label: "SOG", value: stats.Shots },
-      { label: "S%", value: stats.ShootingPercentage.toFixed(3) },
+      { label: "S%", value: (stats.ShootingPercentage * 100).toFixed(3) },
       { label: "FO%", value: stats.FaceOffWinPercentage.toFixed(3) },
       { label: "FOW", value: stats.FaceOffsWon },
       { label: "FOA", value: stats.FaceOffs },
+      { label: "BCHK", value: stats.BodyChecks },
+      { label: "SCHK", value: stats.StickChecks },
+      { label: "SHB", value: stats.ShotsBlocked },
     ]);
   } else {
     values = values.concat([
@@ -436,7 +439,7 @@ export const GetHockeyTeamStatsValues = (
     | CHLTeamSeasonStats
     | ProfessionalTeamGameStats
     | ProfessionalTeamSeasonStats,
-  statsView: StatsView
+  statsView: StatsView,
 ) => {
   let values: any[] = [];
   if (statsView === SEASON_VIEW) {
@@ -481,7 +484,7 @@ export const GetFootballPlayerStatsValues = (
     | NFLPlayerStats
     | NFLPlayerSeasonStats,
   statsView: StatsView,
-  footballStatsType: FootballStatsType
+  footballStatsType: FootballStatsType,
 ): { label: string; value: number }[] => {
   const values: { label: string; value: number }[] = [];
 
@@ -494,7 +497,7 @@ export const GetFootballPlayerStatsValues = (
   switch (footballStatsType) {
     case PASSING:
       let completionPercentage = Number(
-        stats.PassCompletions / stats.PassAttempts
+        stats.PassCompletions / stats.PassAttempts,
       );
       let completionPercentageLabel = "";
       if (completionPercentage > 0) {
@@ -502,7 +505,7 @@ export const GetFootballPlayerStatsValues = (
         completionPercentageLabel = completionPercentage.toFixed(2);
       }
       const passingAvg = Number(
-        (stats.PassingYards / stats.PassAttempts).toFixed(2)
+        (stats.PassingYards / stats.PassAttempts).toFixed(2),
       );
       let QBRating = stats.QBRating;
       if (!QBRating) {
@@ -515,7 +518,7 @@ export const GetFootballPlayerStatsValues = (
           stats.PassAttempts,
           stats.PassingYards,
           stats.PassingTDs,
-          stats.Interceptions
+          stats.Interceptions,
         );
       } else {
         QBRating = QBRating.toFixed(2);
@@ -531,7 +534,7 @@ export const GetFootballPlayerStatsValues = (
         { label: "INTs", value: stats.Interceptions },
         { label: "QBR", value: Number(QBRating) },
         { label: "LP", value: stats.LongestPass },
-        { label: "Scks", value: stats.Sacks }
+        { label: "Scks", value: stats.Sacks },
       );
       break;
 
@@ -543,7 +546,7 @@ export const GetFootballPlayerStatsValues = (
         { label: "RAvg", value: stats.RushAvg },
         { label: "RuTD", value: stats.RushingTDs },
         { label: "Fum", value: stats.Fumbles },
-        { label: "LR", value: stats.LongestRush }
+        { label: "LR", value: stats.LongestRush },
       );
       break;
 
@@ -555,7 +558,7 @@ export const GetFootballPlayerStatsValues = (
         { label: "RcY", value: stats.ReceivingYards },
         { label: "RcTDs", value: stats.ReceivingTDs },
         { label: "Fum", value: stats.Fumbles },
-        { label: "LRec", value: stats.LongestReception }
+        { label: "LRec", value: stats.LongestReception },
       );
       break;
 
@@ -571,7 +574,7 @@ export const GetFootballPlayerStatsValues = (
         { label: "PD", value: stats.PassDeflections },
         { label: "INT", value: stats.InterceptionsCaught },
         { label: "SFT", value: stats.Safeties },
-        { label: "DTDs", value: stats.DefensiveTDs }
+        { label: "DTDs", value: stats.DefensiveTDs },
       );
       break;
 
@@ -588,7 +591,7 @@ export const GetFootballPlayerStatsValues = (
         { label: "GPD", value: stats.GrossPuntDistance },
         { label: "NPD", value: stats.NetPuntDistance },
         { label: "PT", value: stats.PuntTouchbacks },
-        { label: "Ins20", value: stats.PuntsInside20 }
+        { label: "Ins20", value: stats.PuntsInside20 },
       );
       break;
 
@@ -602,7 +605,7 @@ export const GetFootballPlayerStatsValues = (
         { label: "PRetY", value: stats.PuntReturnYards },
         { label: "PRetTDs", value: stats.PuntReturnTDs },
         { label: "FGB", value: stats.FGBlocked },
-        { label: "PB", value: stats.PuntsBlocked }
+        { label: "PB", value: stats.PuntsBlocked },
       );
       break;
 
@@ -610,7 +613,7 @@ export const GetFootballPlayerStatsValues = (
       values.push(
         { label: "Snaps", value: stats.Snaps },
         { label: "ScksAll", value: stats.SacksAllowed },
-        { label: "Pnck", value: stats.Pancakes }
+        { label: "Pnck", value: stats.Pancakes },
       );
       break;
   }
@@ -625,7 +628,7 @@ export const GetFootballTeamStatsValues = (
     | NFLTeamStats
     | NFLTeamSeasonStats,
   statsView: StatsView,
-  footballStatsType: FootballStatsType
+  footballStatsType: FootballStatsType,
 ): { label: string; value: number }[] => {
   const values: { label: string; value: number }[] = [];
   // season aggregate
@@ -644,13 +647,13 @@ export const GetFootballTeamStatsValues = (
     case OVERALL:
       values.push(
         { label: "Pts", value: stats.PointsScored },
-        { label: "Pts All", value: stats.PointsAgainst }
+        { label: "Pts All", value: stats.PointsAgainst },
       );
       if (statsView === SEASON_VIEW) {
         if ("TotalOffensiveYards" in stats && "TotalYardsAllowed" in stats) {
           values.push(
             { label: "Tot Off Yds", value: stats.TotalOffensiveYards },
-            { label: "Tot Yds All", value: stats.TotalYardsAllowed }
+            { label: "Tot Yds All", value: stats.TotalYardsAllowed },
           );
         }
       }
@@ -658,14 +661,14 @@ export const GetFootballTeamStatsValues = (
         { label: "Pass Yds", value: stats.PassingYards },
         { label: "Pass Yds All", value: stats.PassingYardsAllowed },
         { label: "Ru Yds", value: stats.RushingYards },
-        { label: "Ru Yds All", value: stats.RushingYardsAllowed }
+        { label: "Ru Yds All", value: stats.RushingYardsAllowed },
       );
       if (statsView === SEASON_VIEW && "Turnovers" in stats) {
         values.push({ label: "TO", value: stats.Turnovers });
       }
       values.push(
         { label: "Off Pen", value: stats.OffensivePenalties },
-        { label: "Def Pen", value: stats.DefensivePenalties }
+        { label: "Def Pen", value: stats.DefensivePenalties },
       );
       break;
 
@@ -681,7 +684,7 @@ export const GetFootballTeamStatsValues = (
         { label: "INTs", value: stats.PassingInterceptions },
         { label: "Ru Yds", value: stats.RushingYards },
         { label: "RuTD", value: stats.RushingTouchdowns },
-        { label: "Fum", value: stats.RushingFumbles }
+        { label: "Fum", value: stats.RushingFumbles },
       );
       break;
 
@@ -692,7 +695,7 @@ export const GetFootballTeamStatsValues = (
       }
       values.push(
         { label: "Pass Yds All", value: stats.PassingYardsAllowed },
-        { label: "Ru Yds All", value: stats.RushingYardsAllowed }
+        { label: "Ru Yds All", value: stats.RushingYardsAllowed },
       );
       if (statsView === SEASON_VIEW && "Turnovers" in stats) {
         values.push({ label: "TO", value: stats.Turnovers });
@@ -708,7 +711,7 @@ export const GetFootballTeamStatsValues = (
         { label: "FR", value: stats.FumblesRecovered },
         { label: "INT", value: stats.DefensiveInterceptions },
         { label: "SFT", value: stats.Safeties },
-        { label: "DTDs", value: stats.DefensiveTDs }
+        { label: "DTDs", value: stats.DefensiveTDs },
       );
       break;
   }
