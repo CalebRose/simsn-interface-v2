@@ -83,9 +83,12 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
       const cfbtp = TeamProfile as FootballProfile;
       const cfbt = Team as FootballTeam;
       teamLabel = cfbt.TeamName;
-      classRank = cfbtp.RecruitingClassRank;
-      affinities = getAffinityList(cfbtp);
-      res = cfbtp.RecruitingEfficiencyScore * 100;
+      if (cfbtp) {
+        classRank = cfbtp.RecruitingClassRank || 0;
+        affinities = getAffinityList(cfbtp);
+        res = cfbtp.RecruitingEfficiencyScore * 100;
+      }
+
       break;
     default:
       break;

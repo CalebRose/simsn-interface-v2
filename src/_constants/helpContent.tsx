@@ -138,6 +138,55 @@ export const CBBPortalHelpContent: string[][] = [
   ],
 ];
 
+export const CFBPortalHelpContent: string[][] = [
+  [
+    "Welcome to the SimCFB Transfer Portal Page!",
+    "This page is where you will rebuild the your SimCFB Program through the transfer portal. Here, you can recruit other college players and players from other leagues such as the Canadian Hockey League.",
+    "The top row controls the different views available on this page. The 'Overview' button handles the list of all players. The 'Board' button is your personal team board -- any player you add can be viewed here. The 'Rankings' page showcases the recruiting rankings for this year and where each team ranks.",
+    "The buttons to the right of the Overview, and Transfer Board buttons; these handle the different views within the tables. Attributes are the current attributes of the player, and preferences are the player's desires regarding what they're looking for in a program. The higher the player's preference, the more picky they are. You can compare each player's preferences with your team values in the sidebar to see how far your team's points will go towards allocating points onto each player.",
+  ],
+  [
+    "Overview Page",
+    "This page showcases over 1000+ different players from all over the world are eligible and capable of playing in the SimCFB.",
+    "You can filter down the list further by using the different dropdowns showcased on the page. 'Positions' will filter the list by positions; 'Archetype' will filter the list further by the player's archetype. You can also filter the list by country in addition. If you select USA, Canada, Sweden, or Russia as a country, you may also in addition filter further by the different regions within each country. Stars allows you to filter by the player's star rating. Finally, Status allows you to filter by how far along the player is from making a decision to sign with a school.",
+    "To view more info on each player, click on their name. To add a player to your board, click the green 'Plus' button. If a player is already on your board or has been signed, the button will grey out.",
+  ],
+  [
+    "Team Board Page",
+    "This page allows you to spend points towards the players you are targeting. Here, you may view a player's attributes; scout their potential attributes; and view their preferences.",
+    "Additionally, to add points towards a player, input a number into the Add Points input. The number of points selectable on a player may be between 0 and 10.",
+    "Once points have been placed on a player and once a sync occurs, a team is not able to lower the amount of points invested on the player. They may only increase the number of points invested.",
+    "If a team wants to lower the number of points or if they want to stop investing in a player, they must remove the player from their transfer board.",
+    "To save your points spent, click on the Save button at the top.",
+  ],
+  [
+    "How a player signs",
+    "While the transfer portal is active, players will make a decision once teams have invested in them for approximately three weeks.",
+    "If there is no team actively recruiting a player in the portal, the player will remain in the portal while the transfer portal is active.",
+    "Once a team has invested points into a player, the player will then make a decision following three syncs, if no additional teams invest points into them.",
+    "If an additional team invests points into a portal player that another team is investing in, and if that team gets within 66% of the leading team's points, then the portal player's decision will be moved in three weeks time until no additional team invests further.",
+    "When a player is ready to decide, they will make a weighted decision based on the leading team's points and all teams within 66% of the leading team's points. The decision is randomly decided.",
+    "Once a player has signed with a new school, they will exit the portal immediately. Teams that placed the player on their board will be able to see where they signed.",
+  ],
+  [
+    "Promises",
+    "Teams will be able to commit a promise to a player, to encourage them to sign with their program.",
+    "These promises can range from the number of wins, to the amount of playing time, to the success of the team overall.",
+    "When a promise is created, it will act as a multiplier towards the points a team invests into a player. The better the promise, the higher the multiplier.",
+    "If a player signs with a team that made a promise to them, the promise is automatically committed, and the team must fulfill the promise by the end of the next season.",
+  ],
+
+  [
+    "Portal Reputation",
+    "Portal reputation is a measure of how well a team fulfills its promises to players and how other players view the program in the transfer portal.",
+    "When a team makes a promise to a player, it is essentially a commitment to that player.",
+    "If a team fails to fulfill a promise, their portal reputation will take a hit based on the weight of the promise.",
+    "If a team succeeds in fulfilling a promise, their portal reputation will increase based on the weight of the promise.",
+    "Portal reputation is important because it is the second multiplier towards the points a team invests into a player. Teams are not able to adjust their portal reputation outright in the same way they can with promises.",
+    "So it is important to the coach that if they make a promise to a player, they must fulfill it to maintain a good portal reputation.",
+  ],
+];
+
 export const CFBRecruitingHelpContent: string[][] = [
   [
     "Welcome to the SimCFB Recruiting Page!",

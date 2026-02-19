@@ -7,6 +7,7 @@ import { useSimFBAStore } from "../../context/SimFBAContext";
 import { PageContainer } from "../../_design/Container";
 import { HCKTransferPortal } from "./HCKPortal/HCKTransferPortal";
 import { BBATransferPortal } from "./BBAPortal/BBATransferPortal";
+import { CFBTransferPortal } from "./CFBPortal/CFBTransferPortal";
 
 interface TransferPortalPageProps {
   league: League;
@@ -15,7 +16,7 @@ interface TransferPortalPageProps {
 export const TransferPortalPage: FC<TransferPortalPageProps> = ({ league }) => {
   const { selectedLeague, setSelectedLeague } = useLeagueStore();
   const { chlTeam, portalPlayers: HCKPortalPlayers } = useSimHCKStore();
-  const { cfbTeam, portalPlayers: CFBPortalPlayers } = useSimFBAStore();
+  const { cfbTeam } = useSimFBAStore();
   const { cbbTeam } = useSimBBAStore();
 
   useEffect(() => {
@@ -31,11 +32,11 @@ export const TransferPortalPage: FC<TransferPortalPageProps> = ({ league }) => {
     if (selectedLeague === SimCBB && cbbTeam) {
       return false;
     }
-    if (selectedLeague === SimCFB && cfbTeam && CFBPortalPlayers) {
+    if (selectedLeague === SimCFB && cfbTeam) {
       return false;
     }
     return true;
-  }, [chlTeam, cfbTeam, HCKPortalPlayers, CFBPortalPlayers, selectedLeague]);
+  }, [chlTeam, cfbTeam, HCKPortalPlayers, cbbTeam, selectedLeague]);
 
   return (
     <>
@@ -46,9 +47,7 @@ export const TransferPortalPage: FC<TransferPortalPageProps> = ({ league }) => {
       >
         {selectedLeague === SimCHL && chlTeam && <HCKTransferPortal />}
         {selectedLeague === SimCBB && cbbTeam && <BBATransferPortal />}
-        {selectedLeague === SimCFB && cfbTeam && (
-          <>This will be added once Guam joins the FCS.</>
-        )}
+        {selectedLeague === SimCFB && cfbTeam && <CFBTransferPortal />}
       </PageContainer>
     </>
   );

@@ -18,6 +18,7 @@ import { CSSObjectWithLabel, SingleValue } from "react-select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
 import {
   getBBAPromiseWeight,
+  getCFBPromiseWeight,
   getHCKPromiseWeight,
   getSimCBBTeamStateOptions,
   getSimCFBTeamStateOptions,
@@ -82,7 +83,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
   const { chlTeams, chlTeam, chlPlayerSeasonStatsMap, hck_Timestamp } =
     useSimHCKStore();
   const { cfbTeams, cfbTeam } = useSimFBAStore();
-  const { cbbTeams, cbbTeam, cbb_Timestamp } = useSimBBAStore();
+  const { cbbTeams, cbbTeam } = useSimBBAStore();
 
   const [promiseType, setPromiseType] = useState(promise?.PromiseType || "");
   const [benchmark, setBenchmark] = useState(promise?.Benchmark || 0);
@@ -125,6 +126,9 @@ export const PromiseModal: FC<PromiseModalProps> = ({
     if (league === SimCBB) {
       return getBBAPromiseWeight(promiseType, benchmark);
     }
+    if (league === SimCFB) {
+      return getCFBPromiseWeight(promiseType, benchmark);
+    }
     return "";
   }, [league, promiseType, benchmark, promise, hasUserMadeChanges]);
 
@@ -145,6 +149,9 @@ export const PromiseModal: FC<PromiseModalProps> = ({
     if (promiseType === "Minutes") {
       return 40; // minutes per game
     }
+    if (promiseType === "Snap Count") {
+      return 60; // snaps per game
+    }
     return 100;
   }, [promiseType, league]);
 
@@ -155,6 +162,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
     }
     if (
       promiseType === "Wins" ||
+      promiseType === "Snap Count" ||
       promiseType === "Time on Ice" ||
       promiseType === "Minutes" ||
       promiseType === "Snap Count"
@@ -166,7 +174,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
 
     if (promiseType === "Home State Game" && player.Country !== USA) {
       list.push(
-        "Home State Game promise can only be made to players from the USA."
+        "Home State Game promise can only be made to players from the USA.",
       );
     }
     if (promiseType === "Conference Championship") {
@@ -176,7 +184,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
         (league === SimCBB && cbbTeam?.Conference === "Independent")
       ) {
         list.push(
-          "Cannot make Conference Championship promise while coaching a team without a conference."
+          "Cannot make Conference Championship promise while coaching a team without a conference.",
         );
       }
     }
@@ -185,7 +193,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
       (player.IsRedshirt || player.IsRedshirting)
     ) {
       list.push(
-        "Cannot make a redshirt promise to someone who already has or is redshirting."
+        "Cannot make a redshirt promise to someone who already has or is redshirting.",
       );
     }
     return list;
@@ -210,7 +218,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
           return new HockeyPlayerSeasonStats();
         }
         const playerSeasonStatsIdx = seasonStats.findIndex(
-          (s) => s.PlayerID === player.ID
+          (s) => s.PlayerID === player.ID,
         );
         if (playerSeasonStatsIdx >= 0) {
           return seasonStats[playerSeasonStatsIdx];
@@ -279,8 +287,8 @@ export const PromiseModal: FC<PromiseModalProps> = ({
           league === SimCHL
             ? chlTeam?.ID
             : league === SimCFB
-            ? cfbTeam?.ID
-            : cbbTeam?.ID,
+              ? cfbTeam?.ID
+              : cbbTeam?.ID,
       };
       await promisePlayer(dto);
     }

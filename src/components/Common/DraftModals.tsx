@@ -1,14 +1,16 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 
 import { DraftablePlayer } from "../../models/hockeyModels";
 import { useAuthStore } from "../../context/AuthContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { getLogo } from "../../_utility/getLogo";
-import { League, SimPHL } from "../../_constants/constants";
+import { League, SimCHL, SimPHL } from "../../_constants/constants";
 import { HeightToFeetAndInches } from "../../_utility/getHeightByFeetAndInches";
 import PlayerPicture from "../../_utility/usePlayerFaces";
 import { Logo } from "../../_design/Logo";
 import { Text } from "../../_design/Typography";
+import { Tab, TabGroup } from "../../_design/Tabs";
+import { HockeyPlayerStatsModalView } from "./PlayerStatsModalView";
 
 interface DrafteeInfoModalBodyProps {
   league: League;
@@ -32,6 +34,7 @@ interface PHLDrafteeInfoModalBodyProps {
 export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
   player,
 }) => {
+  const [selectedTab, setSelectedTab] = useState<string>("Attributes");
   const { currentUser } = useAuthStore();
   const { phlTeamMap, chlTeamMap } = useSimHCKStore();
   const proTeam = phlTeamMap[player.TeamID];
@@ -134,154 +137,178 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
         )}
       </div>
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <div className="grid w-full grid-cols-4 gap-3">
-          <div className="flex flex-col px-1 gap-1">
-            <Text
-              variant="small"
-              classes="mb-1 whitespace-nowrap font-semibold"
-            >
-              Agility
-            </Text>
-            <Text variant="small">{player.AgilityGrade}</Text>
-          </div>
-          {player.Position !== "G" && (
-            <>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Faceoffs
-                </Text>
-                <Text variant="small">{player.FaceoffsGrade}</Text>
-              </div>
-              <div className="flex flex-col gap-1 px-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Long Shot
-                </Text>
-                <div className="flex justify-around">
-                  <div className="flex flex-col items-center justify-center align-center">
-                    <Text variant="small">{player.LongShotPowerGrade}</Text>
-                    <Text variant="xs">Pow</Text>
-                  </div>
-                  <div className="flex flex-col">
-                    <Text variant="small">{player.LongShotAccuracyGrade}</Text>
-                    <Text variant="xs">Acc</Text>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-1 px-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Close Shot
-                </Text>
-                <div className="flex justify-around">
-                  <div className="flex flex-col items-center justify-center align-center">
-                    <Text variant="small" classes="text-center">
-                      {player.CloseShotPowerGrade}
-                    </Text>
-                    <Text variant="xs">Pow</Text>
-                  </div>
-                  <div className="flex flex-col">
-                    <Text variant="small">{player.CloseShotAccuracyGrade}</Text>
-                    <Text variant="xs">Acc</Text>
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Passing
-                </Text>
-                <Text variant="small">{player.PassingGrade}</Text>
-              </div>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Puck Handling
-                </Text>
-                <Text variant="small">{player.PuckHandlingGrade}</Text>
-              </div>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Strength
-                </Text>
-                <Text variant="small">{player.StrengthGrade}</Text>
-              </div>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Body Checks
-                </Text>
-                <Text variant="small">{player.BodyCheckingGrade}</Text>
-              </div>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Stick Checks
-                </Text>
-                <Text variant="small">{player.StickCheckingGrade}</Text>
-              </div>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Shot Blocks
-                </Text>
-                <Text variant="small">{player.ShotBlockingGrade}</Text>
-              </div>
-            </>
-          )}
+        <TabGroup classes="mb-3 w-full">
+          <Tab
+            label="Attributes"
+            selected={selectedTab === "Attributes"}
+            setSelected={setSelectedTab}
+          />
+          <Tab
+            label="Stats"
+            selected={selectedTab === "Stats"}
+            setSelected={setSelectedTab}
+          />
+        </TabGroup>
 
-          {player.Position === "G" && (
-            <>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Strength
-                </Text>
-                <Text variant="small">{player.StrengthGrade}</Text>
-              </div>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Goalkeeping
-                </Text>
-                <Text variant="small">{player.GoalkeepingGrade}</Text>
-              </div>
-              <div className="flex flex-col px-1 gap-1">
-                <Text
-                  variant="small"
-                  classes="mb-1 whitespace-nowrap font-semibold"
-                >
-                  Goalie Vision
-                </Text>
-                <Text variant="small">{player.GoalieVisionGrade}</Text>
-              </div>
-            </>
-          )}
-        </div>
+        {selectedTab === "Attributes" && (
+          <div className="grid w-full grid-cols-4 gap-3">
+            <div className="flex flex-col px-1 gap-1">
+              <Text
+                variant="small"
+                classes="mb-1 whitespace-nowrap font-semibold"
+              >
+                Agility
+              </Text>
+              <Text variant="small">{player.AgilityGrade}</Text>
+            </div>
+            {player.Position !== "G" && (
+              <>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Faceoffs
+                  </Text>
+                  <Text variant="small">{player.FaceoffsGrade}</Text>
+                </div>
+                <div className="flex flex-col gap-1 px-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Long Shot
+                  </Text>
+                  <div className="flex justify-around">
+                    <div className="flex flex-col items-center justify-center align-center">
+                      <Text variant="small">{player.LongShotPowerGrade}</Text>
+                      <Text variant="xs">Pow</Text>
+                    </div>
+                    <div className="flex flex-col">
+                      <Text variant="small">
+                        {player.LongShotAccuracyGrade}
+                      </Text>
+                      <Text variant="xs">Acc</Text>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 px-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Close Shot
+                  </Text>
+                  <div className="flex justify-around">
+                    <div className="flex flex-col items-center justify-center align-center">
+                      <Text variant="small" classes="text-center">
+                        {player.CloseShotPowerGrade}
+                      </Text>
+                      <Text variant="xs">Pow</Text>
+                    </div>
+                    <div className="flex flex-col">
+                      <Text variant="small">
+                        {player.CloseShotAccuracyGrade}
+                      </Text>
+                      <Text variant="xs">Acc</Text>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Passing
+                  </Text>
+                  <Text variant="small">{player.PassingGrade}</Text>
+                </div>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Puck Handling
+                  </Text>
+                  <Text variant="small">{player.PuckHandlingGrade}</Text>
+                </div>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Strength
+                  </Text>
+                  <Text variant="small">{player.StrengthGrade}</Text>
+                </div>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Body Checks
+                  </Text>
+                  <Text variant="small">{player.BodyCheckingGrade}</Text>
+                </div>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Stick Checks
+                  </Text>
+                  <Text variant="small">{player.StickCheckingGrade}</Text>
+                </div>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Shot Blocks
+                  </Text>
+                  <Text variant="small">{player.ShotBlockingGrade}</Text>
+                </div>
+              </>
+            )}
+
+            {player.Position === "G" && (
+              <>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Strength
+                  </Text>
+                  <Text variant="small">{player.StrengthGrade}</Text>
+                </div>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Goalkeeping
+                  </Text>
+                  <Text variant="small">{player.GoalkeepingGrade}</Text>
+                </div>
+                <div className="flex flex-col px-1 gap-1">
+                  <Text
+                    variant="small"
+                    classes="mb-1 whitespace-nowrap font-semibold"
+                  >
+                    Goalie Vision
+                  </Text>
+                  <Text variant="small">{player.GoalieVisionGrade}</Text>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+        {selectedTab === "Stats" && (
+          <div className="mt-2 overflow-x-auto">
+            <HockeyPlayerStatsModalView player={player} league={SimCHL} />
+          </div>
+        )}
       </div>
     </div>
   );

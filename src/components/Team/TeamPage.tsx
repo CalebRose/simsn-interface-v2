@@ -46,6 +46,7 @@ import {
 } from "../../models/hockeyModels";
 import {
   CollegePlayer as CFBPlayer,
+  CollegePromise as CFBPromise,
   NFLPlayer,
   NFLTradeProposal,
 } from "../../models/footballModels";
@@ -149,9 +150,10 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     chlTeamOptions,
     teamProfileMap,
     collegePromises,
+    createPromise,
     cutCHLPlayer,
     redshirtPlayer,
-    createPromise,
+
     ExportHCKRoster,
     SearchHockeyStats,
     chlGameplan,
@@ -880,12 +882,15 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     cfbRosterMap,
     cfbTeamOptions,
     teamProfileMap,
+    collegePromises,
     cutCFBPlayer,
     redshirtPlayer,
     promisePlayer,
     getBootstrapRosterData,
   } = useSimFBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const promiseModal = useModal();
+
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<CFBPlayer | null>(null);
   const [selectedTeam, setSelectedTeam] = useState(() => {
@@ -928,6 +933,28 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     return null;
   }, [teamProfileMap, selectedTeam]);
 
+  const selectedTeamPromises = useMemo(() => {
+    if (!collegePromises || !selectedTeam) return [];
+    return collegePromises.filter(
+      (promise) => promise.TeamID === selectedTeam.ID,
+    );
+  }, [selectedTeam, collegePromises]);
+
+  const collegePromiseMap = useMemo(() => {
+    const map: Record<number, CFBPromise> = {};
+    selectedTeamPromises.forEach((promise) => {
+      map[promise.CollegePlayerID] = promise;
+    });
+    return map;
+  }, [selectedTeamPromises]);
+
+  const modalPlayerPromise = useMemo(() => {
+    if (!modalPlayer) {
+      return null;
+    }
+    return collegePromiseMap[modalPlayer.ID];
+  }, [modalPlayer, collegePromiseMap]);
+
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = cfbTeamMap ? cfbTeamMap[value] : null;
@@ -938,6 +965,11 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
   const openModal = (action: ModalAction, player: CFBPlayer) => {
     handleOpenModal();
     setModalAction(action);
+    setModalPlayer(player);
+  };
+
+  const openPromiseModal = (player: CFBPlayer) => {
+    promiseModal.handleOpenModal();
     setModalPlayer(player);
   };
 
@@ -959,6 +991,16 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
           player={modalPlayer}
           cutPlayer={cutCFBPlayer}
           redshirtPlayer={redshirtPlayer}
+          promisePlayer={promisePlayer}
+        />
+      )}
+      {modalPlayer && (
+        <PromiseModal
+          league={SimCHL}
+          isOpen={promiseModal.isModalOpen}
+          onClose={promiseModal.handleCloseModal}
+          player={modalPlayer}
+          promise={modalPlayerPromise}
           promisePlayer={promisePlayer}
         />
       )}
@@ -1038,6 +1080,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            openPromiseModal={openPromiseModal}
             redshirtCount={redshirtCount}
             disable={selectedTeam!.ID !== cfbTeam!.ID}
           />

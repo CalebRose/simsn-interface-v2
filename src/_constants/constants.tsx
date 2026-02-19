@@ -826,12 +826,20 @@ export const cbbCountryOptions: { label: string; value: string }[] = [
   { label: "New Caledonia", value: "New Caledonia" },
 ];
 
+export const YearOptions = [
+  { label: "Freshman", value: "1" },
+  { label: "Sophomore", value: "2" },
+  { label: "Junior", value: "3" },
+  { label: "Senior", value: "4" },
+];
+
 export const StarOptions = [
   { label: "Five", value: "5" },
   { label: "Four", value: "4" },
   { label: "Three", value: "3" },
   { label: "Two", value: "2" },
   { label: "One", value: "1" },
+  { label: "Zero", value: "0" },
 ];
 
 export const StatusOptions = [

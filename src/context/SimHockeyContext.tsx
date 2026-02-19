@@ -1749,7 +1749,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   }, []);
 
   const scoutPortalAttribute = async (dto: any) => {
-    const profile = await RecruitService.HCKScoutPortalAttribute(dto);
+    const profile = await TransferPortalService.HCKScoutPortalAttribute(dto);
     if (profile) {
       setTransferPortalProfiles((profiles) =>
         [...profiles].map((p) =>
@@ -1858,10 +1858,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
             ID: GenerateNumberFromRange(500000, 1000000),
           });
           setTransferPortalProfiles((profiles) => [...profiles, newProfile]);
-          enqueueSnackbar("Added transfer player to board!", {
-            variant: "success",
-            autoHideDuration: 3000,
-          });
         }
       } finally {
         setTransferPortalLoading(false);

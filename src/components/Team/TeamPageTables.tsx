@@ -873,6 +873,7 @@ interface CFBRosterTableProps {
   team?: any;
   category?: string;
   openModal: (action: ModalAction, player: CFBPlayer) => void;
+  openPromiseModal: (player: CFBPlayer) => void;
   disable: boolean;
   redshirtCount?: number;
 }
@@ -886,6 +887,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
   team,
   category,
   openModal,
+  openPromiseModal,
   disable,
 }) => {
   const store = useSimFBAStore();
@@ -1061,7 +1063,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
                 openModal(Redshirt, item);
               }
               if (selectedOption?.value === "promise") {
-                openModal(Promise, item);
+                openPromiseModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
               }
