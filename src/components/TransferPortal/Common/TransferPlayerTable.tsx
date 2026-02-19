@@ -339,8 +339,8 @@ const CFBRow: React.FC<CFBRowProps> = ({
   category,
   teamProfile,
 }) => {
-  const hkStore = useSimFBAStore();
-  const { transferProfileMapByPlayerID, cfbTeam } = hkStore;
+  const fbStore = useSimFBAStore();
+  const { transferProfileMapByPlayerID, cfbTeam } = fbStore;
   const { isTablet } = useResponsive();
   const actionVariant =
     !recruitOnBoardMap[item.ID] && item.PreviousTeamID !== cfbTeam?.ID
@@ -352,7 +352,8 @@ const CFBRow: React.FC<CFBRowProps> = ({
   }, [transferProfileMapByPlayerID, item]);
 
   const leadingTeamsList = useMemo(() => {
-    const list = [];
+    const list: any[] = [];
+    if (!transferProfiles) return list;
     const sortedProfiles = transferProfiles.sort(
       (a, b) => b.TotalPoints - a.TotalPoints,
     );

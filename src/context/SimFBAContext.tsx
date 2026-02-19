@@ -1616,7 +1616,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const SearchFootballStats = useCallback(async (dto: any) => {
     if (dto.League === SimCFB) {
       const res = await StatsService.FBACollegeStatsSearch(dto);
-      console.log({ res });
       if (dto.ViewType === SEASON_VIEW) {
         setCfbPlayerSeasonStats((prev) => {
           return { ...prev, [dto.SeasonID]: res.CFBPlayerSeasonStats };

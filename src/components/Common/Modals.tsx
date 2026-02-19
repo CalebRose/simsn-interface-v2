@@ -3165,7 +3165,7 @@ export const CFBPortalInfoModalBody: FC<CFBPortalInfoModalBodyProps> = ({
             className={`w-full max-h-[6rem] overflow-y-auto grid grid-cols-3 gap-y-2 mb-2`}
           >
             {leadingTeamsList.map((contender) => {
-              const logo = getLogo(SimCBB, contender.TeamID, false);
+              const logo = getLogo(SimCFB, contender.TeamID, false);
               const team = cfbTeamMap![contender.TeamID];
               const fullOdds = Math.round(contender.Odds * 100);
               const displayStatus = getDisplayStatus(fullOdds);

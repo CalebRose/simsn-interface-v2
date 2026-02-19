@@ -82,7 +82,6 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
       // Remove some of these as affinities aren't used in portal
       const cfbtp = TeamProfile as FootballProfile;
       const cfbt = Team as FootballTeam;
-      console.log({ cfbtp });
       teamLabel = cfbt.TeamName;
       if (cfbtp) {
         classRank = cfbtp.RecruitingClassRank || 0;

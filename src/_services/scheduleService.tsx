@@ -93,7 +93,6 @@ export default class FBAScheduleService {
   }
 
   async FBAExportCFBPlayByPlay(dto: any): Promise<void> {
-    console.log({ dto });
     await GetExportCall(
       `${fbaUrl}statistics/cfb/export/play/by/play/${dto.GameID}/`,
       "blob",
