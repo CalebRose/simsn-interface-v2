@@ -154,6 +154,11 @@ interface SimBBAContextProps {
   SaveAIRecruitingSettings: (dto: TeamRecruitingProfile) => Promise<void>;
   SearchBasketballStats: (dto: any) => Promise<void>;
   ExportBasketballStats: (dto: any) => Promise<void>;
+  ExportBBRoster: (
+    teamID: number,
+    isPro: boolean,
+    teamName: string,
+  ) => Promise<void>;
   ExportCBBRecruits: () => Promise<void>;
   ExportPlayByPlay: (dto: any) => Promise<void>;
   submitCollegePoll: (dto: any) => Promise<void>;
@@ -349,6 +354,7 @@ const defaultContext: SimBBAContextProps = {
   exportTransferPortalPlayers: async () => {},
   toggleNotificationAsRead: async () => {},
   deleteNotification: async () => {},
+  ExportBBRoster: async () => {},
 };
 
 export const SimBBAContext = createContext<SimBBAContextProps>(defaultContext);
@@ -1339,6 +1345,17 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const ExportBBRoster = useCallback(
+    async (teamID: number, isPro: boolean, teamName: string) => {
+      if (isPro) {
+        await TeamService.ExportNBARoster(teamID, teamName);
+      } else {
+        await TeamService.ExportCBBRoster(teamID, teamName);
+      }
+    },
+    [],
+  );
+
   const ExportCBBRecruits = useCallback(async () => {
     await RecruitService.ExportCBBCroots();
   }, []);
@@ -1818,6 +1835,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         exportTransferPortalPlayers,
         toggleNotificationAsRead,
         deleteNotification,
+        ExportBBRoster,
       }}
     >
       {children}

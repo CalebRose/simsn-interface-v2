@@ -218,6 +218,11 @@ interface SimFBAContextProps {
   updatePointsOnRecruit: (id: number, name: string, points: number) => void;
   SaveRecruitingBoard: () => Promise<void>;
   SaveAIRecruitingSettings: (dto: UpdateRecruitingBoardDTO) => Promise<void>;
+  ExportFBRoster: (
+    teamID: number,
+    isPro: boolean,
+    teamName: string,
+  ) => Promise<void>;
   ExportCFBRecruits: () => Promise<void>;
   SearchFootballStats: (dto: any) => Promise<void>;
   ExportFootballStats: (dto: any) => Promise<void>;
@@ -387,6 +392,7 @@ const defaultContext: SimFBAContextProps = {
   updatePointsOnRecruit: () => {},
   SaveRecruitingBoard: async () => {},
   SaveAIRecruitingSettings: async () => {},
+  ExportFBRoster: async () => {},
   ExportCFBRecruits: async () => {},
   SearchFootballStats: async () => {},
   ExportFootballStats: async () => {},
@@ -1609,6 +1615,17 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     [cfbTeamMap, recruitingLoading],
   );
 
+  const ExportFBRoster = useCallback(
+    async (teamID: number, isPro: boolean, teamName: string) => {
+      if (isPro) {
+        await TeamService.ExportNFLRoster(teamID, teamName);
+      } else {
+        await TeamService.ExportCFBRoster(teamID, teamName);
+      }
+    },
+    [],
+  );
+
   const ExportCFBRecruits = useCallback(async () => {
     await RecruitService.ExportCFBCroots();
   }, []);
@@ -2435,6 +2452,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         updatePointsOnRecruit,
         SaveRecruitingBoard,
         SaveAIRecruitingSettings,
+        ExportFBRoster,
         ExportCFBRecruits,
         SaveFreeAgencyOffer,
         SaveWaiverWireOffer,

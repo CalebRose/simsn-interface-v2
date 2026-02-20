@@ -258,7 +258,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
   };
 
   const exportRoster = async () => {
-    await ExportHCKRoster(selectedTeam!.ID, false);
+    await ExportHCKRoster(selectedTeam!.ID, false, selectedTeam!.TeamName);
   };
 
   return (
@@ -631,7 +631,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
   const proposeTradeModal = useModal();
 
   const exportRoster = async () => {
-    await ExportHCKRoster(selectedTeam!.ID, true);
+    await ExportHCKRoster(selectedTeam!.ID, true, selectedTeam!.TeamName);
   };
 
   return (
@@ -887,6 +887,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     redshirtPlayer,
     promisePlayer,
     getBootstrapRosterData,
+    ExportFBRoster,
   } = useSimFBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
@@ -971,6 +972,10 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
   const openPromiseModal = (player: CFBPlayer) => {
     promiseModal.handleOpenModal();
     setModalPlayer(player);
+  };
+
+  const exportRoster = async () => {
+    await ExportFBRoster(selectedTeam!.ID, false, selectedTeam!.TeamName);
   };
 
   useEffect(() => {
@@ -1058,7 +1063,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" onClick={exportRoster}>
               <Text variant="small">Export</Text>
             </Button>
           </div>
@@ -1119,6 +1124,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     proExtensionMap: nflExtensionMap,
     SaveExtensionOffer,
     CancelExtensionOffer,
+    ExportFBRoster,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1154,6 +1160,10 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return null;
   }, [nflRosterMap, selectedTeam]);
+
+  const exportRoster = async () => {
+    await ExportFBRoster(selectedTeam!.ID, true, selectedTeam!.TeamName);
+  };
 
   useEffect(() => {
     getBootstrapRosterData();
@@ -1487,7 +1497,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" onClick={exportRoster}>
               <Text variant="small">Export</Text>
             </Button>
           </div>
@@ -1537,6 +1547,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     promisePlayer,
     getBootstrapRosterData,
     createPromise,
+    ExportBBRoster,
   } = bbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
@@ -1615,6 +1626,10 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
   const openPromiseModal = (player: CollegePlayer) => {
     promiseModal.handleOpenModal();
     setModalPlayer(player);
+  };
+
+  const exportRoster = async () => {
+    await ExportBBRoster(selectedTeam!.ID, false, selectedTeam!.Team);
   };
 
   useEffect(() => {
@@ -1701,7 +1716,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" onClick={exportRoster}>
               <Text variant="small">Export</Text>
             </Button>
           </div>
@@ -1750,6 +1765,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     capsheetMap,
     SaveExtensionOffer,
     CancelExtensionOffer,
+    ExportBBRoster,
   } = bbStore;
   const extensionModal = useModal();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -1813,6 +1829,10 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
   const openExtensionModal = (player: NBAPlayer) => {
     extensionModal.handleOpenModal();
     setModalPlayer(player);
+  };
+
+  const exportRoster = async () => {
+    await ExportBBRoster(selectedTeam!.ID, true, selectedTeam!.Team);
   };
 
   useEffect(() => {
@@ -1900,7 +1920,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" onClick={exportRoster}>
               <Text variant="small">Export</Text>
             </Button>
           </div>

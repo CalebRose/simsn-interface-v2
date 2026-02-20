@@ -53,32 +53,32 @@ export const TeamService = {
 
   GetCFBTeamStandingsByConference: async (
     conferenceID: number,
-    seasonID: number
+    seasonID: number,
   ): Promise<CollegeStandings[]> => {
     return await GetCall(`${fbaUrl}standings/cfb/${conferenceID}/${seasonID}/`);
   },
 
   GetNFLTeamStandingsByDivision: async (
     divisionID: number,
-    seasonID: number
+    seasonID: number,
   ): Promise<NFLStandings[]> => {
     return await GetCall(`${fbaUrl}standings/nfl/${divisionID}/${seasonID}/`);
   },
 
   GetHistoricalCollegeStandingsByTeamID: async (
-    teamID: number
+    teamID: number,
   ): Promise<CollegeStandings[]> => {
     return await GetCall(`${fbaUrl}standings/cfb/history/team/${teamID}/`);
   },
 
   GetAllCFBStandingsBySeasonID: async (
-    seasonID: number
+    seasonID: number,
   ): Promise<CollegeStandings[]> => {
     return await GetCall(`${fbaUrl}standings/cfb/season/${seasonID}/`);
   },
 
   GetAllNFLStandingsBySeasonID: async (
-    seasonID: number
+    seasonID: number,
   ): Promise<NFLStandings[]> => {
     return await GetCall(`${fbaUrl}standings/nfl/season/${seasonID}/`);
   },
@@ -167,15 +167,55 @@ export const TeamService = {
   RemoveUserFromNBATeam: async (teamID: number, request: NBARequest) => {
     return await PostCall(
       `${bbaUrl}team/nba/removeUserFromTeam/${teamID}`,
-      request
+      request,
     );
   },
 
-  ExportCHLRoster: async (teamID: number) => {
-    await GetExportCall(`${hckUrl}export/college/roster/${teamID}`, "blob");
+  ExportCHLRoster: async (teamID: number, teamName: string) => {
+    await GetExportCall(
+      `${hckUrl}export/college/roster/${teamID}`,
+      "blob",
+      `chl_team_${teamName}_roster.xlsx`,
+    );
   },
 
-  ExportPHLRoster: async (teamID: number) => {
-    await GetExportCall(`${hckUrl}export/pro/roster/${teamID}`, "blob");
+  ExportPHLRoster: async (teamID: number, teamName: string) => {
+    await GetExportCall(
+      `${hckUrl}export/pro/roster/${teamID}`,
+      "blob",
+      `phl_team_${teamName}_roster.xlsx`,
+    );
+  },
+
+  ExportCFBRoster: async (teamID: number, teamName: string) => {
+    await GetExportCall(
+      `${fbaUrl}collegeplayers/team/export/${teamID}`,
+      "blob",
+      `cfb_team_${teamName}_roster.xlsx`,
+    );
+  },
+
+  ExportNFLRoster: async (teamID: number, teamName: string) => {
+    await GetExportCall(
+      `${fbaUrl}nflplayers/team/export/${teamID}`,
+      "blob",
+      `nfl_team_${teamName}_roster.xlsx`,
+    );
+  },
+
+  ExportCBBRoster: async (teamID: number, teamName: string) => {
+    await GetExportCall(
+      `${bbaUrl}export/cbb/team/${teamID}`,
+      "blob",
+      `cbb_team_${teamName}_roster.xlsx`,
+    );
+  },
+
+  ExportNBARoster: async (teamID: number, teamName: string) => {
+    await GetExportCall(
+      `${bbaUrl}export/nba/team/${teamID}`,
+      "blob",
+      `nba_team_${teamName}_roster.xlsx`,
+    );
   },
 };

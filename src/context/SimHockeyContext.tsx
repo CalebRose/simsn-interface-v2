@@ -197,7 +197,11 @@ interface SimHCKContextProps {
   SearchHockeyStats: (dto: any) => Promise<void>;
   ExportHockeyStats: (dto: any) => Promise<void>;
   ExportHockeySchedule: (dto: any) => Promise<void>;
-  ExportHCKRoster: (teamID: number, isPro: boolean) => Promise<void>;
+  ExportHCKRoster: (
+    teamID: number,
+    isPro: boolean,
+    teamName: string,
+  ) => Promise<void>;
   ExportCHLRecruits: () => Promise<void>;
   ExportPlayByPlay: (dto: any) => Promise<void>;
   proposeTrade: (dto: TradeProposal) => Promise<void>;
@@ -1697,11 +1701,11 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   }, []);
 
   const ExportHCKRoster = useCallback(
-    async (teamID: number, isPro: boolean) => {
+    async (teamID: number, isPro: boolean, teamName: string) => {
       if (isPro) {
-        await TeamService.ExportPHLRoster(teamID);
+        await TeamService.ExportPHLRoster(teamID, teamName);
       } else {
-        await TeamService.ExportCHLRoster(teamID);
+        await TeamService.ExportCHLRoster(teamID, teamName);
       }
     },
     [],
