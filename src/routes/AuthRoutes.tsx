@@ -352,6 +352,15 @@ export const AuthRoutes = [
     }
   />,
   <Route
+    key="NFL DRAFT"
+    path={routes.NFL_DRAFT_ROOM}
+    element={
+      <AuthGuard>
+        <DraftPage league={SimNFL} />
+      </AuthGuard>
+    }
+  />,
+  <Route
     key="CFB TEAM PROFILE"
     path={routes.CFB_TEAMPROFILE}
     element={
