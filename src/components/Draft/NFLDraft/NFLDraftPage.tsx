@@ -1,15 +1,16 @@
 import { FC } from "react";
 import {
   NFLDraftee,
+  NFLDraftPick,
   NFLTeam,
   ScoutingProfile,
 } from "../../../models/footballModels";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
-import { League } from "../../../_constants/constants";
+import { League, SimNFL } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useAuthStore } from "../../../context/AuthContext";
-import { useNFLDraft } from "./useNFLDraft";
+import { NFL_PICKS_PER_ROUND, useNFLDraft } from "./useNFLDraft";
 import {
   DraftBoard,
   DraftClock,
@@ -169,12 +170,14 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = ({ team }) => {
           <div className="lg:col-span-2 flex flex-col space-y-4 h-full">
             <div className="flex-1">
               <DraftClock
-                currentPick={currentPick}
+                currentPick={currentPick as NFLDraftPick}
                 currentRound={draftState.currentRound}
                 pickNumber={draftState.currentPick}
                 timeLeft={draftState.timeLeft}
                 isPaused={draftState.isPaused}
                 teamColors={teamColors}
+                league={SimNFL}
+                picksPerRound={NFL_PICKS_PER_ROUND}
               />
             </div>
             <div className="flex-1">
@@ -182,6 +185,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = ({ team }) => {
                 recentPicks={recentPicks.map((pick) => ({ pick }))}
                 teamColors={teamColors}
                 backgroundColor={backgroundColor}
+                league={SimNFL}
               />
             </div>
           </div>
@@ -192,6 +196,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = ({ team }) => {
               userTeamId={team.ID}
               teamColors={teamColors}
               backgroundColor={backgroundColor}
+              league={SimNFL}
             />
           </div>
         </div>
@@ -218,32 +223,46 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = ({ team }) => {
             draftees={nflDraftees}
             draftedPlayerIds={draftedPlayerIds}
             scoutedPlayerIds={scoutedPlayerIds}
-            onAddToScoutBoard={handleAddToScoutBoard}
-            onDraftPlayer={
-              currentPick?.TeamID === team.ID ? handleDraftPlayer : undefined
+            onAddToScoutBoard={(player) =>
+              onAddToScoutBoard(player as unknown as NFLDraftee)
             }
-            isUserTurn={currentPick?.TeamID === team.ID}
+            onDraftPlayer={
+              isUserTurn
+                ? (player) => onDraftPlayer(player as unknown as NFLDraftee)
+                : undefined
+            }
+            isUserTurn={isUserTurn}
             teamColors={teamColors}
             backgroundColor={backgroundColor}
-            scoutingPoints={warRoom?.ScoutingPoints}
-            spentPoints={warRoom?.SpentPoints}
+            scoutingPoints={teamWarRoom?.ScoutingPoints || 0}
+            spentPoints={teamWarRoom?.SpentPoints || 0}
+            openModal={handlePlayerModal}
+            league={SimNFL}
           />
         )}
         {activeTab === "scout" && (
           <ScoutingBoard
             scoutProfiles={scoutProfiles}
             draftedPlayerIds={draftedPlayerIds}
-            onRemoveFromBoard={handleRemoveFromScoutBoard}
-            onDraftPlayer={
-              currentPick?.TeamID === team.ID ? handleDraftPlayer : undefined
+            onRemoveFromBoard={(profile) =>
+              handleRemoveFromScoutBoard(profile as unknown as ScoutingProfile)
             }
-            onViewDetails={handleViewScoutDetails}
-            onRevealAttribute={handleRevealAttributeFromBoard}
-            isUserTurn={currentPick?.TeamID === team.ID}
+            onDraftPlayer={
+              currentPick?.TeamID === team.ID
+                ? (player) => handleDraftPlayer(player as unknown as NFLDraftee)
+                : undefined
+            }
+            onViewDetails={(profile) =>
+              onViewDetails(profile as unknown as ScoutingProfile)
+            }
+            onRevealAttribute={onRevealAttribute}
+            isUserTurn={isUserTurn}
             teamColors={teamColors}
             backgroundColor={backgroundColor}
-            teamScoutingPoints={warRoom?.ScoutingPoints || 0}
-            spentPoints={warRoom?.SpentPoints || 0}
+            teamScoutingPoints={teamWarRoom?.ScoutingPoints || 0}
+            spentPoints={teamWarRoom?.SpentPoints || 0}
+            league={SimNFL}
+            draftablePlayerMap={draftablePlayerMap}
           />
         )}
       </div>
