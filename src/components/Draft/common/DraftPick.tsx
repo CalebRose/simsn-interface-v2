@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { League } from "../../../_constants/constants";
+import { League, SimPHL } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { getLogo } from "../../../_utility/getLogo";
 import { DraftPick as DraftPickType, Draftee } from "./types";
@@ -132,14 +132,18 @@ export const DraftPickCard: React.FC<{
     }
   };
 
-  const draftee = draftablePlayerMap
-    ? draftablePlayerMap[pick.DrafteeID]
-    : undefined;
+  const draftee = useMemo(() => {
+    if (!draftablePlayerMap) return undefined;
+    if (league === SimPHL) {
+      return draftablePlayerMap[pick.DrafteeID];
+    }
+    return draftablePlayerMap[pick.SelectedPlayerID];
+  }, [pick, draftablePlayerMap, league]);
 
-  const drafteeLabel = (() => {
+  const drafteeLabel = useMemo(() => {
     if (!draftee) return "";
     return `${draftee.Position} ${draftee.FirstName} ${draftee.LastName}`;
-  })();
+  }, [draftee]);
 
   const status = getPickStatus(pick, index);
   const statusLabel = getStatusLabel(status);
@@ -211,12 +215,13 @@ export const DraftPickCard: React.FC<{
             <Text variant="small" className="text-gray-400">
               Round {pick.DraftRound}
             </Text>
-            {pick.DrafteeID > 0 && (
-              <>
-                <span className="text-gray-500">•</span>
-                <span className="text-green-500">{drafteeLabel}</span>
-              </>
-            )}
+            {(league === SimPHL && pick.DrafteeID > 0) ||
+              (league !== SimPHL && pick.SelectedPlayerID > 0 && (
+                <>
+                  <span className="text-gray-500">•</span>
+                  <span className="text-green-500">{drafteeLabel}</span>
+                </>
+              ))}
           </div>
         </div>
       </div>

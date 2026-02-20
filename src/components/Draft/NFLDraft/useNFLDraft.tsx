@@ -230,6 +230,7 @@ export const useNFLDraft = () => {
   }, [draftPicksFromState, draftCurrentRound, draftCurrentPick]);
 
   const recentPicks = useMemo(() => {
+    console.log({ draftPicksFromState, draftCurrentRound, draftCurrentPick });
     return draftPicksFromState
       .filter((pick) => {
         const pickOverall =

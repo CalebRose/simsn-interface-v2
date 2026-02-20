@@ -225,6 +225,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 </div>
                 <div className="flex-1">
                   <DraftTicker
+                    draftablePlayerMap={draftablePlayerMap}
                     recentPicks={recentPicks.map((pick) => ({ pick }))}
                     teamColors={teamColors}
                     backgroundColor={backgroundColor}
