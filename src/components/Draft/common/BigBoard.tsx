@@ -3,12 +3,13 @@ import { Draftee, DraftPick } from "./types";
 import { League } from "../../../_constants/constants";
 import { ProfessionalTeam } from "../../../models/hockeyModels";
 import { DraftPickCard } from "./DraftPick";
+import { NFLTeam } from "../../../models/footballModels";
 
 interface BigDraftBoardProps {
   league: League;
   backgroundColor: string;
   draftPicks: DraftPick[];
-  selectedTeam: ProfessionalTeam | null;
+  selectedTeam: ProfessionalTeam | NFLTeam | null;
   draftablePlayerMap: Record<number, Draftee>;
   currentPick: DraftPick | null;
 }

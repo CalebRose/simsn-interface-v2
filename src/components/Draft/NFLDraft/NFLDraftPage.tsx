@@ -1,12 +1,19 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import {
   NFLDraftee,
   NFLDraftPick,
   NFLTeam,
   ScoutingProfile,
 } from "../../../models/footballModels";
-import { Button, ButtonGroup } from "../../../_design/Buttons";
-import { League, SimNFL } from "../../../_constants/constants";
+import {
+  AdminBoard,
+  BigBoard,
+  DraftBoardStr,
+  League,
+  ScoutBoard,
+  SimNFL,
+  WarRoomBoard,
+} from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useAuthStore } from "../../../context/AuthContext";
@@ -18,13 +25,17 @@ import {
   ScoutingBoard,
   UpcomingPicks,
 } from "../common";
+import { ActionModal } from "../../Common/ActionModal";
+import { DraftSidebar } from "../common/DraftSidebar";
+import { DraftWarRoom } from "../common/WarRoom";
+import { BigDraftBoard } from "../common/BigBoard";
+import { DraftAdminBoard } from "../common/AdminBoard";
 
 interface NFLDraftPageProps {
   league: League;
-  team: NFLTeam;
 }
 
-export const NFLDraftPage: FC<NFLDraftPageProps> = ({ team }) => {
+export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
   const { currentUser } = useAuthStore();
 
   const {
@@ -49,11 +60,9 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = ({ team }) => {
     handleViewScoutDetails,
     selectTeamOption,
     nflTeamOptions,
-    // teamNeedsList,
-    // offensiveSystemsInformation,
-    // defensiveSystemsInformation,
-    // offensiveSystem,
-    // defensiveSystem,
+    teamNeedsList,
+    offensiveSystem,
+    defensiveSystem,
     modalPlayer,
     handleCloseModal,
     handlePlayerModal,
@@ -72,7 +81,14 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = ({ team }) => {
     draftPicksFromState,
   } = useNFLDraft();
 
-  const rawTeamColors = useTeamColors(team?.ColorOne, team?.ColorTwo);
+  const isAdmin = useMemo(() => {
+    return currentUser?.roleID === "Admin";
+  }, [currentUser]);
+
+  const rawTeamColors = useTeamColors(
+    selectedTeam?.ColorOne,
+    selectedTeam?.ColorTwo,
+  );
   const teamColors = {
     primary: rawTeamColors.One,
     secondary: rawTeamColors.Two,
@@ -164,108 +180,164 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = ({ team }) => {
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-6 space-y-4 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
-          <div className="lg:col-span-2 flex flex-col space-y-4 h-full">
-            <div className="flex-1">
-              <DraftClock
-                currentPick={currentPick as NFLDraftPick}
-                currentRound={draftState.currentRound}
-                pickNumber={draftState.currentPick}
-                timeLeft={draftState.timeLeft}
-                isPaused={draftState.isPaused}
-                teamColors={teamColors}
-                league={SimNFL}
-                picksPerRound={NFL_PICKS_PER_ROUND}
-              />
+    <>
+      {modalPlayer && (
+        <ActionModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          playerID={modalPlayer.ID}
+          playerLabel={`${modalPlayer.Position} ${modalPlayer.Archetype} ${modalPlayer.FirstName} ${modalPlayer.LastName}`}
+          league={SimNFL}
+          teamID={modalPlayer.PreviousTeamID}
+          modalAction={modalAction}
+          player={modalPlayer}
+        />
+      )}
+      <div className="grid sm:grid-flow-row grid-auto-rows-auto grid-cols-1 sm:grid-cols-[2fr_10fr] w-full h-full gap-y-2 gap-x-2 mb-2">
+        <DraftSidebar
+          selectedTeam={selectedTeam}
+          teamColors={teamColors}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isAdmin={isAdmin}
+          offensiveSystem={offensiveSystem}
+          defensiveSystem={defensiveSystem}
+          teamNeedsList={teamNeedsList}
+          league={SimNFL}
+        />
+        <div className="flex flex-col gap-2">
+          {activeTab !== BigBoard && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-2 h-full">
+              <div className="lg:col-span-2 flex flex-col space-y-4 h-full">
+                <div className="flex-1">
+                  <DraftClock
+                    currentPick={currentPick as NFLDraftPick}
+                    currentRound={draftState.currentRound}
+                    pickNumber={draftState.currentPick}
+                    timeLeft={draftState.seconds}
+                    isPaused={draftState.isPaused}
+                    teamColors={teamColors}
+                    league={SimNFL}
+                    picksPerRound={NFL_PICKS_PER_ROUND}
+                  />
+                </div>
+                <div className="flex-1">
+                  <DraftTicker
+                    recentPicks={recentPicks.map((pick) => ({ pick }))}
+                    teamColors={teamColors}
+                    backgroundColor={backgroundColor}
+                    league={SimNFL}
+                  />
+                </div>
+              </div>
+              <div className="h-full">
+                <UpcomingPicks
+                  upcomingPicks={upcomingPicks.slice(0, 5)}
+                  currentPick={currentPick}
+                  userTeamId={selectedTeam?.ID}
+                  teamColors={teamColors}
+                  backgroundColor={backgroundColor}
+                  league={SimNFL}
+                />
+              </div>
             </div>
-            <div className="flex-1">
-              <DraftTicker
-                recentPicks={recentPicks.map((pick) => ({ pick }))}
+          )}
+          <div>
+            {activeTab === DraftBoardStr && (
+              <DraftBoard
+                draftees={nflDraftees}
+                draftedPlayerIds={draftedPlayerIds}
+                scoutedPlayerIds={scoutedPlayerIds}
+                onAddToScoutBoard={(player) =>
+                  onAddToScoutBoard(player as unknown as NFLDraftee)
+                }
+                onDraftPlayer={
+                  isUserTurn
+                    ? (player) => onDraftPlayer(player as unknown as NFLDraftee)
+                    : undefined
+                }
+                isUserTurn={isUserTurn}
                 teamColors={teamColors}
                 backgroundColor={backgroundColor}
+                scoutingPoints={teamWarRoom?.ScoutingPoints || 0}
+                spentPoints={teamWarRoom?.SpentPoints || 0}
+                openModal={handlePlayerModal}
                 league={SimNFL}
               />
-            </div>
-          </div>
-          <div className="h-full">
-            <UpcomingPicks
-              upcomingPicks={upcomingPicks.slice(0, 5)}
-              currentPick={currentPick}
-              userTeamId={team.ID}
-              teamColors={teamColors}
-              backgroundColor={backgroundColor}
-              league={SimNFL}
-            />
+            )}
+            {activeTab === ScoutBoard && (
+              <ScoutingBoard
+                scoutProfiles={
+                  teamScoutProfiles as unknown as ScoutingProfile[]
+                }
+                draftedPlayerIds={draftedPlayerIds}
+                onRemoveFromBoard={(profile) =>
+                  handleRemoveFromScoutBoard(
+                    profile as unknown as ScoutingProfile,
+                  )
+                }
+                onDraftPlayer={
+                  currentPick?.TeamID === selectedTeam?.ID
+                    ? (player) => onDraftPlayer(player as unknown as NFLDraftee)
+                    : undefined
+                }
+                onViewDetails={(profile) =>
+                  onViewDetails(profile as unknown as ScoutingProfile)
+                }
+                onRevealAttribute={onRevealAttribute}
+                isUserTurn={isUserTurn}
+                teamColors={teamColors}
+                backgroundColor={backgroundColor}
+                teamScoutingPoints={teamWarRoom?.ScoutingPoints || 0}
+                spentPoints={teamWarRoom?.SpentPoints || 0}
+                league={SimNFL}
+                draftablePlayerMap={draftablePlayerMap}
+              />
+            )}
+            {activeTab === WarRoomBoard && (
+              <>
+                <DraftWarRoom
+                  league={SimNFL}
+                  backgroundColor={backgroundColor}
+                  teamDraftPicks={teamDraftPicks as NFLDraftPick[]}
+                  selectedTeam={selectedTeam as NFLTeam | null}
+                  draftablePlayerMap={draftablePlayerMap}
+                />
+              </>
+            )}
+            {activeTab === BigBoard && (
+              <>
+                <BigDraftBoard
+                  draftPicks={draftPicksFromState as NFLDraftPick[]}
+                  selectedTeam={selectedTeam as NFLTeam | null}
+                  draftablePlayerMap={draftablePlayerMap}
+                  league={SimNFL}
+                  backgroundColor={backgroundColor}
+                  currentPick={currentPick}
+                />
+              </>
+            )}
+            {activeTab === AdminBoard && (
+              <>
+                <DraftAdminBoard
+                  draftState={draftState}
+                  resyncDraftData={resyncDraftData}
+                  handleManualDraftStateUpdate={handleManualDraftStateUpdate}
+                  league={SimNFL}
+                  backgroundColor={backgroundColor}
+                  isDraftComplete={isDraftComplete}
+                  teamOptions={nflTeamOptions}
+                  selectTeamOption={selectTeamOption}
+                  resetTimer={resetTimer}
+                  startDraft={startDraft}
+                  pauseDraft={togglePause}
+                  handleExportDraft={handleExportDraftPicks}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>
-      <div className="mb-4">
-        <ButtonGroup>
-          <Button
-            variant={activeTab === "board" ? "primary" : "secondary"}
-            onClick={() => setActiveTab("board")}
-          >
-            Draft Board
-          </Button>
-          <Button
-            variant={activeTab === "scout" ? "primary" : "secondary"}
-            onClick={() => setActiveTab("scout")}
-          >
-            Scouting Board
-          </Button>
-        </ButtonGroup>
-      </div>
-      <div>
-        {activeTab === "board" && (
-          <DraftBoard
-            draftees={nflDraftees}
-            draftedPlayerIds={draftedPlayerIds}
-            scoutedPlayerIds={scoutedPlayerIds}
-            onAddToScoutBoard={(player) =>
-              onAddToScoutBoard(player as unknown as NFLDraftee)
-            }
-            onDraftPlayer={
-              isUserTurn
-                ? (player) => onDraftPlayer(player as unknown as NFLDraftee)
-                : undefined
-            }
-            isUserTurn={isUserTurn}
-            teamColors={teamColors}
-            backgroundColor={backgroundColor}
-            scoutingPoints={teamWarRoom?.ScoutingPoints || 0}
-            spentPoints={teamWarRoom?.SpentPoints || 0}
-            openModal={handlePlayerModal}
-            league={SimNFL}
-          />
-        )}
-        {activeTab === "scout" && (
-          <ScoutingBoard
-            scoutProfiles={scoutProfiles}
-            draftedPlayerIds={draftedPlayerIds}
-            onRemoveFromBoard={(profile) =>
-              handleRemoveFromScoutBoard(profile as unknown as ScoutingProfile)
-            }
-            onDraftPlayer={
-              currentPick?.TeamID === team.ID
-                ? (player) => handleDraftPlayer(player as unknown as NFLDraftee)
-                : undefined
-            }
-            onViewDetails={(profile) =>
-              onViewDetails(profile as unknown as ScoutingProfile)
-            }
-            onRevealAttribute={onRevealAttribute}
-            isUserTurn={isUserTurn}
-            teamColors={teamColors}
-            backgroundColor={backgroundColor}
-            teamScoutingPoints={teamWarRoom?.ScoutingPoints || 0}
-            spentPoints={teamWarRoom?.SpentPoints || 0}
-            league={SimNFL}
-            draftablePlayerMap={draftablePlayerMap}
-          />
-        )}
-      </div>
-    </div>
+    </>
   );
 };

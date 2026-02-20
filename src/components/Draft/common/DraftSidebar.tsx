@@ -9,6 +9,7 @@ import {
   DraftBoardType,
   League,
   ScoutBoard,
+  SimNFL,
   SimPHL,
   WarRoomBoard,
 } from "../../../_constants/constants";
@@ -97,6 +98,20 @@ export const DraftSidebar: React.FC<DraftSidebarProps> = ({
           </Text>
         </div>
         {league === SimPHL && (
+          <>
+            <div className="mt-2">
+              <Text variant="xs" classes="text-gray-200">
+                Offensive System: {offensiveSystem}
+              </Text>
+            </div>
+            <div className="">
+              <Text variant="xs" classes="text-gray-200">
+                Defensive System: {defensiveSystem}
+              </Text>
+            </div>
+          </>
+        )}
+        {league === SimNFL && (
           <>
             <div className="mt-2">
               <Text variant="xs" classes="text-gray-200">

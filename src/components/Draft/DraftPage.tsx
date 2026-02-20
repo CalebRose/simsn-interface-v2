@@ -6,6 +6,7 @@ import { useSimFBAStore } from "../../context/SimFBAContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
 import { PageContainer } from "../../_design/Container";
 import { PHLDraftPage } from "./PHLDraft/PHLDraftPage";
+import { NFLDraftPage } from "./NFLDraft/NFLDraftPage";
 
 interface DraftPageProps {
   league: League;
@@ -53,7 +54,9 @@ export const DraftPage: FC<DraftPageProps> = ({ league }) => {
   return (
     <>
       <PageContainer direction="col" isLoading={isLoading} title={title}>
-        {/* {selectedLeague === SimNFL && nflTeam && <NFLDraftPage league={league} team={nflTeam} />} */}
+        {selectedLeague === SimNFL && nflTeam && (
+          <NFLDraftPage league={league} />
+        )}
         {selectedLeague === SimPHL && phlTeam && (
           <PHLDraftPage league={SimPHL} />
         )}

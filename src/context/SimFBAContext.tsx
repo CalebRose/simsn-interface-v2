@@ -1113,6 +1113,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setNFLDraftees(res.NFLDraftees);
     setNFLWarRoomMap(res.NFLWarRoomMap);
     setNFLScoutingProfileMap(res.NFLScoutingProfileMap);
+    setNFLGameplanMap(res.NFLGameplanMap);
   };
 
   // use this once the portal page is finished

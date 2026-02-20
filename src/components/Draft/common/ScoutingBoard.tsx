@@ -42,8 +42,8 @@ interface ScoutingBoardProps {
   teamScoutingPoints: number;
   spentPoints: number;
   league: DraftLeague;
-  offensiveSystemsInformation: any;
-  defensiveSystemsInformation: any;
+  offensiveSystemsInformation?: any;
+  defensiveSystemsInformation?: any;
   draftablePlayerMap: Record<number, Draftee>;
 }
 
