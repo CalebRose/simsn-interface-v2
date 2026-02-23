@@ -225,11 +225,12 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 </div>
                 <div className="flex-1">
                   <DraftTicker
+                    onPickClick={handlePlayerModal}
                     draftablePlayerMap={draftablePlayerMap}
                     recentPicks={recentPicks.map((pick) => ({ pick }))}
                     teamColors={teamColors}
                     backgroundColor={backgroundColor}
-                    league={league}
+                    league={SimPHL}
                   />
                 </div>
               </div>
@@ -290,6 +291,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   onViewDetails(profile as unknown as ScoutingProfile)
                 }
                 onRevealAttribute={onRevealAttribute}
+                handlePlayerModal={handlePlayerModal}
                 isUserTurn={isUserTurn}
                 teamColors={teamColors}
                 backgroundColor={backgroundColor}
@@ -315,6 +317,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
             {activeTab === BigBoard && (
               <>
                 <BigDraftBoard
+                  handlePlayerModal={handlePlayerModal}
                   draftPicks={draftPicksFromState as DraftPick[]}
                   selectedTeam={selectedTeam as PHLTeam | null}
                   draftablePlayerMap={draftablePlayerMap}

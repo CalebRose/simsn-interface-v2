@@ -1,4 +1,4 @@
-import React, { FC, useState, useMemo } from "react";
+import React, { FC, useState, useMemo, useCallback } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { SelectDropdown } from "../../../_design/Select";
@@ -24,6 +24,7 @@ import {
   DraftablePlayer as PHLDraftee,
   ScoutingProfile as PHLScoutingProfile,
 } from "../../../models/hockeyModels";
+import { DrafteeInfoType, ModalAction } from "../../../_constants/constants";
 
 interface ScoutingBoardProps {
   scoutProfiles: ScoutingProfile[];
@@ -31,6 +32,7 @@ interface ScoutingBoardProps {
   onRemoveFromBoard: (profile: ScoutingProfile) => void;
   onDraftPlayer?: (player: Draftee) => void;
   onViewDetails: (profile: ScoutingProfile) => void;
+  handlePlayerModal?: (action: ModalAction, player: Draftee) => void;
   onRevealAttribute: (
     profileId: number,
     showAttribute: string,
@@ -63,6 +65,7 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
   offensiveSystemsInformation,
   defensiveSystemsInformation,
   draftablePlayerMap,
+  handlePlayerModal,
 }) => {
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
 
@@ -137,6 +140,15 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
     return "text-red-400";
   }, [teamScoutingPoints, spentPoints]);
 
+  const viewPlayer = useCallback(
+    (draftee: Draftee) => {
+      if (handlePlayerModal) {
+        handlePlayerModal(DrafteeInfoType, draftee!!);
+      }
+    },
+    [handlePlayerModal],
+  );
+
   return (
     <Border
       classes="p-4 border-2 w-full overflow-x-auto"
@@ -194,6 +206,7 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
               key={profile.ID}
               profile={profile}
               player={player}
+              viewPlayer={viewPlayer}
               index={index}
               isDrafted={isDrafted}
               backgroundColor={backgroundColor}

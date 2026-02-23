@@ -1,5 +1,10 @@
-import React, { useMemo } from "react";
-import { League, SimPHL } from "../../../_constants/constants";
+import React, { useCallback, useMemo } from "react";
+import {
+  DrafteeInfoType,
+  League,
+  ModalAction,
+  SimPHL,
+} from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { getLogo } from "../../../_utility/getLogo";
 import { DraftPick as DraftPickType, Draftee } from "./types";
@@ -85,6 +90,7 @@ export const DraftPickCard: React.FC<{
   league: any;
   view?: string;
   draftablePlayerMap?: Record<number, Draftee>;
+  handlePlayerModal?: (action: ModalAction, player: Draftee) => void;
 }> = ({
   pick,
   index,
@@ -93,6 +99,7 @@ export const DraftPickCard: React.FC<{
   league,
   view = "",
   draftablePlayerMap,
+  handlePlayerModal,
 }) => {
   const pickNumber = (pick.DraftRound - 1) * 24 + pick.DraftNumber;
   const currentPickNumber = currentPick
@@ -140,6 +147,15 @@ export const DraftPickCard: React.FC<{
     return draftablePlayerMap[pick.SelectedPlayerID];
   }, [pick, draftablePlayerMap, league]);
 
+  const viewPlayer = useCallback(
+    (draftee: Draftee) => {
+      if (handlePlayerModal) {
+        handlePlayerModal(DrafteeInfoType, draftee!!);
+      }
+    },
+    [handlePlayerModal],
+  );
+
   const drafteeLabel = useMemo(() => {
     if (!draftee) return "";
     return `${draftee.Position} ${draftee.FirstName} ${draftee.LastName}`;
@@ -160,11 +176,13 @@ export const DraftPickCard: React.FC<{
       className={`
         relative rounded-lg border p-1 ${view !== "bigboard" ? "transition-colors duration-300" : ""}
         ${getStatusStyles(status)}
+        ${drafteeLabel.length > 0 ? "cursor-pointer" : ""}
       `}
       style={{
         contain: "layout style",
         willChange: status === "current" ? "background-color" : "auto",
       }}
+      onClick={() => viewPlayer(draftee!!)}
     >
       {statusLabel && (
         <div className="absolute -top-3 left-3 px-2 py-0.5 bg-gray-900 rounded z-10">
@@ -215,13 +233,13 @@ export const DraftPickCard: React.FC<{
             <Text variant="small" className="text-gray-400">
               Round {pick.DraftRound}
             </Text>
-            {(league === SimPHL && pick.DrafteeID > 0) ||
-              (league !== SimPHL && pick.SelectedPlayerID > 0 && (
-                <>
-                  <span className="text-gray-500">•</span>
-                  <span className="text-green-500">{drafteeLabel}</span>
-                </>
-              ))}
+            {((league === SimPHL && pick.DrafteeID > 0) ||
+              (league !== SimPHL && pick.SelectedPlayerID > 0)) && (
+              <>
+                <span className="text-gray-500">•</span>
+                <span className="text-green-500">{drafteeLabel}</span>
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -223,6 +223,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                 </div>
                 <div className="flex-1">
                   <DraftTicker
+                    onPickClick={handlePlayerModal}
                     draftablePlayerMap={draftablePlayerMap}
                     recentPicks={recentPicks.map((pick) => ({ pick }))}
                     teamColors={teamColors}

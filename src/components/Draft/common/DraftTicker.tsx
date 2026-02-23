@@ -1,4 +1,4 @@
-import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { getLogo } from "../../../_utility/getLogo";
@@ -10,14 +10,19 @@ import {
   getLeagueConstant,
   isNFLLeague,
 } from "./types";
-import { SimPHL } from "../../../_constants/constants";
+import {
+  DrafteeInfoType,
+  ModalAction,
+  SimNFL,
+  SimPHL,
+} from "../../../_constants/constants";
 
 interface DraftTickerProps {
   recentPicks: Array<{
     pick: DraftPick;
     player?: Draftee;
   }>;
-  onPickClick?: (pick: DraftPick) => void;
+  onPickClick?: (action: ModalAction, player: Draftee) => void;
   teamColors: TeamColors;
   backgroundColor: string;
   league: DraftLeague;
@@ -85,18 +90,30 @@ export const DraftTicker: FC<DraftTickerProps> = ({
 
     const drafteePosition = useMemo(() => {
       if (!draftee) return "";
-      return `${draftee.Position}${draftee.PositionTwo.length > 0 ? `/${draftee.PositionTwo}` : ""}`;
-    }, [draftee]);
+      if (league === SimNFL) {
+        return `${draftee.Position}${draftee.PositionTwo.length > 0 ? `/${draftee.PositionTwo}` : ""}`;
+      }
+      return `${draftee.Position}`;
+    }, [draftee, league]);
 
     const drafteeArchetype = useMemo(() => {
       if (!draftee) return "";
+      if (league === SimNFL) {
+        return `${draftee.Archetype}${draftee.ArchetypeTwo.length > 0 ? `/${draftee.ArchetypeTwo}` : ""}`;
+      }
       return draftee.Archetype;
-    }, [draftee]);
+    }, [draftee, league]);
 
     const drafteeCollege = useMemo(() => {
       if (!draftee) return "";
       return draftee.College;
     }, [draftee]);
+
+    const viewPlayer = useCallback(() => {
+      if (onPickClick) {
+        onPickClick(DrafteeInfoType, draftee!!);
+      }
+    }, [onPickClick, draftee]);
 
     return (
       <div
@@ -110,7 +127,7 @@ export const DraftTicker: FC<DraftTickerProps> = ({
           willChange: hoveredPick === pick.ID ? "transform" : "auto",
           contain: "layout style",
         }}
-        onClick={() => onPickClick?.(pick)}
+        onClick={viewPlayer}
         onMouseEnter={() => setHoveredPick(pick.ID)}
         onMouseLeave={() => setHoveredPick(null)}
       >
