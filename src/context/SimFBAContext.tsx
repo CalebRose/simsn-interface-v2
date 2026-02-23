@@ -169,6 +169,7 @@ interface SimFBAContextProps {
   tradeProposalsMap: Record<number, NFLTradeProposal[]>;
   tradePreferencesMap: Record<number, NFLTradePreferences>;
   nflDraftPicks: NFLDraftPick[];
+  currentSeasonDraftPicks: NFLDraftPick[];
   nflDraftPickMap: Record<number, NFLDraftPick[]>;
   individualDraftPickMap: Record<number, NFLDraftPick>;
   removeUserfromCFBTeamCall: (teamID: number) => Promise<void>;
@@ -355,6 +356,7 @@ const defaultContext: SimFBAContextProps = {
   collegePollSubmission: {} as CollegePollSubmission,
   collegePollsMapBySeason: {},
   nflDraftPicks: [],
+  currentSeasonDraftPicks: [],
   nflDraftPickMap: {},
   individualDraftPickMap: {},
   tradePreferencesMap: {},
@@ -658,6 +660,14 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
     return pickMap;
   }, [nflDraftPicks]);
+
+  const currentSeasonDraftPicks = useMemo(() => {
+    console.log({ nflDraftPicks, cfb_Timestamp });
+    if (!nflDraftPicks) return [];
+    return nflDraftPicks.filter(
+      (pick) => pick.SeasonID === cfb_Timestamp?.NFLSeasonID,
+    );
+  }, [nflDraftPicks, cfb_Timestamp]);
 
   const proPlayerMap = useMemo(() => {
     const playerMap: Record<number, NFLPlayer> = {};
@@ -1114,6 +1124,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setNFLWarRoomMap(res.NFLWarRoomMap);
     setNFLScoutingProfileMap(res.NFLScoutingProfileMap);
     setNFLGameplanMap(res.NFLGameplanMap);
+    setNFLDraftPicks(res.NFLDraftPicks);
+    console.log({ res });
   };
 
   // use this once the portal page is finished
@@ -2589,6 +2601,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         collegePollsMapBySeason,
         nflDraftPicks,
         individualDraftPickMap,
+        currentSeasonDraftPicks,
         nflDraftPickMap,
         tradeProposalsMap,
         tradePreferencesMap,

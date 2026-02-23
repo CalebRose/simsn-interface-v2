@@ -39,7 +39,7 @@ export const useNFLDraft = () => {
     nflWarRoomMap,
     nflGameplanMap,
     nflScoutingProfileMap,
-    nflDraftPicks,
+    currentSeasonDraftPicks,
     proRosterMap,
     getBootstrapDraftData,
     addPlayerToScoutBoard,
@@ -450,17 +450,19 @@ export const useNFLDraft = () => {
   const resyncDraftData = useCallback(async () => {
     const draftMap: Record<number, NFLDraftPick[]> = {};
 
-    nflDraftPicks.forEach((pick) => {
+    currentSeasonDraftPicks.forEach((pick) => {
       if (!draftMap[pick.DraftRound]) {
         draftMap[pick.DraftRound] = [];
       }
       draftMap[pick.DraftRound].push(pick);
     });
 
-    handleManualDraftStateUpdate({
-      allDraftPicks: draftMap,
-    });
-  }, [nflDraftPicks, handleManualDraftStateUpdate]);
+    console.log({ draftMap, currentSeasonDraftPicks });
+
+    // handleManualDraftStateUpdate({
+    //   allDraftPicks: draftMap,
+    // });
+  }, [currentSeasonDraftPicks, handleManualDraftStateUpdate]);
 
   const offensiveSystem = useMemo(() => {
     if (!nflGameplan) return "";
@@ -727,7 +729,7 @@ export const useNFLDraft = () => {
     selectedTeam,
     nflDraftees,
     teamScoutProfiles,
-    nflDraftPicks,
+    currentSeasonDraftPicks,
     activeTab,
     setActiveTab,
     isLoading,
