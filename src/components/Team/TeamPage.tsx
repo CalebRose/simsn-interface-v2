@@ -1373,7 +1373,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
           isOpen={extensionModal.isModalOpen}
           onClose={extensionModal.handleCloseModal}
           player={modalPlayer!!}
-          league={SimPHL}
+          league={SimNFL}
           ts={ts}
           capsheet={nflCapsheet!!}
           existingOffer={nflExtensionMap![modalPlayer!.ID]}
