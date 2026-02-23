@@ -247,6 +247,7 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
         capsheet as NFLCapsheet,
         Number(playerAAV),
         aavValue,
+        true,
       );
     }
     if (league === SimNBA) {

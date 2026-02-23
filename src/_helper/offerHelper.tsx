@@ -512,6 +512,7 @@ export const GenerateNFLFAErrorList = (
   capsheet: NFLCapsheet,
   playerAAV: number,
   offerAAV: number,
+  isExtension?: boolean,
 ): string[] => {
   const errors: string[] = [];
   const {
@@ -585,9 +586,15 @@ export const GenerateNFLFAErrorList = (
   }
 
   if (playerAAV > offerAAV) {
-    errors.push(
-      `The offered AAV (${offerAAV}) is lower than the player's expected AAV (${playerAAV})`,
-    );
+    if (!isExtension) {
+      errors.push(
+        `The offered AAV (${offerAAV}) is lower than the player's expected AAV (${playerAAV})`,
+      );
+    } else if (offerAAV < playerAAV * 0.7) {
+      errors.push(
+        `The offered AAV (${offerAAV}) is more than 30% lower than the player's expected AAV (${playerAAV}).`,
+      );
+    }
   }
 
   // 8) Rule5: bonus % rules around draft
