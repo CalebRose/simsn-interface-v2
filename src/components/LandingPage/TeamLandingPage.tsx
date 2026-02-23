@@ -162,7 +162,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       toggleFBANotification,
       toggleBBANotification,
       toggleHCKNotification,
-    ]
+    ],
   );
 
   const deleteNotification = useCallback(
@@ -195,7 +195,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       deleteFBANotification,
       deleteBBANotification,
       deleteHCKNotification,
-    ]
+    ],
   );
 
   const playerMap = useMemo(() => {
@@ -231,7 +231,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
             FirstName: any;
             LastName: any;
             Position: any;
-          }
+          },
         ) => {
           acc[player.ID] = {
             FirstName: player.FirstName,
@@ -243,7 +243,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         {} as Record<
           number,
           { FirstName: string; LastName: string; Position: string }
-        >
+        >,
       );
     });
 
@@ -299,7 +299,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         topCFBRushers,
         topCFBReceivers,
         collegeNews,
-        cfbRosterMap
+        cfbRosterMap,
       ));
       break;
 
@@ -330,7 +330,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         topNFLRushers,
         topNFLReceivers,
         proNews,
-        proRosterMap
+        proRosterMap,
       ));
       break;
 
@@ -362,7 +362,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         topCBBAssists,
         topCBBRebounds,
         cbbNews,
-        cbbRosterMap
+        cbbRosterMap,
       ));
       break;
 
@@ -394,7 +394,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         topNBAAssists,
         topNBARebounds,
         nbaNews,
-        nbaRosterMap
+        nbaRosterMap,
       ));
       break;
 
@@ -426,7 +426,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         topCHLGoals,
         topCHLAssists,
         topCHLSaves,
-        chlRosterMap
+        chlRosterMap,
       ));
       break;
 
@@ -458,7 +458,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         topPHLGoals,
         topPHLAssists,
         topPHLSaves,
-        phlRosterMap
+        phlRosterMap,
       ));
       break;
 
@@ -625,6 +625,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                 <TeamQuickLinks
                   team={team}
                   league={league}
+                  ts={ts}
                   backgroundColor={backgroundColor}
                   headerColor={headerColor}
                   borderColor={borderColor}

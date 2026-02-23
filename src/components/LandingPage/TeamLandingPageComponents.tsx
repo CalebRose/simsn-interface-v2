@@ -9,7 +9,7 @@ import {
 } from "../../_helper/teamHelper";
 import { StandingsTable } from "../Common/Tables";
 import { SectionCards } from "../../_design/SectionCards";
-import { Button, ButtonGroup } from "../../_design/Buttons";
+import { Button, ButtonGrid, ButtonGroup } from "../../_design/Buttons";
 import {
   League,
   SimCBB,
@@ -76,7 +76,7 @@ export const GamesBar = ({
   useEffect(() => {
     if (scrollContainerRef.current && games.length > 0) {
       const lastCompletedGameIndex = games.findIndex(
-        (game) => !game.GameComplete
+        (game) => !game.GameComplete,
       );
       const gameWidth = scrollContainerRef.current.scrollWidth / games.length;
       const scrollPosition =
@@ -112,13 +112,13 @@ export const GamesBar = ({
     const opponentLogoUrl = getLogo(
       league,
       isHomeGame ? item.AwayTeamID : item.HomeTeamID,
-      currentUser.isRetro
+      currentUser.isRetro,
     );
     const gameDetails = item.isNeutral
       ? `vs ${opponentAbbr}`
       : isHomeGame
-      ? `vs ${opponentAbbr}`
-      : `at ${opponentAbbr}`;
+        ? `vs ${opponentAbbr}`
+        : `at ${opponentAbbr}`;
     let resultColor = "";
 
     // Opponent record (football only)
@@ -819,7 +819,7 @@ export const TeamMailbox = ({
               key={`notification-${index}`}
               className={getNotificationStyles(
                 isDarkMode,
-                !notification.IsRead
+                !notification.IsRead,
               )}
               style={{ borderColor: headerColor }}
             >
@@ -1115,6 +1115,7 @@ interface TeamQuickLinksProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
+  ts?: any;
 }
 
 export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
@@ -1125,6 +1126,7 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
+  ts,
 }) => {
   const navigate = useNavigate();
   const { goToTeamPage } = useDeepLink();
@@ -1141,24 +1143,31 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
         textColorClass={textColorClass}
         darkerBackgroundColor={darkerBackgroundColor}
       >
-        <ButtonGroup classes="flex justify-around p-1 md:py-3 mt-4">
+        <ButtonGrid classes="flex justify-around p-1 md:py-3 mt-4 grid-cols-4 md:grid-cols-6">
           {league === SimCFB && (
             <>
               <Button size="xs" onClick={() => goToTeamPage(league)}>
                 Roster
               </Button>
-              <Button size="xs" onClick={() => navigate(routes.CFB_RECRUITING)}>
-                Recruiting
-              </Button>
+              {ts && !ts.IsOffSeason && (
+                <Button
+                  size="xs"
+                  onClick={() => navigate(routes.CFB_RECRUITING)}
+                >
+                  Recruit
+                </Button>
+              )}
               <Button size="xs" onClick={() => navigate(routes.CFB_SCHEDULE)}>
                 Schedule
               </Button>
               <Button size="xs" onClick={() => navigate(routes.CFB_STATS)}>
                 Stats
               </Button>
-              <Button size="xs" onClick={() => navigate(routes.CFB_TRANSFER)}>
-                Portal
-              </Button>
+              {ts && ts.IsOffSeason && (
+                <Button size="xs" onClick={() => navigate(routes.CFB_TRANSFER)}>
+                  Portal
+                </Button>
+              )}
               <Button size="xs" onClick={() => navigate(routes.NEWS)}>
                 News
               </Button>
@@ -1184,17 +1193,14 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.NEWS)}>
                 News
               </Button>
-              <Button size="xs" onClick={() => navigate(routes.NFL_DRAFT_ROOM)}>
-                Draft
-              </Button>
-              {/* <Button size="xs" onClick={draftListModal.handleOpenModal}>
-                Draft List
-              </Button>
-              <DraftListModal
-                isOpen={draftListModal.isModalOpen}
-                onClose={draftListModal.handleCloseModal}
-                title="Draft List"
-              /> */}
+              {ts && ts.IsDraftTime && (
+                <Button
+                  size="xs"
+                  onClick={() => navigate(routes.NFL_DRAFT_ROOM)}
+                >
+                  Draft
+                </Button>
+              )}
             </>
           )}
           {league === SimCBB && (
@@ -1202,18 +1208,25 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => goToTeamPage(league)}>
                 Roster
               </Button>
-              <Button size="xs" onClick={() => navigate(routes.CBB_RECRUITING)}>
-                Recruiting
-              </Button>
+              {ts && !ts.IsOffSeason && (
+                <Button
+                  size="xs"
+                  onClick={() => navigate(routes.CBB_RECRUITING)}
+                >
+                  Recruit
+                </Button>
+              )}
               <Button size="xs" onClick={() => navigate(routes.CBB_SCHEDULE)}>
                 Schedule
               </Button>
               <Button size="xs" onClick={() => navigate(routes.CBB_STATS)}>
                 Stats
               </Button>
-              <Button size="xs" onClick={() => navigate(routes.CBB_TRANSFER)}>
-                Portal
-              </Button>
+              {ts && ts.IsOffSeason && (
+                <Button size="xs" onClick={() => navigate(routes.CBB_TRANSFER)}>
+                  Portal
+                </Button>
+              )}
               <Button size="xs" onClick={() => navigate(routes.NEWS)}>
                 News
               </Button>
@@ -1224,21 +1237,28 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => goToTeamPage(league)}>
                 Roster
               </Button>
-              <Button
-                size="xs"
-                onClick={() => navigate(routes.NBA_FREE_AGENCY)}
-              >
-                Free Agency
-              </Button>
+              {ts && !ts.IsDraftTime && (
+                <Button
+                  size="xs"
+                  onClick={() => navigate(routes.NBA_FREE_AGENCY)}
+                >
+                  Free Agency
+                </Button>
+              )}
               <Button size="xs" onClick={() => navigate(routes.NBA_SCHEDULE)}>
                 Schedule
               </Button>
               <Button size="xs" onClick={() => navigate(routes.NBA_STATS)}>
                 Stats
               </Button>
-              <Button size="xs" onClick={() => navigate(routes.NBA_DRAFT_ROOM)}>
-                Draft
-              </Button>
+              {ts && ts.IsDraftTime && (
+                <Button
+                  size="xs"
+                  onClick={() => navigate(routes.NBA_DRAFT_ROOM)}
+                >
+                  Draft
+                </Button>
+              )}
               <Button size="xs" onClick={() => navigate(routes.NEWS)}>
                 News
               </Button>
@@ -1249,8 +1269,16 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => goToTeamPage(league)}>
                 Roster
               </Button>
-              <Button size="xs" onClick={() => navigate(routes.CHL_RECRUITING)}>
-                Recruiting
+              {ts && !ts.IsOffSeason && (
+                <Button
+                  size="xs"
+                  onClick={() => navigate(routes.CHL_RECRUITING)}
+                >
+                  Recruit
+                </Button>
+              )}
+              <Button size="xs" onClick={() => navigate(routes.CHL_GAMEPLAN)}>
+                Lineup
               </Button>
               <Button size="xs" onClick={() => navigate(routes.CHL_SCHEDULE)}>
                 Schedule
@@ -1258,9 +1286,11 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.CHL_STATS)}>
                 Stats
               </Button>
-              <Button size="xs" onClick={() => navigate(routes.CHL_TRANSFER)}>
-                Portal
-              </Button>
+              {ts && ts.IsOffSeason && (
+                <Button size="xs" onClick={() => navigate(routes.CHL_TRANSFER)}>
+                  Portal
+                </Button>
+              )}
               <Button size="xs" onClick={() => navigate(routes.NEWS)}>
                 News
               </Button>
@@ -1271,27 +1301,38 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => goToTeamPage(league)}>
                 Roster
               </Button>
-              <Button
-                size="xs"
-                onClick={() => navigate(routes.PHL_FREE_AGENCY)}
-              >
-                Free Agency
+              <Button size="xs" onClick={() => navigate(routes.PHL_GAMEPLAN)}>
+                Lineup
               </Button>
+              {ts && !ts.IsDraftTime && (
+                <Button
+                  size="xs"
+                  onClick={() => navigate(routes.PHL_FREE_AGENCY)}
+                >
+                  Free Agency
+                </Button>
+              )}
               <Button size="xs" onClick={() => navigate(routes.PHL_SCHEDULE)}>
                 Schedule
               </Button>
               <Button size="xs" onClick={() => navigate(routes.PHL_STATS)}>
                 Stats
               </Button>
-              <Button size="xs" onClick={() => navigate(routes.PHL_DRAFT_ROOM)}>
-                Draft
-              </Button>
+              {ts && ts.IsDraftTime && (
+                <Button
+                  size="xs"
+                  onClick={() => navigate(routes.PHL_DRAFT_ROOM)}
+                >
+                  Draft
+                </Button>
+              )}
+
               <Button size="xs" onClick={() => navigate(routes.NEWS)}>
                 News
               </Button>
             </>
           )}
-        </ButtonGroup>
+        </ButtonGrid>
       </SectionCards>
     </>
   );

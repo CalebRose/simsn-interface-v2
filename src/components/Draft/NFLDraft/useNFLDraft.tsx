@@ -459,6 +459,7 @@ export const useNFLDraft = () => {
 
     console.log({ draftMap, currentSeasonDraftPicks });
 
+    // Update this once the NFL season is complete
     // handleManualDraftStateUpdate({
     //   allDraftPicks: draftMap,
     // });
