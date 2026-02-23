@@ -232,11 +232,13 @@ export const usePHLDraft = () => {
       .filter((pick) => {
         const pickOverall =
           (pick.DraftRound - 1) * PHL_PICKS_PER_ROUND + pick.DraftNumber;
-        return pickOverall < draftCurrentPick && pick.SelectedPlayerID > 0;
+        return pickOverall < draftCurrentPick && pick.DrafteeID > 0;
       })
       .sort((a, b) => {
-        const aOverall = a.DraftNumber;
-        const bOverall = b.DraftNumber;
+        const aOverall =
+          (a.DraftRound - 1) * PHL_PICKS_PER_ROUND + a.DraftNumber;
+        const bOverall =
+          (b.DraftRound - 1) * PHL_PICKS_PER_ROUND + b.DraftNumber;
         return bOverall - aOverall;
       })
       .slice(0, 20);

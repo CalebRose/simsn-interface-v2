@@ -49,6 +49,7 @@ interface ScoutingBoardRowProps {
     cost: number,
   ) => void;
   getRevealedCount: (profile: ScoutingProfile) => number;
+  viewPlayer: (draftee: Draftee) => void;
 }
 
 export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
@@ -67,6 +68,7 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
   onDraftPlayer,
   onRevealAttribute,
   getRevealedCount,
+  viewPlayer,
 }) => {
   // SimPHL only
   const [showPotentialAttributes, setShowPotentialAttributes] = useState(false);
@@ -248,7 +250,18 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
           </div>
           <div className="flex-1 md:text-center">
             <Text variant="body-small" classes="text-white font-semibold">
-              {player.FirstName} {player.LastName}
+              <span
+                className={`cursor-pointer font-semibold`}
+                onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
+                  (e.target as HTMLElement).style.color = "#fcd53f";
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLSpanElement>) => {
+                  (e.target as HTMLElement).style.color = "";
+                }}
+                onClick={() => viewPlayer(player)}
+              >
+                {player.FirstName} {player.LastName}
+              </span>
             </Text>
             <div className="flex flex-wrap gap-1 items-start md:items-center md:justify-center max-w-xs md:max-w-none mt-1">
               <Tag variant="gray" size="xs">

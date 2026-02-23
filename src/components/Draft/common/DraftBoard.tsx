@@ -48,8 +48,8 @@ interface DraftBoardProps {
   spentPoints: number;
   league: DraftLeague;
   openModal: (action: ModalAction, player: Draftee | DraftablePlayer) => void;
-  offensiveSystemsInformation: any;
-  defensiveSystemsInformation: any;
+  offensiveSystemsInformation?: any;
+  defensiveSystemsInformation?: any;
 }
 
 export const DraftBoard: FC<DraftBoardProps> = ({

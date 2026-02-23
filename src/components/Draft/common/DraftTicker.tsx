@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { getLogo } from "../../../_utility/getLogo";
@@ -10,16 +10,23 @@ import {
   getLeagueConstant,
   isNFLLeague,
 } from "./types";
+import {
+  DrafteeInfoType,
+  ModalAction,
+  SimNFL,
+  SimPHL,
+} from "../../../_constants/constants";
 
 interface DraftTickerProps {
   recentPicks: Array<{
     pick: DraftPick;
     player?: Draftee;
   }>;
-  onPickClick?: (pick: DraftPick) => void;
+  onPickClick?: (action: ModalAction, player: Draftee) => void;
   teamColors: TeamColors;
   backgroundColor: string;
   league: DraftLeague;
+  draftablePlayerMap: Record<number, Draftee>;
 }
 
 export const DraftTicker: FC<DraftTickerProps> = ({
@@ -28,6 +35,7 @@ export const DraftTicker: FC<DraftTickerProps> = ({
   teamColors,
   backgroundColor,
   league,
+  draftablePlayerMap,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAutoScrolling, setIsAutoScrolling] = useState(true);
@@ -67,14 +75,50 @@ export const DraftTicker: FC<DraftTickerProps> = ({
     const teamLogo = getLogo(leagueConstant, pick.TeamID, false);
     const isNew = index === 0;
 
-    const collegeOrTeam = isNFLLeague(league)
-      ? (player as any)?.College
-      : (player as any)?.Team;
+    const draftee = useMemo(() => {
+      if (!draftablePlayerMap) return undefined;
+      if (league === SimPHL) {
+        return draftablePlayerMap[pick.DrafteeID];
+      }
+      return draftablePlayerMap[pick.SelectedPlayerID];
+    }, [pick, draftablePlayerMap, league, leagueConstant]);
+
+    const drafteeName = useMemo(() => {
+      if (!draftee) return "";
+      return `${draftee.FirstName} ${draftee.LastName}`;
+    }, [draftee]);
+
+    const drafteePosition = useMemo(() => {
+      if (!draftee) return "";
+      if (league === SimNFL) {
+        return `${draftee.Position}${draftee.PositionTwo.length > 0 ? `/${draftee.PositionTwo}` : ""}`;
+      }
+      return `${draftee.Position}`;
+    }, [draftee, league]);
+
+    const drafteeArchetype = useMemo(() => {
+      if (!draftee) return "";
+      if (league === SimNFL) {
+        return `${draftee.Archetype}${draftee.ArchetypeTwo.length > 0 ? `/${draftee.ArchetypeTwo}` : ""}`;
+      }
+      return draftee.Archetype;
+    }, [draftee, league]);
+
+    const drafteeCollege = useMemo(() => {
+      if (!draftee) return "";
+      return draftee.College;
+    }, [draftee]);
+
+    const viewPlayer = useCallback(() => {
+      if (onPickClick) {
+        onPickClick(DrafteeInfoType, draftee!!);
+      }
+    }, [onPickClick, draftee]);
 
     return (
       <div
         className={`
-          flex-shrink-0 w-80 mx-2 cursor-pointer transition-all duration-300
+          flex-shrink-0 w-[35rem] mx-2 cursor-pointer transition-all duration-300
           ${hoveredPick === pick.ID ? "transform scale-105" : ""}
           ${isNew ? "animate-slideIn" : ""}
         `}
@@ -83,7 +127,7 @@ export const DraftTicker: FC<DraftTickerProps> = ({
           willChange: hoveredPick === pick.ID ? "transform" : "auto",
           contain: "layout style",
         }}
-        onClick={() => onPickClick?.(pick)}
+        onClick={viewPlayer}
         onMouseEnter={() => setHoveredPick(pick.ID)}
         onMouseLeave={() => setHoveredPick(null)}
       >
@@ -117,23 +161,23 @@ export const DraftTicker: FC<DraftTickerProps> = ({
             />
             <div className="flex-1 min-w-0">
               <Text variant="body" classes="text-white font-semibold truncate">
-                {pick.SelectedPlayerName || "Selecting..."}
+                {drafteeName || "Selecting..."}
               </Text>
               <div className="flex items-center space-x-2 text-xs">
                 <span className="text-gray-400">{pick.Team}</span>
-                {pick.SelectedPlayerPosition && (
+                {drafteePosition && (
                   <>
                     <span className="text-gray-500">•</span>
                     <span className="text-blue-400 font-semibold">
-                      {pick.SelectedPlayerPosition}
+                      {drafteeArchetype} {drafteePosition}
                     </span>
                   </>
                 )}
-                {collegeOrTeam && (
+                {drafteeCollege && (
                   <>
                     <span className="text-gray-500">•</span>
                     <span className="text-gray-400 truncate">
-                      {collegeOrTeam}
+                      {drafteeCollege}
                     </span>
                   </>
                 )}
@@ -145,10 +189,17 @@ export const DraftTicker: FC<DraftTickerProps> = ({
               </span>
             </div>
           </div>
-          {pick.PreviousTeamID && pick.PreviousTeamID !== pick.TeamID && (
+          {pick.PreviousTeamID > 0 && pick.PreviousTeamID !== pick.TeamID && (
             <div className="mt-2 pt-2 border-t border-gray-600">
               <Text variant="xs" classes="text-yellow-500">
                 Traded from {pick.PreviousTeam}
+              </Text>
+            </div>
+          )}
+          {pick.PreviousTeamID === 0 && (
+            <div className="mt-2 pt-2 border-t border-gray-600">
+              <Text variant="xs" classes="text-green-500">
+                Original Pick
               </Text>
             </div>
           )}

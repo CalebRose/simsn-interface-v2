@@ -4,12 +4,13 @@ import { Draftee, DraftPick as DraftPickType } from "./types";
 import { Text } from "../../../_design/Typography";
 import { ProfessionalTeam } from "../../../models/hockeyModels";
 import { WarRoomDraftPick } from "./DraftPick";
+import { NFLTeam } from "../../../models/footballModels";
 
 interface DraftWarRoomProps {
   league: League;
   backgroundColor: string;
   teamDraftPicks: DraftPickType[];
-  selectedTeam: ProfessionalTeam | null;
+  selectedTeam: ProfessionalTeam | NFLTeam | null;
   draftablePlayerMap: Record<number, Draftee>;
 }
 

@@ -1,16 +1,18 @@
 import React from "react";
 import { Draftee, DraftPick } from "./types";
-import { League } from "../../../_constants/constants";
+import { League, ModalAction } from "../../../_constants/constants";
 import { ProfessionalTeam } from "../../../models/hockeyModels";
 import { DraftPickCard } from "./DraftPick";
+import { NFLTeam } from "../../../models/footballModels";
 
 interface BigDraftBoardProps {
   league: League;
   backgroundColor: string;
   draftPicks: DraftPick[];
-  selectedTeam: ProfessionalTeam | null;
+  selectedTeam: ProfessionalTeam | NFLTeam | null;
   draftablePlayerMap: Record<number, Draftee>;
   currentPick: DraftPick | null;
+  handlePlayerModal?: (action: ModalAction, player: Draftee) => void;
 }
 
 export const BigDraftBoard: React.FC<BigDraftBoardProps> = ({
@@ -20,6 +22,7 @@ export const BigDraftBoard: React.FC<BigDraftBoardProps> = ({
   selectedTeam,
   draftablePlayerMap,
   currentPick,
+  handlePlayerModal,
 }) => {
   return (
     <div
@@ -36,6 +39,7 @@ export const BigDraftBoard: React.FC<BigDraftBoardProps> = ({
             currentPick={currentPick}
             view="bigboard"
             draftablePlayerMap={draftablePlayerMap}
+            handlePlayerModal={handlePlayerModal}
           />
         ))}
       </div>

@@ -96,6 +96,7 @@ import { FaceDataService } from "../_services/faceDataService";
 import FBAScheduleService from "../_services/scheduleService";
 import { notificationService } from "../_services/notificationService";
 import { TransferPortalService } from "../_services/transferPortalService";
+import { DraftService } from "../_services/draftService";
 
 // ✅ Define Types for Context
 interface SimFBAContextProps {
@@ -168,6 +169,7 @@ interface SimFBAContextProps {
   tradeProposalsMap: Record<number, NFLTradeProposal[]>;
   tradePreferencesMap: Record<number, NFLTradePreferences>;
   nflDraftPicks: NFLDraftPick[];
+  currentSeasonDraftPicks: NFLDraftPick[];
   nflDraftPickMap: Record<number, NFLDraftPick[]>;
   individualDraftPickMap: Record<number, NFLDraftPick>;
   removeUserfromCFBTeamCall: (teamID: number) => Promise<void>;
@@ -274,13 +276,17 @@ interface SimFBAContextProps {
   collegeGameplanMap: Record<number, CollegeGameplan | null>;
   nflGameplanMap: Record<number, NFLGameplan | null>;
   nflWarRoomMap: Record<number, NFLWarRoom | null>;
-  nflScoutingProfileMap: Record<number, ScoutingProfile | null>;
+  nflScoutingProfileMap: Record<number, ScoutingProfile[] | null>;
   cfbPostSeasonAwards: AwardsList;
   toggleNotificationAsRead: (
     notificationID: number,
     isPro: boolean,
   ) => Promise<void>;
   deleteNotification: (notificationID: number, isPro: boolean) => Promise<void>;
+  addPlayerToScoutBoard: (dto: any, playerData?: any) => Promise<void>;
+  revealScoutingAttribute: (dto: any) => Promise<void>;
+  removePlayerFromScoutBoard: (id: number) => Promise<void>;
+  exportDraftPicks: (dto: any) => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -350,6 +356,7 @@ const defaultContext: SimFBAContextProps = {
   collegePollSubmission: {} as CollegePollSubmission,
   collegePollsMapBySeason: {},
   nflDraftPicks: [],
+  currentSeasonDraftPicks: [],
   nflDraftPickMap: {},
   individualDraftPickMap: {},
   tradePreferencesMap: {},
@@ -434,6 +441,10 @@ const defaultContext: SimFBAContextProps = {
   nflScoutingProfileMap: {},
   toggleNotificationAsRead: async () => {},
   deleteNotification: async () => {},
+  addPlayerToScoutBoard: async () => {},
+  revealScoutingAttribute: async () => {},
+  removePlayerFromScoutBoard: async () => {},
+  exportDraftPicks: async () => {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -611,7 +622,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     Record<number, NFLWarRoom | null>
   >({});
   const [nflScoutingProfileMap, setNFLScoutingProfileMap] = useState<
-    Record<number, ScoutingProfile | null>
+    Record<number, ScoutingProfile[] | null>
   >({});
   const [cfbPostSeasonAwards, setCFBPostSeasonAwards] = useState<AwardsList>(
     {} as AwardsList,
@@ -649,6 +660,14 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
     return pickMap;
   }, [nflDraftPicks]);
+
+  const currentSeasonDraftPicks = useMemo(() => {
+    console.log({ nflDraftPicks, cfb_Timestamp });
+    if (!nflDraftPicks) return [];
+    return nflDraftPicks.filter(
+      (pick) => pick.SeasonID === cfb_Timestamp?.NFLSeasonID,
+    );
+  }, [nflDraftPicks, cfb_Timestamp]);
 
   const proPlayerMap = useMemo(() => {
     const playerMap: Record<number, NFLPlayer> = {};
@@ -1104,6 +1123,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setNFLDraftees(res.NFLDraftees);
     setNFLWarRoomMap(res.NFLWarRoomMap);
     setNFLScoutingProfileMap(res.NFLScoutingProfileMap);
+    setNFLGameplanMap(res.NFLGameplanMap);
+    setNFLDraftPicks(res.NFLDraftPicks);
+    console.log({ res });
   };
 
   // use this once the portal page is finished
@@ -2355,6 +2377,168 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     const res = await TransferPortalService.ExportCFBPortal();
   }, []);
 
+  const addPlayerToScoutBoard = useCallback(
+    async (dto: any, playerData?: any) => {
+      const tempId = -Date.now();
+      const optimisticProfile = new ScoutingProfile({
+        ID: tempId,
+        PlayerID: dto.PlayerID,
+        TeamID: dto.TeamID,
+        FirstName: playerData?.FirstName || "",
+        LastName: playerData?.LastName || "",
+        Position: playerData?.Position || "",
+        Archetype: playerData?.Archetype || "",
+        College: playerData?.College || "",
+        Overall: playerData?.Overall || 0,
+        ShowCount: 0,
+      });
+
+      // Optimistic update - append to the team's profiles array
+      setNFLScoutingProfileMap((prev) => ({
+        ...prev,
+        [dto.TeamID]: [...(prev[dto.TeamID] ?? []), optimisticProfile],
+      }));
+      enqueueSnackbar("Player added to scouting board!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+
+      try {
+        const res = await DraftService.CreateNFLScoutingProfile(dto);
+        if (res) {
+          const newProfile = new ScoutingProfile(res);
+          setNFLScoutingProfileMap((prev) => ({
+            ...prev,
+            [dto.TeamID]: (prev[dto.TeamID] ?? []).map((p) =>
+              p.ID === tempId ? newProfile : p,
+            ),
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to add player to scouting board:", error);
+        setNFLScoutingProfileMap((prev) => ({
+          ...prev,
+          [dto.TeamID]: (prev[dto.TeamID] ?? []).filter((p) => p.ID !== tempId),
+        }));
+        enqueueSnackbar("Failed to add player to scouting board", {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    },
+    [enqueueSnackbar],
+  );
+
+  const revealScoutingAttribute = useCallback(
+    async (dto: any) => {
+      try {
+        const res = await DraftService.RevealNFLAttribute(dto);
+        // Testing purposes
+        // console.log({ dto });
+        // const res = true;
+        if (res) {
+          setNFLScoutingProfileMap((prev) => {
+            if (!nflTeam) return prev;
+            const profiles = prev[nflTeam.ID] ?? [];
+            return {
+              ...prev,
+              [nflTeam.ID]: profiles.map((p) =>
+                p.ID === dto.ScoutProfileID
+                  ? new ScoutingProfile({
+                      ...p,
+                      [dto.Attribute]: true,
+                      ShowCount: p.ShowCount + 1,
+                    })
+                  : p,
+              ),
+            };
+          });
+          if (nflTeam) {
+            setNFLWarRoomMap((prev) => {
+              const currentWarRoom = prev[nflTeam.ID];
+              if (!currentWarRoom) return prev;
+              return {
+                ...prev,
+                [nflTeam.ID]: new NFLWarRoom({
+                  ...currentWarRoom,
+                  SpentPoints: currentWarRoom.SpentPoints + dto.Points,
+                }),
+              };
+            });
+          }
+          enqueueSnackbar("Attribute revealed!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to reveal attribute:", error);
+        enqueueSnackbar("Failed to reveal attribute", {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    },
+    [nflTeam, enqueueSnackbar],
+  );
+
+  const removePlayerFromScoutBoard = useCallback(
+    async (id: number) => {
+      const teamID = nflTeam?.ID;
+      const removedProfile = teamID
+        ? (nflScoutingProfileMap[teamID] ?? []).find((p) => p.ID === id)
+        : null;
+
+      // Optimistic update - filter from the team's profiles array
+      if (teamID) {
+        setNFLScoutingProfileMap((prev) => ({
+          ...prev,
+          [teamID]: (prev[teamID] ?? []).filter((p) => p.ID !== id),
+        }));
+      }
+      enqueueSnackbar("Player removed from scouting board!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+
+      try {
+        await DraftService.RemoveNFLPlayerFromBoard(id);
+      } catch (error) {
+        console.error("Failed to remove player from scouting board:", error);
+        if (teamID && removedProfile) {
+          setNFLScoutingProfileMap((prev) => ({
+            ...prev,
+            [teamID]: [...(prev[teamID] ?? []), removedProfile],
+          }));
+        }
+        enqueueSnackbar("Failed to remove player from scouting board", {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    },
+    [nflTeam, nflScoutingProfileMap, enqueueSnackbar],
+  );
+
+  const exportDraftPicks = useCallback(
+    async (dto: any) => {
+      try {
+        await DraftService.ExportNFLPlayers(dto);
+        enqueueSnackbar("Draft picks exported!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+      } catch (error) {
+        console.error("Failed to export draft picks:", error);
+        enqueueSnackbar("Failed to export draft picks", {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+      }
+    },
+    [enqueueSnackbar],
+  );
+
   return (
     <SimFBAContext.Provider
       value={{
@@ -2417,6 +2601,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         collegePollsMapBySeason,
         nflDraftPicks,
         individualDraftPickMap,
+        currentSeasonDraftPicks,
         nflDraftPickMap,
         tradeProposalsMap,
         tradePreferencesMap,
@@ -2507,6 +2692,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         scoutPortalAttribute,
         updatePointsOnPortalPlayer,
         exportTransferPortalPlayers,
+        addPlayerToScoutBoard,
+        revealScoutingAttribute,
+        removePlayerFromScoutBoard,
+        exportDraftPicks,
       }}
     >
       {children}
