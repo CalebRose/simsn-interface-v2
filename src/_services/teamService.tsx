@@ -175,7 +175,7 @@ export const TeamService = {
     await GetExportCall(
       `${hckUrl}export/college/roster/${teamID}`,
       "blob",
-      `chl_team_${teamName}_roster.xlsx`,
+      `chl_team_${teamName}_roster.csv`,
     );
   },
 
@@ -183,7 +183,7 @@ export const TeamService = {
     await GetExportCall(
       `${hckUrl}export/pro/roster/${teamID}`,
       "blob",
-      `phl_team_${teamName}_roster.xlsx`,
+      `phl_team_${teamName}_roster.csv`,
     );
   },
 
@@ -191,7 +191,7 @@ export const TeamService = {
     await GetExportCall(
       `${fbaUrl}collegeplayers/team/export/${teamID}`,
       "blob",
-      `cfb_team_${teamName}_roster.xlsx`,
+      `cfb_team_${teamName}_roster.csv`,
     );
   },
 
@@ -199,7 +199,7 @@ export const TeamService = {
     await GetExportCall(
       `${fbaUrl}nflplayers/team/export/${teamID}`,
       "blob",
-      `nfl_team_${teamName}_roster.xlsx`,
+      `nfl_team_${teamName}_roster.csv`,
     );
   },
 
@@ -207,7 +207,7 @@ export const TeamService = {
     await GetExportCall(
       `${bbaUrl}export/cbb/team/${teamID}`,
       "blob",
-      `cbb_team_${teamName}_roster.xlsx`,
+      `cbb_team_${teamName}_roster.csv`,
     );
   },
 
@@ -215,7 +215,7 @@ export const TeamService = {
     await GetExportCall(
       `${bbaUrl}export/nba/team/${teamID}`,
       "blob",
-      `nba_team_${teamName}_roster.xlsx`,
+      `nba_team_${teamName}_roster.csv`,
     );
   },
 };
