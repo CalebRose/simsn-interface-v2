@@ -11,6 +11,7 @@ import { Logo } from "../../_design/Logo";
 import { Text } from "../../_design/Typography";
 import { Tab, TabGroup } from "../../_design/Tabs";
 import { HockeyPlayerStatsModalView } from "./PlayerStatsModalView";
+import { getOverallGrade } from "../Draft/common";
 
 interface DrafteeInfoModalBodyProps {
   league: League;
@@ -106,7 +107,7 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
           Overall
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {player.Overall}
+          {getOverallGrade(player)}
         </Text>
       </div>
       <div className="flex flex-col">
