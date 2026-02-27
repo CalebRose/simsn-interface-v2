@@ -151,7 +151,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     { header: "Age", accessor: "Age" },
     { header: "Height", accessor: "Height" },
     { header: "Weight", accessor: "Weight" },
-    { header: "Overall", accessor: "Overall" },
+    { header: "Overall", accessor: "OverallGrade" },
     { header: "Offensive Fit", accessor: "OffensiveFit" },
     { header: "Defensive Fit", accessor: "DefensiveFit" },
     { header: "Actions", accessor: "actions" },

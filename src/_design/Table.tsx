@@ -14,6 +14,7 @@ import { League, SimCFB, SimNFL } from "../_constants/constants";
 import { useAuthStore } from "../context/AuthContext";
 import { getThemeColors } from "../_utility/themeHelpers";
 import { getPlayerOverall } from "../components/Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
+import { getOverallGrade } from "../components/Draft/common";
 
 export interface SortState {
   key: string | null;
@@ -90,6 +91,22 @@ export const Table = <T,>({
     "Away",
   ]);
 
+  const gradeOrder = [
+    "A+",
+    "A",
+    "A-",
+    "B+",
+    "B",
+    "B-",
+    "C+",
+    "C",
+    "C-",
+    "D+",
+    "D",
+    "D-",
+    "F",
+  ];
+
   // When data or sortState changes, update sortedData
   useEffect(() => {
     if (sortState.key === null) {
@@ -115,28 +132,15 @@ export const Table = <T,>({
       }
 
       if (key.includes("Grade")) {
-        const gradeOrder = [
-          "A+",
-          "A",
-          "A-",
-          "B+",
-          "B",
-          "B-",
-          "C+",
-          "C",
-          "C-",
-          "D+",
-          "D",
-          "D-",
-          "F",
-        ];
-
         // Clean and normalize the grade values
         let aGrade = (a[key] ?? "").toString().trim();
         let bGrade = (b[key] ?? "").toString().trim();
         if (page === "SimCFBPortal" && key === "OverallGrade") {
           aGrade = getPlayerOverall(a, SimCFB).toString();
           bGrade = getPlayerOverall(b, SimCFB).toString();
+        } else if (page === "SimPHLDraftPage" && key === "OverallGrade") {
+          aGrade = getOverallGrade(a);
+          bGrade = getOverallGrade(b);
         }
 
         const ai = gradeOrder.indexOf(aGrade);
