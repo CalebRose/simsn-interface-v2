@@ -26,6 +26,7 @@ interface DraftAdminBoardProps {
   startDraft: () => Promise<void>;
   pauseDraft: () => Promise<void>;
   handleExportDraft: () => Promise<void>;
+  handleOpenAdminProposalsModal: () => void;
 }
 
 export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
@@ -41,6 +42,7 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
   startDraft,
   pauseDraft,
   handleExportDraft,
+  handleOpenAdminProposalsModal,
 }) => {
   const draftPickOptions = getDraftPickOptions();
   const draftRoundOptions = getDraftRoundOptions();
@@ -193,6 +195,15 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
               onClick={handleExportDraft}
             >
               Export
+            </Button>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="body-small">Draft Trades</Text>
+            <Button
+              disabled={!(isDraftComplete && draftState.exportComplete)}
+              onClick={handleOpenAdminProposalsModal}
+            >
+              Process Trades
             </Button>
           </div>
         </div>

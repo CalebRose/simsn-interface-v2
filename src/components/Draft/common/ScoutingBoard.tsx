@@ -200,6 +200,7 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
           if (!player) return null;
 
           const isDrafted = draftedPlayerIds.has(player.ID);
+          console.log({ draftedPlayerIds });
 
           return (
             <ScoutingBoardRow

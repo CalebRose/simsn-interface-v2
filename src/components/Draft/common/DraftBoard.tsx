@@ -235,6 +235,10 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     player.IsBadOffensiveFit = isBadOffensiveFit;
     player.IsBadDefensiveFit = isBadDefensiveFit;
 
+    const isDrafted = (() => {
+      return draftedPlayerIds.has(player.ID);
+    })();
+
     return (
       <div
         className="table-row border-b border-gray-800 hover:bg-gray-800/50 transition-colors text-left"
@@ -341,6 +345,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
                 size="sm"
                 onClick={() => onAddToScoutBoard(player)}
                 className="text-xs rounded-full p-1"
+                disabled={isDrafted}
               >
                 <Medic />
               </Button>
@@ -351,6 +356,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
                 size="sm"
                 onClick={() => onDraftPlayer(player)}
                 className="text-xs"
+                disabled={isDrafted}
               >
                 Draft
               </Button>

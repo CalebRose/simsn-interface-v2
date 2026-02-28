@@ -29,6 +29,174 @@ interface DraftTickerProps {
   draftablePlayerMap: Record<number, Draftee>;
 }
 
+// ---------------------------------------------------------------------------
+// PickCard — defined at module level so its identity is stable across renders.
+// Defining it inside DraftTicker would make React treat it as a new component
+// type on every render, causing every card to unmount/remount and reset the
+// slide-in animation and the scroll position.
+// ---------------------------------------------------------------------------
+
+interface PickCardProps {
+  pickData: { pick: DraftPick; player?: Draftee };
+  index: number;
+  league: DraftLeague;
+  leagueConstant: string;
+  draftablePlayerMap: Record<number, Draftee>;
+  teamColors: TeamColors;
+  isHovered: boolean;
+  onHoverEnter: (id: number) => void;
+  onHoverLeave: () => void;
+  onPickClick?: (action: ModalAction, player: Draftee) => void;
+}
+
+const PickCard: FC<PickCardProps> = ({
+  pickData,
+  index,
+  league,
+  leagueConstant,
+  draftablePlayerMap,
+  teamColors,
+  isHovered,
+  onHoverEnter,
+  onHoverLeave,
+  onPickClick,
+}) => {
+  const { pick } = pickData;
+  const teamLogo = getLogo(league, pick.TeamID, false);
+  const isNew = index === 0;
+
+  const draftee = useMemo(() => {
+    if (!draftablePlayerMap) return undefined;
+    if (league === SimPHL) {
+      return draftablePlayerMap[pick.DrafteeID];
+    }
+    return draftablePlayerMap[pick.SelectedPlayerID];
+  }, [pick, draftablePlayerMap, league]);
+
+  const drafteeName = useMemo(
+    () => (draftee ? `${draftee.FirstName} ${draftee.LastName}` : ""),
+    [draftee],
+  );
+
+  const drafteePosition = useMemo(() => {
+    if (!draftee) return "";
+    if (league === SimNFL) {
+      return `${draftee.Position}${draftee.PositionTwo.length > 0 ? `/${draftee.PositionTwo}` : ""}`;
+    }
+    return `${draftee.Position}`;
+  }, [draftee, league]);
+
+  const drafteeArchetype = useMemo(() => {
+    if (!draftee) return "";
+    if (league === SimNFL) {
+      return `${draftee.Archetype}${draftee.ArchetypeTwo.length > 0 ? `/${draftee.ArchetypeTwo}` : ""}`;
+    }
+    return draftee.Archetype;
+  }, [draftee, league]);
+
+  const drafteeCollege = useMemo(
+    () => (draftee ? draftee.College : ""),
+    [draftee],
+  );
+
+  const viewPlayer = useCallback(() => {
+    if (onPickClick && draftee) {
+      onPickClick(DrafteeInfoType, draftee);
+    }
+  }, [onPickClick, draftee]);
+
+  return (
+    <div
+      className={`
+        flex-shrink-0 w-[35rem] mx-2 cursor-pointer transition-all duration-300
+        ${isHovered ? "transform scale-105" : ""}
+        ${isNew ? "animate-slideIn" : ""}
+      `}
+      style={{
+        transformOrigin: "center",
+        willChange: isHovered ? "transform" : "auto",
+        contain: "layout style",
+      }}
+      onClick={viewPlayer}
+      onMouseEnter={() => onHoverEnter(pick.ID)}
+      onMouseLeave={onHoverLeave}
+    >
+      <Border
+        classes={`
+          p-4 bg-gradient-to-r from-gray-800 to-gray-700 border-2
+          ${isNew ? "ring-2 ring-blue-500 ring-opacity-50" : ""}
+        `}
+        styles={{
+          borderColor: isHovered ? teamColors.primary : "#374151",
+        }}
+      >
+        <div className="flex items-center space-x-3">
+          <div className="flex-shrink-0">
+            <div
+              className={`
+              w-12 h-12 rounded-full flex items-center justify-center font-bold
+              ${isNew ? "bg-blue-500 text-white animate-pulse" : "bg-gray-600 text-gray-300"}
+            `}
+            >
+              {pick.DraftNumber}
+            </div>
+          </div>
+
+          {/* Team logo */}
+          <img
+            src={teamLogo}
+            alt={pick.Team}
+            className="w-10 h-10 object-contain"
+          />
+          <div className="flex-1 min-w-0">
+            <Text variant="body" classes="text-white font-semibold truncate">
+              {drafteeName || "Selecting..."}
+            </Text>
+            <div className="flex items-center space-x-2 text-xs">
+              <span className="text-gray-400">{pick.Team}</span>
+              {drafteePosition && (
+                <>
+                  <span className="text-gray-500">•</span>
+                  <span className="text-blue-400 font-semibold">
+                    {drafteeArchetype} {drafteePosition}
+                  </span>
+                </>
+              )}
+              {drafteeCollege && (
+                <>
+                  <span className="text-gray-500">•</span>
+                  <span className="text-gray-400 truncate">
+                    {drafteeCollege}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="flex-shrink-0">
+            <span className="text-xs text-gray-500 uppercase">
+              R{pick.DraftRound}
+            </span>
+          </div>
+        </div>
+        {pick.PreviousTeamID > 0 && pick.PreviousTeamID !== pick.TeamID && (
+          <div className="mt-2 pt-2 border-t border-gray-600">
+            <Text variant="xs" classes="text-yellow-500">
+              Traded from {pick.PreviousTeam}
+            </Text>
+          </div>
+        )}
+        {pick.PreviousTeamID === 0 && (
+          <div className="mt-2 pt-2 border-t border-gray-600">
+            <Text variant="xs" classes="text-green-500">
+              Original Pick
+            </Text>
+          </div>
+        )}
+      </Border>
+    </div>
+  );
+};
+
 export const DraftTicker: FC<DraftTickerProps> = ({
   recentPicks,
   onPickClick,
@@ -67,146 +235,8 @@ export const DraftTicker: FC<DraftTickerProps> = ({
   const handleMouseEnter = () => setIsAutoScrolling(false);
   const handleMouseLeave = () => setIsAutoScrolling(true);
 
-  const PickCard: FC<{
-    pickData: { pick: DraftPick; player?: Draftee };
-    index: number;
-  }> = ({ pickData, index }) => {
-    const { pick, player } = pickData;
-    const teamLogo = getLogo(leagueConstant, pick.TeamID, false);
-    const isNew = index === 0;
-
-    const draftee = useMemo(() => {
-      if (!draftablePlayerMap) return undefined;
-      if (league === SimPHL) {
-        return draftablePlayerMap[pick.DrafteeID];
-      }
-      return draftablePlayerMap[pick.SelectedPlayerID];
-    }, [pick, draftablePlayerMap, league, leagueConstant]);
-
-    const drafteeName = useMemo(() => {
-      if (!draftee) return "";
-      return `${draftee.FirstName} ${draftee.LastName}`;
-    }, [draftee]);
-
-    const drafteePosition = useMemo(() => {
-      if (!draftee) return "";
-      if (league === SimNFL) {
-        return `${draftee.Position}${draftee.PositionTwo.length > 0 ? `/${draftee.PositionTwo}` : ""}`;
-      }
-      return `${draftee.Position}`;
-    }, [draftee, league]);
-
-    const drafteeArchetype = useMemo(() => {
-      if (!draftee) return "";
-      if (league === SimNFL) {
-        return `${draftee.Archetype}${draftee.ArchetypeTwo.length > 0 ? `/${draftee.ArchetypeTwo}` : ""}`;
-      }
-      return draftee.Archetype;
-    }, [draftee, league]);
-
-    const drafteeCollege = useMemo(() => {
-      if (!draftee) return "";
-      return draftee.College;
-    }, [draftee]);
-
-    const viewPlayer = useCallback(() => {
-      if (onPickClick) {
-        onPickClick(DrafteeInfoType, draftee!!);
-      }
-    }, [onPickClick, draftee]);
-
-    return (
-      <div
-        className={`
-          flex-shrink-0 w-[35rem] mx-2 cursor-pointer transition-all duration-300
-          ${hoveredPick === pick.ID ? "transform scale-105" : ""}
-          ${isNew ? "animate-slideIn" : ""}
-        `}
-        style={{
-          transformOrigin: "center",
-          willChange: hoveredPick === pick.ID ? "transform" : "auto",
-          contain: "layout style",
-        }}
-        onClick={viewPlayer}
-        onMouseEnter={() => setHoveredPick(pick.ID)}
-        onMouseLeave={() => setHoveredPick(null)}
-      >
-        <Border
-          classes={`
-            p-4 bg-gradient-to-r from-gray-800 to-gray-700 border-2
-            ${isNew ? "ring-2 ring-blue-500 ring-opacity-50" : ""}
-          `}
-          styles={{
-            borderColor:
-              hoveredPick === pick.ID ? teamColors.primary : "#374151",
-          }}
-        >
-          <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0">
-              <div
-                className={`
-                w-12 h-12 rounded-full flex items-center justify-center font-bold
-                ${isNew ? "bg-blue-500 text-white animate-pulse" : "bg-gray-600 text-gray-300"}
-              `}
-              >
-                {pick.DraftNumber}
-              </div>
-            </div>
-
-            {/* Team logo */}
-            <img
-              src={teamLogo}
-              alt={pick.Team}
-              className="w-10 h-10 object-contain"
-            />
-            <div className="flex-1 min-w-0">
-              <Text variant="body" classes="text-white font-semibold truncate">
-                {drafteeName || "Selecting..."}
-              </Text>
-              <div className="flex items-center space-x-2 text-xs">
-                <span className="text-gray-400">{pick.Team}</span>
-                {drafteePosition && (
-                  <>
-                    <span className="text-gray-500">•</span>
-                    <span className="text-blue-400 font-semibold">
-                      {drafteeArchetype} {drafteePosition}
-                    </span>
-                  </>
-                )}
-                {drafteeCollege && (
-                  <>
-                    <span className="text-gray-500">•</span>
-                    <span className="text-gray-400 truncate">
-                      {drafteeCollege}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="flex-shrink-0">
-              <span className="text-xs text-gray-500 uppercase">
-                R{pick.DraftRound}
-              </span>
-            </div>
-          </div>
-          {pick.PreviousTeamID > 0 && pick.PreviousTeamID !== pick.TeamID && (
-            <div className="mt-2 pt-2 border-t border-gray-600">
-              <Text variant="xs" classes="text-yellow-500">
-                Traded from {pick.PreviousTeam}
-              </Text>
-            </div>
-          )}
-          {pick.PreviousTeamID === 0 && (
-            <div className="mt-2 pt-2 border-t border-gray-600">
-              <Text variant="xs" classes="text-green-500">
-                Original Pick
-              </Text>
-            </div>
-          )}
-        </Border>
-      </div>
-    );
-  };
+  const handleHoverEnter = useCallback((id: number) => setHoveredPick(id), []);
+  const handleHoverLeave = useCallback(() => setHoveredPick(null), []);
 
   return (
     <div
@@ -253,6 +283,14 @@ export const DraftTicker: FC<DraftTickerProps> = ({
                 key={pickData.pick.ID}
                 pickData={pickData}
                 index={index}
+                league={league}
+                leagueConstant={leagueConstant}
+                draftablePlayerMap={draftablePlayerMap}
+                teamColors={teamColors}
+                isHovered={hoveredPick === pickData.pick.ID}
+                onHoverEnter={handleHoverEnter}
+                onHoverLeave={handleHoverLeave}
+                onPickClick={onPickClick}
               />
             ))
           ) : (
@@ -269,6 +307,14 @@ export const DraftTicker: FC<DraftTickerProps> = ({
                 key={`dup-${pickData.pick.ID}`}
                 pickData={pickData}
                 index={recentPicks.length + index}
+                league={league}
+                leagueConstant={leagueConstant}
+                draftablePlayerMap={draftablePlayerMap}
+                teamColors={teamColors}
+                isHovered={hoveredPick === pickData.pick.ID}
+                onHoverEnter={handleHoverEnter}
+                onHoverLeave={handleHoverLeave}
+                onPickClick={onPickClick}
               />
             ))}
         </div>

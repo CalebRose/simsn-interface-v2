@@ -2,6 +2,8 @@ import { FC, useMemo } from "react";
 import {
   DraftablePlayer,
   ProfessionalTeam as PHLTeam,
+  ProfessionalPlayer,
+  ProfessionalTeam,
   ScoutingProfile,
 } from "../../../models/hockeyModels";
 import {
@@ -32,6 +34,8 @@ import { DraftAdminBoard } from "../common/AdminBoard";
 import { DraftSidebar } from "../common/DraftSidebar";
 import { DraftWarRoom } from "../common/WarRoom";
 import { BigDraftBoard } from "../common/BigBoard";
+import { useModal } from "../../../_hooks/useModal";
+import ProposeDraftTradeModal from "../common/ProposeDraftTradeModal";
 
 interface PHLDraftPageProps {
   league: League;
@@ -82,7 +86,27 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     teamDraftPicks,
     draftablePlayerMap,
     draftPicksFromState,
+    userTeam,
+    tradePartnerTeam,
+    selectTradePartner,
+    teamOptions,
+    userTradablePlayers,
+    userTradablePicks,
+    partnerTradablePlayers,
+    partnerTradablePicks,
+    userTradeProposals,
+    userWarRoomData,
+    approvedRequests,
+    proposeTrade,
+    acceptTrade,
+    rejectTrade,
+    vetoTrade,
+    handleProcessTrade,
   } = usePHLDraft();
+
+  const proposeTradeModal = useModal();
+  const receiveTradeModal = useModal();
+  const adminProposalsModal = useModal();
 
   const isAdmin = useMemo(() => {
     return currentUser?.roleID === "Admin";
@@ -184,6 +208,22 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
 
   return (
     <>
+      <ProposeDraftTradeModal
+        isOpen={proposeTradeModal.isModalOpen}
+        onClose={proposeTradeModal.handleCloseModal}
+        userTeam={userTeam as ProfessionalTeam}
+        tradePartnerTeam={tradePartnerTeam as ProfessionalTeam}
+        league={SimPHL}
+        teamOptions={phlTeamOptions}
+        selectTradePartner={selectTradePartner}
+        userTradablePlayers={userTradablePlayers as ProfessionalPlayer[]}
+        userTradablePicks={teamDraftPicks}
+        partnerTradablePlayers={partnerTradablePlayers as ProfessionalPlayer[]}
+        partnerTradablePicks={partnerTradablePicks as DraftPick[]}
+        proposeTrade={proposeTrade}
+        backgroundColor={backgroundColor}
+        borderColor={teamColors?.secondary}
+      />
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
@@ -311,6 +351,12 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   teamDraftPicks={teamDraftPicks as DraftPick[]}
                   selectedTeam={selectedTeam as PHLTeam | null}
                   draftablePlayerMap={draftablePlayerMap}
+                  handleOpenProposeTradeModal={
+                    proposeTradeModal.handleOpenModal
+                  }
+                  handleOpenReceiveTradeModal={
+                    receiveTradeModal.handleOpenModal
+                  }
                 />
               </>
             )}
@@ -342,6 +388,9 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   startDraft={startDraft}
                   pauseDraft={togglePause}
                   handleExportDraft={handleExportDraftPicks}
+                  handleOpenAdminProposalsModal={
+                    adminProposalsModal.handleOpenModal
+                  }
                 />
               </>
             )}

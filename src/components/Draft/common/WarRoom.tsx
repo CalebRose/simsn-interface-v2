@@ -5,6 +5,8 @@ import { Text } from "../../../_design/Typography";
 import { ProfessionalTeam } from "../../../models/hockeyModels";
 import { WarRoomDraftPick } from "./DraftPick";
 import { NFLTeam } from "../../../models/footballModels";
+import { AnyTradeProposal, WarRoomDoc } from "../hooks/useDraftTradeState";
+import { Button } from "../../../_design/Buttons";
 
 interface DraftWarRoomProps {
   league: League;
@@ -12,6 +14,8 @@ interface DraftWarRoomProps {
   teamDraftPicks: DraftPickType[];
   selectedTeam: ProfessionalTeam | NFLTeam | null;
   draftablePlayerMap: Record<number, Draftee>;
+  handleOpenProposeTradeModal: () => void;
+  handleOpenReceiveTradeModal: () => void;
 }
 
 export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
@@ -20,6 +24,8 @@ export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
   teamDraftPicks,
   selectedTeam,
   draftablePlayerMap,
+  handleOpenProposeTradeModal,
+  handleOpenReceiveTradeModal,
 }) => {
   const teamLabel = useMemo(() => {
     if (!selectedTeam) return "No team selected";
@@ -42,6 +48,21 @@ export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
         <Text variant="body-small" className="mb-4">
           {draftPickCount}
         </Text>
+        <div className="grid grid-cols-1 xl:grid-cols-2 mb-4 gap-4">
+          <div className="flex">
+            <Text variant="body-small" className="mb-4">
+              Propose Trade
+            </Text>
+            <Button onClick={handleOpenProposeTradeModal}>Propose</Button>
+          </div>
+
+          <div className="flex">
+            <Text variant="body-small" className="mb-4">
+              View Trades
+            </Text>
+            <Button onClick={handleOpenReceiveTradeModal}>View</Button>
+          </div>
+        </div>
         <div className="grid grid-cols-1 xl:grid-cols-4 mb-4 gap-4">
           {teamDraftPicks.map((pick) => (
             <WarRoomDraftPick

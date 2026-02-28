@@ -43,7 +43,7 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
   if (!chlTeam) {
     chlTeam = chlTeamMap[player.TeamID];
   }
-  const teamLogo = getLogo(SimPHL, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.isRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
 
   return (
@@ -52,10 +52,10 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
         <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
           <PlayerPicture playerID={player.ID} league={SimPHL} team={proTeam} />
         </div>
-        {proTeam && (
+        {chlTeam && (
           <Logo
             url={teamLogo}
-            label={proTeam.Abbreviation}
+            label={chlTeam.Abbreviation}
             classes="h-[5rem] max-h-[5rem]"
             containerClass="p-4"
             textClass="text-small"

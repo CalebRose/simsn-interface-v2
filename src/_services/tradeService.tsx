@@ -1,5 +1,10 @@
 import { fbaUrl, hckUrl, bbaUrl } from "../_constants/urls";
-import { GetActionCall, GetCall, PostCall } from "../_helper/fetchHelper";
+import {
+  GetActionCall,
+  GetCall,
+  PostCall,
+  PostCallNoResponse,
+} from "../_helper/fetchHelper";
 import { TradePreferences, TradeProposal } from "../models/hockeyModels";
 import {
   NFLTradePreferences,
@@ -32,6 +37,10 @@ export const TradeService = {
     await GetActionCall(`${hckUrl}trades/admin/accept/sync/${id}`);
   },
 
+  HCKProcessAcceptedDraftTrade: async (dto: any): Promise<void> => {
+    await PostCallNoResponse(`${hckUrl}trades/draft/accept/trade/process`, dto);
+  },
+
   HCKVetoAcceptedTrade: async (id: number): Promise<void> => {
     await GetActionCall(`${hckUrl}trades/admin/veto/sync/${id}`);
   },
@@ -49,7 +58,7 @@ export const TradeService = {
   },
 
   FBAUpdateTradePreferences: async (
-    dto: NFLTradePreferences
+    dto: NFLTradePreferences,
   ): Promise<void> => {
     await PostCall(`${fbaUrl}trades/nfl/preferences/update`, dto);
   },

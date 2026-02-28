@@ -662,7 +662,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   }, [nflDraftPicks]);
 
   const currentSeasonDraftPicks = useMemo(() => {
-    console.log({ nflDraftPicks, cfb_Timestamp });
     if (!nflDraftPicks) return [];
     return nflDraftPicks.filter(
       (pick) => pick.SeasonID === cfb_Timestamp?.NFLSeasonID,
@@ -1125,7 +1124,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setNFLScoutingProfileMap(res.NFLScoutingProfileMap);
     setNFLGameplanMap(res.NFLGameplanMap);
     setNFLDraftPicks(res.NFLDraftPicks);
-    console.log({ res });
   };
 
   // use this once the portal page is finished
