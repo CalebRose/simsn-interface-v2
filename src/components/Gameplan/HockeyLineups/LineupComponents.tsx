@@ -59,7 +59,7 @@ interface LineupPlayerProps {
   ChangePlayerInput: (
     playerID: number,
     property: string,
-    value: number
+    value: number,
   ) => void;
   property: string;
   league?: League;
@@ -92,7 +92,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
         ChangeState(Number(opts.value), property);
       }
     },
-    [ChangeState, property]
+    [ChangeState, property],
   );
 
   const placeHolder = useMemo(() => {
@@ -107,10 +107,10 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
       ChangePlayerInput(
         playerID,
         event.target.name,
-        Number(event.target.value)
+        Number(event.target.value),
       );
     },
-    [ChangePlayerInput, playerID]
+    [ChangePlayerInput, playerID],
   );
 
   const selectedOption = useMemo(() => {
@@ -132,7 +132,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
     if (!player || !offenseSystemInformation) return false;
     const goodFits = offenseSystemInformation.GoodFits;
     const idx = goodFits.findIndex(
-      (x: any) => x.archetype === player.Archetype
+      (x: any) => x.archetype === player.Archetype,
     );
     if (idx > -1) {
       return true;
@@ -154,7 +154,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
     if (!player || !defenseSystemInformation) return false;
     const goodFits = defenseSystemInformation.GoodFits;
     const idx = goodFits.findIndex(
-      (x: any) => x.archetype === player.Archetype
+      (x: any) => x.archetype === player.Archetype,
     );
     if (idx > -1) {
       return true;
@@ -297,7 +297,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
                       {league === SimCHL
                         ? getHockeyLetterGrade(
                             player.StickChecking,
-                            player.Year
+                            player.Year,
                           )
                         : player.StickChecking}
                     </Text>
@@ -356,7 +356,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
                     {league === SimCHL
                       ? getHockeyLetterGrade(
                           player.LongShotAccuracy,
-                          player.Year
+                          player.Year,
                         )
                       : player.LongShotAccuracy}
                   </Text>
@@ -387,7 +387,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
                     {league === SimCHL
                       ? getHockeyLetterGrade(
                           player.CloseShotAccuracy,
-                          player.Year
+                          player.Year,
                         )
                       : player.CloseShotAccuracy}
                   </Text>
@@ -504,12 +504,12 @@ export const ShootoutPlayer: FC<ShootoutPlayerProps> = ({
         ChangeState(Number(opts.value), property);
       }
     },
-    [ChangeState, property]
+    [ChangeState, property],
   );
   const GetShootoutValue = useCallback(
     (opts: SingleValue<SelectOption>) =>
       ChangeState(Number(opts?.value), shootoutProperty),
-    [ChangeState, shootoutProperty]
+    [ChangeState, shootoutProperty],
   );
 
   const shootoutPlaceholder = useMemo(() => {
@@ -523,7 +523,7 @@ export const ShootoutPlayer: FC<ShootoutPlayerProps> = ({
   const shotTypeSelectedOption = useMemo(() => {
     return (
       getShootoutOptionList().find(
-        (opt) => Number(opt.value) === lineCategory[shootoutProperty]
+        (opt) => Number(opt.value) === lineCategory[shootoutProperty],
       ) || null
     );
   }, [lineCategory, shootoutProperty]);
@@ -640,32 +640,34 @@ export const ShootoutPlayer: FC<ShootoutPlayerProps> = ({
           }}
         />
       </div>
-      <div className="grid grid-cols-2 w-[80%]">
-        <Text variant="xs">
-          Close Shot Accuracy:{" "}
-          {league === SimCHL
-            ? getHockeyLetterGrade(player.CloseShotAccuracy, player.Year)
-            : player.CloseShotAccuracy}
-        </Text>
-        <Text variant="xs">
-          Close Shot Power:{" "}
-          {league === SimCHL
-            ? getHockeyLetterGrade(player.CloseShotPower, player.Year)
-            : player.CloseShotPower}
-        </Text>
-        <Text variant="xs">
-          Long Shot Accuracy:{" "}
-          {league === SimCHL
-            ? getHockeyLetterGrade(player.LongShotAccuracy, player.Year)
-            : player.LongShotAccuracy}
-        </Text>
-        <Text variant="xs">
-          Long Shot Power:{" "}
-          {league === SimCHL
-            ? getHockeyLetterGrade(player.LongShotPower, player.Year)
-            : player.LongShotPower}
-        </Text>
-      </div>
+      {player && (
+        <div className="grid grid-cols-2 w-[80%]">
+          <Text variant="xs">
+            Close Shot Accuracy:{" "}
+            {league === SimCHL
+              ? getHockeyLetterGrade(player.CloseShotAccuracy, player.Year)
+              : player.CloseShotAccuracy}
+          </Text>
+          <Text variant="xs">
+            Close Shot Power:{" "}
+            {league === SimCHL
+              ? getHockeyLetterGrade(player.CloseShotPower, player.Year)
+              : player.CloseShotPower}
+          </Text>
+          <Text variant="xs">
+            Long Shot Accuracy:{" "}
+            {league === SimCHL
+              ? getHockeyLetterGrade(player.LongShotAccuracy, player.Year)
+              : player.LongShotAccuracy}
+          </Text>
+          <Text variant="xs">
+            Long Shot Power:{" "}
+            {league === SimCHL
+              ? getHockeyLetterGrade(player.LongShotPower, player.Year)
+              : player.LongShotPower}
+          </Text>
+        </div>
+      )}
     </div>
   );
 };
@@ -908,13 +910,13 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
 
   const selectedForwardCheckPreference = useMemo(() => {
     return getHCKAICheckPreferenceObject(
-      currentGameplan.ForwardCheckPreference
+      currentGameplan.ForwardCheckPreference,
     );
   }, [currentGameplan]);
 
   const selectedDefenderCheckPreference = useMemo(() => {
     return getHCKAICheckPreferenceObject(
-      currentGameplan.DefenderCheckPreference
+      currentGameplan.DefenderCheckPreference,
     );
   }, [currentGameplan]);
 
@@ -967,7 +969,7 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
         }
       }
     },
-    []
+    [],
   );
 
   const GetDefenderShotPreference = useCallback(
@@ -985,7 +987,7 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
         }
       }
     },
-    []
+    [],
   );
 
   const GetForwardCheckPreference = useCallback(
@@ -1003,7 +1005,7 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
         }
       }
     },
-    []
+    [],
   );
 
   const GetDefenderCheckPreference = useCallback(
@@ -1021,7 +1023,7 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
         }
       }
     },
-    []
+    [],
   );
 
   const GetCenterSortPreference = useCallback((opts: any) => {
@@ -1049,7 +1051,7 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
         });
       }
     },
-    []
+    [],
   );
 
   const dropdownOptions = getHCKAIGameplanOptionsOptions();
@@ -1070,7 +1072,7 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
     if (selectedCenterSort.length > 0) {
       for (let i = 0; i < selectedCenterSort.length; i++) {
         gp[`CenterSortPreference${i + 1}`] = Number(
-          selectedCenterSort[i].value
+          selectedCenterSort[i].value,
         );
       }
     } else {
@@ -1082,7 +1084,7 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
     if (selectedForwardSort.length > 0) {
       for (let i = 0; i < selectedForwardSort.length; i++) {
         gp[`ForwardSortPreference${i + 1}`] = Number(
-          selectedForwardSort[i].value
+          selectedForwardSort[i].value,
         );
       }
     } else {
@@ -1093,7 +1095,7 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
     if (selectedDefenderSort.length > 0) {
       for (let i = 0; i < selectedDefenderSort.length; i++) {
         gp[`DefenderSortPreference${i + 1}`] = Number(
-          selectedDefenderSort[i].value
+          selectedDefenderSort[i].value,
         );
       }
     } else {

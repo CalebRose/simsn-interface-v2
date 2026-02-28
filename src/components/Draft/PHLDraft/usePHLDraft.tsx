@@ -262,7 +262,11 @@ export const usePHLDraft = () => {
       .filter((pick) => {
         const pickOverall =
           (pick.DraftRound - 1) * PHL_PICKS_PER_ROUND + pick.DraftNumber;
-        return pickOverall < draftCurrentPick && pick.DrafteeID > 0;
+        return (
+          pickOverall <
+            (draftCurrentRound - 1) * PHL_PICKS_PER_ROUND + draftCurrentPick &&
+          pick.DrafteeID > 0
+        );
       })
       .sort((a, b) => {
         const aOverall =
@@ -271,7 +275,7 @@ export const usePHLDraft = () => {
           (b.DraftRound - 1) * PHL_PICKS_PER_ROUND + b.DraftNumber;
         return bOverall - aOverall;
       })
-      .slice(0, 20);
+      .slice(0, 10);
   }, [draftPicksFromState, draftCurrentPick]);
 
   const draftedPlayerIds = useMemo(() => {

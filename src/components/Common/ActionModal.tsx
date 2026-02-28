@@ -335,7 +335,8 @@ export const ActionModal: FC<ActionModalProps> = ({
             <ButtonGroup>
               {modalAction !== InfoType &&
                 modalAction !== RecruitInfoType &&
-                modalAction !== PortalInfoType && (
+                modalAction !== PortalInfoType &&
+                modalAction !== DrafteeInfoType && (
                   <>
                     <Button size="sm" variant="danger" onClick={onClose}>
                       <Text variant="small">Cancel</Text>
