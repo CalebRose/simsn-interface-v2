@@ -44,7 +44,7 @@ export class DraftStateObj {
 
   // Helper method to check if draft is complete
   isDraftComplete(): boolean {
-    return this.currentPick > 168; // Assuming 7 rounds × 24 teams = 168 picks
+    return this.currentRound > 7; // 7 rounds total
   }
 
   // Helper method to get formatted time remaining
@@ -56,13 +56,14 @@ export class DraftStateObj {
 
   // Helper method to update to next pick
   advanceToNextPick(): void {
-    this.currentPick = this.nextPick;
-    this.nextPick += 1;
-    // Update round if needed (assuming 24 picks per round)
-    this.currentRound = Math.ceil(this.currentPick / 24);
-    if (this.currentPick > 24) {
+    if (this.currentPick >= 24) {
+      // End of round — advance to round N+1, pick 1
+      this.currentRound += 1;
       this.currentPick = 1;
       this.nextPick = 2;
+    } else {
+      this.currentPick = this.nextPick;
+      this.nextPick = this.currentPick + 1;
     }
 
     // Reset timer based on round

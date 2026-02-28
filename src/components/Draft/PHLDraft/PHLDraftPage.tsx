@@ -150,11 +150,17 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     const picksInRound = draftPickMap[roundKey] || [];
     if (picksInRound.length === 0) return; // No picks in this round
     const currentPickIndex = picksInRound.findIndex(
-      (pick) => pick.ID === draftState.currentPick,
+      (pick) => pick.DraftNumber === draftState.currentPick,
     );
+    console.log({
+      roundKey,
+      picksInRound,
+      draftPickMap,
+      draftState,
+      currentPickIndex,
+    });
     if (currentPickIndex === -1) return; // Pick not found
     draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
-
     const newDraftState = draftState;
     newDraftState.advanceToNextPick();
     const curr = newDraftState.currentPick;
