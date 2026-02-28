@@ -108,7 +108,7 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
 
   const filteredProfiles = useMemo(() => {
     let filtered = scoutProfiles.filter((profile) => {
-      if (draftedPlayerIds.has(profile.PlayerID)) return false;
+      // if (draftedPlayerIds.has(profile.PlayerID)) return false;
 
       const player = getPlayerFromProfile(profile);
       if (!player) return false;
@@ -200,7 +200,6 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
           if (!player) return null;
 
           const isDrafted = draftedPlayerIds.has(player.ID);
-          console.log({ draftedPlayerIds });
 
           return (
             <ScoutingBoardRow

@@ -46,6 +46,8 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
   const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.isRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
 
+  const abbr = chlTeam ? chlTeam.Abbreviation : "";
+
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
@@ -115,7 +117,7 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
           College
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {chlTeam.Abbreviation}
+          {abbr}
         </Text>
       </div>
       <div className="flex flex-col items-center">

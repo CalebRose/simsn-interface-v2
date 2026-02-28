@@ -60,6 +60,10 @@ export class DraftStateObj {
     this.nextPick += 1;
     // Update round if needed (assuming 24 picks per round)
     this.currentRound = Math.ceil(this.currentPick / 24);
+    if (this.currentPick > 24) {
+      this.currentPick = 1;
+      this.nextPick = 2;
+    }
 
     // Reset timer based on round
     this.seconds = getSecondsByRound(this.currentRound);

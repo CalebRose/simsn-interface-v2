@@ -2077,19 +2077,19 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
                 : p,
             ),
           );
-          if (phlTeam) {
-            setProWarRoom((prev) => {
-              const currentWarRoom = prev[phlTeam.ID];
-              if (!currentWarRoom) return prev;
-              return {
-                ...prev,
-                [phlTeam.ID]: new ProWarRoom({
-                  ...currentWarRoom,
-                  SpentPoints: currentWarRoom.SpentPoints + dto.Points,
-                }),
-              };
-            });
-          }
+
+          setProWarRoom((prev) => {
+            const currentWarRoom = prev[dto.TeamID];
+            if (!currentWarRoom) return prev;
+            return {
+              ...prev,
+              [dto.TeamID]: new ProWarRoom({
+                ...currentWarRoom,
+                SpentPoints: currentWarRoom.SpentPoints + dto.Points,
+              }),
+            };
+          });
+
           enqueueSnackbar("Attribute revealed!", {
             variant: "success",
             autoHideDuration: 3000,

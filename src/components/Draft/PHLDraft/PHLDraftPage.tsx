@@ -36,6 +36,7 @@ import { DraftWarRoom } from "../common/WarRoom";
 import { BigDraftBoard } from "../common/BigBoard";
 import { useModal } from "../../../_hooks/useModal";
 import ProposeDraftTradeModal from "../common/ProposeDraftTradeModal";
+import { getSecondsByRound } from "./utils/draftHelpers";
 
 interface PHLDraftPageProps {
   league: League;
@@ -161,6 +162,9 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     const next = newDraftState.nextPick;
     const draftComplete = newDraftState.isDraftComplete?.() || false;
 
+    const newSeconds = getSecondsByRound(round);
+    const newEndTime = new Date(Date.now() + newSeconds * 1000);
+
     await handleManualDraftStateUpdate({
       currentPick: curr,
       currentRound: round,
@@ -168,6 +172,8 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
       draftComplete,
       recentlyDraftedPlayerID: player.ID,
       allDraftPicks: draftPickMap,
+      endTime: newEndTime,
+      seconds: newSeconds, // Reset to original timer value
     });
   };
 

@@ -350,6 +350,16 @@ export const DraftBoard: FC<DraftBoardProps> = ({
                 <Medic />
               </Button>
             )}
+            {isScouted && (
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled
+                className="text-xs cursor-not-allowed rounded-full p-1"
+              >
+                <CheckCircle textColorClass="text-green-700" />
+              </Button>
+            )}
             {isUserTurn && onDraftPlayer && (
               <Button
                 variant="primary"
@@ -359,16 +369,6 @@ export const DraftBoard: FC<DraftBoardProps> = ({
                 disabled={isDrafted}
               >
                 Draft
-              </Button>
-            )}
-            {isScouted && (
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled
-                className="text-xs cursor-not-allowed rounded-full p-1"
-              >
-                <CheckCircle textColorClass="text-green-700" />
               </Button>
             )}
           </div>
