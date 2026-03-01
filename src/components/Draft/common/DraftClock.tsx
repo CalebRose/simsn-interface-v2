@@ -10,6 +10,8 @@ import {
   isNFLLeague,
 } from "./types";
 import { formatDraftTime } from "../PHLDraft/utils/draftHelpers";
+import { BigBoard, DraftBoardType } from "../../../_constants/constants";
+import { Logo } from "../../../_design/Logo";
 
 interface DraftClockProps {
   currentPick: DraftPick | null;
@@ -20,6 +22,7 @@ interface DraftClockProps {
   teamColors: TeamColors;
   league: DraftLeague;
   picksPerRound?: number;
+  activeTab?: DraftBoardType;
 }
 
 export const DraftClock: FC<DraftClockProps> = ({
@@ -30,6 +33,7 @@ export const DraftClock: FC<DraftClockProps> = ({
   isPaused,
   teamColors,
   league,
+  activeTab,
 }) => {
   const isUrgent = useMemo(() => {
     return !isPaused && timeLeft <= 30 && timeLeft > 0;
@@ -103,24 +107,27 @@ export const DraftClock: FC<DraftClockProps> = ({
         <div className="flex justify-between items-start mb-4">
           <div>
             <Text
-              variant="body"
+              variant={activeTab === BigBoard ? "small" : "body"}
               classes="text-gray-400 uppercase tracking-wider text-xs"
             >
               On The Clock
             </Text>
-            <Text variant="h4" classes="text-white font-bold">
+            <Text
+              variant={activeTab === BigBoard ? "xs" : "h4"}
+              classes={`text-white ${activeTab === BigBoard ? "font-normal" : "font-bold"}`}
+            >
               Round {currentRound} • Pick {pickNumber}
             </Text>
           </div>
           <div className="text-right">
             <Text
-              variant="body"
+              variant={activeTab === BigBoard ? "small" : "body"}
               classes="text-gray-400 uppercase tracking-wider text-xs"
             >
               Time Remaining
             </Text>
             <Text
-              variant="h2"
+              variant={activeTab === BigBoard ? "body-small" : "h2"}
               classes={`font-mono font-bold ${getTimerColor()}`}
             >
               {formattedTime}
@@ -128,25 +135,32 @@ export const DraftClock: FC<DraftClockProps> = ({
           </div>
         </div>
         <div className="flex items-center justify-center space-x-4 mt-6">
-          <img
-            src={teamLogo}
-            alt={currentPick.Team}
-            className="w-20 h-20 object-contain drop-shadow-lg"
+          <Logo
+            url={teamLogo}
+            variant={activeTab === BigBoard ? "normal" : "large"}
           />
           <div className="text-center">
-            <Text variant="h3" classes="text-white font-bold">
+            <Text
+              variant={activeTab === BigBoard ? "body-small" : "h3"}
+              classes="text-white font-bold"
+            >
               {currentPick.Team}
             </Text>
-            <Text variant="body" classes="text-gray-400">
+            <Text
+              variant={activeTab === BigBoard ? "small" : "body"}
+              classes="text-gray-400"
+            >
               {currentPick.Notes || "Making selection..."}
             </Text>
           </div>
         </div>
         {isPaused && (
-          <div className="flex justify-end items-top">
+          <div className="flex justify-end items-top mt-2">
             <span className="flex items-center space-x-1 bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded-full text-xs">
               <span className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse" />
-              <span>PAUSED</span>
+              <span className={activeTab === BigBoard ? "text-xs" : ""}>
+                PAUSED
+              </span>
             </span>
           </div>
         )}

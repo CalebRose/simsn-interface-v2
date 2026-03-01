@@ -13,6 +13,8 @@ import {
   SimPHL,
   WarRoomBoard,
 } from "../../../_constants/constants";
+import { DraftPick } from "./types";
+import { DraftClock } from "./DraftClock";
 
 interface DraftSidebarProps {
   selectedTeam?: {
@@ -29,6 +31,12 @@ interface DraftSidebarProps {
   defensiveSystem: string;
   teamNeedsList: string[];
   league: League;
+  currentPick: DraftPick | null;
+  currentRound: number;
+  pickNumber: number;
+  timeLeft: number;
+  isPaused: boolean;
+  picksPerRound?: number;
 }
 
 export const DraftSidebar: React.FC<DraftSidebarProps> = ({
@@ -41,6 +49,12 @@ export const DraftSidebar: React.FC<DraftSidebarProps> = ({
   defensiveSystem,
   teamNeedsList,
   league,
+  currentPick,
+  currentRound,
+  pickNumber,
+  timeLeft,
+  isPaused,
+  picksPerRound,
 }) => {
   return (
     <div className="flex flex-col mb-4">
@@ -91,47 +105,66 @@ export const DraftSidebar: React.FC<DraftSidebarProps> = ({
             </Button>
           )}
         </ButtonGrid>
-        <hr className="border-gray-700 my-2" />
-        <div className="mt-2">
-          <Text variant="body" classes="text-gray-200">
-            Team Needs
-          </Text>
-        </div>
-        {league === SimPHL && (
+        <hr className="border-gray-700 my-2" />{" "}
+        {activeTab !== BigBoard && (
           <>
             <div className="mt-2">
-              <Text variant="xs" classes="text-gray-200">
-                Offensive System: {offensiveSystem}
+              <Text variant="body" classes="text-gray-200">
+                Team Needs
               </Text>
             </div>
-            <div className="">
-              <Text variant="xs" classes="text-gray-200">
-                Defensive System: {defensiveSystem}
-              </Text>
+            {league === SimPHL && (
+              <>
+                <div className="mt-2">
+                  <Text variant="xs" classes="text-gray-200">
+                    Offensive System: {offensiveSystem}
+                  </Text>
+                </div>
+                <div className="">
+                  <Text variant="xs" classes="text-gray-200">
+                    Defensive System: {defensiveSystem}
+                  </Text>
+                </div>
+              </>
+            )}
+            {league === SimNFL && (
+              <>
+                <div className="mt-2">
+                  <Text variant="xs" classes="text-gray-200">
+                    Offensive System: {offensiveSystem}
+                  </Text>
+                </div>
+                <div className="">
+                  <Text variant="xs" classes="text-gray-200">
+                    Defensive System: {defensiveSystem}
+                  </Text>
+                </div>
+              </>
+            )}
+            <div className="mt-2">
+              {teamNeedsList.map((need) => (
+                <Text key={need} variant="xs" classes="text-gray-400">
+                  {need}
+                </Text>
+              ))}
             </div>
           </>
         )}
-        {league === SimNFL && (
+        {activeTab === BigBoard && (
           <>
-            <div className="mt-2">
-              <Text variant="xs" classes="text-gray-200">
-                Offensive System: {offensiveSystem}
-              </Text>
-            </div>
-            <div className="">
-              <Text variant="xs" classes="text-gray-200">
-                Defensive System: {defensiveSystem}
-              </Text>
-            </div>
+            <DraftClock
+              currentPick={currentPick}
+              currentRound={currentRound}
+              pickNumber={pickNumber}
+              timeLeft={timeLeft}
+              isPaused={isPaused}
+              picksPerRound={picksPerRound}
+              league={league}
+              teamColors={teamColors}
+              activeTab={activeTab}
+            />
           </>
         )}
-        <div className="mt-2">
-          {teamNeedsList.map((need) => (
-            <Text key={need} variant="xs" classes="text-gray-400">
-              {need}
-            </Text>
-          ))}
-        </div>
       </Border>
     </div>
   );

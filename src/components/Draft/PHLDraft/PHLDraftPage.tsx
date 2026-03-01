@@ -259,6 +259,11 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
           defensiveSystem={defensiveSystem}
           teamNeedsList={teamNeedsList}
           league={SimPHL}
+          currentPick={currentPick}
+          currentRound={draftState.currentRound}
+          pickNumber={draftState.currentPick}
+          timeLeft={seconds}
+          isPaused={draftState.isPaused}
         />
         <div className="flex flex-col gap-2">
           {activeTab !== BigBoard && (
