@@ -305,6 +305,17 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
     }
     const actionVariant = !teamOfferMap[item.ID] ? "success" : "secondary";
 
+    const disableAddButton = useMemo(() => {
+      if (!!teamOfferMap[item.ID]) {
+        return true;
+      }
+      if (item.IsAffiliatePlayer && item.Year <= 3) {
+        return true;
+      }
+
+      return false;
+    }, [teamOfferMap, item]);
+
     return (
       <div
         key={item.ID}
@@ -385,9 +396,9 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
             variant={actionVariant}
             size="xs"
             onClick={() => handleOfferModal(FreeAgentOffer, item as PHLPlayer)}
-            disabled={!!teamOfferMap[item.ID]}
+            disabled={disableAddButton}
           >
-            {teamOfferMap[item.ID] ? <ActionLock /> : <Plus />}
+            {disableAddButton ? <ActionLock /> : <Plus />}
           </Button>
         </TableCell>
       </div>

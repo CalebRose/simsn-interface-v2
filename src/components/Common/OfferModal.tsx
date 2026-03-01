@@ -278,10 +278,12 @@ export const OfferModal: FC<OfferModalProps> = ({
   const errors = useMemo(() => {
     const list: string[] = [];
     if (league === SimPHL) {
+      const p = player as ProfessionalPlayer;
       return GeneratePHLFAErrorList(
         offer as PHLFreeAgencyOffer,
         ts as HCKTimestamp,
         capsheet as ProCapsheet,
+        p.IsUDFA,
       );
     }
     if (league === SimNFL) {
@@ -303,7 +305,7 @@ export const OfferModal: FC<OfferModalProps> = ({
       );
     }
     return list;
-  }, [offer, capsheet, ts]);
+  }, [offer, capsheet, ts, player]);
 
   const ChangeInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -187,8 +187,13 @@ const validateYearlySalaryRange = (
   salaries: number[],
   min: number,
   max: number,
+  isUDFA: boolean,
 ): string[] => {
   const errs: string[] = [];
+  let maxValueAllowed = max;
+  if (isUDFA) {
+    max = 1;
+  }
   salaries.forEach((salary, index) => {
     let s = salary || 0;
     if (!salary) {
@@ -198,7 +203,7 @@ const validateYearlySalaryRange = (
     if (s > 0 && s < min) {
       errs.push(`Y${year} Base Salary is less than the minimum: ${s}`);
     }
-    if (salary > max) {
+    if (salary > maxValueAllowed) {
       errs.push(`Y${year} Base Salary is greater than the maximum: ${s}`);
     }
   });
@@ -402,6 +407,7 @@ export const GeneratePHLFAErrorList = (
   offer: PHLFreeAgencyOffer | PHLExtensionOffer,
   ts: HCKTimestamp,
   capsheet: ProCapsheet,
+  isUDFA: boolean,
 ): string[] => {
   const errors: string[] = [];
   const { salaries, ContractLength, ContractValue, totalComp, Y1BaseSalary } =
@@ -493,7 +499,9 @@ export const GeneratePHLFAErrorList = (
     );
   }
 
-  errors.push(...validateYearlySalaryRange(salaries, MIN_SALARY, MAX_SALARY));
+  errors.push(
+    ...validateYearlySalaryRange(salaries, MIN_SALARY, MAX_SALARY, isUDFA),
+  );
 
   const capError = validateYearCap(
     1,

@@ -15,6 +15,7 @@ import {
 } from "../../../_constants/constants";
 import { Border } from "../../../_design/Borders";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
+import { ToggleSwitch } from "../../../_design/Inputs";
 import { Text } from "../../../_design/Typography";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { useResponsive } from "../../../_hooks/useMobile";
@@ -76,13 +77,15 @@ export const PHLFreeAgency = () => {
     offerAction,
     offerModal,
     handleOfferModal,
+    isUDFA,
+    setIsUDFA,
   } = usePHLFreeAgency();
   const { isMobile } = useResponsive();
   const { backgroundColor } = useBackgroundColor();
   const teamColors = useTeamColors(
     phlTeam?.ColorOne,
     phlTeam?.ColorTwo,
-    phlTeam?.ColorThree
+    phlTeam?.ColorThree,
   );
   const helpModal = useModal();
   const aiSettingsModal = useModal();
@@ -279,6 +282,10 @@ export const PHLFreeAgency = () => {
                   isMobile={isMobile}
                 />
               )}
+              <div className="ms-2 flex flex-col space-y-3">
+                <Text variant="h5">UDFA</Text>
+                <ToggleSwitch checked={isUDFA} onChange={setIsUDFA} />
+              </div>
             </div>
           </Border>
           {freeAgencyCategory === Overview && (

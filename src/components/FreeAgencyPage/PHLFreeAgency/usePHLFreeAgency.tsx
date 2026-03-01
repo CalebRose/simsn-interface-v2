@@ -51,6 +51,7 @@ export const usePHLFreeAgency = () => {
   const [freeAgencyCategory, setFreeAgencyCategory] = useState(Overview);
   const [playerType, setPlayerType] = useState<string>(FreeAgent);
   const [tableViewType, setTableViewType] = useState<string>(Attributes);
+  const [isUDFA, setIsUDFA] = useState<boolean>(false);
   const [modalPlayer, setModalPlayer] = useState<
     PHLPlayer | NFLPlayer | NBAPlayer
   >({} as PHLPlayer);
@@ -202,6 +203,7 @@ export const usePHLFreeAgency = () => {
     positions,
     archetype,
     regions,
+    isUDFA,
   });
 
   const {
@@ -243,7 +245,7 @@ export const usePHLFreeAgency = () => {
 
   const handleFAModal = (
     action: ModalAction,
-    player: ProfessionalPlayer | NFLPlayer | NBAPlayer
+    player: ProfessionalPlayer | NFLPlayer | NBAPlayer,
   ) => {
     setModalPlayer(player);
     setModalAction(action);
@@ -254,7 +256,7 @@ export const usePHLFreeAgency = () => {
 
   const handleOfferModal = (
     action: OfferAction,
-    player: ProfessionalPlayer | NFLPlayer | NBAPlayer
+    player: ProfessionalPlayer | NFLPlayer | NBAPlayer,
   ) => {
     setOfferAction(action);
     setModalPlayer(player);
@@ -302,5 +304,7 @@ export const usePHLFreeAgency = () => {
     offerAction,
     offerModal,
     handleOfferModal,
+    isUDFA,
+    setIsUDFA,
   };
 };

@@ -529,12 +529,12 @@ export const usePHLDraft = () => {
 
   const handleExportDraftPicks = useCallback(async () => {
     if (!selectedTeam) return;
-    const dto = { TeamID: selectedTeam.ID };
+    const dto = { DraftPicks: draftPicksFromState };
     await exportDraftPicks(dto);
     updateDraftState({
       exportComplete: true,
     });
-  }, [selectedTeam, exportDraftPicks, updateDraftState]);
+  }, [selectedTeam, draftPicksFromState, exportDraftPicks, updateDraftState]);
 
   const refreshDraftData = useCallback(async () => {
     try {

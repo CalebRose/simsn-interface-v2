@@ -194,7 +194,9 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
           <div className="flex flex-col">
             <Text variant="body-small">Export Draft</Text>
             <Button
-              disabled={!(isDraftComplete && draftState.exportComplete)}
+              disabled={
+                draftState.currentRound < 8 || draftState.exportComplete
+              }
               onClick={handleExportDraft}
             >
               Export

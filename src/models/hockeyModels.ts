@@ -1287,6 +1287,7 @@ export class ProfessionalPlayer {
   Offers: FreeAgencyOffer[];
   WaiverOffer: WaiverOffer[];
   Extensions: ExtensionOffer[];
+  IsUDFA: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -1440,6 +1441,7 @@ export class ProfessionalPlayer {
     this.Offers = this.convertValues(source["Offers"], FreeAgencyOffer);
     this.WaiverOffer = this.convertValues(source["WaiverOffer"], WaiverOffer);
     this.Extensions = this.convertValues(source["Extensions"], ExtensionOffer);
+    this.IsUDFA = source["IsUDFA"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

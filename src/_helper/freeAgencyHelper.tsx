@@ -19,6 +19,7 @@ export const useFilteredPHLFreeAgents = ({
   positions,
   archetype,
   regions,
+  isUDFA,
 }: {
   freeAgents: ProfessionalPlayer[];
   waiverPlayers: ProfessionalPlayer[];
@@ -28,6 +29,7 @@ export const useFilteredPHLFreeAgents = ({
   positions: string[];
   archetype: string[];
   regions: string[];
+  isUDFA: boolean;
 }) => {
   // 1) Pre-build lookup sets
   const positionSet = useMemo(() => new Set(positions), [positions]);
@@ -63,6 +65,10 @@ export const useFilteredPHLFreeAgents = ({
           return false;
         }
 
+        if (isUDFA && !fa.IsUDFA) {
+          return false;
+        }
+
         // passes every active filter
         return true;
       });
@@ -77,6 +83,7 @@ export const useFilteredPHLFreeAgents = ({
       positionSet,
       archSet,
       regionSet,
+      isUDFA,
     ],
   );
 };

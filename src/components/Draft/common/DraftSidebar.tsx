@@ -64,7 +64,9 @@ export const DraftSidebar: React.FC<DraftSidebarProps> = ({
         styles={{ borderColor: teamColors.primary }}
       >
         <Text variant="h4" classes="text-white mb-4">
-          {selectedTeam?.TeamName || "View"}
+          {activeTab !== BigBoard
+            ? selectedTeam?.TeamName || "View"
+            : "Big Board"}
         </Text>
         <ButtonGrid>
           <Button

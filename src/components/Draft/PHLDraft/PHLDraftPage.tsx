@@ -152,13 +152,6 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     const currentPickIndex = picksInRound.findIndex(
       (pick) => pick.DraftNumber === draftState.currentPick,
     );
-    console.log({
-      roundKey,
-      picksInRound,
-      draftPickMap,
-      draftState,
-      currentPickIndex,
-    });
     if (currentPickIndex === -1) return; // Pick not found
     draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
     const newDraftState = draftState;
