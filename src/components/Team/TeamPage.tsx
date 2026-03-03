@@ -15,6 +15,7 @@ import {
   SimNBA,
   TradeBlock,
   Promises,
+  Draft,
 } from "../../_constants/constants";
 import { Border } from "../../_design/Borders";
 import { PageContainer } from "../../_design/Container";
@@ -153,7 +154,6 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     createPromise,
     cutCHLPlayer,
     redshirtPlayer,
-
     ExportHCKRoster,
     SearchHockeyStats,
     chlGameplan,
@@ -344,12 +344,22 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
             {!isMobile && (
               <Button
                 size="sm"
+                isSelected={category === Draft}
+                onClick={() => setCategory(Draft)}
+              >
+                <Text variant="small">Draft</Text>
+              </Button>
+            )}
+            {!isMobile && (
+              <Button
+                size="sm"
                 isSelected={category === Attributes}
                 onClick={() => setCategory(Attributes)}
               >
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
+
             {!isMobile && (
               <Button
                 size="sm"
@@ -426,7 +436,9 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const extensionModal = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
-  const [modalPlayer, setModalPlayer] = useState<PHLPlayer | null>(null);
+  const [modalPlayer, setModalPlayer] = useState<PHLPlayer | CHLPlayer | null>(
+    null,
+  );
   const [selectedTeam, setSelectedTeam] = useState(() => {
     if (teamId) {
       const id = Number(teamId);
@@ -603,7 +615,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     setCategory(Overview);
   };
 
-  const openModal = (action: ModalAction, player: PHLPlayer) => {
+  const openModal = (action: ModalAction, player: PHLPlayer | CHLPlayer) => {
     handleOpenModal();
     setModalAction(action);
     setModalPlayer(player);
@@ -640,7 +652,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
         <ExtensionOfferModal
           isOpen={extensionModal.isModalOpen}
           onClose={extensionModal.handleCloseModal}
-          player={modalPlayer!!}
+          player={modalPlayer!! as PHLPlayer}
           league={SimPHL}
           ts={ts}
           capsheet={capsheet!!}
@@ -793,6 +805,15 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
                 onClick={() => setCategory(Contracts)}
               >
                 <Text variant="small">Contracts</Text>
+              </Button>
+            )}
+            {!isMobile && (
+              <Button
+                size="sm"
+                isSelected={category === Draft}
+                onClick={() => setCategory(Draft)}
+              >
+                <Text variant="small">Draft</Text>
               </Button>
             )}
             {!isMobile && (

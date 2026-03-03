@@ -36,6 +36,7 @@ export const Marketing = "Marketing";
 export const Cut = "Cut";
 export const Promise = "Promise";
 export const Redshirt = "Redshirt";
+export const PickUp = "Pick Up";
 export const InfoType = "Info";
 export const RecruitInfoType = "Recruit Info";
 export const DrafteeInfoType = "Draftee Info";
@@ -75,6 +76,7 @@ export type ModalAction =
   | typeof Promise
   | typeof Redshirt
   | typeof InfoType
+  | typeof PickUp
   | typeof RecruitInfoType
   | typeof PortalInfoType
   | typeof DrafteeInfoType
@@ -356,6 +358,7 @@ export const Values = "Values";
 export const Preferences = "Preferences";
 export const Potentials = "Potentials";
 export const Promises = "Promises";
+export const Draft = "Draft";
 export const Contracts = "Contracts";
 export const Overview = "Overview";
 export const Details = "Details";

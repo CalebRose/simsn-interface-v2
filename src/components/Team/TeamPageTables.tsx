@@ -24,6 +24,8 @@ import {
   TradeBlock,
   PracticeSquad,
   Promises,
+  Draft,
+  PickUp,
 } from "../../_constants/constants";
 import {
   getCHLAttributes,
@@ -71,6 +73,7 @@ import {
   defensiveSystemsInformationList,
   offensiveSystemsInformationList,
 } from "../Gameplan/HockeyLineups/useLineupUtils";
+import { DraftPick } from "../Draft/common";
 
 interface CHLRosterTableProps {
   roster: CHLPlayer[];
@@ -99,7 +102,12 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const { isDesktop, isTablet } = useResponsive();
-  const { hck_Timestamp, collegePromiseMap } = useSimHCKStore();
+  const {
+    hck_Timestamp,
+    collegePromiseMap,
+    phlTeamMap,
+    individualDraftPickMap,
+  } = useSimHCKStore();
 
   let rosterColumns = useMemo(() => {
     let columns = [
@@ -160,6 +168,8 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "GV", accessor: "GoalieVision" },
         { header: "Sta", accessor: "Stamina" },
         { header: "Inj", accessor: "Injury" },
+        { header: "Off. Fit", accessor: "OffensiveFit" },
+        { header: "Def. Fit", accessor: "DefensiveFit" },
       ]);
     }
     if ((isDesktop || isTablet) && category === Promises) {
@@ -170,6 +180,15 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "Benchmark 2", accessor: "BenchmarkStr" },
         { header: "Committed", accessor: "PromiseMade" },
         { header: "Active", accessor: "IsActive" },
+      ]);
+    }
+    if ((isDesktop || isTablet) && category === Draft) {
+      columns = columns.concat([
+        { header: "Drafted Team", accessor: "DraftedTeamID" },
+        { header: "Season", accessor: "SeasonID" },
+        { header: "Round", accessor: "DraftRound" },
+        { header: "Pick", accessor: "DraftPick" },
+        { header: "Eligible for Pickup", accessor: "Eligible" },
       ]);
     }
     columns.push({ header: "Actions", accessor: "actions" });
@@ -243,6 +262,26 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         return true;
       }
       return false;
+    })();
+
+    const draftPickInfo = (() => {
+      if (!individualDraftPickMap[item.DraftPickID]) {
+        return null;
+      }
+      return individualDraftPickMap[item.DraftPickID];
+    })();
+
+    const draftedTeam = (() => {
+      if (!phlTeamMap[item.DraftedTeamID]) {
+        return null;
+      }
+      return phlTeamMap[item.DraftedTeamID];
+    })();
+
+    const isEligibleToPickUp = (() => {
+      if (!draftPickInfo) return false;
+      if (!hck_Timestamp) return false;
+      return draftPickInfo.SeasonID < hck_Timestamp.SeasonID;
     })();
 
     return (
@@ -359,6 +398,70 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
                 {getGeneralLetterGrade(item.InjuryRating)}
               </Text>
             </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodOffensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadOffensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodDefensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadDefensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+          </>
+        )}
+        {category === Potentials && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodOffensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadOffensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodDefensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadDefensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
           </>
         )}
         {category == Promises && isDesktop && (
@@ -391,6 +494,50 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {hasPromise && collegePromise.IsActive ? "Yes" : "No"}
+              </Text>
+            </TableCell>
+          </>
+        )}
+        {category == Draft && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.DraftPickID > 0 && draftedTeam
+                  ? draftedTeam.TeamName + " " + draftedTeam.Mascot
+                  : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.DraftPickID > 0 && draftPickInfo
+                  ? draftPickInfo.Season
+                  : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.DraftPickID > 0 && draftPickInfo
+                  ? draftPickInfo.DraftRound
+                  : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.DraftPickID > 0 && draftPickInfo
+                  ? draftPickInfo.DraftNumber
+                  : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isEligibleToPickUp && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {!isEligibleToPickUp && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
               </Text>
             </TableCell>
           </>
@@ -464,7 +611,7 @@ interface PHLRosterTableProps {
   borderColor?: string;
   team?: any;
   category?: string;
-  openModal: (action: ModalAction, player: PHLPlayer) => void;
+  openModal: (action: ModalAction, player: PHLPlayer | CHLPlayer) => void;
   openExtensionModal: (player: PHLPlayer) => void;
   disable: boolean;
   gameplan: ProGameplan;
@@ -486,6 +633,13 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const { isDesktop, isTablet } = useResponsive();
+  const {
+    chlPlayerMap,
+    phlDraftPicks,
+    phlTeamMap,
+    hck_Timestamp,
+    proPlayerMap,
+  } = useSimHCKStore();
 
   const rosterColumns = useMemo(() => {
     let columns = [
@@ -545,6 +699,8 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         { header: "GV", accessor: "GoalieVision" },
         { header: "Sta", accessor: "Stamina" },
         { header: "Inj", accessor: "Injury" },
+        { header: "Offensive Fit", accessor: "OffensiveFit" },
+        { header: "Defensive Fit", accessor: "DefensiveFit" },
       ]);
     }
 
@@ -561,6 +717,19 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         { header: "NTC", accessor: "NoTradeClause" },
         { header: "NMC", accessor: "NoMovementClause" },
       ]);
+    }
+    if ((isDesktop || isTablet) && category === Draft) {
+      columns = [
+        { header: "Season", accessor: "SeasonID" },
+        { header: "Round", accessor: "DraftRound" },
+        { header: "Pick", accessor: "DraftPick" },
+        { header: "Player", accessor: "PlayerName" },
+        { header: "Prev. Team", accessor: "PreviousTeamID" },
+        { header: "Orig. Team", accessor: "OriginalTeamID" },
+        { header: "Offensive Fit", accessor: "OffensiveFit" },
+        { header: "Defensive Fit", accessor: "DefensiveFit" },
+        { header: "Eligible for Pickup", accessor: "Eligible" },
+      ];
     }
 
     columns.push({ header: "Actions", accessor: "actions" });
@@ -583,7 +752,270 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
     ];
   }, [gameplan]);
 
-  const rowRenderer = (
+  const draftPicks = useMemo(() => {
+    if (!team) return [];
+    if (!phlDraftPicks) return [];
+    return phlDraftPicks[team.ID] || [];
+  }, [phlDraftPicks, team]);
+
+  if (category === Draft) {
+    // need to create a new rowRenderer
+
+    const draftPickRowRenderer = (
+      item: DraftPick,
+      index: number,
+      backgroundColor: string,
+    ) => {
+      const previousTeam = (() => {
+        if (!phlTeamMap) return "None";
+        if (item.PreviousTeamID === 0) return "None";
+        const team = phlTeamMap[item.PreviousTeamID];
+        return `${team.TeamName} ${team.Mascot}` || "None";
+      })();
+
+      const originalTeam = (() => {
+        if (!phlTeamMap) return "None";
+        if (item.OriginalTeamID === 0) return "None";
+        const team = phlTeamMap[item.OriginalTeamID];
+        return `${team.TeamName} ${team.Mascot}` || "None";
+      })();
+
+      const isCollegePlayer = (() => {
+        if (!chlPlayerMap) return false;
+        const collegePlayer = chlPlayerMap[item.DrafteeID];
+        if (collegePlayer && collegePlayer.ID > 0) {
+          return true;
+        }
+        return false;
+      })();
+
+      const draftedPlayer = (() => {
+        if (!chlPlayerMap) return null;
+        const collegePlayer = chlPlayerMap[item.DrafteeID];
+        if (collegePlayer && collegePlayer.ID > 0) {
+          return collegePlayer;
+        }
+        if (!proPlayerMap) return null;
+        const proPlayer = proPlayerMap[item.DrafteeID];
+        if (proPlayer && proPlayer.ID > 0) {
+          return proPlayer;
+        }
+        return null;
+      })();
+
+      const draftedPlayerLabel = (() => {
+        if (!draftedPlayer) return "No Player";
+        return `${draftedPlayer.ID} ${draftedPlayer.Position} ${draftedPlayer.Archetype} ${draftedPlayer.FirstName} ${draftedPlayer.LastName}`;
+      })();
+
+      const isGoodOffensiveFit = (() => {
+        if (!draftedPlayer || !offensiveSystemsInformation) return false;
+        const goodFits = offensiveSystemsInformation.GoodFits;
+        const idx = goodFits.findIndex(
+          (x: any) => x.archetype === draftedPlayer.Archetype,
+        );
+        if (idx > -1) {
+          return true;
+        }
+        return false;
+      })();
+
+      const isBadOffensiveFit = (() => {
+        if (!draftedPlayer || !offensiveSystemsInformation) return false;
+        const badFits = offensiveSystemsInformation.BadFits;
+        const idx = badFits.findIndex(
+          (x: any) => x.archetype === draftedPlayer.Archetype,
+        );
+        if (idx > -1) {
+          return true;
+        }
+        return false;
+      })();
+
+      const isGoodDefensiveFit = (() => {
+        if (!draftedPlayer || !defensiveSystemsInformation) return false;
+        const goodFits = defensiveSystemsInformation.GoodFits;
+        const idx = goodFits.findIndex(
+          (x: any) => x.archetype === draftedPlayer.Archetype,
+        );
+        if (idx > -1) {
+          return true;
+        }
+        return false;
+      })();
+
+      const isBadDefensiveFit = (() => {
+        if (!draftedPlayer || !defensiveSystemsInformation) return false;
+        const badFits = defensiveSystemsInformation.BadFits;
+        const idx = badFits.findIndex(
+          (x: any) => x.archetype === draftedPlayer.Archetype,
+        );
+        if (idx > -1) {
+          return true;
+        }
+        return false;
+      })();
+
+      const isEligibleToPickUp = (() => {
+        if (!hck_Timestamp) return false;
+        return item.SeasonID < hck_Timestamp.SeasonID;
+      })();
+      return (
+        <>
+          <div
+            key={item.ID}
+            className={`table-row border-b dark:border-gray-700 text-left`}
+            style={{ backgroundColor }}
+          >
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.Season}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.DraftRound}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.DraftNumber}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {draftedPlayerLabel}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {previousTeam}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {originalTeam}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodOffensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadOffensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodDefensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadDefensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isEligibleToPickUp && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {!isEligibleToPickUp && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+              </Text>
+            </TableCell>
+            <div
+              className={`table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
+            >
+              <SelectDropdown
+                placeholder={!isDesktop ? "Action" : "Select an action"}
+                options={[
+                  {
+                    value: "pickUp",
+                    label: `Pick Up - ${draftedPlayer?.FirstName} ${draftedPlayer?.LastName}`,
+                  },
+                ]}
+                onChange={(selectedOption: SingleValue<SelectOption>) => {
+                  if (selectedOption?.value === "pickUp") {
+                    openModal(PickUp, draftedPlayer!!);
+                  } else {
+                    console.log(`Action selected: ${selectedOption?.value}`);
+                  }
+                }}
+                isDisabled={disable || !isCollegePlayer || !isEligibleToPickUp}
+                styles={{
+                  control: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                    borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                    color: "#ffffff",
+                    width: "15rem",
+                    maxWidth: "300px",
+                    padding: "0.3rem",
+                    boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+                    borderRadius: "8px",
+                    transition: "all 0.2s ease",
+                  }),
+                  menu: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#1a202c",
+                    borderRadius: "8px",
+                  }),
+                  menuList: (provided) => ({
+                    ...provided,
+                    backgroundColor: "#1a202c",
+                    padding: "0",
+                  }),
+                  option: (provided, state) => ({
+                    ...provided,
+                    backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                    color: "#ffffff",
+                    padding: "10px",
+                    cursor: "pointer",
+                  }),
+                  singleValue: (provided) => ({
+                    ...provided,
+                    color: "#ffffff",
+                  }),
+                  placeholder: (provided) => ({
+                    ...provided,
+                    color: "#ffffff",
+                  }),
+                }}
+              />
+            </div>
+          </div>
+        </>
+      );
+    };
+
+    return (
+      <Table
+        columns={rosterColumns}
+        data={draftPicks}
+        rowRenderer={draftPickRowRenderer}
+        backgroundColor={backgroundColor}
+        team={team}
+      />
+    );
+  }
+
+  const playerRowRenderer = (
     item: PHLPlayer,
     index: number,
     backgroundColor: string,
@@ -682,34 +1114,6 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
                   <User textColorClass={`w-full text-center ${TextGreen}`} />
                 )}
               </>
-            ) : attr.label === "Offensive Fit" ? (
-              <>
-                {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
-                )}
-                {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
-                )}
-                {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
-                )}
-              </>
-            ) : attr.label === "Defensive Fit" ? (
-              <>
-                {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
-                )}
-                {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
-                )}
-                {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
-                )}
-              </>
             ) : attr.label === "TradeBlock" || attr.label === "Affiliate" ? (
               <>
                 {attr.value === "Yes" ? (
@@ -753,6 +1157,70 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             <TableCell>
               <Text variant="xs" classes="text-start">
                 {item.InjuryRating}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodOffensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadOffensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodDefensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadDefensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+          </>
+        )}
+        {category === Potentials && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodOffensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadOffensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {isGoodDefensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadDefensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
               </Text>
             </TableCell>
           </>
@@ -858,7 +1326,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
     <Table
       columns={rosterColumns}
       data={sortedRoster}
-      rowRenderer={rowRenderer}
+      rowRenderer={playerRowRenderer}
       backgroundColor={backgroundColor}
       team={team}
     />

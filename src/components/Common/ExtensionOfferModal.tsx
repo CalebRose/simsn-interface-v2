@@ -234,10 +234,12 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
   const errors = useMemo(() => {
     const list: string[] = [];
     if (league === SimPHL) {
+      const p = player as ProfessionalPlayer;
       return GeneratePHLFAErrorList(
         offer as PHLExtensionOffer,
         ts as HCKTimestamp,
         capsheet as ProCapsheet,
+        p.IsUDFA,
       );
     }
     if (league === SimNFL) {
