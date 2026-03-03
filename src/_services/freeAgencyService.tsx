@@ -132,18 +132,12 @@ export const FreeAgencyService = {
   FBASaveExtensionOffer: async (
     dto: NFLExtensionOffer,
   ): Promise<NFLExtensionOffer> => {
-    return await PostCall(
-      `${fbaUrl}nfl/roster/extend/create/${dto.NFLPlayerID}`,
-      dto,
-    );
+    return await PostCall(`${fbaUrl}nfl/extension/create/offer`, dto);
   },
 
   FBACancelExtensionOffer: async (
     dto: NFLExtensionOffer,
   ): Promise<NFLExtensionOffer> => {
-    return await PostCall(
-      `${fbaUrl}nfl/roster/extend/cancel/${dto.NFLPlayerID}`,
-      dto,
-    );
+    return await PostCall(`${fbaUrl}nfl/extension/cancel/offer`, dto);
   },
 };
