@@ -2036,7 +2036,7 @@ export const getPHLLogo = (id: number, isRetro: boolean) => {
     case 17:
       return HCKLogos.CALG;
     case 18:
-      return HCKLogos.EDM;
+      return HCKLogos.UTAH;
     case 19:
       return HCKLogos.SEA;
     case 20:
