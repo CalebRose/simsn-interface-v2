@@ -357,6 +357,10 @@ export const OfferModal: FC<OfferModalProps> = ({
         PlayerID: player.ID,
         TeamID: capsheet.ID,
       });
+      if (dto.TeamID > 24) {
+        alert("Invalid Team ID. Reach out out to Toucan for support.");
+        return;
+      }
       await confirmOffer(dto);
     }
     if (league === SimNFL) {
@@ -411,10 +415,15 @@ export const OfferModal: FC<OfferModalProps> = ({
               Contracts need to be between 1 through 5 years.
             </Text>
             {league === SimPHL && (
-              <Text variant="xs">
-                - AAV is calculated using the total of all inputs divided by the
-                length of the contract.
-              </Text>
+              <>
+                <Text variant="xs">
+                  - AAV is calculated using the total of all inputs divided by
+                  the length of the contract.
+                </Text>
+                <Text variant="xs">
+                  - The max value for an individual year for UDFAs is $1M.
+                </Text>
+              </>
             )}
             {isNFL && (
               <>

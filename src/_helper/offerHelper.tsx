@@ -192,7 +192,7 @@ const validateYearlySalaryRange = (
   const errs: string[] = [];
   let maxValueAllowed = max;
   if (isUDFA) {
-    max = 1;
+    maxValueAllowed = 1;
   }
   salaries.forEach((salary, index) => {
     let s = salary || 0;
