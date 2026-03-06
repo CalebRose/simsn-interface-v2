@@ -7,13 +7,17 @@ import {
   DEFENSE,
   FootballStatsType,
   GameDay,
+  GameType,
   League,
   OFFENSE,
   OLINE,
   OVERALL,
   PASSING,
   PLAYER_VIEW,
+  POST_SEASON,
+  PRESEASON,
   RECEIVING,
+  REGULAR_SEASON,
   RETURN,
   RUSHING,
   SEASON_VIEW,
@@ -40,7 +44,7 @@ import { Border } from "../../../_design/Borders";
 import { SelectDropdown } from "../../../_design/Select";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { useResponsive } from "../../../_hooks/useMobile";
-import { Button, ButtonGroup } from "../../../_design/Buttons";
+import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import { CollegeTeam, NFLTeam } from "../../../models/footballModels";
 
 interface StatsSidebarProps {
@@ -53,11 +57,13 @@ interface StatsSidebarProps {
   weekOptions: { label: string; value: string }[];
   seasonOptions: { label: string; value: string }[];
   gameDay?: GameDay;
+  gameType: GameType;
   changeGameDay?: (day: GameDay) => void;
   SelectWeekOption: (opts: any) => void;
   SelectSeasonOption: (opts: any) => void;
   ChangeStatsView: (newView: StatsView) => void;
   ChangeStatsType: (newView: StatsType) => void;
+  ChangeGameType: (newView: GameType) => void;
   ChangeFBStatsType?: (newStatsType: FootballStatsType) => void;
   HandleHelpModal: () => void;
   HandleAwardsModal: () => void;
@@ -75,8 +81,10 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
   changeGameDay,
   ChangeStatsView,
   statsType,
+  gameType,
   ChangeStatsType,
   ChangeFBStatsType,
+  ChangeGameType,
   footballStatsType,
   HandleHelpModal,
   weekOptions,
@@ -157,7 +165,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
             />
             <ButtonGroup classes="mb-4">
               <Button
-                size="sm"
+                size="xs"
                 type="button"
                 variant="success"
                 onClick={Search}
@@ -166,7 +174,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
               </Button>
               <Button
                 type="button"
-                size="sm"
+                size="xs"
                 variant="warning"
                 onClick={Export}
               >
@@ -205,10 +213,55 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                   variant="body-small"
                   className={`font-semibold rounded-md py-1 mb-1 mt-1 ${headerTextColorClass}`}
                 >
+                  Game Type
+                </Text>
+              </div>
+              <ButtonGrid
+                classes="sm:flex-auto sm:flex-1 mb-2"
+                style={{ flexGrow: 0 }}
+              >
+                <Button
+                  type="button"
+                  size="xs"
+                  variant={gameType === PRESEASON ? "success" : "secondary"}
+                  onClick={() => ChangeGameType(PRESEASON)}
+                >
+                  Preseason
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant={
+                    gameType === REGULAR_SEASON ? "success" : "secondary"
+                  }
+                  onClick={() => ChangeGameType(REGULAR_SEASON)}
+                >
+                  Regular
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant={gameType === POST_SEASON ? "success" : "secondary"}
+                  onClick={() => ChangeGameType(POST_SEASON)}
+                >
+                  Postseason
+                </Button>
+              </ButtonGrid>
+              <div
+                className="w-full rounded-md text-center mb-2"
+                style={{
+                  backgroundColor: teamColors.One,
+                  borderColor: teamColors.One,
+                }}
+              >
+                <Text
+                  variant="body-small"
+                  className={`font-semibold rounded-md py-1 mb-1 mt-1 ${headerTextColorClass}`}
+                >
                   Stats View
                 </Text>
               </div>
-              <ButtonGroup
+              <ButtonGrid
                 classes="sm:flex-auto sm:flex-1 mb-2"
                 style={{ flexGrow: 0 }}
               >
@@ -228,7 +281,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                 >
                   Season
                 </Button>
-              </ButtonGroup>
+              </ButtonGrid>
               {(league === SimCFB || league === SimNFL) && (
                 <>
                   <div
@@ -245,15 +298,15 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                       Stat Category
                     </Text>
                   </div>
-                  <ButtonGroup
-                    classes="flex sm:flex-auto flex-row mb-2 justify-center"
+                  <ButtonGrid
+                    classes="grid-cols-4 mb-2 justify-center"
                     style={{ flexGrow: 0 }}
                   >
                     {statsType === PLAYER_VIEW && (
                       <>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === PASSING
                               ? "success"
@@ -265,7 +318,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                         </Button>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === RUSHING
                               ? "success"
@@ -277,7 +330,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                         </Button>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === RECEIVING
                               ? "success"
@@ -289,7 +342,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                         </Button>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === DEFENSE
                               ? "success"
@@ -301,7 +354,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                         </Button>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === OLINE
                               ? "success"
@@ -313,7 +366,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                         </Button>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === SPECIAL_TEAMS
                               ? "success"
@@ -325,7 +378,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                         </Button>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === RETURN
                               ? "success"
@@ -341,7 +394,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                       <>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === OVERALL
                               ? "success"
@@ -353,7 +406,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                         </Button>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === OFFENSE
                               ? "success"
@@ -365,7 +418,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                         </Button>
                         <Button
                           type="button"
-                          size="sm"
+                          size="xs"
                           variant={
                             footballStatsType === DEFENSE
                               ? "success"
@@ -377,7 +430,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                         </Button>
                       </>
                     )}
-                  </ButtonGroup>
+                  </ButtonGrid>
                 </>
               )}
               {league !== SimCFB && league !== SimNFL && (
@@ -402,7 +455,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                   >
                     <Button
                       type="button"
-                      size="sm"
+                      size="xs"
                       variant={gameDay === ADay ? "success" : "secondary"}
                       onClick={() => changeGameDay!(ADay)}
                     >
@@ -410,7 +463,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                     </Button>
                     <Button
                       type="button"
-                      size="sm"
+                      size="xs"
                       variant={gameDay === BDay ? "success" : "secondary"}
                       onClick={() => changeGameDay!(BDay)}
                     >
@@ -418,7 +471,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                     </Button>
                     <Button
                       type="button"
-                      size="sm"
+                      size="xs"
                       variant={gameDay === CDay ? "success" : "secondary"}
                       onClick={() => changeGameDay!(CDay)}
                     >
@@ -426,7 +479,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                     </Button>
                     <Button
                       type="button"
-                      size="sm"
+                      size="xs"
                       variant={gameDay === DDay ? "success" : "secondary"}
                       onClick={() => changeGameDay!(DDay)}
                     >
@@ -449,13 +502,10 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                   Stats Type
                 </Text>
               </div>
-              <ButtonGroup
-                classes="flex sm:flex-auto flex-row mb-2"
-                style={{ flexGrow: 0 }}
-              >
+              <ButtonGrid classes="grid-cols-2 mb-2" style={{ flexGrow: 0 }}>
                 <Button
                   type="button"
-                  size="sm"
+                  size="xs"
                   variant={statsType === PLAYER_VIEW ? "success" : "secondary"}
                   onClick={() => ChangeStatsType(PLAYER_VIEW)}
                 >
@@ -463,13 +513,13 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                 </Button>
                 <Button
                   type="button"
-                  size="sm"
+                  size="xs"
                   variant={statsType === TEAM_VIEW ? "success" : "secondary"}
                   onClick={() => ChangeStatsType(TEAM_VIEW)}
                 >
                   Team
                 </Button>
-              </ButtonGroup>
+              </ButtonGrid>
             </>
           )}
           {isTablet && (

@@ -623,7 +623,7 @@ export const AdminCBBTeamCard: React.FC<AdminCBBTeamCardProps> = ({
     await removeUser(team.ID);
     handleCloseModal();
     const payload = {
-      teamId: 0,
+      cbb_id: 0,
     };
     await updateUserByUsername(userName, payload);
   };

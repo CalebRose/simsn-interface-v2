@@ -510,6 +510,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
 
   // 5) Leading teams (memo)
   const leadingTeams = useMemo(() => {
+    console.log({ croot });
     if (!croot.LeadingTeams?.length) return "None";
     if (croot.IsSigned) {
       return <Logo url={getLogo(SimCFB, croot.TeamID, false)} variant="tiny" />;

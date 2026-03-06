@@ -1227,10 +1227,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
           ID: GenerateNumberFromRange(500000, 1000000),
         });
         setRecruitProfiles((profiles) => [...profiles, newProfile]);
-        enqueueSnackbar("Added recruit to board!", {
-          variant: "success",
-          autoHideDuration: 3000,
-        });
       }
     } finally {
       setRecruitingLoading(false);

@@ -103,6 +103,8 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
           ChangeStatsView={ChangeStatsView}
           ChangeStatsType={ChangeStatsType}
           ChangeFBStatsType={ChangeFBStatsType}
+          gameType={gameType}
+          ChangeGameType={ChangeGameType}
           footballStatsType={footballStatsType}
           HandleHelpModal={helpModal.handleOpenModal}
           HandleAwardsModal={awardsModal.handleOpenModal}

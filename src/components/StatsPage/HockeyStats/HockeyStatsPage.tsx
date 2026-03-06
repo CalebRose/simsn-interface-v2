@@ -58,7 +58,7 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
   const teamColors = useTeamColors(
     team?.ColorOne,
     team?.ColorTwo,
-    team?.ColorThree
+    team?.ColorThree,
   );
   return (
     <>
@@ -87,6 +87,8 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
           league={league}
           statsView={statsView}
           statsType={statsType}
+          gameType={gameType}
+          ChangeGameType={ChangeGameType}
           ChangeStatsView={ChangeStatsView}
           ChangeStatsType={ChangeStatsType}
           HandleHelpModal={helpModal.handleOpenModal}

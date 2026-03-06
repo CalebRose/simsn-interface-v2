@@ -1211,7 +1211,7 @@ export const HCKLogos = {
   MIN: `${baseUrl}/logos/Minnesota_Wild.png`,
   NASH: `${baseUrl}/logos/Nashville_Predators_Logo.png`,
   STB: `${baseUrl}/logos/St._Louis_Blues.png`,
-  UTAH: `${baseUrl}/logos/Utah_Hockey_Club.png`,
+  UTAH: `${baseUrl}/logos/UtahMammoth_logo.png`,
   KCS: `${baseUrl}/logos/Kansas_City_Scouts_logo.png`,
   WIN: `${baseUrl}/logos/Winnipeg_Jets.png`,
   ANA: `${baseUrl}/logos/Anaheim_Ducks.png`,
