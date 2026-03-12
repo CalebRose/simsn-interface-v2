@@ -399,7 +399,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       break;
 
     case SimCHL:
-      // if (!ts) break;
+      if (!ts) break;
       ({
         teamStandings,
         teamNotifications,
@@ -432,7 +432,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       break;
 
     case SimPHL:
-      // if (!ts) break;
+      if (!ts) break;
       ({
         teamStandings,
         teamNotifications,

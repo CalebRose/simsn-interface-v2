@@ -63,7 +63,7 @@ export const getLandingCFBData = (
   topCFBRushers: CollegePlayer[],
   topCFBReceivers: CollegePlayer[],
   collegeNews: NewsLog[],
-  cfbRosterMap: Record<number, CollegePlayer[]> | null
+  cfbRosterMap: Record<number, CollegePlayer[]> | null,
 ) => {
   // Team Standings
   const teamStandings = allCFBStandings
@@ -77,7 +77,7 @@ export const getLandingCFBData = (
 
   // Team Match-Up
   const teamAbbrMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.TeamAbbr])
+    allCollegeTeams.map((team) => [team.ID, team.TeamAbbr]),
   );
   let foundMatch: CollegeGame[] | null = null;
   let gameWeek = currentWeek;
@@ -87,7 +87,7 @@ export const getLandingCFBData = (
     const nextMatch = allCollegeGames.filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
-        game.Week === testWeek
+        game.Week === testWeek,
     );
 
     if (nextMatch.length > 0) {
@@ -110,12 +110,12 @@ export const getLandingCFBData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -131,7 +131,7 @@ export const getLandingCFBData = (
   // Team Schedule
   const teamSchedule = allCollegeGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .map((game) => ({
       ...game,
@@ -195,7 +195,7 @@ export const getLandingNFLData = (
   topNFLRushers: NFLPlayer[],
   topNFLReceivers: NFLPlayer[],
   proNews: NewsLog[],
-  proRosterMap: Record<number, NFLPlayer[]> | null
+  proRosterMap: Record<number, NFLPlayer[]> | null,
 ) => {
   // Team Standings
   const teamStandings = allProStandings
@@ -209,7 +209,7 @@ export const getLandingNFLData = (
 
   // Team Match-Up
   const teamAbbrMap = new Map(
-    allProTeams.map((team) => [team.ID, team.TeamAbbr])
+    allProTeams.map((team) => [team.ID, team.TeamAbbr]),
   );
   let foundMatch: NFLGame[] | null = null;
   let gameWeek = currentWeek;
@@ -219,7 +219,7 @@ export const getLandingNFLData = (
     const nextMatch = allProGames.filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
-        game.Week === testWeek
+        game.Week === testWeek,
     );
 
     if (nextMatch.length > 0) {
@@ -242,12 +242,12 @@ export const getLandingNFLData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -263,7 +263,7 @@ export const getLandingNFLData = (
   // Team Schedule
   const teamSchedule = allProGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .map((game) => ({
       ...game,
@@ -329,7 +329,7 @@ export const getLandingCBBData = (
   topCBBAssists: CBBPlayer[],
   topCBBRebounds: CBBPlayer[],
   cbbNews: BasketballNewsLog[],
-  cbbRosterMap: Record<number, CBBPlayer[]> | null
+  cbbRosterMap: Record<number, CBBPlayer[]> | null,
 ) => {
   // Team Standings
   const teamStandings = allCBBStandings
@@ -346,7 +346,7 @@ export const getLandingCBBData = (
   const nextGameDay = GetNextGameDay(
     timestamp.GamesARan,
     timestamp.GamesBRan,
-    timestamp.GamesCRan
+    timestamp.GamesCRan,
   );
   let foundMatch: CBBMatch[] | null = null;
   let gameWeek = currentWeek;
@@ -357,7 +357,7 @@ export const getLandingCBBData = (
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
         game.Week === testWeek &&
-        game.MatchOfWeek === nextGameDay
+        game.MatchOfWeek === nextGameDay,
     );
 
     if (nextMatch.length > 0) {
@@ -380,12 +380,12 @@ export const getLandingCBBData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -401,7 +401,7 @@ export const getLandingCBBData = (
   // Team Schedule
   const teamSchedule = allCBBGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .map((game) => ({
       ...game,
@@ -467,7 +467,7 @@ export const getLandingNBAData = (
   topNBAAssists: NBAPlayer[],
   topNBARebounds: NBAPlayer[],
   nbaNews: BasketballNewsLog[],
-  nbaRosterMap: Record<number, NBAPlayer[]> | null
+  nbaRosterMap: Record<number, NBAPlayer[]> | null,
 ) => {
   // Team Standings
   const teamStandings = allNBAStandings
@@ -484,7 +484,7 @@ export const getLandingNBAData = (
   const nextGameDay = GetNextGameDay(
     timestamp.GamesARan,
     timestamp.GamesBRan,
-    timestamp.GamesCRan
+    timestamp.GamesCRan,
   );
   let foundMatch: NBAMatch[] | null = null;
   let gameWeek = currentWeek;
@@ -495,7 +495,7 @@ export const getLandingNBAData = (
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
         game.Week === testWeek &&
-        game.MatchOfWeek === nextGameDay
+        game.MatchOfWeek === nextGameDay,
     );
 
     if (nextMatch.length > 0) {
@@ -518,12 +518,12 @@ export const getLandingNBAData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -539,7 +539,7 @@ export const getLandingNBAData = (
   // Team Schedule
   const teamSchedule = allNBAGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .map((game) => ({
       ...game,
@@ -605,7 +605,7 @@ export const getLandingCHLData = (
   topCHLGoals: CHLPlayer[],
   topCHLAssists: CHLPlayer[],
   topCHLSaves: CHLPlayer[],
-  chlRosterMap: Record<number, CHLPlayer[]> | null
+  chlRosterMap: Record<number, CHLPlayer[]> | null,
 ) => {
   // Team Standings
   const teamStandings = allCHLStandings
@@ -619,13 +619,15 @@ export const getLandingCHLData = (
 
   // Team Match-Up
   const teamAbbrMap = new Map(
-    chlTeams.map((team) => [team.ID, team.Abbreviation])
+    chlTeams.map((team) => [team.ID, team.Abbreviation]),
   );
-  const nextGameDay = GetNextGameDay(
-    timestamp.GamesARan,
-    timestamp.GamesBRan,
-    timestamp.GamesCRan
-  );
+  const nextGameDay = timestamp
+    ? GetNextGameDay(
+        timestamp.GamesARan,
+        timestamp.GamesBRan,
+        timestamp.GamesCRan,
+      )
+    : "A";
   let foundMatch: CHLGame[] | null = null;
   let gameWeek = currentWeek;
 
@@ -635,7 +637,7 @@ export const getLandingCHLData = (
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
         game.Week === testWeek &&
-        game.GameDay === nextGameDay
+        game.GameDay === nextGameDay,
     );
 
     if (nextMatch.length > 0) {
@@ -658,12 +660,12 @@ export const getLandingCHLData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -679,7 +681,7 @@ export const getLandingCHLData = (
   // Team Schedule
   const teamSchedule = allCHLGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .map((game) => ({
       ...game,
@@ -745,7 +747,7 @@ export const getLandingPHLData = (
   topPHLGoals: PHLPlayer[],
   topPHLAssists: PHLPlayer[],
   topPHLSaves: PHLPlayer[],
-  phlRosterMap: Record<number, PHLPlayer[]> | null
+  phlRosterMap: Record<number, PHLPlayer[]> | null,
 ) => {
   // Team Standings
   const teamStandings = allPHLStandings
@@ -759,22 +761,24 @@ export const getLandingPHLData = (
 
   // Team Match-Up
   const teamAbbrMap = new Map(
-    phlTeams.map((team) => [team.ID, team.Abbreviation])
+    phlTeams.map((team) => [team.ID, team.Abbreviation]),
   );
   let foundMatch: PHLGame[] | null = null;
   let gameWeek = currentWeek;
-  const nextGameDay = GetNextGameDay(
-    timestamp.GamesARan,
-    timestamp.GamesBRan,
-    timestamp.GamesCRan
-  );
+  const nextGameDay = timestamp
+    ? GetNextGameDay(
+        timestamp.GamesARan,
+        timestamp.GamesBRan,
+        timestamp.GamesCRan,
+      )
+    : "A";
   for (let weekOffset = 0; weekOffset <= 10; weekOffset++) {
     const testWeek = currentWeek + weekOffset;
     const nextMatch = allPHLGames.filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
         game.Week === testWeek &&
-        game.GameDay === nextGameDay
+        game.GameDay === nextGameDay,
     );
 
     if (nextMatch.length > 0) {
@@ -797,12 +801,12 @@ export const getLandingPHLData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro
+      currentUser?.isRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -818,7 +822,7 @@ export const getLandingPHLData = (
   // Team Schedule
   const teamSchedule = allPHLGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .map((game) => ({
       ...game,
@@ -880,7 +884,7 @@ interface BoxStatsProps {
 }
 export const getLandingBoxStats = (
   league: League,
-  teamStats: any
+  teamStats: any,
 ): {
   boxOne: BoxStatsProps;
   boxTwo: BoxStatsProps;
@@ -958,7 +962,7 @@ export const getLandingBoxStats = (
         position: teamStats.TopGoals?.Position,
         topStat: teamStats.TopGoals?.SeasonStats?.Goals,
         bottomStat: ConvertTimeOnIce(
-          teamStats.TopGoals?.SeasonStats?.TimeOnIce
+          teamStats.TopGoals?.SeasonStats?.TimeOnIce,
         ).toFixed(1),
       };
       boxTwo = {
@@ -968,7 +972,7 @@ export const getLandingBoxStats = (
         position: teamStats.TopAssists?.Position,
         topStat: teamStats.TopAssists?.SeasonStats?.Assists,
         bottomStat: ConvertTimeOnIce(
-          teamStats.TopAssists?.SeasonStats?.TimeOnIce
+          teamStats.TopAssists?.SeasonStats?.TimeOnIce,
         ).toFixed(1),
       };
       boxThree = {
@@ -978,7 +982,7 @@ export const getLandingBoxStats = (
         position: teamStats.TopSaves?.Position,
         topStat: teamStats.TopSaves?.SeasonStats?.Points,
         bottomStat: ConvertTimeOnIce(
-          teamStats.TopSaves?.SeasonStats?.TimeOnIce
+          teamStats.TopSaves?.SeasonStats?.TimeOnIce,
         ).toFixed(1),
       };
       break;
