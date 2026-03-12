@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import {
   CollegeStandings,
   NFLStandings,
@@ -147,12 +146,10 @@ export const getLandingCFBData = (
   const topRusher = userRushers.length > 0 ? userRushers[0] : null;
   const topReceiver = userReceivers.length > 0 ? userReceivers[0] : null;
 
-  const teamInjuries = useMemo(() => {
-    if (cfbRosterMap && team.ID) {
-      return cfbRosterMap[team.ID]?.filter((player) => player.IsInjured) || [];
-    }
-    return [];
-  }, [cfbRosterMap, team.ID]);
+  const teamInjuries =
+    cfbRosterMap && team.ID
+      ? cfbRosterMap[team.ID]?.filter((player) => player.IsInjured) || []
+      : [];
 
   const teamStats = {
     TopPasser: topPasser,
@@ -286,12 +283,10 @@ export const getLandingNFLData = (
   };
 
   // Team Injuries
-  const teamInjuries = useMemo(() => {
-    if (proRosterMap && team.ID) {
-      return proRosterMap[team.ID]?.filter((player) => player.IsInjured) || [];
-    }
-    return [];
-  }, [proRosterMap, team.ID]);
+  const teamInjuries =
+    proRosterMap && team.ID
+      ? proRosterMap[team.ID]?.filter((player) => player.IsInjured) || []
+      : [];
 
   // Team News
   const teamNews = proNews
@@ -424,12 +419,10 @@ export const getLandingCBBData = (
   };
 
   // Team Injuries
-  const teamInjuries = useMemo(() => {
-    if (cbbRosterMap && team.ID) {
-      return cbbRosterMap[team.ID]?.filter((player) => player.IsInjured) || [];
-    }
-    return [];
-  }, [cbbRosterMap, team.ID]);
+  const teamInjuries =
+    cbbRosterMap && team.ID
+      ? cbbRosterMap[team.ID]?.filter((player) => player.IsInjured) || []
+      : [];
 
   // Team News
   const teamNews = cbbNews
@@ -562,12 +555,10 @@ export const getLandingNBAData = (
   };
 
   // Team Injuries
-  const teamInjuries = useMemo(() => {
-    if (nbaRosterMap && team.ID) {
-      return nbaRosterMap[team.ID]?.filter((player) => player.IsInjured) || [];
-    }
-    return [];
-  }, [nbaRosterMap, team.ID]);
+  const teamInjuries =
+    nbaRosterMap && team.ID
+      ? nbaRosterMap[team.ID]?.filter((player) => player.IsInjured) || []
+      : [];
 
   // Team News
   const teamNews = nbaNews
@@ -704,12 +695,10 @@ export const getLandingCHLData = (
   };
 
   // Team Injuries
-  const teamInjuries = useMemo(() => {
-    if (chlRosterMap && team.ID) {
-      return chlRosterMap[team.ID]?.filter((player) => player.IsInjured) || [];
-    }
-    return [];
-  }, [chlRosterMap, team.ID]);
+  const teamInjuries =
+    chlRosterMap && team.ID
+      ? chlRosterMap[team.ID]?.filter((player) => player.IsInjured) || []
+      : [];
 
   // Team News
   const teamNews = chlNews
@@ -845,12 +834,10 @@ export const getLandingPHLData = (
   };
 
   // Team Injuries
-  const teamInjuries = useMemo(() => {
-    if (phlRosterMap && team.ID) {
-      return phlRosterMap[team.ID]?.filter((player) => player.IsInjured) || [];
-    }
-    return [];
-  }, [phlRosterMap, team.ID]);
+  const teamInjuries =
+    phlRosterMap && team.ID
+      ? phlRosterMap[team.ID]?.filter((player) => player.IsInjured) || []
+      : [];
 
   // Team News
   const teamNews = phlNews

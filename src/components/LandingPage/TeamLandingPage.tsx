@@ -258,215 +258,195 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     nbaRosterMap,
   ]);
 
-  let teamStandings: any[] = [],
-    teamNotifications: any[] = [],
-    teamMatchUp: any[] = [],
-    teamSchedule: any[] = [],
-    homeLogo: string = "",
-    awayLogo: string = "",
-    homeLabel: string = "",
-    awayLabel: string = "",
-    teamStats: any = {},
-    teamNews: any[] = [],
-    gameWeek: number = 0,
-    teamInjuries: any = {};
+  const {
+    teamStandings = [],
+    teamNotifications = [],
+    teamMatchUp = [],
+    teamSchedule = [],
+    homeLogo = "",
+    awayLogo = "",
+    homeLabel = "",
+    awayLabel = "",
+    teamStats = {},
+    teamNews = [],
+    gameWeek = 0,
+    teamInjuries = {},
+  } = useMemo((): Record<string, any> => {
+    switch (league) {
+      case SimCFB:
+        return getLandingCFBData(
+          team,
+          currentWeek,
+          league,
+          currentUser,
+          allCFBStandings,
+          collegeNotifications,
+          allCollegeGames,
+          cfbTeams,
+          topCFBPassers,
+          topCFBRushers,
+          topCFBReceivers,
+          collegeNews,
+          cfbRosterMap,
+        );
 
-  switch (league) {
-    case SimCFB:
-      ({
-        teamStandings,
-        teamNotifications,
-        teamMatchUp,
-        teamSchedule,
-        homeLogo,
-        awayLogo,
-        homeLabel,
-        awayLabel,
-        teamNews,
-        teamStats,
-        gameWeek,
-        teamInjuries,
-      } = getLandingCFBData(
-        team,
-        currentWeek,
-        league,
-        currentUser,
-        allCFBStandings,
-        collegeNotifications,
-        allCollegeGames,
-        cfbTeams,
-        topCFBPassers,
-        topCFBRushers,
-        topCFBReceivers,
-        collegeNews,
-        cfbRosterMap,
-      ));
-      break;
+      case SimNFL:
+        return getLandingNFLData(
+          team,
+          currentWeek,
+          league,
+          currentUser,
+          allProStandings,
+          proNotifications,
+          allProGames,
+          nflTeams,
+          topNFLPassers,
+          topNFLRushers,
+          topNFLReceivers,
+          proNews,
+          proRosterMap,
+        );
 
-    case SimNFL:
-      ({
-        teamStandings,
-        teamNotifications,
-        teamMatchUp,
-        teamSchedule,
-        homeLogo,
-        awayLogo,
-        homeLabel,
-        awayLabel,
-        teamNews,
-        teamStats,
-        gameWeek,
-        teamInjuries,
-      } = getLandingNFLData(
-        team,
-        currentWeek,
-        league,
-        currentUser,
-        allProStandings,
-        proNotifications,
-        allProGames,
-        nflTeams,
-        topNFLPassers,
-        topNFLRushers,
-        topNFLReceivers,
-        proNews,
-        proRosterMap,
-      ));
-      break;
+      case SimCBB:
+        if (!ts) return {};
+        return getLandingCBBData(
+          team,
+          currentWeek,
+          ts,
+          league,
+          currentUser,
+          allCBBStandings,
+          cbbNotifications,
+          allCBBGames,
+          cbbTeams,
+          topCBBPoints,
+          topCBBAssists,
+          topCBBRebounds,
+          cbbNews,
+          cbbRosterMap,
+        );
 
-    case SimCBB:
-      ({
-        teamStandings,
-        teamNotifications,
-        teamMatchUp,
-        teamSchedule,
-        homeLogo,
-        awayLogo,
-        homeLabel,
-        awayLabel,
-        teamNews,
-        teamStats,
-        gameWeek,
-        teamInjuries,
-      } = getLandingCBBData(
-        team,
-        currentWeek,
-        ts,
-        league,
-        currentUser,
-        allCBBStandings,
-        cbbNotifications,
-        allCBBGames,
-        cbbTeams,
-        topCBBPoints,
-        topCBBAssists,
-        topCBBRebounds,
-        cbbNews,
-        cbbRosterMap,
-      ));
-      break;
+      case SimNBA:
+        if (!ts) return {};
+        return getLandingNBAData(
+          team,
+          currentWeek,
+          ts,
+          league,
+          currentUser,
+          allNBAStandings,
+          nbaNotifications,
+          allNBAGames,
+          nbaTeams,
+          topNBAPoints,
+          topNBAAssists,
+          topNBARebounds,
+          nbaNews,
+          nbaRosterMap,
+        );
 
-    case SimNBA:
-      ({
-        teamStandings,
-        teamNotifications,
-        teamMatchUp,
-        teamSchedule,
-        homeLogo,
-        awayLogo,
-        homeLabel,
-        awayLabel,
-        teamNews,
-        teamStats,
-        gameWeek,
-        teamInjuries,
-      } = getLandingNBAData(
-        team,
-        currentWeek,
-        ts,
-        league,
-        currentUser,
-        allNBAStandings,
-        nbaNotifications,
-        allNBAGames,
-        nbaTeams,
-        topNBAPoints,
-        topNBAAssists,
-        topNBARebounds,
-        nbaNews,
-        nbaRosterMap,
-      ));
-      break;
+      case SimCHL:
+        if (!ts) return {};
+        return getLandingCHLData(
+          team,
+          currentWeek,
+          ts,
+          league,
+          currentUser,
+          currentCHLStandings || [],
+          chlNotifications,
+          currentCollegeSeasonGames || [],
+          chlTeams,
+          chlNews,
+          topCHLGoals,
+          topCHLAssists,
+          topCHLSaves,
+          chlRosterMap,
+        );
 
-    case SimCHL:
-      if (!ts) break;
-      ({
-        teamStandings,
-        teamNotifications,
-        teamMatchUp,
-        teamSchedule,
-        homeLogo,
-        awayLogo,
-        homeLabel,
-        awayLabel,
-        teamNews,
-        teamStats,
-        gameWeek,
-        teamInjuries,
-      } = getLandingCHLData(
-        team,
-        currentWeek,
-        ts,
-        league,
-        currentUser,
-        currentCHLStandings || [],
-        chlNotifications,
-        currentCollegeSeasonGames || [],
-        chlTeams,
-        chlNews,
-        topCHLGoals,
-        topCHLAssists,
-        topCHLSaves,
-        chlRosterMap,
-      ));
-      break;
+      case SimPHL:
+        if (!ts) return {};
+        return getLandingPHLData(
+          team,
+          currentWeek,
+          ts,
+          league,
+          currentUser,
+          currentProStandings || [],
+          phlNotifications,
+          currentProSeasonGames || [],
+          phlTeams,
+          phlNews,
+          topPHLGoals,
+          topPHLAssists,
+          topPHLSaves,
+          phlRosterMap,
+        );
 
-    case SimPHL:
-      if (!ts) break;
-      ({
-        teamStandings,
-        teamNotifications,
-        teamMatchUp,
-        teamSchedule,
-        homeLogo,
-        awayLogo,
-        homeLabel,
-        awayLabel,
-        teamNews,
-        gameWeek,
-        teamStats,
-        teamInjuries,
-      } = getLandingPHLData(
-        team,
-        currentWeek,
-        ts,
-        league,
-        currentUser,
-        currentProStandings || [],
-        phlNotifications,
-        currentProSeasonGames || [],
-        phlTeams,
-        phlNews,
-        topPHLGoals,
-        topPHLAssists,
-        topPHLSaves,
-        phlRosterMap,
-      ));
-      break;
-
-    default:
-      break;
-  }
+      default:
+        return {};
+    }
+  }, [
+    league,
+    ts,
+    team,
+    currentWeek,
+    currentUser,
+    allCFBStandings,
+    collegeNotifications,
+    allCollegeGames,
+    cfbTeams,
+    topCFBPassers,
+    topCFBRushers,
+    topCFBReceivers,
+    collegeNews,
+    cfbRosterMap,
+    allProStandings,
+    proNotifications,
+    allProGames,
+    nflTeams,
+    topNFLPassers,
+    topNFLRushers,
+    topNFLReceivers,
+    proNews,
+    proRosterMap,
+    allCBBStandings,
+    cbbNotifications,
+    allCBBGames,
+    cbbTeams,
+    topCBBPoints,
+    topCBBAssists,
+    topCBBRebounds,
+    cbbNews,
+    cbbRosterMap,
+    allNBAStandings,
+    nbaNotifications,
+    allNBAGames,
+    nbaTeams,
+    topNBAPoints,
+    topNBAAssists,
+    topNBARebounds,
+    nbaNews,
+    nbaRosterMap,
+    currentCHLStandings,
+    chlNotifications,
+    currentCollegeSeasonGames,
+    chlTeams,
+    topCHLGoals,
+    topCHLAssists,
+    topCHLSaves,
+    chlNews,
+    chlRosterMap,
+    currentProStandings,
+    phlNotifications,
+    currentProSeasonGames,
+    phlTeams,
+    topPHLGoals,
+    topPHLAssists,
+    topPHLSaves,
+    phlNews,
+    phlRosterMap,
+  ]);
 
   return (
     <>
