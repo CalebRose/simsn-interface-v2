@@ -62,6 +62,8 @@ import {
   ProDraftPageResponse,
   ProWarRoom,
   ScoutingProfile,
+  HistoricCollegePlayer,
+  RetiredPlayer,
 } from "../models/hockeyModels";
 import { TeamService } from "../_services/teamService";
 import {
@@ -215,6 +217,7 @@ interface SimHCKContextProps {
     teamID: number,
   ) => Promise<void>;
   submitCollegePoll: (dto: any) => Promise<void>;
+  getBootstrapStatsData: () => Promise<void>;
   getBootstrapNewsData: () => Promise<void>;
   toggleNotificationAsRead: (
     notificationID: number,
@@ -399,6 +402,7 @@ const defaultContext: SimHCKContextProps = {
   phlScoutProfiles: [],
   phlAllDraftPicks: [],
   getBootstrapDraftData: async () => {},
+  getBootstrapStatsData: async () => {},
   addPlayerToScoutBoard: async () => {},
   revealScoutingAttribute: async () => {},
   removePlayerFromScoutBoard: async () => {},
@@ -460,6 +464,10 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const [proDraftablePlayers, setProDraftablePlayers] = useState<
     DraftablePlayer[]
   >([]);
+  const [historicCollegePlayers, setHistoricCollegePlayers] = useState<
+    HistoricCollegePlayer[]
+  >([]);
+  const [retiredPlayers, setRetiredPlayers] = useState<RetiredPlayer[]>([]);
   const [proWarRoom, setProWarRoom] = useState<
     Record<number, ProWarRoom | null>
   >({});
@@ -632,8 +640,15 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       }
     }
 
+    if (retiredPlayers) {
+      for (let i = 0; i < retiredPlayers.length; i++) {
+        const p = new ProfessionalPlayer({ ...retiredPlayers[i] });
+        playerMap[p.ID] = p;
+      }
+    }
+
     return playerMap;
-  }, [proRosterMap, phlTeams]);
+  }, [proRosterMap, phlTeams, retiredPlayers]);
 
   const teamTransferPortalProfiles = useMemo(() => {
     if (!chlTeam) return [];
@@ -658,12 +673,18 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
     if (portalPlayers) {
       for (let i = 0; i < portalPlayers.length; i++) {
-        const p = portalPlayers[i];
+        const p = new CollegePlayer({ ...portalPlayers[i] });
+        playerMap[p.ID] = p;
+      }
+    }
+    if (historicCollegePlayers) {
+      for (let i = 0; i < historicCollegePlayers.length; i++) {
+        const p = new CollegePlayer({ ...historicCollegePlayers[i] });
         playerMap[p.ID] = p;
       }
     }
     return playerMap;
-  }, [chlRosterMap, chlTeams, portalPlayers]);
+  }, [chlRosterMap, chlTeams, portalPlayers, historicCollegePlayers]);
 
   const transferProfileMapByPlayerID = useMemo(() => {
     const transferProfileMap: Record<number, TransferPortalProfile[]> = {};
@@ -764,6 +785,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     const map: Record<number, CollegeStandings[]> = {};
     for (let i = 0; i < allCHLStandings.length; i++) {
       const standing = allCHLStandings[i];
+      if (!standing) continue;
       if (!map[standing.SeasonID]) {
         map[standing.SeasonID] = [standing];
       } else {
@@ -791,6 +813,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     const map: Record<number, ProfessionalStandings[]> = {};
     for (let i = 0; i < allProStandings.length; i++) {
       const standing = allProStandings[i];
+      if (!standing) continue;
       if (!map[standing.SeasonID]) {
         map[standing.SeasonID] = [standing];
       } else {
@@ -818,6 +841,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     const map: Record<number, CollegeGame[]> = {};
     for (let i = 0; i < allCollegeGames.length; i++) {
       const game = allCollegeGames[i];
+      if (!game) continue;
       if (!map[game.SeasonID]) {
         map[game.SeasonID] = [game];
       } else {
@@ -843,6 +867,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     const map: Record<number, ProfessionalGame[]> = {};
     for (let i = 0; i < allProGames.length; i++) {
       const game = allProGames[i];
+      if (!game) continue;
       if (!map[game.SeasonID]) {
         map[game.SeasonID] = [game];
       } else {
@@ -867,6 +892,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     const map: Record<number, CollegePollOfficial[]> = {};
     for (let i = 0; i < collegePolls.length; i++) {
       const poll = collegePolls[i];
+      if (!poll) continue;
       if (!map[poll.SeasonID]) {
         map[poll.SeasonID] = [poll];
       } else {
@@ -971,6 +997,29 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     setIsLoading(false);
     isFetching.current = false;
   };
+
+  const getBootstrapStatsData = useCallback(async () => {
+    let chlid = 0;
+    let phlid = 0;
+    if (currentUser && currentUser.CHLTeamID) {
+      chlid = currentUser.CHLTeamID;
+    }
+    if (currentUser && currentUser.PHLTeamID) {
+      phlid = currentUser.PHLTeamID;
+    }
+    if (chlid === 0 && phlid === 0) {
+      return;
+    }
+    const res = await BootstrapService.GetHCKStatsBootstrapData(chlid, phlid);
+
+    if (chlid > 0) {
+      setHistoricCollegePlayers(res.HistoricCollegePlayers);
+    }
+
+    if (phlid > 0) {
+      setRetiredPlayers(res.RetiredPlayers);
+    }
+  }, [currentUser?.CHLTeamID, currentUser?.PHLTeamID]);
 
   const removeUserfromCHLTeamCall = useCallback(
     async (teamID: number) => {
@@ -2289,6 +2338,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         removeUserfromPHLTeamCall,
         addUserToCHLTeam,
         addUserToPHLTeam,
+        getBootstrapStatsData,
         cutCHLPlayer,
         redshirtPlayer,
         cutPHLPlayer,

@@ -8,10 +8,10 @@ export const BootstrapService = {
   // ✅ Get Hockey Bootstrap Data
   GetHCKBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<HockeyBootstrap> => {
     return await GetCall<HockeyBootstrap>(
-      `${hckUrl}bootstrap/${collegeID}/${proID}`
+      `${hckUrl}bootstrap/${collegeID}/${proID}`,
     );
   },
 
@@ -26,41 +26,41 @@ export const BootstrapService = {
   // ✅ Get Football Bootstrap Data
   GetFBALandingBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/landing/${collegeID}/${proID}`
+      `${fbaUrl}bootstrap/landing/${collegeID}/${proID}`,
     );
   },
 
   GetFBARosterBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/roster/${collegeID}/${proID}`
+      `${fbaUrl}bootstrap/roster/${collegeID}/${proID}`,
     );
   },
 
   GetFBAStatsBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/stats/${collegeID}/${proID}`
+      `${fbaUrl}bootstrap/stats/${collegeID}/${proID}`,
     );
   },
 
   GetFBARecruitingBootstrapData: async (
-    collegeID: number
+    collegeID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/recruiting/${collegeID}`
+      `${fbaUrl}bootstrap/recruiting/${collegeID}`,
     );
   },
 
   GetFBAFreeAgencyBootstrapData: async (
-    proID: number
+    proID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(`${fbaUrl}bootstrap/freeagency/${proID}`);
   },
@@ -68,10 +68,10 @@ export const BootstrapService = {
   GetFBASchedulingBootstrapData: async (
     username: string,
     collegeID: number,
-    seasonID: number
+    seasonID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/scheduling/${username}/${collegeID}/${seasonID}`
+      `${fbaUrl}bootstrap/scheduling/${username}/${collegeID}/${seasonID}`,
     );
   },
 
@@ -80,48 +80,48 @@ export const BootstrapService = {
   },
 
   GetFBAPortalBootstrapData: async (
-    collegeID: number
+    collegeID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(`${fbaUrl}bootstrap/portal/${collegeID}`);
   },
 
   GetFBAGameplanBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/gameplan/${collegeID}/${proID}`
+      `${fbaUrl}bootstrap/gameplan/${collegeID}/${proID}`,
     );
   },
 
   GetFBANewsBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${fbaUrl}bootstrap/news/${collegeID}/${proID}`
+      `${fbaUrl}bootstrap/news/${collegeID}/${proID}`,
     );
   },
 
   GetBBARosterBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(
-      `${bbaUrl}bootstrap/roster/${collegeID}/${proID}`
+      `${bbaUrl}bootstrap/roster/${collegeID}/${proID}`,
     );
   },
 
   GetBBARecruitingBootstrapData: async (
-    collegeID: number
+    collegeID: number,
   ): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(
-      `${bbaUrl}bootstrap/recruiting/${collegeID}`
+      `${bbaUrl}bootstrap/recruiting/${collegeID}`,
     );
   },
 
   GetBBAFreeAgencyBootstrapData: async (
-    proID: number
+    proID: number,
   ): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(`${bbaUrl}bootstrap/freeagency/${proID}`);
   },
@@ -129,10 +129,10 @@ export const BootstrapService = {
   GetBBASchedulingBootstrapData: async (
     username: string,
     collegeID: number,
-    seasonID: number
+    seasonID: number,
   ): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(
-      `${bbaUrl}bootstrap/scheduling/${username}/${collegeID}/${seasonID}`
+      `${bbaUrl}bootstrap/scheduling/${username}/${collegeID}/${seasonID}`,
     );
   },
 
@@ -141,36 +141,43 @@ export const BootstrapService = {
   },
 
   GetBBAPortalBootstrapData: async (
-    collegeID: number
+    collegeID: number,
   ): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(`${bbaUrl}bootstrap/portal/${collegeID}`);
   },
 
   GetBBAGameplanBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(
-      `${bbaUrl}bootstrap/gameplan/${collegeID}/${proID}`
+      `${bbaUrl}bootstrap/gameplan/${collegeID}/${proID}`,
     );
   },
 
   GetBBANewsBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${bbaUrl}bootstrap/news/${collegeID}/${proID}`
+      `${bbaUrl}bootstrap/news/${collegeID}/${proID}`,
     );
   },
 
   GetHCKNewsBootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
-      `${hckUrl}bootstrap/news/${collegeID}/${proID}`
+      `${hckUrl}bootstrap/news/${collegeID}/${proID}`,
     );
+  },
+
+  GetHCKStatsBootstrapData: async (
+    collegeID: number,
+    proID: number,
+  ): Promise<any> => {
+    return await GetCall<any>(`${hckUrl}bootstrap/stats/${collegeID}/${proID}`);
   },
 
   GetBBABootstrapTeamData: async (): Promise<BBBootstrap> => {
@@ -180,30 +187,30 @@ export const BootstrapService = {
   // ✅ Get Basketball Bootstrap Data
   GetBBABootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(
-      `${bbaUrl}bootstrap/one/${collegeID}/${proID}`
+      `${bbaUrl}bootstrap/one/${collegeID}/${proID}`,
     );
   },
 
   // ✅ Get Basketball Bootstrap Data
   GetSecondBBABootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(
-      `${bbaUrl}bootstrap/two/${collegeID}/${proID}`
+      `${bbaUrl}bootstrap/two/${collegeID}/${proID}`,
     );
   },
 
   // ✅ Get Basketball Bootstrap Data
   GetThirdBBABootstrapData: async (
     collegeID: number,
-    proID: number
+    proID: number,
   ): Promise<BBBootstrap> => {
     return await GetCall<BBBootstrap>(
-      `${bbaUrl}bootstrap/three/${collegeID}/${proID}`
+      `${bbaUrl}bootstrap/three/${collegeID}/${proID}`,
     );
   },
 };

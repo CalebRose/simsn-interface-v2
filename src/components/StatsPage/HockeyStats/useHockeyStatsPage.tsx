@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLeagueStore } from "../../../context/LeagueContext";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import {
@@ -51,8 +51,8 @@ export const useHockeyStats = () => {
     phlTeams,
     phlTeamOptions,
     phlConferenceOptions,
-    chlRosterMap,
-    proRosterMap,
+    chlPlayerMap,
+    proPlayerMap,
     chlPlayerGameStatsMap,
     chlPlayerSeasonStatsMap,
     chlTeamGameStatsMap,
@@ -64,12 +64,13 @@ export const useHockeyStats = () => {
     hck_Timestamp,
     SearchHockeyStats,
     ExportHockeyStats,
+    getBootstrapStatsData,
   } = useSimHCKStore();
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(InfoType);
   const [modalPlayer, setModalPlayer] = useState<PHLPlayer | CHLPlayer>(
-    {} as PHLPlayer
+    {} as PHLPlayer,
   );
   const [statsView, setStatsView] = useState<StatsView>(SEASON_VIEW);
   const [statsType, setStatsType] = useState<StatsType>(PLAYER_VIEW);
@@ -80,6 +81,10 @@ export const useHockeyStats = () => {
   const [selectedSeason, setSelectedSeason] = useState<number>(1); // SEASON ID
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [selectedConferences, setSelectedConferences] = useState<string[]>([]);
+
+  useEffect(() => {
+    getBootstrapStatsData();
+  }, []);
 
   const team = useMemo(() => {
     if (selectedLeague === SimCHL) {
@@ -101,12 +106,12 @@ export const useHockeyStats = () => {
 
   const playerMap = useMemo(() => {
     if (selectedLeague === SimCHL) {
-      return MakeCHLPlayerMapFromRosterMap(chlTeams, chlRosterMap);
+      return chlPlayerMap;
     } else if (selectedLeague === SimPHL) {
-      return MakePHLPlayerMapFromRosterMap(phlTeams, proRosterMap);
+      return proPlayerMap;
     }
     return [];
-  }, [selectedLeague, chlTeams, phlTeams, chlRosterMap, proRosterMap]);
+  }, [selectedLeague, chlPlayerMap, proPlayerMap]);
 
   const teamMap = useMemo(() => {
     if (selectedLeague === SimCHL) {
@@ -155,7 +160,7 @@ export const useHockeyStats = () => {
         chlPlayerSeasonStatsMap,
         chlTeamGameStatsMap,
         chlTeamSeasonStatsMap,
-        gameDay
+        gameDay,
       );
     }
     if (selectedLeague === SimPHL) {
@@ -168,7 +173,7 @@ export const useHockeyStats = () => {
         phlPlayerSeasonStatsMap,
         phlTeamGameStatsMap,
         phlTeamSeasonStatsMap,
-        gameDay
+        gameDay,
       );
     }
     return [];
@@ -277,7 +282,7 @@ export const useHockeyStats = () => {
 
   const handlePlayerModal = (
     action: ModalAction,
-    player: CHLPlayer | PHLPlayer
+    player: CHLPlayer | PHLPlayer,
   ) => {
     setModalPlayer(player);
     setModalAction(action);

@@ -86,6 +86,7 @@ interface CHLRosterTableProps {
   openPromiseModal: (player: CHLPlayer) => void;
   disable: boolean;
   gameplan: CollegeGameplan;
+  redshirtCount: number;
 }
 
 export const CHLRosterTable: FC<CHLRosterTableProps> = ({
@@ -99,6 +100,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
   openPromiseModal,
   disable,
   gameplan,
+  redshirtCount,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const { isDesktop, isTablet } = useResponsive();
@@ -551,7 +553,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
                 value: "cut",
                 label: `Cut - ${item.FirstName} ${item.LastName}`,
               },
-              ...(item.IsRedshirting || item.IsRedshirt
+              ...(item.IsRedshirting || item.IsRedshirt || redshirtCount!! > 6
                 ? []
                 : [
                     {

@@ -143,7 +143,6 @@ export const TeamPage: FC<TeamPageProps> = ({ league }) => {
 const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
   const { teamId } = useParams<{ teamId?: string }>();
   const { currentUser } = useAuthStore();
-  const hkStore = useSimHCKStore();
   const {
     chlTeam,
     chlTeamMap,
@@ -157,7 +156,8 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     ExportHCKRoster,
     SearchHockeyStats,
     chlGameplan,
-  } = hkStore;
+  } = useSimHCKStore();
+
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -238,6 +238,11 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return null;
   }, [teamProfileMap, selectedTeam]);
+
+  const redshirtCount = useMemo(() => {
+    if (!selectedRoster) return 0;
+    return selectedRoster.filter((player) => player.IsRedshirting).length;
+  }, [selectedRoster]);
 
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
@@ -395,6 +400,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
             openPromiseModal={openPromiseModal}
             gameplan={chlGameplan}
             disable={selectedTeam!.ID !== chlTeam!.ID}
+            redshirtCount={redshirtCount}
           />
         </Border>
       )}

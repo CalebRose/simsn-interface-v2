@@ -731,6 +731,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (!collegePolls) return pollMap;
     for (let i = 0; i < collegePolls.length; i++) {
       const poll = collegePolls[i];
+      if (!poll) continue;
       if (!pollMap[poll.SeasonID]) {
         pollMap[poll.SeasonID] = [poll];
       } else {
@@ -886,7 +887,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const currentCollegeSeasonGames = useMemo(() => {
     if (allCollegeGames && allCollegeGames.length > 0 && cfb_Timestamp) {
       return allCollegeGames.filter(
-        (x) => x.SeasonID === cfb_Timestamp.CollegeSeasonID,
+        (x) => x != null && x.SeasonID === cfb_Timestamp.CollegeSeasonID,
       );
     }
     return [];
@@ -908,7 +909,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const currentProSeasonGames = useMemo(() => {
     if (allProGames && allProGames.length > 0 && cfb_Timestamp) {
       return allProGames.filter(
-        (x) => x.SeasonID === cfb_Timestamp.NFLSeasonID,
+        (x) => x != null && x.SeasonID === cfb_Timestamp.NFLSeasonID,
       );
     }
     return [];
