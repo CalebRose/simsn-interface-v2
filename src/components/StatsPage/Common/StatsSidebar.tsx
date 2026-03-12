@@ -125,11 +125,12 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
               backgroundColor={teamColors.One}
               borderColor={teamColors.One}
               headerTextColorClass={headerTextColorClass}
+              variant="h4"
             />
           </div>
           {!isMobile && (
             <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mb-2">
-              <Text as="h6">{conferenceLabel}</Text>
+              <Text variant="h6">{conferenceLabel}</Text>
             </div>
           )}
           <div
@@ -216,10 +217,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                   Game Type
                 </Text>
               </div>
-              <ButtonGrid
-                classes="sm:flex-auto sm:flex-1 mb-2"
-                style={{ flexGrow: 0 }}
-              >
+              <ButtonGrid classes="mb-2 grid-cols-3 justify-center">
                 <Button
                   type="button"
                   size="xs"
@@ -261,13 +259,10 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                   Stats View
                 </Text>
               </div>
-              <ButtonGrid
-                classes="sm:flex-auto sm:flex-1 mb-2"
-                style={{ flexGrow: 0 }}
-              >
+              <ButtonGrid classes="grid-cols-2" style={{ flexGrow: 0 }}>
                 <Button
                   type="button"
-                  size="sm"
+                  size="xs"
                   variant={statsView === WEEK_VIEW ? "success" : "secondary"}
                   onClick={() => ChangeStatsView(WEEK_VIEW)}
                 >
@@ -275,7 +270,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                 </Button>
                 <Button
                   type="button"
-                  size="sm"
+                  size="xs"
                   variant={statsView === SEASON_VIEW ? "success" : "secondary"}
                   onClick={() => ChangeStatsView(SEASON_VIEW)}
                 >

@@ -327,6 +327,9 @@ export const GetHockeyStatsColumns = (
         { header: "FO%", accessor: "FaceOffWinPercentage" },
         { header: "FOW", accessor: "FaceOffsWon" },
         { header: "FOA", accessor: "FaceOffs" },
+        { header: "BCHK", accessor: "BodyChecks" },
+        { header: "SCHK", accessor: "StickChecks" },
+        { header: "SHB", accessor: "ShotsBlocked" },
       ]);
     } else {
       // goalie stats

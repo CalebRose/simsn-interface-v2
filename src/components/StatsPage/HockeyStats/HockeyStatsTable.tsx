@@ -44,7 +44,7 @@ interface HockeyStatsTableProps {
   isMobile?: boolean;
   openModal: (
     action: ModalAction,
-    player: CollegePlayer | ProfessionalPlayer
+    player: CollegePlayer | ProfessionalPlayer,
   ) => void;
   stats: any[];
   statsView: StatsView;
@@ -73,14 +73,14 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
     statsType,
     statsView,
     isMobile!!,
-    isGoalie
+    isGoalie,
   );
 
   // Get Row Renderer
   const CHLPlayerRowRenderer = (
     item: CollegePlayerGameStats | CollegePlayerSeasonStats,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const player = playerMap[item.PlayerID] as CollegePlayer;
     if (!player) return <></>;
@@ -118,22 +118,22 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
             }}
             onClick={() => openModal(InfoType, player)}
           >
-            <Text variant="small">
+            <Text variant="xs">
               {player.FirstName} {player.LastName}
             </Text>
           </span>
         </TableCell>
         <TableCell>
-          <Text variant="small">{player.Position}</Text>
+          <Text variant="xs">{player.Position}</Text>
         </TableCell>
         <TableCell>
-          <Text variant="small">{player.Archetype}</Text>
+          <Text variant="xs">{player.Archetype}</Text>
         </TableCell>
         <TableCell>
-          <Text variant="small">{getYear(player.Year, player.IsRedshirt)}</Text>
+          <Text variant="xs">{getYear(player.Year, player.IsRedshirt)}</Text>
         </TableCell>
         <TableCell>
-          <Text variant="small">
+          <Text variant="xs">
             {getHockeyLetterGrade(player.Overall, player.Year)}
           </Text>
         </TableCell>
@@ -151,7 +151,7 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
   const CHLTeamRowRenderer = (
     item: CollegeTeamGameStats | CollegeTeamSeasonStats,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const collegeTeam = teamMap[item.TeamID] as CollegeTeam;
     if (!collegeTeam) return <></>;
@@ -189,7 +189,7 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
   const PHLPlayerRowRenderer = (
     item: ProfessionalPlayerGameStats | ProfessionalPlayerSeasonStats,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const player = playerMap[item.PlayerID] as ProfessionalPlayer;
     if (!player) return <></>;
@@ -260,7 +260,7 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
   const PHLTeamRowRenderer = (
     item: ProfessionalTeamGameStats | ProfessionalTeamSeasonStats,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const team = teamMap[item.TeamID] as ProfessionalTeam;
     if (!team) return <></>;
@@ -295,7 +295,7 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
   };
 
   const rowRenderer = (
-    league: League
+    league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimPHL) {
       if (statsType === PLAYER_VIEW) {

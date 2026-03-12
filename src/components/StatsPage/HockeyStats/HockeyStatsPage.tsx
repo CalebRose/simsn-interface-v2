@@ -80,7 +80,7 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
         league={league}
         modalAction={Help1}
       />
-      <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[minmax(200px,2fr)_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
+      <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[2fr_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
         <StatsSidebar
           team={team!!}
           teamColors={teamColors}
@@ -102,11 +102,11 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
           changeGameDay={ChangeGameDay}
           HandleAwardsModal={() => {}}
         />
-        <div className="flex flex-col w-full max-[1024px]:gap-y-2">
+        <div className="flex flex-col w-full max-[1024px]:gap-y-2 min-w-0">
           <div className="flex flex-col sm:flex-row gap-x-2">
             <Border
               direction="row"
-              classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 flex-col lg:flex-row"
+              classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 flex-col lg:flex-row "
               styles={{
                 borderColor: teamColors.One,
                 backgroundColor: backgroundColor,
@@ -160,26 +160,28 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
           <div className="flex flex-col">
             <Border
               direction="col"
-              classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 overflow-y-auto max-h-[50vh] md:max-h-[70vh]"
+              classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 gap-x-8 max-h-[50vh] md:max-h-[70vh]"
               styles={{
                 borderColor: teamColors.One,
                 backgroundColor: backgroundColor,
               }}
             >
-              <HockeyStatsTable
-                team={team}
-                teamMap={teamMap}
-                teamColors={teamColors}
-                playerMap={playerMap}
-                league={league}
-                isMobile={isMobile}
-                openModal={handlePlayerModal}
-                stats={filteredStats}
-                statsType={statsType}
-                statsView={statsView}
-                isGoalie={viewGoalieStats}
-                currentPage={currentPage}
-              />
+              <div className="overflow-x-auto overflow-y-auto w-full h-full">
+                <HockeyStatsTable
+                  team={team}
+                  teamMap={teamMap}
+                  teamColors={teamColors}
+                  playerMap={playerMap}
+                  league={league}
+                  isMobile={isMobile}
+                  openModal={handlePlayerModal}
+                  stats={filteredStats}
+                  statsType={statsType}
+                  statsView={statsView}
+                  isGoalie={viewGoalieStats}
+                  currentPage={currentPage}
+                />
+              </div>
               <div className="flex flex-row justify-center py-2">
                 <ButtonGroup>
                   <Button
