@@ -109,12 +109,12 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
   const {
     collegeNotifications: chlNotifications,
     proNotifications: phlNotifications,
-    collegeStandingsMapBySeason,
-    proStandingsMapBySeason,
-    proGamesMapBySeason,
+    currentCHLStandings,
+    currentProStandings,
+    currentCollegeSeasonGames,
+    currentProSeasonGames,
     chlRosterMap,
     proRosterMap: phlRosterMap,
-    collegeGamesMapBySeason,
     collegeNews: chlNews,
     proNews: phlNews,
     chlTeams,
@@ -399,6 +399,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       break;
 
     case SimCHL:
+      // if (!ts) break;
       ({
         teamStandings,
         teamNotifications,
@@ -418,9 +419,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         ts,
         league,
         currentUser,
-        collegeStandingsMapBySeason[ts.SeasonID] || [],
+        currentCHLStandings || [],
         chlNotifications,
-        collegeGamesMapBySeason[ts.SeasonID] || [],
+        currentCollegeSeasonGames || [],
         chlTeams,
         chlNews,
         topCHLGoals,
@@ -431,6 +432,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
       break;
 
     case SimPHL:
+      // if (!ts) break;
       ({
         teamStandings,
         teamNotifications,
@@ -450,9 +452,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
         ts,
         league,
         currentUser,
-        proStandingsMapBySeason[ts.SeasonID] || [],
+        currentProStandings || [],
         phlNotifications,
-        proGamesMapBySeason[ts.SeasonID] || [],
+        currentProSeasonGames || [],
         phlTeams,
         phlNews,
         topPHLGoals,
