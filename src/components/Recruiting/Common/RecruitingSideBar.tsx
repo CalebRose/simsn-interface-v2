@@ -51,6 +51,7 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
   let conf = 0;
   let coach = 0;
   let season = 0;
+  let campusLife = 0;
   let affinities: any[] = [];
   let res = 0;
   let region = "";
@@ -79,6 +80,16 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
       const cbbt = Team as CBBTeam;
       teamLabel = cbbt.Team;
       region = cbbtp.Region;
+      programDevelopment = cbbtp.ProgramPrestige;
+      profDev = cbbtp.ProfessionalPrestige;
+      trad = cbbtp.Traditions;
+      fac = cbbtp.Facilities;
+      atm = cbbtp.Atmosphere;
+      aca = cbbtp.Academics;
+      conf = cbbtp.ConferencePrestige;
+      coach = cbbtp.CoachRating;
+      season = cbbtp.SeasonMomentum;
+      campusLife = cbbtp.CampusLife;
       break;
     case SimCFB:
       const cfbtp = TeamProfile as FootballTeamProfile;
@@ -148,28 +159,32 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
           <Text variant="xs">Four Stars: {TeamProfile?.FourStars}</Text>
           <Text variant="xs">Three Stars: {TeamProfile?.ThreeStars}</Text>
         </div>
-        {league === SimCHL && (
-          <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
-            <TeamLabel
-              team="Team Values"
-              variant="h5"
-              backgroundColor={teamColors.One}
-              borderColor={teamColors.One}
-              headerTextColorClass={headerTextColorClass}
-            />
-            <Text variant="xs">Offense: {offensiveSystem}</Text>
-            <Text variant="xs">Defense: {defensiveSystem}</Text>
-            <Text variant="xs">Program Development: {programDevelopment}</Text>
-            <Text variant="xs">Professional Development: {profDev}</Text>
-            <Text variant="xs">Traditions: {trad}</Text>
-            <Text variant="xs">Facilities: {fac}</Text>
-            <Text variant="xs">Atmosphere: {atm}</Text>
-            <Text variant="xs">Academics: {aca}</Text>
-            <Text variant="xs">Conf. Prestige: {conf}</Text>
-            <Text variant="xs">Coach Rating: {coach}</Text>
-            <Text variant="xs">Season Momentum: {season}</Text>
-          </div>
-        )}
+
+        <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
+          <TeamLabel
+            team="Team Values"
+            variant="h5"
+            backgroundColor={teamColors.One}
+            borderColor={teamColors.One}
+            headerTextColorClass={headerTextColorClass}
+          />
+          {league === SimCHL && (
+            <>
+              <Text variant="xs">Offense: {offensiveSystem}</Text>
+              <Text variant="xs">Defense: {defensiveSystem}</Text>
+            </>
+          )}
+          <Text variant="xs">Program Development: {programDevelopment}</Text>
+          <Text variant="xs">Professional Development: {profDev}</Text>
+          <Text variant="xs">Traditions: {trad}</Text>
+          <Text variant="xs">Facilities: {fac}</Text>
+          <Text variant="xs">Atmosphere: {atm}</Text>
+          <Text variant="xs">Academics: {aca}</Text>
+          <Text variant="xs">Conf. Prestige: {conf}</Text>
+          <Text variant="xs">Coach Rating: {coach}</Text>
+          <Text variant="xs">Season Momentum: {season}</Text>
+          <Text variant="xs">Campus Life: {campusLife}</Text>
+        </div>
       </Border>
     </div>
   );

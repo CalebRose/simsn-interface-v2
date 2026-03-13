@@ -3,7 +3,6 @@ import { useModal } from "../../../_hooks/useModal";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
 import {
   Attributes,
-  cbbUSARegionOptions,
   ModalAction,
   Overview,
   RecruitInfoType,
@@ -44,7 +43,7 @@ export const useCBBRecruiting = () => {
   const [statuses, setStatuses] = useState<string[]>([]);
   const [selectedTeams, setSelectedTeams] = useState<any[]>([]);
   const [selectedClassView, setSelectedClassView] = useState<number>(
-    cbbTeam!.ID
+    cbbTeam!.ID,
   );
   const [conferences, setConferences] = useState<any[]>([]);
   const [attribute, setAttribute] = useState<string>("");
@@ -204,7 +203,7 @@ export const useCBBRecruiting = () => {
 
   const openModal = (
     action: ModalAction,
-    player: HockeyCroot | FootballCroot | BasketballCroot
+    player: HockeyCroot | FootballCroot | BasketballCroot,
   ) => {
     handleOpenModal();
     setModalAction(action);
