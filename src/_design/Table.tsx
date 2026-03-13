@@ -141,6 +141,9 @@ export const Table = <T,>({
         } else if (page === "SimPHLDraftPage" && key === "OverallGrade") {
           aGrade = getOverallGrade(a);
           bGrade = getOverallGrade(b);
+        } else if (page === "SimPHLDraftPage" && key === "OverallGrade") {
+          aGrade = getOverallGrade(a);
+          bGrade = getOverallGrade(b);
         }
 
         const ai = gradeOrder.indexOf(aGrade);
@@ -183,7 +186,11 @@ export const Table = <T,>({
           return 0;
         }
       }
-      if (page === "RecruitingProfileTable") {
+      if (
+        page === "SimCFBRecruitingProfileTable" ||
+        page === "SimCHLRecruitingProfileTable" ||
+        page === "SimCBBRecruitingProfileTable"
+      ) {
         if (
           key.includes("LastName") ||
           key.includes("Position") ||
@@ -193,7 +200,8 @@ export const Table = <T,>({
           key.includes("HighSchool") ||
           key.includes("State") ||
           key.includes("Country") ||
-          key.includes("OverallGrade") ||
+          (key.includes("OverallGrade") &&
+            page !== "SimCBBRecruitingProfileTable") ||
           key.includes("PotentialGrade") ||
           key.includes("AffinityOne") ||
           key.includes("AffinityTwo") ||

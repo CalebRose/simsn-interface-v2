@@ -716,6 +716,7 @@ export const RecruitTable: FC<RecruitTableProps> = ({
       team={team}
       enablePagination
       currentPage={currentPage}
+      page={`${league}RecruitTable`}
     />
   );
 };

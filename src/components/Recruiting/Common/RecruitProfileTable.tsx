@@ -194,6 +194,7 @@ const getRecruitProfileColumns = (
         { header: "Fac.", accessor: "FacilitiesPref" },
         { header: "Atm.", accessor: "AtmospherePref" },
         { header: "Aca.", accessor: "AcademicsPref" },
+        { header: "Cam.", accessor: "CampusLifePref" },
         { header: "Conf.", accessor: "ConferencePref" },
         { header: "Coach", accessor: "CoachPref" },
         { header: "Season", accessor: "SeasonMomentumPref" },
@@ -871,193 +872,231 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
       <TableCell>
         <span className={`text-xs`}>{croot.Stars}</span>
       </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {scoutCount > 5 ? croot.OverallGrade : "?"}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.InsideShooting ? (
-            croot.InsideShooting
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("InsideShooting")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.MidrangeShooting ? (
-            croot.MidRangeShooting
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("MidRangeShooting")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.ThreePointShooting ? (
-            croot.ThreePointShooting
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("ThreePointShooting")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.FreeThrow ? (
-            croot.FreeThrow
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("FreeThrow")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.Agility ? (
-            croot.Agility
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("Agility")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.Ballwork ? (
-            croot.Ballwork
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("Ballwork")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.Stealing ? (
-            croot.Stealing
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("Stealing")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.Blocking ? (
-            croot.Blocking
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("Blocking")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.Rebounding ? (
-            croot.Rebounding
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("Rebounding")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.InteriorDefense ? (
-            croot.InteriorDefense
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("InteriorDefense")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          {profile.PerimeterDefense ? (
-            croot.PerimeterDefense
-          ) : (
-            <Button
-              variant="secondary"
-              size="xs"
-              onClick={() => scoutAttribute("PerimeterDefense")}
-            >
-              ?
-            </Button>
-          )}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>
-          <span className={`text-xs`}>
-            {profile.Potential ? (
-              croot.PotentialGrade
-            ) : (
-              <Button
-                variant="secondary"
-                size="xs"
-                onClick={() => scoutAttribute("Potential")}
-              >
-                ?
-              </Button>
-            )}
-          </span>
-        </span>
-      </TableCell>
+      {category === Attributes && (
+        <>
+          <TableCell>
+            <span className={`text-xs`}>
+              {scoutCount > 5 ? croot.OverallGrade : "?"}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.InsideShooting ? (
+                croot.InsideShooting
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("InsideShooting")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.MidrangeShooting ? (
+                croot.MidRangeShooting
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("MidRangeShooting")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.ThreePointShooting ? (
+                croot.ThreePointShooting
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("ThreePointShooting")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.FreeThrow ? (
+                croot.FreeThrow
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("FreeThrow")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.Agility ? (
+                croot.Agility
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("Agility")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.Ballwork ? (
+                croot.Ballwork
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("Ballwork")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.Stealing ? (
+                croot.Stealing
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("Stealing")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.Blocking ? (
+                croot.Blocking
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("Blocking")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.Rebounding ? (
+                croot.Rebounding
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("Rebounding")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.InteriorDefense ? (
+                croot.InteriorDefense
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("InteriorDefense")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.PerimeterDefense ? (
+                croot.PerimeterDefense
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("PerimeterDefense")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              <span className={`text-xs`}>
+                {profile.Potential ? (
+                  croot.PotentialGrade
+                ) : (
+                  <Button
+                    variant="secondary"
+                    size="xs"
+                    onClick={() => scoutAttribute("Potential")}
+                  >
+                    ?
+                  </Button>
+                )}
+              </span>
+            </span>
+          </TableCell>
+        </>
+      )}
+      {category === Preferences && (
+        <>
+          <TableCell>
+            <span className={`text-xs`}>{croot.ProgramPref}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.ProfDevPref}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.TraditionsPref}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.FacilitiesPref}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.AtmospherePref}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.AcademicsPref}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.CampusLifePref}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.ConferencePref}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.CoachPref}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.SeasonMomentumPref}</span>
+          </TableCell>
+        </>
+      )}
       <TableCell>
         <span className={`text-xs`}>{croot.SigningStatus}</span>
       </TableCell>
@@ -1225,7 +1264,7 @@ export const RecruitProfileTable: FC<RecruitProfileTableProps> = ({
       data={recruitProfiles!!}
       team={team}
       rowRenderer={rowRenderer(league)}
-      page="RecruitingProfileTable"
+      page={`${league}RecruitingProfileTable`}
     />
   );
 };
