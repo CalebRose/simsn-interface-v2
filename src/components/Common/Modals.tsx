@@ -1899,6 +1899,7 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
 
   const scoutCount = useMemo(() => {
     let count = 0;
+    if (!recruitProfile) return count;
     if (recruitProfile.InsideShooting) {
       count++;
     }
