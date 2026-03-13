@@ -7,7 +7,7 @@ import {
   PUTCall,
 } from "../_helper/fetchHelper";
 import {
-  PlayerRecruitProfile as BBAPlayerRecruitProfile,
+  RecruitPlayerProfile as BBAPlayerRecruitProfile,
   UpdateRecruitingBoardDto as BBAUpdateRecruitingBoardDto,
   TeamRecruitingProfile,
 } from "../models/basketballModels";
@@ -69,6 +69,12 @@ export const RecruitService = {
 
   BBAToggleScholarship: async (dto: any): Promise<BBAPlayerRecruitProfile> => {
     return await PostCall(`${bbaUrl}recruit/toggle/Scholarship/v2`, dto);
+  },
+
+  BBAScoutRecruitingAttribute: async (
+    dto: any,
+  ): Promise<BBAPlayerRecruitProfile> => {
+    return await PostCall(`${bbaUrl}recruiting/scout/attribute/`, dto);
   },
 
   BBASaveRecruitingBoard: async (dto: any): Promise<void> => {

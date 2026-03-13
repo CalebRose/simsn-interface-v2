@@ -39,7 +39,7 @@ import { Input } from "../../../_design/Inputs";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
 import {
   Croot as BasketballCroot,
-  PlayerRecruitProfile as BasketballCrootProfile,
+  RecruitPlayerProfile as BasketballCrootProfile,
   TeamRecruitingProfile,
 } from "../../../models/basketballModels";
 import {
@@ -169,25 +169,45 @@ const getRecruitProfileColumns = (
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
       { header: "⭐", accessor: "Stars" },
-      { header: "State", accessor: "State" },
-      { header: "Country", accessor: "Country" },
-      { header: "Ovr", accessor: "OverallGrade" },
-      { header: "Ins", accessor: "Finishing" },
-      { header: "Mid", accessor: "Shooting2" },
-      { header: "3pt", accessor: "Shooting3" },
-      { header: "FT", accessor: "FreeThrow" },
-      { header: "BW", accessor: "Ballwork" },
-      { header: "RB", accessor: "Rebounding" },
-      { header: "Int. D", accessor: "InteriorDefense" },
-      { header: "Per. D", accessor: "PerimeterDefense" },
-      { header: "Pot", accessor: "PotentialGrade" },
+    ];
+    if (!isMobile && category === Attributes) {
+      columns = columns.concat([
+        { header: "Ovr", accessor: "OverallGrade" },
+        { header: "Ins", accessor: "Finishing" },
+        { header: "Mid", accessor: "Shooting2" },
+        { header: "3pt", accessor: "Shooting3" },
+        { header: "FT", accessor: "FreeThrow" },
+        { header: "Agi", accessor: "Agility" },
+        { header: "BW", accessor: "Ballwork" },
+        { header: "ST", accessor: "Stealing" },
+        { header: "BLK", accessor: "Blocking" },
+        { header: "RB", accessor: "Rebounding" },
+        { header: "Int. D", accessor: "InteriorDefense" },
+        { header: "Per. D", accessor: "PerimeterDefense" },
+        { header: "Pot", accessor: "PotentialGrade" },
+      ]);
+    } else if (category === Preferences) {
+      columns = columns.concat([
+        { header: "Prog.", accessor: "ProgramPref" },
+        { header: "Prof. Dev.", accessor: "ProfDevPref" },
+        { header: "Trad.", accessor: "TraditionsPref" },
+        { header: "Fac.", accessor: "FacilitiesPref" },
+        { header: "Atm.", accessor: "AtmospherePref" },
+        { header: "Aca.", accessor: "AcademicsPref" },
+        { header: "Conf.", accessor: "ConferencePref" },
+        { header: "Coach", accessor: "CoachPref" },
+        { header: "Season", accessor: "SeasonMomentumPref" },
+      ]);
+    }
+    columns = columns.concat([
       { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "CurrentWeeksPoints" },
       { header: "Mod.", accessor: "ModifiedPoints" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
-    ];
+    ]);
+
     return columns;
   }
   return [];
@@ -317,7 +337,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
     >
       <TableCell>
         <span className={`text-xs`}>{croot.ID}</span>
-      </TableCell>{" "}
+      </TableCell>
       <TableCell>
         <span
           className={`text-xs cursor-pointer font-semibold ${
@@ -724,6 +744,47 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
   }
   let modValue = profile.CurrentWeeksPoints * modifier;
 
+  const scoutCount = useMemo(() => {
+    let count = 0;
+    if (profile.InsideShooting) {
+      count++;
+    }
+    if (profile.MidRangeShooting) {
+      count++;
+    }
+    if (profile.ThreePointShooting) {
+      count++;
+    }
+    if (profile.FreeThrow) {
+      count++;
+    }
+    if (profile.Ballwork) {
+      count++;
+    }
+    if (profile.Rebounding) {
+      count++;
+    }
+    if (profile.InteriorDefense) {
+      count++;
+    }
+    if (profile.PerimeterDefense) {
+      count++;
+    }
+    if (profile.Agility) {
+      count++;
+    }
+    if (profile.Stealing) {
+      count++;
+    }
+    if (profile.Blocking) {
+      count++;
+    }
+    if (profile.Potential) {
+      count++;
+    }
+    return count;
+  }, [profile]);
+
   // 4) Change handler
   const onPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = Math.max(0, Math.min(20, Number(e.target.value)));
@@ -766,6 +827,11 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
     return "";
   }, [croot]);
 
+  const scoutAttribute = (attr: string) => {
+    setAttribute(attr);
+    openModal(ScoutAttributeType, croot);
+  };
+
   if (!croot) return null;
 
   return (
@@ -794,46 +860,203 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
         <span className={`text-xs`}>{croot.Position}</span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.Archetype}</span>
+        <span className={`text-xs`}>
+          {
+            <span className={`text-xs`}>
+              {scoutCount > 3 ? croot.Archetype : "?"}
+            </span>
+          }
+        </span>
       </TableCell>
       <TableCell>
         <span className={`text-xs`}>{croot.Stars}</span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{annotateRegion(croot.State)}</span>
+        <span className={`text-xs`}>
+          {scoutCount > 5 ? croot.OverallGrade : "?"}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{annotateCountry(croot.Country)}</span>
+        <span className={`text-xs`}>
+          {profile.InsideShooting ? (
+            croot.InsideShooting
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("InsideShooting")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.OverallGrade}</span>
+        <span className={`text-xs`}>
+          {profile.MidrangeShooting ? (
+            croot.MidRangeShooting
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("MidRangeShooting")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.Finishing}</span>
+        <span className={`text-xs`}>
+          {profile.ThreePointShooting ? (
+            croot.ThreePointShooting
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("ThreePointShooting")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.Shooting2}</span>
+        <span className={`text-xs`}>
+          {profile.FreeThrow ? (
+            croot.FreeThrow
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("FreeThrow")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.Shooting3}</span>
+        <span className={`text-xs`}>
+          {profile.Agility ? (
+            croot.Agility
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("Agility")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.FreeThrow}</span>
+        <span className={`text-xs`}>
+          {profile.Ballwork ? (
+            croot.Ballwork
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("Ballwork")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.Ballwork}</span>
+        <span className={`text-xs`}>
+          {profile.Stealing ? (
+            croot.Stealing
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("Stealing")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.Rebounding}</span>
+        <span className={`text-xs`}>
+          {profile.Blocking ? (
+            croot.Blocking
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("Blocking")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.InteriorDefense}</span>
+        <span className={`text-xs`}>
+          {profile.Rebounding ? (
+            croot.Rebounding
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("Rebounding")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.PerimeterDefense}</span>
+        <span className={`text-xs`}>
+          {profile.InteriorDefense ? (
+            croot.InteriorDefense
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("InteriorDefense")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{croot.PotentialGrade}</span>
+        <span className={`text-xs`}>
+          {profile.PerimeterDefense ? (
+            croot.PerimeterDefense
+          ) : (
+            <Button
+              variant="secondary"
+              size="xs"
+              onClick={() => scoutAttribute("PerimeterDefense")}
+            >
+              ?
+            </Button>
+          )}
+        </span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>
+          <span className={`text-xs`}>
+            {profile.Potential ? (
+              croot.PotentialGrade
+            ) : (
+              <Button
+                variant="secondary"
+                size="xs"
+                onClick={() => scoutAttribute("Potential")}
+              >
+                ?
+              </Button>
+            )}
+          </span>
+        </span>
       </TableCell>
       <TableCell>
         <span className={`text-xs`}>{croot.SigningStatus}</span>

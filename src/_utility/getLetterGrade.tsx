@@ -91,7 +91,7 @@ export const getCFBLetterGrade = (
   attrName: keyof cfbAttributes,
   position: keyof PositionAttributes,
   value: number,
-  year: number
+  year: number,
 ): string => {
   const y = Number(year);
   const attrData = attributeAverages[attrName][position];
@@ -190,14 +190,50 @@ export const getCFBOverall = (ovr: number, year: number) => {
   return "F";
 };
 
-export const getCBBLetterGrade = (value: number): string => {
-  if (value > 16) {
+export const getCBBLetterGrade = (attr: number, year: number): string => {
+  if (year < 3) {
+    if (attr > 23) {
+      return "A";
+    }
+    if (attr > 18) {
+      return "B";
+    }
+    if (attr > 10) {
+      return "C";
+    }
+    if (attr > 5) {
+      return "D";
+    }
+    return "F";
+  }
+  if (attr > 29) {
+    return "A+";
+  }
+  if (attr > 26) {
     return "A";
-  } else if (value > 13) {
+  }
+  if (attr > 23) {
+    return "A-";
+  }
+  if (attr > 20) {
+    return "B+";
+  }
+  if (attr > 17) {
     return "B";
-  } else if (value > 10) {
+  }
+  if (attr > 14) {
+    return "B-";
+  }
+  if (attr > 11) {
+    return "C+";
+  }
+  if (attr > 8) {
     return "C";
-  } else if (value > 7) {
+  }
+  if (attr > 5) {
+    return "C-";
+  }
+  if (attr > 2) {
     return "D";
   }
   return "F";

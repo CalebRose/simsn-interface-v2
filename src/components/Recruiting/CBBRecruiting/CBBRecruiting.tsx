@@ -1,9 +1,11 @@
 import {
+  Attributes,
   BasketballArchetypeOptions,
   BasketballPositionOptions,
   cbbCountryOptions,
   Help1,
   Overview,
+  Preferences,
   RecruitingClassView,
   RecruitingRankings,
   RecruitingTeamBoard,
@@ -46,6 +48,7 @@ export const CBBRecruiting = () => {
     SaveRecruitingBoard,
     SaveAIRecruitingSettings,
     ExportCBBRecruits,
+    scoutCrootAttribute,
   } = bbStore;
 
   const {
@@ -90,7 +93,7 @@ export const CBBRecruiting = () => {
   const teamColors = useTeamColors(
     cbbTeam?.ColorOne,
     cbbTeam?.ColorTwo,
-    cbbTeam?.ColorThree
+    cbbTeam?.ColorThree,
   );
   const helpModal = useModal();
   const aiSettingsModal = useModal();
@@ -106,7 +109,7 @@ export const CBBRecruiting = () => {
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           playerID={modalPlayer.ID}
-          playerLabel={`${modalPlayer.Position} ${modalPlayer.Archetype} ${modalPlayer.FirstName} ${modalPlayer.LastName}`}
+          playerLabel={`${modalPlayer.Position} ${modalPlayer.FirstName} ${modalPlayer.LastName}`}
           teamID={cbbTeam!.ID}
           league={SimCBB}
           modalAction={modalAction}
@@ -115,6 +118,7 @@ export const CBBRecruiting = () => {
           addPlayerToBoard={addRecruitToBoard}
           removePlayerFromBoard={removeRecruitFromBoard}
           toggleScholarship={toggleScholarship}
+          scoutAttribute={scoutCrootAttribute}
         />
       )}
       <RecruitingHelpModal
@@ -195,6 +199,26 @@ export const CBBRecruiting = () => {
                   Class
                 </Button>
               </ButtonGroup>
+              <ButtonGroup classes="sm:flex sm:flex-auto sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  variant={
+                    tableViewType === Attributes ? "success" : "secondary"
+                  }
+                  onClick={() => setTableViewType(Attributes)}
+                >
+                  Attributes
+                </Button>
+                <Button
+                  type="button"
+                  variant={
+                    tableViewType === Preferences ? "success" : "secondary"
+                  }
+                  onClick={() => setTableViewType(Preferences)}
+                >
+                  Preferences
+                </Button>
+              </ButtonGroup>
             </Border>
             <Border
               direction="col"
@@ -226,6 +250,17 @@ export const CBBRecruiting = () => {
                     </Text>
                     <Text variant="body-small">
                       {teamProfile?.SpentPoints} of {teamProfile?.WeeklyPoints}
+                    </Text>
+                  </div>
+                  <div className="flex flex-col">
+                    <Text
+                      variant="body-small"
+                      classes="text-nowrap font-semibold"
+                    >
+                      Scouting Points
+                    </Text>
+                    <Text variant="body-small">
+                      {teamProfile?.WeeklyScoutingPoints}
                     </Text>
                   </div>
                 </div>

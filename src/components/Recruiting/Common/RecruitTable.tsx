@@ -50,7 +50,7 @@ import {
 const getRecruitingColumns = (
   league: League,
   category: string,
-  isMobile: boolean
+  isMobile: boolean,
 ) => {
   if (league === SimCFB) {
     let columns: { header: string; accessor: string }[] = [
@@ -80,21 +80,21 @@ const getRecruitingColumns = (
       { header: "ID", accessor: "" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
-      { header: "Arch.", accessor: "Archetype" },
       { header: "⭐", accessor: "Stars" },
       { header: "Ht", accessor: "Height" },
+      { header: "Wt", accessor: "Weight" },
       { header: "State", accessor: "State" },
       { header: "Country", accessor: "Country" },
-      { header: "Ovr", accessor: "OverallGrade" },
-      { header: "Ins", accessor: "Finishing" },
-      { header: "Mid", accessor: "Shooting2" },
-      { header: "3pt", accessor: "Shooting3" },
-      { header: "FT", accessor: "FreeThrow" },
-      { header: "BW", accessor: "Ballwork" },
-      { header: "RB", accessor: "Rebounding" },
-      { header: "Int. D", accessor: "InteriorDefense" },
-      { header: "Per. D", accessor: "PerimeterDefense" },
-      { header: "Pot", accessor: "PotentialGrade" },
+      { header: "Prog.", accessor: "ProgramPref" },
+      { header: "Prof. Dev.", accessor: "ProfDevPref" },
+      { header: "Trad.", accessor: "TraditionsPref" },
+      { header: "Fac.", accessor: "FacilitiesPref" },
+      { header: "Atm.", accessor: "AtmospherePref" },
+      { header: "Aca.", accessor: "AcademicsPref" },
+      { header: "Cam.", accessor: "CampusLifePref" },
+      { header: "Conf.", accessor: "ConferencePref" },
+      { header: "Coach", accessor: "CoachPref" },
+      { header: "Season", accessor: "SeasonMomentumPref" },
       { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
       { header: "Actions", accessor: "actions" },
@@ -399,7 +399,7 @@ const CFBRow: React.FC<CFBRowProps> = ({
       teamProfile.OffensiveScheme,
       teamProfile.DefensiveScheme,
       item.Position,
-      item.Archetype
+      item.Archetype,
     );
   }, [teamProfile]);
 
@@ -408,7 +408,7 @@ const CFBRow: React.FC<CFBRowProps> = ({
       teamProfile.OffensiveScheme,
       teamProfile.DefensiveScheme,
       item.Position,
-      item.Archetype
+      item.Archetype,
     );
   }, [teamProfile]);
 
@@ -629,7 +629,7 @@ interface RecruitTableProps {
   category: string;
   openModal: (
     action: ModalAction,
-    player: HockeyCroot | FootballCroot | BasketballCroot
+    player: HockeyCroot | FootballCroot | BasketballCroot,
   ) => void;
   league: League;
   isMobile?: boolean;
@@ -660,7 +660,7 @@ export const RecruitTable: FC<RecruitTableProps> = ({
   const columns = getRecruitingColumns(league, category, isMobile);
 
   const rowRenderer = (
-    league: League
+    league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimCHL) {
       return (item, index, bg) => (

@@ -36,7 +36,7 @@ import {
   UpdateRecruitingBoardDto,
   NBAWaiverOfferDTO,
   NBAContractOfferDTO,
-  PlayerRecruitProfile,
+  RecruitPlayerProfile,
   CrootProfile,
   NBATradeProposal,
   CollegePollOfficial,
@@ -89,7 +89,7 @@ interface SimBBAContextProps {
   cbbStandingsMap: Record<number, CollegeStandings> | null;
   cbbRosterMap: Record<number, CollegePlayer[]> | null;
   recruits: Croot[];
-  recruitProfiles: PlayerRecruitProfile[];
+  recruitProfiles: RecruitPlayerProfile[];
   teamProfileMap: Record<number, TeamRecruitingProfile> | null;
   portalPlayers: TransferPlayerResponse[];
   collegeInjuryReport: CollegePlayer[];
@@ -139,6 +139,7 @@ interface SimBBAContextProps {
   promisePlayer: (playerID: number, teamID: number) => Promise<void>;
   updateCBBRosterMap: (newMap: Record<number, CollegePlayer[]>) => void;
   updateNBARosterMap: (newMap: Record<number, NBAPlayer[]>) => void;
+  scoutCrootAttribute: (dto: any) => Promise<void>;
   saveCBBGameplan: (dto: any) => Promise<void>;
   saveNBAGameplan: (dto: any) => Promise<void>;
   addRecruitToBoard: (dto: any) => Promise<void>;
@@ -282,6 +283,8 @@ const defaultContext: SimBBAContextProps = {
   addUserToNBATeam: () => {},
   cutCBBPlayer: async () => {},
   cutNBAPlayer: async () => {},
+  scoutCrootAttribute: async () => {},
+
   redshirtPlayer: async () => {},
   promisePlayer: async () => {},
   updateCBBRosterMap: () => {},
@@ -405,7 +408,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   > | null>({});
   const [recruits, setRecruits] = useState<Croot[]>([]);
   const [recruitProfiles, setRecruitProfiles] = useState<
-    PlayerRecruitProfile[]
+    RecruitPlayerProfile[]
   >([]);
   const [teamProfileMap, setTeamProfileMap] = useState<Record<
     number,
@@ -1078,7 +1081,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
           return [...profiles, profile];
         }
         const newProfiles = [...profiles];
-        newProfiles[profileIDX] = { ...profile } as PlayerRecruitProfile;
+        newProfiles[profileIDX] = { ...profile } as RecruitPlayerProfile;
         return newProfiles;
       });
     }
@@ -1099,7 +1102,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       setRecruitProfiles((profiles) =>
         [...profiles].map((p) =>
           p.RecruitID === profile.RecruitID
-            ? new PlayerRecruitProfile({
+            ? new RecruitPlayerProfile({
                 ...profile,
                 Scholarship: profile.Scholarship,
                 ScholarshipRevoked: profile.ScholarshipRevoked,
@@ -1133,7 +1136,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       // Update the profiles and get the new profiles array.
       const updatedProfiles = prevProfiles.map((profile) =>
         profile.ID === id
-          ? new PlayerRecruitProfile({ ...profile, [name]: points })
+          ? new RecruitPlayerProfile({ ...profile, [name]: points })
           : profile,
       );
 
@@ -1701,6 +1704,49 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     [proExtensionMap, setProExtensionMap],
   );
 
+  const scoutCrootAttribute = async (dto: any) => {
+    try {
+      const profile = await RecruitService.BBAScoutRecruitingAttribute(dto);
+
+      let attrname = dto.Attribute;
+      if (dto.Attribute === "MidRangeShooting") {
+        attrname = "MidrangeShooting";
+      }
+      if (profile) {
+        setRecruitProfiles((profiles) =>
+          [...profiles].map((p) =>
+            p.RecruitID === profile.RecruitID
+              ? new RecruitPlayerProfile({
+                  ...profile,
+                  [attrname]: true,
+                })
+              : p,
+          ),
+        );
+        setTeamProfileMap((prev) => {
+          const currentProfile = prev![profile.ProfileID];
+          if (!currentProfile) return prev;
+          let cost = 1;
+          if (dto.Attribute === "Potential") {
+            cost = 3;
+          }
+          return {
+            ...prev,
+            [profile.ProfileID]: new TeamRecruitingProfile({
+              ...currentProfile,
+              WeeklyScoutingPoints: currentProfile.WeeklyScoutingPoints - cost,
+            }),
+          };
+        });
+      }
+    } finally {
+      enqueueSnackbar("Scouted Attribute!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    }
+  };
+
   return (
     <SimBBAContext.Provider
       value={{
@@ -1836,6 +1882,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         toggleNotificationAsRead,
         deleteNotification,
         ExportBBRoster,
+        scoutCrootAttribute,
       }}
     >
       {children}

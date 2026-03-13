@@ -49,6 +49,7 @@ import {
   CollegePlayer as CBBPlayer,
   Croot,
   NBAPlayer,
+  RecruitPlayerProfile as CBBProfile,
   TransferPlayerResponse,
 } from "../../models/basketballModels";
 import { useSimBBAStore } from "../../context/SimBBAContext";
@@ -1870,7 +1871,73 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
   player,
 }) => {
   const { currentUser } = useAuthStore();
-  const { cbbTeamMap } = useSimBBAStore();
+  const { cbbTeam, cbbTeamMap, recruitProfiles } = useSimBBAStore();
+  const teamProfiles = useMemo(() => {
+    if (!cbbTeam) return [];
+    if (!recruitProfiles) return [];
+    return recruitProfiles.filter(
+      (profile) => profile.ProfileID === cbbTeam.ID,
+    );
+  }, [cbbTeam, recruitProfiles]);
+
+  const profileMap = useMemo(() => {
+    if (!teamProfiles) return {};
+    const map: Record<number, (typeof teamProfiles)[0]> = {};
+    teamProfiles.forEach((profile) => {
+      map[profile.RecruitID] = profile;
+    });
+    return map;
+  }, [teamProfiles]);
+
+  const recruitProfile = useMemo(() => {
+    return profileMap[player.ID];
+  }, [profileMap, player.ID]);
+
+  const hasProfile = useMemo(() => {
+    return recruitProfile !== undefined;
+  }, [recruitProfile]);
+
+  const scoutCount = useMemo(() => {
+    let count = 0;
+    if (recruitProfile.InsideShooting) {
+      count++;
+    }
+    if (recruitProfile.MidRangeShooting) {
+      count++;
+    }
+    if (recruitProfile.ThreePointShooting) {
+      count++;
+    }
+    if (recruitProfile.FreeThrow) {
+      count++;
+    }
+    if (recruitProfile.Ballwork) {
+      count++;
+    }
+    if (recruitProfile.Rebounding) {
+      count++;
+    }
+    if (recruitProfile.InteriorDefense) {
+      count++;
+    }
+    if (recruitProfile.PerimeterDefense) {
+      count++;
+    }
+    if (recruitProfile.Agility) {
+      count++;
+    }
+    if (recruitProfile.Stealing) {
+      count++;
+    }
+    if (recruitProfile.Blocking) {
+      count++;
+    }
+    if (recruitProfile.Potential) {
+      count++;
+    }
+    return count;
+  }, [recruitProfile]);
+
   const team = cbbTeamMap ? cbbTeamMap[player.TeamID] : null;
   const teamLogo = getLogo(SimCBB, player.TeamID, currentUser?.isRetro);
   const priorityAttributes = getPriorityCBBCrootAttributes(player);
@@ -1912,10 +1979,19 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
         </div>
         <div className="flex flex-col">
           <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Archetype
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {hasProfile && scoutCount > 3 ? player.Archetype : "?"}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
             Height
           </Text>
           <Text variant="small" classes="whitespace-nowrap">
-            {player.Height}
+            {HeightToFeetAndInches(player.Height).feet}'
+            {HeightToFeetAndInches(player.Height).inches}"
           </Text>
         </div>
         <div className="flex flex-col">
@@ -1923,7 +1999,7 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
             Weight
           </Text>
           <Text variant="small" classes="whitespace-nowrap">
-            ???
+            {player.Weight} lbs
           </Text>
         </div>
         <div className="flex flex-col items-center">
@@ -1939,7 +2015,7 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
             Overall
           </Text>
           <Text variant="small" classes="whitespace-nowrap">
-            {player.OverallGrade}
+            {hasProfile && scoutCount > 5 ? player.OverallGrade : "?"}
           </Text>
         </div>
         <div className="flex flex-col">
@@ -1947,7 +2023,9 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
             Potential
           </Text>
           <Text variant="small" classes="whitespace-nowrap">
-            {player.PotentialGrade}
+            {hasProfile && recruitProfile.Potential
+              ? player.PotentialGrade
+              : "?"}
           </Text>
         </div>
         <div className="flex flex-col">
@@ -1970,7 +2048,9 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
                 >
                   {attr.label}
                 </Text>
-                <Text variant="small">{attr.value}</Text>
+                <Text variant="small">
+                  {hasProfile && recruitProfile[attr.key] ? attr.value : "?"}
+                </Text>
               </div>
             ))}
           </div>
@@ -2051,7 +2131,7 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
   const team = cbbTeamMap ? cbbTeamMap[player.TeamID] : null;
   const teamLogo = getLogo(SimCBB, player.TeamID, currentUser?.isRetro);
   const priorityAttributes = getPriorityCBBAttributes(player);
-
+  const heightObj = HeightToFeetAndInches(player.Height);
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
@@ -2073,9 +2153,9 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
           Hometown
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {player.Country.length > 0 && player.Country !== USA
-            ? `${player.Country}`
-            : player.State}
+          {player.Country !== USA
+            ? player.Country
+            : `${player.City}, ${player.State}`}
         </Text>
       </div>
       <div className="flex flex-col">
@@ -2099,7 +2179,7 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
           Height
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {player.Height}
+          {heightObj.feet}' {heightObj.inches}"
         </Text>
       </div>
       <div className="flex flex-col">
@@ -2107,7 +2187,7 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
           Weight
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          ???
+          {player.Weight} lbs
         </Text>
       </div>
       <div className="flex flex-col items-center">
@@ -2172,7 +2252,7 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
 }) => {
   const { currentUser } = useAuthStore();
   const { nbaTeamMap, proContractMap, cbbTeamMap } = useSimBBAStore();
-
+  const heightObj = HeightToFeetAndInches(player.Height);
   const team = useMemo(() => {
     return nbaTeamMap ? nbaTeamMap[player.TeamID] : null;
   }, [nbaTeamMap, player.TeamID]);
@@ -2236,7 +2316,9 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
           Hometown
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {player.Country !== USA ? player.Country : player.State}
+          {player.Country !== USA
+            ? player.Country
+            : `${player.City}, ${player.State}`}
         </Text>
       </div>
       <div className="flex flex-col">
@@ -2260,7 +2342,7 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
           Height
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {player.Height}
+          {heightObj.feet}' {heightObj.inches}"
         </Text>
       </div>
       <div className="flex flex-col">
@@ -2268,7 +2350,7 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
           Weight
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          ???
+          {player.Weight} lbs
         </Text>
       </div>
       <div className="flex flex-col items-center">
@@ -2309,7 +2391,7 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
               Round {player.DraftedRound} - Pick {player.DraftPick}
             </Text>
             <Text variant="xs" classes="whitespace-nowrap text-small">
-              by {player.DraftedTeamAbbr}
+              by {player.DraftedTeam}
             </Text>
           </>
         )}
@@ -2321,7 +2403,7 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
               Contract
             </Text>
             <Text variant="small" classes="whitespace-nowrap">
-              {contract.ContractLength} years
+              {contract.YearsRemaining} years
             </Text>
           </div>
           <div className="flex flex-col">

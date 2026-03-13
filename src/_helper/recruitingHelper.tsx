@@ -109,7 +109,7 @@ export const useFilteredHockeyRecruits = ({
       });
     },
     // depend on the raw list plus the Sets
-    [recruits, country, positionSet, archSet, regionSet, starsSet, statusSet]
+    [recruits, country, positionSet, archSet, regionSet, starsSet, statusSet],
   );
 };
 
@@ -176,7 +176,7 @@ export const useFilteredBasketballRecruits = ({
       });
     },
     // depend on the raw list plus the Sets
-    [recruits, positionSet, archSet, regionSet, starsSet, statusSet]
+    [recruits, positionSet, archSet, regionSet, starsSet, statusSet],
   );
 };
 
@@ -236,7 +236,7 @@ export const useFilteredFootballRecruits = ({
       });
     },
     // depend on the raw list plus the Sets
-    [recruits, positionSet, archSet, regionSet, starsSet, statusSet]
+    [recruits, positionSet, archSet, regionSet, starsSet, statusSet],
   );
 };
 
@@ -298,7 +298,7 @@ export const ValidateCloseToHome = (croot: any, abbr: any) => {
 
 export const ValidateAffinity = (
   affinity: string,
-  teamProfile: RecruitingTeamProfile
+  teamProfile: RecruitingTeamProfile,
 ) => {
   if (affinity === Academics && teamProfile.AcademicsAffinity) {
     return true;
@@ -378,14 +378,18 @@ export const getCBBAIBehaviorList = () => {
 
 export const getCBBAttributeList = () => {
   return [
-    { label: "Finishing", value: "Finishing" },
-    { label: "Shooting2", value: "Shooting2" },
-    { label: "Shooting3", value: "Shooting3" },
-    { label: "FreeThrow", value: "FreeThrow" },
+    { label: "Agility", value: "Agility" },
+    { label: "Inside Shooting", value: "InsideShooting" },
+    { label: "Mid Range Shooting", value: "MidrangeShooting" },
+    { label: "3pt Shooting", value: "ThreePointShooting" },
+    { label: "Free Throw", value: "FreeThrow" },
     { label: "Ballwork", value: "Ballwork" },
+    { label: "Stealing", value: "Stealing" },
     { label: "Rebounding", value: "Rebounding" },
-    { label: "Interior Defense", value: "Interior Defense" },
-    { label: "Perimeter Defense", value: "Perimeter Defense" },
+    { label: "Blocking", value: "Blocking" },
+    { label: "Interior Defense", value: "InteriorDefense" },
+    { label: "Perimeter Defense", value: "PerimeterDefense" },
+    { label: "Potential", value: "Potential" },
   ];
 };
 
@@ -393,7 +397,7 @@ export const isGoodFit = (
   offensiveScheme: string,
   defensiveScheme: string,
   pos: string,
-  arch: string
+  arch: string,
 ) => {
   if (offensiveScheme.length === 0 || defensiveScheme.length === 0) {
     return false;
@@ -427,7 +431,7 @@ export const isBadFit = (
   offensiveScheme: string,
   defensiveScheme: string,
   pos: string,
-  arch: string
+  arch: string,
 ) => {
   if (offensiveScheme.length === 0 || defensiveScheme.length === 0) {
     return false;
@@ -471,7 +475,7 @@ export const getDisplayStatus = (odds: number) => {
 export const CalculateAdjustedCFBPoints = (
   recruitProfile: RecruitPlayerProfile,
   teamProfile: RecruitingTeamProfile,
-  recruit: FootballCroot
+  recruit: FootballCroot,
 ) => {
   let am1 = recruitProfile.AffinityOneEligible;
   let am2 = recruitProfile.AffinityTwoEligible;
