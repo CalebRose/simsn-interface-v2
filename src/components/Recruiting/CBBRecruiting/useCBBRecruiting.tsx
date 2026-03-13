@@ -80,7 +80,7 @@ export const useCBBRecruiting = () => {
   }, [recruitProfiles]);
 
   const regionOptions = useMemo(() => {
-    return cbbUSARegionOptions;
+    return USARegionOptions;
   }, [country]);
 
   const teamProfile = useMemo(() => {
