@@ -4,7 +4,7 @@ import { useSimFBAStore } from "../../context/SimFBAContext";
 import { PageContainer } from "../../_design/Container";
 import { TeamService } from "../../_services/teamService";
 import { RequestDTO, RequestService } from "../../_services/requestService";
-import { ButtonGroup, PillButton } from "../../_design/Buttons";
+import { ButtonGrid, PillButton } from "../../_design/Buttons";
 import { TeamCard } from "../Common/Cards";
 import {
   League,
@@ -130,10 +130,7 @@ export const AvailableTeams = () => {
 
   const GetViewTeamData = async () => {
     // Baseball orgs don't have a view endpoint yet — use the org data directly
-    if (
-      selectedLeague === SimMLB ||
-      selectedLeague === SimCollegeBaseball
-    ) {
+    if (selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball) {
       setSelectedTeamData(selectedTeam);
       return;
     }
@@ -337,7 +334,7 @@ export const AvailableTeams = () => {
               </div>
             </div>
             <div className="flex flex-col">
-              <ButtonGroup classes="justify-center">
+              <ButtonGrid classes="grid-cols-8 justify-center">
                 <PillButton
                   variant="primaryOutline"
                   isSelected={selectedLeague === SimCFB}
@@ -394,7 +391,7 @@ export const AvailableTeams = () => {
                 >
                   <Text variant="small">SimMLB</Text>
                 </PillButton>
-              </ButtonGroup>
+              </ButtonGrid>
             </div>
           </div>
         </div>
@@ -507,7 +504,9 @@ export const AvailableTeams = () => {
                     league={selectedLeague}
                     disable={
                       sentRequestCollegeBaseball ||
-                      (x.coach != null && x.coach !== "AI" && x.coach.length > 0)
+                      (x.coach != null &&
+                        x.coach !== "AI" &&
+                        x.coach.length > 0)
                     }
                     setSelectedTeam={setSelectedTeam}
                   />

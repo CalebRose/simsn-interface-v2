@@ -73,7 +73,16 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
     useAuthStore();
   const { isCollegeBaseballUser, isMlbUser } = useSimBaseballStore();
 
-  const { cfbTeam, nflTeam, cbbTeam, nbaTeam, chlTeam, phlTeam, collegeBaseballOrg, mlbOrg } = teams;
+  const {
+    cfbTeam,
+    nflTeam,
+    cbbTeam,
+    nbaTeam,
+    chlTeam,
+    phlTeam,
+    collegeBaseballOrg,
+    mlbOrg,
+  } = teams;
 
   const getTeamDisplayName = (league: League, team: any) => {
     switch (league) {
@@ -92,7 +101,9 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
       case SimCollegeBaseball: {
         const cblTeam = team?.teams && (Object.values(team.teams)[0] as any);
         if (cblTeam?.team_full_name && cblTeam?.team_nickname) {
-          return cblTeam.team_full_name.replace(cblTeam.team_nickname, "").trim();
+          return cblTeam.team_full_name
+            .replace(cblTeam.team_nickname, "")
+            .trim();
         }
         return cblTeam?.team_full_name || team?.org_abbrev;
       }
@@ -174,7 +185,10 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
       league: SimCollegeBaseball as League,
       team: collegeBaseballOrg,
       isUser: isCollegeBaseballUser,
-      displayName: getTeamDisplayName(SimCollegeBaseball as League, collegeBaseballOrg),
+      displayName: getTeamDisplayName(
+        SimCollegeBaseball as League,
+        collegeBaseballOrg,
+      ),
     },
     {
       league: SimMLB as League,
@@ -186,7 +200,7 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
 
   return (
     <div className={className}>
-      <ButtonGroup>
+      <ButtonGroup classes="mb-1">
         {leagues.map(({ league, team, isUser, displayName }) => {
           if (!isUser || !team) return null;
 
@@ -194,7 +208,8 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
             <PillButton
               key={league}
               variant="primaryOutline"
-              classes="flex flex-col"
+              classes="flex flex-col px-8 py-2"
+              size="md"
               isSelected={selectedLeague === league}
               onClick={() => onLeagueSelect(league, team)}
             >

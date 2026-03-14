@@ -187,20 +187,24 @@ export const Home = () => {
             }}
           />
         </div>
-        {selectedTeam && (selectedLeague === SimCollegeBaseball || selectedLeague === SimMLB) && (
-          <BaseballLandingPage
-            organization={selectedTeam}
-            league={selectedLeague}
-            ts={ts}
-          />
-        )}
-        {selectedTeam && selectedLeague !== SimCollegeBaseball && selectedLeague !== SimMLB && (
-          <TeamLandingPage
-            team={selectedTeam}
-            league={selectedLeague}
-            ts={ts}
-          />
-        )}
+        {selectedTeam &&
+          (selectedLeague === SimCollegeBaseball ||
+            selectedLeague === SimMLB) && (
+            <BaseballLandingPage
+              organization={selectedTeam}
+              league={selectedLeague}
+              ts={ts}
+            />
+          )}
+        {selectedTeam &&
+          selectedLeague !== SimCollegeBaseball &&
+          selectedLeague !== SimMLB && (
+            <TeamLandingPage
+              team={selectedTeam}
+              league={selectedLeague}
+              ts={ts}
+            />
+          )}
       </div>
     </PageContainer>
   );
