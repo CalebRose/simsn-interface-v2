@@ -1727,6 +1727,8 @@ GONZ: baseUrl + "/logos/Gonzaga_Bulldogs_logo.png",
 MILW: `${baseUrl}/logos/Milwaukee_Panthers_logo.png`,
 WVU: baseUrl + "/logos/West_Virginia_Mountaineers_logo.png",
 MRSH: baseUrl + "/logos/Marshall_Thundering_Herd_logo.png",
+GUAM: baseUrl + "/logos/Guam_logo.png",
+SAMO: baseUrl + "/logos/american_samoa_athletics_logo.png",
 INTAM: baseUrl + "/logos/Wbsc-logo.png",
 USHS: baseUrl + "/logos/NFHS_logo.png",
 };

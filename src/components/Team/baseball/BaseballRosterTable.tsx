@@ -3,6 +3,7 @@ import { DisplayValue, Player, PlayerRatings } from "../../../models/baseball/ba
 import { BattingLeaderRow, PitchingLeaderRow } from "../../../models/baseball/baseballStatsModels";
 import { Attributes, Potentials, Contracts } from "../../../_constants/constants";
 import { displayLevel, displayPlayerTeam, LEVEL_ORDER, getClassYear, numericToLetterGrade, resolveDisplayValue, letterGradeToNumeric } from "../../../_utility/baseballHelpers";
+import { ratingColor, potColor } from "./baseballColorConfig";
 
 // ═══════════════════════════════════════════════
 // Types
@@ -223,22 +224,6 @@ export const comparePlayers = (a: Player, b: Player, sort: SortConfig, statsMap?
 // Styling helpers
 // ═══════════════════════════════════════════════
 
-const ratingColor = (v: number): string => {
-  if (v >= 70) return "text-green-600 dark:text-green-400 font-semibold";
-  if (v >= 60) return "text-blue-600 dark:text-blue-400";
-  if (v >= 50) return "";
-  if (v >= 40) return "text-yellow-600 dark:text-yellow-400";
-  return "text-red-600 dark:text-red-400";
-};
-
-const potColor = (pot: string): string => {
-  if (pot.startsWith("A")) return "text-green-600 dark:text-green-400";
-  if (pot.startsWith("B")) return "text-blue-600 dark:text-blue-400";
-  if (pot.startsWith("C")) return "text-yellow-600 dark:text-yellow-400";
-  if (pot.startsWith("D")) return "text-orange-600 dark:text-orange-400";
-  return "text-red-600 dark:text-red-400";
-};
-
 const thBase = "px-2 py-2 text-center text-xs";
 export const td = "px-2 py-1.5";
 
@@ -251,7 +236,7 @@ export const StatCell = ({ value, isFuzzed }: { value: DisplayValue; isFuzzed?: 
   const { text, colorClass } = resolveDisplayValue(value);
   return (
     <td className={`${td} text-center ${colorClass}`} title={isFuzzed ? "Estimated" : undefined}>
-      {isFuzzed ? `~${text}` : text}
+      {text}
     </td>
   );
 };
@@ -261,7 +246,7 @@ export const PotentialCell = ({ pot, isFuzzed }: { pot: string | null; isFuzzed?
   if (pot === "?") return <td className={`${td} text-center text-gray-400`}>?</td>;
   return (
     <td className={`${td} text-center font-semibold ${potColor(pot)}`} title={isFuzzed ? "Estimated" : undefined}>
-      {isFuzzed ? `~${pot}` : pot}
+      {pot}
     </td>
   );
 };
@@ -271,7 +256,7 @@ export const RatingCell = ({ value, isFuzzed }: { value: DisplayValue; isFuzzed?
   const { text, colorClass } = resolveDisplayValue(value);
   return (
     <td className={`${td} text-center ${colorClass}`} title={isFuzzed ? "Estimated" : undefined}>
-      {isFuzzed ? `~${text}` : text}
+      {text}
     </td>
   );
 };
@@ -280,12 +265,12 @@ const PitchCell = ({ name }: { name: string | null }) => (
   <td className={`${td} text-center text-xs whitespace-nowrap`}>{name || "—"}</td>
 );
 
-const PitchOvrCell = ({ name, ovr, isFuzzed }: { name: string | null; ovr: DisplayValue; isFuzzed?: boolean }) => {
+const PitchOvrCell = ({ name, ovr }: { name: string | null; ovr: DisplayValue }) => {
   if (!name && ovr == null) return <td className={`${td} text-center text-gray-400`}>—</td>;
   const { text, colorClass } = ovr != null ? resolveDisplayValue(ovr) : { text: "—", colorClass: "" };
   return (
     <td className={`${td} text-center ${colorClass}`} title={name || undefined}>
-      {isFuzzed ? `~${text}` : text}
+      {text}
     </td>
   );
 };
@@ -538,11 +523,11 @@ export const PitchAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean 
       <StatCell value={p.ratings.pickoff_display} isFuzzed={af} />
       <RatingCell value={p.ratings.sp_rating} isFuzzed={af} />
       <RatingCell value={p.ratings.rp_rating} isFuzzed={af} />
-      <PitchOvrCell name={p.pitch1_name} ovr={p.ratings.pitch1_ovr} isFuzzed={af} />
-      <PitchOvrCell name={p.pitch2_name} ovr={p.ratings.pitch2_ovr} isFuzzed={af} />
-      <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} isFuzzed={af} />
-      <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} isFuzzed={af} />
-      <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} isFuzzed={af} />
+      <PitchOvrCell name={p.pitch1_name} ovr={p.ratings.pitch1_ovr} />
+      <PitchOvrCell name={p.pitch2_name} ovr={p.ratings.pitch2_ovr} />
+      <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} />
+      <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} />
+      <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} />
     </>
   );
 };
@@ -559,11 +544,11 @@ export const PitchPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?
       <PotentialCell pot={p.potentials.pickoff_pot} isFuzzed={pf} />
       <RatingCell value={p.ratings.sp_rating} isFuzzed={isFuzzed} />
       <RatingCell value={p.ratings.rp_rating} isFuzzed={isFuzzed} />
-      <PitchOvrCell name={p.pitch1_name} ovr={p.ratings.pitch1_ovr} isFuzzed={isFuzzed} />
-      <PitchOvrCell name={p.pitch2_name} ovr={p.ratings.pitch2_ovr} isFuzzed={isFuzzed} />
-      <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} isFuzzed={isFuzzed} />
-      <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} isFuzzed={isFuzzed} />
-      <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} isFuzzed={isFuzzed} />
+      <PitchOvrCell name={p.pitch1_name} ovr={p.ratings.pitch1_ovr} />
+      <PitchOvrCell name={p.pitch2_name} ovr={p.ratings.pitch2_ovr} />
+      <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} />
+      <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} />
+      <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} />
     </>
   );
 };

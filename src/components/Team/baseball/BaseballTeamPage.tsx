@@ -60,21 +60,29 @@ const QuickActionButtons = ({
   const onIR = player.contract?.on_ir ?? false;
   const levelIndex = LEVEL_ORDER.indexOf(player.league_level);
   const canMove = hasContract && LEVEL_ORDER.length > 1;
+  const attrsPrecise = player.visibility_context?.attributes_precise ?? false;
+  const potsPrecise = player.visibility_context?.potentials_precise ?? false;
 
   return (
     <div className="flex flex-wrap gap-0.5 items-center">
       {/* Scouting */}
       {!isCollege && (
-        <button className={`${actionBtn} bg-blue-600/20 text-blue-400 hover:bg-blue-600/40`} onClick={() => onScouting(player, "pro_attrs_precise")} title="Scout Precise Attributes">
-          Attrs
+        <button
+          className={`${actionBtn} ${attrsPrecise ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+          onClick={attrsPrecise ? undefined : () => onScouting(player, "pro_attrs_precise")}
+          disabled={attrsPrecise}
+          title={attrsPrecise ? "Already scouted" : "Scout Precise Attributes"}
+        >
+          Attrs{attrsPrecise ? " ✓" : ""}
         </button>
       )}
       <button
-        className={`${actionBtn} bg-blue-600/20 text-blue-400 hover:bg-blue-600/40`}
-        onClick={() => onScouting(player, isCollege ? "college_potential_precise" : "pro_potential_precise")}
-        title="Scout Precise Potentials"
+        className={`${actionBtn} ${potsPrecise ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+        onClick={potsPrecise ? undefined : () => onScouting(player, isCollege ? "college_potential_precise" : "pro_potential_precise")}
+        disabled={potsPrecise}
+        title={potsPrecise ? "Already scouted" : "Scout Precise Potentials"}
       >
-        Pots
+        Pots{potsPrecise ? " ✓" : ""}
       </button>
 
       {/* Movement — own org only */}
@@ -241,37 +249,51 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     if (!orgId || !lyId) return;
     setScoutingLoading(true);
     const overlay = new Map<number, ScoutingOverlayEntry>();
-    await Promise.all(
-      players.map(async (p) => {
-        try {
-          const data = await BaseballService.GetScoutedPlayer(p.id, orgId, lyId);
-          overlay.set(p.id, {
-            letterGrades: data.letter_grades ?? {},
-            attributes: data.attributes ?? {},
-            potentials: data.potentials ?? {},
-            potentialsPrecise: isPotentialsPrecise(data),
-            attributesPrecise: isAttributesPrecise(data),
-            displayFormat: data.display_format,
-          });
-        } catch { /* player may not be in scouting pool */ }
-      })
-    );
-    setScoutingOverlay(overlay);
+    // Process in small batches with delays to avoid API rate limits (429)
+    const BATCH_SIZE = 3;
+    const BATCH_DELAY_MS = 300;
+    for (let i = 0; i < players.length; i += BATCH_SIZE) {
+      if (i > 0) await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
+      const batch = players.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (p) => {
+          try {
+            const data = await BaseballService.GetScoutedPlayer(p.id, orgId, lyId);
+            overlay.set(p.id, {
+              letterGrades: data.letter_grades ?? {},
+              attributes: data.attributes ?? {},
+              potentials: data.potentials ?? {},
+              potentialsPrecise: isPotentialsPrecise(data),
+              attributesPrecise: isAttributesPrecise(data),
+              displayFormat: data.display_format,
+            });
+          } catch { /* player may not be in scouting pool */ }
+        })
+      );
+      // Update overlay progressively so table starts showing correct data as batches complete
+      setScoutingOverlay(new Map(overlay));
+    }
     setScoutingLoading(false);
   }, []);
 
-  // Fetch scouting data when roster loads
-  // MLB: bootstrap now includes visibility_context per player — no overlay needed.
-  // College: still need overlay to replace 20-80 _display with letter grades.
+  // Fetch scouting budget for all leagues when org loads
   useEffect(() => {
-    if (!isCollege || isAllView || !effectiveOrgId || !leagueYearId) return;
+    if (isAllView || !effectiveOrgId || !leagueYearId) return;
+    BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
+      .then(setScoutingBudget).catch(() => {});
+  }, [isAllView, effectiveOrgId, leagueYearId]);
+
+  // Fetch scouting overlay when roster loads (both college + MLB).
+  // College: replaces 20-80 _display with letter grades.
+  // MLB: replaces bootstrap _display with scouting-aware fuzzed/precise values.
+  // Requests are batched (5 at a time) to avoid API rate limits.
+  useEffect(() => {
+    if (isAllView || !effectiveOrgId || !leagueYearId) return;
     const allPlayers = Object.values(pageRosterMap).flat();
     if (allPlayers.length === 0) return;
     if (scoutingLoadedForOrg.current === effectiveOrgId) return;
     scoutingLoadedForOrg.current = effectiveOrgId;
     fetchScoutingOverlay(allPlayers, effectiveOrgId, leagueYearId);
-    BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
-      .then(setScoutingBudget).catch(() => {});
   }, [isCollege, isAllView, effectiveOrgId, leagueYearId, pageRosterMap, fetchScoutingOverlay]);
 
   // Apply scouting overlay to players: replace _display values, overlay potentials
@@ -290,10 +312,15 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
             (newRatings as any)[displayKey] = grade;
           }
         }
+      } else {
+        // MLB: overlay attributes from scouting endpoint (fuzzed or precise 20-80 values)
+        for (const [key, val] of Object.entries(entry.attributes)) {
+          const displayKey = `${key}_display` as keyof PlayerRatings;
+          if (displayKey in newRatings) {
+            (newRatings as any)[displayKey] = val;
+          }
+        }
       }
-      // MLB: bootstrap already provides correct 20-80 _display values.
-      // Scouting endpoint returns raw _base values — do NOT overlay attributes.
-      // Only visibility_context (fuzzed state) and potentials are overlaid.
 
       const newPotentials = { ...p.potentials };
       for (const [key, val] of Object.entries(entry.potentials)) {
@@ -418,6 +445,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     setCategory(Attributes);
     scoutingLoadedForOrg.current = null;
     setScoutingOverlay(new Map());
+    setScoutingBudget(null);
     if (optValue === ALL_ORGS) {
       setViewedOrgId(ALL_ORGS);
       loadAllOrgPlayers();
@@ -441,32 +469,27 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   const handleScoutingModalClose = useCallback(() => {
     scoutingModal.handleCloseModal();
     if (scoutingPlayerId > 0 && effectiveOrgId && leagueYearId) {
-      if (isCollege) {
-        // College: refresh scouting overlay for this player (letter grades + potentials)
-        BaseballService.GetScoutedPlayer(scoutingPlayerId, effectiveOrgId, leagueYearId)
-          .then((data) => {
-            setScoutingOverlay((prev) => {
-              const next = new Map(prev);
-              next.set(scoutingPlayerId, {
-                letterGrades: data.letter_grades ?? {},
-                attributes: data.attributes ?? {},
-                potentials: data.potentials ?? {},
-                potentialsPrecise: isPotentialsPrecise(data),
-                attributesPrecise: isAttributesPrecise(data),
-                displayFormat: data.display_format,
-              });
-              return next;
+      // Refresh scouting overlay for this player (works for both college + MLB)
+      BaseballService.GetScoutedPlayer(scoutingPlayerId, effectiveOrgId, leagueYearId)
+        .then((data) => {
+          setScoutingOverlay((prev) => {
+            const next = new Map(prev);
+            next.set(scoutingPlayerId, {
+              letterGrades: data.letter_grades ?? {},
+              attributes: data.attributes ?? {},
+              potentials: data.potentials ?? {},
+              potentialsPrecise: isPotentialsPrecise(data),
+              attributesPrecise: isAttributesPrecise(data),
+              displayFormat: data.display_format,
             });
-          })
-          .catch(() => {});
-      } else {
-        // MLB: re-fetch bootstrap — it includes updated _display values + visibility_context
-        loadBootstrapForOrg(effectiveOrgId).then(processBootstrapResult);
-      }
+            return next;
+          });
+        })
+        .catch(() => {});
       BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
         .then(setScoutingBudget).catch(() => {});
     }
-  }, [scoutingModal, scoutingPlayerId, effectiveOrgId, leagueYearId, isCollege, loadBootstrapForOrg, processBootstrapResult]);
+  }, [scoutingModal, scoutingPlayerId, effectiveOrgId, leagueYearId]);
 
   // --- Transaction Modal ---
   const txnModal = useModal();
@@ -503,29 +526,23 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     }
     // Refresh scouting overlay for the scouted player
     if (scoutConfirmPlayer && effectiveOrgId && leagueYearId) {
-      if (isCollege) {
-        BaseballService.GetScoutedPlayer(scoutConfirmPlayer.id, effectiveOrgId, leagueYearId)
-          .then((data) => {
-            setScoutingOverlay((prev) => {
-              const next = new Map(prev);
-              next.set(scoutConfirmPlayer.id, {
-                letterGrades: data.letter_grades ?? {},
-                attributes: data.attributes ?? {},
-                potentials: data.potentials ?? {},
-                potentialsPrecise: isPotentialsPrecise(data),
-                attributesPrecise: isAttributesPrecise(data),
-                displayFormat: data.display_format,
-              });
-              return next;
+      BaseballService.GetScoutedPlayer(scoutConfirmPlayer.id, effectiveOrgId, leagueYearId)
+        .then((data) => {
+          setScoutingOverlay((prev) => {
+            const next = new Map(prev);
+            next.set(scoutConfirmPlayer.id, {
+              letterGrades: data.letter_grades ?? {},
+              attributes: data.attributes ?? {},
+              potentials: data.potentials ?? {},
+              potentialsPrecise: isPotentialsPrecise(data),
+              attributesPrecise: isAttributesPrecise(data),
+              displayFormat: data.display_format,
             });
-          }).catch(() => {});
-      } else {
-        // MLB: re-fetch bootstrap — it includes updated _display values + visibility_context
-        const orgId = viewedOrg?.id ?? userOrg?.id;
-        if (orgId) loadBootstrapForOrg(orgId).then(processBootstrapResult);
-      }
+            return next;
+          });
+        }).catch(() => {});
     }
-  }, [effectiveOrgId, leagueYearId, scoutConfirmPlayer, isCollege, viewedOrg, userOrg, loadBootstrapForOrg, processBootstrapResult]);
+  }, [effectiveOrgId, leagueYearId, scoutConfirmPlayer]);
 
   // --- Stats fetching ---
   useEffect(() => {

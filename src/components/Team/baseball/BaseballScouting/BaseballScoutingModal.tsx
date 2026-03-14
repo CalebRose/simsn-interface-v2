@@ -14,7 +14,7 @@ import {
 } from "../../../../models/baseball/baseballScoutingModels";
 import { VisibilityContext } from "../../../../models/baseball/baseballModels";
 import { InjuryHistoryItem, PlayerStatsResponse } from "../../../../models/baseball/baseballStatsModels";
-import { ratingColor } from "../../../Gameplan/BaseballGameplan/ratingUtils";
+import { ratingColor, gradeColor } from "../baseballColorConfig";
 import { SCOUTING_ACTION_LABELS, SCOUTING_ACTION_COSTS, getClassYear } from "../../../../_utility/baseballHelpers";
 import { useSnackbar } from "notistack";
 import { HSScoutingContent } from "./HSScoutingContent";
@@ -25,15 +25,6 @@ import { League } from "../../../../_constants/constants";
 import { getLogo } from "../../../../_utility/getLogo";
 import { Logo } from "../../../../_design/Logo";
 import { useAuthStore } from "../../../../context/AuthContext";
-
-// ── Letter grade color (matches potColor in BaseballRosterTable) ──
-const gradeColor = (grade: string): string => {
-  if (grade.startsWith("A")) return "text-green-600 dark:text-green-400";
-  if (grade.startsWith("B")) return "text-blue-600 dark:text-blue-400";
-  if (grade.startsWith("C")) return "text-yellow-600 dark:text-yellow-400";
-  if (grade.startsWith("D")) return "text-orange-600 dark:text-orange-400";
-  return "text-red-600 dark:text-red-400";
-};
 
 // ── Attribute display names ──
 const BATTING_ATTRS = [
@@ -201,11 +192,13 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
     setIsUnlocking(false);
   }, [orgId, leagueYearId, playerId, onBudgetChanged, enqueueSnackbar]);
 
-  // Resolve team for PlayerPicture
+  // Resolve team for PlayerPicture — use the player's org, not the viewer's
   const team = useMemo(() => {
     if (!player?.bio || !allTeams || allTeams.length === 0) return null;
-    return allTeams.find((t) => t.org_id === orgId) ?? null;
-  }, [allTeams, orgId, player?.bio]);
+    const playerOrgId = player.bio.org_id;
+    if (!playerOrgId) return null;
+    return allTeams.find((t) => t.org_id === playerOrgId) ?? null;
+  }, [allTeams, player?.bio]);
 
   const teamLogo = useMemo(() => {
     if (!team) return "";
@@ -235,7 +228,7 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={bio ? `${bio.firstname} ${bio.lastname}` : "Loading..."}
+      title={bio ? `#${bio.id} ${bio.firstname} ${bio.lastname}` : "Loading..."}
       maxWidth="max-w-2xl"
       actions={
         <ButtonGroup>
@@ -334,10 +327,17 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
           </div>
 
           {/* ── Scouting Actions (always visible when available) ── */}
-          {vis && vis.available_actions.length > 0 && (
+          {vis && (vis.available_actions.length > 0 || vis.unlocked.length > 0) && (
             <Border classes="p-3">
               <Text variant="small" classes="font-semibold mb-2">Scouting Actions</Text>
               <div className="flex gap-2 flex-wrap">
+                {vis.unlocked.map((action) => (
+                  <PillButton key={action} variant="primaryOutline" disabled>
+                    <Text variant="small" classes="text-gray-400 line-through">
+                      {actionLabels[action] ?? action} ✓
+                    </Text>
+                  </PillButton>
+                ))}
                 {vis.available_actions.map((action) => (
                   <PillButton
                     key={action}
@@ -495,10 +495,13 @@ const AttributesTab: FC<AttributesTabProps> = ({
         {hasNumeric && hasLetterGrades && (
           <span className="text-xs text-gray-400 font-normal ml-1">(Grade / Numeric)</span>
         )}
-        {isFuzzed && (
-          <span className="text-xs text-yellow-500 font-normal ml-1">(~ = estimated)</span>
-        )}
       </Text>
+      {isFuzzed && (
+        <Text variant="xs" classes="text-gray-400 mb-2">Estimated values — scout for precise data</Text>
+      )}
+      {!isFuzzed && hasNumeric && (
+        <Text variant="xs" classes="text-green-600 dark:text-green-400 mb-2">Precise</Text>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {groups.map((group) => (
@@ -537,12 +540,12 @@ const AttributesTab: FC<AttributesTabProps> = ({
                     <Text variant="xs" classes="font-semibold">{pitchName}</Text>
                     {ovr != null && (
                       <span className={`text-xs font-semibold ${ratingColor(ovr)}`}>
-                        {isFuzzed ? "~" : ""}OVR: {ovr.toFixed(0)}
+                        OVR: {ovr.toFixed(0)}
                       </span>
                     )}
                     {!ovr && letterGrades?.[ovrKey] && (
                       <span className={`text-xs font-semibold ${gradeColor(letterGrades[ovrKey])}`}>
-                        {isFuzzed ? "~" : ""}OVR: {letterGrades[ovrKey]}
+                        OVR: {letterGrades[ovrKey]}
                       </span>
                     )}
                   </div>
@@ -617,10 +620,13 @@ const PotentialsTab: FC<PotentialsTabProps> = ({
 
   return (
     <Border classes="p-3">
-      <Text variant="small" classes="font-semibold mb-2">
-        Potentials
-        {potFuzzed && <span className="text-xs text-yellow-500 font-normal ml-1">(~ = estimated)</span>}
-      </Text>
+      <Text variant="small" classes="font-semibold mb-2">Potentials</Text>
+      {potFuzzed && (
+        <Text variant="xs" classes="text-gray-400 mb-2">Estimated values — scout for precise data</Text>
+      )}
+      {!potFuzzed && hasPotentials && (
+        <Text variant="xs" classes="text-green-600 dark:text-green-400 mb-2">Precise</Text>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {groups.map((group) => (
           <div key={group.title}>
@@ -636,7 +642,7 @@ const PotentialsTab: FC<PotentialsTabProps> = ({
                       <span className="text-gray-500">?</span>
                     ) : (
                       <span className={`font-semibold ${gradeColor(val)}`}>
-                        {potFuzzed ? "~" : ""}{val}
+                        {val}
                       </span>
                     )}
                   </div>
@@ -673,7 +679,7 @@ const PotentialsTab: FC<PotentialsTabProps> = ({
                         <span className="text-gray-500">?</span>
                       ) : (
                         <span className={`font-semibold ${gradeColor(val)}`}>
-                          {potFuzzed ? "~" : ""}{val}
+                          {val}
                         </span>
                       )}
                     </div>
@@ -1010,8 +1016,6 @@ const AttrRow: FC<{
   const numeric = attributes?.[`${attrKey}_display`];
 
   const cls = compact ? "flex justify-between text-xs" : "flex justify-between text-xs py-0.5";
-  const fuzzPrefix = isFuzzed ? "~" : "";
-
   // Hidden display format: attributes not yet scouted
   if (isHidden && !grade && numeric == null) {
     return (
@@ -1026,10 +1030,10 @@ const AttrRow: FC<{
     <div className={cls}>
       <span className="text-gray-400">{label}</span>
       <span className="flex gap-1.5">
-        {grade && <span className={`font-semibold ${gradeColor(grade)}`}>{fuzzPrefix}{grade}</span>}
+        {grade && <span className={`font-semibold ${gradeColor(grade)}`}>{grade}</span>}
         {numeric != null && (
           <span className={`${ratingColor(numeric)} ${grade ? "text-gray-300" : "font-semibold"}`}>
-            {grade ? `(${fuzzPrefix}${numeric.toFixed(0)})` : `${fuzzPrefix}${numeric.toFixed(0)}`}
+            {grade ? `(${numeric.toFixed(0)})` : `${numeric.toFixed(0)}`}
           </span>
         )}
         {!grade && numeric == null && <span className="text-gray-500">?</span>}
