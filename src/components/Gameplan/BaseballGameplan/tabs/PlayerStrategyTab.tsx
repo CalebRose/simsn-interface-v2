@@ -432,12 +432,12 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     );
                   }
                   return (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-col gap-2">
                       {pitchNames.map((name, i) => {
                         if (!name) return null;
                         return (
-                          <div key={i} className="flex items-center gap-1">
-                            <Text variant="small" classes="text-gray-400 w-20 truncate">{name}:</Text>
+                          <div key={i} className="flex items-center gap-2">
+                            <Text variant="small" classes="text-gray-400 w-28 truncate">{name}</Text>
                             <input
                               type="number"
                               min={0}

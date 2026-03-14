@@ -58,6 +58,11 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
     return Object.values(rosterMap).flat();
   }, [rosterMap]);
 
+  // Players for the active level only (used to scope scouting fetches)
+  const activeLevelPlayers = useMemo(() => {
+    return allPlayers.filter((p) => p.league_level === activeLevel);
+  }, [allPlayers, activeLevel]);
+
   // ── Scouting overlay ──
   interface ScoutingOverlayEntry {
     letterGrades: Record<string, string>;
@@ -68,6 +73,7 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
     displayFormat?: string;
   }
   const [scoutingOverlay, setScoutingOverlay] = useState<Map<number, ScoutingOverlayEntry>>(new Map());
+  const scoutingLoadedLevels = useRef<Set<string>>(new Set());
   const scoutingLoadedForOrg = useRef<number | null>(null);
 
   const orgId = organization?.id ?? 0;
@@ -87,41 +93,52 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
   };
 
   const fetchScoutingOverlay = useCallback(async (players: Player[], oId: number, lyId: number) => {
-    if (!oId || !lyId) return;
-    const overlay = new Map<number, ScoutingOverlayEntry>();
-    // Process in small batches with delays to avoid API rate limits (429)
+    if (!oId || !lyId || players.length === 0) return;
     const BATCH_SIZE = 3;
     const BATCH_DELAY_MS = 300;
     for (let i = 0; i < players.length; i += BATCH_SIZE) {
       if (i > 0) await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
       const batch = players.slice(i, i + BATCH_SIZE);
+      const results: [number, ScoutingOverlayEntry][] = [];
       await Promise.all(
         batch.map(async (p) => {
           try {
             const data = await BaseballService.GetScoutedPlayer(p.id, oId, lyId);
-            overlay.set(p.id, {
+            results.push([p.id, {
               letterGrades: data.letter_grades ?? {},
               attributes: data.attributes ?? {},
               potentials: data.potentials ?? {},
               potentialsPrecise: isPotentialsPrecise(data),
               attributesPrecise: isAttributesPrecise(data),
               displayFormat: data.display_format,
-            });
+            }]);
           } catch { /* player may not be in scouting pool */ }
         })
       );
-      setScoutingOverlay(new Map(overlay));
+      if (results.length > 0) {
+        setScoutingOverlay((prev) => {
+          const next = new Map(prev);
+          for (const [id, entry] of results) next.set(id, entry);
+          return next;
+        });
+      }
     }
   }, []);
 
   useEffect(() => {
     if (!orgId || !leagueYearId) return;
-    const all = Object.values(rosterMap).flat();
-    if (all.length === 0) return;
-    if (scoutingLoadedForOrg.current === orgId) return;
-    scoutingLoadedForOrg.current = orgId;
-    fetchScoutingOverlay(all, orgId, leagueYearId);
-  }, [orgId, leagueYearId, rosterMap, fetchScoutingOverlay]);
+    if (activeLevelPlayers.length === 0) return;
+    // Reset tracking when org changes
+    if (scoutingLoadedForOrg.current !== orgId) {
+      scoutingLoadedForOrg.current = orgId;
+      scoutingLoadedLevels.current = new Set();
+      setScoutingOverlay(new Map());
+    }
+    // Only fetch for levels we haven't loaded yet
+    if (scoutingLoadedLevels.current.has(activeLevel)) return;
+    scoutingLoadedLevels.current.add(activeLevel);
+    fetchScoutingOverlay(activeLevelPlayers, orgId, leagueYearId);
+  }, [orgId, leagueYearId, activeLevel, activeLevelPlayers, fetchScoutingOverlay]);
 
   const applyScoutingOverlay = useCallback((players: Player[]): Player[] => {
     if (scoutingOverlay.size === 0) return players;

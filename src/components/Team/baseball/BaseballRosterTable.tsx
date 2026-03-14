@@ -50,6 +50,21 @@ export const ALL_ATTR_GROUPS: ColumnGroup[] = [
   ACTIONS_GROUP,
 ];
 
+export const ALL_POT_GROUPS: ColumnGroup[] = [
+  { groupLabel: "", columns: [...INFO_COLS, { label: "Type", sortKey: "ptype" }, { label: "B/T", sortKey: "" }] },
+  { groupLabel: "Hitting", columns: [
+    { label: "Contact", sortKey: "pot_contact" }, { label: "Power", sortKey: "pot_power" },
+    { label: "Eye", sortKey: "pot_eye" }, { label: "Disc", sortKey: "pot_disc" },
+  ]},
+  { groupLabel: "Speed", columns: [{ label: "Speed", sortKey: "pot_speed" }] },
+  { groupLabel: "Defense", columns: [
+    { label: "FldCatch", sortKey: "pot_fldcatch" }, { label: "FldReact", sortKey: "pot_fldreact" },
+    { label: "ThrowAcc", sortKey: "pot_throwacc" }, { label: "ThrowPow", sortKey: "pot_throwpow" },
+  ]},
+  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }] },
+  ACTIONS_GROUP,
+];
+
 export const POS_ATTR_GROUPS: ColumnGroup[] = [
   { groupLabel: "", columns: INFO_COLS },
   { groupLabel: "Hitting", columns: [
@@ -71,12 +86,49 @@ export const POS_ATTR_GROUPS: ColumnGroup[] = [
   ACTIONS_GROUP,
 ];
 
+export const POS_POT_GROUPS: ColumnGroup[] = [
+  { groupLabel: "", columns: INFO_COLS },
+  { groupLabel: "Hitting", columns: [
+    { label: "Contact", sortKey: "pot_contact" }, { label: "Power", sortKey: "pot_power" },
+    { label: "Eye", sortKey: "pot_eye" }, { label: "Disc", sortKey: "pot_disc" },
+  ]},
+  { groupLabel: "Speed / Base", columns: [
+    { label: "Speed", sortKey: "pot_speed" }, { label: "BaseRun", sortKey: "pot_baserun" },
+  ]},
+  { groupLabel: "Fielding", columns: [
+    { label: "FldCatch", sortKey: "pot_fldcatch" }, { label: "FldReact", sortKey: "pot_fldreact" },
+    { label: "FldSpot", sortKey: "pot_fldspot" }, { label: "ThrowAcc", sortKey: "pot_throwacc" },
+    { label: "ThrowPow", sortKey: "pot_throwpow" },
+  ]},
+  { groupLabel: "Catcher", columns: [
+    { label: "CatchFrm", sortKey: "pot_catchfrm" }, { label: "CatchSeq", sortKey: "pot_catchseq" },
+  ]},
+  { groupLabel: "Position", columns: [{ label: "Rtg", sortKey: "posrtg" }] },
+  ACTIONS_GROUP,
+];
+
 export const PITCH_ATTR_GROUPS: ColumnGroup[] = [
   { groupLabel: "", columns: [...INFO_COLS, { label: "Throw", sortKey: "" }] },
   { groupLabel: "Pitching", columns: [
     { label: "Endurance", sortKey: "endurance" }, { label: "Control", sortKey: "control" },
     { label: "Velocity", sortKey: "velocity" }, { label: "Sequence", sortKey: "sequence" },
     { label: "Pickoff", sortKey: "pickoff" },
+  ]},
+  { groupLabel: "Roles", columns: [{ label: "SP", sortKey: "sp" }, { label: "RP", sortKey: "rp" }] },
+  { groupLabel: "Arsenal", columns: [
+    { label: "P1", sortKey: "p1ovr" }, { label: "P2", sortKey: "p2ovr" },
+    { label: "P3", sortKey: "p3ovr" }, { label: "P4", sortKey: "p4ovr" },
+    { label: "P5", sortKey: "p5ovr" },
+  ]},
+  ACTIONS_GROUP,
+];
+
+export const PITCH_POT_GROUPS: ColumnGroup[] = [
+  { groupLabel: "", columns: [...INFO_COLS, { label: "Throw", sortKey: "" }] },
+  { groupLabel: "Pitching", columns: [
+    { label: "Endurance", sortKey: "pot_endurance" }, { label: "Control", sortKey: "pot_control" },
+    { label: "Velocity", sortKey: "pot_velocity" }, { label: "Sequence", sortKey: "pot_sequence" },
+    { label: "Pickoff", sortKey: "pot_pickoff" },
   ]},
   { groupLabel: "Roles", columns: [{ label: "SP", sortKey: "sp" }, { label: "RP", sortKey: "rp" }] },
   { groupLabel: "Arsenal", columns: [
@@ -124,8 +176,11 @@ export const PITCHING_STATS_GROUPS: ColumnGroup[] = [
 
 // Variants without actions column
 export const ALL_ATTR_GROUPS_NO_ACTIONS: ColumnGroup[] = ALL_ATTR_GROUPS.filter((g) => g !== ACTIONS_GROUP);
+export const ALL_POT_GROUPS_NO_ACTIONS: ColumnGroup[] = ALL_POT_GROUPS.filter((g) => g !== ACTIONS_GROUP);
 export const POS_ATTR_GROUPS_NO_ACTIONS: ColumnGroup[] = POS_ATTR_GROUPS.filter((g) => g !== ACTIONS_GROUP);
+export const POS_POT_GROUPS_NO_ACTIONS: ColumnGroup[] = POS_POT_GROUPS.filter((g) => g !== ACTIONS_GROUP);
 export const PITCH_ATTR_GROUPS_NO_ACTIONS: ColumnGroup[] = PITCH_ATTR_GROUPS.filter((g) => g !== ACTIONS_GROUP);
+export const PITCH_POT_GROUPS_NO_ACTIONS: ColumnGroup[] = PITCH_POT_GROUPS.filter((g) => g !== ACTIONS_GROUP);
 export const CONTRACT_GROUPS_NO_ACTIONS: ColumnGroup[] = CONTRACT_GROUPS.filter((g) => g !== ACTIONS_GROUP);
 export const BATTING_STATS_GROUPS_NO_ACTIONS: ColumnGroup[] = BATTING_STATS_GROUPS.filter((g) => g !== ACTIONS_GROUP);
 export const PITCHING_STATS_GROUPS_NO_ACTIONS: ColumnGroup[] = PITCHING_STATS_GROUPS.filter((g) => g !== ACTIONS_GROUP);
@@ -193,6 +248,26 @@ export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsM
     case "p1": return p.pitch1_name; case "p2": return p.pitch2_name;
     case "p3": return p.pitch3_name; case "p4": return p.pitch4_name;
     case "p5": return p.pitch5_name;
+    // Potentials
+    case "pot_contact":   return p.potentials.contact_pot;
+    case "pot_power":     return p.potentials.power_pot;
+    case "pot_eye":       return p.potentials.eye_pot;
+    case "pot_disc":      return p.potentials.discipline_pot;
+    case "pot_speed":     return p.potentials.speed_pot;
+    case "pot_baserun":   return p.potentials.baserunning_pot;
+    case "pot_fldcatch":  return p.potentials.fieldcatch_pot;
+    case "pot_fldreact":  return p.potentials.fieldreact_pot;
+    case "pot_fldspot":   return p.potentials.fieldspot_pot;
+    case "pot_throwacc":  return p.potentials.throwacc_pot;
+    case "pot_throwpow":  return p.potentials.throwpower_pot;
+    case "pot_catchfrm":  return p.potentials.catchframe_pot;
+    case "pot_catchseq":  return p.potentials.catchsequence_pot;
+    case "pot_endurance": return p.potentials.pendurance_pot;
+    case "pot_control":   return p.potentials.pgencontrol_pot;
+    case "pot_velocity":  return p.potentials.pthrowpower_pot;
+    case "pot_sequence":  return p.potentials.psequencing_pot;
+    case "pot_pickoff":   return p.potentials.pickoff_pot;
+    // Contracts
     case "contractYears":       return p.contract?.years ?? null;
     case "contractCurrentYear": return p.contract?.current_year ?? null;
     case "contractSalary":      return p.contract?.current_year_detail?.base_salary ?? null;
@@ -204,14 +279,23 @@ export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsM
 
 const STRING_KEYS = new Set(["name", "ptype", "p1", "p2", "p3", "p4", "p5"]);
 
+const BOTTOM_SORT_VALUES = new Set(["?", "N", ""]);
+const bottomRank = (v: string | number | null): number => {
+  if (v == null) return 2;           // — (null) always last
+  if (BOTTOM_SORT_VALUES.has(v as string)) return 1; // ? / N / empty just above null
+  return 0;                          // real value
+};
+
 export const comparePlayers = (a: Player, b: Player, sort: SortConfig, statsMap?: PlayerStatsMap): number => {
   if (!sort) return 0;
   const { key, dir } = sort;
   const av = resolveSortValue(a, key, statsMap);
   const bv = resolveSortValue(b, key, statsMap);
-  if (av == null && bv == null) return 0;
-  if (av == null) return 1;
-  if (bv == null) return -1;
+  // Push null / "?" / "N" / "" to the bottom regardless of sort direction
+  const aRank = bottomRank(av);
+  const bRank = bottomRank(bv);
+  if (aRank !== bRank) return aRank - bRank;
+  if (aRank > 0) return 0; // both are bottom-tier, keep stable
   const mul = dir === "asc" ? 1 : -1;
   if (STRING_KEYS.has(key)) return mul * String(av).localeCompare(String(bv));
   // Handle letter grades (strings) mixed with numeric values
@@ -650,6 +734,8 @@ export const AllPlayersTable = ({ players, orgAbbrev, onPlayerClick, sortConfig,
     ? (hasActions ? CONTRACT_GROUPS : CONTRACT_GROUPS_NO_ACTIONS)
     : category === Stats
     ? (hasActions ? BATTING_STATS_GROUPS : BATTING_STATS_GROUPS_NO_ACTIONS)
+    : category === Potentials
+    ? (hasActions ? ALL_POT_GROUPS : ALL_POT_GROUPS_NO_ACTIONS)
     : (hasActions ? ALL_ATTR_GROUPS : ALL_ATTR_GROUPS_NO_ACTIONS);
   return (
     <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
@@ -682,6 +768,8 @@ export const PositionTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, o
     ? (hasActions ? CONTRACT_GROUPS : CONTRACT_GROUPS_NO_ACTIONS)
     : category === Stats
     ? (hasActions ? BATTING_STATS_GROUPS : BATTING_STATS_GROUPS_NO_ACTIONS)
+    : category === Potentials
+    ? (hasActions ? POS_POT_GROUPS : POS_POT_GROUPS_NO_ACTIONS)
     : (hasActions ? POS_ATTR_GROUPS : POS_ATTR_GROUPS_NO_ACTIONS);
   return (
     <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
@@ -714,6 +802,8 @@ export const PitcherTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, on
     ? (hasActions ? CONTRACT_GROUPS : CONTRACT_GROUPS_NO_ACTIONS)
     : category === Stats
     ? (hasActions ? PITCHING_STATS_GROUPS : PITCHING_STATS_GROUPS_NO_ACTIONS)
+    : category === Potentials
+    ? (hasActions ? PITCH_POT_GROUPS : PITCH_POT_GROUPS_NO_ACTIONS)
     : (hasActions ? PITCH_ATTR_GROUPS : PITCH_ATTR_GROUPS_NO_ACTIONS);
   return (
     <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">

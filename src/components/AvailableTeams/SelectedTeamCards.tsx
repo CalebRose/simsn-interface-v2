@@ -159,7 +159,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                   <div className="flex-col">
                     <Text variant="small" classes="font-semibold text-start">
                       Coach:{" "}
-                      {selectedTeam.Coach.length > 0
+                      {selectedTeam.Coach?.length > 0
                         ? selectedTeam.Coach
                         : "None"}
                     </Text>
@@ -176,7 +176,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     classes="font-semibold text-start whitespace-nowrap"
                   >
                     Owner:{" "}
-                    {selectedTeam.NFLOwnerName.length > 0
+                    {selectedTeam.NFLOwnerName?.length > 0
                       ? selectedTeam.NFLOwnerName
                       : "None"}
                   </Text>
@@ -185,7 +185,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                   <div className="flex-col">
                     <Text variant="small" classes="font-semibold text-start">
                       Coach:{" "}
-                      {selectedTeam.NFLCoachName.length > 0
+                      {selectedTeam.NFLCoachName?.length > 0
                         ? selectedTeam.NFLCoachName
                         : "None"}
                     </Text>
@@ -197,7 +197,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     classes="font-semibold text-start whitespace-nowrap"
                   >
                     GM:{" "}
-                    {selectedTeam.NFLGMName.length > 0
+                    {selectedTeam.NFLGMName?.length > 0
                       ? selectedTeam.NFLGMName
                       : "None"}
                   </Text>
@@ -209,7 +209,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     classes="font-semibold text-start whitespace-nowrap"
                   >
                     Scout:{" "}
-                    {selectedTeam.NFLAssistantName.length > 0
+                    {selectedTeam.NFLAssistantName?.length > 0
                       ? selectedTeam.NFLAssistantName
                       : "None"}
                   </Text>
@@ -223,7 +223,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 <div className="flex-col">
                   <Text variant="small" classes="font-semibold text-start">
                     Owner:{" "}
-                    {selectedTeam.NBAOwnerName.length > 0
+                    {selectedTeam.NBAOwnerName?.length > 0
                       ? selectedTeam.NBAOwnerName
                       : "None"}
                   </Text>
@@ -231,7 +231,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 <div className="flex-col">
                   <Text variant="small" classes="font-semibold text-start">
                     GM:{" "}
-                    {selectedTeam.NBAGMName.length > 0
+                    {selectedTeam.NBAGMName?.length > 0
                       ? selectedTeam.NBAGMName
                       : "None"}
                   </Text>
@@ -240,7 +240,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                   <div className="flex-col">
                     <Text variant="small" classes="font-semibold text-start">
                       Coach:{" "}
-                      {selectedTeam.NBACoachName.length > 0
+                      {selectedTeam.NBACoachName?.length > 0
                         ? selectedTeam.NBACoachName
                         : "None"}
                     </Text>
@@ -249,7 +249,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 <div className="flex-col">
                   <Text variant="small" classes="font-semibold text-start">
                     Scout:{" "}
-                    {selectedTeam.NBAAssistantName.length > 0
+                    {selectedTeam.NBAAssistantName?.length > 0
                       ? selectedTeam.NBAAssistantName
                       : "None"}
                   </Text>
@@ -386,28 +386,28 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                   <Button
                     size="sm"
                     onClick={() => sendRequest?.(league, selectedTeam, "o")}
-                    disabled={selectedTeam.NFLOwnerName.length > 0}
+                    disabled={(selectedTeam.NFLOwnerName?.length ?? 0) > 0}
                   >
                     <Text variant="small">Request Ownership</Text>
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => sendRequest?.(league, selectedTeam, "hc")}
-                    disabled={selectedTeam.NFLCoachName.length > 0}
+                    disabled={(selectedTeam.NFLCoachName?.length ?? 0) > 0}
                   >
                     <Text variant="small">Request Coach</Text>
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => sendRequest?.(league, selectedTeam, "gm")}
-                    disabled={selectedTeam.NFLGMName.length > 0}
+                    disabled={(selectedTeam.NFLGMName?.length ?? 0) > 0}
                   >
                     <Text variant="small">Request GM</Text>
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => sendRequest?.(league, selectedTeam, "a")}
-                    disabled={selectedTeam.NFLAssistantName.length > 0}
+                    disabled={(selectedTeam.NFLAssistantName?.length ?? 0) > 0}
                   >
                     Request Assistant
                   </Button>
@@ -418,28 +418,28 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                   <Button
                     size="sm"
                     onClick={() => sendRequest?.(league, selectedTeam, "o")}
-                    disabled={selectedTeam.NBAOwnerName.length > 0}
+                    disabled={(selectedTeam.NBAOwnerName?.length ?? 0) > 0}
                   >
                     Request Ownership
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => sendRequest?.(league, selectedTeam, "hc")}
-                    disabled={selectedTeam.NBACoachName.length > 0}
+                    disabled={(selectedTeam.NBACoachName?.length ?? 0) > 0}
                   >
                     Request Coach
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => sendRequest?.(league, selectedTeam, "gm")}
-                    disabled={selectedTeam.NBAGMName.length > 0}
+                    disabled={(selectedTeam.NBAGMName?.length ?? 0) > 0}
                   >
                     Request GM
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => sendRequest?.(league, selectedTeam, "a")}
-                    disabled={selectedTeam.NBAAssistantName.length > 0}
+                    disabled={(selectedTeam.NBAAssistantName?.length ?? 0) > 0}
                   >
                     Request Assistant
                   </Button>
@@ -453,7 +453,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                       sendRequest?.(league, selectedTeam, Owner);
                       handleCloseModal();
                     }}
-                    disabled={selectedTeam.Owner.length > 0}
+                    disabled={(selectedTeam.Owner?.length ?? 0) > 0}
                   >
                     <Text variant="small">Ownership</Text>
                   </Button>
@@ -463,7 +463,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                       sendRequest?.(league, selectedTeam, Coach);
                       handleCloseModal();
                     }}
-                    disabled={selectedTeam.Coach.length > 0}
+                    disabled={(selectedTeam.Coach?.length ?? 0) > 0}
                   >
                     <Text variant="small">Coach</Text>
                   </Button>
@@ -473,7 +473,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                       sendRequest?.(league, selectedTeam, GM);
                       handleCloseModal();
                     }}
-                    disabled={selectedTeam.GM.length > 0}
+                    disabled={(selectedTeam.GM?.length ?? 0) > 0}
                   >
                     <Text variant="small">GM</Text>
                   </Button>
@@ -483,7 +483,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                       sendRequest?.(league, selectedTeam, Scout);
                       handleCloseModal();
                     }}
-                    disabled={selectedTeam.Scout.length > 0}
+                    disabled={(selectedTeam.Scout?.length ?? 0) > 0}
                   >
                     <Text variant="small">Assistant</Text>
                   </Button>
@@ -493,7 +493,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                       sendRequest?.(league, selectedTeam, Marketing);
                       handleCloseModal();
                     }}
-                    disabled={selectedTeam.Marketing.length > 0}
+                    disabled={(selectedTeam.Marketing?.length ?? 0) > 0}
                   >
                     <Text variant="small">Marketing</Text>
                   </Button>

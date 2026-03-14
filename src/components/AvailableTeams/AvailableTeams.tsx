@@ -408,7 +408,7 @@ export const AvailableTeams = () => {
                   conference={x.Conference}
                   league={selectedLeague}
                   disable={
-                    sentRequestCFB || (x.Coach != "AI" && x.Coach.length > 0)
+                    sentRequestCFB || (x.Coach && x.Coach !== "AI" && x.Coach.length > 0)
                   }
                   setSelectedTeam={setSelectedTeam}
                 />
@@ -466,7 +466,7 @@ export const AvailableTeams = () => {
                   conference={x.Conference}
                   league={selectedLeague}
                   disable={
-                    sentRequestCHL || (x.Coach != "AI" && x.Coach.length > 0)
+                    sentRequestCHL || (x.Coach && x.Coach !== "AI" && x.Coach.length > 0)
                   }
                   setSelectedTeam={setSelectedTeam}
                 />

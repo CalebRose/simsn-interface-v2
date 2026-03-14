@@ -28,6 +28,7 @@ import {
   displayTeamName,
   LEVEL_ORDER,
   normalizePlayer,
+  numericToLetterGrade,
 } from "../../../_utility/baseballHelpers";
 import { useModal } from "../../../_hooks/useModal";
 import { BaseballService } from "../../../_services/baseballService";
@@ -406,12 +407,33 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     fetchScoutingOverlay(allPlayers, effectiveOrgId, leagueYearId);
   }, [isCollege, isAllView, effectiveOrgId, leagueYearId, pageRosterMap, fetchScoutingOverlay]);
 
+  // Convert any numeric _display values to letter grades for college players
+  const convertRatingsToGrades = (ratings: PlayerRatings): PlayerRatings => {
+    const converted = { ...ratings };
+    for (const key of Object.keys(converted) as (keyof PlayerRatings)[]) {
+      const val = converted[key];
+      if (typeof val === "number" && key.endsWith("_display")) {
+        (converted as any)[key] = numericToLetterGrade(val);
+      }
+    }
+    return converted;
+  };
+
   // Apply scouting overlay to players: replace _display values, overlay potentials
+  // For college: also ensures all numeric _display values are converted to letter grades
   const applyScoutingOverlay = useCallback(
     (players: Player[]): Player[] => {
-      if (scoutingOverlay.size === 0) return players;
       return players.map((p) => {
         const entry = scoutingOverlay.get(p.id);
+
+        if (isCollege && !entry) {
+          // No scouting data yet — still convert bootstrap 20-80 values to letter grades
+          return {
+            ...p,
+            ratings: convertRatingsToGrades(p.ratings),
+          };
+        }
+
         if (!entry) return p;
         const newRatings = { ...p.ratings };
 
@@ -442,7 +464,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
         return {
           ...p,
-          ratings: newRatings,
+          ratings: isCollege ? convertRatingsToGrades(newRatings) : newRatings,
           potentials: newPotentials,
           visibility_context: {
             context: isCollege ? "college_roster" : "pro_roster",
@@ -816,8 +838,15 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     else if (Object.keys(pageRosterMap).length > 0)
       players = Object.values(pageRosterMap).flat();
     else players = [];
-    return applyScoutingOverlay(players);
-  }, [isAllView, allOrgPlayers, pageRosterMap, applyScoutingOverlay]);
+    const overlaid = applyScoutingOverlay(players);
+    // While scouting is loading, only show players whose overlay data has arrived
+    // to prevent briefly exposing raw bootstrap values (precise/unfuzzed for MLB,
+    // numeric 20-80 for college). Once loading completes, show all players.
+    if (scoutingLoading && !isAllView) {
+      return overlaid.filter((p) => scoutingOverlay.has(p.id));
+    }
+    return overlaid;
+  }, [isAllView, allOrgPlayers, pageRosterMap, applyScoutingOverlay, scoutingLoading, scoutingOverlay]);
 
   const levelTeams = useMemo(() => {
     if (isAllView || !viewedOrg?.teams) return [];
