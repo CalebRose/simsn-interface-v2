@@ -89,22 +89,29 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
   const fetchScoutingOverlay = useCallback(async (players: Player[], oId: number, lyId: number) => {
     if (!oId || !lyId) return;
     const overlay = new Map<number, ScoutingOverlayEntry>();
-    await Promise.all(
-      players.map(async (p) => {
-        try {
-          const data = await BaseballService.GetScoutedPlayer(p.id, oId, lyId);
-          overlay.set(p.id, {
-            letterGrades: data.letter_grades ?? {},
-            attributes: data.attributes ?? {},
-            potentials: data.potentials ?? {},
-            potentialsPrecise: isPotentialsPrecise(data),
-            attributesPrecise: isAttributesPrecise(data),
-            displayFormat: data.display_format,
-          });
-        } catch { /* player may not be in scouting pool */ }
-      })
-    );
-    setScoutingOverlay(overlay);
+    // Process in small batches with delays to avoid API rate limits (429)
+    const BATCH_SIZE = 3;
+    const BATCH_DELAY_MS = 300;
+    for (let i = 0; i < players.length; i += BATCH_SIZE) {
+      if (i > 0) await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
+      const batch = players.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(async (p) => {
+          try {
+            const data = await BaseballService.GetScoutedPlayer(p.id, oId, lyId);
+            overlay.set(p.id, {
+              letterGrades: data.letter_grades ?? {},
+              attributes: data.attributes ?? {},
+              potentials: data.potentials ?? {},
+              potentialsPrecise: isPotentialsPrecise(data),
+              attributesPrecise: isAttributesPrecise(data),
+              displayFormat: data.display_format,
+            });
+          } catch { /* player may not be in scouting pool */ }
+        })
+      );
+      setScoutingOverlay(new Map(overlay));
+    }
   }, []);
 
   useEffect(() => {

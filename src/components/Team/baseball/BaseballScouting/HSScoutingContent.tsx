@@ -9,15 +9,7 @@ import {
 } from "../../../../models/baseball/baseballScoutingModels";
 import type { RecruitingPlayerDetail } from "../../../../models/baseball/baseballRecruitingModels";
 import { SCOUTING_ACTION_LABELS, SCOUTING_ACTION_COSTS, getHSClassYear } from "../../../../_utility/baseballHelpers";
-
-// ── Grade color (consistent with BaseballRosterTable) ──
-const gradeColor = (grade: string): string => {
-  if (grade.startsWith("A")) return "text-green-600 dark:text-green-400";
-  if (grade.startsWith("B")) return "text-blue-600 dark:text-blue-400";
-  if (grade.startsWith("C")) return "text-yellow-600 dark:text-yellow-400";
-  if (grade.startsWith("D")) return "text-orange-600 dark:text-orange-400";
-  return "text-red-600 dark:text-red-400";
-};
+import { gradeColor } from "../baseballColorConfig";
 
 // ── Potential display groups by player type ──
 const POS_POTENTIAL_GROUPS = [
@@ -244,7 +236,7 @@ export const HSScoutingContent: FC<HSScoutingContentProps> = ({
                         <div key={key} className="flex justify-between text-xs py-0.5">
                           <span className="text-gray-400">{label}</span>
                           <span className={`font-semibold ${gradeColor(val)}`}>
-                            {potFuzzed ? "~" : ""}{val}
+                            {val}
                           </span>
                         </div>
                       );

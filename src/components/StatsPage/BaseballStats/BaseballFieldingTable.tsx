@@ -67,7 +67,7 @@ export const BaseballFieldingTable = ({ leaders, league, isRetro, accentColor, o
               return (
                 <th
                   key={col.key}
-                  className={`px-2 py-2 ${col.key === "name" ? "text-left min-w-[10rem]" : "text-center"} ${isSortable ? "cursor-pointer select-none hover:opacity-80" : ""} ${isActive ? "underline decoration-2 underline-offset-2" : ""}`}
+                  className={`px-2 py-2 ${col.key === "name" ? "text-left min-w-[6rem]" : "text-center"} ${isSortable ? "cursor-pointer select-none hover:opacity-80" : ""} ${isActive ? "underline decoration-2 underline-offset-2" : ""}`}
                   title={col.tooltip}
                   onClick={isSortable ? () => onSort!(col.sortKey!) : undefined}
                 >

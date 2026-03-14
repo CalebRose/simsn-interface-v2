@@ -48,7 +48,7 @@ export const LoadingMessages = [
   "In simBaseball eye informs whether your player can make decisions on action or randomly hacks without information.",
   "In simBaseball discipline informs whether your player cares about making the right choice even if they know what's happening.",
   "In simBaseball speed makes player go zoom.",
-  "In simBasebal baserunning and basereact make sure your player gets a jump on the pitcher and rounds the base path without getting thrown or put out.", 
+  "In simBaseball baserunning and basereact make sure your player gets a jump on the pitcher and rounds the base path without getting thrown or put out.", 
   "In simBaseball fieldreact is how quick of a jump you make on the ball once it's in action.",
   "In simBaseball fieldcatch tells you whether your player can actually make a play on the ball.",
   "Calibrating the flux capacitor...",

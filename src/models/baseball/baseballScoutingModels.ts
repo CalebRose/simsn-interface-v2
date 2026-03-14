@@ -178,6 +178,8 @@ export interface ScoutingPlayerBio {
     arm_angle: string | null;
     durability: string;
     injury_risk: string;
+    org_id: number | null;
+    org_abbrev: string | null;
     pitch1_name: string | null;
     pitch2_name: string | null;
     pitch3_name: string | null;

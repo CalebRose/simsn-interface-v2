@@ -1,21 +1,8 @@
 import { FC } from "react";
 import { Player, PlayerRatings, DisplayValue } from "../../../models/baseball/baseballModels";
-import { letterGradeToNumeric } from "../../../_utility/baseballHelpers";
+import { ratingColor, gradeColor } from "../../Team/baseball/baseballColorConfig";
 
-// ── Grade color for letter grades ───────────────────────────────────
-const gradeColor = (grade: string): string => {
-  const n = letterGradeToNumeric(grade);
-  return ratingColor(n);
-};
-
-// ── Rating color thresholds (matches BaseballTeamPage) ──────────────
-export const ratingColor = (v: number): string => {
-  if (v >= 70) return "text-green-600 dark:text-green-400 font-semibold";
-  if (v >= 60) return "text-blue-600 dark:text-blue-400";
-  if (v >= 50) return "";
-  if (v >= 40) return "text-yellow-600 dark:text-yellow-400";
-  return "text-red-600 dark:text-red-400";
-};
+export { ratingColor };
 
 /** Color for a DisplayValue (number, letter grade string, or null). */
 export const displayValueColor = (v: DisplayValue): string => {
@@ -44,7 +31,7 @@ export const RatingChip: FC<RatingChipProps> = ({ value, label, isFuzzed }) => {
     <span className="inline-flex items-center gap-0.5 text-xs" title={isFuzzed ? "Estimated" : undefined}>
       {label && <span className="text-gray-400">{label}:</span>}
       <span className={typeof value === "string" ? gradeColor(value) : ratingColor(value)}>
-        {isFuzzed ? `~${text}` : text}
+        {text}
       </span>
     </span>
   );

@@ -2806,6 +2806,9 @@ case 488: return CBLLogos.MRSH
 case 489: return CBLLogos.INTAM
 case 490: return CBLLogos.USHS
 
+case 504: return CBLLogos.GUAM
+case 505: return CBLLogos.SAMO
+
 default:
       return logoObj.Unknown;
   }

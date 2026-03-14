@@ -28,7 +28,7 @@ interface Column {
 
 const COLUMNS: Column[] = [
   { label: "#", key: "rank", width: "w-10" },
-  { label: "Player", key: "name", width: "min-w-[10rem]" },
+  { label: "Player", key: "name", width: "min-w-[6rem]" },
   { label: "Team", key: "team_abbrev", width: "w-16" },
   { label: "Pos", key: "position", width: "w-12" },
   { label: "G", key: "g", sortKey: "g" },
