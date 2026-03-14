@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Timestamp as FBTimeStamp } from "../models/footballModels";
 import { Timestamp as BKTimestamp } from "../models/basketballModels";
 import { Timestamp as HKTimestamp } from "../models/hockeyModels";
-import { Timestamp as BaseballTimestamp } from "../models/baseballModels";
+import { Timestamp as BaseballTimestamp } from "../models/baseball/baseballModels";
 import { useAuthStore } from "../context/AuthContext";
 import { SimBBA, SimFBA, SimHCK, SimMLB, SimCollegeBaseball } from "../_constants/constants";
 

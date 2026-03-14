@@ -13,6 +13,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -113,6 +115,20 @@ export const AdminPage = () => {
                 onClick={() => setSelectedLeague(SimPHL)}
               >
                 {SimPHL}
+              </PillButton>
+              <PillButton
+                isSelected={selectedLeague === SimCollegeBaseball}
+                classes="w-[8rem]"
+                onClick={() => setSelectedLeague(SimCollegeBaseball)}
+              >
+                SimCB
+              </PillButton>
+              <PillButton
+                isSelected={selectedLeague === SimMLB}
+                classes="w-[8rem]"
+                onClick={() => setSelectedLeague(SimMLB)}
+              >
+                {SimMLB}
               </PillButton>
             </ButtonGroup>
           </Border>

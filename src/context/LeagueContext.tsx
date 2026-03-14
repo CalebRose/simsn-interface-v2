@@ -21,7 +21,7 @@ import { GetLeagueTS } from "../_helper/teamHelper";
 import { Timestamp as FBTimeStamp } from "../models/footballModels";
 import { Timestamp as BKTimestamp } from "../models/basketballModels";
 import { Timestamp as HKTimestamp } from "../models/hockeyModels";
-import { Timestamp as BaseballTimestamp } from "../models/baseballModels";
+import { Timestamp as BaseballTimestamp } from "../models/baseball/baseballModels";
 import { useAuthStore } from "./AuthContext";
 import { useSimHCKStore } from "./SimHockeyContext";
 import { useSimFBAStore } from "./SimFBAContext";
@@ -94,7 +94,7 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
 
   useEffect(() => {
     // only run once all stores are done loading
-    if (fbLoading || bkLoading || hkLoading) return;
+    if (fbLoading || bkLoading || hkLoading || baseballLoading) return;
 
     // Only set team if we don't have a selected team yet
     if (selectedTeam) return;
@@ -110,6 +110,8 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
         nbaTeam,
         chlTeam,
         phlTeam,
+        collegeBaseballOrg: collegeOrganization,
+        mlbOrg: mlbOrganization,
       });
       if (defaultTeam) {
         setSelectedLeague(defaultLeague);
@@ -118,8 +120,8 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
       }
     }
 
-    // 2) Fallback priority: CFB → NFL → CBB → NBA → CHL → PHL
-    const priority: League[] = [SimCFB, SimNFL, SimCBB, SimNBA, SimCHL, SimPHL];
+    // 2) Fallback priority: CFB → NFL → CBB → NBA → CHL → PHL → SimCollegeBaseball → SimMLB
+    const priority: League[] = [SimCFB, SimNFL, SimCBB, SimNBA, SimCHL, SimPHL, SimCollegeBaseball, SimMLB];
     for (let league of priority) {
       const team = teamByLeague({
         league,
@@ -129,6 +131,8 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
         nbaTeam,
         chlTeam,
         phlTeam,
+        collegeBaseballOrg: collegeOrganization,
+        mlbOrg: mlbOrganization,
       });
       if (team) {
         setSelectedLeague(league);
@@ -140,12 +144,15 @@ export const LeagueProvider = ({ children }: LeagueProviderProps) => {
     fbLoading,
     bkLoading,
     hkLoading,
+    baseballLoading,
     cfbTeam,
     nflTeam,
     cbbTeam,
     nbaTeam,
     chlTeam,
     phlTeam,
+    collegeOrganization,
+    mlbOrganization,
     currentUser?.DefaultLeague,
     selectedTeam,
     setSelectedLeague,

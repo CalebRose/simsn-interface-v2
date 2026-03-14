@@ -96,7 +96,7 @@ export const LoginPage = () => {
             <img src={`${simLogos.SimSN}`} className="h-40" alt="SimSNLogo" />
             <div className="flex flex-wrap gap-4 mt-4">
               {Object.entries(simLogos)
-                .slice(2, 8) // Get entries from index 2 to 7
+                .slice(2, 10) // Get entries from index 2 to 9 (SimCFB through SimCBL)
                 .map(([key, value]) => (
                   <img
                     key={key}

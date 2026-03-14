@@ -15,6 +15,7 @@ import {
   SimNFL,
   SimPHL,
   SimMLB,
+  SimCollegeBaseball,
 } from "../../_constants/constants";
 import { SelectedTeamCard } from "./SelectedTeamCards";
 import { Text } from "../../_design/Typography";
@@ -24,6 +25,7 @@ import { useSimBBAStore } from "../../context/SimBBAContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { useLeagueStore } from "../../context/LeagueContext";
+import { getPrimaryBaseballTeam } from "../../_utility/baseballHelpers";
 
 export const AvailableTeams = () => {
   const { selectedLeague, setSelectedLeague } = useLeagueStore();
@@ -69,6 +71,8 @@ export const AvailableTeams = () => {
   const [sentRequestCHL, setSentRequestCHL] = useState(false);
   const [sentRequestPHL, setSentRequestPHL] = useState(false);
   const [sentRequestMLB, setSentRequestMLB] = useState(false);
+  const [sentRequestCollegeBaseball, setSentRequestCollegeBaseball] =
+    useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const isRetro = currentUser?.isRetro;
 
@@ -105,7 +109,12 @@ export const AvailableTeams = () => {
     else if (selectedLeague === SimNBA) teams = [...nbaTeams];
     else if (selectedLeague === SimCHL) teams = [...chlTeams];
     else if (selectedLeague === SimPHL) teams = [...phlTeams];
-    else if (selectedLeague === SimMLB) teams = [...(mlbOrganizations || [])];
+    else if (selectedLeague === SimMLB)
+      teams = [...(mlbOrganizations || [])].filter((o) => o.league === "mlb");
+    else if (selectedLeague === SimCollegeBaseball)
+      teams = [...(mlbOrganizations || [])].filter(
+        (o) => o.league === "college",
+      );
 
     const filtered = teams.filter((x) => {
       const matchesConference =
@@ -120,6 +129,14 @@ export const AvailableTeams = () => {
   };
 
   const GetViewTeamData = async () => {
+    // Baseball orgs don't have a view endpoint yet — use the org data directly
+    if (
+      selectedLeague === SimMLB ||
+      selectedLeague === SimCollegeBaseball
+    ) {
+      setSelectedTeamData(selectedTeam);
+      return;
+    }
     const res = await TeamService.ViewTeamFromAvailableTeamsPage(
       selectedLeague as League,
       selectedTeam.ID,
@@ -135,7 +152,8 @@ export const AvailableTeams = () => {
       (league === SimNBA && sentRequestNBA) ||
       (league === SimCHL && sentRequestCHL) ||
       (league === SimPHL && sentRequestPHL) ||
-      (league === SimMLB && sentRequestMLB)
+      (league === SimMLB && sentRequestMLB) ||
+      (league === SimCollegeBaseball && sentRequestCollegeBaseball)
     ) {
       alert(
         `It appears you've already requested a team within the ${league}. Please wait for an admin to approve the request.`,
@@ -205,9 +223,25 @@ export const AvailableTeams = () => {
         setSentRequestPHL(true);
         break;
       case SimMLB:
-        // TODO: Add RequestService.CreateMLBTeamRequest when backend endpoint is ready
-        // For now, just mark as sent and show success message
+        const mlbRequestDTO = {
+          Username: currentUser!.username,
+          OrgID: team.id,
+          Role: role,
+          IsApproved: false,
+          IsOwner: role === "o",
+          IsGM: role === "gm",
+          IsManager: role === "mgr",
+          IsScout: role === "sc",
+        };
+        await RequestService.CreateMLBTeamRequest(mlbRequestDTO);
         setSentRequestMLB(true);
+        break;
+      case SimCollegeBaseball:
+        await RequestService.CreateCollegeBaseballTeamRequest(
+          team.id,
+          currentUser!.username,
+        );
+        setSentRequestCollegeBaseball(true);
         break;
     }
     enqueueSnackbar(`${league} Request Sent!`, {
@@ -246,8 +280,10 @@ export const AvailableTeams = () => {
         setConferenceOptions(phlConferenceOptions);
         break;
       case SimMLB:
-        // MLB uses organizations, so team/conference filters work differently
-        // For now, set empty options (no filtering by conference/team dropdown)
+        setTeamOptions([]);
+        setConferenceOptions([]);
+        break;
+      case SimCollegeBaseball:
         setTeamOptions([]);
         setConferenceOptions([]);
         break;
@@ -343,6 +379,13 @@ export const AvailableTeams = () => {
                   onClick={() => selectSport(SimPHL)}
                 >
                   <Text variant="small">SimPHL</Text>
+                </PillButton>
+                <PillButton
+                  variant="primaryOutline"
+                  isSelected={selectedLeague === SimCollegeBaseball}
+                  onClick={() => selectSport(SimCollegeBaseball)}
+                >
+                  <Text variant="small">SimCBL</Text>
                 </PillButton>
                 <PillButton
                   variant="primaryOutline"
@@ -445,20 +488,53 @@ export const AvailableTeams = () => {
                   disable={undefined}
                 />
               ))}
+            {selectedLeague === SimCollegeBaseball &&
+              filteredTeams.map((x, idx) => {
+                const primaryTeam = getPrimaryBaseballTeam(x);
+                return (
+                  <TeamCard
+                    key={x.id ?? `cb-${idx}`}
+                    teamID={primaryTeam?.team_id ?? x.id ?? idx}
+                    t={{
+                      ...x,
+                      ColorOne: primaryTeam?.color_one,
+                      ColorTwo: primaryTeam?.color_two,
+                      ColorThree: primaryTeam?.color_three,
+                    }}
+                    retro={isRetro}
+                    team={x.org_abbrev}
+                    conference={primaryTeam?.conference || ""}
+                    league={selectedLeague}
+                    disable={
+                      sentRequestCollegeBaseball ||
+                      (x.coach != null && x.coach !== "AI" && x.coach.length > 0)
+                    }
+                    setSelectedTeam={setSelectedTeam}
+                  />
+                );
+              })}
             {selectedLeague === SimMLB &&
-              filteredTeams.map((x, idx) => (
-                <TeamCard
-                  key={x.id ?? `mlb-${idx}`}
-                  teamID={x.id ?? idx}
-                  t={x}
-                  retro={isRetro}
-                  team={x.org_abbrev}
-                  conference={x.league}
-                  league={selectedLeague}
-                  setSelectedTeam={setSelectedTeam}
-                  disable={sentRequestMLB}
-                />
-              ))}
+              filteredTeams.map((x, idx) => {
+                const primaryTeam = getPrimaryBaseballTeam(x);
+                return (
+                  <TeamCard
+                    key={x.id ?? `mlb-${idx}`}
+                    teamID={primaryTeam?.team_id ?? x.id ?? idx}
+                    t={{
+                      ...x,
+                      ColorOne: primaryTeam?.color_one,
+                      ColorTwo: primaryTeam?.color_two,
+                      ColorThree: primaryTeam?.color_three,
+                    }}
+                    retro={isRetro}
+                    team={x.org_abbrev}
+                    conference={primaryTeam?.conference || ""}
+                    league={selectedLeague}
+                    setSelectedTeam={setSelectedTeam}
+                    disable={sentRequestMLB}
+                  />
+                );
+              })}
           </div>
           <div className="flex min-[320px]:flex-col min-[1025px]:flex-row justify-center min-[320px]:mb-2 min-[820px]:max-h-[35rem] min-[1025px]:max-h-[30rem] max-w-full">
             <SelectedTeamCard
