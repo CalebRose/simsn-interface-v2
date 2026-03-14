@@ -423,21 +423,21 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
               (newRatings as any)[displayKey] = grade;
             }
           }
-        }
-      } else {
-        // MLB: overlay attributes from scouting endpoint (fuzzed or precise 20-80 values)
-        for (const [key, val] of Object.entries(entry.attributes)) {
-          const displayKey = `${key}_display` as keyof PlayerRatings;
-          if (displayKey in newRatings) {
-            (newRatings as any)[displayKey] = val;
+        } else {
+          // MLB: overlay attributes from scouting endpoint (fuzzed or precise 20-80 values)
+          for (const [key, val] of Object.entries(entry.attributes)) {
+            const displayKey = `${key}_display` as keyof PlayerRatings;
+            if (displayKey in newRatings) {
+              (newRatings as any)[displayKey] = val;
+            }
           }
         }
-      }
 
-      const newPotentials = { ...p.potentials };
-      for (const [key, val] of Object.entries(entry.potentials)) {
-        if (key in newPotentials) {
-          (newPotentials as any)[key] = val;
+        const newPotentials = { ...p.potentials };
+        for (const [key, val] of Object.entries(entry.potentials)) {
+          if (key in newPotentials) {
+            (newPotentials as any)[key] = val;
+          }
         }
 
         return {
