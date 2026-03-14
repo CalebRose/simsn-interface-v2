@@ -12,10 +12,13 @@ import {
   SimNBA,
   SimCHL,
   SimPHL,
+  SimCollegeBaseball,
+  SimMLB,
 } from "../../_constants/constants";
 import { useAuthStore } from "../../context/AuthContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
+import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { simLogos } from "../../_constants/logos";
 import { Border } from "../../_design/Borders";
@@ -23,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import routes from "../../_constants/routes";
 import { LeagueSelector } from "../Common/LeagueSelector";
 import { teamByLeague } from "../../_utility/useLeagueSelector";
+import { BaseballLandingPage } from "../LandingPage/BaseballLandingPage";
 
 export const Home = () => {
   const { currentUser } = useAuthStore();
@@ -31,6 +35,7 @@ export const Home = () => {
   const { cfbTeam, nflTeam } = useSimFBAStore();
   const { cbbTeam, nbaTeam } = useSimBBAStore();
   const { chlTeam, phlTeam } = useSimHCKStore();
+  const { collegeOrganization, mlbOrganization } = useSimBaseballStore();
 
   // Check if selected team matches current league and correct it if needed
   useEffect(() => {
@@ -50,6 +55,10 @@ export const Home = () => {
           return currentUser.CHLTeamID;
         case SimPHL:
           return currentUser.PHLTeamID;
+        case SimCollegeBaseball:
+          return collegeOrganization?.id ?? null;
+        case SimMLB:
+          return mlbOrganization?.id ?? null;
         default:
           return null;
       }
@@ -58,7 +67,8 @@ export const Home = () => {
     const expectedTeamId = getUserTeamIdForLeague(selectedLeague as League);
 
     // If the selected team doesn't match the expected team for this league, correct it
-    if (expectedTeamId && selectedTeam.ID !== expectedTeamId) {
+    const teamId = selectedTeam.ID || selectedTeam.id;
+    if (expectedTeamId && teamId !== expectedTeamId) {
       const correctTeam = teamByLeague({
         league: selectedLeague as League,
         cfbTeam,
@@ -67,6 +77,8 @@ export const Home = () => {
         nbaTeam,
         chlTeam,
         phlTeam,
+        collegeBaseballOrg: collegeOrganization,
+        mlbOrg: mlbOrganization,
       });
 
       if (correctTeam) {
@@ -83,6 +95,8 @@ export const Home = () => {
     nbaTeam,
     chlTeam,
     phlTeam,
+    collegeOrganization,
+    mlbOrganization,
     SetTeam,
   ]);
 
@@ -98,7 +112,9 @@ export const Home = () => {
       !NFLTeamID &&
       !CHLTeamID &&
       !PHLTeamID &&
-      !NBATeamID
+      !NBATeamID &&
+      !collegeOrganization &&
+      !mlbOrganization
     ) {
       return false;
     }
@@ -108,12 +124,14 @@ export const Home = () => {
       NFLTeamID === 0 &&
       CHLTeamID === 0 &&
       PHLTeamID === 0 &&
-      NBATeamID === 0
+      NBATeamID === 0 &&
+      !collegeOrganization &&
+      !mlbOrganization
     ) {
       return false;
     }
     return true;
-  }, [currentUser]);
+  }, [currentUser, collegeOrganization, mlbOrganization]);
 
   return (
     <PageContainer isLoading={isLoadingData && isParticipating}>
@@ -164,16 +182,29 @@ export const Home = () => {
               nbaTeam,
               chlTeam,
               phlTeam,
+              collegeBaseballOrg: collegeOrganization,
+              mlbOrg: mlbOrganization,
             }}
           />
         </div>
-        {selectedTeam && (
-          <TeamLandingPage
-            team={selectedTeam}
-            league={selectedLeague}
-            ts={ts}
-          />
-        )}
+        {selectedTeam &&
+          (selectedLeague === SimCollegeBaseball ||
+            selectedLeague === SimMLB) && (
+            <BaseballLandingPage
+              organization={selectedTeam}
+              league={selectedLeague}
+              ts={ts}
+            />
+          )}
+        {selectedTeam &&
+          selectedLeague !== SimCollegeBaseball &&
+          selectedLeague !== SimMLB && (
+            <TeamLandingPage
+              team={selectedTeam}
+              league={selectedLeague}
+              ts={ts}
+            />
+          )}
       </div>
     </PageContainer>
   );

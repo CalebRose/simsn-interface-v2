@@ -11,10 +11,28 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
 } from "../_constants/constants";
+import { BaseballTeamPage } from "../components/Team/baseball/BaseballTeamPage";
+import { BaseballFinancialsPage } from "../components/Team/baseball/BaseballFinancialsPage";
+import { CollegeRosterBreakdownPage } from "../components/Team/baseball/CollegeRosterBreakdownPage";
+import { BaseballGameplanPage } from "../components/Gameplan/BaseballGameplan/BaseballGameplanPage";
+import { BaseballTradePage } from "../components/Team/baseball/BaseballTradePage";
+import { BaseballFreeAgencyPage } from "../components/Team/baseball/BaseballFreeAgencyPage";
+import { BaseballRecruitingPage } from "../components/Team/baseball/BaseballRecruitingPage";
+import { BaseballProScoutingPage } from "../components/Team/baseball/BaseballProScoutingPage";
+import { BaseballIntamScoutingPage } from "../components/Team/baseball/BaseballIntamScoutingPage";
+import { MLBSchedulePage } from "../components/Schedule/BaseballSchedule/MLBSchedulePage";
+import { CollegeBaseballSchedulePage } from "../components/Schedule/BaseballSchedule/CollegeBaseballSchedulePage";
+import { BaseballStatsPage } from "../components/StatsPage/BaseballStats/BaseballStatsPage";
+import { BaseballInjuryPage } from "../components/Team/baseball/BaseballInjuryPage";
+import { PlayoffBracketPage } from "../components/SpecialEvents/BaseballEvents/PlayoffBracketPage";
+import { AllStarGamePage } from "../components/SpecialEvents/BaseballEvents/AllStarGamePage";
+import { WBCPage } from "../components/SpecialEvents/BaseballEvents/WBCPage";
 import { GameplanPage } from "../components/Gameplan/GameplanPage";
 import { RecruitingPage } from "../components/Recruiting/RecruitingPage";
 import { SchedulePage } from "../components/Schedule/SchedulePage";
@@ -375,6 +393,204 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <NewsPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Team"
+    path={routes.COLLEGE_BASEBALL_TEAM}
+    element={
+      <AuthGuard>
+        <BaseballTeamPage league={SimCollegeBaseball} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Team"
+    path={routes.MLB_TEAM}
+    element={
+      <AuthGuard>
+        <BaseballTeamPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Roster Breakdown"
+    path={routes.COLLEGE_BASEBALL_FINANCIALS}
+    element={
+      <AuthGuard>
+        <CollegeRosterBreakdownPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Financials"
+    path={routes.MLB_FINANCIALS}
+    element={
+      <AuthGuard>
+        <BaseballFinancialsPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Gameplan"
+    path={routes.COLLEGE_BASEBALL_GAMEPLAN}
+    element={
+      <AuthGuard>
+        <BaseballGameplanPage league={SimCollegeBaseball} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Gameplan"
+    path={routes.MLB_GAMEPLAN}
+    element={
+      <AuthGuard>
+        <BaseballGameplanPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Trades"
+    path={routes.MLB_TRADES}
+    element={
+      <AuthGuard>
+        <BaseballTradePage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Free Agency"
+    path={routes.MLB_FREE_AGENCY}
+    element={
+      <AuthGuard>
+        <BaseballFreeAgencyPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Pro Scouting"
+    path={routes.MLB_PRO_SCOUTING}
+    element={
+      <AuthGuard>
+        <BaseballProScoutingPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB INTAM Scouting"
+    path={routes.MLB_INTAM_SCOUTING}
+    element={
+      <AuthGuard>
+        <BaseballIntamScoutingPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Recruiting"
+    path={routes.COLLEGE_BASEBALL_RECRUITING}
+    element={
+      <AuthGuard>
+        <BaseballRecruitingPage league={SimCollegeBaseball} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Schedule"
+    path={routes.MLB_SCHEDULE}
+    element={
+      <AuthGuard>
+        <MLBSchedulePage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Schedule"
+    path={routes.COLLEGE_BASEBALL_SCHEDULE}
+    element={
+      <AuthGuard>
+        <CollegeBaseballSchedulePage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Stats"
+    path={routes.MLB_STATS}
+    element={
+      <AuthGuard>
+        <BaseballStatsPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Stats"
+    path={routes.COLLEGE_BASEBALL_STATS}
+    element={
+      <AuthGuard>
+        <BaseballStatsPage league={SimCollegeBaseball} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Injuries"
+    path={routes.MLB_INJURIES}
+    element={
+      <AuthGuard>
+        <BaseballInjuryPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Injuries"
+    path={routes.COLLEGE_BASEBALL_INJURIES}
+    element={
+      <AuthGuard>
+        <BaseballInjuryPage league={SimCollegeBaseball} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Playoffs"
+    path={routes.MLB_PLAYOFFS}
+    element={
+      <AuthGuard>
+        <PlayoffBracketPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Playoffs"
+    path={routes.COLLEGE_BASEBALL_PLAYOFFS}
+    element={
+      <AuthGuard>
+        <PlayoffBracketPage league={SimCollegeBaseball} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB All-Star Game"
+    path={routes.MLB_ALLSTAR}
+    element={
+      <AuthGuard>
+        <AllStarGamePage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB WBC"
+    path={routes.MLB_WBC}
+    element={
+      <AuthGuard>
+        <WBCPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Draft"
+    path={routes.MLB_DRAFT_ROOM}
+    element={
+      <AuthGuard>
+        <DraftPage league={SimMLB} />
       </AuthGuard>
     }
   />,

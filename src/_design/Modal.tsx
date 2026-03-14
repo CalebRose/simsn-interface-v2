@@ -58,10 +58,10 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
       <div
         ref={modalRef}
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full ${maxWidth} p-6 ${classes}`}
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full ${maxWidth} max-h-[90vh] flex flex-col p-6 ${classes}`}
       >
         {/* ✅ Modal Header */}
-        <div className="flex justify-between items-center border-b pb-3">
+        <div className="flex justify-between items-center border-b pb-3 shrink-0">
           <Text
             variant="h4"
             className="text-lg font-semibold text-gray-900 dark:text-white"
@@ -79,13 +79,13 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {/* ✅ Modal Content */}
-        <div className="mt-4 text-gray-700 dark:text-gray-300 h-full">
+        <div className="mt-4 text-gray-700 dark:text-gray-300 flex-1 min-h-0 overflow-y-auto">
           {children}
         </div>
 
         {/* ✅ Modal Actions */}
         {actions && (
-          <div className="mt-6 flex justify-end space-x-2">{actions}</div>
+          <div className="mt-6 flex justify-end space-x-2 shrink-0">{actions}</div>
         )}
       </div>
     </div>

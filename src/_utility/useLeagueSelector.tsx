@@ -3,6 +3,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -16,6 +18,8 @@ interface TeamByLeagueParams {
   nbaTeam: any;
   chlTeam: any;
   phlTeam: any;
+  collegeBaseballOrg?: any;
+  mlbOrg?: any;
 }
 
 export const teamByLeague = ({
@@ -26,6 +30,8 @@ export const teamByLeague = ({
   nbaTeam,
   chlTeam,
   phlTeam,
+  collegeBaseballOrg,
+  mlbOrg,
 }: TeamByLeagueParams) => {
   switch (league) {
     case SimCFB:
@@ -40,6 +46,10 @@ export const teamByLeague = ({
       return chlTeam;
     case SimPHL:
       return phlTeam;
+    case SimCollegeBaseball:
+      return collegeBaseballOrg;
+    case SimMLB:
+      return mlbOrg;
     default:
       return null;
   }

@@ -25,6 +25,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -34,6 +36,10 @@ import {
   NBARequest,
   NBATeam,
 } from "../models/basketballModels";
+import {
+  CollegeBaseballTeamRequest,
+  MLBTeamRequest,
+} from "../models/baseball/baseballModels";
 import { useLeagueStore } from "./LeagueContext";
 import { RequestService } from "../_services/requestService";
 import { updateUserByUsername } from "../firebase/firestoreHelper";
@@ -62,6 +68,12 @@ interface AdminPageContextType {
   fbaNFLRequests: NFLRequest[];
   bbaCBBRequests: CBBRequest[];
   bbaNBARequests: NBARequest[];
+  baseballCBRequests: CollegeBaseballTeamRequest[];
+  baseballMLBRequests: MLBTeamRequest[];
+  acceptCBBaseballRequest: (request: CollegeBaseballTeamRequest) => Promise<void>;
+  rejectCBBaseballRequest: (request: CollegeBaseballTeamRequest) => Promise<void>;
+  acceptMLBRequest: (request: MLBTeamRequest) => Promise<void>;
+  rejectMLBRequest: (request: MLBTeamRequest) => Promise<void>;
   selectedTab: string;
   setSelectedTab: Dispatch<SetStateAction<string>>;
   RefreshRequests: () => Promise<void>;
@@ -92,6 +104,8 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   const [fbaNFLRequests, setFBANFLRequests] = useState<NFLRequest[]>([]);
   const [bbaCBBRequests, setBBACBBRequests] = useState<CBBRequest[]>([]);
   const [bbaNBARequests, setBBANBARequests] = useState<NBARequest[]>([]);
+  const [baseballCBRequests, setBaseballCBRequests] = useState<CollegeBaseballTeamRequest[]>([]);
+  const [baseballMLBRequests, setBaseballMLBRequests] = useState<MLBTeamRequest[]>([]);
 
   const { addUserToCHLTeam, addUserToPHLTeam } = useSimHCKStore();
   const { addUserToCFBTeam, addUserToNFLTeam, cfbTeamMap, proTeamMap } =
@@ -117,6 +131,12 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       (hckCHLRequests.length === 0 || hckPHLRequests.length === 0)
     ) {
       getHockeyRequests();
+    }
+    if (
+      (selectedLeague === SimCollegeBaseball || selectedLeague === SimMLB) &&
+      (baseballCBRequests.length === 0 || baseballMLBRequests.length === 0)
+    ) {
+      getBaseballRequests();
     }
   }, [selectedLeague]);
 
@@ -150,6 +170,57 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       setBBANBARequests(nbaRes);
     }
   };
+
+  const getBaseballRequests = async () => {
+    const cbRes = await RequestService.GetLeagueRequests(SimCollegeBaseball as League);
+    if (cbRes) {
+      setBaseballCBRequests(Array.isArray(cbRes) ? cbRes : []);
+    }
+    const mlbRes = await RequestService.GetLeagueRequests(SimMLB as League);
+    if (mlbRes) {
+      setBaseballMLBRequests(Array.isArray(mlbRes) ? mlbRes : []);
+    }
+  };
+
+  const acceptCBBaseballRequest = useCallback(
+    async (request: CollegeBaseballTeamRequest) => {
+      await RequestService.ApproveCollegeBaseballRequest(request);
+      setBaseballCBRequests((prev) =>
+        prev.filter((req) => req.ID !== request.ID),
+      );
+    },
+    [baseballCBRequests],
+  );
+
+  const rejectCBBaseballRequest = useCallback(
+    async (request: CollegeBaseballTeamRequest) => {
+      await RequestService.RejectCollegeBaseballRequest(request);
+      setBaseballCBRequests((prev) =>
+        prev.filter((req) => req.ID !== request.ID),
+      );
+    },
+    [baseballCBRequests],
+  );
+
+  const acceptMLBRequest = useCallback(
+    async (request: MLBTeamRequest) => {
+      await RequestService.ApproveMLBRequest(request);
+      setBaseballMLBRequests((prev) =>
+        prev.filter((req) => req.ID !== request.ID),
+      );
+    },
+    [baseballMLBRequests],
+  );
+
+  const rejectMLBRequest = useCallback(
+    async (request: MLBTeamRequest) => {
+      await RequestService.RejectMLBRequest(request);
+      setBaseballMLBRequests((prev) =>
+        prev.filter((req) => req.ID !== request.ID),
+      );
+    },
+    [baseballMLBRequests],
+  );
 
   const acceptCHLRequest = useCallback(
     async (request: CollegeTeamRequest) => {
@@ -365,6 +436,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
     await getFootballRequests();
     await getBasketballRequests();
     await getHockeyRequests();
+    await getBaseballRequests();
   }, []);
 
   const refreshHCKTradeProposals = useCallback((id: number) => {
@@ -381,6 +453,12 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
         hckTradeProposals,
         bbaCBBRequests,
         bbaNBARequests,
+        baseballCBRequests,
+        baseballMLBRequests,
+        acceptCBBaseballRequest,
+        rejectCBBaseballRequest,
+        acceptMLBRequest,
+        rejectMLBRequest,
         acceptCHLRequest,
         rejectCHLRequest,
         acceptPHLRequest,

@@ -9,6 +9,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -16,6 +18,7 @@ import {
 import { SideMenuItem } from "../../_design/SideMenuItem";
 import { NavDropdown, NavDropdownItem } from "../../_design/DropdownList";
 import { useAuthStore } from "../../context/AuthContext";
+import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { useSideMenu } from "./DropdownMenuData";
 import { simLogos } from "../../_constants/logos";
 import { ThemeToggle } from "../Common/ThemeToggle";
@@ -33,6 +36,7 @@ export const SideMenu = ({}) => {
     isNFLUser,
     isPHLUser,
   } = useAuthStore();
+  const { isCollegeBaseballUser, isMlbUser, collegeOrganization, mlbOrganization } = useSimBaseballStore();
   const { isOpen, isDropdownOpen, toggleMenu, toggleDropdown, dropdowns } =
     useSideMenu();
   const { isDesktop } = useResponsive();
@@ -41,7 +45,7 @@ export const SideMenu = ({}) => {
   const textColor = getTextColorBasedOnBg(baseColor);
   const navigate = useNavigate();
   // ✅ Generate logos based on current user
-  const { cfbLogo, nflLogo, cbbLogo, nbaLogo, chlLogo, phlLogo, logo } =
+  const { cfbLogo, nflLogo, cbbLogo, nbaLogo, chlLogo, phlLogo, collegeBaseballLogo, mlbLogo, logo } =
     useMemo(() => {
       let cfbLogo = "";
       let nflLogo = "";
@@ -49,6 +53,8 @@ export const SideMenu = ({}) => {
       let nbaLogo = "";
       let chlLogo = "";
       let phlLogo = "";
+      let collegeBaseballLogo = "";
+      let mlbLogo = "";
       let logo = "";
 
       if (currentUser) {
@@ -81,6 +87,18 @@ export const SideMenu = ({}) => {
         if (PHLTeamID) {
           phlLogo = getLogo(SimPHL, PHLTeamID, isRetro);
         }
+        if (collegeOrganization && collegeOrganization.teams) {
+          const teamEntries = Object.values(collegeOrganization.teams);
+          if (teamEntries.length > 0) {
+            collegeBaseballLogo = getLogo(SimCollegeBaseball, teamEntries[0].team_id, isRetro);
+          }
+        }
+        if (mlbOrganization && mlbOrganization.teams) {
+          const mlbTeam = mlbOrganization.teams["mlb"];
+          if (mlbTeam) {
+            mlbLogo = getLogo(SimMLB, mlbTeam.team_id, isRetro);
+          }
+        }
 
         switch (DefaultLeague) {
           case SimCFB:
@@ -101,6 +119,12 @@ export const SideMenu = ({}) => {
           case SimPHL:
             logo = phlLogo;
             break;
+          case SimCollegeBaseball:
+            logo = collegeBaseballLogo;
+            break;
+          case SimMLB:
+            logo = mlbLogo;
+            break;
           default:
             // Fallback priority if DefaultLeague is not defined
             logo =
@@ -110,13 +134,15 @@ export const SideMenu = ({}) => {
               nbaLogo ||
               chlLogo ||
               phlLogo ||
+              mlbLogo ||
+              collegeBaseballLogo ||
               "";
             break;
         }
       }
 
-      return { cfbLogo, nflLogo, cbbLogo, nbaLogo, chlLogo, phlLogo, logo };
-    }, [currentUser]);
+      return { cfbLogo, nflLogo, cbbLogo, nbaLogo, chlLogo, phlLogo, collegeBaseballLogo, mlbLogo, logo };
+    }, [currentUser, collegeOrganization, mlbOrganization]);
 
   // ✅ Handle Logout
   const logout = async () => {
@@ -294,6 +320,26 @@ export const SideMenu = ({}) => {
                 label={SimPHL}
                 logo={phlLogo}
                 dropdown={dropdowns.SimPHL}
+                toggle={toggleMenu}
+                isTop
+              />
+            )}
+            {isCollegeBaseballUser && (
+              <SideMenuItem
+                label="SimCBL"
+                logo={collegeBaseballLogo}
+                dropdown={dropdowns.SimCollegeBaseball}
+                league={SimCollegeBaseball}
+                toggle={toggleMenu}
+                isTop
+              />
+            )}
+            {isMlbUser && (
+              <SideMenuItem
+                label={SimMLB}
+                logo={mlbLogo}
+                dropdown={dropdowns.SimMLB}
+                league={SimMLB}
                 toggle={toggleMenu}
                 isTop
               />

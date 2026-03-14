@@ -36,7 +36,10 @@ export const PostCall = async <TRequest, TResponse>(
     });
 
     if (!response.ok) {
-      throw new ApiError(response.status, `HTTP Error: ${response.statusText}`);
+      let errorBody: any;
+      try { errorBody = await response.json(); } catch {}
+      const msg = errorBody?.message || `HTTP Error: ${response.statusText}`;
+      throw new ApiError(response.status, msg);
     }
 
     const data = (await response.json()) as TResponse;
@@ -90,13 +93,16 @@ export const PUTCall = async <TRequest, TResponse>(
     });
 
     if (!response.ok) {
-      throw new ApiError(response.status, `HTTP Error: ${response.statusText}`);
+      let errorBody: any;
+      try { errorBody = await response.json(); } catch {}
+      const msg = errorBody?.message || `HTTP Error: ${response.statusText}`;
+      throw new ApiError(response.status, msg);
     }
 
     const data = (await response.json()) as TResponse;
     return data;
   } catch (error) {
-    console.error(`POST request failed for URL: ${url}`, error);
+    console.error(`PUT request failed for URL: ${url}`, error);
     throw error; // Rethrow to handle where the call is made
   }
 };

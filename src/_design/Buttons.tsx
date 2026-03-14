@@ -90,6 +90,7 @@ interface PillButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     | "basketballOutline"
     | "hockeyOutline";
   isSelected?: boolean;
+  size?: "xs" | "sm" | "md" | "lg";
 }
 
 export const PillButton: React.FC<PillButtonProps> = ({
@@ -97,9 +98,17 @@ export const PillButton: React.FC<PillButtonProps> = ({
   variant = "primary",
   onClick,
   isSelected = false,
+  size = "lg",
   classes = "",
   ...props
 }) => {
+  const sizes = {
+    xs: "text-xs px-2 py-0.5",
+    sm: "text-sm px-3 py-1",
+    md: "text-base px-4 py-1.5",
+    lg: "text-lg px-5 py-2",
+  };
+
   const styles = {
     primary: "bg-blue-500 hover:bg-blue-700 text-white",
     secondary: "bg-gray-500 hover:bg-gray-700 text-white",
@@ -108,7 +117,7 @@ export const PillButton: React.FC<PillButtonProps> = ({
     basketball: "bg-orange-500 hover:bg-orange-700 text-white",
     hockey: "bg-gray-500 hover:bg-gray-700 text-white",
     primaryOutline:
-      "bg-transparent hover:bg-blue-500 text-blue-500 font-semibold hover:text-white border border-blue-500 hover:border-transparent",
+      "bg-transparent hover:bg-blue-500 text-white font-semibold hover:text-white border border-blue-500 hover:border-transparent",
     secondaryOutline:
       "bg-transparent hover:bg-gray-500 text-gray-500 font-semibold hover:text-white border border-gray-500 hover:border-transparent",
     successOutline:
@@ -129,7 +138,7 @@ export const PillButton: React.FC<PillButtonProps> = ({
   return (
     <button
       type="button"
-      className={`flex items-center justify-center px-2 min-[320px]:h-8 md:max-w-[5.5em] lg:w-[10em] lg:max-w-[12em] sm:h-auto md:px-4 min-[320px]:mb-2 rounded-full shadow ${buttonStyle} ${classes}`}
+      className={`flex items-center justify-center rounded-full shadow ${sizes[size] || sizes.md} ${buttonStyle} ${classes}`}
       onClick={onClick}
       {...props}
     >

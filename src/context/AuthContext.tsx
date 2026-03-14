@@ -23,8 +23,6 @@ interface AuthContextProps {
   isNBAUser: boolean;
   isCHLUser: boolean;
   isPHLUser: boolean;
-  isCollegeBaseballUser: boolean;
-  isMlbUser: boolean;
   isDarkMode: boolean;
 }
 
@@ -43,8 +41,6 @@ const defaultAuthContext: AuthContextProps = {
   isCHLUser: false,
   isNBAUser: false,
   isPHLUser: false,
-  isCollegeBaseballUser: false,
-  isMlbUser: false,
   isDarkMode: true,
 };
 
@@ -185,20 +181,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return false;
   }, [currentUser]);
 
-  const isCollegeBaseballUser = useMemo(() => {
-    if (currentUser && currentUser.CollegeBaseballOrgID) {
-      return currentUser.CollegeBaseballOrgID > 0;
-    }
-    return false;
-  }, [currentUser]);
-
-  const isMlbUser = useMemo(() => {
-    if (currentUser && currentUser.MLBOrgID) {
-      return currentUser.MLBOrgID > 0;
-    }
-    return false;
-  }, [currentUser]);
-
   const isDarkMode = useMemo(() => {
     if (viewMode === "light") {
       return false;
@@ -224,8 +206,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isNBAUser,
         isNFLUser,
         isPHLUser,
-        isCollegeBaseballUser,
-        isMlbUser,
         isDarkMode,
       }}
     >

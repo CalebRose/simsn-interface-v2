@@ -15,6 +15,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -23,6 +25,7 @@ import { Button, ButtonGroup } from "../../_design/Buttons";
 import { useModal } from "../../_hooks/useModal";
 import { SelectedTeamModal } from "./SelectedTeamModal";
 import { useTeamColors } from "../../_hooks/useTeamColors";
+import { getPrimaryBaseballTeam } from "../../_utility/baseballHelpers";
 
 // ✅ Types
 interface SelectedTeamCardProps {
@@ -43,6 +46,8 @@ const isTeamDisabled = (team: any | undefined, league: string): boolean => {
     case SimCBB:
     case SimCHL:
       return team.IsUserCoached || false;
+    case SimCollegeBaseball:
+      return team.coach != null && team.coach !== "AI" && team.coach.length > 0;
     case SimNFL:
       return team.NFLOwnerName?.length &&
         team.NFLGMName?.length &&
@@ -55,6 +60,13 @@ const isTeamDisabled = (team: any | undefined, league: string): boolean => {
         team.NBAGMName?.length &&
         team.NBACoachName?.length &&
         team.NBAAssistantName?.length
+        ? true
+        : false;
+    case SimMLB:
+      return team.owner_name?.length &&
+        team.gm_name?.length &&
+        team.manager_name?.length &&
+        team.scout_name?.length
         ? true
         : false;
     default:
@@ -96,18 +108,23 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
     return <NoSelectedTeam />;
   }
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const logo = getLogo(league as League, selectedTeam?.ID, retro);
+  const isBaseball = league === SimMLB || league === SimCollegeBaseball;
+  const primaryBaseballTeam = isBaseball ? getPrimaryBaseballTeam(selectedTeam) : undefined;
+  const teamID = isBaseball ? (primaryBaseballTeam?.team_id ?? selectedTeam?.id) : selectedTeam?.ID;
+  const logo = getLogo(league as League, teamID, retro);
   const disable = isTeamDisabled(selectedTeam, league);
-  const teamColors = useTeamColors(
-    selectedTeam.ColorOne || "",
-    selectedTeam.ColorTwo || "",
-    selectedTeam.ColorThree || ""
-  );
+  const colorOne = isBaseball ? (primaryBaseballTeam?.color_one || "") : (selectedTeam.ColorOne || "");
+  const colorTwo = isBaseball ? (primaryBaseballTeam?.color_two || "") : (selectedTeam.ColorTwo || "");
+  const colorThree = isBaseball ? (primaryBaseballTeam?.color_three || "") : (selectedTeam.ColorThree || "");
+  const teamColors = useTeamColors(colorOne, colorTwo, colorThree);
   const backgroundColor = !disable ? teamColors.One : "#4B5563";
   const borderColor = !disable ? teamColors.Two : "#4B5563";
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const teamLabel =
     selectedTeam && GetTeamLabel(league as League, selectedTeam);
+  const conferenceLabel = isBaseball
+    ? (primaryBaseballTeam?.conference || "")
+    : (selectedTeam.Conference || "");
   return (
     <div
       className={`flex flex-col max-h-[80vh] w-full min-[1025px]:h-[70vh] min-[820px]:max-h-[48vh] min-[1025px]:max-h-[75vh] min-[1025px]:mx-4 min-[1025px]:mb-3 rounded-2xl shadow-lg border-2 p-6 ${
@@ -134,7 +151,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               </div>
               <div className="flex-col">
                 <Text variant="small" classes="font-semibold text-start">
-                  {selectedTeam.Conference} Conference
+                  {conferenceLabel}{conferenceLabel ? " Conference" : ""}
                 </Text>
               </div>
               {(league === SimCFB || league === SimCBB || league === SimCHL) &&
@@ -240,6 +257,70 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               </div>
             </div>
           )}
+          {league === SimCollegeBaseball &&
+            selectedTeam.coach &&
+            selectedTeam.coach !== "AI" && (
+              <div className="flex-col self-start md:self-auto mx-2 ml-4">
+                <div className="flex-row text-start">
+                  <Text variant="small" classes="font-semibold text-start">
+                    Coach:{" "}
+                    {selectedTeam.coach.length > 0
+                      ? selectedTeam.coach
+                      : "None"}
+                  </Text>
+                </div>
+              </div>
+            )}
+          {league === SimMLB && (
+            <div className="flex-col self-start md:self-auto mx-2 ml-4">
+              <div className="flex-row text-start">
+                <div className="flex-col">
+                  <Text
+                    variant="small"
+                    classes="font-semibold text-start whitespace-nowrap"
+                  >
+                    Owner:{" "}
+                    {selectedTeam.owner_name?.length > 0
+                      ? selectedTeam.owner_name
+                      : "None"}
+                  </Text>
+                </div>
+                <div className="flex-col">
+                  <Text
+                    variant="small"
+                    classes="font-semibold text-start whitespace-nowrap"
+                  >
+                    Manager:{" "}
+                    {selectedTeam.manager_name?.length > 0
+                      ? selectedTeam.manager_name
+                      : "None"}
+                  </Text>
+                </div>
+                <div className="flex-col">
+                  <Text
+                    variant="small"
+                    classes="font-semibold text-start whitespace-nowrap"
+                  >
+                    GM:{" "}
+                    {selectedTeam.gm_name?.length > 0
+                      ? selectedTeam.gm_name
+                      : "None"}
+                  </Text>
+                </div>
+                <div className="flex-col">
+                  <Text
+                    variant="small"
+                    classes="font-semibold text-start whitespace-nowrap"
+                  >
+                    Scout:{" "}
+                    {selectedTeam.scout_name?.length > 0
+                      ? selectedTeam.scout_name
+                      : "None"}
+                  </Text>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         <Border>
           <div className="flex flex-row gap-4 justify-between sm:relative">
@@ -289,7 +370,8 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             <>
               {(league === SimCFB ||
                 league === SimCBB ||
-                league === SimCHL) && (
+                league === SimCHL ||
+                league === SimCollegeBaseball) && (
                 <Button
                   onClick={() => {
                     sendRequest?.(league, selectedTeam, "");
@@ -417,6 +499,50 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                   </Button>
                 </ButtonGroup>
               )}
+              {league === SimMLB && (
+                <ButtonGroup>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      sendRequest?.(league, selectedTeam, "o");
+                      handleCloseModal();
+                    }}
+                    disabled={(selectedTeam.owner_name?.length ?? 0) > 0}
+                  >
+                    <Text variant="small">Ownership</Text>
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      sendRequest?.(league, selectedTeam, "mgr");
+                      handleCloseModal();
+                    }}
+                    disabled={(selectedTeam.manager_name?.length ?? 0) > 0}
+                  >
+                    <Text variant="small">Manager</Text>
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      sendRequest?.(league, selectedTeam, "gm");
+                      handleCloseModal();
+                    }}
+                    disabled={(selectedTeam.gm_name?.length ?? 0) > 0}
+                  >
+                    <Text variant="small">GM</Text>
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      sendRequest?.(league, selectedTeam, "sc");
+                      handleCloseModal();
+                    }}
+                    disabled={(selectedTeam.scout_name?.length ?? 0) > 0}
+                  >
+                    <Text variant="small">Scout</Text>
+                  </Button>
+                </ButtonGroup>
+              )}
             </>
           }
         >
@@ -442,6 +568,12 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             {league === SimPHL &&
               `competing not only for the
             postseason, but also the opportunity to play for the Stanley Cup.`}
+            {league === SimCollegeBaseball &&
+              `competing not only for the
+            conference championship, but also the opportunity to play in the College World Series.`}
+            {league === SimMLB &&
+              `competing not only for the
+            postseason, but also the opportunity to win the World Series.`}
           </Text>
           <Text classes="mb-6 text-start">
             If at any point you don't know where to start or what to do, please

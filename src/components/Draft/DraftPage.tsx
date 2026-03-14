@@ -1,12 +1,14 @@
 import { FC, useEffect, useMemo } from "react";
-import { League, SimPHL, SimNFL, SimNBA } from "../../_constants/constants";
+import { League, SimPHL, SimNFL, SimNBA, SimMLB } from "../../_constants/constants";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
+import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { PageContainer } from "../../_design/Container";
 import { PHLDraftPage } from "./PHLDraft/PHLDraftPage";
 import { NFLDraftPage } from "./NFLDraft/NFLDraftPage";
+import { BaseballDraftPage } from "./BaseballDraft/BaseballDraftPage";
 
 interface DraftPageProps {
   league: League;
@@ -18,6 +20,7 @@ export const DraftPage: FC<DraftPageProps> = ({ league }) => {
   const { nflTeam } = useSimFBAStore();
   const { phlTeam } = useSimHCKStore();
   const { nbaTeam } = useSimBBAStore();
+  const { mlbOrganization } = useSimBaseballStore();
 
   useEffect(() => {
     if (selectedLeague !== league) {
@@ -35,8 +38,11 @@ export const DraftPage: FC<DraftPageProps> = ({ league }) => {
     if (selectedLeague === SimNBA && nbaTeam) {
       return false;
     }
+    if (selectedLeague === SimMLB && mlbOrganization) {
+      return false;
+    }
     return true;
-  }, [nflTeam, phlTeam, nbaTeam, selectedLeague]);
+  }, [nflTeam, phlTeam, nbaTeam, mlbOrganization, selectedLeague]);
 
   const title = useMemo(() => {
     if (selectedLeague === SimNFL && nflTeam) {
@@ -48,8 +54,11 @@ export const DraftPage: FC<DraftPageProps> = ({ league }) => {
     if (selectedLeague === SimNBA && nbaTeam) {
       return `${nbaTeam.Team} Draft Room`;
     }
+    if (selectedLeague === SimMLB && mlbOrganization) {
+      return `${mlbOrganization.org_abbrev} Draft Room`;
+    }
     return "Draft Room";
-  }, [nflTeam, phlTeam, nbaTeam, selectedLeague]);
+  }, [nflTeam, phlTeam, nbaTeam, mlbOrganization, selectedLeague]);
 
   return (
     <>
@@ -61,6 +70,9 @@ export const DraftPage: FC<DraftPageProps> = ({ league }) => {
           <PHLDraftPage league={SimPHL} />
         )}
         {/* {selectedLeague === SimNBA && nbaTeam && <NBADraftPage />} */}
+        {selectedLeague === SimMLB && mlbOrganization && (
+          <BaseballDraftPage league={SimMLB} />
+        )}
       </PageContainer>
     </>
   );

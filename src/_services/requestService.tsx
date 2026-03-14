@@ -2,11 +2,17 @@ import {
   League,
   SimCBB,
   SimCHL,
+  SimMLB,
+  SimCollegeBaseball,
   SimNBA,
   SimPHL,
 } from "../_constants/constants";
-import { bbaUrl, fbaUrl, hckUrl } from "../_constants/urls";
+import { baseballUrl, bbaUrl, fbaUrl, hckUrl } from "../_constants/urls";
 import { GetCall, GetSportAbbr, PostCall } from "../_helper/fetchHelper";
+import {
+  MLBTeamRequest,
+  CollegeBaseballTeamRequest,
+} from "../models/baseball/baseballModels";
 import {
   Request as CBBRequest,
   NBARequest,
@@ -62,6 +68,12 @@ export interface RequestDTO {
 
 export const RequestService = {
   GetLeagueRequests: async (league: League): Promise<any> => {
+    if (league === SimMLB) {
+      return await GetCall(`${baseballUrl}mlb/requests/all`);
+    }
+    if (league === SimCollegeBaseball) {
+      return await GetCall(`${baseballUrl}college/requests/all`);
+    }
     let baseUrl = fbaUrl;
     if (league === SimCBB || league === SimNBA) baseUrl = bbaUrl;
     if (league === SimCHL || league === SimPHL) baseUrl = hckUrl;
@@ -265,5 +277,47 @@ export const RequestService = {
     payload: ProTeamRequest,
   ): Promise<ProTeamRequest> => {
     return await PostCall(`${hckUrl}phl/requests/reject`, payload);
+  },
+
+  // ✅ Baseball (College Baseball & MLB)
+  CreateCollegeBaseballTeamRequest: async (
+    orgId: number,
+    username: string,
+  ): Promise<CollegeBaseballTeamRequest> => {
+    return await PostCall(`${baseballUrl}college/requests/create`, {
+      Username: username,
+      OrgID: orgId,
+      IsApproved: false,
+    });
+  },
+
+  CreateMLBTeamRequest: async (
+    payload: MLBTeamRequest,
+  ): Promise<MLBTeamRequest> => {
+    return await PostCall(`${baseballUrl}mlb/requests/create`, payload);
+  },
+
+  ApproveCollegeBaseballRequest: async (
+    payload: CollegeBaseballTeamRequest,
+  ): Promise<CollegeBaseballTeamRequest> => {
+    return await PostCall(`${baseballUrl}college/requests/approve`, payload);
+  },
+
+  RejectCollegeBaseballRequest: async (
+    payload: CollegeBaseballTeamRequest,
+  ): Promise<CollegeBaseballTeamRequest> => {
+    return await PostCall(`${baseballUrl}college/requests/reject`, payload);
+  },
+
+  ApproveMLBRequest: async (
+    payload: MLBTeamRequest,
+  ): Promise<MLBTeamRequest> => {
+    return await PostCall(`${baseballUrl}mlb/requests/approve`, payload);
+  },
+
+  RejectMLBRequest: async (
+    payload: MLBTeamRequest,
+  ): Promise<MLBTeamRequest> => {
+    return await PostCall(`${baseballUrl}mlb/requests/reject`, payload);
   },
 };

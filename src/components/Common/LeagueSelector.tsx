@@ -5,12 +5,15 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
 } from "../../_constants/constants";
 import { simLogos } from "../../_constants/logos";
 import { useAuthStore } from "../../context/AuthContext";
+import { useSimBaseballStore } from "../../context/SimBaseballContext";
 
 /**
  * LeagueSelector - A reusable component for selecting between different sport leagues
@@ -50,6 +53,8 @@ interface LeagueSelectorProps {
     nbaTeam?: any;
     chlTeam?: any;
     phlTeam?: any;
+    collegeBaseballOrg?: any;
+    mlbOrg?: any;
   };
   /** Whether to show league logos (default: true) */
   showLogos?: boolean;
@@ -66,8 +71,18 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
 }) => {
   const { isCFBUser, isCBBUser, isCHLUser, isNFLUser, isNBAUser, isPHLUser } =
     useAuthStore();
+  const { isCollegeBaseballUser, isMlbUser } = useSimBaseballStore();
 
-  const { cfbTeam, nflTeam, cbbTeam, nbaTeam, chlTeam, phlTeam } = teams;
+  const {
+    cfbTeam,
+    nflTeam,
+    cbbTeam,
+    nbaTeam,
+    chlTeam,
+    phlTeam,
+    collegeBaseballOrg,
+    mlbOrg,
+  } = teams;
 
   const getTeamDisplayName = (league: League, team: any) => {
     switch (league) {
@@ -83,6 +98,19 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
         return team?.TeamName;
       case SimPHL:
         return team?.Mascot;
+      case SimCollegeBaseball: {
+        const cblTeam = team?.teams && (Object.values(team.teams)[0] as any);
+        if (cblTeam?.team_full_name && cblTeam?.team_nickname) {
+          return cblTeam.team_full_name
+            .replace(cblTeam.team_nickname, "")
+            .trim();
+        }
+        return cblTeam?.team_full_name || team?.org_abbrev;
+      }
+      case SimMLB: {
+        const mlbTeam = team?.teams?.["mlb"] as any;
+        return mlbTeam?.team_nickname || team?.org_abbrev;
+      }
       default:
         return "";
     }
@@ -102,6 +130,10 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
         return simLogos.SimCHL;
       case SimPHL:
         return simLogos.SimPHL;
+      case SimMLB:
+        return simLogos.SimMLB;
+      case SimCollegeBaseball:
+        return simLogos.SimCBL;
       default:
         return "";
     }
@@ -149,11 +181,26 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
       isUser: isPHLUser,
       displayName: getTeamDisplayName(SimPHL as League, phlTeam),
     },
+    {
+      league: SimCollegeBaseball as League,
+      team: collegeBaseballOrg,
+      isUser: isCollegeBaseballUser,
+      displayName: getTeamDisplayName(
+        SimCollegeBaseball as League,
+        collegeBaseballOrg,
+      ),
+    },
+    {
+      league: SimMLB as League,
+      team: mlbOrg,
+      isUser: isMlbUser,
+      displayName: getTeamDisplayName(SimMLB as League, mlbOrg),
+    },
   ];
 
   return (
     <div className={className}>
-      <ButtonGroup>
+      <ButtonGroup classes="mb-1">
         {leagues.map(({ league, team, isUser, displayName }) => {
           if (!isUser || !team) return null;
 
@@ -161,7 +208,8 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
             <PillButton
               key={league}
               variant="primaryOutline"
-              classes="flex flex-col"
+              classes="flex flex-col px-8 py-2"
+              size="md"
               isSelected={selectedLeague === league}
               onClick={() => onLeagueSelect(league, team)}
             >

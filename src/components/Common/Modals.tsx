@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import {
   League,
   SimCHL,
@@ -8,6 +8,8 @@ import {
   SimCBB,
   USA,
   SimNBA,
+  SimMLB,
+  SimCollegeBaseball,
 } from "../../_constants/constants";
 import {
   CollegePlayer as CHLPlayer,
@@ -62,6 +64,12 @@ import {
   FootballPlayerStatsModalView,
   HockeyPlayerStatsModalView,
 } from "./PlayerStatsModalView";
+import { Player as BaseballPlayer, PlayerContract as BaseballPlayerContract } from "../../models/baseball/baseballModels";
+import { getClassYear } from "../../_utility/baseballHelpers";
+import { useSimBaseballStore } from "../../context/SimBaseballContext";
+import { displayLevel } from "../../_utility/baseballHelpers";
+import { BaseballService } from "../../_services/baseballService";
+import { InjuryHistoryItem, PositionUsageRow, PlayerStatsResponse } from "../../models/baseball/baseballStatsModels";
 
 interface PlayerInfoModalBodyProps {
   league: League;
@@ -101,6 +109,9 @@ export const PlayerInfoModalBody: FC<PlayerInfoModalBodyProps> = ({
         contract={contract}
       />
     );
+  }
+  if (league === SimMLB || league === SimCollegeBaseball) {
+    return <BaseballPlayerInfoModalBody player={player} league={league} />;
   }
   return <>Unsupported League.</>;
 };
@@ -3317,5 +3328,684 @@ export const CFBPortalInfoModalBody: FC<CFBPortalInfoModalBodyProps> = ({
         )}
       </div>
     </>
+  );
+};
+
+// ─── Baseball Player Info Modal ─────────────────────────────────────────────
+
+interface BaseballPlayerInfoModalBodyProps {
+  player: BaseballPlayer;
+  league: League;
+}
+
+const BaseballStatCell = ({
+  label,
+  value,
+  pot,
+  isFuzzed,
+}: {
+  label: string;
+  value: number | string | null;
+  pot?: string | null;
+  isFuzzed?: boolean;
+}) => {
+  if (value == null) return null;
+  // Handle both numeric (20-80) and letter grade (string) values
+  const isGrade = typeof value === "string";
+  const color = isGrade
+    ? (value.startsWith("A") ? "text-green-600 dark:text-green-400"
+      : value.startsWith("B") ? "text-blue-600 dark:text-blue-400"
+      : value.startsWith("C") ? "text-yellow-600 dark:text-yellow-400"
+      : value.startsWith("D") ? "text-orange-600 dark:text-orange-400"
+      : "text-red-600 dark:text-red-400")
+    : (value >= 70 ? "text-green-600 dark:text-green-400"
+      : value >= 60 ? "text-blue-600 dark:text-blue-400"
+      : value >= 50 ? ""
+      : value >= 40 ? "text-yellow-600 dark:text-yellow-400"
+      : "text-red-600 dark:text-red-400");
+  return (
+    <div className="flex flex-col px-1">
+      <Text variant="small" classes="font-semibold whitespace-nowrap">
+        {label}
+      </Text>
+      <Text variant="small" classes={`whitespace-nowrap ${color}`}>
+        {isFuzzed && <span className="text-gray-400">~</span>}{typeof value === "number" ? Math.round(value) : value}
+        {pot && pot !== "?" && (
+          <span className="ml-0.5 text-xs text-gray-500 dark:text-gray-400">
+            ({pot})
+          </span>
+        )}
+        {pot === "?" && (
+          <span className="ml-0.5 text-xs text-gray-400">(?)</span>
+        )}
+      </Text>
+    </div>
+  );
+};
+
+const BaseballContractRow: FC<{ contract: BaseballPlayerContract; league: League }> = ({ contract, league }) => {
+  const isCollege = league === SimCollegeBaseball;
+
+  if (isCollege) {
+    const classYear = getClassYear(contract);
+    return (
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mt-3 pt-3 border-t dark:border-gray-600">
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Class</Text>
+          <Text variant="small">{classYear.label || "—"}</Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Year</Text>
+          <Text variant="small">{contract.current_year} of {contract.years}</Text>
+        </div>
+        {contract.is_extension && (
+          <div className="flex flex-col">
+            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Redshirt</Text>
+            <Text variant="small" classes="text-yellow-600 dark:text-yellow-400">Yes</Text>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // MLB contract
+  const salary = contract.current_year_detail?.base_salary;
+  const fmt = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  const salaryDisplay = salary != null ? fmt(salary) : "—";
+  const bonusDisplay = contract.bonus ? fmt(contract.bonus) : "—";
+
+  return (
+    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mt-3 pt-3 border-t dark:border-gray-600">
+      <div className="flex flex-col">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Contract</Text>
+        <Text variant="small">Yr {contract.current_year} of {contract.years}</Text>
+      </div>
+      <div className="flex flex-col">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Salary</Text>
+        <Text variant="small">{salaryDisplay}</Text>
+      </div>
+      {contract.bonus > 0 && (
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Bonus</Text>
+          <Text variant="small">{bonusDisplay}</Text>
+        </div>
+      )}
+      {contract.on_ir && (
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">IL Status</Text>
+          <Text variant="small" classes="text-red-600 dark:text-red-400 font-semibold">On IL</Text>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const BaseballPlayerInfoModalBody: FC<
+  BaseballPlayerInfoModalBodyProps
+> = ({ player, league }) => {
+  const [selectedTab, setSelectedTab] = useState<string>("Batting");
+  const { currentUser } = useAuthStore();
+  const { mlbOrganization, collegeOrganization, seasonContext, allTeams } = useSimBaseballStore();
+
+  // Injury history
+  const [injuryHistory, setInjuryHistory] = useState<InjuryHistoryItem[]>([]);
+  const [injuryLoading, setInjuryLoading] = useState(false);
+
+  // Position usage
+  const [positionUsage, setPositionUsage] = useState<PositionUsageRow[]>([]);
+  const [posUsageLoading, setPosUsageLoading] = useState(false);
+
+  // Player statistics
+  const [playerStats, setPlayerStats] = useState<PlayerStatsResponse | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedTab !== "Injuries") return;
+    let cancelled = false;
+    const load = async () => {
+      setInjuryLoading(true);
+      try {
+        const data = await BaseballService.GetInjuryHistory({ player_id: player.id });
+        if (!cancelled) setInjuryHistory(data.events);
+      } catch {
+        if (!cancelled) setInjuryHistory([]);
+      }
+      if (!cancelled) setInjuryLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [selectedTab, player.id]);
+
+  useEffect(() => {
+    if (selectedTab !== "Positions") return;
+    if (!seasonContext?.current_league_year_id) return;
+    let cancelled = false;
+    const load = async () => {
+      setPosUsageLoading(true);
+      try {
+        const data = await BaseballService.GetPositionUsage({
+          league_year_id: seasonContext.current_league_year_id,
+          player_id: player.id,
+        });
+        if (!cancelled) setPositionUsage(data.positions);
+      } catch {
+        if (!cancelled) setPositionUsage([]);
+      }
+      if (!cancelled) setPosUsageLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [selectedTab, player.id, seasonContext?.current_league_year_id]);
+
+  useEffect(() => {
+    if (selectedTab !== "Statistics") return;
+    let cancelled = false;
+    const load = async () => {
+      setStatsLoading(true);
+      try {
+        const data = await BaseballService.GetPlayerStats(player.id, {
+          league_year_id: seasonContext?.current_league_year_id,
+        });
+        if (!cancelled) setPlayerStats(data);
+      } catch {
+        if (!cancelled) setPlayerStats(null);
+      }
+      if (!cancelled) setStatsLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [selectedTab, player.id, seasonContext?.current_league_year_id]);
+
+  const heightObj = HeightToFeetAndInches(player.height);
+  // Look up the player's team from allTeams (works for ANY org, not just the user's)
+  const team = useMemo(() => {
+    if (!allTeams || allTeams.length === 0) return null;
+    // Match by team_abbrev (most reliable across orgs)
+    if (player.team_abbrev) {
+      const match = allTeams.find((t) => t.team_abbrev === player.team_abbrev);
+      if (match) return match;
+    }
+    return null;
+  }, [allTeams, player.team_abbrev]);
+  const teamLogo = team
+    ? getLogo(
+        league === SimMLB ? SimMLB : SimCollegeBaseball,
+        team.team_id,
+        currentUser?.isRetro,
+      )
+    : "";
+
+  const r = player.ratings;
+  const pot = player.potentials;
+  const isPitcher = player.ptype === "Pitcher";
+
+  return (
+    <div className="flex flex-col w-full">
+      {/* Header: Face + Info Grid */}
+      <div className="grid grid-cols-4 gap-4 w-full">
+        {/* Face + Team Logo */}
+        <div className="row-span-3 flex flex-col items-center">
+          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+            <PlayerPicture
+              playerID={player.id}
+              league={league as League}
+              team={team}
+            />
+          </div>
+          {team && (
+            <Logo
+              url={teamLogo}
+              label={team.team_abbrev}
+              classes="h-[5rem] max-h-[5rem]"
+              containerClass="p-4"
+              textClass="text-small"
+            />
+          )}
+        </div>
+
+        {/* Info cells */}
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Type
+          </Text>
+          <Text variant="small" classes="whitespace-nowrap">
+            {player.ptype}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Age
+          </Text>
+          <Text variant="small">{player.age}</Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Overall
+          </Text>
+          <Text variant="small">{player.displayovr ?? "—"}</Text>
+        </div>
+
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Level
+          </Text>
+          <Text variant="small">{displayLevel(player.league_level)}</Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Team
+          </Text>
+          <Text variant="small">{player.team_abbrev}</Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Bats / Throws
+          </Text>
+          <Text variant="small">
+            {player.bat_hand} / {player.pitch_hand}
+          </Text>
+        </div>
+
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Height / Weight
+          </Text>
+          <Text variant="small">
+            {heightObj.feet}'{heightObj.inches}" / {player.weight} lbs
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Durability
+          </Text>
+          <Text variant="small">{player.durability || "—"}</Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Injury Risk
+          </Text>
+          <Text variant="small">{player.injury_risk || "—"}</Text>
+        </div>
+      </div>
+
+      {/* Contract Info */}
+      {player.contract && (
+        <BaseballContractRow contract={player.contract} league={league} />
+      )}
+
+      {/* Tabs */}
+      <div className="flex flex-col mt-4 pt-4 border-t dark:border-gray-600">
+        <TabGroup classes="mb-3">
+          <Tab
+            label="Batting"
+            selected={selectedTab === "Batting"}
+            setSelected={setSelectedTab}
+          />
+          <Tab
+            label="Fielding"
+            selected={selectedTab === "Fielding"}
+            setSelected={setSelectedTab}
+          />
+          {isPitcher && (
+            <Tab
+              label="Pitching"
+              selected={selectedTab === "Pitching"}
+              setSelected={setSelectedTab}
+            />
+          )}
+          <Tab
+            label="Positions"
+            selected={selectedTab === "Positions"}
+            setSelected={setSelectedTab}
+          />
+          <Tab
+            label="Injuries"
+            selected={selectedTab === "Injuries"}
+            setSelected={setSelectedTab}
+          />
+          <Tab
+            label="Statistics"
+            selected={selectedTab === "Statistics"}
+            setSelected={setSelectedTab}
+          />
+        </TabGroup>
+
+        {selectedTab === "Batting" && (
+          <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
+            <BaseballStatCell label="Contact" value={r.contact_display} pot={pot.contact_pot} />
+            <BaseballStatCell label="Power" value={r.power_display} pot={pot.power_pot} />
+            <BaseballStatCell label="Eye" value={r.eye_display} pot={pot.eye_pot} />
+            <BaseballStatCell label="Discipline" value={r.discipline_display} pot={pot.discipline_pot} />
+            <BaseballStatCell label="Speed" value={r.speed_display} pot={pot.speed_pot} />
+            <BaseballStatCell label="Base Reaction" value={r.basereaction_display} pot={pot.basereaction_pot} />
+            <BaseballStatCell label="Baserunning" value={r.baserunning_display} pot={pot.baserunning_pot} />
+          </div>
+        )}
+
+        {selectedTab === "Fielding" && (
+          <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
+            <BaseballStatCell label="Field Catch" value={r.fieldcatch_display} pot={pot.fieldcatch_pot} />
+            <BaseballStatCell label="Field React" value={r.fieldreact_display} pot={pot.fieldreact_pot} />
+            <BaseballStatCell label="Field Spot" value={r.fieldspot_display} pot={pot.fieldspot_pot} />
+            <BaseballStatCell label="Throw Acc" value={r.throwacc_display} pot={pot.throwacc_pot} />
+            <BaseballStatCell label="Throw Pow" value={r.throwpower_display} pot={pot.throwpower_pot} />
+            <BaseballStatCell label="Catch Frame" value={r.catchframe_display} pot={pot.catchframe_pot} />
+            <BaseballStatCell label="Catch Seq" value={r.catchsequence_display} pot={pot.catchsequence_pot} />
+          </div>
+        )}
+
+        {selectedTab === "Pitching" && isPitcher && (
+          <div className="space-y-3">
+            <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
+              <BaseballStatCell label="Endurance" value={r.pendurance_display} pot={pot.pendurance_pot} />
+              <BaseballStatCell label="Control" value={r.pgencontrol_display} pot={pot.pgencontrol_pot} />
+              <BaseballStatCell label="Velocity" value={r.pthrowpower_display} pot={pot.pthrowpower_pot} />
+              <BaseballStatCell label="Sequencing" value={r.psequencing_display} pot={pot.psequencing_pot} />
+              <BaseballStatCell label="Pickoff" value={r.pickoff_display} pot={pot.pickoff_pot} />
+            </div>
+            <div className="border-t dark:border-gray-600 pt-3">
+              <Text variant="small" classes="font-semibold mb-2">Pitch Arsenal</Text>
+              <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
+                {[1, 2, 3, 4, 5].map((i) => {
+                  const name = player[`pitch${i}_name` as keyof BaseballPlayer] as string | null;
+                  const ovr = r[`pitch${i}_ovr` as keyof typeof r] as number | null;
+                  if (!name) return null;
+                  return (
+                    <div key={i} className="flex flex-col px-1">
+                      <Text variant="small" classes="font-semibold whitespace-nowrap">{name}</Text>
+                      <Text variant="small" classes={`whitespace-nowrap ${
+                        (ovr ?? 0) >= 70 ? "text-green-600 dark:text-green-400" :
+                        (ovr ?? 0) >= 60 ? "text-blue-600 dark:text-blue-400" :
+                        (ovr ?? 0) >= 50 ? "" :
+                        (ovr ?? 0) >= 40 ? "text-yellow-600 dark:text-yellow-400" :
+                        "text-red-600 dark:text-red-400"
+                      }`}>
+                        {ovr ?? "—"}
+                      </Text>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {selectedTab === "Positions" && (
+          <div className="space-y-4">
+            {/* Position Ratings with XP modifier */}
+            <div>
+              <Text variant="small" classes="font-semibold mb-2">Position Ratings</Text>
+              <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
+                {([
+                  { label: "C", key: "c", ratingKey: "c_rating" },
+                  { label: "1B", key: "fb", ratingKey: "fb_rating" },
+                  { label: "2B", key: "sb", ratingKey: "sb_rating" },
+                  { label: "3B", key: "tb", ratingKey: "tb_rating" },
+                  { label: "SS", key: "ss", ratingKey: "ss_rating" },
+                  { label: "LF", key: "lf", ratingKey: "lf_rating" },
+                  { label: "CF", key: "cf", ratingKey: "cf_rating" },
+                  { label: "RF", key: "rf", ratingKey: "rf_rating" },
+                  { label: "DH", key: "dh", ratingKey: "dh_rating" },
+                  ...(isPitcher ? [
+                    { label: "SP", key: "sp", ratingKey: "sp_rating" },
+                    { label: "RP", key: "rp", ratingKey: "rp_rating" },
+                  ] : []),
+                ] as { label: string; key: string; ratingKey: keyof typeof r }[]).map((pos) => {
+                  const rating = r[pos.ratingKey] as number | null;
+                  const xpMod = player.defensive_xp_mod?.[pos.key];
+                  if (rating == null) return null;
+                  const ratingColor =
+                    rating >= 70 ? "text-green-600 dark:text-green-400" :
+                    rating >= 60 ? "text-blue-600 dark:text-blue-400" :
+                    rating >= 50 ? "" :
+                    rating >= 40 ? "text-yellow-600 dark:text-yellow-400" :
+                    "text-red-600 dark:text-red-400";
+                  const xpColor = xpMod != null
+                    ? xpMod >= 0.03 ? "text-green-600 dark:text-green-400"
+                    : xpMod >= 0 ? "text-blue-600 dark:text-blue-400"
+                    : xpMod >= -0.10 ? "text-yellow-600 dark:text-yellow-400"
+                    : "text-red-600 dark:text-red-400"
+                    : "";
+                  return (
+                    <div key={pos.key} className="flex flex-col px-1">
+                      <Text variant="small" classes="font-semibold whitespace-nowrap">{pos.label}</Text>
+                      <Text variant="small" classes={`whitespace-nowrap ${ratingColor}`}>
+                        {rating}
+                        {xpMod != null && (
+                          <span className={`ml-1 text-[10px] ${xpColor}`}>
+                            {xpMod >= 0 ? "+" : ""}{(xpMod * 100).toFixed(0)}%
+                          </span>
+                        )}
+                      </Text>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Position Usage (games started) */}
+            <div className="border-t dark:border-gray-600 pt-3">
+              <Text variant="small" classes="font-semibold mb-2">Season Position Usage</Text>
+              {posUsageLoading ? (
+                <Text variant="small" classes="text-gray-400 py-2 text-center">Loading...</Text>
+              ) : positionUsage.length === 0 ? (
+                <Text variant="small" classes="text-gray-400 py-2 text-center">No position usage data this season.</Text>
+              ) : (
+                <table className="w-full border-collapse text-xs">
+                  <thead>
+                    <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                      <th className="px-2 py-1 text-left">Position</th>
+                      <th className="px-2 py-1 text-center">Starts</th>
+                      <th className="px-2 py-1 text-center">vs L</th>
+                      <th className="px-2 py-1 text-center">vs R</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {positionUsage
+                      .sort((a, b) => b.starts - a.starts)
+                      .map((pu) => {
+                        const posDisplay: Record<string, string> = {
+                          c: "C", fb: "1B", sb: "2B", tb: "3B", ss: "SS",
+                          lf: "LF", cf: "CF", rf: "RF", dh: "DH", p: "P",
+                        };
+                        return (
+                          <tr key={pu.position_code} className="border-b border-gray-100 dark:border-gray-700">
+                            <td className="px-2 py-1.5 font-medium">{posDisplay[pu.position_code] ?? pu.position_code.toUpperCase()}</td>
+                            <td className="px-2 py-1.5 text-center font-semibold">{pu.starts}</td>
+                            <td className="px-2 py-1.5 text-center text-gray-500">{pu.vs_l_starts}</td>
+                            <td className="px-2 py-1.5 text-center text-gray-500">{pu.vs_r_starts}</td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        )}
+
+        {selectedTab === "Injuries" && (
+          <div className="w-full">
+            {injuryLoading ? (
+              <Text variant="small" classes="text-gray-400 py-4 text-center">Loading injury history...</Text>
+            ) : injuryHistory.length === 0 ? (
+              <Text variant="small" classes="text-gray-400 py-4 text-center">No injury history found.</Text>
+            ) : (
+              <table className="w-full border-collapse text-xs">
+                <thead>
+                  <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                    <th className="px-2 py-1 text-left">Injury</th>
+                    <th className="px-2 py-1 text-center">Assigned</th>
+                    <th className="px-2 py-1 text-center">Remaining</th>
+                    <th className="px-2 py-1 text-left">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {injuryHistory.map((evt) => (
+                    <tr key={evt.event_id} className="border-b border-gray-100 dark:border-gray-700">
+                      <td className="px-2 py-1.5">{evt.injury_name}</td>
+                      <td className="px-2 py-1.5 text-center">{evt.weeks_assigned}w</td>
+                      <td className="px-2 py-1.5 text-center">
+                        <span className={evt.weeks_remaining > 0 ? "text-red-600 dark:text-red-400 font-semibold" : "text-green-600 dark:text-green-400"}>
+                          {evt.weeks_remaining > 0 ? `${evt.weeks_remaining}w` : "Healed"}
+                        </span>
+                      </td>
+                      <td className="px-2 py-1.5 text-gray-500">{evt.created_at}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {selectedTab === "Statistics" && (
+          <div className="w-full space-y-4">
+            {statsLoading ? (
+              <Text variant="small" classes="text-gray-400 py-4 text-center">Loading statistics...</Text>
+            ) : !playerStats ? (
+              <Text variant="small" classes="text-gray-400 py-4 text-center">No statistics available.</Text>
+            ) : (
+              <>
+                {/* Batting Stats */}
+                {playerStats.batting && playerStats.batting.length > 0 && (
+                  <div>
+                    <Text variant="small" classes="font-semibold mb-2">Batting</Text>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse text-xs">
+                        <thead>
+                          <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                            <th className="px-1.5 py-1 text-left">Team</th>
+                            <th className="px-1.5 py-1 text-center">G</th>
+                            <th className="px-1.5 py-1 text-center">AB</th>
+                            <th className="px-1.5 py-1 text-center">R</th>
+                            <th className="px-1.5 py-1 text-center">H</th>
+                            <th className="px-1.5 py-1 text-center">2B</th>
+                            <th className="px-1.5 py-1 text-center">3B</th>
+                            <th className="px-1.5 py-1 text-center">HR</th>
+                            <th className="px-1.5 py-1 text-center">RBI</th>
+                            <th className="px-1.5 py-1 text-center">BB</th>
+                            <th className="px-1.5 py-1 text-center">SO</th>
+                            <th className="px-1.5 py-1 text-center">SB</th>
+                            <th className="px-1.5 py-1 text-center">AVG</th>
+                            <th className="px-1.5 py-1 text-center">OBP</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {playerStats.batting.map((s, i) => (
+                            <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                              <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
+                              <td className="px-1.5 py-1 text-center">{s.g}</td>
+                              <td className="px-1.5 py-1 text-center">{s.ab}</td>
+                              <td className="px-1.5 py-1 text-center">{s.r}</td>
+                              <td className="px-1.5 py-1 text-center">{s.h}</td>
+                              <td className="px-1.5 py-1 text-center">{s["2b"]}</td>
+                              <td className="px-1.5 py-1 text-center">{s["3b"]}</td>
+                              <td className="px-1.5 py-1 text-center">{s.hr}</td>
+                              <td className="px-1.5 py-1 text-center">{s.rbi}</td>
+                              <td className="px-1.5 py-1 text-center">{s.bb}</td>
+                              <td className="px-1.5 py-1 text-center">{s.so}</td>
+                              <td className="px-1.5 py-1 text-center">{s.sb}</td>
+                              <td className="px-1.5 py-1 text-center font-semibold">{s.avg}</td>
+                              <td className="px-1.5 py-1 text-center font-semibold">{s.obp}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Pitching Stats */}
+                {playerStats.pitching && playerStats.pitching.length > 0 && (
+                  <div>
+                    <Text variant="small" classes="font-semibold mb-2">Pitching</Text>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse text-xs">
+                        <thead>
+                          <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                            <th className="px-1.5 py-1 text-left">Team</th>
+                            <th className="px-1.5 py-1 text-center">G</th>
+                            <th className="px-1.5 py-1 text-center">GS</th>
+                            <th className="px-1.5 py-1 text-center">W</th>
+                            <th className="px-1.5 py-1 text-center">L</th>
+                            <th className="px-1.5 py-1 text-center">SV</th>
+                            <th className="px-1.5 py-1 text-center">IP</th>
+                            <th className="px-1.5 py-1 text-center">H</th>
+                            <th className="px-1.5 py-1 text-center">ER</th>
+                            <th className="px-1.5 py-1 text-center">BB</th>
+                            <th className="px-1.5 py-1 text-center">SO</th>
+                            <th className="px-1.5 py-1 text-center">ERA</th>
+                            <th className="px-1.5 py-1 text-center">WHIP</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {playerStats.pitching.map((s, i) => (
+                            <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                              <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
+                              <td className="px-1.5 py-1 text-center">{s.g}</td>
+                              <td className="px-1.5 py-1 text-center">{s.gs}</td>
+                              <td className="px-1.5 py-1 text-center">{s.w}</td>
+                              <td className="px-1.5 py-1 text-center">{s.l}</td>
+                              <td className="px-1.5 py-1 text-center">{s.sv}</td>
+                              <td className="px-1.5 py-1 text-center">{s.ip}</td>
+                              <td className="px-1.5 py-1 text-center">{s.h}</td>
+                              <td className="px-1.5 py-1 text-center">{s.er}</td>
+                              <td className="px-1.5 py-1 text-center">{s.bb}</td>
+                              <td className="px-1.5 py-1 text-center">{s.so}</td>
+                              <td className="px-1.5 py-1 text-center font-semibold">{s.era}</td>
+                              <td className="px-1.5 py-1 text-center font-semibold">{s.whip}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Fielding Stats */}
+                {playerStats.fielding && playerStats.fielding.length > 0 && (
+                  <div>
+                    <Text variant="small" classes="font-semibold mb-2">Fielding</Text>
+                    <div className="overflow-x-auto">
+                      <table className="w-full border-collapse text-xs">
+                        <thead>
+                          <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                            <th className="px-1.5 py-1 text-left">Team</th>
+                            <th className="px-1.5 py-1 text-center">Pos</th>
+                            <th className="px-1.5 py-1 text-center">G</th>
+                            <th className="px-1.5 py-1 text-center">INN</th>
+                            <th className="px-1.5 py-1 text-center">PO</th>
+                            <th className="px-1.5 py-1 text-center">A</th>
+                            <th className="px-1.5 py-1 text-center">E</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {playerStats.fielding.map((s, i) => (
+                            <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                              <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
+                              <td className="px-1.5 py-1 text-center">{s.pos}</td>
+                              <td className="px-1.5 py-1 text-center">{s.g}</td>
+                              <td className="px-1.5 py-1 text-center">{s.inn}</td>
+                              <td className="px-1.5 py-1 text-center">{s.po}</td>
+                              <td className="px-1.5 py-1 text-center">{s.a}</td>
+                              <td className="px-1.5 py-1 text-center">{s.e}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {playerStats.batting?.length === 0 && playerStats.pitching?.length === 0 && playerStats.fielding?.length === 0 && (
+                  <Text variant="small" classes="text-gray-400 py-4 text-center">No statistics recorded this season.</Text>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };

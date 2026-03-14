@@ -4,6 +4,8 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -14,6 +16,7 @@ import { useAdminPage } from "../../context/AdminPageContext";
 import { useAuthStore } from "../../context/AuthContext";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
+import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { updateUserByUsername } from "../../firebase/firestoreHelper";
@@ -23,6 +26,11 @@ import {
   Request as CBBRequest,
   Team,
 } from "../../models/basketballModels";
+import {
+  CollegeBaseballTeamRequest,
+  MLBTeamRequest,
+  BaseballOrganization,
+} from "../../models/baseball/baseballModels";
 import {
   CollegeTeam,
   NFLRequest,
@@ -46,6 +54,8 @@ export const AdminRequestsTab = () => {
     bbaNBARequests,
     fbaCFBRequests,
     fbaNFLRequests,
+    baseballCBRequests,
+    baseballMLBRequests,
   } = useAdminPage();
   const hkStore = useSimHCKStore();
   const { chlTeamMap, phlTeamMap } = hkStore;
@@ -56,6 +66,18 @@ export const AdminRequestsTab = () => {
   const bbStore = useSimBBAStore();
   const bbLoading = bbStore.isLoading;
   const { nbaTeamMap, cbbTeamMap } = bbStore;
+  const baseballStore = useSimBaseballStore();
+  const { organizations: baseballOrgs } = baseballStore;
+  const baseballLoading = baseballStore.isLoading;
+
+  const baseballOrgMap = useMemo(() => {
+    if (!baseballOrgs) return {};
+    const map: Record<number, BaseballOrganization> = {};
+    for (const org of baseballOrgs) {
+      map[org.id] = org;
+    }
+    return map;
+  }, [baseballOrgs]);
 
   return (
     <div
@@ -125,6 +147,28 @@ export const AdminRequestsTab = () => {
             nflTeam={proTeamMap![request.NFLTeamID]}
             key={request.ID}
             oneItem={fbaNFLRequests.length === 1}
+          />
+        ))}
+
+      {selectedLeague === SimCollegeBaseball &&
+        !baseballLoading &&
+        baseballCBRequests.map((request) => (
+          <CollegeBaseballRequestCard
+            request={request}
+            org={baseballOrgMap[request.OrgID]}
+            key={request.ID}
+            oneItem={baseballCBRequests.length === 1}
+          />
+        ))}
+
+      {selectedLeague === SimMLB &&
+        !baseballLoading &&
+        baseballMLBRequests.map((request) => (
+          <MLBRequestCard
+            request={request}
+            org={baseballOrgMap[request.OrgID]}
+            key={request.ID}
+            oneItem={baseballMLBRequests.length === 1}
           />
         ))}
     </div>
@@ -470,6 +514,103 @@ export const NFLRequestCard: React.FC<NFLRequestCardProps> = ({
       reject={reject}
       backgroundColor={backgroundColor}
       borderColor={borderColor}
+      username={request.Username}
+      role={role}
+    />
+  );
+};
+
+interface CollegeBaseballRequestCardProps {
+  request: CollegeBaseballTeamRequest;
+  org: BaseballOrganization;
+  oneItem: boolean;
+}
+
+export const CollegeBaseballRequestCard: React.FC<CollegeBaseballRequestCardProps> = ({
+  request,
+  org,
+  oneItem,
+}) => {
+  const authStore = useAuthStore();
+  const { currentUser } = authStore;
+  const requestLogo = getLogo(
+    SimMLB as League,
+    request.OrgID,
+    currentUser?.isRetro,
+  );
+  const { acceptCBBaseballRequest, rejectCBBaseballRequest } = useAdminPage();
+  const accept = async () => {
+    await acceptCBBaseballRequest(request);
+  };
+  const reject = async () => {
+    await rejectCBBaseballRequest(request);
+  };
+
+  const teamLabel = useMemo(() => {
+    if (!org) return "Unknown Organization";
+    return org.org_abbrev;
+  }, [org]);
+
+  return (
+    <AdminRequestCard
+      teamLabel={teamLabel}
+      requestLogo={requestLogo}
+      oneItem={oneItem}
+      accept={accept}
+      reject={reject}
+      username={request.Username}
+      role="Coach"
+    />
+  );
+};
+
+interface MLBRequestCardProps {
+  request: MLBTeamRequest;
+  org: BaseballOrganization;
+  oneItem: boolean;
+}
+
+export const MLBRequestCard: React.FC<MLBRequestCardProps> = ({
+  request,
+  org,
+  oneItem,
+}) => {
+  const authStore = useAuthStore();
+  const { currentUser } = authStore;
+  const requestLogo = getLogo(
+    SimMLB as League,
+    request.OrgID,
+    currentUser?.isRetro,
+  );
+  const { acceptMLBRequest, rejectMLBRequest } = useAdminPage();
+  const accept = async () => {
+    await acceptMLBRequest(request);
+  };
+  const reject = async () => {
+    await rejectMLBRequest(request);
+  };
+
+  const teamLabel = useMemo(() => {
+    if (!org) return "Unknown Organization";
+    return org.org_abbrev;
+  }, [org]);
+
+  const role = useMemo(() => {
+    if (!request) return "Unknown Role";
+    if (request.IsOwner) return "Owner";
+    if (request.IsGM) return "GM";
+    if (request.IsManager) return "Manager";
+    if (request.IsScout) return "Scout";
+    return request.Role || "Unknown Role";
+  }, [request]);
+
+  return (
+    <AdminRequestCard
+      teamLabel={teamLabel}
+      requestLogo={requestLogo}
+      oneItem={oneItem}
+      accept={accept}
+      reject={reject}
       username={request.Username}
       role={role}
     />
