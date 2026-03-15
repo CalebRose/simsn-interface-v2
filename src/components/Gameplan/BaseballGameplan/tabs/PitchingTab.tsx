@@ -37,6 +37,61 @@ import {
   Tooltip,
 } from "../playerDropdownUtils";
 
+// Dark-theme compact styles for pitching dropdowns
+const DK_BG = "#1a202c";
+const DK_BG_FOCUS = "#2d3748";
+const DK_BORDER = "#4A5568";
+const DK_BORDER_FOCUS = "#4A90E2";
+
+const pitcherSelectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: "30px",
+    fontSize: "0.75rem",
+    padding: "0",
+    backgroundColor: state.isFocused ? DK_BG_FOCUS : DK_BG,
+    borderColor: state.isFocused ? DK_BORDER_FOCUS : DK_BORDER,
+    color: "#fff",
+    boxShadow: state.isFocused ? `0 0 0 1px ${DK_BORDER_FOCUS}` : "none",
+    borderRadius: "8px",
+  }),
+  valueContainer: (base: any) => ({ ...base, padding: "0 6px" }),
+  singleValue: (base: any) => ({ ...base, fontSize: "0.75rem", color: "#fff" }),
+  input: (base: any) => ({ ...base, margin: "0", padding: "0", color: "#fff" }),
+  placeholder: (base: any) => ({ ...base, fontSize: "0.75rem", color: "#A0AEC0" }),
+  indicatorsContainer: (base: any) => ({ ...base, "& > div": { padding: "2px" } }),
+  option: (base: any, state: any) => ({
+    ...base, fontSize: "0.75rem", padding: "5px 8px",
+    backgroundColor: state.isFocused ? DK_BG_FOCUS : DK_BG, color: "#fff", cursor: "pointer",
+  }),
+  menu: (base: any) => ({ ...base, minWidth: "180px", backgroundColor: DK_BG, borderRadius: "8px" }),
+  menuList: (base: any) => ({ ...base, backgroundColor: DK_BG, padding: "0" }),
+};
+
+const roleSelectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: "30px",
+    fontSize: "0.7rem",
+    padding: "0",
+    backgroundColor: state.isFocused ? DK_BG_FOCUS : DK_BG,
+    borderColor: state.isFocused ? DK_BORDER_FOCUS : DK_BORDER,
+    color: "#fff",
+    boxShadow: state.isFocused ? `0 0 0 1px ${DK_BORDER_FOCUS}` : "none",
+    borderRadius: "8px",
+  }),
+  valueContainer: (base: any) => ({ ...base, padding: "0 4px" }),
+  singleValue: (base: any) => ({ ...base, fontSize: "0.7rem", color: "#fff" }),
+  input: (base: any) => ({ ...base, margin: "0", padding: "0", color: "#fff" }),
+  indicatorsContainer: (base: any) => ({ ...base, "& > div": { padding: "2px" } }),
+  option: (base: any, state: any) => ({
+    ...base, fontSize: "0.7rem", padding: "4px 8px",
+    backgroundColor: state.isFocused ? DK_BG_FOCUS : DK_BG, color: "#fff", cursor: "pointer",
+  }),
+  menu: (base: any) => ({ ...base, minWidth: "90px", backgroundColor: DK_BG, borderRadius: "8px" }),
+  menuList: (base: any) => ({ ...base, backgroundColor: DK_BG, padding: "0" }),
+};
+
 interface PitchingTabProps {
   teamId: number;
   players: Player[];
@@ -319,13 +374,14 @@ const RotationSection = ({
           <Tooltip text="How many starting pitchers rotate through the lineup. The engine cycles through slots in order.">
             <div className="flex flex-wrap items-center gap-2">
               <Text variant="small" classes="font-semibold">Rotation Size:</Text>
-              <div className="w-full sm:w-[180px]">
+              <div className="w-full sm:w-[140px]">
                 <SelectDropdown
                   options={rotSizeOptions}
                   value={rotSizeOptions.find((o) => o.value === String(rotation.rotation_size ?? 5)) ?? null}
                   onChange={(opt) => {
                     if (opt) handleSizeChange(Number((opt as SelectOption).value));
                   }}
+                  styles={roleSelectStyles}
                 />
               </div>
             </div>
@@ -386,7 +442,7 @@ const RotationSection = ({
                 {isNext && (
                   <span className="text-xs font-bold text-blue-500 uppercase">Next</span>
                 )}
-                <div className="w-full sm:w-[280px]">
+                <div className="w-full sm:w-[200px]">
                   <SelectDropdown<false>
                     options={groupedOptions as any}
                     value={currentValue}
@@ -395,6 +451,7 @@ const RotationSection = ({
                     }}
                     isSearchable
                     placeholder="Select pitcher..."
+                    styles={pitcherSelectStyles}
                     components={{
                       Option: ColoredOptionSimple as any,
                       GroupHeading: StyledGroupHeading as any,
@@ -648,7 +705,7 @@ const BullpenSection = ({
               <div className="flex flex-wrap items-center gap-3">
                 <span className="font-bold text-lg w-8 text-center">{entry.slot}</span>
 
-                <div className="w-full sm:w-[250px]">
+                <div className="w-full sm:w-[180px]">
                   <SelectDropdown<false>
                     options={groupedOptions as any}
                     value={currentValue}
@@ -657,6 +714,7 @@ const BullpenSection = ({
                     }}
                     isSearchable
                     placeholder="Select pitcher..."
+                    styles={pitcherSelectStyles}
                     components={{
                       Option: ColoredOptionSimple as any,
                       GroupHeading: StyledGroupHeading as any,
@@ -665,13 +723,14 @@ const BullpenSection = ({
                 </div>
 
                 <Tooltip text="The reliever's bullpen role determines when the engine brings them into the game.">
-                  <div className="w-full sm:w-[140px]">
+                  <div className="w-full sm:w-[100px]">
                     <SelectDropdown
                       options={BullpenRoleOptions}
                       value={BullpenRoleOptions.find((o) => o.value === entry.role) ?? null}
                       onChange={(opt) => {
                         if (opt) updateEntry(idx, { role: (opt as SelectOption).value as BullpenRole });
                       }}
+                      styles={roleSelectStyles}
                     />
                   </div>
                 </Tooltip>
@@ -745,7 +804,7 @@ const BullpenSection = ({
           <Text variant="small" classes="text-gray-500 dark:text-gray-400 mb-2">
             Player who pitches if the entire bullpen is exhausted.
           </Text>
-          <div className="w-full sm:w-[280px]">
+          <div className="w-full sm:w-[200px]">
             <SelectDropdown<false>
               options={[{ label: "", options: [noneOption] }, ...allPlayerGroupedOptions] as any}
               value={
@@ -762,6 +821,7 @@ const BullpenSection = ({
               }}
               isClearable
               isSearchable
+              styles={pitcherSelectStyles}
               components={{
                 Option: ColoredOptionSimple as any,
                 GroupHeading: StyledGroupHeading as any,
