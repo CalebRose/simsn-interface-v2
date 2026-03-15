@@ -124,11 +124,18 @@ const RATING_DISPLAY_FIELDS = [
   "pitch5_consist", "pitch5_pacc", "pitch5_pbrk", "pitch5_pcntrl",
 ];
 
-/** Ensure ratings sub-object has _display fields, falling back to bare name or _base variants. */
+/** Ensure ratings sub-object has _display fields.
+ *  Bootstrap now returns visibility-aware _display values (fuzzed or precise),
+ *  so we must NOT fall back to raw/base values — that would leak precise data.
+ *  Only populate _display if the key is completely absent from the response. */
 const normalizeRatings = (r: any): any => {
   const result = { ...r };
   for (const field of RATING_DISPLAY_FIELDS) {
-    result[`${field}_display`] = r[`${field}_display`] ?? r[field] ?? r[`${field}_base`] ?? null;
+    const displayKey = `${field}_display`;
+    if (!(displayKey in result)) {
+      // Field missing entirely — use raw value as last resort (pre-visibility bootstrap compat)
+      result[displayKey] = r[field] ?? r[`${field}_base`] ?? null;
+    }
   }
   return result;
 };
@@ -405,18 +412,24 @@ export const letterGradeToNumeric = (grade: string): number => {
 // ── Fog-of-war display helpers ──────────────────────────────
 
 const numericRatingColor = (v: number): string => {
-  if (v >= 70) return "text-green-600 dark:text-green-400 font-semibold";
-  if (v >= 60) return "text-blue-600 dark:text-blue-400";
-  if (v >= 50) return "";
-  if (v >= 40) return "text-yellow-600 dark:text-yellow-400";
+  if (v == 80) return "text-blue-600 dark:text-blue-400 font-semibold";
+  if (v >= 70) return "text-green-600 dark:text-green-400";
+  if (v >= 60) return "text-green-600 dark:text-green-400";
+  if (v >= 50) return "text-yellow-600 dark:text-yellow-400";
+  if (v >= 40) return "text-orange-600 dark:text-orange-400";
+  if (v >= 30) return "text-orange-600 dark:text-orange-400";
+  if (v >= 20) return "text-red-600 dark:text-red-400";
   return "text-red-600 dark:text-red-400";
 };
 
 const gradeColorClass = (grade: string): string => {
-  if (grade.startsWith("A")) return "text-green-600 dark:text-green-400";
-  if (grade.startsWith("B")) return "text-blue-600 dark:text-blue-400";
+  if (grade.startsWith("A")) return "text-blue-600 dark:text-blue-400";
+  if (grade.startsWith("B")) return "text-green-600 dark:text-green-400";
   if (grade.startsWith("C")) return "text-yellow-600 dark:text-yellow-400";
   if (grade.startsWith("D")) return "text-orange-600 dark:text-orange-400";
+  if (grade.startsWith("F")) return "text-red-600 dark:text-red-400";
+  if (grade.startsWith("?")) return "";
+  if (grade.startsWith("—")) return "";
   return "text-red-600 dark:text-red-400";
 };
 

@@ -25,6 +25,7 @@ import { League } from "../../../../_constants/constants";
 import { getLogo } from "../../../../_utility/getLogo";
 import { Logo } from "../../../../_design/Logo";
 import { useAuthStore } from "../../../../context/AuthContext";
+import "../baseballMobile.css";
 
 // ── Attribute display names ──
 const BATTING_ATTRS = [
@@ -378,6 +379,7 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
               bio={bio!}
               visibilityContext={player.visibility_context}
               displayFormat={player.display_format}
+              unlocked={vis?.unlocked}
             />
           )}
 
@@ -443,6 +445,7 @@ interface AttributesTabProps {
   bio: ScoutingPlayerResponse["bio"];
   visibilityContext?: VisibilityContext;
   displayFormat?: string;
+  unlocked?: string[];
 }
 
 const AttributesTab: FC<AttributesTabProps> = ({
@@ -453,11 +456,18 @@ const AttributesTab: FC<AttributesTabProps> = ({
   bio,
   visibilityContext,
   displayFormat,
+  unlocked = [],
 }) => {
   const hasLetterGrades = letterGrades && Object.keys(letterGrades).length > 0;
   const hasNumeric = attributes && Object.keys(attributes).length > 0;
   const isHidden = displayFormat === "hidden" || (pool === "hs" && !displayFormat);
-  const isFuzzed = visibilityContext ? !visibilityContext.attributes_precise : false;
+  // Precise when visibility_context says so, display_format is "20-80", or relevant action is unlocked
+  const isPrecise =
+    visibilityContext?.attributes_precise === true ||
+    displayFormat === "20-80" ||
+    unlocked.includes("pro_attrs_precise") ||
+    unlocked.includes("draft_attrs_precise");
+  const isFuzzed = !isPrecise;
 
   if (isHidden && !hasLetterGrades && !hasNumeric) {
     return (
@@ -532,7 +542,7 @@ const AttributesTab: FC<AttributesTabProps> = ({
             {pitchSlots.map((slot) => {
               const pitchName = bio[`pitch${slot}_name` as keyof typeof bio] as string;
               const ovrKey = `pitch${slot}_ovr`;
-              const ovr = attributes?.[`${ovrKey}_display`];
+              const ovr = attributes?.[`${ovrKey}_display`] ?? attributes?.[ovrKey];
               const subKeys = ["pacc", "pcntrl", "pbrk", "consist"];
               return (
                 <div key={slot} className="bg-gray-50 dark:bg-gray-700/50 rounded p-2">
@@ -595,7 +605,8 @@ const PotentialsTab: FC<PotentialsTabProps> = ({
 }) => {
   const hasPotentials = potentials && Object.keys(potentials).length > 0;
   const isHidden = displayFormat === "hidden";
-  const potFuzzed = visibilityContext ? !visibilityContext.potentials_precise : false;
+  // Default to fuzzed — only show precise when visibility_context explicitly confirms it
+  const potFuzzed = !(visibilityContext?.potentials_precise === true);
 
   if (isHidden && !hasPotentials) {
     return (
@@ -794,6 +805,7 @@ const InjuriesTab: FC<{ injuryHistory: InjuryHistoryItem[]; injuryLoading: boole
 
   return (
     <Border classes="p-3">
+      <div className="baseball-table-wrapper overflow-x-auto">
       <table className="w-full border-collapse text-xs">
         <thead>
           <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
@@ -818,6 +830,7 @@ const InjuriesTab: FC<{ injuryHistory: InjuryHistoryItem[]; injuryLoading: boole
           ))}
         </tbody>
       </table>
+      </div>
     </Border>
   );
 };
@@ -907,7 +920,7 @@ const StatisticsTab: FC<{ player: ScoutingPlayerResponse }> = ({ player }) => {
           {fallbackStats.batting.length > 0 && (
             <div className="mb-3">
               <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Batting</Text>
-              <div className="overflow-x-auto">
+              <div className="baseball-table-wrapper overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead><tr className="text-gray-400 border-b dark:border-gray-600">
                     <th className="px-2 py-1 text-center">Year</th><th className="px-2 py-1 text-center">Team</th>
@@ -938,7 +951,7 @@ const StatisticsTab: FC<{ player: ScoutingPlayerResponse }> = ({ player }) => {
           {fallbackStats.pitching.length > 0 && (
             <div className="mb-3">
               <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Pitching</Text>
-              <div className="overflow-x-auto">
+              <div className="baseball-table-wrapper overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead><tr className="text-gray-400 border-b dark:border-gray-600">
                     <th className="px-2 py-1 text-center">Year</th><th className="px-2 py-1 text-center">Team</th>
@@ -969,7 +982,7 @@ const StatisticsTab: FC<{ player: ScoutingPlayerResponse }> = ({ player }) => {
           {fallbackStats.fielding.length > 0 && (
             <div className="mb-3">
               <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Fielding</Text>
-              <div className="overflow-x-auto">
+              <div className="baseball-table-wrapper overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead><tr className="text-gray-400 border-b dark:border-gray-600">
                     <th className="px-2 py-1 text-center">Year</th><th className="px-2 py-1 text-center">Team</th>

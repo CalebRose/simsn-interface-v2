@@ -24,6 +24,7 @@ import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import type { RecruitingState, BoardPlayer, Commitment, InvestmentStateResponse } from "../../../models/baseball/baseballRecruitingModels";
 import { useSnackbar } from "notistack";
+import "./baseballMobile.css";
 
 // ═══════════════════════════════════════════════
 // Scouted potentials cache
@@ -654,7 +655,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                 <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">No recruits found.</Text>
               ) : (
                 <>
-                  <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+                  <div className="baseball-table-wrapper overflow-x-auto max-h-[70vh] overflow-y-auto">
                     <table className="w-full text-sm text-left">
                       <GroupedTableHeader
                         groups={poolColumnGroups}
@@ -722,7 +723,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                     </div>
                   )}
 
-                  <div className="overflow-x-auto">
+                  <div className="baseball-table-wrapper overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-700 bg-gray-50 dark:bg-gray-700">
@@ -842,7 +843,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                 <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">No commitments yet.</Text>
               ) : (
                 <>
-                  <div className="overflow-x-auto">
+                  <div className="baseball-table-wrapper overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-700 bg-gray-50 dark:bg-gray-700">

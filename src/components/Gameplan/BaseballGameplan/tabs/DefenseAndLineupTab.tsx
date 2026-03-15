@@ -185,11 +185,14 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
       setAssignments(savedAssignments);
       baselineRef.current = JSON.stringify(savedAssignments);
       setMessage("Saved successfully");
-    } catch {
-      setMessage("Failed to save");
+    } catch (err: any) {
+      const detail = err?.message && err.message !== "Failed to fetch"
+        ? err.message
+        : "Unknown error";
+      setMessage(`Failed to save: ${detail}`);
     } finally {
       setIsSaving(false);
-      setTimeout(() => setMessage(""), 3000);
+      setTimeout(() => setMessage(""), 5000);
     }
   };
 
@@ -331,7 +334,8 @@ const PositionCard = ({
         </Text>
         <button
           onClick={onAdd}
-          className="text-xs text-blue-500 hover:text-blue-400 cursor-pointer font-medium"
+          className="text-sm sm:text-xs px-2 py-1.5 sm:px-0 sm:py-0 rounded sm:rounded-none bg-blue-600/10 sm:bg-transparent text-blue-500 hover:text-blue-400 cursor-pointer font-medium"
+          aria-label={`Add ${PositionShortMap[positionCode] ?? positionCode.toUpperCase()} assignment`}
         >
           + Add
         </button>
@@ -389,7 +393,7 @@ const PositionCard = ({
                 )}
 
                 {/* vs Hand pills + Lock toggle */}
-                <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center justify-between gap-3 sm:gap-2 flex-wrap">
                   <div className="flex items-center gap-1">
                     <Text variant="small" classes="text-gray-500 text-xs mr-1">vs:</Text>
                     <ButtonGroup>
@@ -441,7 +445,7 @@ const PositionCard = ({
                         onUpdate(globalIdx, { min_order: v && v >= 1 && v <= 9 ? v : null });
                       }}
                       placeholder="—"
-                      className="w-10 px-1 py-1 text-sm text-center border rounded bg-black text-white border-gray-500"
+                      className="w-14 sm:w-10 px-1 py-2 sm:py-1 text-sm text-center border rounded bg-black text-white border-gray-500"
                     />
                     <span className="text-gray-500 text-xs">-</span>
                     <input
@@ -454,7 +458,7 @@ const PositionCard = ({
                         onUpdate(globalIdx, { max_order: v && v >= 1 && v <= 9 ? v : null });
                       }}
                       placeholder="—"
-                      className="w-10 px-1 py-1 text-sm text-center border rounded bg-black text-white border-gray-500"
+                      className="w-14 sm:w-10 px-1 py-2 sm:py-1 text-sm text-center border rounded bg-black text-white border-gray-500"
                     />
                   </div>
                 </div>
@@ -480,21 +484,24 @@ const PositionCard = ({
                     <button
                       onClick={() => onMove(globalIdx, -1)}
                       disabled={posIdx === 0}
-                      className="w-6 h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
+                      className="w-9 h-9 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
+                      aria-label="Move up"
                     >
                       ↑
                     </button>
                     <button
                       onClick={() => onMove(globalIdx, 1)}
                       disabled={posIdx === entries.length - 1}
-                      className="w-6 h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-xs"
+                      className="w-9 h-9 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
+                      aria-label="Move down"
                     >
                       ↓
                     </button>
                     <button
                       onClick={() => onRemove(globalIdx)}
-                      className="w-6 h-6 flex items-center justify-center rounded bg-red-700 text-white border border-red-500 hover:bg-red-600 text-xs"
+                      className="w-9 h-9 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-red-700 text-white border border-red-500 hover:bg-red-600 text-sm sm:text-xs"
                       title="Remove"
+                      aria-label="Remove assignment"
                     >
                       ×
                     </button>

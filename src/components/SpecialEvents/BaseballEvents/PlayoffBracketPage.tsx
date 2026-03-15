@@ -19,6 +19,7 @@ import {
   MLB_ROUND_ORDER, MILB_ROUND_ORDER, CWS_ROUND_ORDER, ROUND_LABELS,
   BootstrapPlayoffEvent, bootstrapPlayoffToBracket,
 } from "../../../models/baseball/baseballEventModels";
+import "../../Team/baseball/baseballMobile.css";
 
 // ═══════════════════════════════════════════════
 // Sub-components
@@ -45,13 +46,13 @@ const SeriesCard = ({
   const isWinnerB = series.winner?.id === series.team_b.id;
 
   return (
-    <div className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-[14rem]`}>
+    <div className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-full sm:min-w-[14rem]`}>
       {/* Team A */}
       <div className={`flex items-center justify-between gap-2 py-1 ${isWinnerA ? "font-bold" : isWinnerB ? "opacity-50" : ""}`}>
         <div className="flex items-center gap-2">
           {logoA && <img src={logoA} className="w-5 h-5 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
           <span className="text-sm">{series.team_a.abbrev}</span>
-          {series.team_a.seed > 0 && <span className="text-[10px] text-gray-400">({series.team_a.seed})</span>}
+          {series.team_a.seed > 0 && <span className="text-[11px] sm:text-[10px] text-gray-400">({series.team_a.seed})</span>}
         </div>
         <span className="text-sm font-semibold tabular-nums">{series.wins_a}</span>
       </div>
@@ -62,13 +63,13 @@ const SeriesCard = ({
         <div className="flex items-center gap-2">
           {logoB && <img src={logoB} className="w-5 h-5 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
           <span className="text-sm">{series.team_b.abbrev}</span>
-          {series.team_b.seed > 0 && <span className="text-[10px] text-gray-400">({series.team_b.seed})</span>}
+          {series.team_b.seed > 0 && <span className="text-[11px] sm:text-[10px] text-gray-400">({series.team_b.seed})</span>}
         </div>
         <span className="text-sm font-semibold tabular-nums">{series.wins_b}</span>
       </div>
       {/* Status badge */}
       <div className="mt-1.5 text-center">
-        <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full ${
+        <span className={`text-[11px] sm:text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full ${
           series.status === "complete" ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
           : series.status === "active" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
           : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
@@ -134,7 +135,7 @@ const CWSBracketTable = ({ entries }: { entries: CWSBracketEntry[] }) => {
   );
 
   return (
-    <div className="flex gap-8 flex-wrap">
+    <div className="flex gap-4 md:gap-8 flex-wrap">
       {renderGroup("Winners Bracket", winners, "text-green-600 dark:text-green-400")}
       {renderGroup("Losers Bracket", losers, "text-yellow-600 dark:text-yellow-400")}
       {renderGroup("Eliminated", eliminated, "text-red-600 dark:text-red-400")}
@@ -305,8 +306,8 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
           ) : (
             <>
               {/* Bracket rounds — horizontal scroll */}
-              <div className="overflow-x-auto">
-                <div className="flex gap-6 items-start min-w-max py-2">
+              <div className="baseball-table-wrapper overflow-x-auto">
+                <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start min-w-max py-2">
                   {roundOrder.map((roundKey) => {
                     const seriesList = bracket.rounds[roundKey] ?? [];
                     return (

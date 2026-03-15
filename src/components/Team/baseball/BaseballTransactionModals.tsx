@@ -6,7 +6,7 @@ import { Input } from "../../../_design/Inputs";
 import { SelectDropdown } from "../../../_design/Select";
 import { Border } from "../../../_design/Borders";
 import { Player, BaseballSeasonContext } from "../../../models/baseball/baseballModels";
-import { RosterWarning } from "../../../models/baseball/baseballTransactionModels";
+import { RosterWarning, TransactionPlayerPatch } from "../../../models/baseball/baseballTransactionModels";
 import { ScoutingActionType, ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 import { BaseballService } from "../../../_services/baseballService";
 import { displayLevel, LEVEL_ORDER, LEVEL_TO_NUMERIC, SCOUTING_ACTION_LABELS, SCOUTING_ACTION_COSTS } from "../../../_utility/baseballHelpers";
@@ -80,7 +80,7 @@ interface BaseballTransactionModalProps {
   action: TransactionAction | null;
   orgId: number;
   seasonContext: BaseballSeasonContext;
-  onSuccess: () => void;
+  onSuccess: (playerId: number, patch?: TransactionPlayerPatch) => void;
 }
 
 export const BaseballTransactionModal: FC<BaseballTransactionModalProps> = (props) => {
@@ -133,18 +133,21 @@ const MoveToLevelModal: FC<
         target_level_id: LEVEL_TO_NUMERIC[targetLevel],
         league_year_id: seasonContext.current_league_year_id,
       };
+      let patch: TransactionPlayerPatch | undefined;
       if (isPromotion) {
         const res = await BaseballService.PromotePlayer(dto);
         showRosterWarning(res.roster_warning);
+        patch = res.player;
       } else {
-        await BaseballService.DemotePlayer(dto);
+        const res = await BaseballService.DemotePlayer(dto);
+        patch = res.player;
       }
 
       enqueueSnackbar(
         `${name} moved to ${displayLevel(targetLevel)}`,
         { variant: "success", autoHideDuration: 3000 },
       );
-      onSuccess();
+      onSuccess(player.id, patch);
       onClose();
     } catch (err: any) {
       enqueueSnackbar(err?.message || "Failed to move player", {
@@ -225,17 +228,20 @@ const ConfirmationModal: FC<
     if (!player.contract) return;
     setIsSubmitting(true);
     try {
+      let patch: TransactionPlayerPatch | undefined;
       if (type === "ir_place") {
-        await BaseballService.PlaceOnIR({
+        const res = await BaseballService.PlaceOnIR({
           contract_id: player.contract.id,
           league_year_id: seasonContext.current_league_year_id,
         });
+        patch = res.player;
         enqueueSnackbar(`${name} placed on IR`, { variant: "success", autoHideDuration: 3000 });
       } else if (type === "ir_activate") {
         const res = await BaseballService.ActivateFromIR({
           contract_id: player.contract.id,
           league_year_id: seasonContext.current_league_year_id,
         });
+        patch = res.player;
         enqueueSnackbar(`${name} activated from IR`, { variant: "success", autoHideDuration: 3000 });
         showRosterWarning(res.roster_warning);
       } else {
@@ -244,13 +250,14 @@ const ConfirmationModal: FC<
           org_id: orgId,
           league_year_id: seasonContext.current_league_year_id,
         });
+        patch = res.player;
         const suffix =
           res.years_remaining_on_books > 0
             ? ` ${res.years_remaining_on_books} year(s) remaining on books.`
             : "";
         enqueueSnackbar(`${name} released.${suffix}`, { variant: "success", autoHideDuration: 4000 });
       }
-      onSuccess();
+      onSuccess(player.id, patch);
       onClose();
     } catch (err: any) {
       enqueueSnackbar(err?.message || "Transaction failed", { variant: "error", autoHideDuration: 4000 });
@@ -319,7 +326,7 @@ const BuyoutModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
         `${name} bought out for $${(res.buyout_amount / 1_000_000).toFixed(2)}M`,
         { variant: "success", autoHideDuration: 4000 },
       );
-      onSuccess();
+      onSuccess(player.id, res.player);
       onClose();
     } catch (err: any) {
       enqueueSnackbar(err?.message || "Buyout failed", { variant: "error", autoHideDuration: 4000 });
@@ -350,7 +357,7 @@ const BuyoutModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
         </ButtonGroup>
       }
     >
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
         <Border direction="col" classes="p-3 text-start">
           <Text variant="h6" classes="mb-2">Contract Info</Text>
           <Text variant="small">Years: {player.contract?.years ?? "—"}</Text>
@@ -447,7 +454,7 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
         `Extension offered to ${name} — ${res.years} year(s), starts year ${res.starts_league_year}`,
         { variant: "success", autoHideDuration: 4000 },
       );
-      onSuccess();
+      onSuccess(player.id);
       onClose();
     } catch (err: any) {
       enqueueSnackbar(err?.message || "Extension failed", { variant: "error", autoHideDuration: 4000 });
@@ -478,7 +485,7 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
       }
     >
       {/* Rules + Errors */}
-      <div className="grid grid-cols-[2fr_3fr] gap-2 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-[2fr_3fr] gap-2 mb-4">
         <Border direction="col" classes="text-start p-3">
           <Text variant="h6">Rules</Text>
           <Text variant="xs">Contracts must be 1 through 5 years.</Text>
@@ -495,7 +502,7 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
       </div>
 
       {/* Length + Bonus */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
         <Input
           type="number"
           label="Years"
@@ -523,7 +530,7 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
       </div>
 
       {/* Per-year salary inputs */}
-      <div className="grid grid-cols-5 gap-2 mb-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-2">
         {[0, 1, 2, 3, 4].map((i) => (
           <div key={i} className={i >= years ? "opacity-30 pointer-events-none" : ""}>
             <Input
@@ -554,7 +561,7 @@ interface ScoutingConfirmationModalProps {
   budget: ScoutingBudget | null;
   orgId: number;
   leagueYearId: number;
-  onSuccess: () => void;
+  onSuccess: (pointsRemaining?: number) => void;
 }
 
 export const ScoutingConfirmationModal: FC<ScoutingConfirmationModalProps> = ({
@@ -577,7 +584,7 @@ export const ScoutingConfirmationModal: FC<ScoutingConfirmationModalProps> = ({
   const handleConfirm = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      await BaseballService.PerformScoutingAction({
+      const res = await BaseballService.PerformScoutingAction({
         org_id: orgId,
         league_year_id: leagueYearId,
         player_id: player.id,
@@ -587,7 +594,7 @@ export const ScoutingConfirmationModal: FC<ScoutingConfirmationModalProps> = ({
         variant: "success",
         autoHideDuration: 3000,
       });
-      onSuccess();
+      onSuccess(res.points_remaining);
       onClose();
     } catch (err: any) {
       enqueueSnackbar(err?.message || `Scouting action failed`, {

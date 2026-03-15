@@ -25,6 +25,7 @@ import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { useSnackbar } from "notistack";
+import "./baseballMobile.css";
 
 // ═══════════════════════════════════════════════
 // Scouted potentials cache
@@ -545,7 +546,7 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
                 <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">No players found.</Text>
               ) : (
                 <>
-                  <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+                  <div className="baseball-table-wrapper overflow-x-auto max-h-[70vh] overflow-y-auto">
                     <table className="w-full text-sm text-left">
                       <GroupedTableHeader
                         groups={poolColumnGroups}
@@ -579,7 +580,7 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
                   No players on your board yet. Scout players from the Scouting Pool tab to add them.
                 </Text>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="baseball-table-wrapper overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-gray-700 bg-gray-50 dark:bg-gray-700">
@@ -629,7 +630,7 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
                 <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">No signings yet.</Text>
               ) : (
                 <>
-                  <div className="overflow-x-auto">
+                  <div className="baseball-table-wrapper overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-700 bg-gray-50 dark:bg-gray-700">

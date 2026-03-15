@@ -15,6 +15,7 @@ import {
   PRE_ARB_SALARY,
   ARB_ESTIMATED_SALARY,
 } from "./financialConstants";
+import "../baseballMobile.css";
 
 interface ContractsTabProps {
   orgId: number;
@@ -169,7 +170,7 @@ const PayrollProjectionView = ({ data }: { data: PayrollProjectionResponse }) =>
         <Text variant="h5" classes="mb-3 font-semibold">
           Payroll Projection
         </Text>
-        <div className="overflow-x-auto">
+        <div className="baseball-table-wrapper overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-gray-100 dark:bg-gray-700 text-xs font-semibold text-gray-600 dark:text-gray-300">

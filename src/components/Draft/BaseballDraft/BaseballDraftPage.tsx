@@ -110,9 +110,9 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-3 w-full min-h-[600px]">
+    <div className="flex flex-col lg:grid lg:grid-cols-12 gap-3 w-full min-h-[600px]">
       {/* Sidebar */}
-      <div className="col-span-2">
+      <div className="lg:col-span-2">
         <BaseballDraftSidebar
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -122,7 +122,7 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
       </div>
 
       {/* Main Content */}
-      <div className="col-span-10 flex flex-col gap-3">
+      <div className="lg:col-span-10 flex flex-col gap-3">
         {/* Header Bar — hidden on Big Board view */}
         {activeTab !== "bigboard" && (
           <div className="flex flex-col gap-2">

@@ -174,6 +174,7 @@ export interface BattingLeaderboardParams {
   league_year_id: number;
   league_level?: number;
   team_id?: number;
+  org_id?: number;
   sort?: BattingSortField;
   order?: "asc" | "desc";
   position?: string;
@@ -187,6 +188,7 @@ export interface PitchingLeaderboardParams {
   league_year_id: number;
   league_level?: number;
   team_id?: number;
+  org_id?: number;
   sort?: PitchingSortField;
   order?: "asc" | "desc";
   role?: "starter" | "reliever";

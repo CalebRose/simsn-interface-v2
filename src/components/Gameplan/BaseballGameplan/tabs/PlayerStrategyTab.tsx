@@ -148,11 +148,14 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
       });
       setEditing(saved);
       setMessage("Saved successfully");
-    } catch {
-      setMessage("Failed to save");
+    } catch (err: any) {
+      const detail = err?.message && err.message !== "Failed to fetch"
+        ? err.message
+        : "Unknown error";
+      setMessage(`Failed to save: ${detail}`);
     } finally {
       setIsSaving(false);
-      setTimeout(() => setMessage(""), 3000);
+      setTimeout(() => setMessage(""), 5000);
     }
   };
 
@@ -342,7 +345,7 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     step={0.1}
                     value={editing.stealfreq}
                     onChange={(e) => updateEditing({ stealfreq: parseFloat(e.target.value) || 0 })}
-                    className="w-24 px-2 py-1 text-sm border rounded bg-black text-white border-gray-500"
+                    className="w-full sm:w-24 px-2 py-2 sm:py-1 text-sm border rounded bg-black text-white border-gray-500"
                   />
                 </FieldRow>
               </div>
@@ -378,7 +381,7 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     step={0.1}
                     value={editing.pickofffreq}
                     onChange={(e) => updateEditing({ pickofffreq: parseFloat(e.target.value) || 0 })}
-                    className="w-24 px-2 py-1 text-sm border rounded bg-black text-white border-gray-500"
+                    className="w-full sm:w-24 px-2 py-2 sm:py-1 text-sm border rounded bg-black text-white border-gray-500"
                   />
                 </FieldRow>
 
@@ -391,7 +394,7 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     onChange={(e) =>
                       updateEditing({ pitchpull: e.target.value ? Number(e.target.value) : null })
                     }
-                    className="w-24 px-2 py-1 text-sm border rounded bg-black text-white border-gray-500"
+                    className="w-full sm:w-24 px-2 py-2 sm:py-1 text-sm border rounded bg-black text-white border-gray-500"
                     placeholder="Default"
                   />
                 </FieldRow>
@@ -432,12 +435,12 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     );
                   }
                   return (
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-col gap-2">
                       {pitchNames.map((name, i) => {
                         if (!name) return null;
                         return (
-                          <div key={i} className="flex items-center gap-1">
-                            <Text variant="small" classes="text-gray-400 w-20 truncate">{name}:</Text>
+                          <div key={i} className="flex items-center gap-2">
+                            <Text variant="small" classes="text-gray-400 w-28 truncate">{name}</Text>
                             <input
                               type="number"
                               min={0}
@@ -448,7 +451,7 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                                 updated[i] = parseInt(e.target.value) || 0;
                                 updateEditing({ pitchchoices: updated });
                               }}
-                              className="w-16 px-2 py-1 text-sm border rounded bg-black text-white border-gray-500"
+                              className="w-20 sm:w-16 px-2 py-2 sm:py-1 text-sm border rounded bg-black text-white border-gray-500"
                             />
                           </div>
                         );

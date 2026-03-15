@@ -17,6 +17,7 @@ import {
   PlayoffBracketResponse, PlayoffSeries,
   ROUND_LABELS, BootstrapWBCEvent,
 } from "../../../models/baseball/baseballEventModels";
+import "../../Team/baseball/baseballMobile.css";
 
 // ═══════════════════════════════════════════════
 // Sub-components
@@ -30,6 +31,7 @@ const PoolStandingsTable = ({ teams, poolGroup }: { teams: WBCTeam[]; poolGroup:
   return (
     <div className="min-w-[12rem]">
       <Text variant="small" classes="font-bold mb-2 uppercase">Pool {poolGroup}</Text>
+      <div className="baseball-table-wrapper overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="text-left text-xs font-semibold border-b border-gray-300 dark:border-gray-600">
@@ -59,6 +61,7 @@ const PoolStandingsTable = ({ teams, poolGroup }: { teams: WBCTeam[]; poolGroup:
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };
@@ -72,6 +75,7 @@ const CountryRosterTable = ({
   return (
     <div>
       <Text variant="small" classes="font-bold mb-2">{countryCode} Roster</Text>
+      <div className="baseball-table-wrapper overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="text-left text-xs font-semibold border-b border-gray-300 dark:border-gray-600">
@@ -93,6 +97,7 @@ const CountryRosterTable = ({
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };

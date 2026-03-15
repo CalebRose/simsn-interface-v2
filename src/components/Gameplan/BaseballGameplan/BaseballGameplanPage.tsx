@@ -58,6 +58,11 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
     return Object.values(rosterMap).flat();
   }, [rosterMap]);
 
+  // Players for the active level only (used to scope scouting fetches)
+  const activeLevelPlayers = useMemo(() => {
+    return allPlayers.filter((p) => p.league_level === activeLevel);
+  }, [allPlayers, activeLevel]);
+
   // ── Scouting overlay ──
   interface ScoutingOverlayEntry {
     letterGrades: Record<string, string>;
@@ -68,6 +73,7 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
     displayFormat?: string;
   }
   const [scoutingOverlay, setScoutingOverlay] = useState<Map<number, ScoutingOverlayEntry>>(new Map());
+  const scoutingLoadedLevels = useRef<Set<string>>(new Set());
   const scoutingLoadedForOrg = useRef<number | null>(null);
 
   const orgId = organization?.id ?? 0;
@@ -87,47 +93,60 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
   };
 
   const fetchScoutingOverlay = useCallback(async (players: Player[], oId: number, lyId: number) => {
-    if (!oId || !lyId) return;
-    const overlay = new Map<number, ScoutingOverlayEntry>();
-    // Process in small batches with delays to avoid API rate limits (429)
-    const BATCH_SIZE = 3;
-    const BATCH_DELAY_MS = 300;
-    for (let i = 0; i < players.length; i += BATCH_SIZE) {
-      if (i > 0) await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
-      const batch = players.slice(i, i + BATCH_SIZE);
-      await Promise.all(
-        batch.map(async (p) => {
-          try {
-            const data = await BaseballService.GetScoutedPlayer(p.id, oId, lyId);
-            overlay.set(p.id, {
-              letterGrades: data.letter_grades ?? {},
-              attributes: data.attributes ?? {},
-              potentials: data.potentials ?? {},
-              potentialsPrecise: isPotentialsPrecise(data),
-              attributesPrecise: isAttributesPrecise(data),
-              displayFormat: data.display_format,
-            });
-          } catch { /* player may not be in scouting pool */ }
-        })
-      );
-      setScoutingOverlay(new Map(overlay));
-    }
+    if (!oId || !lyId || players.length === 0) return;
+    try {
+      const playerIds = players.map((p) => p.id);
+      const results = await BaseballService.GetScoutedPlayersBatch(playerIds, oId, lyId);
+      const entries: [number, ScoutingOverlayEntry][] = [];
+      for (const [idStr, data] of Object.entries(results)) {
+        entries.push([Number(idStr), {
+          letterGrades: data.letter_grades ?? {},
+          attributes: data.attributes ?? {},
+          potentials: data.potentials ?? {},
+          potentialsPrecise: isPotentialsPrecise(data),
+          attributesPrecise: isAttributesPrecise(data),
+          displayFormat: data.display_format,
+        }]);
+      }
+      if (entries.length > 0) {
+        setScoutingOverlay((prev) => {
+          const next = new Map(prev);
+          for (const [id, entry] of entries) next.set(id, entry);
+          return next;
+        });
+      }
+    } catch { /* scouting overlay unavailable — bootstrap data is already fuzzed */ }
   }, []);
 
   useEffect(() => {
     if (!orgId || !leagueYearId) return;
-    const all = Object.values(rosterMap).flat();
-    if (all.length === 0) return;
-    if (scoutingLoadedForOrg.current === orgId) return;
-    scoutingLoadedForOrg.current = orgId;
-    fetchScoutingOverlay(all, orgId, leagueYearId);
-  }, [orgId, leagueYearId, rosterMap, fetchScoutingOverlay]);
+    if (activeLevelPlayers.length === 0) return;
+    // Reset tracking when org changes
+    if (scoutingLoadedForOrg.current !== orgId) {
+      scoutingLoadedForOrg.current = orgId;
+      scoutingLoadedLevels.current = new Set();
+      setScoutingOverlay(new Map());
+    }
+    // Only fetch for levels we haven't loaded yet
+    if (scoutingLoadedLevels.current.has(activeLevel)) return;
+    scoutingLoadedLevels.current.add(activeLevel);
+    fetchScoutingOverlay(activeLevelPlayers, orgId, leagueYearId);
+  }, [orgId, leagueYearId, activeLevel, activeLevelPlayers, fetchScoutingOverlay]);
 
   const applyScoutingOverlay = useCallback((players: Player[]): Player[] => {
-    if (scoutingOverlay.size === 0) return players;
     return players.map((p) => {
       const entry = scoutingOverlay.get(p.id);
-      if (!entry) return p;
+      if (!entry) {
+        return {
+          ...p,
+          visibility_context: p.visibility_context ?? {
+            context: isCollege ? "college_roster" as const : "pro_roster" as const,
+            display_format: isCollege ? "letter_grade" as const : "20-80" as const,
+            attributes_precise: false,
+            potentials_precise: false,
+          },
+        };
+      }
       const newRatings = { ...p.ratings };
 
       if (isCollege) {
@@ -135,6 +154,14 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
           const displayKey = `${key}_display` as keyof PlayerRatings;
           if (displayKey in newRatings) {
             (newRatings as any)[displayKey] = grade;
+          }
+        }
+      } else {
+        // MLB: overlay attributes from scouting endpoint (fuzzed or precise 20-80 values)
+        // Keys from scouting endpoint already include _display suffix (e.g. "contact_display")
+        for (const [key, val] of Object.entries(entry.attributes)) {
+          if (key in newRatings) {
+            (newRatings as any)[key] = val;
           }
         }
       }
@@ -161,6 +188,9 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
   }, [isCollege, scoutingOverlay]);
 
   const levelPlayers = useMemo(() => {
+    // Bootstrap data is now visibility-aware (fuzzed by the backend),
+    // so players are safe to show immediately. The scouting overlay only
+    // upgrades fuzzed → precise after a scouting action.
     const raw = allPlayers.filter((p) => p.league_level === activeLevel);
     return applyScoutingOverlay(raw);
   }, [allPlayers, activeLevel, applyScoutingOverlay]);
@@ -196,10 +226,10 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
 
   return (
     <PageContainer>
-      <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
+      <div className="flex-col w-full md:mb-6 px-2 sm:px-4 md:px-0">
         {/* Header */}
         <Border classes="p-4 mb-2">
-          <div className="flex items-center gap-4 mb-3">
+          <div className="flex items-center flex-wrap gap-2 sm:gap-4 mb-3">
             {logo && (
               <img
                 src={logo}
@@ -224,7 +254,7 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
                         onClick={() =>
                           setSelectedLevel(level === "mlb" ? null : level)
                         }
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-all cursor-pointer border
+                        className={`flex items-center gap-1.5 px-3 py-2.5 sm:py-1.5 rounded-lg text-sm whitespace-nowrap transition-all cursor-pointer border
                       ${
                         isActive
                           ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 font-semibold text-blue-700 dark:text-blue-300"

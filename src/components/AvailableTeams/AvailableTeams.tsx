@@ -26,6 +26,26 @@ import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { getPrimaryBaseballTeam } from "../../_utility/baseballHelpers";
+import type { BaseballOrganization } from "../../models/baseball/baseballModels";
+
+const buildBaseballOptions = (orgs: BaseballOrganization[], league: "mlb" | "college") => {
+  const filtered = orgs.filter((o) => o.league === league);
+  const sorted = [...filtered].sort((a, b) => a.org_abbrev.localeCompare(b.org_abbrev));
+  const teamOpts = sorted.map((o) => ({
+    label: o.org_abbrev,
+    value: o.id.toString(),
+  }));
+  const confMap = new Map<string, { label: string; value: string }>();
+  for (const o of sorted) {
+    const primary = getPrimaryBaseballTeam(o);
+    const conf = primary?.conference;
+    if (conf && !confMap.has(conf)) {
+      confMap.set(conf, { label: conf, value: conf });
+    }
+  }
+  const confOpts = Array.from(confMap.values()).sort((a, b) => a.label.localeCompare(b.label));
+  return { teamOpts, confOpts };
+};
 
 export const AvailableTeams = () => {
   const { selectedLeague, setSelectedLeague } = useLeagueStore();
@@ -116,11 +136,22 @@ export const AvailableTeams = () => {
         (o) => o.league === "college",
       );
 
+    const isBaseball = selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball;
     const filtered = teams.filter((x) => {
-      const matchesConference =
-        conferences.length > 0 ? conferences.includes(x.ConferenceID) : true;
-      const matchesTeams =
-        selectedTeams.length > 0 ? selectedTeams.includes(x.ID) : true;
+      let matchesConference = true;
+      let matchesTeams = true;
+      if (isBaseball) {
+        if (conferences.length > 0) {
+          const primary = getPrimaryBaseballTeam(x);
+          matchesConference = conferences.includes(primary?.conference);
+        }
+        if (selectedTeams.length > 0) {
+          matchesTeams = selectedTeams.includes(x.id);
+        }
+      } else {
+        if (conferences.length > 0) matchesConference = conferences.includes(x.ConferenceID);
+        if (selectedTeams.length > 0) matchesTeams = selectedTeams.includes(x.ID);
+      }
       return matchesConference && matchesTeams;
     });
 
@@ -276,14 +307,18 @@ export const AvailableTeams = () => {
         setTeamOptions(phlTeamOptions);
         setConferenceOptions(phlConferenceOptions);
         break;
-      case SimMLB:
-        setTeamOptions([]);
-        setConferenceOptions([]);
+      case SimMLB: {
+        const mlb = buildBaseballOptions(mlbOrganizations || [], "mlb");
+        setTeamOptions(mlb.teamOpts);
+        setConferenceOptions(mlb.confOpts);
         break;
-      case SimCollegeBaseball:
-        setTeamOptions([]);
-        setConferenceOptions([]);
+      }
+      case SimCollegeBaseball: {
+        const cbl = buildBaseballOptions(mlbOrganizations || [], "college");
+        setTeamOptions(cbl.teamOpts);
+        setConferenceOptions(cbl.confOpts);
         break;
+      }
     }
 
     setSelectedTeams([]);
@@ -293,7 +328,8 @@ export const AvailableTeams = () => {
   };
 
   const ChangeConference = (options: any) => {
-    const opts = [...options.map((x: any) => Number(x.value))];
+    const isBaseball = selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball;
+    const opts = [...options.map((x: any) => isBaseball ? x.value : Number(x.value))];
     setConferences(() => opts);
   };
 
@@ -408,7 +444,7 @@ export const AvailableTeams = () => {
                   conference={x.Conference}
                   league={selectedLeague}
                   disable={
-                    sentRequestCFB || (x.Coach != "AI" && x.Coach.length > 0)
+                    sentRequestCFB || (x.Coach && x.Coach !== "AI" && x.Coach.length > 0)
                   }
                   setSelectedTeam={setSelectedTeam}
                 />
@@ -466,7 +502,7 @@ export const AvailableTeams = () => {
                   conference={x.Conference}
                   league={selectedLeague}
                   disable={
-                    sentRequestCHL || (x.Coach != "AI" && x.Coach.length > 0)
+                    sentRequestCHL || (x.Coach && x.Coach !== "AI" && x.Coach.length > 0)
                   }
                   setSelectedTeam={setSelectedTeam}
                 />

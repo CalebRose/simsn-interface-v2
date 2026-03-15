@@ -110,6 +110,15 @@ export const normalizeFaceData = (f: any): FaceDataResponse => {
     } as FaceDataResponse;
 };
 
+/** Build a URLSearchParams from a params object, skipping null/undefined values. */
+const buildQueryString = (params: Record<string, string | number | boolean | null | undefined>): string => {
+    const qs = new URLSearchParams();
+    for (const [key, val] of Object.entries(params)) {
+        if (val != null && val !== "") qs.set(key, String(val));
+    }
+    return qs.toString();
+};
+
 export const BaseballService = {
     //Fetch Orgs
     GetAllOrganizations: async (): Promise<BaseballOrganization[]> => {
@@ -258,48 +267,16 @@ export const BaseballService = {
     },
     // --- Scouting: Pool Endpoints ---
     GetCollegePool: async (params: CollegePoolParams): Promise<CollegePoolResponse> => {
-        const qs = new URLSearchParams();
-        if (params.page) qs.set("page", String(params.page));
-        if (params.per_page) qs.set("per_page", String(params.per_page));
-        if (params.sort) qs.set("sort", params.sort);
-        if (params.dir) qs.set("dir", params.dir);
-        if (params.age) qs.set("age", String(params.age));
-        if (params.ptype) qs.set("ptype", params.ptype);
-        if (params.area) qs.set("area", params.area);
-        if (params.star_rating) qs.set("star_rating", String(params.star_rating));
-        if (params.search) qs.set("search", params.search);
-        if (params.viewing_org_id) qs.set("viewing_org_id", String(params.viewing_org_id));
-        if (params.league_year_id) qs.set("league_year_id", String(params.league_year_id));
-        return await GetCall<CollegePoolResponse>(`${baseballUrl}scouting/college-pool?${qs.toString()}`);
+        const qs = buildQueryString(params as unknown as Record<string, string | number | boolean | null | undefined>);
+        return await GetCall<CollegePoolResponse>(`${baseballUrl}scouting/college-pool?${qs}`);
     },
     GetProPool: async (params: ProPoolParams): Promise<ProPoolResponse> => {
-        const qs = new URLSearchParams();
-        if (params.page) qs.set("page", String(params.page));
-        if (params.per_page) qs.set("per_page", String(params.per_page));
-        if (params.sort) qs.set("sort", params.sort);
-        if (params.dir) qs.set("dir", params.dir);
-        if (params.ptype) qs.set("ptype", params.ptype);
-        if (params.min_age) qs.set("min_age", String(params.min_age));
-        if (params.max_age) qs.set("max_age", String(params.max_age));
-        if (params.area) qs.set("area", params.area);
-        if (params.search) qs.set("search", params.search);
-        if (params.org_id) qs.set("org_id", String(params.org_id));
-        if (params.viewing_org_id) qs.set("viewing_org_id", String(params.viewing_org_id));
-        return await GetCall<ProPoolResponse>(`${baseballUrl}scouting/pro-pool?${qs.toString()}`);
+        const qs = buildQueryString(params as unknown as Record<string, string | number | boolean | null | undefined>);
+        return await GetCall<ProPoolResponse>(`${baseballUrl}scouting/pro-pool?${qs}`);
     },
     GetIntamPool: async (params: IntamPoolParams): Promise<IntamPoolResponse> => {
-        const qs = new URLSearchParams();
-        if (params.page) qs.set("page", String(params.page));
-        if (params.per_page) qs.set("per_page", String(params.per_page));
-        if (params.sort) qs.set("sort", params.sort);
-        if (params.dir) qs.set("dir", params.dir);
-        if (params.ptype) qs.set("ptype", params.ptype);
-        if (params.min_age) qs.set("min_age", String(params.min_age));
-        if (params.max_age) qs.set("max_age", String(params.max_age));
-        if (params.area) qs.set("area", params.area);
-        if (params.search) qs.set("search", params.search);
-        if (params.viewing_org_id) qs.set("viewing_org_id", String(params.viewing_org_id));
-        return await GetCall<IntamPoolResponse>(`${baseballUrl}scouting/intam-pool?${qs.toString()}`);
+        const qs = buildQueryString(params as unknown as Record<string, string | number | boolean | null | undefined>);
+        return await GetCall<IntamPoolResponse>(`${baseballUrl}scouting/intam-pool?${qs}`);
     },
     GetIntamBoard: async (orgId: number, leagueYearId: number): Promise<BoardResponse> => {
         return await GetCall<BoardResponse>(`${baseballUrl}scouting/intam-board/${orgId}?league_year_id=${leagueYearId}`);
@@ -318,20 +295,8 @@ export const BaseballService = {
         return await GetCall<IntamSigningsResponse>(`${baseballUrl}scouting/intam-signings?${qs.toString()}`);
     },
     GetMlbPool: async (params: MlbPoolParams): Promise<MlbPoolResponse> => {
-        const qs = new URLSearchParams();
-        if (params.page) qs.set("page", String(params.page));
-        if (params.per_page) qs.set("per_page", String(params.per_page));
-        if (params.sort) qs.set("sort", params.sort);
-        if (params.dir) qs.set("dir", params.dir);
-        if (params.ptype) qs.set("ptype", params.ptype);
-        if (params.min_age) qs.set("min_age", String(params.min_age));
-        if (params.max_age) qs.set("max_age", String(params.max_age));
-        if (params.area) qs.set("area", params.area);
-        if (params.search) qs.set("search", params.search);
-        if (params.org_id) qs.set("org_id", String(params.org_id));
-        if (params.level) qs.set("level", String(params.level));
-        if (params.viewing_org_id) qs.set("viewing_org_id", String(params.viewing_org_id));
-        return await GetCall<MlbPoolResponse>(`${baseballUrl}scouting/mlb-pool?${qs.toString()}`);
+        const qs = buildQueryString(params as unknown as Record<string, string | number | boolean | null | undefined>);
+        return await GetCall<MlbPoolResponse>(`${baseballUrl}scouting/mlb-pool?${qs}`);
     },
     GetFreeAgentList: async (): Promise<FreeAgentListItem[]> => {
         return await GetCall<FreeAgentListItem[]>(`${baseballUrl}transactions/free-agents`);
@@ -339,6 +304,30 @@ export const BaseballService = {
     // --- Scouting: Player Detail & Actions ---
     GetScoutedPlayer: async (playerId: number, orgId: number, leagueYearId: number): Promise<ScoutingPlayerResponse> => {
         return await GetCall<ScoutingPlayerResponse>(`${baseballUrl}scouting/player/${playerId}?org_id=${orgId}&league_year_id=${leagueYearId}`);
+    },
+    /**
+     * Fetch scouting data for multiple players in a single request.
+     * Max 200 player IDs per call.
+     */
+    GetScoutedPlayersBatch: async (
+        playerIds: number[],
+        orgId: number,
+        leagueYearId: number,
+    ): Promise<Record<number, ScoutingPlayerResponse>> => {
+        if (playerIds.length === 0) return {};
+        const qs = new URLSearchParams();
+        qs.set("org_id", String(orgId));
+        qs.set("league_year_id", String(leagueYearId));
+        qs.set("player_ids", playerIds.join(","));
+        const response = await GetCall<{ players: Record<string, ScoutingPlayerResponse>; not_found: number[] }>(
+            `${baseballUrl}scouting/players/batch?${qs.toString()}`,
+        );
+        // Convert string-keyed response to number-keyed for consumer convenience
+        const result: Record<number, ScoutingPlayerResponse> = {};
+        for (const [idStr, data] of Object.entries(response.players)) {
+            result[Number(idStr)] = data;
+        }
+        return result;
     },
     PerformScoutingAction: async (dto: ScoutingActionRequest): Promise<ScoutingActionResponse> => {
         return await PostCall<ScoutingActionRequest, ScoutingActionResponse>(`${baseballUrl}scouting/action`, dto);
@@ -395,6 +384,7 @@ export const BaseballService = {
         qs.set("league_year_id", String(params.league_year_id));
         if (params.league_level != null) qs.set("league_level", String(params.league_level));
         if (params.team_id != null) qs.set("team_id", String(params.team_id));
+        if (params.org_id != null) qs.set("org_id", String(params.org_id));
         if (params.sort) qs.set("sort", params.sort);
         if (params.order) qs.set("order", params.order);
         if (params.position) qs.set("position", params.position);
@@ -409,6 +399,7 @@ export const BaseballService = {
         qs.set("league_year_id", String(params.league_year_id));
         if (params.league_level != null) qs.set("league_level", String(params.league_level));
         if (params.team_id != null) qs.set("team_id", String(params.team_id));
+        if (params.org_id != null) qs.set("org_id", String(params.org_id));
         if (params.sort) qs.set("sort", params.sort);
         if (params.order) qs.set("order", params.order);
         if (params.role) qs.set("role", params.role);

@@ -14,6 +14,7 @@ import { PoolPagination } from "./BaseballScouting/PoolPagination";
 import { ScoutingBudgetBar } from "./BaseballScouting/ScoutingBudgetBar";
 import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
 import { BaseballSigningModal } from "./BaseballScouting/BaseballSigningModal";
+import "./baseballMobile.css";
 
 // ── Attribute columns by player type ──
 
@@ -239,7 +240,7 @@ export const BaseballProScoutingPage = (_props: BaseballProScoutingPageProps) =>
             <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">No players found.</Text>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="baseball-table-wrapper overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-700">

@@ -18,6 +18,7 @@ import {
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
+import "./baseballMobile.css";
 
 // ═══════════════════════════════════════════════
 // Constants
@@ -365,7 +366,7 @@ export const CollegeRosterBreakdownPage = () => {
         {/* Roster table */}
         {!isLoading && (
           <Border classes="p-4" styles={{ borderTop: `3px solid ${headerColor}` }}>
-            <div className="overflow-x-auto">
+            <div className="baseball-table-wrapper overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b-2 border-gray-200 dark:border-gray-600">

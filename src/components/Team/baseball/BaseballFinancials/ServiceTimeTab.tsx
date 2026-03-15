@@ -8,6 +8,7 @@ import {
   PHASE_CONFIG,
   LEVEL_NAMES,
 } from "./financialConstants";
+import "../baseballMobile.css";
 
 interface ServiceTimeTabProps {
   orgId: number;
@@ -206,7 +207,7 @@ const ServiceTimeView = ({ players }: { players: ContractOverviewPlayer[] }) => 
         <Text variant="h5" classes="mb-3 font-semibold">
           Service Time Overview
         </Text>
-        <div className="overflow-x-auto">
+        <div className="baseball-table-wrapper overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-gray-100 dark:bg-gray-700 text-xs font-semibold text-gray-600 dark:text-gray-300">

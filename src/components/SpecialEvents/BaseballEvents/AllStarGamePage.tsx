@@ -14,6 +14,7 @@ import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
 import {
   AllStarPlayer, BootstrapAllStarEvent, AllStarGameResult,
 } from "../../../models/baseball/baseballEventModels";
+import "../../Team/baseball/baseballMobile.css";
 
 // ═══════════════════════════════════════════════
 // Sub-components
@@ -34,7 +35,7 @@ const RosterTable = ({ players }: { players: AllStarPlayer[] }) => {
   const sorted = useMemo(() => sortRoster(players), [players]);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="baseball-table-wrapper overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="text-left text-xs font-semibold uppercase border-b-2 border-gray-300 dark:border-gray-600">
