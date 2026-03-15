@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { GroupBase } from "react-select";
 import { Text } from "../../../../_design/Typography";
 import { Button, PillButton, ButtonGroup } from "../../../../_design/Buttons";
 import { SelectDropdown } from "../../../../_design/Select";
@@ -23,7 +24,16 @@ import {
   PositionRatingKey,
   LineupRoleOptions,
 } from "../BaseballGameplanConstants";
-import { PlayerAttributeRow, ratingColor } from "../ratingUtils";
+import { PlayerAttributeRow, ratingColor, StaminaBar } from "../ratingUtils";
+import {
+  PlayerSelectOption,
+  buildGroupedPlayerOptions,
+  flattenGroups,
+  ColoredOptionSimple,
+  StyledGroupHeading,
+  PlayerFilter,
+  Tooltip,
+} from "../playerDropdownUtils";
 
 interface DefenseAndLineupTabProps {
   teamId: number;
@@ -31,6 +41,71 @@ interface DefenseAndLineupTabProps {
 }
 
 const ALL_POSITIONS: PositionCode[] = [...DEFENSE_POSITION_ORDER, "dh"];
+
+/** Order dropdown options: null + 1-9 */
+const ORDER_OPTIONS: SelectOption[] = [
+  { value: "", label: "—" },
+  ...Array.from({ length: 9 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) })),
+];
+
+/** Compact styles for small inline dropdowns (Role).
+ *  These compose ON TOP of the themed base styles — `base` here is the raw
+ *  react-select default, so we must re-apply dark-theme colors explicitly. */
+const DK_BG = "#1a202c";
+const DK_BG_FOCUS = "#2d3748";
+const DK_BORDER = "#4A5568";
+const DK_BORDER_FOCUS = "#4A90E2";
+
+const compactSelectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: "26px",
+    fontSize: "0.7rem",
+    padding: "0",
+    backgroundColor: state.isFocused ? DK_BG_FOCUS : DK_BG,
+    borderColor: state.isFocused ? DK_BORDER_FOCUS : DK_BORDER,
+    color: "#fff",
+    boxShadow: state.isFocused ? `0 0 0 1px ${DK_BORDER_FOCUS}` : "none",
+    borderRadius: "8px",
+  }),
+  valueContainer: (base: any) => ({ ...base, padding: "0 4px" }),
+  singleValue: (base: any) => ({ ...base, fontSize: "0.7rem", color: "#fff" }),
+  input: (base: any) => ({ ...base, margin: "0", padding: "0", color: "#fff" }),
+  indicatorsContainer: (base: any) => ({ ...base, "& > div": { padding: "2px" } }),
+  option: (base: any, state: any) => ({
+    ...base, fontSize: "0.7rem", padding: "4px 8px",
+    backgroundColor: state.isFocused ? DK_BG_FOCUS : DK_BG, color: "#fff", cursor: "pointer",
+  }),
+  menu: (base: any) => ({ ...base, minWidth: "100px", backgroundColor: DK_BG, borderRadius: "8px" }),
+  menuList: (base: any) => ({ ...base, backgroundColor: DK_BG, padding: "0" }),
+};
+
+/** Even more compact for order dropdowns (just a single digit) */
+const tinySelectStyles = {
+  control: (base: any, state: any) => ({
+    ...base,
+    minHeight: "26px",
+    fontSize: "0.7rem",
+    padding: "0",
+    width: "44px",
+    backgroundColor: state.isFocused ? DK_BG_FOCUS : DK_BG,
+    borderColor: state.isFocused ? DK_BORDER_FOCUS : DK_BORDER,
+    color: "#fff",
+    boxShadow: state.isFocused ? `0 0 0 1px ${DK_BORDER_FOCUS}` : "none",
+    borderRadius: "8px",
+  }),
+  valueContainer: (base: any) => ({ ...base, padding: "0 2px", justifyContent: "center" }),
+  singleValue: (base: any) => ({ ...base, fontSize: "0.7rem", textAlign: "center" as const, color: "#fff" }),
+  input: (base: any) => ({ ...base, margin: "0", padding: "0", color: "#fff" }),
+  indicatorsContainer: (base: any) => ({ ...base, "& > div": { padding: "1px" } }),
+  dropdownIndicator: (base: any) => ({ ...base, padding: "2px" }),
+  option: (base: any, state: any) => ({
+    ...base, fontSize: "0.7rem", padding: "3px 6px", textAlign: "center" as const,
+    backgroundColor: state.isFocused ? DK_BG_FOCUS : DK_BG, color: "#fff", cursor: "pointer",
+  }),
+  menu: (base: any) => ({ ...base, minWidth: "44px", width: "44px", backgroundColor: DK_BG, borderRadius: "8px" }),
+  menuList: (base: any) => ({ ...base, backgroundColor: DK_BG, padding: "0" }),
+};
 
 /** Ensure assignments from older API responses have the new batting fields. */
 function normalizeAssignment(a: DefenseAssignment): DefenseAssignment {
@@ -49,6 +124,10 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Filter state
+  const [hiddenPlayerIds, setHiddenPlayerIds] = useState<Set<number>>(new Set());
+  const [hideAssigned, setHideAssigned] = useState(false);
 
   // Load defense config
   useEffect(() => {
@@ -87,23 +166,26 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
     return map;
   }, [assignments]);
 
-  // Build player options per position, sorted by relevant rating
-  const playerOptionsByPos = useMemo(() => {
-    const result: Record<string, SelectOption[]> = {};
+  // Set of all player IDs currently assigned on this tab
+  const assignedPlayerIds = useMemo(() => {
+    return new Set(assignments.filter((a) => a.player_id).map((a) => a.player_id));
+  }, [assignments]);
+
+  // Build grouped player options per position
+  const groupedOptionsByPos = useMemo(() => {
+    const result: Record<string, GroupBase<PlayerSelectOption>[]> = {};
     for (const pos of ALL_POSITIONS) {
       const ratingKey = PositionRatingKey[pos] as keyof PlayerRatings;
-      const sorted = [...players].sort(
-        (a, b) =>
-          ((b.ratings[ratingKey] as number) ?? 0) -
-          ((a.ratings[ratingKey] as number) ?? 0),
+      result[pos] = buildGroupedPlayerOptions(
+        players,
+        ratingKey,
+        hiddenPlayerIds,
+        hideAssigned,
+        assignedPlayerIds,
       );
-      result[pos] = sorted.map((p) => ({
-        value: String(p.id),
-        label: `${p.firstname} ${p.lastname} (${(p.ratings[ratingKey] as number) ?? "—"})`,
-      }));
     }
     return result;
-  }, [players]);
+  }, [players, hiddenPlayerIds, hideAssigned, assignedPlayerIds]);
 
   // Player map for rating lookups
   const playerMap = useMemo(() => {
@@ -174,6 +256,19 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
     });
   };
 
+  // --- Clear & Reset ---
+
+  const handleClear = () => {
+    setAssignments([]);
+  };
+
+  const handleReset = () => {
+    const baseline = baselineRef.current;
+    if (baseline) {
+      setAssignments(JSON.parse(baseline));
+    }
+  };
+
   // --- Save ---
 
   const handleSave = async () => {
@@ -203,13 +298,9 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div>
           <Text variant="h5" classes="font-semibold">Defense & Lineup</Text>
-          <Text variant="small" classes="text-gray-500 dark:text-gray-400">
-            Build your depth chart: assign players to positions, set batting roles & platoon splits.
-            The engine uses your chart to fill the starting lineup each game.
-          </Text>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {message && (
@@ -217,11 +308,40 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
               {message}
             </Text>
           )}
+          <Button variant="secondaryOutline" size="sm" onClick={handleReset} disabled={!isDirty}>
+            Reset
+          </Button>
+          <Button variant="danger" size="sm" onClick={handleClear} disabled={assignments.length === 0}>
+            Clear All
+          </Button>
           <Button variant="primary" size="sm" onClick={handleSave} disabled={isSaving || !isDirty}>
             {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
+
+      {/* Explainer */}
+      <div className="mb-3 p-3 rounded-lg bg-gray-800/50 border border-gray-700">
+        <Text variant="small" classes="text-gray-400 leading-relaxed">
+          Build your depth chart by assigning players to defensive positions. For each assignment you can set a
+          <strong className="text-gray-300"> platoon split </strong> (vs LHP/RHP),
+          <strong className="text-gray-300"> batting role </strong> (how the player is used in the lineup order),
+          <strong className="text-gray-300"> order range </strong> (which lineup slots they can fill),
+          and a <strong className="text-gray-300"> weight </strong> (how strongly the engine prefers this player). Explicit <strong className="text-gray-300">order range</strong>  overrides the <strong className="text-gray-300">batting roles</strong>. 
+          Use <strong className="text-gray-300">Force Start</strong> to guarantee a player starts regardless of other settings.
+          The engine uses this chart to generate a starting lineup each game. Positions without entries or with conflicting entries fall back to the best available player by rating. <strong className="text-gray-300">Priority</strong>  dictates which player is chosen first for subweek A of a week and then the engine decides how to distribute the rest of the starts. For best results, put your most frequent player at a position as the top priority. Below is the <strong className="text-gray-300"> Dropdown Filters</strong> section and it will allow you to reduce the pool of players to select for positions to ease selection. 
+        </Text>
+      </div>
+
+      {/* Player Filter */}
+      <PlayerFilter
+        players={players}
+        context="defense"
+        hiddenPlayerIds={hiddenPlayerIds}
+        onHiddenChange={setHiddenPlayerIds}
+        hideAssigned={hideAssigned}
+        onHideAssignedChange={setHideAssigned}
+      />
 
       {/* Depth Chart — Diamond Layout */}
       <div>
@@ -233,7 +353,7 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
               positionCode={pos}
               entries={grouped[pos] ?? []}
               allAssignments={assignments}
-              playerOptions={playerOptionsByPos[pos] ?? []}
+              groupedOptions={groupedOptionsByPos[pos] ?? []}
               playerMap={playerMap}
               onAdd={() => addAssignment(pos)}
               onUpdate={(globalIdx, updates) => updateAssignment(globalIdx, updates)}
@@ -251,7 +371,7 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
               positionCode={pos}
               entries={grouped[pos] ?? []}
               allAssignments={assignments}
-              playerOptions={playerOptionsByPos[pos] ?? []}
+              groupedOptions={groupedOptionsByPos[pos] ?? []}
               playerMap={playerMap}
               onAdd={() => addAssignment(pos)}
               onUpdate={(globalIdx, updates) => updateAssignment(globalIdx, updates)}
@@ -268,7 +388,7 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
               positionCode="c"
               entries={grouped["c"] ?? []}
               allAssignments={assignments}
-              playerOptions={playerOptionsByPos["c"] ?? []}
+              groupedOptions={groupedOptionsByPos["c"] ?? []}
               playerMap={playerMap}
               onAdd={() => addAssignment("c")}
               onUpdate={(globalIdx, updates) => updateAssignment(globalIdx, updates)}
@@ -286,7 +406,7 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
               positionCode="dh"
               entries={grouped["dh"] ?? []}
               allAssignments={assignments}
-              playerOptions={playerOptionsByPos["dh"] ?? []}
+              groupedOptions={groupedOptionsByPos["dh"] ?? []}
               playerMap={playerMap}
               onAdd={() => addAssignment("dh")}
               onUpdate={(globalIdx, updates) => updateAssignment(globalIdx, updates)}
@@ -306,7 +426,7 @@ interface PositionCardProps {
   positionCode: PositionCode;
   entries: DefenseAssignment[];
   allAssignments: DefenseAssignment[];
-  playerOptions: SelectOption[];
+  groupedOptions: GroupBase<PlayerSelectOption>[];
   playerMap: Record<number, Player>;
   onAdd: () => void;
   onUpdate: (globalIndex: number, updates: Partial<DefenseAssignment>) => void;
@@ -318,13 +438,16 @@ const PositionCard = ({
   positionCode,
   entries,
   allAssignments,
-  playerOptions,
+  groupedOptions,
   playerMap,
   onAdd,
   onUpdate,
   onRemove,
   onMove,
 }: PositionCardProps) => {
+  // Flatten groups so we can find the currently selected value
+  const flatOptions = useMemo(() => flattenGroups(groupedOptions), [groupedOptions]);
+
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
       {/* Card header */}
@@ -353,18 +476,34 @@ const PositionCard = ({
           {entries.map((entry, posIdx) => {
             const globalIdx = allAssignments.indexOf(entry);
             const assignedPlayer = entry.player_id ? playerMap[entry.player_id] : null;
+            const currentValue = entry.player_id
+              ? flatOptions.find((o) => o.value === String(entry.player_id))
+                ?? (assignedPlayer ? {
+                    value: String(assignedPlayer.id),
+                    label: `${assignedPlayer.firstname} ${assignedPlayer.lastname}`,
+                    ptype: assignedPlayer.ptype,
+                    rating: null,
+                    listedPos: null,
+                    stamina: assignedPlayer.stamina ?? null,
+                    hasFatigueData: assignedPlayer.has_fatigue_data ?? false,
+                  } as PlayerSelectOption : null)
+              : null;
             return (
               <div key={globalIdx} className="px-3 py-2 space-y-2">
                 {/* Player dropdown */}
                 <div className="w-full">
-                  <SelectDropdown
-                    options={playerOptions}
-                    value={playerOptions.find((o) => o.value === String(entry.player_id)) ?? null}
+                  <SelectDropdown<false>
+                    options={groupedOptions as any}
+                    value={currentValue}
                     onChange={(opt) => {
                       if (opt) onUpdate(globalIdx, { player_id: Number((opt as SelectOption).value) });
                     }}
                     isSearchable
                     placeholder="Select player..."
+                    components={{
+                      Option: ColoredOptionSimple as any,
+                      GroupHeading: StyledGroupHeading as any,
+                    }}
                   />
                 </div>
 
@@ -386,87 +525,113 @@ const PositionCard = ({
                           </span>
                         ) : null;
                       })()}
+                      <StaminaBar player={assignedPlayer} />
                     </div>
                     <PlayerAttributeRow player={assignedPlayer} attributes={BATTING_DISPLAY_ATTRS} />
                     <PlayerAttributeRow player={assignedPlayer} attributes={ALL_DEFENSE_ATTRS} />
                   </div>
                 )}
 
-                {/* vs Hand pills + Lock toggle */}
+                {/* vs Hand pills + Force Start toggle */}
                 <div className="flex items-center justify-between gap-3 sm:gap-2 flex-wrap">
-                  <div className="flex items-center gap-1">
-                    <Text variant="small" classes="text-gray-500 text-xs mr-1">vs:</Text>
-                    <ButtonGroup>
-                      {(["both", "L", "R"] as VsHand[]).map((hand) => (
-                        <PillButton
-                          key={hand}
-                          variant="primaryOutline"
-                          isSelected={entry.vs_hand === hand}
-                          onClick={() => onUpdate(globalIdx, { vs_hand: hand })}
-                        >
-                          <Text variant="small">{hand === "both" ? "All" : hand}</Text>
-                        </PillButton>
-                      ))}
-                    </ButtonGroup>
-                  </div>
+                  <Tooltip text="Filter when this player is eligible: vs all pitchers, only vs left-handed pitchers, or only vs right-handed pitchers.">
+                    <div className="flex items-center gap-1">
+                      <Text variant="small" classes="text-gray-500 text-xs mr-1">vs:</Text>
+                      <ButtonGroup>
+                        {(["both", "L", "R"] as VsHand[]).map((hand) => (
+                          <PillButton
+                            key={hand}
+                            variant="primaryOutline"
+                            isSelected={entry.vs_hand === hand}
+                            onClick={() => onUpdate(globalIdx, { vs_hand: hand })}
+                          >
+                            <Text variant="small">{hand === "both" ? "All" : hand}</Text>
+                          </PillButton>
+                        ))}
+                      </ButtonGroup>
+                    </div>
+                  </Tooltip>
 
-                  <div className="flex items-center gap-1">
-                    <Text variant="small" classes="text-gray-500 text-xs">Lock:</Text>
-                    <ToggleSwitch
-                      checked={entry.locked}
-                      onChange={(checked) => onUpdate(globalIdx, { locked: checked })}
-                    />
-                  </div>
+                  <Tooltip text="Force this player into the starting lineup every game, overriding order range and weight settings.">
+                    <div className="flex items-center gap-1">
+                      <Text variant="small" classes="text-gray-500 text-xs">Force Start:</Text>
+                      <ToggleSwitch
+                        checked={entry.locked}
+                        onChange={(checked) => onUpdate(globalIdx, { locked: checked })}
+                      />
+                    </div>
+                  </Tooltip>
                 </div>
+                {entry.locked && (
+                  <Text variant="small" classes="text-yellow-500/80 text-xs italic">
+                    Overrides order range and weight — this player will always start when eligible.
+                  </Text>
+                )}
 
-                {/* Batting role + preferred order */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="flex items-center gap-1 min-w-0">
-                    <Text variant="small" classes="text-gray-500 text-xs shrink-0">Batting:</Text>
-                    <div className="w-28">
+                {/* Batting role — full width */}
+                <Tooltip text="Determines where in the batting order this player fits. Table Setter and On-Base go early; Sluggers bat 3rd/4th; Bottom bats last.">
+                  <div className="flex items-center gap-1">
+                    <Text variant="small" classes="text-gray-500 text-xs shrink-0">Role:</Text>
+                    <div className="flex-1 mr-1">
                       <SelectDropdown
                         options={LineupRoleOptions}
                         value={LineupRoleOptions.find((o) => o.value === entry.lineup_role) ?? LineupRoleOptions.find((o) => o.value === "balanced")}
                         onChange={(opt) => {
                           if (opt) onUpdate(globalIdx, { lineup_role: (opt as SelectOption).value as LineupRole });
                         }}
+                        styles={compactSelectStyles}
                       />
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Text variant="small" classes="text-gray-500 text-xs shrink-0">Order:</Text>
-                    <input
-                      type="number"
-                      min={1}
-                      max={9}
-                      value={entry.min_order ?? ""}
-                      onChange={(e) => {
-                        const v = e.target.value ? parseInt(e.target.value) : null;
-                        onUpdate(globalIdx, { min_order: v && v >= 1 && v <= 9 ? v : null });
-                      }}
-                      placeholder="—"
-                      className="w-14 sm:w-10 px-1 py-2 sm:py-1 text-sm text-center border rounded bg-black text-white border-gray-500"
-                    />
-                    <span className="text-gray-500 text-xs">-</span>
-                    <input
-                      type="number"
-                      min={1}
-                      max={9}
-                      value={entry.max_order ?? ""}
-                      onChange={(e) => {
-                        const v = e.target.value ? parseInt(e.target.value) : null;
-                        onUpdate(globalIdx, { max_order: v && v >= 1 && v <= 9 ? v : null });
-                      }}
-                      placeholder="—"
-                      className="w-14 sm:w-10 px-1 py-2 sm:py-1 text-sm text-center border rounded bg-black text-white border-gray-500"
-                    />
-                  </div>
+                </Tooltip>
+
+                {/* Preferred order */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Tooltip text="Restrict which batting order slots (1-9) this player can be placed in. Leave blank for no restriction.">
+                    <div className="flex items-center gap-1">
+                      <Text variant="small" classes="text-gray-500 text-xs shrink-0">Order:</Text>
+                      <div>
+                        <SelectDropdown
+                          options={ORDER_OPTIONS}
+                          value={ORDER_OPTIONS.find((o) => o.value === String(entry.min_order ?? "")) ?? ORDER_OPTIONS[0]}
+                          onChange={(opt) => {
+                            const v = (opt as SelectOption)?.value;
+                            onUpdate(globalIdx, { min_order: v ? parseInt(v) : null });
+                          }}
+                          styles={tinySelectStyles}
+                        />
+                      </div>
+                      <span className="text-gray-500 text-xs">to</span>
+                      <div>
+                        <SelectDropdown
+                          options={ORDER_OPTIONS}
+                          value={ORDER_OPTIONS.find((o) => o.value === String(entry.max_order ?? "")) ?? ORDER_OPTIONS[0]}
+                          onChange={(opt) => {
+                            const v = (opt as SelectOption)?.value;
+                            onUpdate(globalIdx, { max_order: v ? parseInt(v) : null });
+                          }}
+                          styles={tinySelectStyles}
+                        />
+                      </div>
+                    </div>
+                  </Tooltip>
                 </div>
 
-                {/* Weight input + move/remove controls */}
-                <div className="flex items-center justify-between gap-2">
+                {/* Weight with +/- buttons */}
+                <Tooltip text="How strongly the engine prefers this player at this position. Higher weight = more likely to start. Range: 0 to 10.">
                   <div className="flex items-center gap-1">
                     <Text variant="small" classes="text-gray-500 text-xs">Weight:</Text>
+                    <button
+                      onClick={() => {
+                        const next = Math.max(0, Math.round((entry.target_weight - 0.5) * 10) / 10);
+                        onUpdate(globalIdx, { target_weight: next });
+                      }}
+                      disabled={entry.target_weight <= 0}
+                      className="w-8 h-8 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+                      aria-label="Decrease weight"
+                    >
+                      −
+                    </button>
                     <input
                       type="number"
                       min={0}
@@ -476,36 +641,53 @@ const PositionCard = ({
                       onChange={(e) =>
                         onUpdate(globalIdx, { target_weight: parseFloat(e.target.value) || 1.0 })
                       }
-                      className="w-16 px-2 py-1 text-sm border rounded bg-black text-white border-gray-500"
+                      className="w-14 px-1 py-1 text-sm text-center border rounded bg-black text-white border-gray-500"
                     />
+                    <button
+                      onClick={() => {
+                        const next = Math.min(10, Math.round((entry.target_weight + 0.5) * 10) / 10);
+                        onUpdate(globalIdx, { target_weight: next });
+                      }}
+                      disabled={entry.target_weight >= 10}
+                      className="w-8 h-8 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+                      aria-label="Increase weight"
+                    >
+                      +
+                    </button>
                   </div>
+                </Tooltip>
 
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => onMove(globalIdx, -1)}
-                      disabled={posIdx === 0}
-                      className="w-9 h-9 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
-                      aria-label="Move up"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      onClick={() => onMove(globalIdx, 1)}
-                      disabled={posIdx === entries.length - 1}
-                      className="w-9 h-9 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
-                      aria-label="Move down"
-                    >
-                      ↓
-                    </button>
-                    <button
-                      onClick={() => onRemove(globalIdx)}
-                      className="w-9 h-9 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-red-700 text-white border border-red-500 hover:bg-red-600 text-sm sm:text-xs"
-                      title="Remove"
-                      aria-label="Remove assignment"
-                    >
-                      ×
-                    </button>
-                  </div>
+                {/* Priority reorder + remove — own row */}
+                <div className="flex items-center justify-between pt-1 border-t border-gray-700/50">
+                  <Tooltip text="Change this player's priority within the position. Higher priority players are considered first by the engine.">
+                    <div className="flex items-center gap-1">
+                      <Text variant="small" classes="text-gray-500 text-xs mr-1">Priority:</Text>
+                      <button
+                        onClick={() => onMove(globalIdx, -1)}
+                        disabled={posIdx === 0}
+                        className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
+                        aria-label="Move up"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        onClick={() => onMove(globalIdx, 1)}
+                        disabled={posIdx === entries.length - 1}
+                        className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
+                        aria-label="Move down"
+                      >
+                        ↓
+                      </button>
+                    </div>
+                  </Tooltip>
+                  <button
+                    onClick={() => onRemove(globalIdx)}
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-red-700 text-white border border-red-500 hover:bg-red-600 text-sm sm:text-xs"
+                    title="Remove this assignment"
+                    aria-label="Remove assignment"
+                  >
+                    ×
+                  </button>
                 </div>
               </div>
             );

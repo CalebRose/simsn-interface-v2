@@ -185,6 +185,8 @@ export interface ScoutingPlayerBio {
     pitch3_name: string | null;
     pitch4_name: string | null;
     pitch5_name: string | null;
+    stamina?:    number;          // 0-100, from roster endpoint
+    has_fatigue_data?: boolean;   // true = real fatigue record
 }
 
 export interface GeneratedBattingStats {

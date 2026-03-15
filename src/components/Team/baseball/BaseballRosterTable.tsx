@@ -4,7 +4,7 @@ import { DisplayValue, Player, PlayerRatings } from "../../../models/baseball/ba
 import { BattingLeaderRow, PitchingLeaderRow } from "../../../models/baseball/baseballStatsModels";
 import { Attributes, Potentials, Contracts } from "../../../_constants/constants";
 import { displayLevel, displayPlayerTeam, LEVEL_ORDER, getClassYear, numericToLetterGrade, resolveDisplayValue, letterGradeToNumeric } from "../../../_utility/baseballHelpers";
-import { ratingColor, potColor } from "./baseballColorConfig";
+import { ratingColor, potColor, staminaColor } from "./baseballColorConfig";
 
 // ═══════════════════════════════════════════════
 // Types
@@ -47,7 +47,7 @@ export const ALL_ATTR_GROUPS: ColumnGroup[] = [
     { label: "FldCatch", sortKey: "fldcatch" }, { label: "FldReact", sortKey: "fldreact" },
     { label: "ThrowAcc", sortKey: "throwacc" }, { label: "ThrowPow", sortKey: "throwpow" },
   ]},
-  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }] },
+  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }, { label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -62,7 +62,7 @@ export const ALL_POT_GROUPS: ColumnGroup[] = [
     { label: "FldCatch", sortKey: "pot_fldcatch" }, { label: "FldReact", sortKey: "pot_fldreact" },
     { label: "ThrowAcc", sortKey: "pot_throwacc" }, { label: "ThrowPow", sortKey: "pot_throwpow" },
   ]},
-  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }] },
+  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }, { label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -218,6 +218,7 @@ export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsM
     case "age":           return p.age;
     case "ovr":           return p.displayovr != null ? Number(p.displayovr) : null;
     case "durability":    return p.durability;
+    case "stamina":       return p.stamina ?? null;
     case "contact":       return p.ratings.contact_display;
     case "power":         return p.ratings.power_display;
     case "eye":           return p.ratings.eye_display;
@@ -345,6 +346,23 @@ export const RatingCell = ({ value, isFuzzed, label }: { value: DisplayValue; is
     </td>
   );
 };
+
+const staminaBarBg = (v: number): string => {
+  if (v >= 90) return "bg-green-500";
+  if (v >= 70) return "bg-green-400";
+  if (v >= 50) return "bg-yellow-500";
+  if (v >= 30) return "bg-orange-500";
+  return "bg-red-500";
+};
+
+const StaminaBarCell = ({ value }: { value: number }) => (
+  <div className="flex items-center gap-1 min-w-[48px]">
+    <div className="flex-1 h-2.5 rounded-full bg-gray-700 overflow-hidden">
+      <div className={`h-full rounded-full ${staminaBarBg(value)}`} style={{ width: `${value}%` }} />
+    </div>
+    <span className={`text-[10px] font-semibold w-5 text-right ${staminaColor(value)}`}>{value}</span>
+  </div>
+);
 
 const PitchCell = ({ name, label }: { name: string | null; label?: string }) => (
   <td data-label={label} className={`${td} text-center text-xs whitespace-nowrap`}>{name || "—"}</td>
@@ -524,6 +542,12 @@ export const AllAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
       <StatCell value={p.ratings.throwacc_display} isFuzzed={af} label="ThrowAcc" />
       <StatCell value={p.ratings.throwpower_display} isFuzzed={af} label="ThrowPow" />
       <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {p.has_fatigue_data === false
+          ? <span className="text-gray-400">—</span>
+          : <StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -548,6 +572,12 @@ export const AllPotCells = ({ p }: { p: Player }) => {
       <PotentialCell pot={p.potentials.throwacc_pot} isFuzzed={pf} label="ThrowAcc" />
       <PotentialCell pot={p.potentials.throwpower_pot} isFuzzed={pf} label="ThrowPow" />
       <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {p.has_fatigue_data === false
+          ? <span className="text-gray-400">—</span>
+          : <StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };

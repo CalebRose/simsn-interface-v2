@@ -161,8 +161,8 @@ export const BaseballService = {
     GetPlayerStrategy: async (orgId: number, playerId: number): Promise<PlayerStrategy> => {
         return await GetCall<PlayerStrategy>(`${baseballUrl}gameplanning/org/${orgId}/player/${playerId}/strategy`);
     },
-    SavePlayerStrategy: async (orgId: number, playerId: number, dto: Partial<PlayerStrategy> & { user_id: number }): Promise<PlayerStrategy> => {
-        return await PUTCall<Partial<PlayerStrategy> & { user_id: number }, PlayerStrategy>(`${baseballUrl}gameplanning/org/${orgId}/player/${playerId}/strategy`, dto);
+    SavePlayerStrategy: async (orgId: number, playerId: number, dto: Partial<PlayerStrategy>): Promise<PlayerStrategy> => {
+        return await PUTCall<Partial<PlayerStrategy>, PlayerStrategy>(`${baseballUrl}gameplanning/org/${orgId}/player/${playerId}/strategy`, dto);
     },
     // --- Gameplanning: Team Strategy ---
     GetTeamStrategy: async (teamId: number): Promise<TeamStrategy> => {

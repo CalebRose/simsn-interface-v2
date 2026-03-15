@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { GroupBase } from "react-select";
 import { Text } from "../../../../_design/Typography";
 import { Button } from "../../../../_design/Buttons";
 import { SelectDropdown } from "../../../../_design/Select";
 import { SelectOption } from "../../../../_hooks/useSelectStyles";
-import { Player } from "../../../../models/baseball/baseballModels";
+import { Player, PlayerRatings } from "../../../../models/baseball/baseballModels";
 import {
   RotationConfig,
   RotationSlot,
@@ -25,7 +26,16 @@ import {
   SP_DISPLAY_ATTRS,
   RP_DISPLAY_ATTRS,
 } from "../BaseballGameplanConstants";
-import { PlayerAttributeRow, PitchOverallChips } from "../ratingUtils";
+import { PlayerAttributeRow, PitchOverallChips, StaminaBar } from "../ratingUtils";
+import {
+  PlayerSelectOption,
+  buildGroupedPlayerOptions,
+  flattenGroups,
+  ColoredOptionSimple,
+  StyledGroupHeading,
+  PlayerFilter,
+  Tooltip,
+} from "../playerDropdownUtils";
 
 interface PitchingTabProps {
   teamId: number;
@@ -34,10 +44,24 @@ interface PitchingTabProps {
 
 export const PitchingTab = ({ teamId, players }: PitchingTabProps) => {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    rotation: true,
-    bullpen: true,
-    strategy: true,
+    rotation: false,
+    bullpen: false,
+    strategy: false,
   });
+
+  // Shared filter state across rotation + bullpen sections
+  const [hiddenPlayerIds, setHiddenPlayerIds] = useState<Set<number>>(new Set());
+  const [hideAssigned, setHideAssigned] = useState(false);
+
+  // Collect assigned player IDs from both rotation and bullpen for hide-assigned
+  const [rotationPlayerIds, setRotationPlayerIds] = useState<Set<number>>(new Set());
+  const [bullpenPlayerIds, setBullpenPlayerIds] = useState<Set<number>>(new Set());
+  const assignedPlayerIds = useMemo(() => {
+    const combined = new Set<number>();
+    for (const id of rotationPlayerIds) if (id) combined.add(id);
+    for (const id of bullpenPlayerIds) if (id) combined.add(id);
+    return combined;
+  }, [rotationPlayerIds, bullpenPlayerIds]);
 
   const toggle = (key: string) => {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -45,15 +69,50 @@ export const PitchingTab = ({ teamId, players }: PitchingTabProps) => {
 
   return (
     <div>
-      <Text variant="h5" classes="font-semibold mb-3">Pitching</Text>
+      <Text variant="h5" classes="font-semibold mb-2">Pitching</Text>
+
+      {/* Explainer */}
+      <div className="mb-3 p-3 rounded-lg bg-gray-800/50 border border-gray-700">
+        <Text variant="small" classes="text-gray-400 leading-relaxed">
+          Configure your <strong className="text-gray-300">starting rotation</strong> order and size,
+          set up your <strong className="text-gray-300">bullpen</strong> with roles for each reliever,
+          and adjust <strong className="text-gray-300">team strategy</strong> settings like defensive positioning,
+          pitch count limits, and reliever selection priority. The engine uses these settings to manage
+          pitching decisions during simulated games.
+        </Text>
+      </div>
+
+      {/* Player Filter — shared across rotation & bullpen */}
+      <PlayerFilter
+        players={players}
+        context="pitching"
+        hiddenPlayerIds={hiddenPlayerIds}
+        onHiddenChange={setHiddenPlayerIds}
+        hideAssigned={hideAssigned}
+        onHideAssignedChange={setHideAssigned}
+      />
 
       <div className="space-y-4">
         <AccordionSection title="Starting Rotation" isOpen={openSections.rotation} onToggle={() => toggle("rotation")}>
-          <RotationSection teamId={teamId} players={players} />
+          <RotationSection
+            teamId={teamId}
+            players={players}
+            hiddenPlayerIds={hiddenPlayerIds}
+            hideAssigned={hideAssigned}
+            assignedPlayerIds={assignedPlayerIds}
+            onAssignedChange={setRotationPlayerIds}
+          />
         </AccordionSection>
 
         <AccordionSection title="Bullpen" isOpen={openSections.bullpen} onToggle={() => toggle("bullpen")}>
-          <BullpenSection teamId={teamId} players={players} />
+          <BullpenSection
+            teamId={teamId}
+            players={players}
+            hiddenPlayerIds={hiddenPlayerIds}
+            hideAssigned={hideAssigned}
+            assignedPlayerIds={assignedPlayerIds}
+            onAssignedChange={setBullpenPlayerIds}
+          />
         </AccordionSection>
 
         <AccordionSection title="Team Strategy" isOpen={openSections.strategy} onToggle={() => toggle("strategy")}>
@@ -91,7 +150,23 @@ const AccordionSection = ({
 
 // ── Rotation Section ─────────────────────────────────────────────────
 
-const RotationSection = ({ teamId, players }: { teamId: number; players: Player[] }) => {
+interface FilterableSectionProps {
+  teamId: number;
+  players: Player[];
+  hiddenPlayerIds: Set<number>;
+  hideAssigned: boolean;
+  assignedPlayerIds: Set<number>;
+  onAssignedChange: (ids: Set<number>) => void;
+}
+
+const RotationSection = ({
+  teamId,
+  players,
+  hiddenPlayerIds,
+  hideAssigned,
+  assignedPlayerIds,
+  onAssignedChange,
+}: FilterableSectionProps) => {
   const [rotation, setRotation] = useState<RotationConfig>({
     rotation_size: 5,
     current_slot: 0,
@@ -133,26 +208,27 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
     return () => { cancelled = true; };
   }, [teamId]);
 
+  // Report assigned player IDs up to parent
+  useEffect(() => {
+    onAssignedChange(new Set(rotation.slots.filter((s) => s.player_id).map((s) => s.player_id)));
+  }, [rotation.slots, onAssignedChange]);
+
   const isDirty = useMemo(() => {
     return JSON.stringify(rotation) !== baselineRef.current;
   }, [rotation]);
 
-  const spPitchers = useMemo(() => {
-    return [...players].sort((a, b) => {
-      const aVal = a.ratings.sp_rating;
-      const bVal = b.ratings.sp_rating;
-      const aNum = aVal == null ? 0 : typeof aVal === "string" ? 0 : aVal;
-      const bNum = bVal == null ? 0 : typeof bVal === "string" ? 0 : bVal;
-      return bNum - aNum;
-    });
-  }, [players]);
+  // Build grouped options sorted by SP rating
+  const groupedOptions = useMemo(() => {
+    return buildGroupedPlayerOptions(
+      players,
+      "sp_rating" as keyof PlayerRatings,
+      hiddenPlayerIds,
+      hideAssigned,
+      assignedPlayerIds,
+    );
+  }, [players, hiddenPlayerIds, hideAssigned, assignedPlayerIds]);
 
-  const pitcherOptions: SelectOption[] = useMemo(() => {
-    return spPitchers.map((p) => ({
-      value: String(p.id),
-      label: `${p.firstname} ${p.lastname} (SP: ${p.ratings.sp_rating ?? "—"})`,
-    }));
-  }, [spPitchers]);
+  const flatOptions = useMemo(() => flattenGroups(groupedOptions), [groupedOptions]);
 
   const rotSizeOptions: SelectOption[] = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => ({
@@ -200,6 +276,19 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
     });
   };
 
+  const handleClear = () => {
+    setRotation((prev) => ({
+      ...prev,
+      slots: prev.slots.map((s) => ({ ...s, player_id: 0 })),
+    }));
+  };
+
+  const handleReset = () => {
+    if (baselineRef.current) {
+      setRotation(JSON.parse(baselineRef.current));
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setMessage("");
@@ -227,16 +316,20 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex flex-wrap items-center gap-3">
-          <Text variant="small" classes="font-semibold">Rotation Size:</Text>
-          <div className="w-full sm:w-[180px]">
-            <SelectDropdown
-              options={rotSizeOptions}
-              value={rotSizeOptions.find((o) => o.value === String(rotation.rotation_size ?? 5)) ?? null}
-              onChange={(opt) => {
-                if (opt) handleSizeChange(Number((opt as SelectOption).value));
-              }}
-            />
-          </div>
+          <Tooltip text="How many starting pitchers rotate through the lineup. The engine cycles through slots in order.">
+            <div className="flex flex-wrap items-center gap-2">
+              <Text variant="small" classes="font-semibold">Rotation Size:</Text>
+              <div className="w-full sm:w-[180px]">
+                <SelectDropdown
+                  options={rotSizeOptions}
+                  value={rotSizeOptions.find((o) => o.value === String(rotation.rotation_size ?? 5)) ?? null}
+                  onChange={(opt) => {
+                    if (opt) handleSizeChange(Number((opt as SelectOption).value));
+                  }}
+                />
+              </div>
+            </div>
+          </Tooltip>
           {rotation.current_slot != null && (
             <Text variant="small" classes="text-gray-500 dark:text-gray-400">
               Next up: Slot {rotation.current_slot + 1}
@@ -249,6 +342,12 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
               {message}
             </Text>
           )}
+          <Button variant="secondaryOutline" size="sm" onClick={handleReset} disabled={!isDirty}>
+            Reset
+          </Button>
+          <Button variant="danger" size="sm" onClick={handleClear}>
+            Clear
+          </Button>
           <Button variant="primary" size="sm" onClick={handleSave} disabled={isSaving || !isDirty}>
             {isSaving ? "Saving..." : "Save Rotation"}
           </Button>
@@ -259,6 +358,18 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
         {rotation.slots.map((slot, idx) => {
           const isNext = idx === rotation.current_slot;
           const assignedPlayer = slot.player_id ? playerMap[slot.player_id] : null;
+          const currentValue = slot.player_id
+            ? flatOptions.find((o) => o.value === String(slot.player_id))
+              ?? (assignedPlayer ? {
+                  value: String(assignedPlayer.id),
+                  label: `${assignedPlayer.firstname} ${assignedPlayer.lastname}`,
+                  ptype: assignedPlayer.ptype,
+                  rating: null,
+                  listedPos: null,
+                  stamina: assignedPlayer.stamina ?? null,
+                  hasFatigueData: assignedPlayer.has_fatigue_data ?? false,
+                } as PlayerSelectOption : null)
+            : null;
           return (
             <div
               key={idx}
@@ -269,19 +380,25 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
               }`}
             >
               <div className="flex flex-wrap items-center gap-3">
-                <span className="font-bold text-lg w-8 text-center">{slot.slot}</span>
+                <Tooltip text={`Rotation slot ${slot.slot}. The engine cycles through these in order each game.`}>
+                  <span className="font-bold text-lg w-8 text-center">{slot.slot}</span>
+                </Tooltip>
                 {isNext && (
                   <span className="text-xs font-bold text-blue-500 uppercase">Next</span>
                 )}
                 <div className="w-full sm:w-[280px]">
-                  <SelectDropdown
-                    options={pitcherOptions}
-                    value={pitcherOptions.find((o) => o.value === String(slot.player_id)) ?? null}
+                  <SelectDropdown<false>
+                    options={groupedOptions as any}
+                    value={currentValue}
                     onChange={(opt) => {
                       if (opt) updateSlotPlayer(idx, Number((opt as SelectOption).value));
                     }}
                     isSearchable
                     placeholder="Select pitcher..."
+                    components={{
+                      Option: ColoredOptionSimple as any,
+                      GroupHeading: StyledGroupHeading as any,
+                    }}
                   />
                 </div>
                 <div className="flex gap-1 ml-auto">
@@ -290,6 +407,7 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
                     disabled={idx === 0}
                     className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Move up"
+                    title="Move this pitcher earlier in the rotation"
                   >
                     ↑
                   </button>
@@ -298,6 +416,7 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
                     disabled={idx === rotation.slots.length - 1}
                     className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Move down"
+                    title="Move this pitcher later in the rotation"
                   >
                     ↓
                   </button>
@@ -308,6 +427,7 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
                 <div className="mt-2 ml-11 flex flex-wrap items-center gap-3">
                   <PlayerAttributeRow player={assignedPlayer} attributes={SP_DISPLAY_ATTRS} />
                   <PitchOverallChips player={assignedPlayer} />
+                  <StaminaBar player={assignedPlayer} />
                 </div>
               )}
             </div>
@@ -326,7 +446,14 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
 
 // ── Bullpen Section ──────────────────────────────────────────────────
 
-const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[] }) => {
+const BullpenSection = ({
+  teamId,
+  players,
+  hiddenPlayerIds,
+  hideAssigned,
+  assignedPlayerIds,
+  onAssignedChange,
+}: FilterableSectionProps) => {
   const [bullpen, setBullpen] = useState<BullpenConfig>({ pitchers: [], emergency_pitcher_id: null });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -363,36 +490,44 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
     return () => { cancelled = true; };
   }, [teamId]);
 
+  // Report assigned player IDs up to parent
+  useEffect(() => {
+    const ids = new Set(bullpen.pitchers.filter((e) => e.player_id).map((e) => e.player_id));
+    if (bullpen.emergency_pitcher_id) ids.add(bullpen.emergency_pitcher_id);
+    onAssignedChange(ids);
+  }, [bullpen.pitchers, bullpen.emergency_pitcher_id, onAssignedChange]);
+
   const isDirty = useMemo(() => {
     return JSON.stringify(bullpen) !== baselineRef.current;
   }, [bullpen]);
 
-  const sortedByRp = useMemo(() => {
-    return [...players].sort((a, b) => {
-      const aVal = a.ratings.rp_rating;
-      const bVal = b.ratings.rp_rating;
-      const aNum = aVal == null ? 0 : typeof aVal === "string" ? 0 : aVal;
-      const bNum = bVal == null ? 0 : typeof bVal === "string" ? 0 : bVal;
-      return bNum - aNum;
-    });
+  // Build grouped options sorted by RP rating
+  const groupedOptions = useMemo(() => {
+    return buildGroupedPlayerOptions(
+      players,
+      "rp_rating" as keyof PlayerRatings,
+      hiddenPlayerIds,
+      hideAssigned,
+      assignedPlayerIds,
+    );
+  }, [players, hiddenPlayerIds, hideAssigned, assignedPlayerIds]);
+
+  const flatOptions = useMemo(() => flattenGroups(groupedOptions), [groupedOptions]);
+
+  // Emergency pitcher uses all players (unfiltered, just with labels)
+  const allPlayerGroupedOptions = useMemo(() => {
+    return buildGroupedPlayerOptions(
+      players,
+      "rp_rating" as keyof PlayerRatings,
+      new Set(), // no hiding for emergency
+      false,
+      new Set(),
+    );
   }, [players]);
 
-  const pitcherOptions: SelectOption[] = useMemo(() => {
-    return sortedByRp.map((p) => ({
-      value: String(p.id),
-      label: `${p.firstname} ${p.lastname} (RP: ${p.ratings.rp_rating ?? "—"})`,
-    }));
-  }, [sortedByRp]);
+  const allPlayerFlatOptions = useMemo(() => flattenGroups(allPlayerGroupedOptions), [allPlayerGroupedOptions]);
 
-  const allPlayerOptions: SelectOption[] = useMemo(() => {
-    return [
-      { value: "", label: "None" },
-      ...players.map((p) => ({
-        value: String(p.id),
-        label: `${p.firstname} ${p.lastname}`,
-      })),
-    ];
-  }, [players]);
+  const noneOption: PlayerSelectOption = { value: "", label: "None", ptype: "Position" as any, rating: null, listedPos: null, stamina: null, hasFatigueData: false };
 
   const updateEntry = (index: number, updates: Partial<BullpenEntry>) => {
     setBullpen((prev) => ({
@@ -435,6 +570,16 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
     });
   };
 
+  const handleClear = () => {
+    setBullpen({ pitchers: [], emergency_pitcher_id: null });
+  };
+
+  const handleReset = () => {
+    if (baselineRef.current) {
+      setBullpen(JSON.parse(baselineRef.current));
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setMessage("");
@@ -468,6 +613,12 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
               {message}
             </Text>
           )}
+          <Button variant="secondaryOutline" size="sm" onClick={handleReset} disabled={!isDirty}>
+            Reset
+          </Button>
+          <Button variant="danger" size="sm" onClick={handleClear} disabled={bullpen.pitchers.length === 0 && !bullpen.emergency_pitcher_id}>
+            Clear All
+          </Button>
           <Button variant="primary" size="sm" onClick={handleSave} disabled={isSaving || !isDirty}>
             {isSaving ? "Saving..." : "Save Bullpen"}
           </Button>
@@ -477,6 +628,18 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
       <div className="space-y-2 mb-3">
         {bullpen.pitchers.map((entry, idx) => {
           const assignedPlayer = entry.player_id ? playerMap[entry.player_id] : null;
+          const currentValue = entry.player_id
+            ? flatOptions.find((o) => o.value === String(entry.player_id))
+              ?? (assignedPlayer ? {
+                  value: String(assignedPlayer.id),
+                  label: `${assignedPlayer.firstname} ${assignedPlayer.lastname}`,
+                  ptype: assignedPlayer.ptype,
+                  rating: null,
+                  listedPos: null,
+                  stamina: assignedPlayer.stamina ?? null,
+                  hasFatigueData: assignedPlayer.has_fatigue_data ?? false,
+                } as PlayerSelectOption : null)
+            : null;
           return (
             <div
               key={idx}
@@ -486,26 +649,32 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
                 <span className="font-bold text-lg w-8 text-center">{entry.slot}</span>
 
                 <div className="w-full sm:w-[250px]">
-                  <SelectDropdown
-                    options={pitcherOptions}
-                    value={pitcherOptions.find((o) => o.value === String(entry.player_id)) ?? null}
+                  <SelectDropdown<false>
+                    options={groupedOptions as any}
+                    value={currentValue}
                     onChange={(opt) => {
                       if (opt) updateEntry(idx, { player_id: Number((opt as SelectOption).value) });
                     }}
                     isSearchable
                     placeholder="Select pitcher..."
-                  />
-                </div>
-
-                <div className="w-full sm:w-[140px]">
-                  <SelectDropdown
-                    options={BullpenRoleOptions}
-                    value={BullpenRoleOptions.find((o) => o.value === entry.role) ?? null}
-                    onChange={(opt) => {
-                      if (opt) updateEntry(idx, { role: (opt as SelectOption).value as BullpenRole });
+                    components={{
+                      Option: ColoredOptionSimple as any,
+                      GroupHeading: StyledGroupHeading as any,
                     }}
                   />
                 </div>
+
+                <Tooltip text="The reliever's bullpen role determines when the engine brings them into the game.">
+                  <div className="w-full sm:w-[140px]">
+                    <SelectDropdown
+                      options={BullpenRoleOptions}
+                      value={BullpenRoleOptions.find((o) => o.value === entry.role) ?? null}
+                      onChange={(opt) => {
+                        if (opt) updateEntry(idx, { role: (opt as SelectOption).value as BullpenRole });
+                      }}
+                    />
+                  </div>
+                </Tooltip>
 
                 {BullpenRoleDescriptions[entry.role] && (
                   <span
@@ -522,6 +691,7 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
                     disabled={idx === 0}
                     className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Move up"
+                    title="Move this reliever up in priority"
                   >
                     ↑
                   </button>
@@ -530,13 +700,14 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
                     disabled={idx === bullpen.pitchers.length - 1}
                     className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Move down"
+                    title="Move this reliever down in priority"
                   >
                     ↓
                   </button>
                   <button
                     onClick={() => removePitcher(idx)}
                     className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-red-700 text-white border border-red-500 hover:bg-red-600"
-                    title="Remove"
+                    title="Remove this pitcher from the bullpen"
                     aria-label="Remove pitcher"
                   >
                     ×
@@ -549,6 +720,7 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
                 <div className="mt-2 ml-11 flex flex-wrap items-center gap-3">
                   <PlayerAttributeRow player={assignedPlayer} attributes={RP_DISPLAY_ATTRS} />
                   <PitchOverallChips player={assignedPlayer} />
+                  <StaminaBar player={assignedPlayer} />
                 </div>
               )}
             </div>
@@ -567,31 +739,37 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
       )}
 
       {/* Emergency Pitcher */}
-      <div className="mt-6 p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
-        <Text variant="small" classes="font-semibold mb-1">Emergency Pitcher</Text>
-        <Text variant="small" classes="text-gray-500 dark:text-gray-400 mb-2">
-          Player who pitches if the entire bullpen is exhausted.
-        </Text>
-        <div className="w-full sm:w-[280px]">
-          <SelectDropdown
-            options={allPlayerOptions}
-            value={
-              bullpen.emergency_pitcher_id
-                ? allPlayerOptions.find((o) => o.value === String(bullpen.emergency_pitcher_id)) ?? null
-                : allPlayerOptions[0]
-            }
-            onChange={(opt) => {
-              const val = (opt as SelectOption)?.value;
-              setBullpen((prev) => ({
-                ...prev,
-                emergency_pitcher_id: val ? Number(val) || null : null,
-              }));
-            }}
-            isClearable
-            isSearchable
-          />
+      <Tooltip text="Last-resort pitcher used only when the entire bullpen is exhausted. Can be any player on the roster.">
+        <div className="mt-6 p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
+          <Text variant="small" classes="font-semibold mb-1">Emergency Pitcher</Text>
+          <Text variant="small" classes="text-gray-500 dark:text-gray-400 mb-2">
+            Player who pitches if the entire bullpen is exhausted.
+          </Text>
+          <div className="w-full sm:w-[280px]">
+            <SelectDropdown<false>
+              options={[{ label: "", options: [noneOption] }, ...allPlayerGroupedOptions] as any}
+              value={
+                bullpen.emergency_pitcher_id
+                  ? allPlayerFlatOptions.find((o) => o.value === String(bullpen.emergency_pitcher_id)) ?? null
+                  : noneOption
+              }
+              onChange={(opt) => {
+                const val = (opt as PlayerSelectOption)?.value;
+                setBullpen((prev) => ({
+                  ...prev,
+                  emergency_pitcher_id: val ? Number(val) || null : null,
+                }));
+              }}
+              isClearable
+              isSearchable
+              components={{
+                Option: ColoredOptionSimple as any,
+                GroupHeading: StyledGroupHeading as any,
+              }}
+            />
+          </div>
         </div>
-      </div>
+      </Tooltip>
     </div>
   );
 };
@@ -646,6 +824,12 @@ const TeamStrategySection = ({ teamId }: { teamId: number }) => {
     setStrategy((prev) => ({ ...prev, ...updates }));
   };
 
+  const handleReset = () => {
+    if (baselineRef.current) {
+      setStrategy(JSON.parse(baselineRef.current));
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setMessage("");
@@ -678,6 +862,9 @@ const TeamStrategySection = ({ teamId }: { teamId: number }) => {
               {message}
             </Text>
           )}
+          <Button variant="secondaryOutline" size="sm" onClick={handleReset} disabled={!isDirty}>
+            Reset
+          </Button>
           <Button variant="primary" size="sm" onClick={handleSave} disabled={isSaving || !isDirty}>
             {isSaving ? "Saving..." : "Save Strategy"}
           </Button>
@@ -686,80 +873,90 @@ const TeamStrategySection = ({ teamId }: { teamId: number }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Outfield Spacing */}
-        <div className="space-y-1">
-          <Text variant="small" classes="font-semibold">Outfield Spacing</Text>
-          <SelectDropdown
-            options={OutfieldSpacingOptions}
-            value={OutfieldSpacingOptions.find((o) => o.value === strategy.outfield_spacing) ?? null}
-            onChange={(opt) => {
-              if (opt) update({ outfield_spacing: (opt as SelectOption).value as OutfieldSpacing });
-            }}
-          />
-        </div>
+        <Tooltip text="Default outfield positioning. Deep plays back for power hitters; Shallow plays in for weak contact. Shifts overload one side.">
+          <div className="space-y-1">
+            <Text variant="small" classes="font-semibold">Outfield Spacing</Text>
+            <SelectDropdown
+              options={OutfieldSpacingOptions}
+              value={OutfieldSpacingOptions.find((o) => o.value === strategy.outfield_spacing) ?? null}
+              onChange={(opt) => {
+                if (opt) update({ outfield_spacing: (opt as SelectOption).value as OutfieldSpacing });
+              }}
+            />
+          </div>
+        </Tooltip>
 
         {/* Infield Spacing */}
-        <div className="space-y-1">
-          <Text variant="small" classes="font-semibold">Infield Spacing</Text>
-          <SelectDropdown
-            options={InfieldSpacingOptions}
-            value={InfieldSpacingOptions.find((o) => o.value === strategy.infield_spacing) ?? null}
-            onChange={(opt) => {
-              if (opt) update({ infield_spacing: (opt as SelectOption).value as InfieldSpacing });
-            }}
-          />
-        </div>
+        <Tooltip text="Default infield positioning. 'In' brings infielders closer for plays at the plate. 'Double Play' optimizes for turning two.">
+          <div className="space-y-1">
+            <Text variant="small" classes="font-semibold">Infield Spacing</Text>
+            <SelectDropdown
+              options={InfieldSpacingOptions}
+              value={InfieldSpacingOptions.find((o) => o.value === strategy.infield_spacing) ?? null}
+              onChange={(opt) => {
+                if (opt) update({ infield_spacing: (opt as SelectOption).value as InfieldSpacing });
+              }}
+            />
+          </div>
+        </Tooltip>
 
         {/* Bullpen Cutoff */}
-        <div className="space-y-1">
-          <Text variant="small" classes="font-semibold">Bullpen Cutoff (Pitch Count)</Text>
-          <Text variant="small" classes="text-gray-500 dark:text-gray-400">
-            Pitch count at which the SP is considered for replacement
-          </Text>
-          <input
-            type="number"
-            min={50}
-            max={150}
-            value={strategy.bullpen_cutoff}
-            onChange={(e) => update({ bullpen_cutoff: Number(e.target.value) || 100 })}
-            className="w-full sm:w-24 px-3 py-2 text-sm border rounded bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
+        <Tooltip text="The pitch count threshold at which the engine considers pulling the starter. Lower values protect arms; higher values ride hot pitchers longer.">
+          <div className="space-y-1">
+            <Text variant="small" classes="font-semibold">Bullpen Cutoff (Pitch Count)</Text>
+            <Text variant="small" classes="text-gray-500 dark:text-gray-400">
+              Pitch count at which the SP is considered for replacement
+            </Text>
+            <input
+              type="number"
+              min={50}
+              max={150}
+              value={strategy.bullpen_cutoff}
+              onChange={(e) => update({ bullpen_cutoff: Number(e.target.value) || 100 })}
+              className="w-full sm:w-24 px-3 py-2 text-sm border rounded bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+        </Tooltip>
 
         {/* Bullpen Priority */}
-        <div className="space-y-1">
-          <Text variant="small" classes="font-semibold">Bullpen Priority</Text>
-          <Text variant="small" classes="text-gray-500 dark:text-gray-400">
-            How relievers are selected
-          </Text>
-          <SelectDropdown
-            options={BullpenPriorityOptions}
-            value={BullpenPriorityOptions.find((o) => o.value === strategy.bullpen_priority) ?? null}
-            onChange={(opt) => {
-              if (opt) update({ bullpen_priority: (opt as SelectOption).value as BullpenPriorityType });
-            }}
-          />
-        </div>
+        <Tooltip text="How the engine picks which reliever to use. 'Rest' favors the most-rested arm. 'Matchup' favors handedness advantage. 'Best Available' picks by rating.">
+          <div className="space-y-1">
+            <Text variant="small" classes="font-semibold">Bullpen Priority</Text>
+            <Text variant="small" classes="text-gray-500 dark:text-gray-400">
+              How relievers are selected
+            </Text>
+            <SelectDropdown
+              options={BullpenPriorityOptions}
+              value={BullpenPriorityOptions.find((o) => o.value === strategy.bullpen_priority) ?? null}
+              onChange={(opt) => {
+                if (opt) update({ bullpen_priority: (opt as SelectOption).value as BullpenPriorityType });
+              }}
+            />
+          </div>
+        </Tooltip>
 
         {/* Intentional Walk List */}
-        <div className="space-y-1">
-          <Text variant="small" classes="font-semibold">Intentional Walk Targets</Text>
-          <Text variant="small" classes="text-gray-500 dark:text-gray-400">
-            Opposing player IDs to intentionally walk in high-leverage situations
-          </Text>
-          <input
-            type="text"
-            value={strategy.intentional_walk_list?.join(", ") ?? ""}
-            onChange={(e) => {
-              const ids = e.target.value
-                .split(",")
-                .map((s) => parseInt(s.trim(), 10))
-                .filter((n) => !isNaN(n));
-              update({ intentional_walk_list: ids });
-            }}
-            className="w-full px-3 py-2 text-sm border rounded bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="e.g. 42, 55, 101"
-          />
-        </div>
+        <Tooltip text="Enter opposing player IDs (comma-separated) that your team should intentionally walk in high-leverage at-bats.">
+          <div className="space-y-1">
+            <Text variant="small" classes="font-semibold">Intentional Walk Targets</Text>
+            <Text variant="small" classes="text-gray-500 dark:text-gray-400">
+              Opposing player IDs to intentionally walk in high-leverage situations
+            </Text>
+            <input
+              type="text"
+              value={strategy.intentional_walk_list?.join(", ") ?? ""}
+              onChange={(e) => {
+                const ids = e.target.value
+                  .split(",")
+                  .map((s) => parseInt(s.trim(), 10))
+                  .filter((n) => !isNaN(n));
+                update({ intentional_walk_list: ids });
+              }}
+              className="w-full px-3 py-2 text-sm border rounded bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="e.g. 42, 55, 101"
+            />
+          </div>
+        </Tooltip>
       </div>
     </div>
   );

@@ -287,6 +287,7 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
                 <BioField label="Bats / Throws" value={`${bio!.bat_hand ?? "—"} / ${bio!.pitch_hand ?? "—"}`} />
                 <BioField label="Durability" value={bio!.durability} />
                 <BioField label="Injury Risk" value={bio!.injury_risk} />
+                <BioField label="Stamina" value={bio!.has_fatigue_data === false ? "No data" : String(bio!.stamina ?? "—")} />
                 <BioField label="Origin" value={bio!.intorusa === "usa" ? "USA" : "International"} />
               </div>
               {/* Pitches */}
