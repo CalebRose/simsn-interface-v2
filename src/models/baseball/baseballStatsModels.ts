@@ -21,6 +21,11 @@ export interface BoxScoreLinescore {
   away: BoxScoreLinescoreSide;
 }
 
+export interface PbpPlayer {
+  id: number;
+  name: string;
+}
+
 export interface PlayByPlayEntry {
   ID: number;
   Inning: number;
@@ -33,23 +38,60 @@ export interface PlayByPlayEntry {
   "Strike Count": number;
   "Out Count": number;
   "Outs this Action": number;
-  Batter: { player_id: number; player_name: string };
-  Pitcher: { player_id: number; player_name: string };
+  Batter: PbpPlayer | { player_id: number; player_name: string };
+  Pitcher: PbpPlayer | { player_id: number; player_name: string };
   Outcomes: string;
-  Is_Hit: boolean;
-  Is_Strikeout: boolean;
+  "Batted Ball"?: string;
+  "Air or Ground"?: string;
+  "Hit Depth"?: string;
+  "Hit Direction"?: string;
+  "Hit Situation"?: string;
+  "Targeted Defender"?: string;
+  "Defensive Outcome"?: string;
+  "Error List"?: string;
+  "Defensive Actions"?: string;
+  "On First"?: PbpPlayer | null;
+  "On Second"?: PbpPlayer | null;
+  "On Third"?: PbpPlayer | null;
+  Home?: any[];
   Is_Walk: boolean;
+  Is_Strikeout: boolean;
+  Is_InPlay?: boolean;
+  Is_Hit: boolean;
+  Is_HBP?: boolean;
+  Is_Pickoff?: boolean;
+  Is_StealAttempt?: boolean;
+  Is_StealSuccess?: boolean;
+  Error_Count?: number;
+  Is_Liveball?: boolean;
+  Is_Foul?: boolean;
   Is_Single: boolean;
   Is_Double: boolean;
   Is_Triple: boolean;
   Is_Homerun: boolean;
+  AB_Over?: boolean;
+  Pre_Outs?: number;
   Runners_Scored: number;
+  Runners_Scored_IDs?: number[];
+  Is_DP_Opportunity?: boolean;
+  Is_DP?: boolean;
+  Is_TP_Opportunity?: boolean;
+  Is_TP?: boolean;
+  Catcher?: PbpPlayer | null;
+  "First Base"?: PbpPlayer | null;
+  "Second Base"?: PbpPlayer | null;
+  "Third Base"?: PbpPlayer | null;
+  Shortstop?: PbpPlayer | null;
+  "Left Field"?: PbpPlayer | null;
+  "Center Field"?: PbpPlayer | null;
+  "Right Field"?: PbpPlayer | null;
 }
 
 export interface BoxScoreBattingLine {
   player_id: number;
   name: string;
   pos?: string;
+  pa: number;
   ab: number;
   r: number;
   h: number;
@@ -59,6 +101,7 @@ export interface BoxScoreBattingLine {
   itphr: number;
   rbi: number;
   bb: number;
+  hbp: number;
   so: number;
   sb: number;
   cs: number;
@@ -76,6 +119,11 @@ export interface BoxScorePitchingLine {
   so: number;
   hr: number;
   itphr: number;
+  pc: number;
+  balls: number;
+  strikes: number;
+  hbp: number;
+  wp: number;
   dec: string; // "W" | "L" | "S" | ""
 }
 
@@ -119,7 +167,7 @@ export interface BoxScoreResponse {
 
 export interface PlayByPlayResponse {
   game_id: number;
-  play_by_play: any[];
+  play_by_play: PlayByPlayEntry[];
 }
 
 // ═══════════════════════════════════════════════

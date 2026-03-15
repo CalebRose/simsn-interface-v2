@@ -157,3 +157,45 @@
     display: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Box score tables — always horizontal-scroll, never card layout.
+   ═══════════════════════════════════════════════════════════════════ */
+.compact-table {
+  -webkit-overflow-scrolling: touch;
+}
+
+.compact-table table {
+  min-width: max-content;
+}
+
+@media screen and (max-width: 900px) {
+  .compact-table table thead,
+  .compact-table table tfoot {
+    display: table-header-group !important;
+    position: static !important;
+  }
+
+  .compact-table table tbody {
+    display: table-row-group !important;
+  }
+
+  .compact-table table tr {
+    display: table-row !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .compact-table table td,
+  .compact-table table th {
+    display: table-cell !important;
+    white-space: nowrap;
+    font-size: 0.7rem !important;
+    padding: 0.2rem 0.35rem !important;
+  }
+
+  .compact-table table td::before {
+    display: none !important;
+    content: none !important;
+  }
+}

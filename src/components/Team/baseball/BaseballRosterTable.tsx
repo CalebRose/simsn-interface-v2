@@ -84,6 +84,7 @@ export const POS_ATTR_GROUPS: ColumnGroup[] = [
     { label: "CatchFrm", sortKey: "catchfrm" }, { label: "CatchSeq", sortKey: "catchseq" },
   ]},
   { groupLabel: "Position", columns: [{ label: "Rtg", sortKey: "posrtg" }] },
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -105,6 +106,7 @@ export const POS_POT_GROUPS: ColumnGroup[] = [
     { label: "CatchFrm", sortKey: "pot_catchfrm" }, { label: "CatchSeq", sortKey: "pot_catchseq" },
   ]},
   { groupLabel: "Position", columns: [{ label: "Rtg", sortKey: "posrtg" }] },
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -121,6 +123,7 @@ export const PITCH_ATTR_GROUPS: ColumnGroup[] = [
     { label: "P3", sortKey: "p3ovr" }, { label: "P4", sortKey: "p4ovr" },
     { label: "P5", sortKey: "p5ovr" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -137,6 +140,7 @@ export const PITCH_POT_GROUPS: ColumnGroup[] = [
     { label: "P3", sortKey: "p3ovr" }, { label: "P4", sortKey: "p4ovr" },
     { label: "P5", sortKey: "p5ovr" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -543,9 +547,7 @@ export const AllAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
       <StatCell value={p.ratings.throwpower_display} isFuzzed={af} label="ThrowPow" />
       <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {p.has_fatigue_data === false
-          ? <span className="text-gray-400">—</span>
-          : <StaminaBarCell value={p.stamina ?? 100} />
+        {<StaminaBarCell value={p.stamina ?? 100} />
         }
       </td>
     </>
@@ -573,9 +575,7 @@ export const AllPotCells = ({ p }: { p: Player }) => {
       <PotentialCell pot={p.potentials.throwpower_pot} isFuzzed={pf} label="ThrowPow" />
       <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {p.has_fatigue_data === false
-          ? <span className="text-gray-400">—</span>
-          : <StaminaBarCell value={p.stamina ?? 100} />
+        {<StaminaBarCell value={p.stamina ?? 100} />
         }
       </td>
     </>
@@ -600,6 +600,10 @@ export const PosAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
       <StatCell value={p.ratings.catchframe_display} isFuzzed={af} label="CatchFrm" />
       <StatCell value={p.ratings.catchsequence_display} isFuzzed={af} label="CatchSeq" />
       <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={af} label="Pos Rtg" />
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -622,6 +626,10 @@ export const PosPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?: 
       <PotentialCell pot={p.potentials.catchframe_pot} isFuzzed={pf} label="CatchFrm" />
       <PotentialCell pot={p.potentials.catchsequence_pot} isFuzzed={pf} label="CatchSeq" />
       <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={isFuzzed} label="Pos Rtg" />
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -643,6 +651,10 @@ export const PitchAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean 
       <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} label="P3" />
       <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} label="P4" />
       <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} label="P5" />
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -664,6 +676,10 @@ export const PitchPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?
       <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} label="P3" />
       <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} label="P4" />
       <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} label="P5" />
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };

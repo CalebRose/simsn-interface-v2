@@ -594,7 +594,7 @@ export interface BaseballInjury {
     team: string;
     position: string;
     injury_type: string;
-    weeks_of_recovery: number;
+    weeks_remaining: number;
     level: string;
 }
 

@@ -129,6 +129,9 @@ export const BaseballService = {
         const qs = viewingOrgId ? `?viewing_org_id=${viewingOrgId}` : "";
         return await GetCall<BaseballRosters[]>(`${baseballUrl}rosters${qs}`);
     },
+    GetOrgRoster: async (orgAbbrev: string): Promise<any[]> => {
+        return await GetCall<any[]>(`${baseballUrl}orgs/${orgAbbrev}/roster`);
+    },
     // Bootstrap landing page data
     GetBootstrapLandingData: async (orgId: number): Promise<BaseballBootstrapLanding> => {
         const url = `${baseballUrl}bootstrap/landing/${orgId}`;

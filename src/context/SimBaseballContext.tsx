@@ -341,6 +341,50 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   }, []);
 
   /**
+   * Fetch stamina data from the roster endpoint and merge it into
+   * a rosterMap. The bootstrap endpoint doesn't include stamina/has_fatigue_data,
+   * so we supplement from the roster API.
+   */
+  const fetchAndMergeStamina = useCallback(async (
+    orgAbbrev: string,
+    rosterMap: Record<string, Player[]>,
+  ): Promise<Record<string, Player[]>> => {
+    try {
+      console.log("[fetchAndMergeStamina] fetching roster for org:", orgAbbrev);
+      const rawResponse: any = await BaseballService.GetOrgRoster(orgAbbrev);
+      console.log("[fetchAndMergeStamina] raw response type:", typeof rawResponse, "isArray:", Array.isArray(rawResponse), "keys:", rawResponse ? Object.keys(rawResponse).slice(0, 10) : null);
+      // Extract player array — handle both array and object-with-players shapes
+      const rosterPlayers: any[] = Array.isArray(rawResponse) ? rawResponse : (rawResponse?.players ?? rawResponse?.roster ?? rawResponse?.Players ?? rawResponse?.Roster ?? []);
+      console.log("[fetchAndMergeStamina] players:", { count: rosterPlayers.length, sample: rosterPlayers[0] ? { id: rosterPlayers[0].id, stamina: rosterPlayers[0].stamina, has_fatigue_data: rosterPlayers[0].has_fatigue_data } : null });
+      if (rosterPlayers.length === 0) return rosterMap;
+
+      // Build a lookup: player_id → { stamina, has_fatigue_data }
+      const staminaMap = new Map<number, { stamina?: number; has_fatigue_data?: boolean }>();
+      for (const p of rosterPlayers) {
+        const pid = p.id ?? p.player_id;
+        if (pid != null) {
+          staminaMap.set(pid, {
+            stamina: p.stamina,
+            has_fatigue_data: p.has_fatigue_data,
+          });
+        }
+      }
+
+      const patched: Record<string, Player[]> = {};
+      for (const [key, players] of Object.entries(rosterMap)) {
+        patched[key] = players.map((p) => {
+          const data = staminaMap.get(p.id);
+          return data ? { ...p, stamina: data.stamina, has_fatigue_data: data.has_fatigue_data } : p;
+        });
+      }
+      return patched;
+    } catch (e) {
+      console.error("Failed to fetch stamina data:", e);
+      return rosterMap;
+    }
+  }, []);
+
+  /**
    * Phase 1: Load the active org's bootstrap data ASAP (fast path).
    * Phase 2: After dashboard renders, backfill the all-orgs cache + load rosters/faces.
    */
@@ -382,6 +426,18 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         // No session cache and network failed — unblock with empty state
         setIsBootstrapLoading(false);
         setInitialLoadDone(true);
+      }
+    }
+
+    // ── Phase 1.5: Patch stamina from roster endpoint (bootstrap doesn't include it) ──
+    const org = organizations.find((o) => o.id === activeOrgId);
+    if (org?.org_abbrev) {
+      const cached = bootstrapCache.current.get(activeOrgId);
+      if (cached) {
+        const patchedMap = await fetchAndMergeStamina(org.org_abbrev, cached.rosterMap);
+        const patchedBootstrap = { ...cached, rosterMap: patchedMap };
+        bootstrapCache.current.set(activeOrgId, patchedBootstrap);
+        applyBootstrap(activeOrgId, patchedBootstrap);
       }
     }
 
@@ -472,7 +528,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         if (Object.keys(sharedFaces).length > 0) setGlobalFaces(sharedFaces);
       })
       .catch((e) => console.error("Background all-orgs cache fill failed:", e));
-  }, [processAndCacheOrgData]);
+  }, [processAndCacheOrgData, organizations, fetchAndMergeStamina]);
 
   /** Apply cached bootstrap data to active state (no network call). */
   const applyBootstrap = useCallback((orgId: number, data: BootstrapData) => {
@@ -512,6 +568,18 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
       setIsBootstrapLoading(true);
       const data = await BaseballService.GetBootstrapLandingData(orgId);
       const bootstrapData = processAndCacheOrgData(orgId, data);
+
+      // Patch stamina from roster endpoint (bootstrap doesn't include it)
+      const org = organizations.find((o) => o.id === orgId);
+      if (org?.org_abbrev) {
+        const patchedMap = await fetchAndMergeStamina(org.org_abbrev, bootstrapData.rosterMap);
+        const patchedBootstrap = { ...bootstrapData, rosterMap: patchedMap };
+        bootstrapCache.current.set(orgId, patchedBootstrap);
+        applyBootstrap(orgId, patchedBootstrap);
+        setIsBootstrapLoading(false);
+        return { ...data, RosterMap: patchedMap };
+      }
+
       applyBootstrap(orgId, bootstrapData);
       setIsBootstrapLoading(false);
       return data;
@@ -520,7 +588,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
       setIsBootstrapLoading(false);
       return null;
     }
-  }, [applyBootstrap, processAndCacheOrgData]);
+  }, [applyBootstrap, processAndCacheOrgData, organizations, fetchAndMergeStamina]);
 
   const toggleNotificationAsRead = useCallback(
     async (notificationId: number) => {

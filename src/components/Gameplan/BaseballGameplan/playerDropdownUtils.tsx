@@ -124,7 +124,7 @@ export const ColoredOptionSimple: FC<OptionProps<PlayerSelectOption, false, Grou
         <span style={{ color: ratingColor, fontWeight: 600, marginLeft: "auto" }}>
           {ratingStr}
         </span>
-        {data.hasFatigueData && data.stamina != null && (
+        {data.stamina != null && (
           <span style={{
             color: staminaHexColor(data.stamina),
             fontSize: "0.6rem",

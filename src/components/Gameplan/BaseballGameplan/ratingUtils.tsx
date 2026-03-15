@@ -73,13 +73,6 @@ export const PlayerAttributeRow: FC<PlayerAttributeRowProps> = ({
 
 // ── StaminaChip — shows current fatigue level (text badge) ──────────
 export const StaminaChip: FC<{ player: Player }> = ({ player }) => {
-  if (player.has_fatigue_data === false) {
-    return (
-      <span className="text-xs px-1.5 py-0.5 rounded bg-gray-700/50 text-gray-400">
-        Stam: —
-      </span>
-    );
-  }
   const stam = player.stamina ?? 100;
   return (
     <span className={`text-xs px-1.5 py-0.5 rounded font-semibold bg-gray-700/50 ${staminaColor(stam)}`}>
@@ -99,15 +92,6 @@ const staminaBarColor = (v: number): string => {
 };
 
 export const StaminaBar: FC<{ player: Player; label?: string }> = ({ player, label }) => {
-  if (player.has_fatigue_data === false) {
-    return (
-      <div className="flex items-center gap-2">
-        {label && <span className="text-xs text-gray-400 shrink-0">{label}</span>}
-        <div className="flex-1 h-3 rounded-full bg-gray-700 overflow-hidden min-w-[60px]" />
-        <span className="text-xs text-gray-500 w-6 text-right">—</span>
-      </div>
-    );
-  }
   const stam = player.stamina ?? 100;
   return (
     <div className="flex items-center gap-2">
