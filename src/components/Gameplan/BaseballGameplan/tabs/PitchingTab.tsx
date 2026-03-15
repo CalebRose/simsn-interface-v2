@@ -208,11 +208,14 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
       setRotation(saved);
       baselineRef.current = JSON.stringify(saved);
       setMessage("Saved successfully");
-    } catch {
-      setMessage("Failed to save");
+    } catch (err: any) {
+      const detail = err?.message && err.message !== "Failed to fetch"
+        ? err.message
+        : "Unknown error";
+      setMessage(`Failed to save: ${detail}`);
     } finally {
       setIsSaving(false);
-      setTimeout(() => setMessage(""), 3000);
+      setTimeout(() => setMessage(""), 5000);
     }
   };
 
@@ -222,10 +225,10 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Text variant="small" classes="font-semibold">Rotation Size:</Text>
-          <div className="w-[180px]">
+          <div className="w-full sm:w-[180px]">
             <SelectDropdown
               options={rotSizeOptions}
               value={rotSizeOptions.find((o) => o.value === String(rotation.rotation_size ?? 5)) ?? null}
@@ -265,12 +268,12 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
                   : "border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800"
               }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <span className="font-bold text-lg w-8 text-center">{slot.slot}</span>
                 {isNext && (
                   <span className="text-xs font-bold text-blue-500 uppercase">Next</span>
                 )}
-                <div className="w-[280px]">
+                <div className="w-full sm:w-[280px]">
                   <SelectDropdown
                     options={pitcherOptions}
                     value={pitcherOptions.find((o) => o.value === String(slot.player_id)) ?? null}
@@ -285,14 +288,16 @@ const RotationSection = ({ teamId, players }: { teamId: number; players: Player[
                   <button
                     onClick={() => moveSlot(idx, -1)}
                     disabled={idx === 0}
-                    className="w-7 h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    aria-label="Move up"
                   >
                     ↑
                   </button>
                   <button
                     onClick={() => moveSlot(idx, 1)}
                     disabled={idx === rotation.slots.length - 1}
-                    className="w-7 h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    aria-label="Move down"
                   >
                     ↓
                   </button>
@@ -438,11 +443,14 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
       setBullpen(saved);
       baselineRef.current = JSON.stringify(saved);
       setMessage("Saved successfully");
-    } catch {
-      setMessage("Failed to save");
+    } catch (err: any) {
+      const detail = err?.message && err.message !== "Failed to fetch"
+        ? err.message
+        : "Unknown error";
+      setMessage(`Failed to save: ${detail}`);
     } finally {
       setIsSaving(false);
-      setTimeout(() => setMessage(""), 3000);
+      setTimeout(() => setMessage(""), 5000);
     }
   };
 
@@ -474,10 +482,10 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
               key={idx}
               className="p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <span className="font-bold text-lg w-8 text-center">{entry.slot}</span>
 
-                <div className="w-[250px]">
+                <div className="w-full sm:w-[250px]">
                   <SelectDropdown
                     options={pitcherOptions}
                     value={pitcherOptions.find((o) => o.value === String(entry.player_id)) ?? null}
@@ -489,7 +497,7 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
                   />
                 </div>
 
-                <div className="w-[140px]">
+                <div className="w-full sm:w-[140px]">
                   <SelectDropdown
                     options={BullpenRoleOptions}
                     value={BullpenRoleOptions.find((o) => o.value === entry.role) ?? null}
@@ -512,21 +520,24 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
                   <button
                     onClick={() => moveEntry(idx, -1)}
                     disabled={idx === 0}
-                    className="w-7 h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    aria-label="Move up"
                   >
                     ↑
                   </button>
                   <button
                     onClick={() => moveEntry(idx, 1)}
                     disabled={idx === bullpen.pitchers.length - 1}
-                    className="w-7 h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    aria-label="Move down"
                   >
                     ↓
                   </button>
                   <button
                     onClick={() => removePitcher(idx)}
-                    className="w-7 h-7 flex items-center justify-center rounded bg-red-700 text-white border border-red-500 hover:bg-red-600"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-red-700 text-white border border-red-500 hover:bg-red-600"
                     title="Remove"
+                    aria-label="Remove pitcher"
                   >
                     ×
                   </button>
@@ -561,7 +572,7 @@ const BullpenSection = ({ teamId, players }: { teamId: number; players: Player[]
         <Text variant="small" classes="text-gray-500 dark:text-gray-400 mb-2">
           Player who pitches if the entire bullpen is exhausted.
         </Text>
-        <div className="w-[280px]">
+        <div className="w-full sm:w-[280px]">
           <SelectDropdown
             options={allPlayerOptions}
             value={
@@ -643,11 +654,14 @@ const TeamStrategySection = ({ teamId }: { teamId: number }) => {
       setStrategy(saved);
       baselineRef.current = JSON.stringify(saved);
       setMessage("Saved successfully");
-    } catch {
-      setMessage("Failed to save");
+    } catch (err: any) {
+      const detail = err?.message && err.message !== "Failed to fetch"
+        ? err.message
+        : "Unknown error";
+      setMessage(`Failed to save: ${detail}`);
     } finally {
       setIsSaving(false);
-      setTimeout(() => setMessage(""), 3000);
+      setTimeout(() => setMessage(""), 5000);
     }
   };
 
@@ -707,7 +721,7 @@ const TeamStrategySection = ({ teamId }: { teamId: number }) => {
             max={150}
             value={strategy.bullpen_cutoff}
             onChange={(e) => update({ bullpen_cutoff: Number(e.target.value) || 100 })}
-            className="w-24 px-3 py-2 text-sm border rounded bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full sm:w-24 px-3 py-2 text-sm border rounded bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 

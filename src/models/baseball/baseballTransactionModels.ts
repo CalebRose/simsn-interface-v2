@@ -60,6 +60,15 @@ export interface RosterWarning {
     over_limit: boolean;
 }
 
+/** Post-transaction player state returned by all transaction endpoints. */
+export interface TransactionPlayerPatch {
+    firstname: string;
+    lastname: string;
+    ptype: string;
+    current_level: string | null;
+    on_ir: boolean;
+}
+
 export interface PromoteResponse {
     transaction_id: number;
     contract_id: number;
@@ -67,6 +76,7 @@ export interface PromoteResponse {
     from_level: string;
     to_level: string;
     roster_warning?: RosterWarning;
+    player?: TransactionPlayerPatch;
 }
 
 export interface DemoteResponse {
@@ -75,12 +85,14 @@ export interface DemoteResponse {
     player_id: number;
     from_level: string;
     to_level: string;
+    player?: TransactionPlayerPatch;
 }
 
 export interface IRPlaceResponse {
     transaction_id: number;
     contract_id: number;
     player_id: number;
+    player?: TransactionPlayerPatch;
 }
 
 export interface IRActivateResponse {
@@ -88,6 +100,7 @@ export interface IRActivateResponse {
     contract_id: number;
     player_id: number;
     roster_warning?: RosterWarning;
+    player?: TransactionPlayerPatch;
 }
 
 export interface ReleaseResponse {
@@ -95,6 +108,7 @@ export interface ReleaseResponse {
     contract_id: number;
     player_id: number;
     years_remaining_on_books: number;
+    player?: TransactionPlayerPatch;
 }
 
 export interface BuyoutResponse {
@@ -103,6 +117,7 @@ export interface BuyoutResponse {
     buyout_contract_id: number;
     buyout_amount: number;
     player_id: number;
+    player?: TransactionPlayerPatch;
 }
 
 export interface ExtendResponse {

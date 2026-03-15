@@ -5,6 +5,7 @@ import { BaseballService } from "../../../_services/baseballService";
 import { BoxScoreResponse, BoxScoreSubstitution } from "../../../models/baseball/baseballStatsModels";
 import { getLogo } from "../../../_utility/getLogo";
 import { League, SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
+import "../../../components/Team/baseball/baseballMobile.css";
 
 const POS_DISPLAY: Record<string, string> = {
   c: "C", fb: "1B", sb: "2B", tb: "3B", ss: "SS",
@@ -139,7 +140,7 @@ const LinescoreTable = ({ boxScore, leagueType, isRetro }: { boxScore: BoxScoreR
   const homeLogo = getLogo(leagueType, boxScore.home_team.id, isRetro);
 
   return (
-    <div className="overflow-x-auto flex justify-center">
+    <div className="baseball-table-wrapper overflow-x-auto flex justify-center">
       <table className="border-collapse text-sm">
         <thead>
           <tr className="border-b-2 border-gray-300 dark:border-gray-500">
@@ -161,13 +162,13 @@ const LinescoreTable = ({ boxScore, leagueType, isRetro }: { boxScore: BoxScoreR
               </div>
             </td>
             {innings.map((i) => (
-              <td key={i} className="px-2 py-1.5 text-center">
+              <td key={i} className="px-1.5 sm:px-2 py-1.5 sm:py-1.5 text-center">
                 {i < ls.away.runs.length ? ls.away.runs[i] : ""}
               </td>
             ))}
-            <td className="px-2 py-1.5 text-center font-bold border-l-2 border-gray-300 dark:border-gray-500">{ls.away.R}</td>
-            <td className="px-2 py-1.5 text-center">{ls.away.H}</td>
-            <td className="px-2 py-1.5 text-center">{ls.away.E}</td>
+            <td className="px-1.5 sm:px-2 py-1.5 sm:py-1.5 text-center font-bold border-l-2 border-gray-300 dark:border-gray-500">{ls.away.R}</td>
+            <td className="px-1.5 sm:px-2 py-1.5 sm:py-1.5 text-center">{ls.away.H}</td>
+            <td className="px-1.5 sm:px-2 py-1.5 sm:py-1.5 text-center">{ls.away.E}</td>
           </tr>
           <tr>
             <td className="px-3 py-1.5 font-semibold">
@@ -177,13 +178,13 @@ const LinescoreTable = ({ boxScore, leagueType, isRetro }: { boxScore: BoxScoreR
               </div>
             </td>
             {innings.map((i) => (
-              <td key={i} className="px-2 py-1.5 text-center">
+              <td key={i} className="px-1.5 sm:px-2 py-1.5 sm:py-1.5 text-center">
                 {i < ls.home.runs.length ? ls.home.runs[i] : ""}
               </td>
             ))}
-            <td className="px-2 py-1.5 text-center font-bold border-l-2 border-gray-300 dark:border-gray-500">{ls.home.R}</td>
-            <td className="px-2 py-1.5 text-center">{ls.home.H}</td>
-            <td className="px-2 py-1.5 text-center">{ls.home.E}</td>
+            <td className="px-1.5 sm:px-2 py-1.5 sm:py-1.5 text-center font-bold border-l-2 border-gray-300 dark:border-gray-500">{ls.home.R}</td>
+            <td className="px-1.5 sm:px-2 py-1.5 sm:py-1.5 text-center">{ls.home.H}</td>
+            <td className="px-1.5 sm:px-2 py-1.5 sm:py-1.5 text-center">{ls.home.E}</td>
           </tr>
         </tbody>
       </table>
@@ -197,11 +198,11 @@ const BattingLineTable = ({ lines, onPlayerClick }: { lines: BoxScoreResponse["b
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="baseball-table-wrapper overflow-x-auto">
       <table className="w-full border-collapse text-xs">
         <thead>
           <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-            <th className="px-2 py-1 text-left min-w-[8rem]">Player</th>
+            <th className="px-1.5 sm:px-2 py-1 text-left min-w-[8rem]">Player</th>
             <th className="px-1 py-1 text-center">Pos</th>
             <th className="px-1 py-1 text-center">AB</th>
             <th className="px-1 py-1 text-center">R</th>
@@ -250,11 +251,11 @@ const PitchingLineTable = ({ lines, onPlayerClick }: { lines: BoxScoreResponse["
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="baseball-table-wrapper overflow-x-auto">
       <table className="w-full border-collapse text-xs">
         <thead>
           <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-            <th className="px-2 py-1 text-left min-w-[8rem]">Pitcher</th>
+            <th className="px-1.5 sm:px-2 py-1 text-left min-w-[8rem]">Pitcher</th>
             <th className="px-1 py-1 text-center">Dec</th>
             <th className="px-1 py-1 text-center">IP</th>
             <th className="px-1 py-1 text-center">H</th>

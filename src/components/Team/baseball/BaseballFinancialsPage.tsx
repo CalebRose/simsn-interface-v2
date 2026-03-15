@@ -114,11 +114,11 @@ export const BaseballFinancialsPage = ({ league }: BaseballFinancialsPageProps) 
 
   return (
     <PageContainer>
-      <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
+      <div className="flex-col w-full px-2 sm:px-4 md:px-0 md:mb-6">
         {/* Org selector */}
         {orgOptions.length > 1 && (
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <div className="min-w-[280px] max-w-[400px]">
+            <div className="w-full sm:min-w-[280px] sm:max-w-[400px]">
               <SelectDropdown
                 options={orgOptions}
                 value={selectedOrgOption}

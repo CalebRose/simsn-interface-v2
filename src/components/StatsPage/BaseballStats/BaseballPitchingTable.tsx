@@ -3,6 +3,7 @@ import { getLogo } from "../../../_utility/getLogo";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getStatsHeaderStyle } from "./statsHeaderStyle";
 import { useAuthStore } from "../../../context/AuthContext";
+import "../../Team/baseball/baseballMobile.css";
 
 interface Props {
   leaders: PitchingLeaderRow[];
@@ -66,7 +67,7 @@ export const BaseballPitchingTable = ({ leaders, league, isRetro, accentColor, o
   const headerStyle = getStatsHeaderStyle(accentColor, isDarkMode);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto baseball-table-wrapper">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr
@@ -79,7 +80,7 @@ export const BaseballPitchingTable = ({ leaders, league, isRetro, accentColor, o
               return (
                 <th
                   key={col.key}
-                  className={`px-2 py-2 ${col.key === "name" ? "text-left min-w-[6rem]" : "text-center"} ${isSortable ? "cursor-pointer select-none hover:opacity-80" : ""} ${isActive ? "underline decoration-2 underline-offset-2" : ""}`}
+                  className={`px-2 py-2 ${col.key === "name" ? "text-left min-w-[6rem] sticky left-0 z-10 bg-inherit" : "text-center"} ${isSortable ? "cursor-pointer select-none hover:opacity-80" : ""} ${isActive ? "underline decoration-2 underline-offset-2" : ""}`}
                   title={col.tooltip}
                   onClick={isSortable ? () => onSort!(col.sortKey!) : undefined}
                 >
@@ -100,11 +101,11 @@ export const BaseballPitchingTable = ({ leaders, league, isRetro, accentColor, o
               >
                 {COLUMNS.map((col) => {
                   if (col.key === "rank") {
-                    return <td key={col.key} className="px-2 py-1.5 text-center text-gray-400">{row.rank}</td>;
+                    return <td key={col.key} className="px-2 py-2.5 sm:py-1.5 text-center text-gray-400">{row.rank}</td>;
                   }
                   if (col.key === "name") {
                     return (
-                      <td key={col.key} className="px-2 py-1.5 font-medium">
+                      <td key={col.key} className="px-2 py-2.5 sm:py-1.5 font-medium sticky left-0 z-10 bg-inherit">
                         {onPlayerClick ? (
                           <span className="cursor-pointer hover:underline hover:text-blue-500" onClick={() => onPlayerClick(row.player_id)}>{row.name}</span>
                         ) : row.name}
@@ -113,7 +114,7 @@ export const BaseballPitchingTable = ({ leaders, league, isRetro, accentColor, o
                   }
                   if (col.key === "team_abbrev") {
                     return (
-                      <td key={col.key} className="px-2 py-1.5 text-center">
+                      <td key={col.key} className="px-2 py-2.5 sm:py-1.5 text-center">
                         <div className="flex items-center justify-center gap-1">
                           {logo && <img src={logo} className="w-4 h-4 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
                           <span className="text-xs">{row.team_abbrev}</span>
@@ -126,7 +127,7 @@ export const BaseballPitchingTable = ({ leaders, league, isRetro, accentColor, o
                   return (
                     <td
                       key={col.key}
-                      className={`px-2 py-1.5 text-center ${col.bold ? "font-semibold" : ""} ${isActive ? "bg-yellow-50/60 dark:bg-yellow-900/15" : ""}`}
+                      className={`px-2 py-2.5 sm:py-1.5 text-center ${col.bold ? "font-semibold" : ""} ${isActive ? "bg-yellow-50/60 dark:bg-yellow-900/15" : ""}`}
                     >
                       {val}
                     </td>

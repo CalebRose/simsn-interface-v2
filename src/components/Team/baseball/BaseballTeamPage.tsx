@@ -13,6 +13,7 @@ import {
   VisibilityContext,
   ListedPositionResponse,
 } from "../../../models/baseball/baseballModels";
+import { TransactionPlayerPatch } from "../../../models/baseball/baseballTransactionModels";
 import {
   SimCollegeBaseball,
   SimMLB,
@@ -55,6 +56,7 @@ import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import "./baseballMobile.css";
 import {
   ScoutingActionType,
   ScoutingBudget,
@@ -72,7 +74,7 @@ const Stats = "Stats";
 // ═══════════════════════════════════════════════
 
 const actionBtn =
-  "px-1.5 py-0.5 rounded text-[10px] font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
+  "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
 
 const QuickActionButtons = ({
   player,
@@ -95,7 +97,7 @@ const QuickActionButtons = ({
   const potsPrecise = player.visibility_context?.potentials_precise ?? false;
 
   return (
-    <div className="flex flex-wrap gap-0.5 items-center">
+    <div className="flex flex-wrap gap-1.5 sm:gap-0.5 items-center">
       {/* Scouting */}
       {!isCollege && (
         <button
@@ -103,6 +105,7 @@ const QuickActionButtons = ({
           onClick={attrsPrecise ? undefined : () => onScouting(player, "pro_attrs_precise")}
           disabled={attrsPrecise}
           title={attrsPrecise ? "Already scouted" : "Scout Precise Attributes"}
+          aria-label={attrsPrecise ? "Already scouted" : "Scout Precise Attributes"}
         >
           Attrs{attrsPrecise ? " ✓" : ""}
         </button>
@@ -112,6 +115,7 @@ const QuickActionButtons = ({
         onClick={potsPrecise ? undefined : () => onScouting(player, isCollege ? "college_potential_precise" : "pro_potential_precise")}
         disabled={potsPrecise}
         title={potsPrecise ? "Already scouted" : "Scout Precise Potentials"}
+        aria-label={potsPrecise ? "Already scouted" : "Scout Precise Potentials"}
       >
         Pots{potsPrecise ? " ✓" : ""}
       </button>
@@ -122,6 +126,7 @@ const QuickActionButtons = ({
           className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
           onClick={() => onTransaction(player, "promote")}
           title="Move to Level"
+          aria-label="Move to Level"
         >
           Move
         </button>
@@ -131,6 +136,7 @@ const QuickActionButtons = ({
           className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
           onClick={() => onTransaction(player, "ir_place")}
           title="Place on IR"
+          aria-label="Place on IR"
         >
           IR
         </button>
@@ -140,6 +146,7 @@ const QuickActionButtons = ({
           className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
           onClick={() => onTransaction(player, "ir_activate")}
           title="Activate from IR"
+          aria-label="Activate from IR"
         >
           Act
         </button>
@@ -152,6 +159,7 @@ const QuickActionButtons = ({
             className={`${actionBtn} bg-red-600/20 text-red-400 hover:bg-red-600/40`}
             onClick={() => onTransaction(player, "release")}
             title="Release"
+            aria-label="Release player"
           >
             Rel
           </button>
@@ -159,6 +167,7 @@ const QuickActionButtons = ({
             className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`}
             onClick={() => onTransaction(player, "extend")}
             title="Extend"
+            aria-label="Extend contract"
           >
             Ext
           </button>
@@ -166,6 +175,7 @@ const QuickActionButtons = ({
             className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`}
             onClick={() => onTransaction(player, "buyout")}
             title="Buyout"
+            aria-label="Buyout contract"
           >
             Buy
           </button>
@@ -256,6 +266,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     mlbOrganization,
     collegeOrganization,
     loadBootstrapForOrg,
+    getAllCachedOrgPlayers,
     seasonContext,
   } = useSimBaseballStore();
 
@@ -331,6 +342,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   >(new Map());
   const [scoutingLoading, setScoutingLoading] = useState(false);
   const scoutingLoadedForOrg = useRef<number | null>(null);
+  const statsCache = useRef<{ orgId: number; lyId: number; data: PlayerStatsMap } | null>(null);
   const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(
     null,
   );
@@ -357,33 +369,24 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   };
 
   const fetchScoutingOverlay = useCallback(async (players: Player[], orgId: number, lyId: number) => {
-    if (!orgId || !lyId) return;
+    if (!orgId || !lyId || players.length === 0) return;
     setScoutingLoading(true);
-    const overlay = new Map<number, ScoutingOverlayEntry>();
-    // Process in small batches with delays to avoid API rate limits (429)
-    const BATCH_SIZE = 3;
-    const BATCH_DELAY_MS = 300;
-    for (let i = 0; i < players.length; i += BATCH_SIZE) {
-      if (i > 0) await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
-      const batch = players.slice(i, i + BATCH_SIZE);
-      await Promise.all(
-        batch.map(async (p) => {
-          try {
-            const data = await BaseballService.GetScoutedPlayer(p.id, orgId, lyId);
-            overlay.set(p.id, {
-              letterGrades: data.letter_grades ?? {},
-              attributes: data.attributes ?? {},
-              potentials: data.potentials ?? {},
-              potentialsPrecise: isPotentialsPrecise(data),
-              attributesPrecise: isAttributesPrecise(data),
-              displayFormat: data.display_format,
-            });
-          } catch { /* player may not be in scouting pool */ }
-        })
-      );
-      // Update overlay progressively so table starts showing correct data as batches complete
-      setScoutingOverlay(new Map(overlay));
-    }
+    try {
+      const playerIds = players.map((p) => p.id);
+      const results = await BaseballService.GetScoutedPlayersBatch(playerIds, orgId, lyId);
+      const overlay = new Map<number, ScoutingOverlayEntry>();
+      for (const [idStr, data] of Object.entries(results)) {
+        overlay.set(Number(idStr), {
+          letterGrades: data.letter_grades ?? {},
+          attributes: data.attributes ?? {},
+          potentials: data.potentials ?? {},
+          potentialsPrecise: isPotentialsPrecise(data),
+          attributesPrecise: isAttributesPrecise(data),
+          displayFormat: data.display_format,
+        });
+      }
+      setScoutingOverlay(overlay);
+    } catch { /* scouting overlay unavailable — bootstrap data is already fuzzed */ }
     setScoutingLoading(false);
   }, []);
 
@@ -426,15 +429,18 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       return players.map((p) => {
         const entry = scoutingOverlay.get(p.id);
 
-        if (isCollege && !entry) {
-          // No scouting data yet — still convert bootstrap 20-80 values to letter grades
+        if (!entry) {
           return {
             ...p,
-            ratings: convertRatingsToGrades(p.ratings),
+            ratings: isCollege ? convertRatingsToGrades(p.ratings) : p.ratings,
+            visibility_context: p.visibility_context ?? {
+              context: isCollege ? "college_roster" : "pro_roster",
+              display_format: isCollege ? "letter_grade" : "20-80",
+              attributes_precise: false,
+              potentials_precise: false,
+            },
           };
         }
-
-        if (!entry) return p;
         const newRatings = { ...p.ratings };
 
         if (isCollege) {
@@ -447,10 +453,10 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
           }
         } else {
           // MLB: overlay attributes from scouting endpoint (fuzzed or precise 20-80 values)
+          // Keys from scouting endpoint already include _display suffix (e.g. "contact_display")
           for (const [key, val] of Object.entries(entry.attributes)) {
-            const displayKey = `${key}_display` as keyof PlayerRatings;
-            if (displayKey in newRatings) {
-              (newRatings as any)[displayKey] = val;
+            if (key in newRatings) {
+              (newRatings as any)[key] = val;
             }
           }
         }
@@ -543,30 +549,40 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   const loadAllOrgPlayers = useCallback(async () => {
     setIsLoadingAll(true);
     try {
-      const results = await Promise.all(
-        leagueOrgs.map((org) =>
-          BaseballService.GetBootstrapLandingData(org.id),
-        ),
-      );
-      setAllOrgPlayers(
-        results.flatMap((d) => {
-          if (!d.RosterMap) return [];
-          return Object.values(d.RosterMap).flat().map(normalizePlayer);
-        }),
-      );
-      // Capture allTeams from first result for consistent dropdown data
-      const firstWithTeams = results.find((d) => d.AllTeams?.length > 0);
-      if (firstWithTeams) setPageAllTeams(firstWithTeams.AllTeams);
+      // Try reading from the in-memory bootstrap cache first (no network calls)
+      const cached = getAllCachedOrgPlayers();
+      if (cached && cached.players.length > 0) {
+        const leaguePlayerFilter = (p: Player) => {
+          if (league === SimMLB) return LEVEL_ORDER.includes(p.league_level);
+          return p.league_level === "college";
+        };
+        setAllOrgPlayers(cached.players.filter(leaguePlayerFilter));
+        if (cached.allTeams.length > 0) setPageAllTeams(cached.allTeams);
+      } else {
+        // Cache not ready — fall back to single all-orgs endpoint
+        const allData = await BaseballService.GetAllBootstrapData();
+        const players: Player[] = [];
+        if (allData.Orgs) {
+          for (const orgEntry of Object.values(allData.Orgs)) {
+            if (orgEntry.RosterMap) {
+              for (const roster of Object.values(orgEntry.RosterMap)) {
+                players.push(...(roster as any[]).map(normalizePlayer));
+              }
+            }
+          }
+        }
+        setAllOrgPlayers(players);
+        if (allData.AllTeams?.length > 0) setPageAllTeams(allData.AllTeams);
+      }
     } catch (e) {
       console.error("Failed to load all org players", e);
     }
     setIsLoadingAll(false);
-  }, [leagueOrgs]);
+  }, [league, getAllCachedOrgPlayers]);
 
   // --- Filters & category ---
-  const [filterLevel, setFilterLevel] = useState<string>(
-    league === SimMLB ? "mlb" : "all",
-  );
+  const defaultLevel = league === SimMLB ? "mlb" : "college";
+  const [filterLevel, setFilterLevel] = useState<string>(defaultLevel);
   const [filterType, setFilterType] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState<BaseballCategory>(Attributes);
@@ -580,7 +596,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
   // Team color theming — reflects the selected level's team colors
   const activeColorTeam = useMemo(() => {
-    if (filterLevel === "all" || !viewedOrg?.teams) return primaryTeam;
+    if (!viewedOrg?.teams) return primaryTeam;
     return viewedOrg.teams[filterLevel] ?? primaryTeam;
   }, [filterLevel, viewedOrg, primaryTeam]);
   const teamColors = useTeamColors(
@@ -609,12 +625,13 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   }, []);
 
   const handleOrgChange = useCallback((optValue: string) => {
-    setFilterLevel("all");
+    setFilterLevel(defaultLevel);
     setSortConfig(null);
     setCategory(Attributes);
     scoutingLoadedForOrg.current = null;
     setScoutingOverlay(new Map());
     setScoutingBudget(null);
+    statsCache.current = null;
     if (optValue === ALL_ORGS) {
       setViewedOrgId(ALL_ORGS);
       loadAllOrgPlayers();
@@ -625,6 +642,32 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       loadBootstrapForOrg(orgId).then(processBootstrapResult);
     }
   }, [userOrg?.id, loadBootstrapForOrg, loadAllOrgPlayers, processBootstrapResult]);
+
+  // --- Shared scouting refresh helper ---
+  const refreshPlayerScouting = useCallback((playerId: number, refreshBudget = true) => {
+    if (!playerId || !effectiveOrgId || !leagueYearId) return;
+    BaseballService.GetScoutedPlayer(playerId, effectiveOrgId, leagueYearId)
+      .then((data) => {
+        setScoutingOverlay((prev) => {
+          const next = new Map(prev);
+          next.set(playerId, {
+            letterGrades: data.letter_grades ?? {},
+            attributes: data.attributes ?? {},
+            potentials: data.potentials ?? {},
+            potentialsPrecise: isPotentialsPrecise(data),
+            attributesPrecise: isAttributesPrecise(data),
+            displayFormat: data.display_format,
+          });
+          return next;
+        });
+      })
+      .catch(() => {});
+    if (refreshBudget) {
+      BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
+        .then(setScoutingBudget)
+        .catch(() => {});
+    }
+  }, [effectiveOrgId, leagueYearId]);
 
   // --- Scouting Modal (college + MLB) ---
   const scoutingModal = useModal();
@@ -637,29 +680,8 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
   const handleScoutingModalClose = useCallback(() => {
     scoutingModal.handleCloseModal();
-    if (scoutingPlayerId > 0 && effectiveOrgId && leagueYearId) {
-      // Refresh scouting overlay for this player (works for both college + MLB)
-      BaseballService.GetScoutedPlayer(scoutingPlayerId, effectiveOrgId, leagueYearId)
-        .then((data) => {
-          setScoutingOverlay((prev) => {
-            const next = new Map(prev);
-            next.set(scoutingPlayerId, {
-              letterGrades: data.letter_grades ?? {},
-              attributes: data.attributes ?? {},
-              potentials: data.potentials ?? {},
-              potentialsPrecise: isPotentialsPrecise(data),
-              attributesPrecise: isAttributesPrecise(data),
-              displayFormat: data.display_format,
-            });
-            return next;
-          });
-        })
-        .catch(() => {});
-      BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
-        .then(setScoutingBudget)
-        .catch(() => {});
-    }
-  }, [scoutingModal, scoutingPlayerId, effectiveOrgId, leagueYearId]);
+    refreshPlayerScouting(scoutingPlayerId);
+  }, [scoutingModal, scoutingPlayerId, refreshPlayerScouting]);
 
   // --- Transaction Modal ---
   const txnModal = useModal();
@@ -675,9 +697,50 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     [txnModal],
   );
 
-  const handleTransactionSuccess = useCallback(() => {
-    const orgId = viewedOrg?.id ?? userOrg?.id;
-    if (orgId) loadBootstrapForOrg(orgId).then(processBootstrapResult);
+  const handleTransactionSuccess = useCallback((playerId: number, patch?: TransactionPlayerPatch) => {
+    if (patch) {
+      // Patch roster locally — no network call needed
+      setPageRosterMap((prev) => {
+        const updated: Record<string, Player[]> = {};
+        for (const [level, players] of Object.entries(prev)) {
+          if (patch.current_level === null) {
+            // Player released/bought out — remove from all levels
+            updated[level] = players.filter((p) => p.id !== playerId);
+          } else if (level === patch.current_level) {
+            // Player moved to this level — add if not already here, update IR status
+            const exists = players.some((p) => p.id === playerId);
+            if (exists) {
+              updated[level] = players.map((p) =>
+                p.id === playerId
+                  ? { ...p, league_level: patch.current_level!, contract: p.contract ? { ...p.contract, on_ir: patch.on_ir } : p.contract }
+                  : p,
+              );
+            } else {
+              // Find the player from another level and move them here
+              const allPlayers = Object.values(prev).flat();
+              const moving = allPlayers.find((p) => p.id === playerId);
+              if (moving) {
+                updated[level] = [...players, { ...moving, league_level: patch.current_level!, contract: moving.contract ? { ...moving.contract, on_ir: patch.on_ir } : moving.contract }];
+              } else {
+                updated[level] = players;
+              }
+            }
+          } else {
+            // Remove player from levels they're no longer on
+            updated[level] = players.filter((p) => p.id !== playerId);
+          }
+        }
+        return updated;
+      });
+      // Invalidate stats cache since roster changed
+      statsCache.current = null;
+    } else {
+      // No patch data (e.g. extension) — force refresh
+      const orgId = viewedOrg?.id ?? userOrg?.id;
+      if (orgId) {
+        loadBootstrapForOrg(orgId, true).then(processBootstrapResult);
+      }
+    }
   }, [viewedOrg, userOrg, loadBootstrapForOrg, processBootstrapResult]);
 
   // --- Scouting Confirmation Modal ---
@@ -697,37 +760,26 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     [scoutConfirmModal],
   );
 
-  const handleScoutingConfirmSuccess = useCallback(() => {
-    // Refresh scouting budget
-    if (effectiveOrgId && leagueYearId) {
-      BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
-        .then(setScoutingBudget)
-        .catch(() => {});
+  const handleScoutingConfirmSuccess = useCallback((pointsRemaining?: number) => {
+    if (scoutConfirmPlayer) {
+      // Refresh player scouting data but skip budget re-fetch — we have it from the response
+      refreshPlayerScouting(scoutConfirmPlayer.id, false);
     }
-    // Refresh scouting overlay for the scouted player
-    if (scoutConfirmPlayer && effectiveOrgId && leagueYearId) {
-      BaseballService.GetScoutedPlayer(scoutConfirmPlayer.id, effectiveOrgId, leagueYearId)
-        .then((data) => {
-          setScoutingOverlay((prev) => {
-            const next = new Map(prev);
-            next.set(scoutConfirmPlayer.id, {
-              letterGrades: data.letter_grades ?? {},
-              attributes: data.attributes ?? {},
-              potentials: data.potentials ?? {},
-              potentialsPrecise: isPotentialsPrecise(data),
-              attributesPrecise: isAttributesPrecise(data),
-              displayFormat: data.display_format,
-            });
-            return next;
-          });
-        }).catch(() => {});
+    if (pointsRemaining != null) {
+      // Update budget locally from the scouting action response
+      setScoutingBudget((prev) => prev ? { ...prev, remaining_points: pointsRemaining } : prev);
     }
-  }, [effectiveOrgId, leagueYearId, scoutConfirmPlayer]);
+  }, [scoutConfirmPlayer, refreshPlayerScouting]);
 
-  // --- Stats fetching ---
+  // --- Stats fetching (cached per org to avoid re-fetching on category toggle) ---
   useEffect(() => {
     if (category !== Stats || !leagueYearId || isAllView) {
-      setPlayerStatsMap(new Map());
+      return;
+    }
+    const orgId = viewedOrg?.id ?? 0;
+    // Return cached stats if we already fetched for this org + season
+    if (statsCache.current && statsCache.current.orgId === orgId && statsCache.current.lyId === leagueYearId) {
+      setPlayerStatsMap(statsCache.current.data);
       return;
     }
     let cancelled = false;
@@ -735,32 +787,25 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       setStatsLoading(true);
       const map: PlayerStatsMap = new Map();
       try {
-        // Fetch batting + pitching leaders for all teams in this org
-        const teamIds = viewedOrg?.teams
-          ? Object.values(viewedOrg.teams).map((t) => t.team_id)
-          : [];
-        const fetches = teamIds.flatMap((tid) => [
+        // Single org-level call replaces per-team loop
+        const [battingRes, pitchingRes] = await Promise.all([
           BaseballService.GetBattingLeaders({
             league_year_id: leagueYearId,
-            team_id: tid,
-            page_size: 200,
-          })
-            .then((res) => {
-              for (const row of res.leaders) map.set(row.player_id, row);
-            })
-            .catch(() => {}),
+            org_id: orgId,
+            page_size: 500,
+          }),
           BaseballService.GetPitchingLeaders({
             league_year_id: leagueYearId,
-            team_id: tid,
-            page_size: 200,
-          })
-            .then((res) => {
-              for (const row of res.leaders) map.set(row.player_id, row);
-            })
-            .catch(() => {}),
+            org_id: orgId,
+            page_size: 500,
+          }),
         ]);
-        await Promise.all(fetches);
-        if (!cancelled) setPlayerStatsMap(map);
+        for (const row of battingRes.leaders) map.set(row.player_id, row);
+        for (const row of pitchingRes.leaders) map.set(row.player_id, row);
+        if (!cancelled) {
+          statsCache.current = { orgId, lyId: leagueYearId, data: map };
+          setPlayerStatsMap(map);
+        }
       } catch {
         if (!cancelled) setPlayerStatsMap(new Map());
       }
@@ -838,15 +883,11 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     else if (Object.keys(pageRosterMap).length > 0)
       players = Object.values(pageRosterMap).flat();
     else players = [];
-    const overlaid = applyScoutingOverlay(players);
-    // While scouting is loading, only show players whose overlay data has arrived
-    // to prevent briefly exposing raw bootstrap values (precise/unfuzzed for MLB,
-    // numeric 20-80 for college). Once loading completes, show all players.
-    if (scoutingLoading && !isAllView) {
-      return overlaid.filter((p) => scoutingOverlay.has(p.id));
-    }
-    return overlaid;
-  }, [isAllView, allOrgPlayers, pageRosterMap, applyScoutingOverlay, scoutingLoading, scoutingOverlay]);
+    // Bootstrap data is now visibility-aware (fuzzed by the backend),
+    // so players are safe to show immediately. The scouting overlay only
+    // upgrades fuzzed → precise after a scouting action.
+    return applyScoutingOverlay(players);
+  }, [isAllView, allOrgPlayers, pageRosterMap, applyScoutingOverlay]);
 
   const levelTeams = useMemo(() => {
     if (isAllView || !viewedOrg?.teams) return [];
@@ -869,7 +910,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
   const filteredPlayers = useMemo(() => {
     const filtered = allPlayers
-      .filter((p) => filterLevel === "all" || p.league_level === filterLevel)
+      .filter((p) => p.league_level === filterLevel)
       .filter((p) => filterType === "all" || p.ptype === filterType)
       .filter(
         (p) =>
@@ -978,7 +1019,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   // --- Render ---
   return (
     <PageContainer>
-      <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
+      <div className="flex-col w-full md:mb-6 px-2 sm:px-4 md:px-0">
         {/* Team-colored header */}
         <div
           className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
@@ -1029,13 +1070,6 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
                 Team
               </Text>
               <div className="flex flex-wrap gap-2">
-                <TeamSelectorCard
-                  isSelected={filterLevel === "all"}
-                  onClick={() => setFilterLevel("all")}
-                  label="All Teams"
-                  sublabel={`${allPlayers.length} players`}
-                  accentColor={headerColor}
-                />
                 {levelTeams.map(({ level, team }) => (
                   <TeamSelectorCard
                     key={level}
@@ -1073,13 +1107,6 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
                 Level
               </Text>
               <ButtonGroup>
-                <PillButton
-                  variant="primaryOutline"
-                  isSelected={filterLevel === "all"}
-                  onClick={() => setFilterLevel("all")}
-                >
-                  <Text variant="small">All</Text>
-                </PillButton>
                 {availableLevels.map((lv) => (
                   <PillButton
                     key={lv}

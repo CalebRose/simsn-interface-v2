@@ -1,4 +1,5 @@
 import { ReactNode, useRef, useState, useEffect } from "react";
+import "./baseballMobile.css";
 import { DisplayValue, Player, PlayerRatings } from "../../../models/baseball/baseballModels";
 import { BattingLeaderRow, PitchingLeaderRow } from "../../../models/baseball/baseballStatsModels";
 import { Attributes, Potentials, Contracts } from "../../../_constants/constants";
@@ -309,58 +310,58 @@ export const comparePlayers = (a: Player, b: Player, sort: SortConfig, statsMap?
 // ═══════════════════════════════════════════════
 
 const thBase = "px-2 py-2 text-center text-xs";
-export const td = "px-2 py-1.5";
+export const td = "px-2 py-2.5 sm:py-1.5";
 
 // ═══════════════════════════════════════════════
 // Shared cell components
 // ═══════════════════════════════════════════════
 
-export const StatCell = ({ value, isFuzzed }: { value: DisplayValue; isFuzzed?: boolean }) => {
-  if (value == null) return <td className={`${td} text-center text-gray-400`}>—</td>;
+export const StatCell = ({ value, isFuzzed, label }: { value: DisplayValue; isFuzzed?: boolean; label?: string }) => {
+  if (value == null) return <td data-label={label} className={`${td} text-center text-gray-400`}>—</td>;
   const { text, colorClass } = resolveDisplayValue(value);
   return (
-    <td className={`${td} text-center ${colorClass}`} title={isFuzzed ? "Estimated" : undefined}>
+    <td data-label={label} className={`${td} text-center ${colorClass}`} title={isFuzzed ? "Estimated" : undefined}>
       {text}
     </td>
   );
 };
 
-export const PotentialCell = ({ pot, isFuzzed }: { pot: string | null; isFuzzed?: boolean }) => {
-  if (!pot || pot === "N") return <td className={`${td} text-center text-gray-400`}>—</td>;
-  if (pot === "?") return <td className={`${td} text-center text-gray-400`}>?</td>;
+export const PotentialCell = ({ pot, isFuzzed, label }: { pot: string | null; isFuzzed?: boolean; label?: string }) => {
+  if (!pot || pot === "N") return <td data-label={label} className={`${td} text-center text-gray-400`}>—</td>;
+  if (pot === "?") return <td data-label={label} className={`${td} text-center text-gray-400`}>?</td>;
   return (
-    <td className={`${td} text-center font-semibold ${potColor(pot)}`} title={isFuzzed ? "Estimated" : undefined}>
+    <td data-label={label} className={`${td} text-center font-semibold ${potColor(pot)}`} title={isFuzzed ? "Estimated" : undefined}>
       {pot}
     </td>
   );
 };
 
-export const RatingCell = ({ value, isFuzzed }: { value: DisplayValue; isFuzzed?: boolean }) => {
-  if (value == null) return <td className={`${td} text-center text-gray-400`}>—</td>;
+export const RatingCell = ({ value, isFuzzed, label }: { value: DisplayValue; isFuzzed?: boolean; label?: string }) => {
+  if (value == null) return <td data-label={label} className={`${td} text-center text-gray-400`}>—</td>;
   const { text, colorClass } = resolveDisplayValue(value);
   return (
-    <td className={`${td} text-center ${colorClass}`} title={isFuzzed ? "Estimated" : undefined}>
+    <td data-label={label} className={`${td} text-center ${colorClass}`} title={isFuzzed ? "Estimated" : undefined}>
       {text}
     </td>
   );
 };
 
-const PitchCell = ({ name }: { name: string | null }) => (
-  <td className={`${td} text-center text-xs whitespace-nowrap`}>{name || "—"}</td>
+const PitchCell = ({ name, label }: { name: string | null; label?: string }) => (
+  <td data-label={label} className={`${td} text-center text-xs whitespace-nowrap`}>{name || "—"}</td>
 );
 
-const PitchOvrCell = ({ name, ovr }: { name: string | null; ovr: DisplayValue }) => {
-  if (!name && ovr == null) return <td className={`${td} text-center text-gray-400`}>—</td>;
+const PitchOvrCell = ({ name, ovr, label }: { name: string | null; ovr: DisplayValue; label?: string }) => {
+  if (!name && ovr == null) return <td data-label={label} className={`${td} text-center text-gray-400`}>—</td>;
   const { text, colorClass } = ovr != null ? resolveDisplayValue(ovr) : { text: "—", colorClass: "" };
   return (
-    <td className={`${td} text-center ${colorClass}`} title={name || undefined}>
+    <td data-label={label} className={`${td} text-center ${colorClass}`} title={name || undefined}>
       {text}
     </td>
   );
 };
 
 export const NameCell = ({ p }: { p: Player }) => (
-  <td className={`${td} font-medium whitespace-nowrap sticky left-0 bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}>
+  <td data-label="Name" className={`${td} bb-cell-name font-medium whitespace-nowrap sticky left-0 bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}>
     {p.firstname} {p.lastname}
     {p.contract?.on_ir && (
       <span className="ml-1 px-1 py-0.5 text-[10px] font-bold rounded bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400">IR</span>
@@ -396,7 +397,7 @@ export const PositionCell = ({ p, onOverride }: {
   const canEdit = !!onOverride;
 
   return (
-    <td className={`${td} text-center relative`} onClick={(e) => { if (canEdit) { e.stopPropagation(); setIsOpen(!isOpen); } }}>
+    <td data-label="Pos" className={`${td} text-center relative`} onClick={(e) => { if (canEdit) { e.stopPropagation(); setIsOpen(!isOpen); } }}>
       <span className={`text-xs font-semibold ${canEdit ? "cursor-pointer hover:underline" : ""}`}>
         {pos ?? "—"}
       </span>
@@ -484,20 +485,20 @@ export const InfoCells = ({ p, orgAbbrev, isCollege, ageOverride, onPositionOver
     <>
       <NameCell p={p} />
       <PositionCell p={p} onOverride={onPositionOverride} />
-      <td className={`${td} text-center font-semibold ${ovrResolved?.colorClass ?? ""}`}>
+      <td data-label="OVR" className={`${td} bb-cell-ovr text-center font-semibold ${ovrResolved?.colorClass ?? ""}`}>
         {ovrResolved ? ovrResolved.text : "—"}
       </td>
-      <td className={`${td} text-center`}>{displayLevel(p.league_level)}</td>
-      <td className={`${td} text-center`}>{displayPlayerTeam(p.league_level, p.team_abbrev, orgAbbrev)}</td>
+      <td data-label="Level" className={`${td} text-center`}>{displayLevel(p.league_level)}</td>
+      <td data-label="Team" className={`${td} text-center`}>{displayPlayerTeam(p.league_level, p.team_abbrev, orgAbbrev)}</td>
       {ageOverride ? (
-        <td className={`${td} text-center`}>{ageOverride}</td>
+        <td data-label="Age" className={`${td} text-center`}>{ageOverride}</td>
       ) : isCollege && classYear?.abbrev ? (
-        <td className={`${td} text-center`}>
+        <td data-label="Age" className={`${td} text-center`}>
           <span className="font-medium">{classYear.abbrev}</span>
           <span className="text-xs text-gray-400 ml-1">({p.age})</span>
         </td>
       ) : (
-        <td className={`${td} text-center`}>{p.age}</td>
+        <td data-label="Age" className={`${td} text-center`}>{p.age}</td>
       )}
     </>
   );
@@ -507,22 +508,22 @@ export const AllAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
   const af = p.visibility_context ? !p.visibility_context.attributes_precise : isFuzzed;
   return (
     <>
-      <td className={`${td} text-center`}>
+      <td data-label="Type" className={`${td} text-center`}>
         <span className={`px-1.5 py-0.5 text-xs rounded ${p.ptype === "Pitcher" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300" : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"}`}>
           {p.ptype === "Pitcher" ? "P" : "Pos"}
         </span>
       </td>
-      <td className={`${td} text-center`}>{p.bat_hand}/{p.pitch_hand}</td>
-      <StatCell value={p.ratings.contact_display} isFuzzed={af} />
-      <StatCell value={p.ratings.power_display} isFuzzed={af} />
-      <StatCell value={p.ratings.eye_display} isFuzzed={af} />
-      <StatCell value={p.ratings.discipline_display} isFuzzed={af} />
-      <StatCell value={p.ratings.speed_display} isFuzzed={af} />
-      <StatCell value={p.ratings.fieldcatch_display} isFuzzed={af} />
-      <StatCell value={p.ratings.fieldreact_display} isFuzzed={af} />
-      <StatCell value={p.ratings.throwacc_display} isFuzzed={af} />
-      <StatCell value={p.ratings.throwpower_display} isFuzzed={af} />
-      <td className={`${td} text-center text-xs`}>{p.durability}</td>
+      <td data-label="B/T" className={`${td} text-center`}>{p.bat_hand}/{p.pitch_hand}</td>
+      <StatCell value={p.ratings.contact_display} isFuzzed={af} label="Contact" />
+      <StatCell value={p.ratings.power_display} isFuzzed={af} label="Power" />
+      <StatCell value={p.ratings.eye_display} isFuzzed={af} label="Eye" />
+      <StatCell value={p.ratings.discipline_display} isFuzzed={af} label="Disc" />
+      <StatCell value={p.ratings.speed_display} isFuzzed={af} label="Speed" />
+      <StatCell value={p.ratings.fieldcatch_display} isFuzzed={af} label="FldCatch" />
+      <StatCell value={p.ratings.fieldreact_display} isFuzzed={af} label="FldReact" />
+      <StatCell value={p.ratings.throwacc_display} isFuzzed={af} label="ThrowAcc" />
+      <StatCell value={p.ratings.throwpower_display} isFuzzed={af} label="ThrowPow" />
+      <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
     </>
   );
 };
@@ -531,22 +532,22 @@ export const AllPotCells = ({ p }: { p: Player }) => {
   const pf = p.visibility_context ? !p.visibility_context.potentials_precise : false;
   return (
     <>
-      <td className={`${td} text-center`}>
+      <td data-label="Type" className={`${td} text-center`}>
         <span className={`px-1.5 py-0.5 text-xs rounded ${p.ptype === "Pitcher" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300" : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"}`}>
           {p.ptype === "Pitcher" ? "P" : "Pos"}
         </span>
       </td>
-      <td className={`${td} text-center`}>{p.bat_hand}/{p.pitch_hand}</td>
-      <PotentialCell pot={p.potentials.contact_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.power_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.eye_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.discipline_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.speed_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.fieldcatch_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.fieldreact_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.throwacc_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.throwpower_pot} isFuzzed={pf} />
-      <td className={`${td} text-center text-xs`}>{p.durability}</td>
+      <td data-label="B/T" className={`${td} text-center`}>{p.bat_hand}/{p.pitch_hand}</td>
+      <PotentialCell pot={p.potentials.contact_pot} isFuzzed={pf} label="Contact" />
+      <PotentialCell pot={p.potentials.power_pot} isFuzzed={pf} label="Power" />
+      <PotentialCell pot={p.potentials.eye_pot} isFuzzed={pf} label="Eye" />
+      <PotentialCell pot={p.potentials.discipline_pot} isFuzzed={pf} label="Disc" />
+      <PotentialCell pot={p.potentials.speed_pot} isFuzzed={pf} label="Speed" />
+      <PotentialCell pot={p.potentials.fieldcatch_pot} isFuzzed={pf} label="FldCatch" />
+      <PotentialCell pot={p.potentials.fieldreact_pot} isFuzzed={pf} label="FldReact" />
+      <PotentialCell pot={p.potentials.throwacc_pot} isFuzzed={pf} label="ThrowAcc" />
+      <PotentialCell pot={p.potentials.throwpower_pot} isFuzzed={pf} label="ThrowPow" />
+      <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
     </>
   );
 };
@@ -555,20 +556,20 @@ export const PosAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
   const af = p.visibility_context ? !p.visibility_context.attributes_precise : isFuzzed;
   return (
     <>
-      <StatCell value={p.ratings.contact_display} isFuzzed={af} />
-      <StatCell value={p.ratings.power_display} isFuzzed={af} />
-      <StatCell value={p.ratings.eye_display} isFuzzed={af} />
-      <StatCell value={p.ratings.discipline_display} isFuzzed={af} />
-      <StatCell value={p.ratings.speed_display} isFuzzed={af} />
-      <StatCell value={p.ratings.baserunning_display} isFuzzed={af} />
-      <StatCell value={p.ratings.fieldcatch_display} isFuzzed={af} />
-      <StatCell value={p.ratings.fieldreact_display} isFuzzed={af} />
-      <StatCell value={p.ratings.fieldspot_display} isFuzzed={af} />
-      <StatCell value={p.ratings.throwacc_display} isFuzzed={af} />
-      <StatCell value={p.ratings.throwpower_display} isFuzzed={af} />
-      <StatCell value={p.ratings.catchframe_display} isFuzzed={af} />
-      <StatCell value={p.ratings.catchsequence_display} isFuzzed={af} />
-      <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={af} />
+      <StatCell value={p.ratings.contact_display} isFuzzed={af} label="Contact" />
+      <StatCell value={p.ratings.power_display} isFuzzed={af} label="Power" />
+      <StatCell value={p.ratings.eye_display} isFuzzed={af} label="Eye" />
+      <StatCell value={p.ratings.discipline_display} isFuzzed={af} label="Disc" />
+      <StatCell value={p.ratings.speed_display} isFuzzed={af} label="Speed" />
+      <StatCell value={p.ratings.baserunning_display} isFuzzed={af} label="BaseRun" />
+      <StatCell value={p.ratings.fieldcatch_display} isFuzzed={af} label="FldCatch" />
+      <StatCell value={p.ratings.fieldreact_display} isFuzzed={af} label="FldReact" />
+      <StatCell value={p.ratings.fieldspot_display} isFuzzed={af} label="FldSpot" />
+      <StatCell value={p.ratings.throwacc_display} isFuzzed={af} label="ThrowAcc" />
+      <StatCell value={p.ratings.throwpower_display} isFuzzed={af} label="ThrowPow" />
+      <StatCell value={p.ratings.catchframe_display} isFuzzed={af} label="CatchFrm" />
+      <StatCell value={p.ratings.catchsequence_display} isFuzzed={af} label="CatchSeq" />
+      <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={af} label="Pos Rtg" />
     </>
   );
 };
@@ -577,20 +578,20 @@ export const PosPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?: 
   const pf = p.visibility_context ? !p.visibility_context.potentials_precise : potFuzzed;
   return (
     <>
-      <PotentialCell pot={p.potentials.contact_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.power_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.eye_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.discipline_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.speed_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.baserunning_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.fieldcatch_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.fieldreact_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.fieldspot_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.throwacc_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.throwpower_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.catchframe_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.catchsequence_pot} isFuzzed={pf} />
-      <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={isFuzzed} />
+      <PotentialCell pot={p.potentials.contact_pot} isFuzzed={pf} label="Contact" />
+      <PotentialCell pot={p.potentials.power_pot} isFuzzed={pf} label="Power" />
+      <PotentialCell pot={p.potentials.eye_pot} isFuzzed={pf} label="Eye" />
+      <PotentialCell pot={p.potentials.discipline_pot} isFuzzed={pf} label="Disc" />
+      <PotentialCell pot={p.potentials.speed_pot} isFuzzed={pf} label="Speed" />
+      <PotentialCell pot={p.potentials.baserunning_pot} isFuzzed={pf} label="BaseRun" />
+      <PotentialCell pot={p.potentials.fieldcatch_pot} isFuzzed={pf} label="FldCatch" />
+      <PotentialCell pot={p.potentials.fieldreact_pot} isFuzzed={pf} label="FldReact" />
+      <PotentialCell pot={p.potentials.fieldspot_pot} isFuzzed={pf} label="FldSpot" />
+      <PotentialCell pot={p.potentials.throwacc_pot} isFuzzed={pf} label="ThrowAcc" />
+      <PotentialCell pot={p.potentials.throwpower_pot} isFuzzed={pf} label="ThrowPow" />
+      <PotentialCell pot={p.potentials.catchframe_pot} isFuzzed={pf} label="CatchFrm" />
+      <PotentialCell pot={p.potentials.catchsequence_pot} isFuzzed={pf} label="CatchSeq" />
+      <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={isFuzzed} label="Pos Rtg" />
     </>
   );
 };
@@ -599,19 +600,19 @@ export const PitchAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean 
   const af = p.visibility_context ? !p.visibility_context.attributes_precise : isFuzzed;
   return (
     <>
-      <td className={`${td} text-center`}>{p.pitch_hand}</td>
-      <StatCell value={p.ratings.pendurance_display} isFuzzed={af} />
-      <StatCell value={p.ratings.pgencontrol_display} isFuzzed={af} />
-      <StatCell value={p.ratings.pthrowpower_display} isFuzzed={af} />
-      <StatCell value={p.ratings.psequencing_display} isFuzzed={af} />
-      <StatCell value={p.ratings.pickoff_display} isFuzzed={af} />
-      <RatingCell value={p.ratings.sp_rating} isFuzzed={af} />
-      <RatingCell value={p.ratings.rp_rating} isFuzzed={af} />
-      <PitchOvrCell name={p.pitch1_name} ovr={p.ratings.pitch1_ovr} />
-      <PitchOvrCell name={p.pitch2_name} ovr={p.ratings.pitch2_ovr} />
-      <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} />
-      <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} />
-      <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} />
+      <td data-label="Throw" className={`${td} text-center`}>{p.pitch_hand}</td>
+      <StatCell value={p.ratings.pendurance_display} isFuzzed={af} label="Endurance" />
+      <StatCell value={p.ratings.pgencontrol_display} isFuzzed={af} label="Control" />
+      <StatCell value={p.ratings.pthrowpower_display} isFuzzed={af} label="Velocity" />
+      <StatCell value={p.ratings.psequencing_display} isFuzzed={af} label="Sequence" />
+      <StatCell value={p.ratings.pickoff_display} isFuzzed={af} label="Pickoff" />
+      <RatingCell value={p.ratings.sp_rating} isFuzzed={af} label="SP" />
+      <RatingCell value={p.ratings.rp_rating} isFuzzed={af} label="RP" />
+      <PitchOvrCell name={p.pitch1_name} ovr={p.ratings.pitch1_ovr} label="P1" />
+      <PitchOvrCell name={p.pitch2_name} ovr={p.ratings.pitch2_ovr} label="P2" />
+      <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} label="P3" />
+      <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} label="P4" />
+      <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} label="P5" />
     </>
   );
 };
@@ -620,19 +621,19 @@ export const PitchPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?
   const pf = p.visibility_context ? !p.visibility_context.potentials_precise : potFuzzed;
   return (
     <>
-      <td className={`${td} text-center`}>{p.pitch_hand}</td>
-      <PotentialCell pot={p.potentials.pendurance_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.pgencontrol_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.pthrowpower_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.psequencing_pot} isFuzzed={pf} />
-      <PotentialCell pot={p.potentials.pickoff_pot} isFuzzed={pf} />
-      <RatingCell value={p.ratings.sp_rating} isFuzzed={isFuzzed} />
-      <RatingCell value={p.ratings.rp_rating} isFuzzed={isFuzzed} />
-      <PitchOvrCell name={p.pitch1_name} ovr={p.ratings.pitch1_ovr} />
-      <PitchOvrCell name={p.pitch2_name} ovr={p.ratings.pitch2_ovr} />
-      <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} />
-      <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} />
-      <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} />
+      <td data-label="Throw" className={`${td} text-center`}>{p.pitch_hand}</td>
+      <PotentialCell pot={p.potentials.pendurance_pot} isFuzzed={pf} label="Endurance" />
+      <PotentialCell pot={p.potentials.pgencontrol_pot} isFuzzed={pf} label="Control" />
+      <PotentialCell pot={p.potentials.pthrowpower_pot} isFuzzed={pf} label="Velocity" />
+      <PotentialCell pot={p.potentials.psequencing_pot} isFuzzed={pf} label="Sequence" />
+      <PotentialCell pot={p.potentials.pickoff_pot} isFuzzed={pf} label="Pickoff" />
+      <RatingCell value={p.ratings.sp_rating} isFuzzed={isFuzzed} label="SP" />
+      <RatingCell value={p.ratings.rp_rating} isFuzzed={isFuzzed} label="RP" />
+      <PitchOvrCell name={p.pitch1_name} ovr={p.ratings.pitch1_ovr} label="P1" />
+      <PitchOvrCell name={p.pitch2_name} ovr={p.ratings.pitch2_ovr} label="P2" />
+      <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} label="P3" />
+      <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} label="P4" />
+      <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} label="P5" />
     </>
   );
 };
@@ -640,7 +641,7 @@ export const PitchPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?
 export const ContractCells = ({ p, isCollege }: { p: Player; isCollege?: boolean }) => {
   const c = p.contract;
   if (!c) {
-    return <><td className={`${td} text-center text-gray-400`} colSpan={6}>No contract</td></>;
+    return <><td data-label="Contract" className={`${td} text-center text-gray-400`} colSpan={6}>No contract</td></>;
   }
   const salary = c.current_year_detail?.base_salary;
   const share = c.current_year_detail?.salary_share;
@@ -655,12 +656,12 @@ export const ContractCells = ({ p, isCollege }: { p: Player; isCollege?: boolean
   }
   return (
     <>
-      <td className={`${td} text-center`}>{c.years}</td>
-      <td className={`${td} text-center`}>{c.current_year}</td>
-      <td className={`${td} text-center`}>{salary != null ? `$${(salary / 1_000_000).toFixed(2)}M` : "—"}</td>
-      <td className={`${td} text-center`}>{share != null ? `${(share * 100).toFixed(1)}%` : "—"}</td>
-      <td className={`${td} text-center`}>{c.bonus > 0 ? `$${(c.bonus / 1_000_000).toFixed(2)}M` : "—"}</td>
-      <td className={`${td} text-center text-xs`}>{badges.length > 0 ? badges.join(", ") : "Active"}</td>
+      <td data-label="Years" className={`${td} text-center`}>{c.years}</td>
+      <td data-label="Yr" className={`${td} text-center`}>{c.current_year}</td>
+      <td data-label="Salary" className={`${td} text-center`}>{salary != null ? `$${(salary / 1_000_000).toFixed(2)}M` : "—"}</td>
+      <td data-label="Share" className={`${td} text-center`}>{share != null ? `${(share * 100).toFixed(1)}%` : "—"}</td>
+      <td data-label="Bonus" className={`${td} text-center`}>{c.bonus > 0 ? `$${(c.bonus / 1_000_000).toFixed(2)}M` : "—"}</td>
+      <td data-label="Status" className={`${td} text-center text-xs`}>{badges.length > 0 ? badges.join(", ") : "Active"}</td>
     </>
   );
 };
@@ -670,40 +671,40 @@ export type PlayerStatsMap = Map<number, BattingLeaderRow | PitchingLeaderRow>;
 
 export const BattingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: PlayerStatsMap }) => {
   const s = statsMap?.get(p.id) as BattingLeaderRow | undefined;
-  if (!s) return <td className={`${td} text-center text-gray-400`} colSpan={12}>—</td>;
+  if (!s) return <td data-label="Stats" className={`${td} text-center text-gray-400`} colSpan={12}>—</td>;
   return (
     <>
-      <td className={`${td} text-center`}>{s.g}</td>
-      <td className={`${td} text-center`}>{s.ab}</td>
-      <td className={`${td} text-center`}>{s.h}</td>
-      <td className={`${td} text-center font-semibold`}>{s.hr}</td>
-      <td className={`${td} text-center`}>{s.rbi}</td>
-      <td className={`${td} text-center`}>{s.bb}</td>
-      <td className={`${td} text-center`}>{s.so}</td>
-      <td className={`${td} text-center`}>{s.sb}</td>
-      <td className={`${td} text-center font-semibold`}>{s.avg}</td>
-      <td className={`${td} text-center font-semibold`}>{s.obp}</td>
-      <td className={`${td} text-center font-semibold`}>{s.slg}</td>
-      <td className={`${td} text-center font-semibold`}>{s.ops}</td>
+      <td data-label="G" className={`${td} text-center`}>{s.g}</td>
+      <td data-label="AB" className={`${td} text-center`}>{s.ab}</td>
+      <td data-label="H" className={`${td} text-center`}>{s.h}</td>
+      <td data-label="HR" className={`${td} text-center font-semibold`}>{s.hr}</td>
+      <td data-label="RBI" className={`${td} text-center`}>{s.rbi}</td>
+      <td data-label="BB" className={`${td} text-center`}>{s.bb}</td>
+      <td data-label="SO" className={`${td} text-center`}>{s.so}</td>
+      <td data-label="SB" className={`${td} text-center`}>{s.sb}</td>
+      <td data-label="AVG" className={`${td} text-center font-semibold`}>{s.avg}</td>
+      <td data-label="OBP" className={`${td} text-center font-semibold`}>{s.obp}</td>
+      <td data-label="SLG" className={`${td} text-center font-semibold`}>{s.slg}</td>
+      <td data-label="OPS" className={`${td} text-center font-semibold`}>{s.ops}</td>
     </>
   );
 };
 
 export const PitchingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: PlayerStatsMap }) => {
   const s = statsMap?.get(p.id) as PitchingLeaderRow | undefined;
-  if (!s) return <td className={`${td} text-center text-gray-400`} colSpan={10}>—</td>;
+  if (!s) return <td data-label="Stats" className={`${td} text-center text-gray-400`} colSpan={10}>—</td>;
   return (
     <>
-      <td className={`${td} text-center`}>{s.g}</td>
-      <td className={`${td} text-center`}>{s.gs}</td>
-      <td className={`${td} text-center`}>{s.w}</td>
-      <td className={`${td} text-center`}>{s.l}</td>
-      <td className={`${td} text-center`}>{s.sv}</td>
-      <td className={`${td} text-center`}>{s.ip}</td>
-      <td className={`${td} text-center`}>{s.so}</td>
-      <td className={`${td} text-center`}>{s.bb}</td>
-      <td className={`${td} text-center font-semibold`}>{s.era}</td>
-      <td className={`${td} text-center font-semibold`}>{s.whip}</td>
+      <td data-label="G" className={`${td} text-center`}>{s.g}</td>
+      <td data-label="GS" className={`${td} text-center`}>{s.gs}</td>
+      <td data-label="W" className={`${td} text-center`}>{s.w}</td>
+      <td data-label="L" className={`${td} text-center`}>{s.l}</td>
+      <td data-label="SV" className={`${td} text-center`}>{s.sv}</td>
+      <td data-label="IP" className={`${td} text-center`}>{s.ip}</td>
+      <td data-label="SO" className={`${td} text-center`}>{s.so}</td>
+      <td data-label="BB" className={`${td} text-center`}>{s.bb}</td>
+      <td data-label="ERA" className={`${td} text-center font-semibold`}>{s.era}</td>
+      <td data-label="WHIP" className={`${td} text-center font-semibold`}>{s.whip}</td>
     </>
   );
 };
@@ -738,7 +739,7 @@ export const AllPlayersTable = ({ players, orgAbbrev, onPlayerClick, sortConfig,
     ? (hasActions ? ALL_POT_GROUPS : ALL_POT_GROUPS_NO_ACTIONS)
     : (hasActions ? ALL_ATTR_GROUPS : ALL_ATTR_GROUPS_NO_ACTIONS);
   return (
-    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+    <div className="baseball-table-wrapper overflow-x-auto max-h-[70vh] overflow-y-auto">
       <table className="w-full text-sm text-left">
         <GroupedTableHeader groups={groups} sortConfig={sortConfig} onSort={onSort} />
         <tbody>
@@ -750,7 +751,7 @@ export const AllPlayersTable = ({ players, orgAbbrev, onPlayerClick, sortConfig,
               {category === Contracts && <ContractCells p={p} isCollege={isCollege} />}
               {category === Stats && <BattingStatsCells p={p} statsMap={playerStatsMap} />}
               {renderActions && (
-                <td className={`${td} text-center`} onClick={(e) => e.stopPropagation()}>
+                <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}
                 </td>
               )}
@@ -772,7 +773,7 @@ export const PositionTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, o
     ? (hasActions ? POS_POT_GROUPS : POS_POT_GROUPS_NO_ACTIONS)
     : (hasActions ? POS_ATTR_GROUPS : POS_ATTR_GROUPS_NO_ACTIONS);
   return (
-    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+    <div className="baseball-table-wrapper overflow-x-auto max-h-[70vh] overflow-y-auto">
       <table className="w-full text-sm text-left">
         <GroupedTableHeader groups={groups} sortConfig={sortConfig} onSort={onSort} />
         <tbody>
@@ -784,7 +785,7 @@ export const PositionTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, o
               {category === Contracts && <ContractCells p={p} isCollege={isCollege} />}
               {category === Stats && <BattingStatsCells p={p} statsMap={playerStatsMap} />}
               {renderActions && (
-                <td className={`${td} text-center`} onClick={(e) => e.stopPropagation()}>
+                <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}
                 </td>
               )}
@@ -806,7 +807,7 @@ export const PitcherTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, on
     ? (hasActions ? PITCH_POT_GROUPS : PITCH_POT_GROUPS_NO_ACTIONS)
     : (hasActions ? PITCH_ATTR_GROUPS : PITCH_ATTR_GROUPS_NO_ACTIONS);
   return (
-    <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+    <div className="baseball-table-wrapper overflow-x-auto max-h-[70vh] overflow-y-auto">
       <table className="w-full text-sm text-left">
         <GroupedTableHeader groups={groups} sortConfig={sortConfig} onSort={onSort} />
         <tbody>
@@ -818,7 +819,7 @@ export const PitcherTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, on
               {category === Contracts && <ContractCells p={p} isCollege={isCollege} />}
               {category === Stats && <PitchingStatsCells p={p} statsMap={playerStatsMap} />}
               {renderActions && (
-                <td className={`${td} text-center`} onClick={(e) => e.stopPropagation()}>
+                <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}
                 </td>
               )}

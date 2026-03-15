@@ -18,6 +18,7 @@ import { Close } from "../../../_design/Icons";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { SingleValue } from "react-select";
 import { enqueueSnackbar } from "notistack";
+import "./baseballMobile.css";
 
 // Dark theme select styles for org selector
 const darkSelectStyles = {
@@ -205,7 +206,7 @@ const PlayerPickerTable: FC<PlayerPickerTableProps> = ({
             </Text>
 
             {/* Table */}
-            <div className="overflow-y-auto max-h-[35vh] border border-gray-600 rounded">
+            <div className="baseball-table-wrapper overflow-y-auto max-h-[35vh] border border-gray-600 rounded">
                 <table className="w-full text-xs text-left">
                     <thead className="sticky top-0 z-10 bg-gray-800">
                         <tr className="border-b border-gray-600">

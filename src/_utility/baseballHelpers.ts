@@ -124,11 +124,18 @@ const RATING_DISPLAY_FIELDS = [
   "pitch5_consist", "pitch5_pacc", "pitch5_pbrk", "pitch5_pcntrl",
 ];
 
-/** Ensure ratings sub-object has _display fields, falling back to bare name or _base variants. */
+/** Ensure ratings sub-object has _display fields.
+ *  Bootstrap now returns visibility-aware _display values (fuzzed or precise),
+ *  so we must NOT fall back to raw/base values — that would leak precise data.
+ *  Only populate _display if the key is completely absent from the response. */
 const normalizeRatings = (r: any): any => {
   const result = { ...r };
   for (const field of RATING_DISPLAY_FIELDS) {
-    result[`${field}_display`] = r[`${field}_display`] ?? r[field] ?? r[`${field}_base`] ?? null;
+    const displayKey = `${field}_display`;
+    if (!(displayKey in result)) {
+      // Field missing entirely — use raw value as last resort (pre-visibility bootstrap compat)
+      result[displayKey] = r[field] ?? r[`${field}_base`] ?? null;
+    }
   }
   return result;
 };

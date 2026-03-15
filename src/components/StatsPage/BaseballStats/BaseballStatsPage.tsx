@@ -354,7 +354,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
 
         {/* Filters */}
         <Border classes="p-4 mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
-          <div className="flex flex-wrap items-end gap-4">
+          <div className="flex flex-wrap items-end gap-3 sm:gap-4">
             {/* Position filter — Batting */}
             {activeTab === "Batting" && (
               <div>
@@ -409,7 +409,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
 
             {/* Team filter (not for Team tab) */}
             {activeTab !== "Team" && (
-              <div className="min-w-[14rem]">
+              <div className="w-full sm:w-auto sm:min-w-[14rem]">
                 <Text variant="small" classes="font-semibold mb-1">Team</Text>
                 <SelectDropdown
                   options={teamOptions}
@@ -427,7 +427,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
 
             {/* Level filter (MLB only) */}
             {!isCollege && levelOptions.length > 0 && (
-              <div className="min-w-[8rem]">
+              <div className="w-full sm:w-auto sm:min-w-[8rem]">
                 <Text variant="small" classes="font-semibold mb-1">Level</Text>
                 <SelectDropdown
                   options={levelOptions}
@@ -442,7 +442,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
 
             {/* Qualifying minimum (not for Team tab) */}
             {activeTab !== "Team" && qualifyingOptions.length > 0 && (
-              <div className="min-w-[9rem]">
+              <div className="w-full sm:w-auto sm:min-w-[9rem]">
                 <Text variant="small" classes="font-semibold mb-1">Qualifying</Text>
                 <SelectDropdown
                   options={qualifyingOptions}

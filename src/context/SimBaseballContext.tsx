@@ -143,6 +143,7 @@ interface SimBaseballContextProps {
   isBootstrapLoading: boolean;
   // Actions
   loadBootstrapForOrg: (orgId: number, forceRefresh?: boolean) => Promise<any>;
+  getAllCachedOrgPlayers: () => { players: Player[]; allTeams: BaseballTeam[] } | null;
   toggleNotificationAsRead: (notificationId: number) => void;
   deleteNotification: (notificationId: number) => void;
 }
@@ -177,6 +178,7 @@ const defaultContext: SimBaseballContextProps = {
   bootstrappedOrgId: null,
   isBootstrapLoading: false,
   loadBootstrapForOrg: async () => null,
+  getAllCachedOrgPlayers: () => null,
   toggleNotificationAsRead: () => {},
   deleteNotification: () => {},
 };
@@ -453,35 +455,23 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
             return updated;
           });
         }
-      })
-      .catch((e) => console.error("Background all-orgs cache fill failed:", e));
 
-    // Load rosters and faces AFTER bootstrap completes (don't compete for bandwidth)
-    BaseballService.GetAllRosters(activeOrgId)
-      .then((allRosters) => {
-        const rostersArray: BaseballRosters[] = Array.isArray(allRosters)
-          ? allRosters
-          : Object.values(allRosters as Record<string, BaseballRosters>);
-        setRosters(
-          rostersArray.map((r) => ({
-            ...r,
-            players: r.players.map(normalizePlayer),
-          }))
-        );
-      })
-      .catch((e) => console.error("Failed to load baseball rosters", e));
-
-    BaseballService.GetFaceData()
-      .then((faceData) => {
-        const normalizedGlobalFaces: { [key: number]: FaceDataResponse } = {};
-        if (faceData.faces) {
-          for (const [id, f] of Object.entries(faceData.faces)) {
-            normalizedGlobalFaces[Number(id)] = normalizeFaceData(f);
+        // Build rosters from the all-orgs bootstrap data (no separate API call needed)
+        const builtRosters: BaseballRosters[] = [];
+        for (const [orgIdStr, orgEntry] of Object.entries(allData.Orgs)) {
+          if (orgEntry.RosterMap) {
+            builtRosters.push({
+              org_id: Number(orgIdStr),
+              players: Object.values(orgEntry.RosterMap).flat().map(normalizePlayer),
+            } as BaseballRosters);
           }
         }
-        setGlobalFaces(normalizedGlobalFaces);
+        if (builtRosters.length > 0) setRosters(builtRosters);
+
+        // Face data is already in the all-orgs response — use it directly
+        if (Object.keys(sharedFaces).length > 0) setGlobalFaces(sharedFaces);
       })
-      .catch((e) => console.error("Failed to load baseball face data", e));
+      .catch((e) => console.error("Background all-orgs cache fill failed:", e));
   }, [processAndCacheOrgData]);
 
   /** Apply cached bootstrap data to active state (no network call). */
@@ -582,6 +572,25 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
     [bootstrappedOrgId]
   );
 
+  /**
+   * Return all players from the in-memory bootstrap cache (no network call).
+   * Returns null if the cache hasn't been populated yet.
+   */
+  const getAllCachedOrgPlayers = useCallback((): { players: Player[]; allTeams: BaseballTeam[] } | null => {
+    if (bootstrapCache.current.size === 0) return null;
+    const players: Player[] = [];
+    let allTeams: BaseballTeam[] = [];
+    for (const [, data] of bootstrapCache.current) {
+      for (const roster of Object.values(data.rosterMap)) {
+        players.push(...roster);
+      }
+      if (allTeams.length === 0 && data.allTeams.length > 0) {
+        allTeams = data.allTeams;
+      }
+    }
+    return { players, allTeams };
+  }, []);
+
   // Merge global faces with any bootstrap-specific faces (global takes priority for coverage)
   const mergedFaces = useMemo(() => ({
     ...activeBootstrap.playerFaces,
@@ -620,6 +629,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         bootstrappedOrgId,
         isBootstrapLoading,
         loadBootstrapForOrg,
+        getAllCachedOrgPlayers,
         toggleNotificationAsRead,
         deleteNotification,
       }}

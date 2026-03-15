@@ -1,0 +1,159 @@
+/* Baseball-specific mobile responsive overrides */
+
+/* ═══════════════════════════════════════════════════════════════════
+   Enhance global table-to-card transform for baseball tables.
+   The global CSS (index.css @media max-width:900px) converts tables
+   to card layout. We enhance it here with 2-column grid, compact
+   spacing, full-width action buttons, and proper card headers.
+   ═══════════════════════════════════════════════════════════════════ */
+@media screen and (max-width: 900px) {
+  /* 2-column grid inside each card — halves card height */
+  .baseball-table-wrapper table tr {
+    grid-template-columns: 1fr 1fr !important;
+    padding: 0.5rem 0.75rem !important;
+    margin: 0.375rem 0.25rem !important;
+    gap: 0 !important;
+  }
+
+  /* Tighter cell padding inside cards */
+  .baseball-table-wrapper table td {
+    padding: 0.3rem 0.25rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  /* Use data-label instead of label attr for baseball tables */
+  .baseball-table-wrapper table td::before {
+    content: attr(data-label) !important;
+    min-width: 45% !important;
+    max-width: 45% !important;
+    font-size: 0.7rem !important;
+    margin: auto 0.375rem auto 0 !important;
+    color: inherit !important;
+    opacity: 0.6;
+  }
+
+  /* Name cell: full-width card header — hide "Name" label, show just the name */
+  .baseball-table-wrapper table td.bb-cell-name {
+    grid-column: 1 / -1 !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.25) !important;
+    padding-bottom: 0.4rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+
+  .baseball-table-wrapper table td.bb-cell-name::before {
+    display: none !important;
+  }
+
+  /* Actions cell: full-width row at bottom with prominent buttons */
+  .baseball-table-wrapper table td.bb-cell-actions {
+    grid-column: 1 / -1 !important;
+    border-top: 1px solid rgba(128, 128, 128, 0.25) !important;
+    padding-top: 0.5rem !important;
+    margin-top: 0.25rem !important;
+    justify-content: center !important;
+    gap: 0.25rem !important;
+  }
+
+  .baseball-table-wrapper table td.bb-cell-actions::before {
+    display: none !important;
+  }
+
+  /* Make the button container fill the full card width */
+  .baseball-table-wrapper table td.bb-cell-actions > div {
+    width: 100% !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.375rem !important;
+  }
+
+  /* Make action buttons grow to fill available space, bigger touch targets */
+  .baseball-table-wrapper table td.bb-cell-actions button {
+    flex: 1 1 0% !important;
+    min-height: 42px !important;
+    min-width: 0 !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+    border-radius: 0.375rem !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* OVR cell: slightly emphasized */
+  .baseball-table-wrapper table td.bb-cell-ovr {
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Extra-small screens: single column cards */
+@media screen and (max-width: 400px) {
+  .baseball-table-wrapper table tr {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Touch-friendly button overrides for mobile */
+@media (max-width: 768px) {
+  .baseball-action-btn {
+    min-height: 36px;
+    min-width: 36px;
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .baseball-move-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.875rem;
+  }
+
+  .baseball-dropdown-mobile {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Table scroll-hint gradient (right edge fade) — desktop only */
+.baseball-table-wrapper {
+  position: relative;
+}
+
+.baseball-table-wrapper::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2rem;
+  background: linear-gradient(to left, var(--bg-surface, rgba(0, 0, 0, 0.15)), transparent);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+.baseball-table-wrapper.scrolled-end::after {
+  opacity: 0;
+}
+
+/* Sticky player name column for horizontal-scrolling tables (desktop) */
+.baseball-sticky-name {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: inherit;
+}
+
+@media (min-width: 901px) {
+  .baseball-table-wrapper::after {
+    display: none;
+  }
+}
+
+/* On mobile, disable scroll gradient & sticky since cards don't scroll horizontally */
+@media (max-width: 900px) {
+  .baseball-table-wrapper::after {
+    display: none !important;
+  }
+}

@@ -3,6 +3,7 @@ import {
   BaseballDraftSigningStatus,
   formatSlotValue,
 } from "../../../models/baseball/baseballDraftModels";
+import "../../Team/baseball/baseballMobile.css";
 
 interface BaseballPickSigningProps {
   signingStatuses: BaseballDraftSigningStatus[];
@@ -101,7 +102,7 @@ const BaseballPickSigning: React.FC<BaseballPickSigningProps> = ({
       </div>
 
       {/* Signing Table */}
-      <div className="overflow-x-auto">
+      <div className="baseball-table-wrapper overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-gray-700 text-gray-400">

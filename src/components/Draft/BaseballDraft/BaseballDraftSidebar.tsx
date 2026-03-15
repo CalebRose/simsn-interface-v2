@@ -1,5 +1,6 @@
 import React from "react";
 import { BaseballDraftTab } from "../../../models/baseball/baseballDraftModels";
+import { useResponsive } from "../../../_hooks/useMobile";
 
 interface BaseballDraftSidebarProps {
   activeTab: BaseballDraftTab;
@@ -73,8 +74,11 @@ const BaseballDraftSidebar: React.FC<BaseballDraftSidebarProps> = ({
     tabs.push({ key: "admin", label: "Admin", icon: <SettingsIcon /> });
   }
 
+  const { isMobile, isTablet } = useResponsive();
+  const isCompact = isMobile || isTablet;
+
   return (
-    <div className="flex flex-col gap-1 rounded-lg bg-gray-900 p-2">
+    <div className={`flex ${isCompact ? "flex-row overflow-x-auto gap-2 py-2" : "flex-col gap-1"} rounded-lg bg-gray-900 p-2`}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.key;
         return (
@@ -82,12 +86,13 @@ const BaseballDraftSidebar: React.FC<BaseballDraftSidebarProps> = ({
             key={tab.key}
             onClick={() => onTabChange(tab.key)}
             className={`
-              flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-white transition-colors
+              flex items-center gap-2 sm:gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-white transition-colors whitespace-nowrap
+              ${isCompact ? "shrink-0" : "w-full"}
               ${isActive ? "bg-blue-600" : "bg-gray-800 hover:bg-gray-700"}
             `}
           >
             {tab.icon}
-            <span>{tab.label}</span>
+            {!isMobile && <span>{tab.label}</span>}
           </button>
         );
       })}

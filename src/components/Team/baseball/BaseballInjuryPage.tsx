@@ -18,6 +18,7 @@ import { InjuryReportItem, InjuryHistoryItem } from "../../../models/baseball/ba
 import { useModal } from "../../../_hooks/useModal";
 import { ActionModal } from "../../Common/ActionModal";
 import { Player } from "../../../models/baseball/baseballModels";
+import "./baseballMobile.css";
 
 // ═══════════════════════════════════════════════
 // Component
@@ -359,7 +360,7 @@ export const BaseballInjuryPage = ({ league }: Props) => {
               <Text variant="body" classes="text-gray-500 dark:text-gray-400">Loading injuries...</Text>
             </div>
           ) : activeTab === "Current" ? (
-            <div className="overflow-x-auto">
+            <div className="baseball-table-wrapper overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 border-b-2 border-gray-200 dark:border-gray-600">
@@ -417,7 +418,7 @@ export const BaseballInjuryPage = ({ league }: Props) => {
               </table>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="baseball-table-wrapper overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 border-b-2 border-gray-200 dark:border-gray-600">

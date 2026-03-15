@@ -4,6 +4,7 @@ import {
   BASEBALL_DRAFT_POSITIONS,
 } from "../../../models/baseball/baseballDraftModels";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
+import "../../Team/baseball/baseballMobile.css";
 
 interface BaseballDraftBoardProps {
   draftees: BaseballDraftee[];
@@ -127,7 +128,7 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
       </label>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="baseball-table-wrapper overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead>
             <tr className="text-gray-400 border-b border-gray-800">

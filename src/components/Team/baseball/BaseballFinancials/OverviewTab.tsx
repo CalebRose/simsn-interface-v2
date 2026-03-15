@@ -8,6 +8,7 @@ import {
   ObligationItem,
 } from "../../../../models/baseball/baseballModels";
 import { formatMoney, signedMoney } from "./financialConstants";
+import "../baseballMobile.css";
 
 interface OverviewTabProps {
   financials: BaseballFinancials;
@@ -123,7 +124,7 @@ const WeeklyCashflowSection = ({ weeks }: { weeks: FinancialWeek[] }) => {
       <Text variant="h5" classes="mb-3 font-semibold">
         Weekly Cashflow
       </Text>
-      <div className="overflow-x-auto max-h-[50vh] overflow-y-auto">
+      <div className="baseball-table-wrapper overflow-x-auto max-h-[50vh] overflow-y-auto">
         <table className="w-full text-sm text-left">
           <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
             <tr>
@@ -304,7 +305,7 @@ const FutureCommitmentsSection = ({
       <Text variant="h5" classes="mb-3 font-semibold">
         Future Commitments
       </Text>
-      <div className="overflow-x-auto">
+      <div className="baseball-table-wrapper overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700">
             <tr>

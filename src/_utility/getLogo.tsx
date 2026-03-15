@@ -2339,42 +2339,42 @@ case 130:
       return BaseballLogos.MIL_scraps;
 case 131:
       return BaseballLogos.TB_scraps;
-case 132:
-      return BaseballLogos.ATL_scraps;
 case 133:
       return BaseballLogos.LAA_scraps;
+case 132:
+      return BaseballLogos.ATL_scraps;
 case 134:
       return BaseballLogos.OAK_scraps;
 case 135:
-      return BaseballLogos.SD_scraps;
+      return BaseballLogos.COL_scraps;
 case 136:
       return BaseballLogos.CWS_scraps;
 case 137:
-      return BaseballLogos.COL_scraps;
+      return BaseballLogos.SF_scraps;
 case 138:
       return BaseballLogos.KC_scraps;
 case 139:
       return BaseballLogos.MIN_scraps;
 case 140:
-      return BaseballLogos.SF_scraps;
-case 141:
       return BaseballLogos.BOS_scraps;
-case 142:
+case 141:
       return BaseballLogos.CLE_scraps;
-case 143:
+case 142:
       return BaseballLogos.CHC_scraps;
-case 144:
+case 143:
       return BaseballLogos.PHI_scraps;
-case 145:
+case 144:
       return BaseballLogos.STL_scraps;
-case 146:
+case 145:
       return BaseballLogos.SEA_scraps;
-case 147:
+case 146:
       return BaseballLogos.BAL_scraps;
-case 148:
-      return BaseballLogos.CIN_scraps;
-case 149:
+case 147:
       return BaseballLogos.LAD_scraps;
+case 148:
+      return BaseballLogos.SD_scraps;
+case 149:
+      return BaseballLogos.CIN_scraps;
 case 150:
       return BaseballLogos.WAS_scraps;
 case 151:

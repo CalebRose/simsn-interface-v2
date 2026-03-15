@@ -100,7 +100,7 @@ const SeriesCard = ({ series, teamId, league, isRetro, accentColor, compact, onG
   return (
     <div className={`rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden ${compact ? "" : "max-w-lg"}`}>
       {/* Series header */}
-      <div className="flex items-center gap-3 px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
         {oppLogo && (
           <img src={oppLogo} className="w-6 h-6 object-contain" alt={oppAbbrev}
             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
@@ -125,7 +125,7 @@ const SeriesCard = ({ series, teamId, league, isRetro, accentColor, compact, onG
         {series.games.map((g) => {
           const isGameHome = g.home_team_id === teamId;
           return (
-            <div key={g.id} className="flex items-center gap-2 px-3 py-1.5 text-sm">
+            <div key={g.id} className="flex items-center gap-2 px-2 sm:px-3 py-1.5 text-sm">
               <span className="text-xs text-gray-400 w-12">{SUBWEEK_LABELS[g.season_subweek] ?? g.season_subweek}</span>
               <span className="flex-1 text-gray-600 dark:text-gray-300">
                 {isGameHome ? g.away_team_abbrev : `@ ${g.home_team_abbrev}`}
@@ -573,7 +573,7 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
                   </div>
                 ) : (
                   /* Multiple series — grid layout */
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                     {weeklySeriesList.map((series) => (
                       <SeriesCard
                         key={`${series.season_week}-${series.home_team_id}-${series.away_team_id}`}

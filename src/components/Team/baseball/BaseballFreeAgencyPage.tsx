@@ -9,6 +9,7 @@ import { BaseballService } from "../../../_services/baseballService";
 import { FreeAgentListItem } from "../../../models/baseball/baseballScoutingModels";
 import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
 import { BaseballSigningModal } from "./BaseballScouting/BaseballSigningModal";
+import "./baseballMobile.css";
 
 // ═══════════════════════════════════════════════
 // Main page component
@@ -108,7 +109,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
 
   return (
     <PageContainer>
-      <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
+      <div className="flex-col w-full px-2 sm:px-4 md:px-0 md:mb-6">
         <Border classes="p-4 mb-2">
           <Text variant="h4" classes="mb-4">Free Agency</Text>
 
@@ -135,7 +136,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search player..."
-              className="text-sm border rounded px-2 py-1 w-48 dark:bg-gray-700 dark:border-gray-600"
+              className="text-sm border rounded px-2 py-1 w-full sm:w-48 dark:bg-gray-700 dark:border-gray-600"
             />
             <Text variant="small" classes="text-gray-500 dark:text-gray-400">
               {filteredPlayers.length} players
@@ -156,7 +157,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
           ) : filteredPlayers.length === 0 ? (
             <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">No free agents available.</Text>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="baseball-table-wrapper overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-700">
