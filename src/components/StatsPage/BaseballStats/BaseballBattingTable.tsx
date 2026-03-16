@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { BattingLeaderRow, BattingSortField } from "../../../models/baseball/baseballStatsModels";
 import { getLogo } from "../../../_utility/getLogo";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getStatsHeaderStyle } from "./statsHeaderStyle";
 import { useAuthStore } from "../../../context/AuthContext";
 import "../../Team/baseball/baseballMobile.css";
+
+const POS_SORT_ORDER = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "SP", "RP", "P"];
 
 interface Props {
   leaders: BattingLeaderRow[];
@@ -23,6 +26,7 @@ interface Column {
   width?: string;
   bold?: boolean;
   advanced?: boolean;
+  localSort?: boolean;
   tooltip?: string;
   format?: (row: BattingLeaderRow) => string;
 }
@@ -31,7 +35,7 @@ const COLUMNS: Column[] = [
   { label: "#", key: "rank", width: "w-10" },
   { label: "Player", key: "name", width: "min-w-[6rem]" },
   { label: "Team", key: "team_abbrev", width: "w-16" },
-  { label: "Pos", key: "position", width: "w-12" },
+  { label: "Pos", key: "position", width: "w-12", localSort: true },
   { label: "G", key: "g", sortKey: "g" },
   { label: "PA", key: "pa", sortKey: "pa" },
   { label: "AB", key: "ab", sortKey: "ab" },
@@ -69,6 +73,14 @@ export const BaseballBattingTable = ({ leaders, league, isRetro, accentColor, on
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
   const { isDarkMode } = useAuthStore();
   const headerStyle = getStatsHeaderStyle(accentColor, isDarkMode);
+  const [posSortDir, setPosSortDir] = useState<"asc" | "desc" | null>(null);
+
+  const displayLeaders = posSortDir ? [...leaders].sort((a, b) => {
+    const ai = POS_SORT_ORDER.indexOf((a.position ?? "").toUpperCase());
+    const bi = POS_SORT_ORDER.indexOf((b.position ?? "").toUpperCase());
+    const diff = (ai >= 0 ? ai : 99) - (bi >= 0 ? bi : 99);
+    return posSortDir === "asc" ? diff : -diff;
+  }) : leaders;
 
   const getValue = (row: BattingLeaderRow, col: Column): string | number => {
     if (col.format) return col.format(row);
@@ -84,24 +96,32 @@ export const BaseballBattingTable = ({ leaders, league, isRetro, accentColor, on
             style={headerStyle}
           >
             {COLUMNS.map((col) => {
-              const isSortable = !!col.sortKey && !!onSort;
-              const isActive = col.sortKey === sortField;
+              const isSortable = (!!col.sortKey && !!onSort) || col.localSort;
+              const isActive = col.sortKey === sortField || (col.localSort && posSortDir != null);
+              const handleClick = () => {
+                if (col.localSort) {
+                  setPosSortDir((prev) => prev === "asc" ? "desc" : prev === "desc" ? null : "asc");
+                } else if (col.sortKey && onSort) {
+                  setPosSortDir(null);
+                  onSort(col.sortKey);
+                }
+              };
               return (
                 <th
                   key={col.key}
                   className={`px-2 py-2 ${col.width ?? "w-12"} ${col.key === "name" ? "text-left sticky left-0 z-10 bg-inherit" : "text-center"} ${isSortable ? "cursor-pointer select-none hover:opacity-80" : ""} ${isActive ? "underline decoration-2 underline-offset-2" : ""}`}
                   title={col.tooltip}
-                  onClick={isSortable ? () => onSort!(col.sortKey!) : undefined}
+                  onClick={isSortable ? handleClick : undefined}
                 >
                   {col.label}
-                  <SortIndicator field={col.sortKey} sortField={sortField} sortOrder={sortOrder} />
+                  {col.localSort && posSortDir ? <span className="ml-0.5 text-[10px]">{posSortDir === "asc" ? "▲" : "▼"}</span> : <SortIndicator field={col.sortKey} sortField={sortField} sortOrder={sortOrder} />}
                 </th>
               );
             })}
           </tr>
         </thead>
         <tbody>
-          {leaders.map((row, idx) => {
+          {displayLeaders.map((row, idx) => {
             const logo = getLogo(leagueType, row.team_id, isRetro);
             return (
               <tr

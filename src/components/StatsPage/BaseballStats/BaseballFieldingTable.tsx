@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { FieldingLeaderRow, FieldingSortField } from "../../../models/baseball/baseballStatsModels";
 import { getLogo } from "../../../_utility/getLogo";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getStatsHeaderStyle } from "./statsHeaderStyle";
 import { useAuthStore } from "../../../context/AuthContext";
 import "../../Team/baseball/baseballMobile.css";
+
+const POS_SORT_ORDER = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "SP", "RP", "P"];
 
 interface Props {
   leaders: FieldingLeaderRow[];
@@ -23,13 +26,14 @@ interface Column {
   bold?: boolean;
   advanced?: boolean;
   tooltip?: string;
+  localSort?: boolean;
 }
 
 const COLUMNS: Column[] = [
   { label: "#", key: "rank" },
   { label: "Player", key: "name" },
   { label: "Team", key: "team_abbrev" },
-  { label: "Pos", key: "pos" },
+  { label: "Pos", key: "pos", localSort: true },
   { label: "G", key: "g", sortKey: "g" },
   { label: "Inn", key: "inn", sortKey: "inn" },
   { label: "PO", key: "po", sortKey: "putouts" },
@@ -53,6 +57,14 @@ export const BaseballFieldingTable = ({ leaders, league, isRetro, accentColor, o
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
   const { isDarkMode } = useAuthStore();
   const headerStyle = getStatsHeaderStyle(accentColor, isDarkMode);
+  const [posSortDir, setPosSortDir] = useState<"asc" | "desc" | null>(null);
+
+  const displayLeaders = posSortDir ? [...leaders].sort((a, b) => {
+    const ai = POS_SORT_ORDER.indexOf((a.pos ?? "").toUpperCase());
+    const bi = POS_SORT_ORDER.indexOf((b.pos ?? "").toUpperCase());
+    const diff = (ai >= 0 ? ai : 99) - (bi >= 0 ? bi : 99);
+    return posSortDir === "asc" ? diff : -diff;
+  }) : leaders;
 
   return (
     <div className="overflow-x-auto baseball-table-wrapper">
@@ -63,24 +75,32 @@ export const BaseballFieldingTable = ({ leaders, league, isRetro, accentColor, o
             style={headerStyle}
           >
             {COLUMNS.map((col) => {
-              const isSortable = !!col.sortKey && !!onSort;
-              const isActive = col.sortKey === sortField;
+              const isSortable = (!!col.sortKey && !!onSort) || col.localSort;
+              const isActive = col.sortKey === sortField || (col.localSort && posSortDir != null);
+              const handleClick = () => {
+                if (col.localSort) {
+                  setPosSortDir((prev) => prev === "asc" ? "desc" : prev === "desc" ? null : "asc");
+                } else if (col.sortKey && onSort) {
+                  setPosSortDir(null);
+                  onSort(col.sortKey);
+                }
+              };
               return (
                 <th
                   key={col.key}
                   className={`px-2 py-2 ${col.key === "name" ? "text-left min-w-[6rem] sticky left-0 z-10 bg-inherit" : "text-center"} ${isSortable ? "cursor-pointer select-none hover:opacity-80" : ""} ${isActive ? "underline decoration-2 underline-offset-2" : ""}`}
                   title={col.tooltip}
-                  onClick={isSortable ? () => onSort!(col.sortKey!) : undefined}
+                  onClick={isSortable ? handleClick : undefined}
                 >
                   {col.label}
-                  <SortIndicator field={col.sortKey} sortField={sortField} sortOrder={sortOrder} />
+                  {col.localSort && posSortDir ? <span className="ml-0.5 text-[10px]">{posSortDir === "asc" ? "▲" : "▼"}</span> : <SortIndicator field={col.sortKey} sortField={sortField} sortOrder={sortOrder} />}
                 </th>
               );
             })}
           </tr>
         </thead>
         <tbody>
-          {leaders.map((row, idx) => {
+          {displayLeaders.map((row, idx) => {
             const logo = getLogo(leagueType, row.team_id, isRetro);
             return (
               <tr

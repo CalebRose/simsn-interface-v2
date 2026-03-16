@@ -17,9 +17,11 @@ import {
   BaseballTeam,
   BaseballFinancials,
 } from "../../models/baseball/baseballModels";
-import { SimCollegeBaseball, SimMLB, InfoType, League } from "../../_constants/constants";
+import { SimCollegeBaseball, SimMLB, League } from "../../_constants/constants";
 import { useModal } from "../../_hooks/useModal";
-import { ActionModal } from "../Common/ActionModal";
+import { BaseballScoutingModal } from "../Team/baseball/BaseballScouting/BaseballScoutingModal";
+import { ScoutingBudget } from "../../models/baseball/baseballScoutingModels";
+import { BaseballService } from "../../_services/baseballService";
 import { Player } from "../../models/baseball/baseballModels";
 import { getLogo } from "../../_utility/getLogo";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
@@ -30,7 +32,6 @@ import { useTeamColors } from "../../_hooks/useTeamColors";
 import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { BaseballBoxScoreModal } from "../Schedule/BaseballSchedule/BaseballBoxScoreModal";
-import { BaseballService } from "../../_services/baseballService";
 import { BattingLeaderRow, PitchingLeaderRow } from "../../models/baseball/baseballStatsModels";
 import PlayerPicture from "../../_utility/usePlayerFaces";
 
@@ -62,7 +63,6 @@ export const BaseballLandingPage = ({
     loadBootstrapForOrg,
     bootstrappedOrgId,
     isBootstrapLoading,
-    allRosters,
   } = useSimBaseballStore();
   const { isMobile } = useResponsive();
 
@@ -75,16 +75,26 @@ export const BaseballLandingPage = ({
 
   // --- Player modal ---
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const [modalPlayer, setModalPlayer] = useState<Player | null>(null);
-  const allPlayers = useMemo(() => allRosters.flatMap((r) => r.players), [allRosters]);
+  const [modalPlayerId, setModalPlayerId] = useState<number | null>(null);
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+  const orgId = userOrg.id;
+  const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+
+  const refreshBudget = useCallback(() => {
+    if (orgId && leagueYearId) {
+      BaseballService.GetScoutingBudget(orgId, leagueYearId)
+        .then(setScoutingBudget).catch(() => {});
+    }
+  }, [orgId, leagueYearId]);
+
+  useEffect(() => {
+    refreshBudget();
+  }, [refreshBudget]);
 
   const openPlayerModal = useCallback((playerId: number) => {
-    const player = allPlayers.find((p) => p.id === playerId);
-    if (player) {
-      setModalPlayer(player);
-      handleOpenModal();
-    }
-  }, [allPlayers, handleOpenModal]);
+    setModalPlayerId(playerId);
+    handleOpenModal();
+  }, [handleOpenModal]);
 
   // --- Org selector: view any org ---
   const [viewedOrgId, setViewedOrgId] = useState<number | null>(null);
@@ -912,16 +922,17 @@ export const BaseballLandingPage = ({
         onPlayerClick={openPlayerModal}
       />
 
-      {/* Player Info Modal */}
-      {modalPlayer && (
-        <ActionModal
+      {/* Player Modal */}
+      {modalPlayerId != null && (
+        <BaseballScoutingModal
           isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          playerID={modalPlayer.id}
-          playerLabel={`${modalPlayer.firstname} ${modalPlayer.lastname}`}
-          league={(league === SimMLB ? SimMLB : SimCollegeBaseball) as League}
-          modalAction={InfoType}
-          player={modalPlayer}
+          onClose={() => { setModalPlayerId(null); handleCloseModal(); }}
+          playerId={modalPlayerId}
+          orgId={orgId}
+          leagueYearId={leagueYearId}
+          scoutingBudget={scoutingBudget}
+          onBudgetChanged={refreshBudget}
+          league={league === SimMLB ? SimMLB : SimCollegeBaseball}
         />
       )}
     </div>
@@ -1049,8 +1060,8 @@ const BaseballInjuriesSection = ({ injuries }: { injuries: BaseballInjury[] }) =
               {injury.injury_type}
             </Text>
             <Text variant="xs" classes="text-white">
-              {injury.weeks_of_recovery}{" "}
-              {injury.weeks_of_recovery === 1 ? "game" : "games"}
+              {injury.weeks_remaining}{" "}
+              {injury.weeks_remaining === 1 ? "week" : "weeks"}
             </Text>
           </div>
         ))}
@@ -1080,20 +1091,19 @@ const LeaderCard = ({
   statLine: string;
   details: string;
 }) => (
-  <div className="flex items-center gap-3 p-2 rounded-lg border dark:border-gray-600">
-    <div className="w-12 h-12 shrink-0">
+  <div className="flex items-start gap-3 p-3 rounded-lg border dark:border-gray-600">
+    <div className="w-[72px] h-[72px] shrink-0">
       <PlayerPicture
         playerID={playerId}
         team={team}
         league={(league === SimMLB ? SimMLB : SimCollegeBaseball) as League}
-        classes="w-12 h-12"
       />
     </div>
-    <div className="flex flex-col min-w-0">
+    <div className="flex flex-col min-w-0 items-start">
       <Text variant="small" classes={`font-semibold ${labelColor}`}>{label}</Text>
       <Text variant="body" classes="font-semibold truncate">{name}</Text>
-      <Text variant="small" classes="font-medium">{statLine}</Text>
-      <Text variant="small" classes="text-gray-500 dark:text-gray-400">{details}</Text>
+      <Text variant="small" classes="font-medium text-left">{statLine}</Text>
+      <Text variant="small" classes="text-gray-500 dark:text-gray-400 text-left">{details}</Text>
     </div>
   </div>
 );
@@ -1179,7 +1189,9 @@ const BaseballGamesBar = ({
           const lost = isComplete && teamScore < oppScore;
           const isNextGame = idx === firstUpcomingIdx;
 
-          let cardBg = "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600";
+          let cardBg = isHome
+            ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600"
+            : "bg-white dark:bg-gray-800/60 border-gray-200 dark:border-gray-600/60";
           if (isComplete) {
             if (won) cardBg = "bg-green-50 dark:bg-green-900/20 border-green-500";
             else if (lost) cardBg = "bg-red-50 dark:bg-red-900/20 border-red-500";
@@ -1269,6 +1281,7 @@ const StandingsTable = ({
   const leader = rows[0];
 
   return (
+    <div className="compact-table overflow-x-auto">
     <table className="w-full text-sm text-left">
       <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700 sticky top-0">
         <tr>
@@ -1314,5 +1327,6 @@ const StandingsTable = ({
         })}
       </tbody>
     </table>
+    </div>
   );
 };

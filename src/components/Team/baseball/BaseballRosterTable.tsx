@@ -4,7 +4,7 @@ import { DisplayValue, Player, PlayerRatings } from "../../../models/baseball/ba
 import { BattingLeaderRow, PitchingLeaderRow } from "../../../models/baseball/baseballStatsModels";
 import { Attributes, Potentials, Contracts } from "../../../_constants/constants";
 import { displayLevel, displayPlayerTeam, LEVEL_ORDER, getClassYear, numericToLetterGrade, resolveDisplayValue, letterGradeToNumeric } from "../../../_utility/baseballHelpers";
-import { ratingColor, potColor } from "./baseballColorConfig";
+import { ratingColor, potColor, staminaColor } from "./baseballColorConfig";
 
 // ═══════════════════════════════════════════════
 // Types
@@ -47,7 +47,7 @@ export const ALL_ATTR_GROUPS: ColumnGroup[] = [
     { label: "FldCatch", sortKey: "fldcatch" }, { label: "FldReact", sortKey: "fldreact" },
     { label: "ThrowAcc", sortKey: "throwacc" }, { label: "ThrowPow", sortKey: "throwpow" },
   ]},
-  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }] },
+  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }, { label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -62,7 +62,7 @@ export const ALL_POT_GROUPS: ColumnGroup[] = [
     { label: "FldCatch", sortKey: "pot_fldcatch" }, { label: "FldReact", sortKey: "pot_fldreact" },
     { label: "ThrowAcc", sortKey: "pot_throwacc" }, { label: "ThrowPow", sortKey: "pot_throwpow" },
   ]},
-  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }] },
+  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }, { label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -84,6 +84,7 @@ export const POS_ATTR_GROUPS: ColumnGroup[] = [
     { label: "CatchFrm", sortKey: "catchfrm" }, { label: "CatchSeq", sortKey: "catchseq" },
   ]},
   { groupLabel: "Position", columns: [{ label: "Rtg", sortKey: "posrtg" }] },
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -105,6 +106,7 @@ export const POS_POT_GROUPS: ColumnGroup[] = [
     { label: "CatchFrm", sortKey: "pot_catchfrm" }, { label: "CatchSeq", sortKey: "pot_catchseq" },
   ]},
   { groupLabel: "Position", columns: [{ label: "Rtg", sortKey: "posrtg" }] },
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -121,6 +123,7 @@ export const PITCH_ATTR_GROUPS: ColumnGroup[] = [
     { label: "P3", sortKey: "p3ovr" }, { label: "P4", sortKey: "p4ovr" },
     { label: "P5", sortKey: "p5ovr" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -137,6 +140,7 @@ export const PITCH_POT_GROUPS: ColumnGroup[] = [
     { label: "P3", sortKey: "p3ovr" }, { label: "P4", sortKey: "p4ovr" },
     { label: "P5", sortKey: "p5ovr" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -145,8 +149,9 @@ export const CONTRACT_GROUPS: ColumnGroup[] = [
   { groupLabel: "Contract", columns: [
     { label: "Years", sortKey: "contractYears" }, { label: "Yr", sortKey: "contractCurrentYear" },
     { label: "Salary", sortKey: "contractSalary" }, { label: "Share", sortKey: "contractShare" },
-    { label: "Bonus", sortKey: "contractBonus" }, { label: "Status", sortKey: "" },
+    { label: "Bonus", sortKey: "contractBonus" }, { label: "Status", sortKey: "contractStatus" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -160,6 +165,7 @@ export const BATTING_STATS_GROUPS: ColumnGroup[] = [
     { label: "AVG", sortKey: "stat_avg" }, { label: "OBP", sortKey: "stat_obp" },
     { label: "SLG", sortKey: "stat_slg" }, { label: "OPS", sortKey: "stat_ops" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -168,10 +174,13 @@ export const PITCHING_STATS_GROUPS: ColumnGroup[] = [
   { groupLabel: "Pitching", columns: [
     { label: "G", sortKey: "stat_g" }, { label: "GS", sortKey: "stat_gs" },
     { label: "W", sortKey: "stat_w" }, { label: "L", sortKey: "stat_l" },
-    { label: "SV", sortKey: "stat_sv" }, { label: "IP", sortKey: "stat_ip" },
+    { label: "SV", sortKey: "stat_sv" }, { label: "HLD", sortKey: "stat_hld" },
+    { label: "BS", sortKey: "stat_bs" }, { label: "QS", sortKey: "stat_qs" },
+    { label: "IP", sortKey: "stat_ip" },
     { label: "SO", sortKey: "stat_so" }, { label: "BB", sortKey: "stat_bb" },
     { label: "ERA", sortKey: "stat_era" }, { label: "WHIP", sortKey: "stat_whip" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -202,6 +211,14 @@ export const getPrimaryPositionRating = (p: Player): number | null => {
   return (p.ratings as any)[rKey] ?? null;
 };
 
+const POS_SORT_ORDER = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "SP", "RP", "P"];
+const DURABILITY_SORT_ORDER: Record<string, number> = {
+  // Cover all possible API string formats (case-insensitive lookup used below)
+  "fragile": 1, "frail": 2, "injury prone": 3, "below average": 4,
+  "normal": 5, "average": 5, "durable": 6, "above average": 6,
+  "very durable": 7, "iron man": 8,
+};
+
 export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsMap): string | number | null => {
   if (key.startsWith("stat_")) {
     const s = statsMap?.get(p.id);
@@ -212,12 +229,17 @@ export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsM
   }
   switch (key) {
     case "name":          return p.lastname;
-    case "pos":           return p.listed_position ?? "";
+    case "pos": {
+      const pos = (p.listed_position ?? "").toUpperCase();
+      const idx = POS_SORT_ORDER.indexOf(pos);
+      return idx >= 0 ? idx : 99;
+    }
     case "ptype":         return p.ptype;
     case "level":         return LEVEL_ORDER.indexOf(p.league_level);
     case "age":           return p.age;
     case "ovr":           return p.displayovr != null ? Number(p.displayovr) : null;
-    case "durability":    return p.durability;
+    case "durability":    return DURABILITY_SORT_ORDER[(p.durability || "").toLowerCase()] ?? 5;
+    case "stamina":       return p.stamina ?? null;
     case "contact":       return p.ratings.contact_display;
     case "power":         return p.ratings.power_display;
     case "eye":           return p.ratings.eye_display;
@@ -274,6 +296,14 @@ export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsM
     case "contractSalary":      return p.contract?.current_year_detail?.base_salary ?? null;
     case "contractShare":       return p.contract?.current_year_detail?.salary_share ?? null;
     case "contractBonus":       return p.contract?.bonus ?? null;
+    case "contractStatus": {
+      if (!p.contract) return 0;
+      // Sort: IR first, then Buyout, Extension, then Active last
+      if (p.contract.on_ir) return 3;
+      if (p.contract.is_buyout) return 2;
+      if (p.contract.is_extension) return 1;
+      return 0;
+    }
     default: return null;
   }
 };
@@ -345,6 +375,23 @@ export const RatingCell = ({ value, isFuzzed, label }: { value: DisplayValue; is
     </td>
   );
 };
+
+const staminaBarBg = (v: number): string => {
+  if (v >= 90) return "bg-green-500";
+  if (v >= 70) return "bg-green-400";
+  if (v >= 50) return "bg-yellow-500";
+  if (v >= 30) return "bg-orange-500";
+  return "bg-red-500";
+};
+
+const StaminaBarCell = ({ value }: { value: number }) => (
+  <div className="flex items-center gap-1 min-w-[48px]">
+    <div className="flex-1 h-2.5 rounded-full bg-gray-700 overflow-hidden">
+      <div className={`h-full rounded-full ${staminaBarBg(value)}`} style={{ width: `${value}%` }} />
+    </div>
+    <span className={`text-[10px] font-semibold w-5 text-right ${staminaColor(value)}`}>{value}</span>
+  </div>
+);
 
 const PitchCell = ({ name, label }: { name: string | null; label?: string }) => (
   <td data-label={label} className={`${td} text-center text-xs whitespace-nowrap`}>{name || "—"}</td>
@@ -524,6 +571,10 @@ export const AllAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
       <StatCell value={p.ratings.throwacc_display} isFuzzed={af} label="ThrowAcc" />
       <StatCell value={p.ratings.throwpower_display} isFuzzed={af} label="ThrowPow" />
       <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -548,6 +599,10 @@ export const AllPotCells = ({ p }: { p: Player }) => {
       <PotentialCell pot={p.potentials.throwacc_pot} isFuzzed={pf} label="ThrowAcc" />
       <PotentialCell pot={p.potentials.throwpower_pot} isFuzzed={pf} label="ThrowPow" />
       <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -570,6 +625,10 @@ export const PosAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
       <StatCell value={p.ratings.catchframe_display} isFuzzed={af} label="CatchFrm" />
       <StatCell value={p.ratings.catchsequence_display} isFuzzed={af} label="CatchSeq" />
       <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={af} label="Pos Rtg" />
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -592,6 +651,10 @@ export const PosPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?: 
       <PotentialCell pot={p.potentials.catchframe_pot} isFuzzed={pf} label="CatchFrm" />
       <PotentialCell pot={p.potentials.catchsequence_pot} isFuzzed={pf} label="CatchSeq" />
       <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={isFuzzed} label="Pos Rtg" />
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -613,6 +676,10 @@ export const PitchAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean 
       <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} label="P3" />
       <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} label="P4" />
       <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} label="P5" />
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -634,6 +701,10 @@ export const PitchPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?
       <PitchOvrCell name={p.pitch3_name} ovr={p.ratings.pitch3_ovr} label="P3" />
       <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} label="P4" />
       <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} label="P5" />
+      <td data-label="Stamina" className={`${td} text-center text-xs`}>
+        {<StaminaBarCell value={p.stamina ?? 100} />
+        }
+      </td>
     </>
   );
 };
@@ -692,7 +763,7 @@ export const BattingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: Playe
 
 export const PitchingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: PlayerStatsMap }) => {
   const s = statsMap?.get(p.id) as PitchingLeaderRow | undefined;
-  if (!s) return <td data-label="Stats" className={`${td} text-center text-gray-400`} colSpan={10}>—</td>;
+  if (!s) return <td data-label="Stats" className={`${td} text-center text-gray-400`} colSpan={13}>—</td>;
   return (
     <>
       <td data-label="G" className={`${td} text-center`}>{s.g}</td>
@@ -700,6 +771,9 @@ export const PitchingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: Play
       <td data-label="W" className={`${td} text-center`}>{s.w}</td>
       <td data-label="L" className={`${td} text-center`}>{s.l}</td>
       <td data-label="SV" className={`${td} text-center`}>{s.sv}</td>
+      <td data-label="HLD" className={`${td} text-center`}>{s.hld}</td>
+      <td data-label="BS" className={`${td} text-center`}>{s.bs}</td>
+      <td data-label="QS" className={`${td} text-center`}>{s.qs}</td>
       <td data-label="IP" className={`${td} text-center`}>{s.ip}</td>
       <td data-label="SO" className={`${td} text-center`}>{s.so}</td>
       <td data-label="BB" className={`${td} text-center`}>{s.bb}</td>
@@ -748,8 +822,8 @@ export const AllPlayersTable = ({ players, orgAbbrev, onPlayerClick, sortConfig,
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
               {category === Attributes && <AllAttrCells p={p} isFuzzed={isFuzzed} />}
               {category === Potentials && <AllPotCells p={p} />}
-              {category === Contracts && <ContractCells p={p} isCollege={isCollege} />}
-              {category === Stats && <BattingStatsCells p={p} statsMap={playerStatsMap} />}
+              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
+              {category === Stats && <><BattingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
               {renderActions && (
                 <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}
@@ -782,8 +856,8 @@ export const PositionTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, o
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
               {category === Attributes && <PosAttrCells p={p} isFuzzed={isFuzzed} />}
               {category === Potentials && <PosPotCells p={p} isFuzzed={isFuzzed} potFuzzed={potFuzzed} />}
-              {category === Contracts && <ContractCells p={p} isCollege={isCollege} />}
-              {category === Stats && <BattingStatsCells p={p} statsMap={playerStatsMap} />}
+              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
+              {category === Stats && <><BattingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
               {renderActions && (
                 <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}
@@ -816,8 +890,8 @@ export const PitcherTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, on
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
               {category === Attributes && <PitchAttrCells p={p} isFuzzed={isFuzzed} />}
               {category === Potentials && <PitchPotCells p={p} isFuzzed={isFuzzed} potFuzzed={potFuzzed} />}
-              {category === Contracts && <ContractCells p={p} isCollege={isCollege} />}
-              {category === Stats && <PitchingStatsCells p={p} statsMap={playerStatsMap} />}
+              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
+              {category === Stats && <><PitchingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
               {renderActions && (
                 <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}

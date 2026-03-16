@@ -156,7 +156,20 @@ const normalizePtype = (raw: string | undefined | null): string => {
  *
  * Detects old shape by checking for `ratings` sub-object.
  */
+let _normalizePlayerLogged = false;
 export const normalizePlayer = (raw: any): Player => {
+  // DEBUG: log first player to verify stamina data in API response
+  if (raw.id && !_normalizePlayerLogged) {
+    _normalizePlayerLogged = true;
+    console.log("[normalizePlayer] sample raw player:", {
+      id: raw.id,
+      stamina: raw.stamina,
+      has_fatigue_data: raw.has_fatigue_data,
+      hasBio: !!raw.bio,
+      hasRatings: !!raw.ratings,
+      keys: Object.keys(raw).filter((k: string) => k.includes("stam") || k.includes("fatigue")),
+    });
+  }
   // New roster shape — has bio wrapper with firstName/lastName
   if (raw.bio && typeof raw.bio === "object") {
     const bio = raw.bio;
@@ -186,6 +199,8 @@ export const normalizePlayer = (raw: any): Player => {
       ratings:       normalizeRatings(raw.ratings ?? {}),
       potentials:    raw.potentials ?? {},
       visibility_context: raw.visibility_context,
+      stamina:         raw.stamina,
+      has_fatigue_data: raw.has_fatigue_data,
     } as Player;
   }
 
@@ -329,6 +344,8 @@ export const normalizePlayer = (raw: any): Player => {
     ratings,
     potentials,
     visibility_context: raw.visibility_context,
+    stamina:         raw.stamina,
+    has_fatigue_data: raw.has_fatigue_data,
   };
 };
 
@@ -349,7 +366,12 @@ const CLASS_MAP: Record<number, [string, string]> = {
  */
 export const getClassYear = (contract: PlayerContract | null): { label: string; abbrev: string } => {
   if (!contract) return { label: "", abbrev: "" };
-  const [label, abbrev] = CLASS_MAP[Math.min(contract.current_year, 5)] ?? ["Senior", "SR"];
+  // For redshirt players, current_year includes the redshirt year,
+  // so subtract 1 to get the actual class year (year 4 of 5 = Junior, not Senior).
+  const classIdx = contract.is_extension
+    ? Math.max(contract.current_year - 1, 1)
+    : contract.current_year;
+  const [label, abbrev] = CLASS_MAP[Math.min(classIdx, 5)] ?? ["Senior", "SR"];
   const prefix = contract.is_extension ? "RS " : "";
   return { label: prefix + label, abbrev: prefix + abbrev };
 };

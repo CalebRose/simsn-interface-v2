@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../_hooks/useModal";
-import { ActionModal } from "../../Common/ActionModal";
-import { Player } from "../../../models/baseball/baseballModels";
+import { BaseballScoutingModal } from "../../Team/baseball/BaseballScouting/BaseballScoutingModal";
+import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { PillButton, ButtonGroup } from "../../../_design/Buttons";
@@ -12,7 +12,7 @@ import {
   BaseballOrganization, BaseballSeasonContext,
   ScheduleGame, ScheduleResponse,
 } from "../../../models/baseball/baseballModels";
-import { SimMLB, SimCollegeBaseball, InfoType, League } from "../../../_constants/constants";
+import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getLogo } from "../../../_utility/getLogo";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
@@ -250,7 +250,7 @@ const CalendarCell = ({ game, teamId, onGameClick }: {
 
 export const BaseballScheduleView = ({ league, organization, seasonContext }: BaseballScheduleViewProps) => {
   const { currentUser } = useAuthStore();
-  const { allTeams, allRosters } = useSimBaseballStore();
+  const { allTeams } = useSimBaseballStore();
 
   const isCollege = league === SimCollegeBaseball;
   const primaryTeam = getPrimaryBaseballTeam(organization);
@@ -258,15 +258,25 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
 
   // --- Player modal ---
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const [modalPlayer, setModalPlayer] = useState<Player | null>(null);
-  const allPlayers = useMemo(() => allRosters.flatMap((r) => r.players), [allRosters]);
+  const [modalPlayerId, setModalPlayerId] = useState<number | null>(null);
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+  const orgId = organization.id;
+  const leagueYearId = seasonContext.current_league_year_id;
+
+  const refreshBudget = useCallback(() => {
+    if (orgId && leagueYearId) {
+      BaseballService.GetScoutingBudget(orgId, leagueYearId)
+        .then(setScoutingBudget).catch(() => {});
+    }
+  }, [orgId, leagueYearId]);
+
+  useEffect(() => {
+    refreshBudget();
+  }, [refreshBudget]);
 
   const openPlayerModal = useCallback((playerId: number) => {
-    const player = allPlayers.find((p) => p.id === playerId);
-    if (player) {
-      setModalPlayer(player);
-      handleOpenModal();
-    }
+    setModalPlayerId(playerId);
+    handleOpenModal();
   }, [allPlayers, handleOpenModal]);
 
   // --- Team color theming ---
@@ -749,16 +759,17 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
           onPlayerClick={openPlayerModal}
         />
 
-        {/* Player Info Modal */}
-        {modalPlayer && (
-          <ActionModal
+        {/* Player Modal */}
+        {modalPlayerId != null && (
+          <BaseballScoutingModal
             isOpen={isModalOpen}
-            onClose={handleCloseModal}
-            playerID={modalPlayer.id}
-            playerLabel={`${modalPlayer.firstname} ${modalPlayer.lastname}`}
-            league={(league === SimMLB ? SimMLB : SimCollegeBaseball) as League}
-            modalAction={InfoType}
-            player={modalPlayer}
+            onClose={() => { setModalPlayerId(null); handleCloseModal(); }}
+            playerId={modalPlayerId}
+            orgId={orgId}
+            leagueYearId={leagueYearId}
+            scoutingBudget={scoutingBudget}
+            onBudgetChanged={refreshBudget}
+            league={league === SimMLB ? SimMLB : SimCollegeBaseball}
           />
         )}
       </div>

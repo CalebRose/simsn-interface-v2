@@ -109,8 +109,7 @@ export const SampleLineupsTab = ({ teamId, players }: SampleLineupsTabProps) => 
         <div>
           <Text variant="h5" classes="font-semibold">Sample Lineups</Text>
           <Text variant="small" classes="text-gray-500 dark:text-gray-400">
-            Approximate preview of how your depth chart and lineup roles produce starting lineups.
-            Games C & D include randomness to simulate usage rotation.
+            Approximate preview of how your depth chart and settings produces lineups. <strong className="text-gray-300">This is an estimate.</strong>
           </Text>
         </div>
         <Button variant="secondaryOutline" size="sm" onClick={regenerate}>

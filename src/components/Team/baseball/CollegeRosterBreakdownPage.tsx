@@ -5,9 +5,11 @@ import { PageContainer } from "../../../_design/Container";
 import { SelectDropdown } from "../../../_design/Select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { Player, BaseballTeam } from "../../../models/baseball/baseballModels";
-import { SimCollegeBaseball, InfoType, type League } from "../../../_constants/constants";
+import { SimCollegeBaseball } from "../../../_constants/constants";
 import { useModal } from "../../../_hooks/useModal";
-import { ActionModal } from "../../Common/ActionModal";
+import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
+import { BaseballService } from "../../../_services/baseballService";
 import { getLogo } from "../../../_utility/getLogo";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
@@ -262,9 +264,24 @@ export const CollegeRosterBreakdownPage = () => {
 
   // --- Player modal ---
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const [modalPlayer, setModalPlayer] = useState<Player | null>(null);
+  const [modalPlayerId, setModalPlayerId] = useState<number | null>(null);
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+  const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+  const modalOrgId = viewedOrg?.id ?? 0;
+
+  const refreshBudget = useCallback(() => {
+    if (modalOrgId && leagueYearId) {
+      BaseballService.GetScoutingBudget(modalOrgId, leagueYearId)
+        .then(setScoutingBudget).catch(() => {});
+    }
+  }, [modalOrgId, leagueYearId]);
+
+  useEffect(() => {
+    refreshBudget();
+  }, [refreshBudget]);
+
   const openPlayerModal = useCallback((player: Player) => {
-    setModalPlayer(player);
+    setModalPlayerId(player.id);
     handleOpenModal();
   }, [handleOpenModal]);
 
@@ -394,15 +411,16 @@ export const CollegeRosterBreakdownPage = () => {
         )}
       </div>
 
-      {modalPlayer && (
-        <ActionModal
+      {modalPlayerId != null && (
+        <BaseballScoutingModal
           isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          playerID={modalPlayer.id}
-          playerLabel={`${modalPlayer.firstname} ${modalPlayer.lastname}`}
-          league={SimCollegeBaseball as League}
-          modalAction={InfoType}
-          player={modalPlayer}
+          onClose={() => { setModalPlayerId(null); handleCloseModal(); }}
+          playerId={modalPlayerId}
+          orgId={modalOrgId}
+          leagueYearId={leagueYearId}
+          scoutingBudget={scoutingBudget}
+          onBudgetChanged={refreshBudget}
+          league={SimCollegeBaseball}
         />
       )}
     </PageContainer>

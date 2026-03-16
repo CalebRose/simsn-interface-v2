@@ -21,6 +21,11 @@ export interface BoxScoreLinescore {
   away: BoxScoreLinescoreSide;
 }
 
+export interface PbpPlayer {
+  id: number;
+  name: string;
+}
+
 export interface PlayByPlayEntry {
   ID: number;
   Inning: number;
@@ -33,23 +38,61 @@ export interface PlayByPlayEntry {
   "Strike Count": number;
   "Out Count": number;
   "Outs this Action": number;
-  Batter: { player_id: number; player_name: string };
-  Pitcher: { player_id: number; player_name: string };
+  Batter: PbpPlayer | { player_id: number; player_name: string };
+  Pitcher: PbpPlayer | { player_id: number; player_name: string };
   Outcomes: string;
-  Is_Hit: boolean;
-  Is_Strikeout: boolean;
+  "Batted Ball"?: string;
+  "Air or Ground"?: string;
+  "Hit Depth"?: string;
+  "Hit Direction"?: string;
+  "Hit Situation"?: string;
+  "Targeted Defender"?: string;
+  "Defensive Outcome"?: string;
+  "Error List"?: string;
+  "Defensive Actions"?: string;
+  "On First"?: PbpPlayer | null;
+  "On Second"?: PbpPlayer | null;
+  "On Third"?: PbpPlayer | null;
+  Home?: any[];
   Is_Walk: boolean;
+  Is_Strikeout: boolean;
+  Is_InPlay?: boolean;
+  Is_Hit: boolean;
+  Is_HBP?: boolean;
+  Is_Pickoff?: boolean;
+  Is_StealAttempt?: boolean;
+  Is_StealSuccess?: boolean;
+  Error_Count?: number;
+  Is_Liveball?: boolean;
+  Is_Foul?: boolean;
   Is_Single: boolean;
   Is_Double: boolean;
   Is_Triple: boolean;
   Is_Homerun: boolean;
+  AB_Over?: boolean;
+  Pre_Outs?: number;
   Runners_Scored: number;
+  Runners_Scored_IDs?: number[];
+  Is_DP_Opportunity?: boolean;
+  Is_DP?: boolean;
+  Is_TP_Opportunity?: boolean;
+  Is_TP?: boolean;
+  Catcher?: PbpPlayer | null;
+  "First Base"?: PbpPlayer | null;
+  "Second Base"?: PbpPlayer | null;
+  "Third Base"?: PbpPlayer | null;
+  Shortstop?: PbpPlayer | null;
+  "Left Field"?: PbpPlayer | null;
+  "Center Field"?: PbpPlayer | null;
+  "Right Field"?: PbpPlayer | null;
 }
 
 export interface BoxScoreBattingLine {
   player_id: number;
   name: string;
   pos?: string;
+  batting_order?: number;
+  pa: number;
   ab: number;
   r: number;
   h: number;
@@ -59,6 +102,7 @@ export interface BoxScoreBattingLine {
   itphr: number;
   rbi: number;
   bb: number;
+  hbp: number;
   so: number;
   sb: number;
   cs: number;
@@ -67,6 +111,7 @@ export interface BoxScoreBattingLine {
 export interface BoxScorePitchingLine {
   player_id: number;
   name: string;
+  appearance_order?: number;
   gs: number;
   ip: string;
   h: number;
@@ -76,7 +121,15 @@ export interface BoxScorePitchingLine {
   so: number;
   hr: number;
   itphr: number;
+  pc: number;
+  balls: number;
+  strikes: number;
+  hbp: number;
+  wp: number;
   dec: string; // "W" | "L" | "S" | ""
+  hold?: number;          // 0 or 1
+  blown_save?: number;    // 0 or 1
+  quality_start?: number; // 0 or 1, only meaningful when gs === 1
 }
 
 export type SubstitutionType = "pitching_change" | "emergency_pitcher" | "pinch_hit" | "defensive_sub";
@@ -88,6 +141,12 @@ export interface BoxScoreSubstitution {
   player_in: { id: number; name: string };
   player_out: { id: number; name: string };
   new_position: string;
+  // Pitching change entry context (only on pitching_change subs from newer games)
+  entry_score_diff?: number;
+  entry_runners_on?: number;
+  entry_inning?: number;
+  entry_outs?: number;
+  entry_is_save_situation?: boolean;
 }
 
 export type DefenseDict = Record<string, number>; // position code → player_id
@@ -119,7 +178,7 @@ export interface BoxScoreResponse {
 
 export interface PlayByPlayResponse {
   game_id: number;
-  play_by_play: any[];
+  play_by_play: PlayByPlayEntry[];
 }
 
 // ═══════════════════════════════════════════════
@@ -164,7 +223,8 @@ export type BattingSortField =
 export type PitchingSortField =
   | "era" | "wins" | "so" | "saves" | "whip"
   | "k9" | "bb9" | "hr9" | "h9" | "k_bb" | "w_pct" | "k_pct" | "bb_pct" | "babip" | "ip_gs"
-  | "g" | "gs" | "w" | "l" | "sv" | "ip" | "h" | "r" | "er" | "bb" | "hr";
+  | "g" | "gs" | "w" | "l" | "sv" | "ip" | "h" | "r" | "er" | "bb" | "hr"
+  | "holds" | "blown_saves" | "quality_starts";
 export type FieldingSortField =
   | "fpct" | "putouts" | "assists"
   | "tc" | "tc_g" | "rf_g" | "po_inn" | "a_inn" | "e_inn"
@@ -263,6 +323,9 @@ export interface PitchingLeaderRow {
   w: number;
   l: number;
   sv: number;
+  hld: number;
+  bs: number;
+  qs: number;
   ip: string;
   h: number;
   r: number;
@@ -362,6 +425,9 @@ export interface TeamPitchingRow {
   w: number;
   l: number;
   sv: number;
+  hld: number;
+  bs: number;
+  qs: number;
   ip: string;
   r: number;
   er: number;
@@ -454,6 +520,9 @@ export interface PlayerPitchingSeason {
   w: number;
   l: number;
   sv: number;
+  hld: number;
+  bs: number;
+  qs: number;
   ip: string;
   h: number;
   r: number;

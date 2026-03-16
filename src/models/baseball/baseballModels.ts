@@ -298,6 +298,8 @@ export interface Player {
     potentials:          PlayerPotentials;
     defensive_xp_mod?:   Record<string, number>; // position code → XP modifier (-0.20 to +0.05)
     visibility_context?: VisibilityContext;
+    stamina?:            number;          // 0-100, 100 = fully rested
+    has_fatigue_data?:   boolean;         // true = real fatigue record, false = no data yet
 }
 
 export interface ListedPositionResponse {
@@ -592,7 +594,7 @@ export interface BaseballInjury {
     team: string;
     position: string;
     injury_type: string;
-    weeks_of_recovery: number;
+    weeks_remaining: number;
     level: string;
 }
 

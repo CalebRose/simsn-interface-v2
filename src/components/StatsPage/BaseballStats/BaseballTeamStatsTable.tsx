@@ -18,7 +18,7 @@ type TeamSortField =
   | "g" | "pa" | "ab" | "r" | "h" | "2b" | "3b" | "hr" | "itphr" | "rbi" | "bb" | "so" | "sb" | "cs" | "tb"
   | "avg" | "obp" | "slg" | "ops" | "babip"
   // Pitching
-  | "p_w" | "p_l" | "p_sv" | "p_ip" | "p_r" | "p_er" | "p_hr" | "p_itphr" | "p_bb" | "p_so" | "p_ha"
+  | "p_w" | "p_l" | "p_sv" | "p_hld" | "p_bs" | "p_qs" | "p_ip" | "p_r" | "p_er" | "p_hr" | "p_itphr" | "p_bb" | "p_so" | "p_ha"
   | "p_era" | "p_whip" | "p_k9" | "p_bb9" | "p_hr9";
 
 const BATTING_COLS: { label: string; key: string; sortKey: TeamSortField; bold?: boolean }[] = [
@@ -43,6 +43,9 @@ const PITCHING_COLS: { label: string; key: string; sortKey: TeamSortField; bold?
   { label: "W", key: "w", sortKey: "p_w", bold: true },
   { label: "L", key: "l", sortKey: "p_l" },
   { label: "SV", key: "sv", sortKey: "p_sv" },
+  { label: "HLD", key: "hld", sortKey: "p_hld" },
+  { label: "BS", key: "bs", sortKey: "p_bs" },
+  { label: "QS", key: "qs", sortKey: "p_qs" },
   { label: "IP", key: "ip", sortKey: "p_ip" },
   { label: "R", key: "r", sortKey: "p_r" },
   { label: "ER", key: "er", sortKey: "p_er" },
@@ -58,7 +61,7 @@ const PITCHING_COLS: { label: string; key: string; sortKey: TeamSortField; bold?
 ];
 
 // ASC-by-default fields (lower is better)
-const ASC_DEFAULTS = new Set<TeamSortField>(["so", "p_er", "p_r", "p_hr", "p_bb", "p_ha", "p_era", "p_whip", "p_bb9", "p_hr9", "p_l"]);
+const ASC_DEFAULTS = new Set<TeamSortField>(["so", "p_er", "p_r", "p_hr", "p_bb", "p_ha", "p_era", "p_whip", "p_bb9", "p_hr9", "p_l", "p_bs"]);
 
 const parseNum = (v: string | number): number => {
   if (typeof v === "number") return v;

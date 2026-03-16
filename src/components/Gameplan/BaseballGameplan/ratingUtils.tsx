@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { Player, PlayerRatings, DisplayValue } from "../../../models/baseball/baseballModels";
-import { ratingColor, gradeColor } from "../../Team/baseball/baseballColorConfig";
+import { ratingColor, gradeColor, staminaColor } from "../../Team/baseball/baseballColorConfig";
 
-export { ratingColor };
+export { ratingColor, staminaColor };
 
 /** Color for a DisplayValue (number, letter grade string, or null). */
 export const displayValueColor = (v: DisplayValue): string => {
@@ -67,6 +67,42 @@ export const PlayerAttributeRow: FC<PlayerAttributeRowProps> = ({
           isFuzzed={fuzzed}
         />
       ))}
+    </div>
+  );
+};
+
+// ── StaminaChip — shows current fatigue level (text badge) ──────────
+export const StaminaChip: FC<{ player: Player }> = ({ player }) => {
+  const stam = player.stamina ?? 100;
+  return (
+    <span className={`text-xs px-1.5 py-0.5 rounded font-semibold bg-gray-700/50 ${staminaColor(stam)}`}>
+      Stam: {stam}
+    </span>
+  );
+};
+
+// ── StaminaBar — graphical bar showing stamina fill level ───────────
+
+const staminaBarColor = (v: number): string => {
+  if (v >= 90) return "bg-green-500";
+  if (v >= 70) return "bg-green-400";
+  if (v >= 50) return "bg-yellow-500";
+  if (v >= 30) return "bg-orange-500";
+  return "bg-red-500";
+};
+
+export const StaminaBar: FC<{ player: Player; label?: string }> = ({ player, label }) => {
+  const stam = player.stamina ?? 100;
+  return (
+    <div className="flex items-center gap-2">
+      {label && <span className="text-xs text-gray-400 shrink-0">{label}</span>}
+      <div className="flex-1 h-3 rounded-full bg-gray-700 overflow-hidden min-w-[60px]">
+        <div
+          className={`h-full rounded-full transition-all ${staminaBarColor(stam)}`}
+          style={{ width: `${stam}%` }}
+        />
+      </div>
+      <span className={`text-xs font-semibold w-6 text-right ${staminaColor(stam)}`}>{stam}</span>
     </div>
   );
 };

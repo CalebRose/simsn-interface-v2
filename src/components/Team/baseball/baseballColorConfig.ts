@@ -29,3 +29,12 @@ export const gradeColor = (grade: string): string => {
 
 // Potential letter grade colors (separated for independent tuning)
 export const potColor = gradeColor;
+
+// Stamina 0-100 scale colors (same progression as ratingColor, stretched to wider range)
+export const staminaColor = (v: number): string => {
+  if (v >= 90) return "text-green-600 dark:text-green-400 font-semibold";
+  if (v >= 70) return "text-green-600 dark:text-green-400";
+  if (v >= 50) return "text-yellow-600 dark:text-yellow-400";
+  if (v >= 30) return "text-orange-600 dark:text-orange-400";
+  return "text-red-600 dark:text-red-400";
+};
