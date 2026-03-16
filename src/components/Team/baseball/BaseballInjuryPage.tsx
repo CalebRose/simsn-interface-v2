@@ -5,7 +5,7 @@ import { PageContainer } from "../../../_design/Container";
 import { SelectDropdown } from "../../../_design/Select";
 import { TabGroup, Tab } from "../../../_design/Tabs";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
-import { InfoType, SimMLB, SimCollegeBaseball, League } from "../../../_constants/constants";
+import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
 import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
@@ -16,7 +16,8 @@ import { getLogo } from "../../../_utility/getLogo";
 import { BaseballService } from "../../../_services/baseballService";
 import { InjuryReportItem, InjuryHistoryItem } from "../../../models/baseball/baseballStatsModels";
 import { useModal } from "../../../_hooks/useModal";
-import { ActionModal } from "../../Common/ActionModal";
+import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 import { Player } from "../../../models/baseball/baseballModels";
 import "./baseballMobile.css";
 
@@ -61,16 +62,27 @@ export const BaseballInjuryPage = ({ league }: Props) => {
 
   // Player modal
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const [modalPlayer, setModalPlayer] = useState<Player | null>(null);
-  const allPlayers = useMemo(() => allRosters.flatMap((r) => r.players), [allRosters]);
+  const [modalPlayerId, setModalPlayerId] = useState<number | null>(null);
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+
+  const orgId = organization?.id ?? 0;
+  const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+
+  const refreshBudget = useCallback(() => {
+    if (orgId && leagueYearId) {
+      BaseballService.GetScoutingBudget(orgId, leagueYearId)
+        .then(setScoutingBudget).catch(() => {});
+    }
+  }, [orgId, leagueYearId]);
+
+  useEffect(() => {
+    refreshBudget();
+  }, [refreshBudget]);
 
   const openPlayerModal = useCallback((playerId: number) => {
-    const player = allPlayers.find((p) => p.id === playerId);
-    if (player) {
-      setModalPlayer(player);
-      handleOpenModal();
-    }
-  }, [allPlayers, handleOpenModal]);
+    setModalPlayerId(playerId);
+    handleOpenModal();
+  }, [handleOpenModal]);
 
   // --- State ---
   const [activeTab, setActiveTab] = useState<InjuryTab>("Current");
@@ -463,16 +475,17 @@ export const BaseballInjuryPage = ({ league }: Props) => {
         </Border>
       </div>
 
-      {/* Player Info Modal */}
-      {modalPlayer && (
-        <ActionModal
+      {/* Player Modal */}
+      {modalPlayerId != null && (
+        <BaseballScoutingModal
           isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          playerID={modalPlayer.id}
-          playerLabel={`${modalPlayer.firstname} ${modalPlayer.lastname}`}
-          league={(league === SimMLB ? SimMLB : SimCollegeBaseball) as League}
-          modalAction={InfoType}
-          player={modalPlayer}
+          onClose={() => { setModalPlayerId(null); handleCloseModal(); }}
+          playerId={modalPlayerId}
+          orgId={orgId}
+          leagueYearId={leagueYearId}
+          scoutingBudget={scoutingBudget}
+          onBudgetChanged={refreshBudget}
+          league={league === SimMLB ? SimMLB : SimCollegeBaseball}
         />
       )}
     </PageContainer>

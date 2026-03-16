@@ -149,8 +149,9 @@ export const CONTRACT_GROUPS: ColumnGroup[] = [
   { groupLabel: "Contract", columns: [
     { label: "Years", sortKey: "contractYears" }, { label: "Yr", sortKey: "contractCurrentYear" },
     { label: "Salary", sortKey: "contractSalary" }, { label: "Share", sortKey: "contractShare" },
-    { label: "Bonus", sortKey: "contractBonus" }, { label: "Status", sortKey: "" },
+    { label: "Bonus", sortKey: "contractBonus" }, { label: "Status", sortKey: "contractStatus" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -164,6 +165,7 @@ export const BATTING_STATS_GROUPS: ColumnGroup[] = [
     { label: "AVG", sortKey: "stat_avg" }, { label: "OBP", sortKey: "stat_obp" },
     { label: "SLG", sortKey: "stat_slg" }, { label: "OPS", sortKey: "stat_ops" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -178,6 +180,7 @@ export const PITCHING_STATS_GROUPS: ColumnGroup[] = [
     { label: "SO", sortKey: "stat_so" }, { label: "BB", sortKey: "stat_bb" },
     { label: "ERA", sortKey: "stat_era" }, { label: "WHIP", sortKey: "stat_whip" },
   ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
@@ -208,6 +211,14 @@ export const getPrimaryPositionRating = (p: Player): number | null => {
   return (p.ratings as any)[rKey] ?? null;
 };
 
+const POS_SORT_ORDER = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "SP", "RP", "P"];
+const DURABILITY_SORT_ORDER: Record<string, number> = {
+  // Cover all possible API string formats (case-insensitive lookup used below)
+  "fragile": 1, "frail": 2, "injury prone": 3, "below average": 4,
+  "normal": 5, "average": 5, "durable": 6, "above average": 6,
+  "very durable": 7, "iron man": 8,
+};
+
 export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsMap): string | number | null => {
   if (key.startsWith("stat_")) {
     const s = statsMap?.get(p.id);
@@ -218,12 +229,16 @@ export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsM
   }
   switch (key) {
     case "name":          return p.lastname;
-    case "pos":           return p.listed_position ?? "";
+    case "pos": {
+      const pos = (p.listed_position ?? "").toUpperCase();
+      const idx = POS_SORT_ORDER.indexOf(pos);
+      return idx >= 0 ? idx : 99;
+    }
     case "ptype":         return p.ptype;
     case "level":         return LEVEL_ORDER.indexOf(p.league_level);
     case "age":           return p.age;
     case "ovr":           return p.displayovr != null ? Number(p.displayovr) : null;
-    case "durability":    return p.durability;
+    case "durability":    return DURABILITY_SORT_ORDER[(p.durability || "").toLowerCase()] ?? 5;
     case "stamina":       return p.stamina ?? null;
     case "contact":       return p.ratings.contact_display;
     case "power":         return p.ratings.power_display;
@@ -281,6 +296,14 @@ export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsM
     case "contractSalary":      return p.contract?.current_year_detail?.base_salary ?? null;
     case "contractShare":       return p.contract?.current_year_detail?.salary_share ?? null;
     case "contractBonus":       return p.contract?.bonus ?? null;
+    case "contractStatus": {
+      if (!p.contract) return 0;
+      // Sort: IR first, then Buyout, Extension, then Active last
+      if (p.contract.on_ir) return 3;
+      if (p.contract.is_buyout) return 2;
+      if (p.contract.is_extension) return 1;
+      return 0;
+    }
     default: return null;
   }
 };
@@ -799,8 +822,8 @@ export const AllPlayersTable = ({ players, orgAbbrev, onPlayerClick, sortConfig,
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
               {category === Attributes && <AllAttrCells p={p} isFuzzed={isFuzzed} />}
               {category === Potentials && <AllPotCells p={p} />}
-              {category === Contracts && <ContractCells p={p} isCollege={isCollege} />}
-              {category === Stats && <BattingStatsCells p={p} statsMap={playerStatsMap} />}
+              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
+              {category === Stats && <><BattingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
               {renderActions && (
                 <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}
@@ -833,8 +856,8 @@ export const PositionTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, o
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
               {category === Attributes && <PosAttrCells p={p} isFuzzed={isFuzzed} />}
               {category === Potentials && <PosPotCells p={p} isFuzzed={isFuzzed} potFuzzed={potFuzzed} />}
-              {category === Contracts && <ContractCells p={p} isCollege={isCollege} />}
-              {category === Stats && <BattingStatsCells p={p} statsMap={playerStatsMap} />}
+              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
+              {category === Stats && <><BattingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
               {renderActions && (
                 <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}
@@ -867,8 +890,8 @@ export const PitcherTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, on
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
               {category === Attributes && <PitchAttrCells p={p} isFuzzed={isFuzzed} />}
               {category === Potentials && <PitchPotCells p={p} isFuzzed={isFuzzed} potFuzzed={potFuzzed} />}
-              {category === Contracts && <ContractCells p={p} isCollege={isCollege} />}
-              {category === Stats && <PitchingStatsCells p={p} statsMap={playerStatsMap} />}
+              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
+              {category === Stats && <><PitchingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
               {renderActions && (
                 <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}

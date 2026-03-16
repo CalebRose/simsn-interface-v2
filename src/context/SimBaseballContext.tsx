@@ -543,7 +543,21 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   const loadBootstrapForOrg = useCallback(async (orgId: number, forceRefresh?: boolean) => {
     // Cache hit — swap instantly, no network call
     if (!forceRefresh && bootstrapCache.current.has(orgId)) {
-      const cached = bootstrapCache.current.get(orgId)!;
+      let cached = bootstrapCache.current.get(orgId)!;
+
+      // Check if stamina has been patched for this cached data.
+      // If any player has stamina undefined, we need to fetch it.
+      const allPlayers = Object.values(cached.rosterMap).flat();
+      const needsStamina = allPlayers.length > 0 && allPlayers.every((p) => p.stamina === undefined);
+      if (needsStamina) {
+        const org = organizations.find((o) => o.id === orgId);
+        if (org?.org_abbrev) {
+          const patchedMap = await fetchAndMergeStamina(org.org_abbrev, cached.rosterMap);
+          cached = { ...cached, rosterMap: patchedMap };
+          bootstrapCache.current.set(orgId, cached);
+        }
+      }
+
       applyBootstrap(orgId, cached);
       // Return PascalCase shape to match raw API response (consumed by processBootstrapResult in team pages)
       return {

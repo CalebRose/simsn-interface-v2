@@ -17,9 +17,11 @@ import {
   BaseballTeam,
   BaseballFinancials,
 } from "../../models/baseball/baseballModels";
-import { SimCollegeBaseball, SimMLB, InfoType, League } from "../../_constants/constants";
+import { SimCollegeBaseball, SimMLB, League } from "../../_constants/constants";
 import { useModal } from "../../_hooks/useModal";
-import { ActionModal } from "../Common/ActionModal";
+import { BaseballScoutingModal } from "../Team/baseball/BaseballScouting/BaseballScoutingModal";
+import { ScoutingBudget } from "../../models/baseball/baseballScoutingModels";
+import { BaseballService } from "../../_services/baseballService";
 import { Player } from "../../models/baseball/baseballModels";
 import { getLogo } from "../../_utility/getLogo";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
@@ -30,7 +32,6 @@ import { useTeamColors } from "../../_hooks/useTeamColors";
 import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { BaseballBoxScoreModal } from "../Schedule/BaseballSchedule/BaseballBoxScoreModal";
-import { BaseballService } from "../../_services/baseballService";
 import { BattingLeaderRow, PitchingLeaderRow } from "../../models/baseball/baseballStatsModels";
 import PlayerPicture from "../../_utility/usePlayerFaces";
 
@@ -62,7 +63,6 @@ export const BaseballLandingPage = ({
     loadBootstrapForOrg,
     bootstrappedOrgId,
     isBootstrapLoading,
-    allRosters,
   } = useSimBaseballStore();
   const { isMobile } = useResponsive();
 
@@ -75,16 +75,26 @@ export const BaseballLandingPage = ({
 
   // --- Player modal ---
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const [modalPlayer, setModalPlayer] = useState<Player | null>(null);
-  const allPlayers = useMemo(() => allRosters.flatMap((r) => r.players), [allRosters]);
+  const [modalPlayerId, setModalPlayerId] = useState<number | null>(null);
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+  const orgId = userOrg.id;
+  const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+
+  const refreshBudget = useCallback(() => {
+    if (orgId && leagueYearId) {
+      BaseballService.GetScoutingBudget(orgId, leagueYearId)
+        .then(setScoutingBudget).catch(() => {});
+    }
+  }, [orgId, leagueYearId]);
+
+  useEffect(() => {
+    refreshBudget();
+  }, [refreshBudget]);
 
   const openPlayerModal = useCallback((playerId: number) => {
-    const player = allPlayers.find((p) => p.id === playerId);
-    if (player) {
-      setModalPlayer(player);
-      handleOpenModal();
-    }
-  }, [allPlayers, handleOpenModal]);
+    setModalPlayerId(playerId);
+    handleOpenModal();
+  }, [handleOpenModal]);
 
   // --- Org selector: view any org ---
   const [viewedOrgId, setViewedOrgId] = useState<number | null>(null);
@@ -912,16 +922,17 @@ export const BaseballLandingPage = ({
         onPlayerClick={openPlayerModal}
       />
 
-      {/* Player Info Modal */}
-      {modalPlayer && (
-        <ActionModal
+      {/* Player Modal */}
+      {modalPlayerId != null && (
+        <BaseballScoutingModal
           isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          playerID={modalPlayer.id}
-          playerLabel={`${modalPlayer.firstname} ${modalPlayer.lastname}`}
-          league={(league === SimMLB ? SimMLB : SimCollegeBaseball) as League}
-          modalAction={InfoType}
-          player={modalPlayer}
+          onClose={() => { setModalPlayerId(null); handleCloseModal(); }}
+          playerId={modalPlayerId}
+          orgId={orgId}
+          leagueYearId={leagueYearId}
+          scoutingBudget={scoutingBudget}
+          onBudgetChanged={refreshBudget}
+          league={league === SimMLB ? SimMLB : SimCollegeBaseball}
         />
       )}
     </div>
