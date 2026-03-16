@@ -366,7 +366,12 @@ const CLASS_MAP: Record<number, [string, string]> = {
  */
 export const getClassYear = (contract: PlayerContract | null): { label: string; abbrev: string } => {
   if (!contract) return { label: "", abbrev: "" };
-  const [label, abbrev] = CLASS_MAP[Math.min(contract.current_year, 5)] ?? ["Senior", "SR"];
+  // For redshirt players, current_year includes the redshirt year,
+  // so subtract 1 to get the actual class year (year 4 of 5 = Junior, not Senior).
+  const classIdx = contract.is_extension
+    ? Math.max(contract.current_year - 1, 1)
+    : contract.current_year;
+  const [label, abbrev] = CLASS_MAP[Math.min(classIdx, 5)] ?? ["Senior", "SR"];
   const prefix = contract.is_extension ? "RS " : "";
   return { label: prefix + label, abbrev: prefix + abbrev };
 };

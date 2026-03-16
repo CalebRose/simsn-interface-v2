@@ -3930,6 +3930,9 @@ export const BaseballPlayerInfoModalBody: FC<
                             <th className="px-1.5 py-1 text-center">W</th>
                             <th className="px-1.5 py-1 text-center">L</th>
                             <th className="px-1.5 py-1 text-center">SV</th>
+                            <th className="px-1.5 py-1 text-center">HLD</th>
+                            <th className="px-1.5 py-1 text-center">BS</th>
+                            <th className="px-1.5 py-1 text-center">QS</th>
                             <th className="px-1.5 py-1 text-center">IP</th>
                             <th className="px-1.5 py-1 text-center">H</th>
                             <th className="px-1.5 py-1 text-center">ER</th>
@@ -3948,6 +3951,9 @@ export const BaseballPlayerInfoModalBody: FC<
                               <td className="px-1.5 py-1 text-center">{s.w}</td>
                               <td className="px-1.5 py-1 text-center">{s.l}</td>
                               <td className="px-1.5 py-1 text-center">{s.sv}</td>
+                              <td className="px-1.5 py-1 text-center">{s.hld}</td>
+                              <td className="px-1.5 py-1 text-center">{s.bs}</td>
+                              <td className="px-1.5 py-1 text-center">{s.qs}</td>
                               <td className="px-1.5 py-1 text-center">{s.ip}</td>
                               <td className="px-1.5 py-1 text-center">{s.h}</td>
                               <td className="px-1.5 py-1 text-center">{s.er}</td>

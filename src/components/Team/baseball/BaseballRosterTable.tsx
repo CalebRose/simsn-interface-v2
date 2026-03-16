@@ -172,7 +172,9 @@ export const PITCHING_STATS_GROUPS: ColumnGroup[] = [
   { groupLabel: "Pitching", columns: [
     { label: "G", sortKey: "stat_g" }, { label: "GS", sortKey: "stat_gs" },
     { label: "W", sortKey: "stat_w" }, { label: "L", sortKey: "stat_l" },
-    { label: "SV", sortKey: "stat_sv" }, { label: "IP", sortKey: "stat_ip" },
+    { label: "SV", sortKey: "stat_sv" }, { label: "HLD", sortKey: "stat_hld" },
+    { label: "BS", sortKey: "stat_bs" }, { label: "QS", sortKey: "stat_qs" },
+    { label: "IP", sortKey: "stat_ip" },
     { label: "SO", sortKey: "stat_so" }, { label: "BB", sortKey: "stat_bb" },
     { label: "ERA", sortKey: "stat_era" }, { label: "WHIP", sortKey: "stat_whip" },
   ]},
@@ -738,7 +740,7 @@ export const BattingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: Playe
 
 export const PitchingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: PlayerStatsMap }) => {
   const s = statsMap?.get(p.id) as PitchingLeaderRow | undefined;
-  if (!s) return <td data-label="Stats" className={`${td} text-center text-gray-400`} colSpan={10}>—</td>;
+  if (!s) return <td data-label="Stats" className={`${td} text-center text-gray-400`} colSpan={13}>—</td>;
   return (
     <>
       <td data-label="G" className={`${td} text-center`}>{s.g}</td>
@@ -746,6 +748,9 @@ export const PitchingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: Play
       <td data-label="W" className={`${td} text-center`}>{s.w}</td>
       <td data-label="L" className={`${td} text-center`}>{s.l}</td>
       <td data-label="SV" className={`${td} text-center`}>{s.sv}</td>
+      <td data-label="HLD" className={`${td} text-center`}>{s.hld}</td>
+      <td data-label="BS" className={`${td} text-center`}>{s.bs}</td>
+      <td data-label="QS" className={`${td} text-center`}>{s.qs}</td>
       <td data-label="IP" className={`${td} text-center`}>{s.ip}</td>
       <td data-label="SO" className={`${td} text-center`}>{s.so}</td>
       <td data-label="BB" className={`${td} text-center`}>{s.bb}</td>

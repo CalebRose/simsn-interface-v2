@@ -91,6 +91,7 @@ export interface BoxScoreBattingLine {
   player_id: number;
   name: string;
   pos?: string;
+  batting_order?: number;
   pa: number;
   ab: number;
   r: number;
@@ -110,6 +111,7 @@ export interface BoxScoreBattingLine {
 export interface BoxScorePitchingLine {
   player_id: number;
   name: string;
+  appearance_order?: number;
   gs: number;
   ip: string;
   h: number;
@@ -125,6 +127,9 @@ export interface BoxScorePitchingLine {
   hbp: number;
   wp: number;
   dec: string; // "W" | "L" | "S" | ""
+  hold?: number;          // 0 or 1
+  blown_save?: number;    // 0 or 1
+  quality_start?: number; // 0 or 1, only meaningful when gs === 1
 }
 
 export type SubstitutionType = "pitching_change" | "emergency_pitcher" | "pinch_hit" | "defensive_sub";
@@ -136,6 +141,12 @@ export interface BoxScoreSubstitution {
   player_in: { id: number; name: string };
   player_out: { id: number; name: string };
   new_position: string;
+  // Pitching change entry context (only on pitching_change subs from newer games)
+  entry_score_diff?: number;
+  entry_runners_on?: number;
+  entry_inning?: number;
+  entry_outs?: number;
+  entry_is_save_situation?: boolean;
 }
 
 export type DefenseDict = Record<string, number>; // position code → player_id
@@ -212,7 +223,8 @@ export type BattingSortField =
 export type PitchingSortField =
   | "era" | "wins" | "so" | "saves" | "whip"
   | "k9" | "bb9" | "hr9" | "h9" | "k_bb" | "w_pct" | "k_pct" | "bb_pct" | "babip" | "ip_gs"
-  | "g" | "gs" | "w" | "l" | "sv" | "ip" | "h" | "r" | "er" | "bb" | "hr";
+  | "g" | "gs" | "w" | "l" | "sv" | "ip" | "h" | "r" | "er" | "bb" | "hr"
+  | "holds" | "blown_saves" | "quality_starts";
 export type FieldingSortField =
   | "fpct" | "putouts" | "assists"
   | "tc" | "tc_g" | "rf_g" | "po_inn" | "a_inn" | "e_inn"
@@ -311,6 +323,9 @@ export interface PitchingLeaderRow {
   w: number;
   l: number;
   sv: number;
+  hld: number;
+  bs: number;
+  qs: number;
   ip: string;
   h: number;
   r: number;
@@ -410,6 +425,9 @@ export interface TeamPitchingRow {
   w: number;
   l: number;
   sv: number;
+  hld: number;
+  bs: number;
+  qs: number;
   ip: string;
   r: number;
   er: number;
@@ -502,6 +520,9 @@ export interface PlayerPitchingSeason {
   w: number;
   l: number;
   sv: number;
+  hld: number;
+  bs: number;
+  qs: number;
   ip: string;
   h: number;
   r: number;
