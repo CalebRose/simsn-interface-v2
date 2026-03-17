@@ -177,6 +177,14 @@ export const SideMenu = ({}) => {
     return currentUser.IsBanned;
   }, [currentUser]);
 
+  const isCommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return (
+      currentUser.roleID === "Admin" ||
+      currentUser.roleID?.includes("Commissioner")
+    );
+  }, [currentUser]);
+
   // ✅ Handle Logout
   const logout = async () => {
     setProcessing(true);
@@ -268,7 +276,7 @@ export const SideMenu = ({}) => {
                         isRoute={true}
                         route={routes.USER}
                       />
-                      {currentUser.roleID === "Admin" && !isBanned && (
+                      {isCommissioner && !isBanned && (
                         <NavDropdownItem
                           label="Admin"
                           isRoute={true}

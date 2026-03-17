@@ -212,6 +212,10 @@ export const ManageUserModal: FC<ManageUserModalProps> = ({
 
   const handleToggleBan = () =>
     withBusy(async () => {
+      if (u.username === "TuscanSota" || u.username === "Rocketcan") {
+        notify("Cannot ban this user.", "error");
+        return;
+      }
       await updateUser(u.id, { IsBanned: !u.IsBanned });
       setViewingUser({ ...u, IsBanned: !u.IsBanned });
       notify(
@@ -233,6 +237,10 @@ export const ManageUserModal: FC<ManageUserModalProps> = ({
 
   const handleDelete = () =>
     withBusy(async () => {
+      if (u.username === "TuscanSota" || u.username === "Rocketcan") {
+        notify("Cannot delete this user", "error");
+        return;
+      }
       await deleteUser(u.id);
       notify(`${u.username} deleted`, "success");
       setConfirmDelete(false);
