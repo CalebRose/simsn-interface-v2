@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSnackbar } from "notistack";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { PageContainer } from "../../_design/Container";
@@ -28,9 +28,14 @@ import { useLeagueStore } from "../../context/LeagueContext";
 import { getPrimaryBaseballTeam } from "../../_utility/baseballHelpers";
 import type { BaseballOrganization } from "../../models/baseball/baseballModels";
 
-const buildBaseballOptions = (orgs: BaseballOrganization[], league: "mlb" | "college") => {
+const buildBaseballOptions = (
+  orgs: BaseballOrganization[],
+  league: "mlb" | "college",
+) => {
   const filtered = orgs.filter((o) => o.league === league);
-  const sorted = [...filtered].sort((a, b) => a.org_abbrev.localeCompare(b.org_abbrev));
+  const sorted = [...filtered].sort((a, b) =>
+    a.org_abbrev.localeCompare(b.org_abbrev),
+  );
   const teamOpts = sorted.map((o) => ({
     label: o.org_abbrev,
     value: o.id.toString(),
@@ -43,7 +48,9 @@ const buildBaseballOptions = (orgs: BaseballOrganization[], league: "mlb" | "col
       confMap.set(conf, { label: conf, value: conf });
     }
   }
-  const confOpts = Array.from(confMap.values()).sort((a, b) => a.label.localeCompare(b.label));
+  const confOpts = Array.from(confMap.values()).sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
   return { teamOpts, confOpts };
 };
 
@@ -78,7 +85,6 @@ export const AvailableTeams = () => {
   const [teamOptions, setTeamOptions] = useState(cfbTeamOptions);
   const [conferenceOptions, setConferenceOptions] =
     useState(cfbConferenceOptions);
-  const [filteredTeams, setFilteredTeams] = useState<any[]>([]);
   const [selectedTeams, setSelectedTeams] = useState<any[]>([]);
   const [conferences, setConferences] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,20 +114,7 @@ export const AvailableTeams = () => {
     }
   }, [selectedTeam, selectedLeague]);
 
-  useEffect(() => {
-    filterTeams();
-  }, [
-    selectedLeague,
-    conferences,
-    selectedTeams,
-    cfbTeams,
-    cbbTeams,
-    nflTeams,
-    nbaTeams,
-    mlbOrganizations,
-  ]);
-
-  const filterTeams = () => {
+  const filteredTeams = useMemo(() => {
     let teams: any[] = [];
     if (selectedLeague === SimCFB) teams = [...cfbTeams];
     else if (selectedLeague === SimNFL) teams = [...nflTeams];
@@ -136,7 +129,8 @@ export const AvailableTeams = () => {
         (o) => o.league === "college",
       );
 
-    const isBaseball = selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball;
+    const isBaseball =
+      selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball;
     const filtered = teams.filter((x) => {
       let matchesConference = true;
       let matchesTeams = true;
@@ -149,15 +143,30 @@ export const AvailableTeams = () => {
           matchesTeams = selectedTeams.includes(x.id);
         }
       } else {
-        if (conferences.length > 0) matchesConference = conferences.includes(x.ConferenceID);
-        if (selectedTeams.length > 0) matchesTeams = selectedTeams.includes(x.ID);
+        if (conferences.length > 0)
+          matchesConference = conferences.includes(x.ConferenceID);
+        if (selectedTeams.length > 0)
+          matchesTeams = selectedTeams.includes(x.ID);
       }
       return matchesConference && matchesTeams;
     });
+    return filtered;
+  }, [
+    selectedLeague,
+    conferences,
+    selectedTeams,
+    cfbTeams,
+    cbbTeams,
+    nflTeams,
+    nbaTeams,
+    chlTeams,
+    phlTeams,
+    mlbOrganizations,
+  ]);
 
-    setFilteredTeams(filtered);
+  useEffect(() => {
     setIsLoading(false);
-  };
+  }, [filteredTeams]);
 
   const GetViewTeamData = async () => {
     // Baseball orgs don't have a view endpoint yet — use the org data directly
@@ -328,8 +337,11 @@ export const AvailableTeams = () => {
   };
 
   const ChangeConference = (options: any) => {
-    const isBaseball = selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball;
-    const opts = [...options.map((x: any) => isBaseball ? x.value : Number(x.value))];
+    const isBaseball =
+      selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball;
+    const opts = [
+      ...options.map((x: any) => (isBaseball ? x.value : Number(x.value))),
+    ];
     setConferences(() => opts);
   };
 
@@ -444,7 +456,8 @@ export const AvailableTeams = () => {
                   conference={x.Conference}
                   league={selectedLeague}
                   disable={
-                    sentRequestCFB || (x.Coach && x.Coach !== "AI" && x.Coach.length > 0)
+                    sentRequestCFB ||
+                    (x.Coach && x.Coach !== "AI" && x.Coach.length > 0)
                   }
                   setSelectedTeam={setSelectedTeam}
                 />
@@ -502,7 +515,8 @@ export const AvailableTeams = () => {
                   conference={x.Conference}
                   league={selectedLeague}
                   disable={
-                    sentRequestCHL || (x.Coach && x.Coach !== "AI" && x.Coach.length > 0)
+                    sentRequestCHL ||
+                    (x.Coach && x.Coach !== "AI" && x.Coach.length > 0)
                   }
                   setSelectedTeam={setSelectedTeam}
                 />
