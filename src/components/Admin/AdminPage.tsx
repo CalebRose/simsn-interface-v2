@@ -28,6 +28,7 @@ import { AdminRequestsTab } from "./AdminRequestsTab";
 import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
 import { AdminTradesTab } from "./AdminTradesTab";
+import { useMemo } from "react";
 
 interface UnAuthPageProps {
   navigate: NavigateFunction;
@@ -57,6 +58,42 @@ export const AdminPage = () => {
   if (currentUser && currentUser.roleID && currentUser.roleID !== AdminRole) {
     return <UnAuthAdminPage navigate={navigate} />;
   }
+
+  const isAdmin = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.roleID === AdminRole;
+  }, [currentUser]);
+
+  const isCFBCommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.roleID?.includes("CFB Commissioner");
+  }, [currentUser]);
+
+  const isNFLCommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.roleID?.includes("NFL Commissioner");
+  }, [currentUser]);
+
+  const isCBBCommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.roleID?.includes("CBB Commissioner");
+  }, [currentUser]);
+
+  const isNBACommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.roleID?.includes("NBA Commissioner");
+  }, [currentUser]);
+
+  const isCHLCommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.roleID?.includes("CHL Commissioner");
+  }, [currentUser]);
+
+  const isPHLCommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.roleID?.includes("PHL Commissioner");
+  }, [currentUser]);
+
   const leagueStore = useLeagueStore();
   const { ts, selectedLeague, setSelectedLeague } = leagueStore;
   const { selectedTab, setSelectedTab } = useAdminPage();
@@ -69,67 +106,83 @@ export const AdminPage = () => {
             <Text variant="h6" className="text-start mb-2">
               Leagues
             </Text>
-            <ButtonGroup classes="justify-between flex-wrap gap-2">
-              <PillButton
-                isSelected={selectedLeague === SimCFB}
-                classes="w-[8rem]"
-                onClick={() => setSelectedLeague(SimCFB)}
-              >
-                {SimCFB}
-              </PillButton>
-              <PillButton
-                isSelected={selectedLeague === SimNFL}
-                classes="w-[8rem]"
-                onClick={() => setSelectedLeague(SimNFL)}
-              >
-                {SimNFL}
-              </PillButton>
-              <PillButton
-                isSelected={selectedLeague === SimNBA}
-                variant="basketball"
-                classes="w-[8rem]"
-                onClick={() => setSelectedLeague(SimCBB)}
-              >
-                {SimCBB}
-              </PillButton>
-              <PillButton
-                isSelected={selectedLeague === SimCBB}
-                variant="basketball"
-                classes="w-[8rem]"
-                onClick={() => setSelectedLeague(SimNBA)}
-              >
-                {SimNBA}
-              </PillButton>
-              <PillButton
-                isSelected={selectedLeague === SimCHL}
-                variant="hockey"
-                classes="w-[8rem]"
-                onClick={() => setSelectedLeague(SimCHL)}
-              >
-                {SimCHL}
-              </PillButton>
-              <PillButton
-                isSelected={selectedLeague === SimPHL}
-                variant="hockey"
-                classes="w-[8rem]"
-                onClick={() => setSelectedLeague(SimPHL)}
-              >
-                {SimPHL}
-              </PillButton>
-              <PillButton
-                isSelected={selectedLeague === SimCollegeBaseball}
-                classes="w-[8rem]"
-                onClick={() => setSelectedLeague(SimCollegeBaseball)}
-              >
-                SimCB
-              </PillButton>
-              <PillButton
-                isSelected={selectedLeague === SimMLB}
-                classes="w-[8rem]"
-                onClick={() => setSelectedLeague(SimMLB)}
-              >
-                {SimMLB}
-              </PillButton>
+            <ButtonGroup classes="justify-between flex-wrap gap-2 py-4">
+              {(isAdmin || isCFBCommissioner) && (
+                <PillButton
+                  isSelected={selectedLeague === SimCFB}
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimCFB)}
+                >
+                  {SimCFB}
+                </PillButton>
+              )}
+              {(isAdmin || isNFLCommissioner) && (
+                <PillButton
+                  isSelected={selectedLeague === SimNFL}
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimNFL)}
+                >
+                  {SimNFL}
+                </PillButton>
+              )}
+              {(isAdmin || isCBBCommissioner) && (
+                <PillButton
+                  isSelected={selectedLeague === SimNBA}
+                  variant="basketball"
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimCBB)}
+                >
+                  {SimCBB}
+                </PillButton>
+              )}
+              {(isAdmin || isNBACommissioner) && (
+                <PillButton
+                  isSelected={selectedLeague === SimCBB}
+                  variant="basketball"
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimNBA)}
+                >
+                  {SimNBA}
+                </PillButton>
+              )}
+              {(isAdmin || isCHLCommissioner) && (
+                <PillButton
+                  isSelected={selectedLeague === SimCHL}
+                  variant="hockey"
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimCHL)}
+                >
+                  {SimCHL}
+                </PillButton>
+              )}
+              {(isAdmin || isPHLCommissioner) && (
+                <PillButton
+                  isSelected={selectedLeague === SimPHL}
+                  variant="hockey"
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimPHL)}
+                >
+                  {SimPHL}
+                </PillButton>
+              )}
+              {isAdmin && (
+                <PillButton
+                  isSelected={selectedLeague === SimCollegeBaseball}
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimCollegeBaseball)}
+                >
+                  SimCB
+                </PillButton>
+              )}
+              {isAdmin && (
+                <PillButton
+                  isSelected={selectedLeague === SimMLB}
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimMLB)}
+                >
+                  {SimMLB}
+                </PillButton>
+              )}
             </ButtonGroup>
           </Border>
         </div>

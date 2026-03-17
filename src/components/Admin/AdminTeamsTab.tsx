@@ -130,7 +130,7 @@ export const AdminCHLTeamCard: React.FC<AdminCHLTeamCardProps> = ({
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
   const textColorClass = teamColors.TextColorOne;
-  const logo = getLogo(SimCHL as League, team.ID, currentUser?.isRetro);
+  const logo = getLogo(SimCHL as League, team.ID, currentUser?.IsRetro);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
 
   const removeUserFromTeam = async () => {
@@ -237,7 +237,7 @@ export const AdminPHLTeamCard: React.FC<AdminPHLTeamCardProps> = ({
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
   const textColorClass = teamColors.TextColorOne;
-  const logo = getLogo(SimPHL as League, team.ID, currentUser?.isRetro);
+  const logo = getLogo(SimPHL as League, team.ID, currentUser?.IsRetro);
   const remove = async (role: string) => {
     const dto = {
       TeamID: team.ID,
@@ -372,7 +372,7 @@ export const AdminCFBTeamCard: React.FC<AdminCFBTeamCardProps> = ({
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
   const textColorClass = teamColors.TextColorOne;
-  const logo = getLogo(SimCFB as League, team.ID, currentUser?.isRetro);
+  const logo = getLogo(SimCFB as League, team.ID, currentUser?.IsRetro);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
 
   const removeUserFromTeam = async () => {
@@ -479,7 +479,7 @@ export const AdminNFLTeamCard: React.FC<AdminNFLTeamCardProps> = ({
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
   const textColorClass = teamColors.TextColorOne;
-  const logo = getLogo(SimNFL as League, team.ID, currentUser?.isRetro);
+  const logo = getLogo(SimNFL as League, team.ID, currentUser?.IsRetro);
   const remove = async (role: string) => {
     const dto = {
       NFLTeamID: team.ID,
@@ -615,7 +615,7 @@ export const AdminCBBTeamCard: React.FC<AdminCBBTeamCardProps> = ({
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
   const textColorClass = teamColors.TextColorOne;
-  const logo = getLogo(SimCBB as League, team.ID, currentUser?.isRetro);
+  const logo = getLogo(SimCBB as League, team.ID, currentUser?.IsRetro);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
 
   const removeUserFromTeam = async () => {
@@ -722,7 +722,7 @@ export const AdminNBATeamCard: React.FC<AdminNBATeamCardProps> = ({
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
   const textColorClass = teamColors.TextColorOne;
-  const logo = getLogo(SimNBA as League, team.ID, currentUser?.isRetro);
+  const logo = getLogo(SimNBA as League, team.ID, currentUser?.IsRetro);
   const remove = async (role: string) => {
     const dto = {
       NBATeamID: team.ID,

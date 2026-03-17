@@ -42,6 +42,7 @@ import { TeamProfilePage } from "../components/TeamProfile/TeamProfile";
 import { TransferPortalPage } from "../components/TransferPortal/TransferPortal";
 import { NewsPage } from "../components/News/NewsPage";
 import { DraftPage } from "../components/Draft/DraftPage";
+import { AdminUsersPage } from "../components/AdminUsers/AdminUsersPage";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
@@ -69,6 +70,15 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <AdminPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="Users"
+    path={routes.USERS}
+    element={
+      <AuthGuard>
+        <AdminUsersPage />
       </AuthGuard>
     }
   />,

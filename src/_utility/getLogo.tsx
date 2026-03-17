@@ -21,9 +21,9 @@ import {
 export const getLogo = (
   league: League,
   id: number,
-  isRetro: boolean | undefined,
+  IsRetro: boolean | undefined,
 ) => {
-  const retro = isRetro || false;
+  const retro = IsRetro || false;
   if (league === SimCFB) return getCFBLogo(id, retro);
   if (league === SimNFL) return getNFLLogo(id, retro);
   if (league === SimCBB) return getCBBLogo(id, retro);
@@ -35,8 +35,8 @@ export const getLogo = (
   return "";
 };
 
-export const getCFBLogo = (id: number, isRetro: boolean) => {
-  const logoObj = isRetro ? retro_logos : logos;
+export const getCFBLogo = (id: number, IsRetro: boolean) => {
+  const logoObj = IsRetro ? retro_logos : logos;
   switch (id) {
     case 1:
       return logoObj.Air_Force;
@@ -574,8 +574,8 @@ export const getCFBLogo = (id: number, isRetro: boolean) => {
       return logoObj.Unknown;
   }
 };
-export const getNFLLogo = (id: number, isRetro: boolean) => {
-  const logoObj = isRetro ? retro_logos : logos;
+export const getNFLLogo = (id: number, IsRetro: boolean) => {
+  const logoObj = IsRetro ? retro_logos : logos;
   switch (id) {
     case 29:
       return logoObj.ARI_Cardinals;
@@ -646,8 +646,8 @@ export const getNFLLogo = (id: number, isRetro: boolean) => {
       return logoObj.Unknown;
   }
 };
-export const getCBBLogo = (id: number, isRetro: boolean) => {
-  const logoObj = isRetro ? retro_logos : logos;
+export const getCBBLogo = (id: number, IsRetro: boolean) => {
+  const logoObj = IsRetro ? retro_logos : logos;
   switch (id) {
     case 1:
       return logoObj.Air_Force;
@@ -1410,8 +1410,8 @@ export const getCBBLogo = (id: number, isRetro: boolean) => {
       return logoObj.Unknown;
   }
 };
-export const getNBALogo = (id: number, isRetro: boolean) => {
-  const logoObj = isRetro ? retro_logos : logos;
+export const getNBALogo = (id: number, IsRetro: boolean) => {
+  const logoObj = IsRetro ? retro_logos : logos;
   switch (id) {
     case 1:
       return logoObj.ATL_Hawks;
@@ -1804,8 +1804,8 @@ export const getNBALogo = (id: number, isRetro: boolean) => {
       return logoObj.Unknown;
   }
 };
-export const getCHLLogo = (id: number, isRetro: boolean) => {
-  const logoObj = isRetro ? retro_logos : logos;
+export const getCHLLogo = (id: number, IsRetro: boolean) => {
+  const logoObj = IsRetro ? retro_logos : logos;
   switch (id) {
     case 1:
       return logos.Air_Force;
@@ -2001,8 +2001,8 @@ export const getCHLLogo = (id: number, isRetro: boolean) => {
       return logoObj.Unknown;
   }
 };
-export const getPHLLogo = (id: number, isRetro: boolean) => {
-  const logoObj = isRetro ? retro_logos : logos;
+export const getPHLLogo = (id: number, IsRetro: boolean) => {
+  const logoObj = IsRetro ? retro_logos : logos;
   switch (id) {
     case 1:
       return HCKLogos.MONT;
@@ -2074,8 +2074,8 @@ export const getPHLLogo = (id: number, isRetro: boolean) => {
   }
 };
 
-export const getMLBLogo = (id: number, isRetro: boolean) => {
-  const logoObj = isRetro ? retro_logos : logos;
+export const getMLBLogo = (id: number, IsRetro: boolean) => {
+  const logoObj = IsRetro ? retro_logos : logos;
   switch (id) {
     case 1:
       return BaseballLogos.NYM;
@@ -2137,679 +2137,973 @@ export const getMLBLogo = (id: number, isRetro: boolean) => {
       return BaseballLogos.CIN;
     case 30:
       return BaseballLogos.WAS;
-case 31:
+    case 31:
       return BaseballLogos.BIRM;
-case 32:
+    case 32:
       return BaseballLogos.SPRF;
-case 33:
+    case 33:
       return BaseballLogos.CHAT;
-case 34:
+    case 34:
       return BaseballLogos.COLC;
-case 35:
+    case 35:
       return BaseballLogos.READ;
-case 36:
+    case 36:
       return BaseballLogos.MID;
-case 37:
+    case 37:
       return BaseballLogos.PORT;
-case 38:
+    case 38:
       return BaseballLogos.ARKT;
-case 39:
+    case 39:
       return BaseballLogos.PENS;
-case 40:
+    case 40:
       return BaseballLogos.NWAN;
-case 41:
+    case 41:
       return BaseballLogos.WICH;
-case 42:
+    case 42:
       return BaseballLogos.BING;
-case 43:
+    case 43:
       return BaseballLogos.CCH;
-case 44:
+    case 44:
       return BaseballLogos.HARR;
-case 45:
+    case 45:
       return BaseballLogos.FRSC;
-case 46:
+    case 46:
       return BaseballLogos.ALTO;
-case 47:
+    case 47:
       return BaseballLogos.BILX;
-case 48:
+    case 48:
       return BaseballLogos.RICH;
-case 49:
+    case 49:
       return BaseballLogos.AKRD;
-case 50:
+    case 50:
       return BaseballLogos.TENN;
-case 51:
+    case 51:
       return BaseballLogos.BOW;
-case 52:
+    case 52:
       return BaseballLogos.TULS;
-case 53:
+    case 53:
       return BaseballLogos.HART;
-case 54:
+    case 54:
       return BaseballLogos.NHFC;
-case 55:
+    case 55:
       return BaseballLogos.SA;
-case 56:
+    case 56:
       return BaseballLogos.AMAR;
-case 57:
+    case 57:
       return BaseballLogos.ERIE;
-case 58:
+    case 58:
       return BaseballLogos.RCTP;
-case 59:
+    case 59:
       return BaseballLogos.SMST;
-case 60:
+    case 60:
       return BaseballLogos.MONT;
-case 61:
+    case 61:
       return BaseballLogos.SCRA;
-case 62:
+    case 62:
       return BaseballLogos.SACR;
-case 63:
+    case 63:
       return BaseballLogos.TACO;
-case 64:
+    case 64:
       return BaseballLogos.PASO;
-case 65:
+    case 65:
       return BaseballLogos.ROCH;
-case 66:
+    case 66:
       return BaseballLogos.INDI;
-case 67:
+    case 67:
       return BaseballLogos.STPS;
-case 68:
+    case 68:
       return BaseballLogos.BUFF;
-case 69:
+    case 69:
       return BaseballLogos.SALT;
-case 70:
+    case 70:
       return BaseballLogos.JAX;
-case 71:
+    case 71:
       return BaseballLogos.DURH;
-case 72:
+    case 72:
       return BaseballLogos.SLSC;
-case 73:
+    case 73:
       return BaseballLogos.IOWA;
-case 74:
+    case 74:
       return BaseballLogos.ALBQ;
-case 75:
+    case 75:
       return BaseballLogos.NASH;
-case 76:
+    case 76:
       return BaseballLogos.RRE;
-case 77:
+    case 77:
       return BaseballLogos.TOL;
-case 78:
+    case 78:
       return BaseballLogos.GWIN;
-case 79:
+    case 79:
       return BaseballLogos.OMA;
-case 80:
+    case 80:
       return BaseballLogos.OCBC;
-case 81:
+    case 81:
       return BaseballLogos.COLU;
-case 82:
+    case 82:
       return BaseballLogos.LVAV;
-case 83:
+    case 83:
       return BaseballLogos.MEMP;
-case 84:
+    case 84:
       return BaseballLogos.CHAR;
-case 85:
+    case 85:
       return BaseballLogos.LOU;
-case 86:
+    case 86:
       return BaseballLogos.LVAL;
-case 87:
+    case 87:
       return BaseballLogos.WORS;
-case 88:
+    case 88:
       return BaseballLogos.SYRA;
-case 89:
+    case 89:
       return BaseballLogos.RENO;
-case 90:
+    case 90:
       return BaseballLogos.NOR;
-case 91:
+    case 91:
       return BaseballLogos.SPOK;
-case 92:
+    case 92:
       return BaseballLogos.TCDD;
-case 93:
+    case 93:
       return BaseballLogos.BELT;
-case 94:
+    case 94:
       return BaseballLogos.PEOR;
-case 95:
+    case 95:
       return BaseballLogos.WISC;
-case 96:
+    case 96:
       return BaseballLogos.SBC;
-case 97:
+    case 97:
       return BaseballLogos.HICK;
-case 98:
+    case 98:
       return BaseballLogos.LANS;
-case 99:
+    case 99:
       return BaseballLogos.BRKN;
-case 100:
+    case 100:
       return BaseballLogos.EVAS;
-case 101:
+    case 101:
       return BaseballLogos.WILM;
-case 102:
+    case 102:
       return BaseballLogos.ABER;
-case 103:
+    case 103:
       return BaseballLogos.EUGE;
-case 104:
+    case 104:
       return BaseballLogos.JSHO;
-case 105:
+    case 105:
       return BaseballLogos.BGHR;
-case 106:
+    case 106:
       return BaseballLogos.FWTC;
-case 107:
+    case 107:
       return BaseballLogos.WMW;
-case 108:
+    case 108:
       return BaseballLogos.WISA;
-case 109:
+    case 109:
       return BaseballLogos.ASHV;
-case 110:
+    case 110:
       return BaseballLogos.GRBR;
-case 111:
+    case 111:
       return BaseballLogos.DAYT;
-case 112:
+    case 112:
       return BaseballLogos.HILL;
-case 113:
+    case 113:
       return BaseballLogos.CRK;
-case 114:
+    case 114:
       return BaseballLogos.ROME;
-case 115:
+    case 115:
       return BaseballLogos.GLL;
-case 116:
+    case 116:
       return BaseballLogos.LCC;
-case 117:
+    case 117:
       return BaseballLogos.QCRB;
-case 118:
+    case 118:
       return BaseballLogos.GRNV;
-case 119:
+    case 119:
       return BaseballLogos.HUDV;
-case 120:
+    case 120:
       return BaseballLogos.VANC;
-case 121:
+    case 121:
       return BaseballLogos.NYM_scraps;
-case 122:
+    case 122:
       return BaseballLogos.TEX_scraps;
-case 123:
+    case 123:
       return BaseballLogos.DET_scraps;
-case 124:
+    case 124:
       return BaseballLogos.HOU_scraps;
-case 125:
+    case 125:
       return BaseballLogos.NYY_scraps;
-case 126:
+    case 126:
       return BaseballLogos.MIA_scraps;
-case 127:
+    case 127:
       return BaseballLogos.PIT_scraps;
-case 128:
+    case 128:
       return BaseballLogos.TOR_scraps;
-case 129:
+    case 129:
       return BaseballLogos.ARI_scraps;
-case 130:
+    case 130:
       return BaseballLogos.MIL_scraps;
-case 131:
+    case 131:
       return BaseballLogos.TB_scraps;
-case 133:
+    case 133:
       return BaseballLogos.LAA_scraps;
-case 132:
+    case 132:
       return BaseballLogos.ATL_scraps;
-case 134:
+    case 134:
       return BaseballLogos.OAK_scraps;
-case 135:
+    case 135:
       return BaseballLogos.COL_scraps;
-case 136:
+    case 136:
       return BaseballLogos.CWS_scraps;
-case 137:
+    case 137:
       return BaseballLogos.SF_scraps;
-case 138:
+    case 138:
       return BaseballLogos.KC_scraps;
-case 139:
+    case 139:
       return BaseballLogos.MIN_scraps;
-case 140:
+    case 140:
       return BaseballLogos.BOS_scraps;
-case 141:
+    case 141:
       return BaseballLogos.CLE_scraps;
-case 142:
+    case 142:
       return BaseballLogos.CHC_scraps;
-case 143:
+    case 143:
       return BaseballLogos.PHI_scraps;
-case 144:
+    case 144:
       return BaseballLogos.STL_scraps;
-case 145:
+    case 145:
       return BaseballLogos.SEA_scraps;
-case 146:
+    case 146:
       return BaseballLogos.BAL_scraps;
-case 147:
+    case 147:
       return BaseballLogos.LAD_scraps;
-case 148:
+    case 148:
       return BaseballLogos.SD_scraps;
-case 149:
+    case 149:
       return BaseballLogos.CIN_scraps;
-case 150:
+    case 150:
       return BaseballLogos.WAS_scraps;
-case 151:
+    case 151:
       return BaseballLogos.LELS;
-case 152:
+    case 152:
       return BaseballLogos.DMRV;
-case 153:
+    case 153:
       return BaseballLogos.HCSB;
-case 154:
+    case 154:
       return BaseballLogos.LAKE;
-case 155:
+    case 155:
       return BaseballLogos.VLIA;
-case 156:
+    case 156:
       return BaseballLogos.CFF;
-case 157:
+    case 157:
       return BaseballLogos.LHBC;
-case 158:
+    case 158:
       return BaseballLogos.JUPI;
-case 159:
+    case 159:
       return BaseballLogos.MBP;
-case 160:
+    case 160:
       return BaseballLogos.FRES;
-case 161:
+    case 161:
       return BaseballLogos.JOSE;
-case 162:
+    case 162:
       return BaseballLogos.FYTV;
-case 163:
+    case 163:
       return BaseballLogos.CARO;
-case 164:
+    case 164:
       return BaseballLogos.STCK;
-case 165:
+    case 165:
       return BaseballLogos.CWAT;
-case 166:
+    case 166:
       return BaseballLogos.TONA;
-case 167:
+    case 167:
       return BaseballLogos.STLM;
-case 168:
+    case 168:
       return BaseballLogos.CHST;
-case 169:
+    case 169:
       return BaseballLogos.KANN;
-case 170:
+    case 170:
       return BaseballLogos.FRED;
-case 171:
+    case 171:
       return BaseballLogos.TAMP;
-case 172:
+    case 172:
       return BaseballLogos.FMMM;
-case 173:
+    case 173:
       return BaseballLogos.DUNE;
-case 174:
+    case 174:
       return BaseballLogos.AUGU;
-case 175:
+    case 175:
       return BaseballLogos.MOD;
-case 176:
+    case 176:
       return BaseballLogos.BRAD;
-case 177:
+    case 177:
       return BaseballLogos.IESS;
-case 178:
+    case 178:
       return BaseballLogos.PALM;
-case 179:
+    case 179:
       return BaseballLogos.SALM;
-case 180:
+    case 180:
       return BaseballLogos.RCQ;
 
-
-
-
-
-
-
-
-
-
-
-
-
-      default:
+    default:
       return logoObj.Unknown;
   }
 };
 
-
-
-
-
-
-
-export const getCollegeBaseballLogo = (id: number, isRetro: boolean) => {
-  const logoObj = isRetro ? retro_logos : logos;
+export const getCollegeBaseballLogo = (id: number, IsRetro: boolean) => {
+  const logoObj = IsRetro ? retro_logos : logos;
   switch (id) {
-case 181: return CBLLogos.AUB;
-case 182: return CBLLogos.JST;
-case 183: return CBLLogos.USA;
-case 184: return CBLLogos.BAMA;
-case 185: return CBLLogos.UAB;
-case 186: return CBLLogos.SAM;
-case 187: return CBLLogos.TROY;
-case 188: return CBLLogos.ALST
-case 189: return CBLLogos.AAMU
+    case 181:
+      return CBLLogos.AUB;
+    case 182:
+      return CBLLogos.JST;
+    case 183:
+      return CBLLogos.USA;
+    case 184:
+      return CBLLogos.BAMA;
+    case 185:
+      return CBLLogos.UAB;
+    case 186:
+      return CBLLogos.SAM;
+    case 187:
+      return CBLLogos.TROY;
+    case 188:
+      return CBLLogos.ALST;
+    case 189:
+      return CBLLogos.AAMU;
 
-case 190: return CBLLogos.UNA
-case 191: return CBLLogos.ARK
-case 192: return CBLLogos.LR
-case 193: return CBLLogos.UAPB
-case 194: return CBLLogos.CARK
-case 195: return CBLLogos.ARST
-case 196: return CBLLogos.AZST
-case 197: return CBLLogos.ZONA
-case 198: return CBLLogos.GCU
-case 199: return CBLLogos.UCLA
+    case 190:
+      return CBLLogos.UNA;
+    case 191:
+      return CBLLogos.ARK;
+    case 192:
+      return CBLLogos.LR;
+    case 193:
+      return CBLLogos.UAPB;
+    case 194:
+      return CBLLogos.CARK;
+    case 195:
+      return CBLLogos.ARST;
+    case 196:
+      return CBLLogos.AZST;
+    case 197:
+      return CBLLogos.ZONA;
+    case 198:
+      return CBLLogos.GCU;
+    case 199:
+      return CBLLogos.UCLA;
 
-case 200: return CBLLogos.CSUF
-case 201: return CBLLogos.CAL
-case 202: return CBLLogos.USC
-case 203: return CBLLogos.UCI
-case 204: return CBLLogos.STAN
-case 205: return CBLLogos.UCSB
-case 206: return CBLLogos.CP
-case 207: return CBLLogos.FRES
-case 208: return CBLLogos.USD
-case 209: return CBLLogos.SDSU
+    case 200:
+      return CBLLogos.CSUF;
+    case 201:
+      return CBLLogos.CAL;
+    case 202:
+      return CBLLogos.USC;
+    case 203:
+      return CBLLogos.UCI;
+    case 204:
+      return CBLLogos.STAN;
+    case 205:
+      return CBLLogos.UCSB;
+    case 206:
+      return CBLLogos.CP;
+    case 207:
+      return CBLLogos.FRES;
+    case 208:
+      return CBLLogos.USD;
+    case 209:
+      return CBLLogos.SDSU;
 
-case 210: return CBLLogos.LBSU
-case 211: return CBLLogos.PEPP
-case 212: return CBLLogos.SCU
-case 213: return CBLLogos.PAC
-case 214: return CBLLogos.SJSU
-case 215: return CBLLogos.UCD
-case 216: return CBLLogos.CSUN
-case 217: return CBLLogos.UCR
-case 218: return CBLLogos.SSU
-case 219: return CBLLogos.SF
+    case 210:
+      return CBLLogos.LBSU;
+    case 211:
+      return CBLLogos.PEPP;
+    case 212:
+      return CBLLogos.SCU;
+    case 213:
+      return CBLLogos.PAC;
+    case 214:
+      return CBLLogos.SJSU;
+    case 215:
+      return CBLLogos.UCD;
+    case 216:
+      return CBLLogos.CSUN;
+    case 217:
+      return CBLLogos.UCR;
+    case 218:
+      return CBLLogos.SSU;
+    case 219:
+      return CBLLogos.SF;
 
-case 220: return CBLLogos.LMU
-case 221: return CBLLogos.SMC
-case 222: return CBLLogos.UCSD
-case 223: return CBLLogos.CBU
-case 224: return CBLLogos.CSUB
-case 225: return CBLLogos.CONN
-case 226: return CBLLogos.YALE
-case 227: return CBLLogos.USAF
-case 228: return CBLLogos.UNCO
-case 229: return CBLLogos.SHU
+    case 220:
+      return CBLLogos.LMU;
+    case 221:
+      return CBLLogos.SMC;
+    case 222:
+      return CBLLogos.UCSD;
+    case 223:
+      return CBLLogos.CBU;
+    case 224:
+      return CBLLogos.CSUB;
+    case 225:
+      return CBLLogos.CONN;
+    case 226:
+      return CBLLogos.YALE;
+    case 227:
+      return CBLLogos.USAF;
+    case 228:
+      return CBLLogos.UNCO;
+    case 229:
+      return CBLLogos.SHU;
 
-case 230: return CBLLogos.FAIR
-case 231: return CBLLogos.CCSU
-case 232: return CBLLogos.QUIN
-case 233: return CBLLogos.UNH
-case 234: return CBLLogos.GEOT
-case 235: return CBLLogos.GW
-case 236: return CBLLogos.DSU
-case 237: return CBLLogos.DEL
-case 238: return CBLLogos.MIAF
-case 239: return CBLLogos.FLA
+    case 230:
+      return CBLLogos.FAIR;
+    case 231:
+      return CBLLogos.CCSU;
+    case 232:
+      return CBLLogos.QUIN;
+    case 233:
+      return CBLLogos.UNH;
+    case 234:
+      return CBLLogos.GEOT;
+    case 235:
+      return CBLLogos.GW;
+    case 236:
+      return CBLLogos.DSU;
+    case 237:
+      return CBLLogos.DEL;
+    case 238:
+      return CBLLogos.MIAF;
+    case 239:
+      return CBLLogos.FLA;
 
-case 240: return CBLLogos.FSU
-case 241: return CBLLogos.STET
-case 242: return CBLLogos.UCF
-case 243: return CBLLogos.FIU
-case 244: return CBLLogos.FAU
-case 245: return CBLLogos.BCU
-case 246: return CBLLogos.USF
-case 247: return CBLLogos.UNF
-case 248: return CBLLogos.JU
-case 249: return CBLLogos.ACU
+    case 240:
+      return CBLLogos.FSU;
+    case 241:
+      return CBLLogos.STET;
+    case 242:
+      return CBLLogos.UCF;
+    case 243:
+      return CBLLogos.FIU;
+    case 244:
+      return CBLLogos.FAU;
+    case 245:
+      return CBLLogos.BCU;
+    case 246:
+      return CBLLogos.USF;
+    case 247:
+      return CBLLogos.UNF;
+    case 248:
+      return CBLLogos.JU;
+    case 249:
+      return CBLLogos.ACU;
 
-case 250: return CBLLogos.FAMU
-case 251: return CBLLogos.FGCU
-case 252: return CBLLogos.GT
-case 253: return CBLLogos.UGA
-case 254: return CBLLogos.KNSW
-case 255: return CBLLogos.GASO
-case 256: return CBLLogos.GAST
-case 257: return CBLLogos.MER
-case 258: return CBLLogos.UWG
-case 259: return CBLLogos.HAWI
+    case 250:
+      return CBLLogos.FAMU;
+    case 251:
+      return CBLLogos.FGCU;
+    case 252:
+      return CBLLogos.GT;
+    case 253:
+      return CBLLogos.UGA;
+    case 254:
+      return CBLLogos.KNSW;
+    case 255:
+      return CBLLogos.GASO;
+    case 256:
+      return CBLLogos.GAST;
+    case 257:
+      return CBLLogos.MER;
+    case 258:
+      return CBLLogos.UWG;
+    case 259:
+      return CBLLogos.HAWI;
 
-case 260: return CBLLogos.IOWA
-case 261: return CBLLogos.ILLI
-case 262: return CBLLogos.NW
-case 263: return CBLLogos.BRAD
-case 264: return CBLLogos.WIU
-case 265: return CBLLogos.UIC
-case 266: return CBLLogos.NIU
-case 267: return CBLLogos.ILST
-case 268: return CBLLogos.SIU
-case 269: return CBLLogos.SIUE
+    case 260:
+      return CBLLogos.IOWA;
+    case 261:
+      return CBLLogos.ILLI;
+    case 262:
+      return CBLLogos.NW;
+    case 263:
+      return CBLLogos.BRAD;
+    case 264:
+      return CBLLogos.WIU;
+    case 265:
+      return CBLLogos.UIC;
+    case 266:
+      return CBLLogos.NIU;
+    case 267:
+      return CBLLogos.ILST;
+    case 268:
+      return CBLLogos.SIU;
+    case 269:
+      return CBLLogos.SIUE;
 
-case 270: return CBLLogos.EIU
-case 271: return CBLLogos.ND
-case 272: return CBLLogos.IND
-case 273: return CBLLogos.BALL
-case 274: return CBLLogos.INST
-case 275: return CBLLogos.PURD
-case 276: return CBLLogos.BUT
-case 277: return CBLLogos.USI
-case 278: return CBLLogos.EVAN
-case 279: return CBLLogos.VAL
+    case 270:
+      return CBLLogos.EIU;
+    case 271:
+      return CBLLogos.ND;
+    case 272:
+      return CBLLogos.IND;
+    case 273:
+      return CBLLogos.BALL;
+    case 274:
+      return CBLLogos.INST;
+    case 275:
+      return CBLLogos.PURD;
+    case 276:
+      return CBLLogos.BUT;
+    case 277:
+      return CBLLogos.USI;
+    case 278:
+      return CBLLogos.EVAN;
+    case 279:
+      return CBLLogos.VAL;
 
-case 280: return CBLLogos.KSST
-case 281: return CBLLogos.KANS
-case 282: return CBLLogos.WICH
-case 283: return CBLLogos.LOU
-case 284: return CBLLogos.UKEN
-case 285: return CBLLogos.WKU
-case 286: return CBLLogos.EKU
-case 287: return CBLLogos.MORE
-case 288: return CBLLogos.MUR
-case 289: return CBLLogos.NKU
+    case 280:
+      return CBLLogos.KSST;
+    case 281:
+      return CBLLogos.KANS;
+    case 282:
+      return CBLLogos.WICH;
+    case 283:
+      return CBLLogos.LOU;
+    case 284:
+      return CBLLogos.UKEN;
+    case 285:
+      return CBLLogos.WKU;
+    case 286:
+      return CBLLogos.EKU;
+    case 287:
+      return CBLLogos.MORE;
+    case 288:
+      return CBLLogos.MUR;
+    case 289:
+      return CBLLogos.NKU;
 
-case 290: return CBLLogos.BELL
-case 291: return CBLLogos.LSU
-case 292: return CBLLogos.TLNE
-case 293: return CBLLogos.LT
-case 294: return CBLLogos.ULL
-case 295: return CBLLogos.ULM
-case 296: return CBLLogos.SELA
-case 297: return CBLLogos.UNO
-case 298: return CBLLogos.NWST
-case 299: return CBLLogos.NICH
+    case 290:
+      return CBLLogos.BELL;
+    case 291:
+      return CBLLogos.LSU;
+    case 292:
+      return CBLLogos.TLNE;
+    case 293:
+      return CBLLogos.LT;
+    case 294:
+      return CBLLogos.ULL;
+    case 295:
+      return CBLLogos.ULM;
+    case 296:
+      return CBLLogos.SELA;
+    case 297:
+      return CBLLogos.UNO;
+    case 298:
+      return CBLLogos.NWST;
+    case 299:
+      return CBLLogos.NICH;
 
-case 300: return CBLLogos.GRAM
-case 301: return CBLLogos.SOU
-case 302: return CBLLogos.MCN
-case 303: return CBLLogos.NE
-case 304: return CBLLogos.BC
-case 305: return CBLLogos.HARV
-case 306: return CBLLogos.MASS
-case 307: return CBLLogos.HC
-case 308: return CBLLogos.MRMK
-case 309: return CBLLogos.STO
+    case 300:
+      return CBLLogos.GRAM;
+    case 301:
+      return CBLLogos.SOU;
+    case 302:
+      return CBLLogos.MCN;
+    case 303:
+      return CBLLogos.NE;
+    case 304:
+      return CBLLogos.BC;
+    case 305:
+      return CBLLogos.HARV;
+    case 306:
+      return CBLLogos.MASS;
+    case 307:
+      return CBLLogos.HC;
+    case 308:
+      return CBLLogos.MRMK;
+    case 309:
+      return CBLLogos.STO;
 
-case 310: return CBLLogos.UML
-case 311: return CBLLogos.UMD
-case 312: return CBLLogos.NAVY
-case 313: return CBLLogos.MSM
-case 314: return CBLLogos.COPP
-case 315: return CBLLogos.UMBC
-case 316: return CBLLogos.TOW
-case 317: return CBLLogos.UMES
-case 318: return CBLLogos.ME
-case 319: return CBLLogos.MICH
+    case 310:
+      return CBLLogos.UML;
+    case 311:
+      return CBLLogos.UMD;
+    case 312:
+      return CBLLogos.NAVY;
+    case 313:
+      return CBLLogos.MSM;
+    case 314:
+      return CBLLogos.COPP;
+    case 315:
+      return CBLLogos.UMBC;
+    case 316:
+      return CBLLogos.TOW;
+    case 317:
+      return CBLLogos.UMES;
+    case 318:
+      return CBLLogos.ME;
+    case 319:
+      return CBLLogos.MICH;
 
-case 320: return CBLLogos.MIST
-case 321: return CBLLogos.CMU
-case 322: return CBLLogos.EMU
-case 323: return CBLLogos.OAK
-case 324: return CBLLogos.MINN
-case 325: return CBLLogos.STMN
-case 326: return CBLLogos.MIZZ
-case 327: return CBLLogos.SEMO
-case 328: return CBLLogos.SLU
-case 329: return CBLLogos.LIN
+    case 320:
+      return CBLLogos.MIST;
+    case 321:
+      return CBLLogos.CMU;
+    case 322:
+      return CBLLogos.EMU;
+    case 323:
+      return CBLLogos.OAK;
+    case 324:
+      return CBLLogos.MINN;
+    case 325:
+      return CBLLogos.STMN;
+    case 326:
+      return CBLLogos.MIZZ;
+    case 327:
+      return CBLLogos.SEMO;
+    case 328:
+      return CBLLogos.SLU;
+    case 329:
+      return CBLLogos.LIN;
 
-case 330: return CBLLogos.MOST
-case 331: return CBLLogos.MISS
-case 332: return CBLLogos.MSST
-case 333: return CBLLogos.USM
-case 334: return CBLLogos.MSVU
-case 335: return CBLLogos.JXST
-case 336: return CBLLogos.ACLN
-case 337: return CBLLogos.UNC
-case 338: return CBLLogos.NCST
-case 339: return CBLLogos.WAKE
+    case 330:
+      return CBLLogos.MOST;
+    case 331:
+      return CBLLogos.MISS;
+    case 332:
+      return CBLLogos.MSST;
+    case 333:
+      return CBLLogos.USM;
+    case 334:
+      return CBLLogos.MSVU;
+    case 335:
+      return CBLLogos.JXST;
+    case 336:
+      return CBLLogos.ACLN;
+    case 337:
+      return CBLLogos.UNC;
+    case 338:
+      return CBLLogos.NCST;
+    case 339:
+      return CBLLogos.WAKE;
 
-case 340: return CBLLogos.ECU
-case 341: return CBLLogos.DUKE
-case 342: return CBLLogos.CHAR
-case 343: return CBLLogos.UNCW
-case 344: return CBLLogos.WCU
-case 345: return CBLLogos.HP
-case 346: return CBLLogos.UNCG
-case 347: return CBLLogos.APST
-case 348: return CBLLogos.DAV
-case 349: return CBLLogos.UNCA
+    case 340:
+      return CBLLogos.ECU;
+    case 341:
+      return CBLLogos.DUKE;
+    case 342:
+      return CBLLogos.CHAR;
+    case 343:
+      return CBLLogos.UNCW;
+    case 344:
+      return CBLLogos.WCU;
+    case 345:
+      return CBLLogos.HP;
+    case 346:
+      return CBLLogos.UNCG;
+    case 347:
+      return CBLLogos.APST;
+    case 348:
+      return CBLLogos.DAV;
+    case 349:
+      return CBLLogos.UNCA;
 
-case 350: return CBLLogos.WEBB
-case 351: return CBLLogos.CAMP
-case 352: return CBLLogos.QUOC
-case 353: return CBLLogos.NCAT
-case 354: return CBLLogos.ELON
-case 355: return CBLLogos.NDSU
-case 356: return CBLLogos.NEB
-case 357: return CBLLogos.CREI
-case 358: return CBLLogos.UNOM
-case 359: return CBLLogos.DART
+    case 350:
+      return CBLLogos.WEBB;
+    case 351:
+      return CBLLogos.CAMP;
+    case 352:
+      return CBLLogos.QUOC;
+    case 353:
+      return CBLLogos.NCAT;
+    case 354:
+      return CBLLogos.ELON;
+    case 355:
+      return CBLLogos.NDSU;
+    case 356:
+      return CBLLogos.NEB;
+    case 357:
+      return CBLLogos.CREI;
+    case 358:
+      return CBLLogos.UNOM;
+    case 359:
+      return CBLLogos.DART;
 
-case 360: return CBLLogos.RUTG
-case 361: return CBLLogos.RID
-case 362: return CBLLogos.MONM
-case 363: return CBLLogos.HALL
-case 364: return CBLLogos.NJIT
-case 365: return CBLLogos.PRIN
-case 366: return CBLLogos.FDU
-case 367: return CBLLogos.SPU
-case 368: return CBLLogos.NMSU
-case 369: return CBLLogos.UNM
+    case 360:
+      return CBLLogos.RUTG;
+    case 361:
+      return CBLLogos.RID;
+    case 362:
+      return CBLLogos.MONM;
+    case 363:
+      return CBLLogos.HALL;
+    case 364:
+      return CBLLogos.NJIT;
+    case 365:
+      return CBLLogos.PRIN;
+    case 366:
+      return CBLLogos.FDU;
+    case 367:
+      return CBLLogos.SPU;
+    case 368:
+      return CBLLogos.NMSU;
+    case 369:
+      return CBLLogos.UNM;
 
-case 370: return CBLLogos.UNLV
-case 371: return CBLLogos.NEV
-case 372: return CBLLogos.STBK
-case 373: return CBLLogos.ARMY
-case 374: return CBLLogos.SJU
-case 375: return CBLLogos.CAN
-case 376: return CBLLogos.MRST
-case 377: return CBLLogos.MAN
-case 378: return CBLLogos.HOF
-case 379: return CBLLogos.LEM
+    case 370:
+      return CBLLogos.UNLV;
+    case 371:
+      return CBLLogos.NEV;
+    case 372:
+      return CBLLogos.STBK;
+    case 373:
+      return CBLLogos.ARMY;
+    case 374:
+      return CBLLogos.SJU;
+    case 375:
+      return CBLLogos.CAN;
+    case 376:
+      return CBLLogos.MRST;
+    case 377:
+      return CBLLogos.MAN;
+    case 378:
+      return CBLLogos.HOF;
+    case 379:
+      return CBLLogos.LEM;
 
-case 380: return CBLLogos.COLU
-case 381: return CBLLogos.LIU
-case 382: return CBLLogos.BING
-case 383: return CBLLogos.SBON
-case 384: return CBLLogos.COR
-case 385: return CBLLogos.NIA
-case 386: return CBLLogos.FOR
-case 387: return CBLLogos.WAG
-case 388: return CBLLogos.SIE
-case 389: return CBLLogos.ALB
+    case 380:
+      return CBLLogos.COLU;
+    case 381:
+      return CBLLogos.LIU;
+    case 382:
+      return CBLLogos.BING;
+    case 383:
+      return CBLLogos.SBON;
+    case 384:
+      return CBLLogos.COR;
+    case 385:
+      return CBLLogos.NIA;
+    case 386:
+      return CBLLogos.FOR;
+    case 387:
+      return CBLLogos.WAG;
+    case 388:
+      return CBLLogos.SIE;
+    case 389:
+      return CBLLogos.ALB;
 
-case 390: return CBLLogos.IONA
-case 391: return CBLLogos.OHST
-case 392: return CBLLogos.CINC
-case 393: return CBLLogos.KENT
-case 394: return CBLLogos.TLDO
-case 395: return CBLLogos.MIAO
-case 396: return CBLLogos.WRST
-case 397: return CBLLogos.WMU
-case 398: return CBLLogos.DAY
-case 399: return CBLLogos.AKRN
+    case 390:
+      return CBLLogos.IONA;
+    case 391:
+      return CBLLogos.OHST;
+    case 392:
+      return CBLLogos.CINC;
+    case 393:
+      return CBLLogos.KENT;
+    case 394:
+      return CBLLogos.TLDO;
+    case 395:
+      return CBLLogos.MIAO;
+    case 396:
+      return CBLLogos.WRST;
+    case 397:
+      return CBLLogos.WMU;
+    case 398:
+      return CBLLogos.DAY;
+    case 399:
+      return CBLLogos.AKRN;
 
-case 400: return CBLLogos.BGSU
-case 401: return CBLLogos.YSU
-case 402: return CBLLogos.OHIO
-case 403: return CBLLogos.XAV
-case 404: return CBLLogos.OKLA
-case 405: return CBLLogos.OKST
-case 406: return CBLLogos.ORU
-case 407: return CBLLogos.ORST
-case 408: return CBLLogos.OREG
-case 409: return CBLLogos.PORT
+    case 400:
+      return CBLLogos.BGSU;
+    case 401:
+      return CBLLogos.YSU;
+    case 402:
+      return CBLLogos.OHIO;
+    case 403:
+      return CBLLogos.XAV;
+    case 404:
+      return CBLLogos.OKLA;
+    case 405:
+      return CBLLogos.OKST;
+    case 406:
+      return CBLLogos.ORU;
+    case 407:
+      return CBLLogos.ORST;
+    case 408:
+      return CBLLogos.OREG;
+    case 409:
+      return CBLLogos.PORT;
 
-case 410: return CBLLogos.PITT
-case 411: return CBLLogos.PNST
-case 412: return CBLLogos.VILL
-case 413: return CBLLogos.JOES
-case 414: return CBLLogos.LAS
-case 415: return CBLLogos.LAF
-case 416: return CBLLogos.LEH
-case 417: return CBLLogos.PENN
-case 418: return CBLLogos.BUCK
-case 419: return CBLLogos.MRCY
+    case 410:
+      return CBLLogos.PITT;
+    case 411:
+      return CBLLogos.PNST;
+    case 412:
+      return CBLLogos.VILL;
+    case 413:
+      return CBLLogos.JOES;
+    case 414:
+      return CBLLogos.LAS;
+    case 415:
+      return CBLLogos.LAF;
+    case 416:
+      return CBLLogos.LEH;
+    case 417:
+      return CBLLogos.PENN;
+    case 418:
+      return CBLLogos.BUCK;
+    case 419:
+      return CBLLogos.MRCY;
 
-case 420: return CBLLogos.URI
-case 421: return CBLLogos.BRWN
-case 422: return CBLLogos.BRY
-case 423: return CBLLogos.CCU
-case 424: return CBLLogos.SOCA
-case 425: return CBLLogos.CLEM
-case 426: return CBLLogos.COFC
-case 427: return CBLLogos.CIT
-case 428: return CBLLogos.WOF
-case 429: return CBLLogos.CHSO
+    case 420:
+      return CBLLogos.URI;
+    case 421:
+      return CBLLogos.BRWN;
+    case 422:
+      return CBLLogos.BRY;
+    case 423:
+      return CBLLogos.CCU;
+    case 424:
+      return CBLLogos.SOCA;
+    case 425:
+      return CBLLogos.CLEM;
+    case 426:
+      return CBLLogos.COFC;
+    case 427:
+      return CBLLogos.CIT;
+    case 428:
+      return CBLLogos.WOF;
+    case 429:
+      return CBLLogos.CHSO;
 
-case 430: return CBLLogos.UPST
-case 431: return CBLLogos.PRE
-case 432: return CBLLogos.WIN
-case 433: return CBLLogos.SDST
-case 434: return CBLLogos.TENN
-case 435: return CBLLogos.VAND
-case 436: return CBLLogos.MEMP
-case 437: return CBLLogos.MTSU
-case 438: return CBLLogos.APSU
-case 439: return CBLLogos.UTM
+    case 430:
+      return CBLLogos.UPST;
+    case 431:
+      return CBLLogos.PRE;
+    case 432:
+      return CBLLogos.WIN;
+    case 433:
+      return CBLLogos.SDST;
+    case 434:
+      return CBLLogos.TENN;
+    case 435:
+      return CBLLogos.VAND;
+    case 436:
+      return CBLLogos.MEMP;
+    case 437:
+      return CBLLogos.MTSU;
+    case 438:
+      return CBLLogos.APSU;
+    case 439:
+      return CBLLogos.UTM;
 
-case 440: return CBLLogos.ETSU
-case 441: return CBLLogos.LIP
-case 442: return CBLLogos.BEL
-case 443: return CBLLogos.TNTC
-case 444: return CBLLogos.TAMU
-case 445: return CBLLogos.TCU
-case 446: return CBLLogos.RICE
-case 447: return CBLLogos.BAYL
-case 448: return CBLLogos.TEX
-case 449: return CBLLogos.UHOU
+    case 440:
+      return CBLLogos.ETSU;
+    case 441:
+      return CBLLogos.LIP;
+    case 442:
+      return CBLLogos.BEL;
+    case 443:
+      return CBLLogos.TNTC;
+    case 444:
+      return CBLLogos.TAMU;
+    case 445:
+      return CBLLogos.TCU;
+    case 446:
+      return CBLLogos.RICE;
+    case 447:
+      return CBLLogos.BAYL;
+    case 448:
+      return CBLLogos.TEX;
+    case 449:
+      return CBLLogos.UHOU;
 
-case 450: return CBLLogos.TTU
-case 451: return CBLLogos.DBU
-case 452: return CBLLogos.SHSU
-case 453: return CBLLogos.LAM
-case 454: return CBLLogos.UTSA
-case 455: return CBLLogos.AMCC
-case 456: return CBLLogos.HCU
-case 457: return CBLLogos.RGV
-case 458: return CBLLogos.UIW
-case 459: return CBLLogos.TXST
+    case 450:
+      return CBLLogos.TTU;
+    case 451:
+      return CBLLogos.DBU;
+    case 452:
+      return CBLLogos.SHSU;
+    case 453:
+      return CBLLogos.LAM;
+    case 454:
+      return CBLLogos.UTSA;
+    case 455:
+      return CBLLogos.AMCC;
+    case 456:
+      return CBLLogos.HCU;
+    case 457:
+      return CBLLogos.RGV;
+    case 458:
+      return CBLLogos.UIW;
+    case 459:
+      return CBLLogos.TXST;
 
-case 460: return CBLLogos.UTA
-case 461: return CBLLogos.SFA
-case 462: return CBLLogos.PVAM
-case 463: return CBLLogos.TAR
-case 464: return CBLLogos.TXSO
-case 465: return CBLLogos.UTAH
-case 466: return CBLLogos.BYU
-case 467: return CBLLogos.UTU
-case 468: return CBLLogos.UVU
-case 469: return CBLLogos.UVA
+    case 460:
+      return CBLLogos.UTA;
+    case 461:
+      return CBLLogos.SFA;
+    case 462:
+      return CBLLogos.PVAM;
+    case 463:
+      return CBLLogos.TAR;
+    case 464:
+      return CBLLogos.TXSO;
+    case 465:
+      return CBLLogos.UTAH;
+    case 466:
+      return CBLLogos.BYU;
+    case 467:
+      return CBLLogos.UTU;
+    case 468:
+      return CBLLogos.UVU;
+    case 469:
+      return CBLLogos.UVA;
 
-case 470: return CBLLogos.VT
-case 471: return CBLLogos.LU
-case 472: return CBLLogos.VCU
-case 473: return CBLLogos.RAD
-case 474: return CBLLogos.JMU
-case 475: return CBLLogos.NORF
-case 476: return CBLLogos.ODU
-case 477: return CBLLogos.RICH
-case 478: return CBLLogos.GMU
-case 479: return CBLLogos.LONG
+    case 470:
+      return CBLLogos.VT;
+    case 471:
+      return CBLLogos.LU;
+    case 472:
+      return CBLLogos.VCU;
+    case 473:
+      return CBLLogos.RAD;
+    case 474:
+      return CBLLogos.JMU;
+    case 475:
+      return CBLLogos.NORF;
+    case 476:
+      return CBLLogos.ODU;
+    case 477:
+      return CBLLogos.RICH;
+    case 478:
+      return CBLLogos.GMU;
+    case 479:
+      return CBLLogos.LONG;
 
-case 480: return CBLLogos.WandM
-case 481: return CBLLogos.VMI
-case 482: return CBLLogos.WASH
-case 483: return CBLLogos.WAST
-case 484: return CBLLogos.SEAU
-case 485: return CBLLogos.GONZ
-case 486: return CBLLogos.MILW
-case 487: return CBLLogos.WVU
-case 488: return CBLLogos.MRSH
+    case 480:
+      return CBLLogos.WandM;
+    case 481:
+      return CBLLogos.VMI;
+    case 482:
+      return CBLLogos.WASH;
+    case 483:
+      return CBLLogos.WAST;
+    case 484:
+      return CBLLogos.SEAU;
+    case 485:
+      return CBLLogos.GONZ;
+    case 486:
+      return CBLLogos.MILW;
+    case 487:
+      return CBLLogos.WVU;
+    case 488:
+      return CBLLogos.MRSH;
 
-case 489: return CBLLogos.INTAM
-case 490: return CBLLogos.USHS
+    case 489:
+      return CBLLogos.INTAM;
+    case 490:
+      return CBLLogos.USHS;
 
-case 504: return CBLLogos.GUAM
-case 505: return CBLLogos.SAMO
+    case 504:
+      return CBLLogos.GUAM;
+    case 505:
+      return CBLLogos.SAMO;
 
-default:
+    default:
       return logoObj.Unknown;
   }
 };

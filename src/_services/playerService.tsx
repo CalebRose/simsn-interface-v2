@@ -82,4 +82,8 @@ export const PlayerService = {
   ActivateNBAOption: async (contractID: number): Promise<void> => {
     await GetActionCall(`${bbaUrl}nba/players/activate/option/${contractID}`);
   },
+
+  async FBATagPlayer(dto: any) {
+    return await PostCall(`${fbaUrl}nflplayers/tag/player/`, dto);
+  },
 };

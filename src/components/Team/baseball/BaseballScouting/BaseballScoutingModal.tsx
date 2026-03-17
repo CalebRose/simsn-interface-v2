@@ -13,9 +13,16 @@ import {
   ScoutingActionType,
 } from "../../../../models/baseball/baseballScoutingModels";
 import { VisibilityContext } from "../../../../models/baseball/baseballModels";
-import { InjuryHistoryItem, PlayerStatsResponse } from "../../../../models/baseball/baseballStatsModels";
+import {
+  InjuryHistoryItem,
+  PlayerStatsResponse,
+} from "../../../../models/baseball/baseballStatsModels";
 import { ratingColor, gradeColor } from "../baseballColorConfig";
-import { SCOUTING_ACTION_LABELS, SCOUTING_ACTION_COSTS, getClassYear } from "../../../../_utility/baseballHelpers";
+import {
+  SCOUTING_ACTION_LABELS,
+  SCOUTING_ACTION_COSTS,
+  getClassYear,
+} from "../../../../_utility/baseballHelpers";
 import { useSnackbar } from "notistack";
 import { HSScoutingContent } from "./HSScoutingContent";
 import PlayerPicture from "../../../../_utility/usePlayerFaces";
@@ -60,42 +67,60 @@ const PITCHING_ATTRS = [
 
 // ── Potential display groups by player type ──
 const POS_POTENTIAL_GROUPS = [
-  { title: "Batting", keys: [
-    { key: "contact_pot", label: "Contact" },
-    { key: "power_pot", label: "Power" },
-    { key: "eye_pot", label: "Eye" },
-    { key: "discipline_pot", label: "Discipline" },
-  ]},
-  { title: "Speed / Base", keys: [
-    { key: "speed_pot", label: "Speed" },
-    { key: "baserunning_pot", label: "Baserunning" },
-    { key: "basereaction_pot", label: "Base React" },
-  ]},
-  { title: "Fielding", keys: [
-    { key: "fieldcatch_pot", label: "Catch" },
-    { key: "fieldreact_pot", label: "React" },
-    { key: "fieldspot_pot", label: "Spot" },
-    { key: "throwpower_pot", label: "Throw Pow" },
-    { key: "throwacc_pot", label: "Throw Acc" },
-  ]},
-  { title: "Catching", keys: [
-    { key: "catchframe_pot", label: "Framing" },
-    { key: "catchsequence_pot", label: "Sequence" },
-  ]},
+  {
+    title: "Batting",
+    keys: [
+      { key: "contact_pot", label: "Contact" },
+      { key: "power_pot", label: "Power" },
+      { key: "eye_pot", label: "Eye" },
+      { key: "discipline_pot", label: "Discipline" },
+    ],
+  },
+  {
+    title: "Speed / Base",
+    keys: [
+      { key: "speed_pot", label: "Speed" },
+      { key: "baserunning_pot", label: "Baserunning" },
+      { key: "basereaction_pot", label: "Base React" },
+    ],
+  },
+  {
+    title: "Fielding",
+    keys: [
+      { key: "fieldcatch_pot", label: "Catch" },
+      { key: "fieldreact_pot", label: "React" },
+      { key: "fieldspot_pot", label: "Spot" },
+      { key: "throwpower_pot", label: "Throw Pow" },
+      { key: "throwacc_pot", label: "Throw Acc" },
+    ],
+  },
+  {
+    title: "Catching",
+    keys: [
+      { key: "catchframe_pot", label: "Framing" },
+      { key: "catchsequence_pot", label: "Sequence" },
+    ],
+  },
 ];
 
 const PITCH_POTENTIAL_GROUPS = [
-  { title: "Pitching", keys: [
-    { key: "pendurance_pot", label: "Endurance" },
-    { key: "pgencontrol_pot", label: "Control" },
-    { key: "pthrowpower_pot", label: "Velocity" },
-    { key: "psequencing_pot", label: "Sequencing" },
-    { key: "pickoff_pot", label: "Pickoff" },
-  ]},
-  { title: "Athletic", keys: [
-    { key: "speed_pot", label: "Speed" },
-    { key: "baserunning_pot", label: "Baserunning" },
-  ]},
+  {
+    title: "Pitching",
+    keys: [
+      { key: "pendurance_pot", label: "Endurance" },
+      { key: "pgencontrol_pot", label: "Control" },
+      { key: "pthrowpower_pot", label: "Velocity" },
+      { key: "psequencing_pot", label: "Sequencing" },
+      { key: "pickoff_pot", label: "Pickoff" },
+    ],
+  },
+  {
+    title: "Athletic",
+    keys: [
+      { key: "speed_pot", label: "Speed" },
+      { key: "baserunning_pot", label: "Baserunning" },
+    ],
+  },
 ];
 
 interface BaseballScoutingModalProps {
@@ -142,10 +167,17 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
         if (!cancelled) setPlayer(data);
       })
       .catch((err) => {
-        if (!cancelled) enqueueSnackbar(err?.message || "Failed to load player", { variant: "error" });
+        if (!cancelled)
+          enqueueSnackbar(err?.message || "Failed to load player", {
+            variant: "error",
+          });
       })
-      .finally(() => { if (!cancelled) setIsLoadingPlayer(false); });
-    return () => { cancelled = true; };
+      .finally(() => {
+        if (!cancelled) setIsLoadingPlayer(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen, playerId, orgId, leagueYearId]);
 
   // Reset on close
@@ -162,36 +194,60 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
     let cancelled = false;
     setInjuryLoading(true);
     BaseballService.GetInjuryHistory({ player_id: playerId })
-      .then((data) => { if (!cancelled) setInjuryHistory(data.events); })
-      .catch(() => { if (!cancelled) setInjuryHistory([]); })
-      .finally(() => { if (!cancelled) setInjuryLoading(false); });
-    return () => { cancelled = true; };
+      .then((data) => {
+        if (!cancelled) setInjuryHistory(data.events);
+      })
+      .catch(() => {
+        if (!cancelled) setInjuryHistory([]);
+      })
+      .finally(() => {
+        if (!cancelled) setInjuryLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [selectedTab, playerId]);
 
-  const handleUnlock = useCallback(async (actionType: string) => {
-    setIsUnlocking(true);
-    try {
-      const dto: ScoutingActionRequest = {
-        org_id: orgId,
-        league_year_id: leagueYearId,
-        player_id: playerId,
-        action_type: actionType as ScoutingActionType,
-      };
-      const res = await BaseballService.PerformScoutingAction(dto);
-      if (res.status === "unlocked") {
-        enqueueSnackbar(`Unlocked! (${res.points_spent} pts spent, ${res.points_remaining} remaining)`, { variant: "success", autoHideDuration: 3000 });
-      } else {
-        enqueueSnackbar("Already unlocked", { variant: "info", autoHideDuration: 2000 });
+  const handleUnlock = useCallback(
+    async (actionType: string) => {
+      setIsUnlocking(true);
+      try {
+        const dto: ScoutingActionRequest = {
+          org_id: orgId,
+          league_year_id: leagueYearId,
+          player_id: playerId,
+          action_type: actionType as ScoutingActionType,
+        };
+        const res = await BaseballService.PerformScoutingAction(dto);
+        if (res.status === "unlocked") {
+          enqueueSnackbar(
+            `Unlocked! (${res.points_spent} pts spent, ${res.points_remaining} remaining)`,
+            { variant: "success", autoHideDuration: 3000 },
+          );
+        } else {
+          enqueueSnackbar("Already unlocked", {
+            variant: "info",
+            autoHideDuration: 2000,
+          });
+        }
+        onBudgetChanged();
+        // Re-fetch player with updated visibility
+        const updated = await BaseballService.GetScoutedPlayer(
+          playerId,
+          orgId,
+          leagueYearId,
+        );
+        setPlayer(updated);
+      } catch (err: any) {
+        enqueueSnackbar(err?.message || "Scouting action failed", {
+          variant: "error",
+          autoHideDuration: 4000,
+        });
       }
-      onBudgetChanged();
-      // Re-fetch player with updated visibility
-      const updated = await BaseballService.GetScoutedPlayer(playerId, orgId, leagueYearId);
-      setPlayer(updated);
-    } catch (err: any) {
-      enqueueSnackbar(err?.message || "Scouting action failed", { variant: "error", autoHideDuration: 4000 });
-    }
-    setIsUnlocking(false);
-  }, [orgId, leagueYearId, playerId, onBudgetChanged, enqueueSnackbar]);
+      setIsUnlocking(false);
+    },
+    [orgId, leagueYearId, playerId, onBudgetChanged, enqueueSnackbar],
+  );
 
   // Resolve team for PlayerPicture — use the player's org, not the viewer's
   const team = useMemo(() => {
@@ -206,9 +262,9 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
     return getLogo(
       league === SimMLB ? SimMLB : SimCollegeBaseball,
       team.team_id,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
-  }, [team, league, currentUser?.isRetro]);
+  }, [team, league, currentUser?.IsRetro]);
 
   if (!isOpen) return null;
 
@@ -241,7 +297,9 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
     >
       {isLoadingPlayer || !player ? (
         <div className="flex items-center justify-center py-12">
-          <Text variant="body" classes="text-gray-500 dark:text-gray-400">Loading player data...</Text>
+          <Text variant="body" classes="text-gray-500 dark:text-gray-400">
+            Loading player data...
+          </Text>
         </div>
       ) : vis?.pool === "hs" ? (
         <HSScoutingContent
@@ -284,19 +342,34 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
                 <BioField label="Area" value={bio!.area} />
                 <BioField label="Height" value={heightDisplay(bio!.height)} />
                 <BioField label="Weight" value={`${bio!.weight} lbs`} />
-                <BioField label="Bats / Throws" value={`${bio!.bat_hand ?? "—"} / ${bio!.pitch_hand ?? "—"}`} />
+                <BioField
+                  label="Bats / Throws"
+                  value={`${bio!.bat_hand ?? "—"} / ${bio!.pitch_hand ?? "—"}`}
+                />
                 <BioField label="Durability" value={bio!.durability} />
                 <BioField label="Injury Risk" value={bio!.injury_risk} />
                 <BioField label="Stamina" value={String(bio!.stamina ?? 100)} />
-                <BioField label="Origin" value={bio!.intorusa === "usa" ? "USA" : "International"} />
+                <BioField
+                  label="Origin"
+                  value={bio!.intorusa === "usa" ? "USA" : "International"}
+                />
               </div>
               {/* Pitches */}
               {(bio!.pitch1_name || bio!.pitch2_name) && (
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {[bio!.pitch1_name, bio!.pitch2_name, bio!.pitch3_name, bio!.pitch4_name, bio!.pitch5_name]
+                  {[
+                    bio!.pitch1_name,
+                    bio!.pitch2_name,
+                    bio!.pitch3_name,
+                    bio!.pitch4_name,
+                    bio!.pitch5_name,
+                  ]
                     .filter(Boolean)
                     .map((name, i) => (
-                      <span key={i} className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700">
+                      <span
+                        key={i}
+                        className="text-xs px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700"
+                      >
                         {name}
                       </span>
                     ))}
@@ -307,19 +380,29 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
                 <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   {isCollege ? (
                     <span>
-                      {getClassYear(player.contract).label || "—"} (Year {player.contract.current_year} of {player.contract.years})
-                      {player.contract.is_extension && <span className="ml-1 text-yellow-600 dark:text-yellow-400">(Redshirt)</span>}
+                      {getClassYear(player.contract).label || "—"} (Year{" "}
+                      {player.contract.current_year} of {player.contract.years})
+                      {player.contract.is_extension && (
+                        <span className="ml-1 text-yellow-600 dark:text-yellow-400">
+                          (Redshirt)
+                        </span>
+                      )}
                     </span>
                   ) : (
                     <span>
-                      Contract: Yr {player.contract.current_year} of {player.contract.years}
-                      {player.contract.current_year_detail?.base_salary != null && (
+                      Contract: Yr {player.contract.current_year} of{" "}
+                      {player.contract.years}
+                      {player.contract.current_year_detail?.base_salary !=
+                        null && (
                         <span className="ml-1">
-                          — ${player.contract.current_year_detail.base_salary.toLocaleString()}
+                          — $
+                          {player.contract.current_year_detail.base_salary.toLocaleString()}
                         </span>
                       )}
                       {player.contract.on_ir && (
-                        <span className="ml-1 text-red-600 dark:text-red-400 font-semibold">IL</span>
+                        <span className="ml-1 text-red-600 dark:text-red-400 font-semibold">
+                          IL
+                        </span>
                       )}
                     </span>
                   )}
@@ -329,45 +412,78 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
           </div>
 
           {/* ── Scouting Actions (always visible when available) ── */}
-          {vis && (vis.available_actions.length > 0 || vis.unlocked.length > 0) && (
-            <Border classes="p-3">
-              <Text variant="small" classes="font-semibold mb-2">Scouting Actions</Text>
-              <div className="flex gap-2 flex-wrap">
-                {vis.unlocked.map((action) => (
-                  <PillButton key={action} variant="primaryOutline" disabled>
-                    <Text variant="small" classes="text-gray-400 line-through">
-                      {actionLabels[action] ?? action} ✓
-                    </Text>
-                  </PillButton>
-                ))}
-                {vis.available_actions.map((action) => (
-                  <PillButton
-                    key={action}
-                    variant="primaryOutline"
-                    disabled={isUnlocking || (scoutingBudget != null && scoutingBudget.remaining_points < (actionCosts[action] ?? 0))}
-                    onClick={() => handleUnlock(action)}
-                  >
-                    <Text variant="small">
-                      {actionLabels[action] ?? action} ({actionCosts[action] ?? "?"} pts)
-                    </Text>
-                  </PillButton>
-                ))}
-              </div>
-              {scoutingBudget && (
-                <Text variant="xs" classes="text-gray-400 mt-1">
-                  Budget: {scoutingBudget.remaining_points} / {scoutingBudget.total_points} pts remaining
+          {vis &&
+            (vis.available_actions.length > 0 || vis.unlocked.length > 0) && (
+              <Border classes="p-3">
+                <Text variant="small" classes="font-semibold mb-2">
+                  Scouting Actions
                 </Text>
-              )}
-            </Border>
-          )}
+                <div className="flex gap-2 flex-wrap">
+                  {vis.unlocked.map((action) => (
+                    <PillButton key={action} variant="primaryOutline" disabled>
+                      <Text
+                        variant="small"
+                        classes="text-gray-400 line-through"
+                      >
+                        {actionLabels[action] ?? action} ✓
+                      </Text>
+                    </PillButton>
+                  ))}
+                  {vis.available_actions.map((action) => (
+                    <PillButton
+                      key={action}
+                      variant="primaryOutline"
+                      disabled={
+                        isUnlocking ||
+                        (scoutingBudget != null &&
+                          scoutingBudget.remaining_points <
+                            (actionCosts[action] ?? 0))
+                      }
+                      onClick={() => handleUnlock(action)}
+                    >
+                      <Text variant="small">
+                        {actionLabels[action] ?? action} (
+                        {actionCosts[action] ?? "?"} pts)
+                      </Text>
+                    </PillButton>
+                  ))}
+                </div>
+                {scoutingBudget && (
+                  <Text variant="xs" classes="text-gray-400 mt-1">
+                    Budget: {scoutingBudget.remaining_points} /{" "}
+                    {scoutingBudget.total_points} pts remaining
+                  </Text>
+                )}
+              </Border>
+            )}
 
           {/* ── Tab Bar ── */}
           <TabGroup classes="mb-0">
-            <Tab label="Attributes" selected={selectedTab === "Attributes"} setSelected={setSelectedTab} />
-            <Tab label="Potentials" selected={selectedTab === "Potentials"} setSelected={setSelectedTab} />
-            <Tab label="Contract" selected={selectedTab === "Contract"} setSelected={setSelectedTab} />
-            <Tab label="Injuries" selected={selectedTab === "Injuries"} setSelected={setSelectedTab} />
-            <Tab label="Statistics" selected={selectedTab === "Statistics"} setSelected={setSelectedTab} />
+            <Tab
+              label="Attributes"
+              selected={selectedTab === "Attributes"}
+              setSelected={setSelectedTab}
+            />
+            <Tab
+              label="Potentials"
+              selected={selectedTab === "Potentials"}
+              setSelected={setSelectedTab}
+            />
+            <Tab
+              label="Contract"
+              selected={selectedTab === "Contract"}
+              setSelected={setSelectedTab}
+            />
+            <Tab
+              label="Injuries"
+              selected={selectedTab === "Injuries"}
+              setSelected={setSelectedTab}
+            />
+            <Tab
+              label="Statistics"
+              selected={selectedTab === "Statistics"}
+              setSelected={setSelectedTab}
+            />
           </TabGroup>
 
           {/* ── Tab Content ── */}
@@ -394,10 +510,7 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
           )}
 
           {selectedTab === "Contract" && (
-            <ContractTab
-              contract={player.contract}
-              isCollege={isCollege}
-            />
+            <ContractTab contract={player.contract} isCollege={isCollege} />
           )}
 
           {selectedTab === "Injuries" && (
@@ -407,9 +520,7 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
             />
           )}
 
-          {selectedTab === "Statistics" && (
-            <StatisticsTab player={player} />
-          )}
+          {selectedTab === "Statistics" && <StatisticsTab player={player} />}
         </div>
       )}
     </Modal>
@@ -429,8 +540,12 @@ const BioField: FC<{ label: string; value: string }> = ({ label, value }) => (
 
 const ReportCard: FC<{ title: string; text: string }> = ({ title, text }) => (
   <div className="bg-gray-50 dark:bg-gray-700/50 rounded p-2">
-    <Text variant="xs" classes="font-semibold mb-1">{title}</Text>
-    <Text variant="xs" classes="text-gray-600 dark:text-gray-300">{text}</Text>
+    <Text variant="xs" classes="font-semibold mb-1">
+      {title}
+    </Text>
+    <Text variant="xs" classes="text-gray-600 dark:text-gray-300">
+      {text}
+    </Text>
   </div>
 );
 
@@ -461,7 +576,8 @@ const AttributesTab: FC<AttributesTabProps> = ({
 }) => {
   const hasLetterGrades = letterGrades && Object.keys(letterGrades).length > 0;
   const hasNumeric = attributes && Object.keys(attributes).length > 0;
-  const isHidden = displayFormat === "hidden" || (pool === "hs" && !displayFormat);
+  const isHidden =
+    displayFormat === "hidden" || (pool === "hs" && !displayFormat);
   // Precise when visibility_context says so, display_format is "20-80", or relevant action is unlocked
   const isPrecise =
     visibilityContext?.attributes_precise === true ||
@@ -504,20 +620,28 @@ const AttributesTab: FC<AttributesTabProps> = ({
       <Text variant="small" classes="font-semibold mb-2">
         Attributes
         {hasNumeric && hasLetterGrades && (
-          <span className="text-xs text-gray-400 font-normal ml-1">(Grade / Numeric)</span>
+          <span className="text-xs text-gray-400 font-normal ml-1">
+            (Grade / Numeric)
+          </span>
         )}
       </Text>
       {isFuzzed && (
-        <Text variant="xs" classes="text-gray-400 mb-2">Estimated values — scout for precise data</Text>
+        <Text variant="xs" classes="text-gray-400 mb-2">
+          Estimated values — scout for precise data
+        </Text>
       )}
       {!isFuzzed && hasNumeric && (
-        <Text variant="xs" classes="text-green-600 dark:text-green-400 mb-2">Precise</Text>
+        <Text variant="xs" classes="text-green-600 dark:text-green-400 mb-2">
+          Precise
+        </Text>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {groups.map((group) => (
           <div key={group.title}>
-            <Text variant="xs" classes="font-semibold text-gray-400 mb-1">{group.title}</Text>
+            <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+              {group.title}
+            </Text>
             <div className="space-y-0.5">
               {group.attrs.map((attr) => (
                 <AttrRow
@@ -538,24 +662,38 @@ const AttributesTab: FC<AttributesTabProps> = ({
       {/* Pitch sub-abilities for pitchers */}
       {pitchSlots.length > 0 && (
         <div className="mt-3">
-          <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Pitches</Text>
+          <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+            Pitches
+          </Text>
           <div className="space-y-2">
             {pitchSlots.map((slot) => {
-              const pitchName = bio[`pitch${slot}_name` as keyof typeof bio] as string;
+              const pitchName = bio[
+                `pitch${slot}_name` as keyof typeof bio
+              ] as string;
               const ovrKey = `pitch${slot}_ovr`;
-              const ovr = attributes?.[`${ovrKey}_display`] ?? attributes?.[ovrKey];
+              const ovr =
+                attributes?.[`${ovrKey}_display`] ?? attributes?.[ovrKey];
               const subKeys = ["pacc", "pcntrl", "pbrk", "consist"];
               return (
-                <div key={slot} className="bg-gray-50 dark:bg-gray-700/50 rounded p-2">
+                <div
+                  key={slot}
+                  className="bg-gray-50 dark:bg-gray-700/50 rounded p-2"
+                >
                   <div className="flex items-center gap-2 mb-1">
-                    <Text variant="xs" classes="font-semibold">{pitchName}</Text>
+                    <Text variant="xs" classes="font-semibold">
+                      {pitchName}
+                    </Text>
                     {ovr != null && (
-                      <span className={`text-xs font-semibold ${ratingColor(ovr)}`}>
+                      <span
+                        className={`text-xs font-semibold ${ratingColor(ovr)}`}
+                      >
                         OVR: {ovr.toFixed(0)}
                       </span>
                     )}
                     {!ovr && letterGrades?.[ovrKey] && (
-                      <span className={`text-xs font-semibold ${gradeColor(letterGrades[ovrKey])}`}>
+                      <span
+                        className={`text-xs font-semibold ${gradeColor(letterGrades[ovrKey])}`}
+                      >
                         OVR: {letterGrades[ovrKey]}
                       </span>
                     )}
@@ -567,7 +705,15 @@ const AttributesTab: FC<AttributesTabProps> = ({
                         <AttrRow
                           key={key}
                           attrKey={key}
-                          label={sub === "pacc" ? "Acc" : sub === "pcntrl" ? "Ctrl" : sub === "pbrk" ? "Break" : "Cons"}
+                          label={
+                            sub === "pacc"
+                              ? "Acc"
+                              : sub === "pcntrl"
+                                ? "Ctrl"
+                                : sub === "pbrk"
+                                  ? "Break"
+                                  : "Cons"
+                          }
                           letterGrades={letterGrades}
                           attributes={attributes}
                           isHidden={isHidden}
@@ -622,7 +768,9 @@ const PotentialsTab: FC<PotentialsTabProps> = ({
   if (!hasPotentials) {
     return (
       <Border classes="p-3">
-        <Text variant="xs" classes="text-gray-400">No potential data available.</Text>
+        <Text variant="xs" classes="text-gray-400">
+          No potential data available.
+        </Text>
       </Border>
     );
   }
@@ -632,23 +780,34 @@ const PotentialsTab: FC<PotentialsTabProps> = ({
 
   return (
     <Border classes="p-3">
-      <Text variant="small" classes="font-semibold mb-2">Potentials</Text>
+      <Text variant="small" classes="font-semibold mb-2">
+        Potentials
+      </Text>
       {potFuzzed && (
-        <Text variant="xs" classes="text-gray-400 mb-2">Estimated values — scout for precise data</Text>
+        <Text variant="xs" classes="text-gray-400 mb-2">
+          Estimated values — scout for precise data
+        </Text>
       )}
       {!potFuzzed && hasPotentials && (
-        <Text variant="xs" classes="text-green-600 dark:text-green-400 mb-2">Precise</Text>
+        <Text variant="xs" classes="text-green-600 dark:text-green-400 mb-2">
+          Precise
+        </Text>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {groups.map((group) => (
           <div key={group.title}>
-            <Text variant="xs" classes="font-semibold text-gray-400 mb-1">{group.title}</Text>
+            <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+              {group.title}
+            </Text>
             <div className="space-y-0.5">
               {group.keys.map(({ key, label }) => {
                 const val = potentials[key];
                 if (val == null) return null;
                 return (
-                  <div key={key} className="flex justify-between text-xs py-0.5">
+                  <div
+                    key={key}
+                    className="flex justify-between text-xs py-0.5"
+                  >
                     <span className="text-gray-400">{label}</span>
                     {val === "?" ? (
                       <span className="text-gray-500">?</span>
@@ -666,42 +825,52 @@ const PotentialsTab: FC<PotentialsTabProps> = ({
       </div>
 
       {/* Pitch potentials for pitchers */}
-      {isPitcher && (() => {
-        const pitchPotKeys = Object.keys(potentials).filter((k) => /^pitch\d+_.*_pot$/.test(k));
-        if (pitchPotKeys.length === 0) return null;
-        // Group by pitch slot
-        const slots = new Map<number, { key: string; sub: string; val: string | null }[]>();
-        for (const k of pitchPotKeys) {
-          const match = k.match(/^pitch(\d+)_(.+)_pot$/);
-          if (!match) continue;
-          const slot = parseInt(match[1]);
-          if (!slots.has(slot)) slots.set(slot, []);
-          slots.get(slot)!.push({ key: k, sub: match[2], val: potentials[k] });
-        }
-        return (
-          <div className="mt-3">
-            <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Pitch Potentials</Text>
-            <div className="space-y-1">
-              {Array.from(slots.entries()).map(([slot, subs]) => (
-                <div key={slot} className="grid grid-cols-4 gap-1">
-                  {subs.map(({ key, sub, val }) => (
-                    <div key={key} className="flex justify-between text-xs">
-                      <span className="text-gray-400 capitalize">{sub}</span>
-                      {val == null || val === "?" ? (
-                        <span className="text-gray-500">?</span>
-                      ) : (
-                        <span className={`font-semibold ${gradeColor(val)}`}>
-                          {val}
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ))}
+      {isPitcher &&
+        (() => {
+          const pitchPotKeys = Object.keys(potentials).filter((k) =>
+            /^pitch\d+_.*_pot$/.test(k),
+          );
+          if (pitchPotKeys.length === 0) return null;
+          // Group by pitch slot
+          const slots = new Map<
+            number,
+            { key: string; sub: string; val: string | null }[]
+          >();
+          for (const k of pitchPotKeys) {
+            const match = k.match(/^pitch(\d+)_(.+)_pot$/);
+            if (!match) continue;
+            const slot = parseInt(match[1]);
+            if (!slots.has(slot)) slots.set(slot, []);
+            slots
+              .get(slot)!
+              .push({ key: k, sub: match[2], val: potentials[k] });
+          }
+          return (
+            <div className="mt-3">
+              <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+                Pitch Potentials
+              </Text>
+              <div className="space-y-1">
+                {Array.from(slots.entries()).map(([slot, subs]) => (
+                  <div key={slot} className="grid grid-cols-4 gap-1">
+                    {subs.map(({ key, sub, val }) => (
+                      <div key={key} className="flex justify-between text-xs">
+                        <span className="text-gray-400 capitalize">{sub}</span>
+                        {val == null || val === "?" ? (
+                          <span className="text-gray-500">?</span>
+                        ) : (
+                          <span className={`font-semibold ${gradeColor(val)}`}>
+                            {val}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
     </Border>
   );
 };
@@ -710,35 +879,59 @@ const PotentialsTab: FC<PotentialsTabProps> = ({
 // Contract Tab
 // ═══════════════════════════════════════════════════
 
-const ContractTab: FC<{ contract?: any; isCollege: boolean }> = ({ contract, isCollege }) => {
+const ContractTab: FC<{ contract?: any; isCollege: boolean }> = ({
+  contract,
+  isCollege,
+}) => {
   if (!contract) {
     return (
       <Border classes="p-3">
-        <Text variant="xs" classes="text-gray-400">No contract data available.</Text>
+        <Text variant="xs" classes="text-gray-400">
+          No contract data available.
+        </Text>
       </Border>
     );
   }
 
-  const fmt = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  const fmt = (n: number) =>
+    `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
   if (isCollege) {
     const classYear = getClassYear(contract);
     return (
       <Border classes="p-3">
-        <Text variant="small" classes="font-semibold mb-3">Eligibility</Text>
+        <Text variant="small" classes="font-semibold mb-3">
+          Eligibility
+        </Text>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div className="flex flex-col">
-            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Class</Text>
+            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+              Class
+            </Text>
             <Text variant="small">{classYear.label || "—"}</Text>
           </div>
           <div className="flex flex-col">
-            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Year</Text>
-            <Text variant="small">{contract.current_year} of {contract.years}</Text>
+            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+              Year
+            </Text>
+            <Text variant="small">
+              {contract.current_year} of {contract.years}
+            </Text>
           </div>
           {contract.is_extension && (
             <div className="flex flex-col">
-              <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Redshirt</Text>
-              <Text variant="small" classes="text-yellow-600 dark:text-yellow-400">Yes</Text>
+              <Text
+                variant="body"
+                classes="mb-1 whitespace-nowrap font-semibold"
+              >
+                Redshirt
+              </Text>
+              <Text
+                variant="small"
+                classes="text-yellow-600 dark:text-yellow-400"
+              >
+                Yes
+              </Text>
             </div>
           )}
         </div>
@@ -753,26 +946,43 @@ const ContractTab: FC<{ contract?: any; isCollege: boolean }> = ({ contract, isC
 
   return (
     <Border classes="p-3">
-      <Text variant="small" classes="font-semibold mb-3">Contract</Text>
+      <Text variant="small" classes="font-semibold mb-3">
+        Contract
+      </Text>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div className="flex flex-col">
-          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Term</Text>
-          <Text variant="small">Yr {contract.current_year} of {contract.years}</Text>
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Term
+          </Text>
+          <Text variant="small">
+            Yr {contract.current_year} of {contract.years}
+          </Text>
         </div>
         <div className="flex flex-col">
-          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Salary</Text>
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Salary
+          </Text>
           <Text variant="small">{salaryDisplay}</Text>
         </div>
         {contract.bonus > 0 && (
           <div className="flex flex-col">
-            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Bonus</Text>
+            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+              Bonus
+            </Text>
             <Text variant="small">{bonusDisplay}</Text>
           </div>
         )}
         {contract.on_ir && (
           <div className="flex flex-col">
-            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">IL Status</Text>
-            <Text variant="small" classes="text-red-600 dark:text-red-400 font-semibold">On IL</Text>
+            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+              IL Status
+            </Text>
+            <Text
+              variant="small"
+              classes="text-red-600 dark:text-red-400 font-semibold"
+            >
+              On IL
+            </Text>
           </div>
         )}
       </div>
@@ -784,14 +994,16 @@ const ContractTab: FC<{ contract?: any; isCollege: boolean }> = ({ contract, isC
 // Injuries Tab
 // ═══════════════════════════════════════════════════
 
-const InjuriesTab: FC<{ injuryHistory: InjuryHistoryItem[]; injuryLoading: boolean }> = ({
-  injuryHistory,
-  injuryLoading,
-}) => {
+const InjuriesTab: FC<{
+  injuryHistory: InjuryHistoryItem[];
+  injuryLoading: boolean;
+}> = ({ injuryHistory, injuryLoading }) => {
   if (injuryLoading) {
     return (
       <Border classes="p-3">
-        <Text variant="small" classes="text-gray-400 py-4 text-center">Loading injury history...</Text>
+        <Text variant="small" classes="text-gray-400 py-4 text-center">
+          Loading injury history...
+        </Text>
       </Border>
     );
   }
@@ -799,7 +1011,9 @@ const InjuriesTab: FC<{ injuryHistory: InjuryHistoryItem[]; injuryLoading: boole
   if (injuryHistory.length === 0) {
     return (
       <Border classes="p-3">
-        <Text variant="small" classes="text-gray-400 py-4 text-center">No injury history found.</Text>
+        <Text variant="small" classes="text-gray-400 py-4 text-center">
+          No injury history found.
+        </Text>
       </Border>
     );
   }
@@ -807,30 +1021,43 @@ const InjuriesTab: FC<{ injuryHistory: InjuryHistoryItem[]; injuryLoading: boole
   return (
     <Border classes="p-3">
       <div className="baseball-table-wrapper overflow-x-auto">
-      <table className="w-full border-collapse text-xs">
-        <thead>
-          <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-            <th className="px-2 py-1 text-left">Injury</th>
-            <th className="px-2 py-1 text-center">Assigned</th>
-            <th className="px-2 py-1 text-center">Remaining</th>
-            <th className="px-2 py-1 text-left">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {injuryHistory.map((evt) => (
-            <tr key={evt.event_id} className="border-b border-gray-100 dark:border-gray-700">
-              <td className="px-2 py-1.5">{evt.injury_name}</td>
-              <td className="px-2 py-1.5 text-center">{evt.weeks_assigned}w</td>
-              <td className="px-2 py-1.5 text-center">
-                <span className={evt.weeks_remaining > 0 ? "text-red-600 dark:text-red-400 font-semibold" : "text-green-600 dark:text-green-400"}>
-                  {evt.weeks_remaining > 0 ? `${evt.weeks_remaining}w` : "Healed"}
-                </span>
-              </td>
-              <td className="px-2 py-1.5 text-gray-500">{evt.created_at}</td>
+        <table className="w-full border-collapse text-xs">
+          <thead>
+            <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+              <th className="px-2 py-1 text-left">Injury</th>
+              <th className="px-2 py-1 text-center">Assigned</th>
+              <th className="px-2 py-1 text-center">Remaining</th>
+              <th className="px-2 py-1 text-left">Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {injuryHistory.map((evt) => (
+              <tr
+                key={evt.event_id}
+                className="border-b border-gray-100 dark:border-gray-700"
+              >
+                <td className="px-2 py-1.5">{evt.injury_name}</td>
+                <td className="px-2 py-1.5 text-center">
+                  {evt.weeks_assigned}w
+                </td>
+                <td className="px-2 py-1.5 text-center">
+                  <span
+                    className={
+                      evt.weeks_remaining > 0
+                        ? "text-red-600 dark:text-red-400 font-semibold"
+                        : "text-green-600 dark:text-green-400"
+                    }
+                  >
+                    {evt.weeks_remaining > 0
+                      ? `${evt.weeks_remaining}w`
+                      : "Healed"}
+                  </span>
+                </td>
+                <td className="px-2 py-1.5 text-gray-500">{evt.created_at}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </Border>
   );
@@ -846,7 +1073,8 @@ const StatisticsTab: FC<{ player: ScoutingPlayerResponse }> = ({ player }) => {
   const hasReport = player.text_report;
 
   // Fallback: fetch from GetPlayerStats when scouting endpoint doesn't include stats
-  const [fallbackStats, setFallbackStats] = useState<PlayerStatsResponse | null>(null);
+  const [fallbackStats, setFallbackStats] =
+    useState<PlayerStatsResponse | null>(null);
   const [fallbackLoading, setFallbackLoading] = useState(false);
 
   useEffect(() => {
@@ -854,22 +1082,38 @@ const StatisticsTab: FC<{ player: ScoutingPlayerResponse }> = ({ player }) => {
     let cancelled = false;
     setFallbackLoading(true);
     BaseballService.GetPlayerStats(player.bio.id, {})
-      .then((data) => { if (!cancelled) setFallbackStats(data); })
-      .catch(() => { if (!cancelled) setFallbackStats(null); })
-      .finally(() => { if (!cancelled) setFallbackLoading(false); });
-    return () => { cancelled = true; };
+      .then((data) => {
+        if (!cancelled) setFallbackStats(data);
+      })
+      .catch(() => {
+        if (!cancelled) setFallbackStats(null);
+      })
+      .finally(() => {
+        if (!cancelled) setFallbackLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [player.bio.id, hasGenerated, hasCounting]);
 
-  const hasFallback = fallbackStats && (
-    (fallbackStats.batting?.length ?? 0) > 0 ||
-    (fallbackStats.pitching?.length ?? 0) > 0 ||
-    (fallbackStats.fielding?.length ?? 0) > 0
-  );
+  const hasFallback =
+    fallbackStats &&
+    ((fallbackStats.batting?.length ?? 0) > 0 ||
+      (fallbackStats.pitching?.length ?? 0) > 0 ||
+      (fallbackStats.fielding?.length ?? 0) > 0);
 
-  if (!hasGenerated && !hasCounting && !hasReport && !hasFallback && !fallbackLoading) {
+  if (
+    !hasGenerated &&
+    !hasCounting &&
+    !hasReport &&
+    !hasFallback &&
+    !fallbackLoading
+  ) {
     return (
       <Border classes="p-3">
-        <Text variant="xs" classes="text-gray-400">No statistics available.</Text>
+        <Text variant="xs" classes="text-gray-400">
+          No statistics available.
+        </Text>
       </Border>
     );
   }
@@ -879,12 +1123,31 @@ const StatisticsTab: FC<{ player: ScoutingPlayerResponse }> = ({ player }) => {
       {/* Text Report */}
       {hasReport && (
         <Border classes="p-3">
-          <Text variant="small" classes="font-semibold mb-2">Scout Report</Text>
+          <Text variant="small" classes="font-semibold mb-2">
+            Scout Report
+          </Text>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {player.text_report!.batting && <ReportCard title="Batting" text={player.text_report!.batting} />}
-            {player.text_report!.fielding && <ReportCard title="Fielding" text={player.text_report!.fielding} />}
-            {player.text_report!.pitching && <ReportCard title="Pitching" text={player.text_report!.pitching} />}
-            {player.text_report!.athletic && <ReportCard title="Athletic" text={player.text_report!.athletic} />}
+            {player.text_report!.batting && (
+              <ReportCard title="Batting" text={player.text_report!.batting} />
+            )}
+            {player.text_report!.fielding && (
+              <ReportCard
+                title="Fielding"
+                text={player.text_report!.fielding}
+              />
+            )}
+            {player.text_report!.pitching && (
+              <ReportCard
+                title="Pitching"
+                text={player.text_report!.pitching}
+              />
+            )}
+            {player.text_report!.athletic && (
+              <ReportCard
+                title="Athletic"
+                text={player.text_report!.athletic}
+              />
+            )}
           </div>
         </Border>
       )}
@@ -892,56 +1155,102 @@ const StatisticsTab: FC<{ player: ScoutingPlayerResponse }> = ({ player }) => {
       {/* Generated Stats */}
       {hasGenerated && (
         <Border classes="p-3">
-          <Text variant="small" classes="font-semibold mb-2">Season Stats</Text>
-          {player.generated_stats!.batting && <GeneratedBattingSection stats={player.generated_stats!.batting} />}
-          {player.generated_stats!.fielding && <GeneratedFieldingSection stats={player.generated_stats!.fielding} />}
-          {player.generated_stats!.pitching && <GeneratedPitchingSection stats={player.generated_stats!.pitching} />}
+          <Text variant="small" classes="font-semibold mb-2">
+            Season Stats
+          </Text>
+          {player.generated_stats!.batting && (
+            <GeneratedBattingSection stats={player.generated_stats!.batting} />
+          )}
+          {player.generated_stats!.fielding && (
+            <GeneratedFieldingSection
+              stats={player.generated_stats!.fielding}
+            />
+          )}
+          {player.generated_stats!.pitching && (
+            <GeneratedPitchingSection
+              stats={player.generated_stats!.pitching}
+            />
+          )}
         </Border>
       )}
 
       {/* Counting Stats (INTAM) */}
       {hasCounting && (
         <Border classes="p-3">
-          <Text variant="small" classes="font-semibold mb-2">Stats</Text>
-          {player.counting_stats!.batting && <GeneratedBattingSection stats={player.counting_stats!.batting} />}
-          {player.counting_stats!.fielding && <GeneratedFieldingSection stats={player.counting_stats!.fielding} />}
-          {player.counting_stats!.pitching && <GeneratedPitchingSection stats={player.counting_stats!.pitching} />}
+          <Text variant="small" classes="font-semibold mb-2">
+            Stats
+          </Text>
+          {player.counting_stats!.batting && (
+            <GeneratedBattingSection stats={player.counting_stats!.batting} />
+          )}
+          {player.counting_stats!.fielding && (
+            <GeneratedFieldingSection stats={player.counting_stats!.fielding} />
+          )}
+          {player.counting_stats!.pitching && (
+            <GeneratedPitchingSection stats={player.counting_stats!.pitching} />
+          )}
         </Border>
       )}
 
       {/* Fallback: stats from GetPlayerStats endpoint */}
       {fallbackLoading && (
         <Border classes="p-3">
-          <Text variant="xs" classes="text-gray-400">Loading statistics...</Text>
+          <Text variant="xs" classes="text-gray-400">
+            Loading statistics...
+          </Text>
         </Border>
       )}
       {!hasGenerated && !hasCounting && hasFallback && fallbackStats && (
         <Border classes="p-3">
-          <Text variant="small" classes="font-semibold mb-2">Season Stats</Text>
+          <Text variant="small" classes="font-semibold mb-2">
+            Season Stats
+          </Text>
           {fallbackStats.batting.length > 0 && (
             <div className="mb-3">
-              <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Batting</Text>
+              <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+                Batting
+              </Text>
               <div className="baseball-table-wrapper overflow-x-auto">
                 <table className="w-full text-xs">
-                  <thead><tr className="text-gray-400 border-b dark:border-gray-600">
-                    <th className="px-2 py-1 text-center">Year</th><th className="px-2 py-1 text-center">Team</th>
-                    <th className="px-2 py-1 text-center">G</th><th className="px-2 py-1 text-center">AB</th>
-                    <th className="px-2 py-1 text-center">H</th><th className="px-2 py-1 text-center">HR</th>
-                    <th className="px-2 py-1 text-center">RBI</th><th className="px-2 py-1 text-center">BB</th>
-                    <th className="px-2 py-1 text-center">SO</th><th className="px-2 py-1 text-center">SB</th>
-                    <th className="px-2 py-1 text-center">AVG</th><th className="px-2 py-1 text-center">OBP</th>
-                  </tr></thead>
+                  <thead>
+                    <tr className="text-gray-400 border-b dark:border-gray-600">
+                      <th className="px-2 py-1 text-center">Year</th>
+                      <th className="px-2 py-1 text-center">Team</th>
+                      <th className="px-2 py-1 text-center">G</th>
+                      <th className="px-2 py-1 text-center">AB</th>
+                      <th className="px-2 py-1 text-center">H</th>
+                      <th className="px-2 py-1 text-center">HR</th>
+                      <th className="px-2 py-1 text-center">RBI</th>
+                      <th className="px-2 py-1 text-center">BB</th>
+                      <th className="px-2 py-1 text-center">SO</th>
+                      <th className="px-2 py-1 text-center">SB</th>
+                      <th className="px-2 py-1 text-center">AVG</th>
+                      <th className="px-2 py-1 text-center">OBP</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {fallbackStats.batting.map((s, i) => (
                       <tr key={i} className="border-b dark:border-gray-700">
-                        <td className="px-2 py-1 text-center">{s.league_year_id}</td>
-                        <td className="px-2 py-1 text-center">{s.team_abbrev}</td>
-                        <td className="px-2 py-1 text-center">{s.g}</td><td className="px-2 py-1 text-center">{s.ab}</td>
-                        <td className="px-2 py-1 text-center">{s.h}</td><td className="px-2 py-1 text-center">{s.hr}</td>
-                        <td className="px-2 py-1 text-center">{s.rbi}</td><td className="px-2 py-1 text-center">{s.bb}</td>
-                        <td className="px-2 py-1 text-center">{s.so}</td><td className="px-2 py-1 text-center">{s.sb}</td>
-                        <td className="px-2 py-1 text-center font-semibold">{s.avg}</td>
-                        <td className="px-2 py-1 text-center font-semibold">{s.obp}</td>
+                        <td className="px-2 py-1 text-center">
+                          {s.league_year_id}
+                        </td>
+                        <td className="px-2 py-1 text-center">
+                          {s.team_abbrev}
+                        </td>
+                        <td className="px-2 py-1 text-center">{s.g}</td>
+                        <td className="px-2 py-1 text-center">{s.ab}</td>
+                        <td className="px-2 py-1 text-center">{s.h}</td>
+                        <td className="px-2 py-1 text-center">{s.hr}</td>
+                        <td className="px-2 py-1 text-center">{s.rbi}</td>
+                        <td className="px-2 py-1 text-center">{s.bb}</td>
+                        <td className="px-2 py-1 text-center">{s.so}</td>
+                        <td className="px-2 py-1 text-center">{s.sb}</td>
+                        <td className="px-2 py-1 text-center font-semibold">
+                          {s.avg}
+                        </td>
+                        <td className="px-2 py-1 text-center font-semibold">
+                          {s.obp}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -951,28 +1260,50 @@ const StatisticsTab: FC<{ player: ScoutingPlayerResponse }> = ({ player }) => {
           )}
           {fallbackStats.pitching.length > 0 && (
             <div className="mb-3">
-              <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Pitching</Text>
+              <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+                Pitching
+              </Text>
               <div className="baseball-table-wrapper overflow-x-auto">
                 <table className="w-full text-xs">
-                  <thead><tr className="text-gray-400 border-b dark:border-gray-600">
-                    <th className="px-2 py-1 text-center">Year</th><th className="px-2 py-1 text-center">Team</th>
-                    <th className="px-2 py-1 text-center">G</th><th className="px-2 py-1 text-center">GS</th>
-                    <th className="px-2 py-1 text-center">W</th><th className="px-2 py-1 text-center">L</th>
-                    <th className="px-2 py-1 text-center">SV</th><th className="px-2 py-1 text-center">IP</th>
-                    <th className="px-2 py-1 text-center">SO</th><th className="px-2 py-1 text-center">BB</th>
-                    <th className="px-2 py-1 text-center">ERA</th><th className="px-2 py-1 text-center">WHIP</th>
-                  </tr></thead>
+                  <thead>
+                    <tr className="text-gray-400 border-b dark:border-gray-600">
+                      <th className="px-2 py-1 text-center">Year</th>
+                      <th className="px-2 py-1 text-center">Team</th>
+                      <th className="px-2 py-1 text-center">G</th>
+                      <th className="px-2 py-1 text-center">GS</th>
+                      <th className="px-2 py-1 text-center">W</th>
+                      <th className="px-2 py-1 text-center">L</th>
+                      <th className="px-2 py-1 text-center">SV</th>
+                      <th className="px-2 py-1 text-center">IP</th>
+                      <th className="px-2 py-1 text-center">SO</th>
+                      <th className="px-2 py-1 text-center">BB</th>
+                      <th className="px-2 py-1 text-center">ERA</th>
+                      <th className="px-2 py-1 text-center">WHIP</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {fallbackStats.pitching.map((s, i) => (
                       <tr key={i} className="border-b dark:border-gray-700">
-                        <td className="px-2 py-1 text-center">{s.league_year_id}</td>
-                        <td className="px-2 py-1 text-center">{s.team_abbrev}</td>
-                        <td className="px-2 py-1 text-center">{s.g}</td><td className="px-2 py-1 text-center">{s.gs}</td>
-                        <td className="px-2 py-1 text-center">{s.w}</td><td className="px-2 py-1 text-center">{s.l}</td>
-                        <td className="px-2 py-1 text-center">{s.sv}</td><td className="px-2 py-1 text-center">{s.ip}</td>
-                        <td className="px-2 py-1 text-center">{s.so}</td><td className="px-2 py-1 text-center">{s.bb}</td>
-                        <td className="px-2 py-1 text-center font-semibold">{s.era}</td>
-                        <td className="px-2 py-1 text-center font-semibold">{s.whip}</td>
+                        <td className="px-2 py-1 text-center">
+                          {s.league_year_id}
+                        </td>
+                        <td className="px-2 py-1 text-center">
+                          {s.team_abbrev}
+                        </td>
+                        <td className="px-2 py-1 text-center">{s.g}</td>
+                        <td className="px-2 py-1 text-center">{s.gs}</td>
+                        <td className="px-2 py-1 text-center">{s.w}</td>
+                        <td className="px-2 py-1 text-center">{s.l}</td>
+                        <td className="px-2 py-1 text-center">{s.sv}</td>
+                        <td className="px-2 py-1 text-center">{s.ip}</td>
+                        <td className="px-2 py-1 text-center">{s.so}</td>
+                        <td className="px-2 py-1 text-center">{s.bb}</td>
+                        <td className="px-2 py-1 text-center font-semibold">
+                          {s.era}
+                        </td>
+                        <td className="px-2 py-1 text-center font-semibold">
+                          {s.whip}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -982,23 +1313,38 @@ const StatisticsTab: FC<{ player: ScoutingPlayerResponse }> = ({ player }) => {
           )}
           {fallbackStats.fielding.length > 0 && (
             <div className="mb-3">
-              <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Fielding</Text>
+              <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+                Fielding
+              </Text>
               <div className="baseball-table-wrapper overflow-x-auto">
                 <table className="w-full text-xs">
-                  <thead><tr className="text-gray-400 border-b dark:border-gray-600">
-                    <th className="px-2 py-1 text-center">Year</th><th className="px-2 py-1 text-center">Team</th>
-                    <th className="px-2 py-1 text-center">Pos</th><th className="px-2 py-1 text-center">G</th>
-                    <th className="px-2 py-1 text-center">INN</th><th className="px-2 py-1 text-center">PO</th>
-                    <th className="px-2 py-1 text-center">A</th><th className="px-2 py-1 text-center">E</th>
-                  </tr></thead>
+                  <thead>
+                    <tr className="text-gray-400 border-b dark:border-gray-600">
+                      <th className="px-2 py-1 text-center">Year</th>
+                      <th className="px-2 py-1 text-center">Team</th>
+                      <th className="px-2 py-1 text-center">Pos</th>
+                      <th className="px-2 py-1 text-center">G</th>
+                      <th className="px-2 py-1 text-center">INN</th>
+                      <th className="px-2 py-1 text-center">PO</th>
+                      <th className="px-2 py-1 text-center">A</th>
+                      <th className="px-2 py-1 text-center">E</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     {fallbackStats.fielding.map((s, i) => (
                       <tr key={i} className="border-b dark:border-gray-700">
-                        <td className="px-2 py-1 text-center">{s.league_year_id}</td>
-                        <td className="px-2 py-1 text-center">{s.team_abbrev}</td>
-                        <td className="px-2 py-1 text-center">{s.pos}</td><td className="px-2 py-1 text-center">{s.g}</td>
-                        <td className="px-2 py-1 text-center">{s.inn}</td><td className="px-2 py-1 text-center">{s.po}</td>
-                        <td className="px-2 py-1 text-center">{s.a}</td><td className="px-2 py-1 text-center">{s.e}</td>
+                        <td className="px-2 py-1 text-center">
+                          {s.league_year_id}
+                        </td>
+                        <td className="px-2 py-1 text-center">
+                          {s.team_abbrev}
+                        </td>
+                        <td className="px-2 py-1 text-center">{s.pos}</td>
+                        <td className="px-2 py-1 text-center">{s.g}</td>
+                        <td className="px-2 py-1 text-center">{s.inn}</td>
+                        <td className="px-2 py-1 text-center">{s.po}</td>
+                        <td className="px-2 py-1 text-center">{s.a}</td>
+                        <td className="px-2 py-1 text-center">{s.e}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1025,11 +1371,21 @@ const AttrRow: FC<{
   isHidden?: boolean;
   isFuzzed?: boolean;
   compact?: boolean;
-}> = ({ attrKey, label, letterGrades, attributes, isHidden, isFuzzed, compact }) => {
+}> = ({
+  attrKey,
+  label,
+  letterGrades,
+  attributes,
+  isHidden,
+  isFuzzed,
+  compact,
+}) => {
   const grade = letterGrades?.[attrKey];
   const numeric = attributes?.[`${attrKey}_display`];
 
-  const cls = compact ? "flex justify-between text-xs" : "flex justify-between text-xs py-0.5";
+  const cls = compact
+    ? "flex justify-between text-xs"
+    : "flex justify-between text-xs py-0.5";
   // Hidden display format: attributes not yet scouted
   if (isHidden && !grade && numeric == null) {
     return (
@@ -1044,9 +1400,13 @@ const AttrRow: FC<{
     <div className={cls}>
       <span className="text-gray-400">{label}</span>
       <span className="flex gap-1.5">
-        {grade && <span className={`font-semibold ${gradeColor(grade)}`}>{grade}</span>}
+        {grade && (
+          <span className={`font-semibold ${gradeColor(grade)}`}>{grade}</span>
+        )}
         {numeric != null && (
-          <span className={`${ratingColor(numeric)} ${grade ? "text-gray-300" : "font-semibold"}`}>
+          <span
+            className={`${ratingColor(numeric)} ${grade ? "text-gray-300" : "font-semibold"}`}
+          >
             {grade ? `(${numeric.toFixed(0)})` : `${numeric.toFixed(0)}`}
           </span>
         )}
@@ -1058,16 +1418,27 @@ const AttrRow: FC<{
 
 // ── Generated Stats sub-components ──
 
-const StatPair: FC<{ label: string; value: string | number }> = ({ label, value }) => (
+const StatPair: FC<{ label: string; value: string | number }> = ({
+  label,
+  value,
+}) => (
   <div className="text-center">
     <div className="text-xs text-gray-400">{label}</div>
-    <div className="text-sm font-medium">{typeof value === "number" ? (value % 1 !== 0 ? value.toFixed(3).replace(/^0/, "") : value) : value}</div>
+    <div className="text-sm font-medium">
+      {typeof value === "number"
+        ? value % 1 !== 0
+          ? value.toFixed(3).replace(/^0/, "")
+          : value
+        : value}
+    </div>
   </div>
 );
 
 const GeneratedBattingSection: FC<{ stats: any }> = ({ stats }) => (
   <div className="mb-2">
-    <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Batting</Text>
+    <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+      Batting
+    </Text>
     <div className="grid grid-cols-5 sm:grid-cols-8 gap-2">
       <StatPair label="G" value={stats.games} />
       <StatPair label="AB" value={stats.at_bats} />
@@ -1083,7 +1454,9 @@ const GeneratedBattingSection: FC<{ stats: any }> = ({ stats }) => (
 
 const GeneratedFieldingSection: FC<{ stats: any }> = ({ stats }) => (
   <div className="mb-2">
-    <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Fielding</Text>
+    <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+      Fielding
+    </Text>
     <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
       <StatPair label="G" value={stats.games} />
       <StatPair label="PO" value={stats.putouts} />
@@ -1096,7 +1469,9 @@ const GeneratedFieldingSection: FC<{ stats: any }> = ({ stats }) => (
 
 const GeneratedPitchingSection: FC<{ stats: any }> = ({ stats }) => (
   <div className="mb-2">
-    <Text variant="xs" classes="font-semibold text-gray-400 mb-1">Pitching</Text>
+    <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+      Pitching
+    </Text>
     <div className="grid grid-cols-5 sm:grid-cols-8 gap-2">
       <StatPair label="W" value={stats.wins} />
       <StatPair label="L" value={stats.losses} />

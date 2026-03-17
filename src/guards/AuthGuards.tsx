@@ -15,6 +15,9 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     if (!isLoading && !currentUser) {
       navigate("/login");
     }
+    if (currentUser && currentUser.IsBanned) {
+      navigate("/");
+    }
   }, [isLoading, currentUser, navigate]);
 
   if (isLoading || !currentUser) {

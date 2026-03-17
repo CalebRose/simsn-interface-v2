@@ -1,5 +1,8 @@
 import { useState, useMemo } from "react";
-import { TeamBattingRow, TeamPitchingRow } from "../../../models/baseball/baseballStatsModels";
+import {
+  TeamBattingRow,
+  TeamPitchingRow,
+} from "../../../models/baseball/baseballStatsModels";
 import { getLogo } from "../../../_utility/getLogo";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getStatsHeaderStyle } from "./statsHeaderStyle";
@@ -9,19 +12,59 @@ interface Props {
   batting: TeamBattingRow[];
   pitching: TeamPitchingRow[];
   league: string;
-  isRetro?: boolean;
+  IsRetro?: boolean;
   accentColor?: string;
 }
 
 type TeamSortField =
   // Batting
-  | "g" | "pa" | "ab" | "r" | "h" | "2b" | "3b" | "hr" | "itphr" | "rbi" | "bb" | "so" | "sb" | "cs" | "tb"
-  | "avg" | "obp" | "slg" | "ops" | "babip"
+  | "g"
+  | "pa"
+  | "ab"
+  | "r"
+  | "h"
+  | "2b"
+  | "3b"
+  | "hr"
+  | "itphr"
+  | "rbi"
+  | "bb"
+  | "so"
+  | "sb"
+  | "cs"
+  | "tb"
+  | "avg"
+  | "obp"
+  | "slg"
+  | "ops"
+  | "babip"
   // Pitching
-  | "p_w" | "p_l" | "p_sv" | "p_hld" | "p_bs" | "p_qs" | "p_ip" | "p_r" | "p_er" | "p_hr" | "p_itphr" | "p_bb" | "p_so" | "p_ha"
-  | "p_era" | "p_whip" | "p_k9" | "p_bb9" | "p_hr9";
+  | "p_w"
+  | "p_l"
+  | "p_sv"
+  | "p_hld"
+  | "p_bs"
+  | "p_qs"
+  | "p_ip"
+  | "p_r"
+  | "p_er"
+  | "p_hr"
+  | "p_itphr"
+  | "p_bb"
+  | "p_so"
+  | "p_ha"
+  | "p_era"
+  | "p_whip"
+  | "p_k9"
+  | "p_bb9"
+  | "p_hr9";
 
-const BATTING_COLS: { label: string; key: string; sortKey: TeamSortField; bold?: boolean }[] = [
+const BATTING_COLS: {
+  label: string;
+  key: string;
+  sortKey: TeamSortField;
+  bold?: boolean;
+}[] = [
   { label: "G", key: "g", sortKey: "g" },
   { label: "PA", key: "pa", sortKey: "pa" },
   { label: "R", key: "r", sortKey: "r" },
@@ -39,7 +82,12 @@ const BATTING_COLS: { label: string; key: string; sortKey: TeamSortField; bold?:
   { label: "BABIP", key: "babip", sortKey: "babip" },
 ];
 
-const PITCHING_COLS: { label: string; key: string; sortKey: TeamSortField; bold?: boolean }[] = [
+const PITCHING_COLS: {
+  label: string;
+  key: string;
+  sortKey: TeamSortField;
+  bold?: boolean;
+}[] = [
   { label: "W", key: "w", sortKey: "p_w", bold: true },
   { label: "L", key: "l", sortKey: "p_l" },
   { label: "SV", key: "sv", sortKey: "p_sv" },
@@ -61,7 +109,20 @@ const PITCHING_COLS: { label: string; key: string; sortKey: TeamSortField; bold?
 ];
 
 // ASC-by-default fields (lower is better)
-const ASC_DEFAULTS = new Set<TeamSortField>(["so", "p_er", "p_r", "p_hr", "p_bb", "p_ha", "p_era", "p_whip", "p_bb9", "p_hr9", "p_l", "p_bs"]);
+const ASC_DEFAULTS = new Set<TeamSortField>([
+  "so",
+  "p_er",
+  "p_r",
+  "p_hr",
+  "p_bb",
+  "p_ha",
+  "p_era",
+  "p_whip",
+  "p_bb9",
+  "p_hr9",
+  "p_l",
+  "p_bs",
+]);
 
 const parseNum = (v: string | number): number => {
   if (typeof v === "number") return v;
@@ -69,7 +130,13 @@ const parseNum = (v: string | number): number => {
   return isNaN(n) ? 0 : n;
 };
 
-export const BaseballTeamStatsTable = ({ batting, pitching, league, isRetro, accentColor }: Props) => {
+export const BaseballTeamStatsTable = ({
+  batting,
+  pitching,
+  league,
+  IsRetro,
+  accentColor,
+}: Props) => {
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
   const { isDarkMode } = useAuthStore();
   const headerStyle = getStatsHeaderStyle(accentColor, isDarkMode);
@@ -110,7 +177,15 @@ export const BaseballTeamStatsTable = ({ batting, pitching, league, isRetro, acc
     return rows;
   }, [batting, pitchingMap, sortField, sortOrder]);
 
-  const SortHeader = ({ label, field, bold }: { label: string; field: TeamSortField; bold?: boolean }) => {
+  const SortHeader = ({
+    label,
+    field,
+    bold,
+  }: {
+    label: string;
+    field: TeamSortField;
+    bold?: boolean;
+  }) => {
     const isActive = sortField === field;
     return (
       <th
@@ -118,7 +193,11 @@ export const BaseballTeamStatsTable = ({ batting, pitching, league, isRetro, acc
         onClick={() => handleSort(field)}
       >
         {label}
-        {isActive && <span className="ml-0.5 text-[10px]">{sortOrder === "asc" ? "▲" : "▼"}</span>}
+        {isActive && (
+          <span className="ml-0.5 text-[10px]">
+            {sortOrder === "asc" ? "▲" : "▼"}
+          </span>
+        )}
       </th>
     );
   };
@@ -135,26 +214,42 @@ export const BaseballTeamStatsTable = ({ batting, pitching, league, isRetro, acc
             <th className="px-2 py-2 text-center" colSpan={BATTING_COLS.length}>
               <span className="border-b-2 border-current pb-0.5">Batting</span>
             </th>
-            <th className="px-2 py-2 text-center" colSpan={PITCHING_COLS.length}>
+            <th
+              className="px-2 py-2 text-center"
+              colSpan={PITCHING_COLS.length}
+            >
               <span className="border-b-2 border-current pb-0.5">Pitching</span>
             </th>
           </tr>
-          <tr className="text-xs border-b border-gray-200 dark:border-gray-600"
-            style={headerStyle ? { color: headerStyle.color as string } : undefined}
+          <tr
+            className="text-xs border-b border-gray-200 dark:border-gray-600"
+            style={
+              headerStyle ? { color: headerStyle.color as string } : undefined
+            }
           >
             <th className="px-2 py-1"></th>
             {BATTING_COLS.map((col) => (
-              <SortHeader key={col.sortKey} label={col.label} field={col.sortKey} bold={col.bold} />
+              <SortHeader
+                key={col.sortKey}
+                label={col.label}
+                field={col.sortKey}
+                bold={col.bold}
+              />
             ))}
             {PITCHING_COLS.map((col) => (
-              <SortHeader key={col.sortKey} label={col.label} field={col.sortKey} bold={col.bold} />
+              <SortHeader
+                key={col.sortKey}
+                label={col.label}
+                field={col.sortKey}
+                bold={col.bold}
+              />
             ))}
           </tr>
         </thead>
         <tbody>
           {sortedBatting.map((b, idx) => {
             const p = pitchingMap.get(b.team_id);
-            const logo = getLogo(leagueType, b.team_id, isRetro);
+            const logo = getLogo(leagueType, b.team_id, IsRetro);
             return (
               <tr
                 key={b.team_id}
@@ -162,14 +257,26 @@ export const BaseballTeamStatsTable = ({ batting, pitching, league, isRetro, acc
               >
                 <td className="px-2 py-1.5">
                   <div className="flex items-center gap-2">
-                    {logo && <img src={logo} className="w-5 h-5 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
+                    {logo && (
+                      <img
+                        src={logo}
+                        className="w-5 h-5 object-contain"
+                        alt=""
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    )}
                     <span className="font-medium">{b.team_abbrev}</span>
                   </div>
                 </td>
                 {BATTING_COLS.map((col) => {
                   const isActive = sortField === col.sortKey;
                   return (
-                    <td key={col.sortKey} className={`px-2 py-1.5 text-center ${col.bold ? "font-semibold" : ""} ${isActive ? "bg-yellow-50/60 dark:bg-yellow-900/15" : ""}`}>
+                    <td
+                      key={col.sortKey}
+                      className={`px-2 py-1.5 text-center ${col.bold ? "font-semibold" : ""} ${isActive ? "bg-yellow-50/60 dark:bg-yellow-900/15" : ""}`}
+                    >
                       {(b as any)[col.key] ?? "—"}
                     </td>
                   );
@@ -177,7 +284,10 @@ export const BaseballTeamStatsTable = ({ batting, pitching, league, isRetro, acc
                 {PITCHING_COLS.map((col) => {
                   const isActive = sortField === col.sortKey;
                   return (
-                    <td key={col.sortKey} className={`px-2 py-1.5 text-center ${col.bold ? "font-semibold" : ""} ${isActive ? "bg-yellow-50/60 dark:bg-yellow-900/15" : ""}`}>
+                    <td
+                      key={col.sortKey}
+                      className={`px-2 py-1.5 text-center ${col.bold ? "font-semibold" : ""} ${isActive ? "bg-yellow-50/60 dark:bg-yellow-900/15" : ""}`}
+                    >
                       {p ? ((p as any)[col.key] ?? "—") : "—"}
                     </td>
                   );
@@ -187,7 +297,10 @@ export const BaseballTeamStatsTable = ({ batting, pitching, league, isRetro, acc
           })}
           {batting.length === 0 && (
             <tr>
-              <td colSpan={1 + BATTING_COLS.length + PITCHING_COLS.length} className="px-4 py-8 text-center text-gray-400">
+              <td
+                colSpan={1 + BATTING_COLS.length + PITCHING_COLS.length}
+                className="px-4 py-8 text-center text-gray-400"
+              >
                 No team stats available.
               </td>
             </tr>

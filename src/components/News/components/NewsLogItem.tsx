@@ -27,7 +27,7 @@ interface NewsLogItemProps {
   onEngagementUpdate: (
     newsId: string,
     type: EngagementType,
-    userTeamId: number
+    userTeamId: number,
   ) => Promise<void>;
 }
 
@@ -100,7 +100,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
 
   const team = getTeamInfo();
   const teamLogo = team
-    ? getLogo(league, newsItem.TeamID, currentUser?.isRetro)
+    ? getLogo(league, newsItem.TeamID, currentUser?.IsRetro)
     : null;
 
   // Get team name based on league and team structure
@@ -250,7 +250,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
             {newsItem.MessageType && (
               <span
                 className={`max-[768px]:px-1 max-[768px]:py-0.5 max-[768px]:text-xs px-2 py-0.5 rounded-md text-xs font-medium ${getMessageTypeStyle(
-                  newsItem.MessageType
+                  newsItem.MessageType,
                 )}`}
               >
                 {newsItem.MessageType}

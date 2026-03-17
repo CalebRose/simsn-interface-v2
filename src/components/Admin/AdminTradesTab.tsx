@@ -60,17 +60,17 @@ export const PHLTradeCard: React.FC<PHLTradeCardProps> = ({
   const sendingTeamLogo = getLogo(
     SimPHL as League,
     sendingTeam.ID,
-    currentUser?.isRetro
+    currentUser?.IsRetro,
   );
   const receivingTeamLogo = getLogo(
     SimPHL as League,
     receivingTeam.ID,
-    currentUser?.isRetro
+    currentUser?.IsRetro,
   );
   const teamColors = useTeamColors(
     sendingTeam.ColorOne,
     sendingTeam.ColorTwo,
-    sendingTeam.ColorThree
+    sendingTeam.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;

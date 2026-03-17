@@ -9,7 +9,12 @@ import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
 import { useModal } from "../../../_hooks/useModal";
 import { BaseballService } from "../../../_services/baseballService";
-import { IntamPoolResponse, IntamSigning, PoolPlayer, ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
+import {
+  IntamPoolResponse,
+  IntamSigning,
+  PoolPlayer,
+  ScoutingBudget,
+} from "../../../models/baseball/baseballScoutingModels";
 import { BoardPlayer } from "../../../models/baseball/baseballRecruitingModels";
 import { usePoolTable } from "./BaseballScouting/usePoolTable";
 import { PoolPagination } from "./BaseballScouting/PoolPagination";
@@ -41,72 +46,96 @@ interface ScoutedEntry {
 // ═══════════════════════════════════════════════
 
 const INTAM_POS_GROUPS: ColumnGroup[] = [
-  { groupLabel: "", columns: [
-    { label: "", sortKey: "" },
-    { label: "Name", sortKey: "lastname" },
-    { label: "Age", sortKey: "age" },
-    { label: "Area", sortKey: "area" },
-    { label: "B/T", sortKey: "" },
-  ]},
-  { groupLabel: "Potentials", columns: [
-    { label: "Contact", sortKey: "contact_pot" },
-    { label: "Power", sortKey: "power_pot" },
-    { label: "Eye", sortKey: "eye_pot" },
-    { label: "Disc", sortKey: "discipline_pot" },
-    { label: "Speed", sortKey: "speed_pot" },
-    { label: "BaseRun", sortKey: "baserunning_pot" },
-    { label: "FldCatch", sortKey: "fieldcatch_pot" },
-    { label: "FldReact", sortKey: "fieldreact_pot" },
-    { label: "ThrowAcc", sortKey: "throwacc_pot" },
-    { label: "ThrowPow", sortKey: "throwpower_pot" },
-  ]},
-  { groupLabel: "Batting Stats", columns: [
-    { label: "AVG", sortKey: "batting_avg" },
-    { label: "OBP", sortKey: "batting_obp" },
-    { label: "SLG", sortKey: "batting_slg" },
-    { label: "HR", sortKey: "batting_hr" },
-    { label: "RBI", sortKey: "batting_rbi" },
-    { label: "R", sortKey: "batting_runs" },
-    { label: "SB", sortKey: "batting_sb" },
-    { label: "SO", sortKey: "batting_so" },
-  ]},
-  { groupLabel: "Fielding Stats", columns: [
-    { label: "FLD%", sortKey: "fielding_fpct" },
-    { label: "PO", sortKey: "fielding_po" },
-    { label: "A", sortKey: "fielding_a" },
-    { label: "E", sortKey: "fielding_errors" },
-  ]},
+  {
+    groupLabel: "",
+    columns: [
+      { label: "", sortKey: "" },
+      { label: "Name", sortKey: "lastname" },
+      { label: "Age", sortKey: "age" },
+      { label: "Area", sortKey: "area" },
+      { label: "B/T", sortKey: "" },
+    ],
+  },
+  {
+    groupLabel: "Potentials",
+    columns: [
+      { label: "Contact", sortKey: "contact_pot" },
+      { label: "Power", sortKey: "power_pot" },
+      { label: "Eye", sortKey: "eye_pot" },
+      { label: "Disc", sortKey: "discipline_pot" },
+      { label: "Speed", sortKey: "speed_pot" },
+      { label: "BaseRun", sortKey: "baserunning_pot" },
+      { label: "FldCatch", sortKey: "fieldcatch_pot" },
+      { label: "FldReact", sortKey: "fieldreact_pot" },
+      { label: "ThrowAcc", sortKey: "throwacc_pot" },
+      { label: "ThrowPow", sortKey: "throwpower_pot" },
+    ],
+  },
+  {
+    groupLabel: "Batting Stats",
+    columns: [
+      { label: "AVG", sortKey: "batting_avg" },
+      { label: "OBP", sortKey: "batting_obp" },
+      { label: "SLG", sortKey: "batting_slg" },
+      { label: "HR", sortKey: "batting_hr" },
+      { label: "RBI", sortKey: "batting_rbi" },
+      { label: "R", sortKey: "batting_runs" },
+      { label: "SB", sortKey: "batting_sb" },
+      { label: "SO", sortKey: "batting_so" },
+    ],
+  },
+  {
+    groupLabel: "Fielding Stats",
+    columns: [
+      { label: "FLD%", sortKey: "fielding_fpct" },
+      { label: "PO", sortKey: "fielding_po" },
+      { label: "A", sortKey: "fielding_a" },
+      { label: "E", sortKey: "fielding_errors" },
+    ],
+  },
 ];
 
 const INTAM_PITCH_GROUPS: ColumnGroup[] = [
-  { groupLabel: "", columns: [
-    { label: "", sortKey: "" },
-    { label: "Name", sortKey: "lastname" },
-    { label: "Age", sortKey: "age" },
-    { label: "Area", sortKey: "area" },
-    { label: "Throw", sortKey: "" },
-  ]},
-  { groupLabel: "Potentials", columns: [
-    { label: "Endurance", sortKey: "pendurance_pot" },
-    { label: "Control", sortKey: "pgencontrol_pot" },
-    { label: "Velocity", sortKey: "pthrowpower_pot" },
-    { label: "Sequence", sortKey: "psequencing_pot" },
-  ]},
-  { groupLabel: "Pitching Stats", columns: [
-    { label: "ERA", sortKey: "pitching_era" },
-    { label: "K/9", sortKey: "pitching_k9" },
-    { label: "BB/9", sortKey: "pitching_bb9" },
-    { label: "WHIP", sortKey: "pitching_whip" },
-    { label: "W", sortKey: "pitching_wins" },
-    { label: "SO", sortKey: "pitching_so" },
-    { label: "IP", sortKey: "pitching_ip" },
-  ]},
-  { groupLabel: "Fielding Stats", columns: [
-    { label: "FLD%", sortKey: "fielding_fpct" },
-    { label: "PO", sortKey: "fielding_po" },
-    { label: "A", sortKey: "fielding_a" },
-    { label: "E", sortKey: "fielding_errors" },
-  ]},
+  {
+    groupLabel: "",
+    columns: [
+      { label: "", sortKey: "" },
+      { label: "Name", sortKey: "lastname" },
+      { label: "Age", sortKey: "age" },
+      { label: "Area", sortKey: "area" },
+      { label: "Throw", sortKey: "" },
+    ],
+  },
+  {
+    groupLabel: "Potentials",
+    columns: [
+      { label: "Endurance", sortKey: "pendurance_pot" },
+      { label: "Control", sortKey: "pgencontrol_pot" },
+      { label: "Velocity", sortKey: "pthrowpower_pot" },
+      { label: "Sequence", sortKey: "psequencing_pot" },
+    ],
+  },
+  {
+    groupLabel: "Pitching Stats",
+    columns: [
+      { label: "ERA", sortKey: "pitching_era" },
+      { label: "K/9", sortKey: "pitching_k9" },
+      { label: "BB/9", sortKey: "pitching_bb9" },
+      { label: "WHIP", sortKey: "pitching_whip" },
+      { label: "W", sortKey: "pitching_wins" },
+      { label: "SO", sortKey: "pitching_so" },
+      { label: "IP", sortKey: "pitching_ip" },
+    ],
+  },
+  {
+    groupLabel: "Fielding Stats",
+    columns: [
+      { label: "FLD%", sortKey: "fielding_fpct" },
+      { label: "PO", sortKey: "fielding_po" },
+      { label: "A", sortKey: "fielding_a" },
+      { label: "E", sortKey: "fielding_errors" },
+    ],
+  },
 ];
 
 // ═══════════════════════════════════════════════
@@ -115,9 +144,18 @@ const INTAM_PITCH_GROUPS: ColumnGroup[] = [
 
 const cell = "px-2 py-1.5";
 
-const StatNum = ({ value, decimals = 3 }: { value: any; decimals?: number }) => {
-  if (value == null) return <td className={`${cell} text-center text-gray-400`}>—</td>;
-  return <td className={`${cell} text-center`}>{Number(value).toFixed(decimals)}</td>;
+const StatNum = ({
+  value,
+  decimals = 3,
+}: {
+  value: any;
+  decimals?: number;
+}) => {
+  if (value == null)
+    return <td className={`${cell} text-center text-gray-400`}>—</td>;
+  return (
+    <td className={`${cell} text-center`}>{Number(value).toFixed(decimals)}</td>
+  );
 };
 
 // ═══════════════════════════════════════════════
@@ -130,9 +168,13 @@ type Tab = "pool" | "board" | "signings";
 // Main page component
 // ═══════════════════════════════════════════════
 
-interface BaseballIntamScoutingPageProps { league: string }
+interface BaseballIntamScoutingPageProps {
+  league: string;
+}
 
-export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps) => {
+export const BaseballIntamScoutingPage = (
+  _props: BaseballIntamScoutingPageProps,
+) => {
   const { enqueueSnackbar } = useSnackbar();
   const { currentUser } = useAuthStore();
   const { mlbOrganization, seasonContext } = useSimBaseballStore();
@@ -147,7 +189,11 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
     return Object.values(mlbOrganization.teams)[0] ?? null;
   }, [mlbOrganization]);
 
-  const teamColors = useTeamColors(primaryTeam?.color_one ?? undefined, primaryTeam?.color_two ?? undefined, primaryTeam?.color_three ?? undefined);
+  const teamColors = useTeamColors(
+    primaryTeam?.color_one ?? undefined,
+    primaryTeam?.color_two ?? undefined,
+    primaryTeam?.color_three ?? undefined,
+  );
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -157,8 +203,8 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
 
   const logo = useMemo(() => {
     if (!primaryTeam) return "";
-    return getLogo(SimMLB, primaryTeam.team_id, currentUser?.isRetro);
-  }, [primaryTeam, currentUser?.isRetro]);
+    return getLogo(SimMLB, primaryTeam.team_id, currentUser?.IsRetro);
+  }, [primaryTeam, currentUser?.IsRetro]);
 
   const pageTitle = useMemo(() => {
     if (!primaryTeam) return "International Scouting";
@@ -168,7 +214,10 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
   // ── Server-side pool table ──
   const fetcher = useCallback(
     (params: Record<string, any>) =>
-      BaseballService.GetIntamPool({ ...params, viewing_org_id: orgId }) as Promise<IntamPoolResponse>,
+      BaseballService.GetIntamPool({
+        ...params,
+        viewing_org_id: orgId,
+      }) as Promise<IntamPoolResponse>,
     [orgId],
   );
   const pool = usePoolTable<PoolPlayer, IntamPoolResponse>(fetcher, {
@@ -184,7 +233,7 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
 
   // ── Pool sort config for GroupedTableHeader ──
   const poolSortConfig = useMemo(
-    () => ({ key: pool.sortKey, dir: pool.sortDir } as const),
+    () => ({ key: pool.sortKey, dir: pool.sortDir }) as const,
     [pool.sortKey, pool.sortDir],
   );
 
@@ -200,7 +249,9 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
 
   // ── Scouting budget ──
   const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
-  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(
+    null,
+  );
 
   // ── Scouting Modal ──
   const scoutingModal = useModal();
@@ -241,7 +292,11 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
         setBoardPlayers(r.players ?? []);
         setBoardPlayerIds(new Set(r.board_player_ids ?? []));
       })
-      .catch((err) => { console.error("[IntamBoard] fetch failed:", err); setBoardPlayers([]); setBoardPlayerIds(new Set()); })
+      .catch((err) => {
+        console.error("[IntamBoard] fetch failed:", err);
+        setBoardPlayers([]);
+        setBoardPlayerIds(new Set());
+      })
       .finally(() => setBoardLoading(false));
   }, [orgId, leagueYearId]);
 
@@ -254,54 +309,96 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
     if (activeTab === "board") loadBoard();
   }, [activeTab, loadBoard]);
 
-  const handleAddToBoard = useCallback(async (playerId: number) => {
-    try {
-      await BaseballService.AddToIntamBoard({ org_id: orgId, league_year_id: leagueYearId, player_id: playerId });
-      setBoardPlayerIds((prev) => new Set(prev).add(playerId));
-      loadBoard();
-      enqueueSnackbar("Added to board", { variant: "success", autoHideDuration: 2000 });
-    } catch (err: any) {
-      enqueueSnackbar(err?.message || "Failed to add to board", { variant: "error" });
-    }
-  }, [orgId, leagueYearId, loadBoard, enqueueSnackbar]);
+  const handleAddToBoard = useCallback(
+    async (playerId: number) => {
+      try {
+        await BaseballService.AddToIntamBoard({
+          org_id: orgId,
+          league_year_id: leagueYearId,
+          player_id: playerId,
+        });
+        setBoardPlayerIds((prev) => new Set(prev).add(playerId));
+        loadBoard();
+        enqueueSnackbar("Added to board", {
+          variant: "success",
+          autoHideDuration: 2000,
+        });
+      } catch (err: any) {
+        enqueueSnackbar(err?.message || "Failed to add to board", {
+          variant: "error",
+        });
+      }
+    },
+    [orgId, leagueYearId, loadBoard, enqueueSnackbar],
+  );
 
-  const handleRemoveFromBoard = useCallback(async (playerId: number) => {
-    try {
-      await BaseballService.RemoveFromIntamBoard({ org_id: orgId, league_year_id: leagueYearId, player_id: playerId });
-      setBoardPlayerIds((prev) => { const next = new Set(prev); next.delete(playerId); return next; });
-      setBoardPlayers((prev) => prev.filter((p) => p.player_id !== playerId));
-      enqueueSnackbar("Removed from board", { variant: "info", autoHideDuration: 2000 });
-    } catch (err: any) {
-      enqueueSnackbar(err?.message || "Failed to remove from board", { variant: "error" });
-    }
-  }, [orgId, leagueYearId, enqueueSnackbar]);
+  const handleRemoveFromBoard = useCallback(
+    async (playerId: number) => {
+      try {
+        await BaseballService.RemoveFromIntamBoard({
+          org_id: orgId,
+          league_year_id: leagueYearId,
+          player_id: playerId,
+        });
+        setBoardPlayerIds((prev) => {
+          const next = new Set(prev);
+          next.delete(playerId);
+          return next;
+        });
+        setBoardPlayers((prev) => prev.filter((p) => p.player_id !== playerId));
+        enqueueSnackbar("Removed from board", {
+          variant: "info",
+          autoHideDuration: 2000,
+        });
+      } catch (err: any) {
+        enqueueSnackbar(err?.message || "Failed to remove from board", {
+          variant: "error",
+        });
+      }
+    },
+    [orgId, leagueYearId, enqueueSnackbar],
+  );
 
   // ── Scouted potentials cache ──
-  const [scoutedCache, setScoutedCache] = useState<Map<number, ScoutedEntry>>(new Map());
+  const [scoutedCache, setScoutedCache] = useState<Map<number, ScoutedEntry>>(
+    new Map(),
+  );
   const cacheLoadedRef = useRef(false);
 
-  const cachePlayerScouting = useCallback((playerId: number) => {
-    if (!orgId || !leagueYearId) return;
-    BaseballService.GetScoutedPlayer(playerId, orgId, leagueYearId)
-      .then((data) => {
-        if (data.potentials && Object.values(data.potentials).some((v) => v != null && v !== "?")) {
-          const preciseUnlocked =
-            data.visibility_context?.potentials_precise ||
-            data.visibility?.unlocked?.includes("pro_potential_precise");
-          const fuzzed = !preciseUnlocked;
-          setScoutedCache((prev) => {
-            const next = new Map(prev);
-            next.set(playerId, { potentials: data.potentials!, fuzzed });
-            return next;
-          });
-        }
-      })
-      .catch(() => {});
-  }, [orgId, leagueYearId]);
+  const cachePlayerScouting = useCallback(
+    (playerId: number) => {
+      if (!orgId || !leagueYearId) return;
+      BaseballService.GetScoutedPlayer(playerId, orgId, leagueYearId)
+        .then((data) => {
+          if (
+            data.potentials &&
+            Object.values(data.potentials).some((v) => v != null && v !== "?")
+          ) {
+            const preciseUnlocked =
+              data.visibility_context?.potentials_precise ||
+              data.visibility?.unlocked?.includes("pro_potential_precise");
+            const fuzzed = !preciseUnlocked;
+            setScoutedCache((prev) => {
+              const next = new Map(prev);
+              next.set(playerId, { potentials: data.potentials!, fuzzed });
+              return next;
+            });
+          }
+        })
+        .catch(() => {});
+    },
+    [orgId, leagueYearId],
+  );
 
   // Pre-populate cache for board players on load
   useEffect(() => {
-    if (!orgId || !leagueYearId || boardPlayerIds.size === 0 || cacheLoadedRef.current) return;
+    if (
+      !orgId ||
+      !leagueYearId ||
+      boardPlayerIds.size === 0 ||
+      cacheLoadedRef.current
+    )
+      return;
     cacheLoadedRef.current = true;
     boardPlayerIds.forEach((pid) => cachePlayerScouting(pid));
   }, [orgId, leagueYearId, boardPlayerIds, cachePlayerScouting]);
@@ -324,8 +421,15 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
   const loadSignings = useCallback(() => {
     if (!leagueYearId) return;
     setSigningsLoading(true);
-    BaseballService.GetIntamSignings({ league_year_id: leagueYearId, page: signingsPage, per_page: 50 })
-      .then((r) => { setSignings(r.signings); setSigningsTotalPages(r.total_pages); })
+    BaseballService.GetIntamSignings({
+      league_year_id: leagueYearId,
+      page: signingsPage,
+      per_page: 50,
+    })
+      .then((r) => {
+        setSignings(r.signings);
+        setSigningsTotalPages(r.total_pages);
+      })
       .catch(() => setSignings([]))
       .finally(() => setSigningsLoading(false));
   }, [leagueYearId, signingsPage]);
@@ -340,12 +444,19 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
   const td = "px-2 py-1";
 
   if (!mlbOrganization) {
-    return <PageContainer><Text variant="h4">No organization found.</Text></PageContainer>;
+    return (
+      <PageContainer>
+        <Text variant="h4">No organization found.</Text>
+      </PageContainer>
+    );
   }
 
   // ── Pool row helpers ──
 
-  const getPot = (pp: PoolPlayer, key: string): { pot: string | null; fuzzed: boolean } => {
+  const getPot = (
+    pp: PoolPlayer,
+    key: string,
+  ): { pot: string | null; fuzzed: boolean } => {
     const cached = scoutedCache.get(pp.id);
     if (cached) {
       const val = cached.potentials[key] ?? null;
@@ -357,97 +468,172 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
   const renderPosRow = (pp: PoolPlayer) => {
     const onBoard = boardPlayerIds.has(pp.id);
     return (
-    <tr key={pp.id}
-      className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-      onClick={() => openScoutingModal(pp.id)}
-    >
-      <td className={`${cell} text-center`} onClick={(e) => e.stopPropagation()}>
-        <button
-          className={`w-6 h-6 rounded text-xs font-bold transition-colors ${
-            onBoard
-              ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400"
-              : "bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400"
-          }`}
-          title={onBoard ? "Remove from board" : "Add to board"}
-          onClick={() => onBoard ? handleRemoveFromBoard(pp.id) : handleAddToBoard(pp.id)}
+      <tr
+        key={pp.id}
+        className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+        onClick={() => openScoutingModal(pp.id)}
+      >
+        <td
+          className={`${cell} text-center`}
+          onClick={(e) => e.stopPropagation()}
         >
-          {onBoard ? "★" : "+"}
-        </button>
-      </td>
-      <td className={`${cell} font-medium whitespace-nowrap sticky left-[2.5rem] bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}>
-        {pp.firstname} {pp.lastname}
-      </td>
-      <td className={`${cell} text-center`}>{pp.age}</td>
-      <td className={`${cell} text-center`}>{pp.area}</td>
-      <td className={`${cell} text-center`}>{pp.bat_hand}/{pp.pitch_hand}</td>
-      {(() => { const p = getPot(pp, "contact_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "power_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "eye_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "discipline_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "speed_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "baserunning_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "fieldcatch_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "fieldreact_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "throwacc_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "throwpower_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      <StatNum value={pp.generated_stats?.batting?.avg} decimals={3} />
-      <StatNum value={pp.generated_stats?.batting?.obp} decimals={3} />
-      <StatNum value={pp.generated_stats?.batting?.slg} decimals={3} />
-      <StatNum value={pp.generated_stats?.batting?.home_runs} decimals={0} />
-      <StatNum value={pp.generated_stats?.batting?.rbi} decimals={0} />
-      <StatNum value={pp.generated_stats?.batting?.runs} decimals={0} />
-      <StatNum value={pp.generated_stats?.batting?.stolen_bases} decimals={0} />
-      <StatNum value={pp.generated_stats?.batting?.strikeouts} decimals={0} />
-      <StatNum value={pp.generated_stats?.fielding?.fielding_pct} decimals={3} />
-      <StatNum value={pp.generated_stats?.fielding?.putouts} decimals={0} />
-      <StatNum value={pp.generated_stats?.fielding?.assists} decimals={0} />
-      <StatNum value={pp.generated_stats?.fielding?.errors} decimals={0} />
-    </tr>
+          <button
+            className={`w-6 h-6 rounded text-xs font-bold transition-colors ${
+              onBoard
+                ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400"
+            }`}
+            title={onBoard ? "Remove from board" : "Add to board"}
+            onClick={() =>
+              onBoard ? handleRemoveFromBoard(pp.id) : handleAddToBoard(pp.id)
+            }
+          >
+            {onBoard ? "★" : "+"}
+          </button>
+        </td>
+        <td
+          className={`${cell} font-medium whitespace-nowrap sticky left-[2.5rem] bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
+        >
+          {pp.firstname} {pp.lastname}
+        </td>
+        <td className={`${cell} text-center`}>{pp.age}</td>
+        <td className={`${cell} text-center`}>{pp.area}</td>
+        <td className={`${cell} text-center`}>
+          {pp.bat_hand}/{pp.pitch_hand}
+        </td>
+        {(() => {
+          const p = getPot(pp, "contact_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "power_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "eye_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "discipline_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "speed_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "baserunning_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "fieldcatch_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "fieldreact_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "throwacc_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "throwpower_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        <StatNum value={pp.generated_stats?.batting?.avg} decimals={3} />
+        <StatNum value={pp.generated_stats?.batting?.obp} decimals={3} />
+        <StatNum value={pp.generated_stats?.batting?.slg} decimals={3} />
+        <StatNum value={pp.generated_stats?.batting?.home_runs} decimals={0} />
+        <StatNum value={pp.generated_stats?.batting?.rbi} decimals={0} />
+        <StatNum value={pp.generated_stats?.batting?.runs} decimals={0} />
+        <StatNum
+          value={pp.generated_stats?.batting?.stolen_bases}
+          decimals={0}
+        />
+        <StatNum value={pp.generated_stats?.batting?.strikeouts} decimals={0} />
+        <StatNum
+          value={pp.generated_stats?.fielding?.fielding_pct}
+          decimals={3}
+        />
+        <StatNum value={pp.generated_stats?.fielding?.putouts} decimals={0} />
+        <StatNum value={pp.generated_stats?.fielding?.assists} decimals={0} />
+        <StatNum value={pp.generated_stats?.fielding?.errors} decimals={0} />
+      </tr>
     );
   };
 
   const renderPitchRow = (pp: PoolPlayer) => {
     const onBoard = boardPlayerIds.has(pp.id);
     return (
-    <tr key={pp.id}
-      className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-      onClick={() => openScoutingModal(pp.id)}
-    >
-      <td className={`${cell} text-center`} onClick={(e) => e.stopPropagation()}>
-        <button
-          className={`w-6 h-6 rounded text-xs font-bold transition-colors ${
-            onBoard
-              ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400"
-              : "bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400"
-          }`}
-          title={onBoard ? "Remove from board" : "Add to board"}
-          onClick={() => onBoard ? handleRemoveFromBoard(pp.id) : handleAddToBoard(pp.id)}
+      <tr
+        key={pp.id}
+        className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+        onClick={() => openScoutingModal(pp.id)}
+      >
+        <td
+          className={`${cell} text-center`}
+          onClick={(e) => e.stopPropagation()}
         >
-          {onBoard ? "★" : "+"}
-        </button>
-      </td>
-      <td className={`${cell} font-medium whitespace-nowrap sticky left-[2.5rem] bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}>
-        {pp.firstname} {pp.lastname}
-      </td>
-      <td className={`${cell} text-center`}>{pp.age}</td>
-      <td className={`${cell} text-center`}>{pp.area}</td>
-      <td className={`${cell} text-center`}>{pp.pitch_hand}</td>
-      {(() => { const p = getPot(pp, "pendurance_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "pgencontrol_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "pthrowpower_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      {(() => { const p = getPot(pp, "psequencing_pot"); return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />; })()}
-      <StatNum value={pp.generated_stats?.pitching?.era} decimals={2} />
-      <StatNum value={pp.generated_stats?.pitching?.k_per_9} decimals={1} />
-      <StatNum value={pp.generated_stats?.pitching?.bb_per_9} decimals={1} />
-      <StatNum value={pp.generated_stats?.pitching?.whip} decimals={2} />
-      <StatNum value={pp.generated_stats?.pitching?.wins} decimals={0} />
-      <StatNum value={pp.generated_stats?.pitching?.strikeouts} decimals={0} />
-      <StatNum value={pp.generated_stats?.pitching?.innings_pitched} decimals={1} />
-      <StatNum value={pp.generated_stats?.fielding?.fielding_pct} decimals={3} />
-      <StatNum value={pp.generated_stats?.fielding?.putouts} decimals={0} />
-      <StatNum value={pp.generated_stats?.fielding?.assists} decimals={0} />
-      <StatNum value={pp.generated_stats?.fielding?.errors} decimals={0} />
-    </tr>
+          <button
+            className={`w-6 h-6 rounded text-xs font-bold transition-colors ${
+              onBoard
+                ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400"
+            }`}
+            title={onBoard ? "Remove from board" : "Add to board"}
+            onClick={() =>
+              onBoard ? handleRemoveFromBoard(pp.id) : handleAddToBoard(pp.id)
+            }
+          >
+            {onBoard ? "★" : "+"}
+          </button>
+        </td>
+        <td
+          className={`${cell} font-medium whitespace-nowrap sticky left-[2.5rem] bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
+        >
+          {pp.firstname} {pp.lastname}
+        </td>
+        <td className={`${cell} text-center`}>{pp.age}</td>
+        <td className={`${cell} text-center`}>{pp.area}</td>
+        <td className={`${cell} text-center`}>{pp.pitch_hand}</td>
+        {(() => {
+          const p = getPot(pp, "pendurance_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "pgencontrol_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "pthrowpower_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        {(() => {
+          const p = getPot(pp, "psequencing_pot");
+          return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
+        })()}
+        <StatNum value={pp.generated_stats?.pitching?.era} decimals={2} />
+        <StatNum value={pp.generated_stats?.pitching?.k_per_9} decimals={1} />
+        <StatNum value={pp.generated_stats?.pitching?.bb_per_9} decimals={1} />
+        <StatNum value={pp.generated_stats?.pitching?.whip} decimals={2} />
+        <StatNum value={pp.generated_stats?.pitching?.wins} decimals={0} />
+        <StatNum
+          value={pp.generated_stats?.pitching?.strikeouts}
+          decimals={0}
+        />
+        <StatNum
+          value={pp.generated_stats?.pitching?.innings_pitched}
+          decimals={1}
+        />
+        <StatNum
+          value={pp.generated_stats?.fielding?.fielding_pct}
+          decimals={3}
+        />
+        <StatNum value={pp.generated_stats?.fielding?.putouts} decimals={0} />
+        <StatNum value={pp.generated_stats?.fielding?.assists} decimals={0} />
+        <StatNum value={pp.generated_stats?.fielding?.errors} decimals={0} />
+      </tr>
     );
   };
 
@@ -457,10 +643,21 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
         {/* Team-colored header */}
         <div
           className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{ backgroundColor: headerColor, borderBottom: `3px solid ${borderColor}` }}
+          style={{
+            backgroundColor: headerColor,
+            borderBottom: `3px solid ${borderColor}`,
+          }}
         >
-          {logo && <img src={logo} className="w-10 h-10 object-contain" alt={orgAbbrev} />}
-          <Text variant="h4" classes={headerTextClass}>{pageTitle}</Text>
+          {logo && (
+            <img
+              src={logo}
+              className="w-10 h-10 object-contain"
+              alt={orgAbbrev}
+            />
+          )}
+          <Text variant="h4" classes={headerTextClass}>
+            {pageTitle}
+          </Text>
           <div className="ml-auto">
             {orgId > 0 && leagueYearId > 0 && (
               <ScoutingBudgetBar
@@ -474,16 +671,31 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
         </div>
 
         {/* Tab Selector + Filters */}
-        <Border classes="p-4 mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+        <Border
+          classes="p-4 mb-2"
+          styles={{ borderTop: `3px solid ${headerColor}` }}
+        >
           <div className="mb-4">
             <ButtonGroup>
-              <PillButton variant="primaryOutline" isSelected={activeTab === "pool"} onClick={() => setActiveTab("pool")}>
+              <PillButton
+                variant="primaryOutline"
+                isSelected={activeTab === "pool"}
+                onClick={() => setActiveTab("pool")}
+              >
                 <Text variant="small">Scouting Pool</Text>
               </PillButton>
-              <PillButton variant="primaryOutline" isSelected={activeTab === "board"} onClick={() => setActiveTab("board")}>
+              <PillButton
+                variant="primaryOutline"
+                isSelected={activeTab === "board"}
+                onClick={() => setActiveTab("board")}
+              >
                 <Text variant="small">My Board</Text>
               </PillButton>
-              <PillButton variant="primaryOutline" isSelected={activeTab === "signings"} onClick={() => setActiveTab("signings")}>
+              <PillButton
+                variant="primaryOutline"
+                isSelected={activeTab === "signings"}
+                onClick={() => setActiveTab("signings")}
+              >
                 <Text variant="small">Signings</Text>
               </PillButton>
             </ButtonGroup>
@@ -494,12 +706,22 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
             <>
               {/* Player Type */}
               <div className="mb-3">
-                <Text variant="small" classes="font-semibold mb-1">Player Type</Text>
+                <Text variant="small" classes="font-semibold mb-1">
+                  Player Type
+                </Text>
                 <ButtonGroup>
-                  <PillButton variant="primaryOutline" isSelected={pool.filters.ptype === "Position"} onClick={() => pool.setFilter("ptype", "Position")}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={pool.filters.ptype === "Position"}
+                    onClick={() => pool.setFilter("ptype", "Position")}
+                  >
                     <Text variant="small">Position</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={pool.filters.ptype === "Pitcher"} onClick={() => pool.setFilter("ptype", "Pitcher")}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={pool.filters.ptype === "Pitcher"}
+                    onClick={() => pool.setFilter("ptype", "Pitcher")}
+                  >
                     <Text variant="small">Pitcher</Text>
                   </PillButton>
                 </ButtonGroup>
@@ -517,11 +739,16 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
                 <input
                   type="text"
                   value={pool.filters.area ?? ""}
-                  onChange={(e) => pool.setFilter("area", e.target.value || undefined)}
+                  onChange={(e) =>
+                    pool.setFilter("area", e.target.value || undefined)
+                  }
                   placeholder="Filter by area..."
                   className="text-sm border rounded px-2 py-1 w-40 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <Text variant="small" classes="text-gray-500 dark:text-gray-400">
+                <Text
+                  variant="small"
+                  classes="text-gray-500 dark:text-gray-400"
+                >
                   {pool.totalCount} players
                 </Text>
               </div>
@@ -530,20 +757,38 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
         </Border>
 
         {/* Content Area */}
-        <Border classes="p-4" styles={{ borderTop: `3px solid ${headerColor}` }}>
+        <Border
+          classes="p-4"
+          styles={{ borderTop: `3px solid ${headerColor}` }}
+        >
           {/* ── Pool Tab ── */}
           {activeTab === "pool" && (
             <>
               {pool.isLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Text variant="body" classes="text-gray-500 dark:text-gray-400">Loading players...</Text>
+                  <Text
+                    variant="body"
+                    classes="text-gray-500 dark:text-gray-400"
+                  >
+                    Loading players...
+                  </Text>
                 </div>
               ) : pool.error ? (
                 <div className="flex items-center justify-center py-12">
-                  <Text variant="body" classes="text-gray-500 dark:text-gray-400">INTAM scouting data is not yet available.</Text>
+                  <Text
+                    variant="body"
+                    classes="text-gray-500 dark:text-gray-400"
+                  >
+                    INTAM scouting data is not yet available.
+                  </Text>
                 </div>
               ) : pool.data.length === 0 ? (
-                <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">No players found.</Text>
+                <Text
+                  variant="body-small"
+                  classes="text-gray-500 dark:text-gray-400"
+                >
+                  No players found.
+                </Text>
               ) : (
                 <>
                   <div className="baseball-table-wrapper overflow-x-auto max-h-[70vh] overflow-y-auto">
@@ -555,14 +800,16 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
                       />
                       <tbody>
                         {pool.data.map((pp) =>
-                          showPitchers
-                            ? renderPitchRow(pp)
-                            : renderPosRow(pp),
+                          showPitchers ? renderPitchRow(pp) : renderPosRow(pp),
                         )}
                       </tbody>
                     </table>
                   </div>
-                  <PoolPagination page={pool.page} totalPages={pool.totalPages} onPageChange={pool.setPage} />
+                  <PoolPagination
+                    page={pool.page}
+                    totalPages={pool.totalPages}
+                    onPageChange={pool.setPage}
+                  />
                 </>
               )}
             </>
@@ -573,11 +820,20 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
             <>
               {boardLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Text variant="body" classes="text-gray-500 dark:text-gray-400">Loading board...</Text>
+                  <Text
+                    variant="body"
+                    classes="text-gray-500 dark:text-gray-400"
+                  >
+                    Loading board...
+                  </Text>
                 </div>
               ) : boardPlayers.length === 0 ? (
-                <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">
-                  No players on your board yet. Scout players from the Scouting Pool tab to add them.
+                <Text
+                  variant="body-small"
+                  classes="text-gray-500 dark:text-gray-400"
+                >
+                  No players on your board yet. Scout players from the Scouting
+                  Pool tab to add them.
                 </Text>
               ) : (
                 <div className="baseball-table-wrapper overflow-x-auto">
@@ -593,21 +849,31 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
                     </thead>
                     <tbody>
                       {boardPlayers.map((bp) => (
-                        <tr key={bp.player_id}
+                        <tr
+                          key={bp.player_id}
                           className="border-b border-gray-800 hover:bg-gray-700/30 cursor-pointer"
                           onClick={() => openScoutingModal(bp.player_id)}
                         >
-                          <td className={td} onClick={(e) => e.stopPropagation()}>
+                          <td
+                            className={td}
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <button
                               className="w-6 h-6 rounded text-xs font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors"
                               title="Remove from board"
-                              onClick={() => handleRemoveFromBoard(bp.player_id)}
+                              onClick={() =>
+                                handleRemoveFromBoard(bp.player_id)
+                              }
                             >
                               ✕
                             </button>
                           </td>
-                          <td className={`${td} font-medium`}>{bp.player_name}</td>
-                          <td className={td}>{bp.ptype === "Pitcher" ? "P" : "Pos"}</td>
+                          <td className={`${td} font-medium`}>
+                            {bp.player_name}
+                          </td>
+                          <td className={td}>
+                            {bp.ptype === "Pitcher" ? "P" : "Pos"}
+                          </td>
                           <td className={td}>{(bp as any).area ?? "—"}</td>
                           <td className={td}>{(bp as any).age ?? "—"}</td>
                         </tr>
@@ -624,10 +890,20 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
             <>
               {signingsLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Text variant="body" classes="text-gray-500 dark:text-gray-400">Loading signings...</Text>
+                  <Text
+                    variant="body"
+                    classes="text-gray-500 dark:text-gray-400"
+                  >
+                    Loading signings...
+                  </Text>
                 </div>
               ) : signings.length === 0 ? (
-                <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">No signings yet.</Text>
+                <Text
+                  variant="body-small"
+                  classes="text-gray-500 dark:text-gray-400"
+                >
+                  No signings yet.
+                </Text>
               ) : (
                 <>
                   <div className="baseball-table-wrapper overflow-x-auto">
@@ -645,20 +921,33 @@ export const BaseballIntamScoutingPage = (_props: BaseballIntamScoutingPageProps
                       </thead>
                       <tbody>
                         {signings.map((s) => (
-                          <tr key={s.player_id} className="border-b border-gray-800 hover:bg-gray-700/30">
-                            <td className={`${td} font-medium`}>{s.player_name}</td>
+                          <tr
+                            key={s.player_id}
+                            className="border-b border-gray-800 hover:bg-gray-700/30"
+                          >
+                            <td className={`${td} font-medium`}>
+                              {s.player_name}
+                            </td>
                             <td className={td}>{s.org_abbrev}</td>
-                            <td className={td}>{s.ptype === "Pitcher" ? "P" : "Pos"}</td>
+                            <td className={td}>
+                              {s.ptype === "Pitcher" ? "P" : "Pos"}
+                            </td>
                             <td className={td}>{s.age}</td>
                             <td className={td}>{s.contract_years}</td>
-                            <td className={td}>${(s.contract_bonus / 1_000_000).toFixed(2)}M</td>
+                            <td className={td}>
+                              ${(s.contract_bonus / 1_000_000).toFixed(2)}M
+                            </td>
                             <td className={td}>{s.signed_date ?? "—"}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  <PoolPagination page={signingsPage} totalPages={signingsTotalPages} onPageChange={setSigningsPage} />
+                  <PoolPagination
+                    page={signingsPage}
+                    totalPages={signingsTotalPages}
+                    onPageChange={setSigningsPage}
+                  />
                 </>
               )}
             </>

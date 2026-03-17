@@ -102,20 +102,38 @@ const QuickActionButtons = ({
       {!isCollege && (
         <button
           className={`${actionBtn} ${attrsPrecise ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
-          onClick={attrsPrecise ? undefined : () => onScouting(player, "pro_attrs_precise")}
+          onClick={
+            attrsPrecise
+              ? undefined
+              : () => onScouting(player, "pro_attrs_precise")
+          }
           disabled={attrsPrecise}
           title={attrsPrecise ? "Already scouted" : "Scout Precise Attributes"}
-          aria-label={attrsPrecise ? "Already scouted" : "Scout Precise Attributes"}
+          aria-label={
+            attrsPrecise ? "Already scouted" : "Scout Precise Attributes"
+          }
         >
           Attrs{attrsPrecise ? " ✓" : ""}
         </button>
       )}
       <button
         className={`${actionBtn} ${potsPrecise ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
-        onClick={potsPrecise ? undefined : () => onScouting(player, isCollege ? "college_potential_precise" : "pro_potential_precise")}
+        onClick={
+          potsPrecise
+            ? undefined
+            : () =>
+                onScouting(
+                  player,
+                  isCollege
+                    ? "college_potential_precise"
+                    : "pro_potential_precise",
+                )
+        }
         disabled={potsPrecise}
         title={potsPrecise ? "Already scouted" : "Scout Precise Potentials"}
-        aria-label={potsPrecise ? "Already scouted" : "Scout Precise Potentials"}
+        aria-label={
+          potsPrecise ? "Already scouted" : "Scout Precise Potentials"
+        }
       >
         Pots{potsPrecise ? " ✓" : ""}
       </button>
@@ -342,7 +360,11 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   >(new Map());
   const [scoutingLoading, setScoutingLoading] = useState(false);
   const scoutingLoadedForOrg = useRef<number | null>(null);
-  const statsCache = useRef<{ orgId: number; lyId: number; data: PlayerStatsMap } | null>(null);
+  const statsCache = useRef<{
+    orgId: number;
+    lyId: number;
+    data: PlayerStatsMap;
+  } | null>(null);
   const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(
     null,
   );
@@ -368,33 +390,43 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     return unlocked.includes("pro_attrs_precise");
   };
 
-  const fetchScoutingOverlay = useCallback(async (players: Player[], orgId: number, lyId: number) => {
-    if (!orgId || !lyId || players.length === 0) return;
-    setScoutingLoading(true);
-    try {
-      const playerIds = players.map((p) => p.id);
-      const results = await BaseballService.GetScoutedPlayersBatch(playerIds, orgId, lyId);
-      const overlay = new Map<number, ScoutingOverlayEntry>();
-      for (const [idStr, data] of Object.entries(results)) {
-        overlay.set(Number(idStr), {
-          letterGrades: data.letter_grades ?? {},
-          attributes: data.attributes ?? {},
-          potentials: data.potentials ?? {},
-          potentialsPrecise: isPotentialsPrecise(data),
-          attributesPrecise: isAttributesPrecise(data),
-          displayFormat: data.display_format,
-        });
+  const fetchScoutingOverlay = useCallback(
+    async (players: Player[], orgId: number, lyId: number) => {
+      if (!orgId || !lyId || players.length === 0) return;
+      setScoutingLoading(true);
+      try {
+        const playerIds = players.map((p) => p.id);
+        const results = await BaseballService.GetScoutedPlayersBatch(
+          playerIds,
+          orgId,
+          lyId,
+        );
+        const overlay = new Map<number, ScoutingOverlayEntry>();
+        for (const [idStr, data] of Object.entries(results)) {
+          overlay.set(Number(idStr), {
+            letterGrades: data.letter_grades ?? {},
+            attributes: data.attributes ?? {},
+            potentials: data.potentials ?? {},
+            potentialsPrecise: isPotentialsPrecise(data),
+            attributesPrecise: isAttributesPrecise(data),
+            displayFormat: data.display_format,
+          });
+        }
+        setScoutingOverlay(overlay);
+      } catch {
+        /* scouting overlay unavailable — bootstrap data is already fuzzed */
       }
-      setScoutingOverlay(overlay);
-    } catch { /* scouting overlay unavailable — bootstrap data is already fuzzed */ }
-    setScoutingLoading(false);
-  }, []);
+      setScoutingLoading(false);
+    },
+    [],
+  );
 
   // Fetch scouting budget for all leagues when org loads
   useEffect(() => {
     if (isAllView || !effectiveOrgId || !leagueYearId) return;
     BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
-      .then(setScoutingBudget).catch(() => {});
+      .then(setScoutingBudget)
+      .catch(() => {});
   }, [isAllView, effectiveOrgId, leagueYearId]);
 
   // Fetch scouting overlay when roster loads (both college + MLB).
@@ -408,7 +440,14 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     if (scoutingLoadedForOrg.current === effectiveOrgId) return;
     scoutingLoadedForOrg.current = effectiveOrgId;
     fetchScoutingOverlay(allPlayers, effectiveOrgId, leagueYearId);
-  }, [isCollege, isAllView, effectiveOrgId, leagueYearId, pageRosterMap, fetchScoutingOverlay]);
+  }, [
+    isCollege,
+    isAllView,
+    effectiveOrgId,
+    leagueYearId,
+    pageRosterMap,
+    fetchScoutingOverlay,
+  ]);
 
   // Convert any numeric _display values to letter grades for college players
   const convertRatingsToGrades = (ratings: PlayerRatings): PlayerRatings => {
@@ -624,50 +663,61 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     });
   }, []);
 
-  const handleOrgChange = useCallback((optValue: string) => {
-    setFilterLevel(defaultLevel);
-    setSortConfig(null);
-    setCategory(Attributes);
-    scoutingLoadedForOrg.current = null;
-    setScoutingOverlay(new Map());
-    setScoutingBudget(null);
-    statsCache.current = null;
-    if (optValue === ALL_ORGS) {
-      setViewedOrgId(ALL_ORGS);
-      loadAllOrgPlayers();
-    } else {
-      const orgId = Number(optValue);
-      setViewedOrgId(orgId === userOrg?.id ? null : optValue);
-      setIsLoadingOrg(true);
-      loadBootstrapForOrg(orgId).then(processBootstrapResult);
-    }
-  }, [userOrg?.id, loadBootstrapForOrg, loadAllOrgPlayers, processBootstrapResult]);
+  const handleOrgChange = useCallback(
+    (optValue: string) => {
+      setFilterLevel(defaultLevel);
+      setSortConfig(null);
+      setCategory(Attributes);
+      scoutingLoadedForOrg.current = null;
+      setScoutingOverlay(new Map());
+      setScoutingBudget(null);
+      statsCache.current = null;
+      if (optValue === ALL_ORGS) {
+        setViewedOrgId(ALL_ORGS);
+        loadAllOrgPlayers();
+      } else {
+        const orgId = Number(optValue);
+        setViewedOrgId(orgId === userOrg?.id ? null : optValue);
+        setIsLoadingOrg(true);
+        loadBootstrapForOrg(orgId).then(processBootstrapResult);
+      }
+    },
+    [
+      userOrg?.id,
+      loadBootstrapForOrg,
+      loadAllOrgPlayers,
+      processBootstrapResult,
+    ],
+  );
 
   // --- Shared scouting refresh helper ---
-  const refreshPlayerScouting = useCallback((playerId: number, refreshBudget = true) => {
-    if (!playerId || !effectiveOrgId || !leagueYearId) return;
-    BaseballService.GetScoutedPlayer(playerId, effectiveOrgId, leagueYearId)
-      .then((data) => {
-        setScoutingOverlay((prev) => {
-          const next = new Map(prev);
-          next.set(playerId, {
-            letterGrades: data.letter_grades ?? {},
-            attributes: data.attributes ?? {},
-            potentials: data.potentials ?? {},
-            potentialsPrecise: isPotentialsPrecise(data),
-            attributesPrecise: isAttributesPrecise(data),
-            displayFormat: data.display_format,
+  const refreshPlayerScouting = useCallback(
+    (playerId: number, refreshBudget = true) => {
+      if (!playerId || !effectiveOrgId || !leagueYearId) return;
+      BaseballService.GetScoutedPlayer(playerId, effectiveOrgId, leagueYearId)
+        .then((data) => {
+          setScoutingOverlay((prev) => {
+            const next = new Map(prev);
+            next.set(playerId, {
+              letterGrades: data.letter_grades ?? {},
+              attributes: data.attributes ?? {},
+              potentials: data.potentials ?? {},
+              potentialsPrecise: isPotentialsPrecise(data),
+              attributesPrecise: isAttributesPrecise(data),
+              displayFormat: data.display_format,
+            });
+            return next;
           });
-          return next;
-        });
-      })
-      .catch(() => {});
-    if (refreshBudget) {
-      BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
-        .then(setScoutingBudget)
+        })
         .catch(() => {});
-    }
-  }, [effectiveOrgId, leagueYearId]);
+      if (refreshBudget) {
+        BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
+          .then(setScoutingBudget)
+          .catch(() => {});
+      }
+    },
+    [effectiveOrgId, leagueYearId],
+  );
 
   // --- Scouting Modal (college + MLB) ---
   const scoutingModal = useModal();
@@ -697,51 +747,69 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     [txnModal],
   );
 
-  const handleTransactionSuccess = useCallback((playerId: number, patch?: TransactionPlayerPatch) => {
-    if (patch) {
-      // Patch roster locally — no network call needed
-      setPageRosterMap((prev) => {
-        const updated: Record<string, Player[]> = {};
-        for (const [level, players] of Object.entries(prev)) {
-          if (patch.current_level === null) {
-            // Player released/bought out — remove from all levels
-            updated[level] = players.filter((p) => p.id !== playerId);
-          } else if (level === patch.current_level) {
-            // Player moved to this level — add if not already here, update IR status
-            const exists = players.some((p) => p.id === playerId);
-            if (exists) {
-              updated[level] = players.map((p) =>
-                p.id === playerId
-                  ? { ...p, league_level: patch.current_level!, contract: p.contract ? { ...p.contract, on_ir: patch.on_ir } : p.contract }
-                  : p,
-              );
-            } else {
-              // Find the player from another level and move them here
-              const allPlayers = Object.values(prev).flat();
-              const moving = allPlayers.find((p) => p.id === playerId);
-              if (moving) {
-                updated[level] = [...players, { ...moving, league_level: patch.current_level!, contract: moving.contract ? { ...moving.contract, on_ir: patch.on_ir } : moving.contract }];
+  const handleTransactionSuccess = useCallback(
+    (playerId: number, patch?: TransactionPlayerPatch) => {
+      if (patch) {
+        // Patch roster locally — no network call needed
+        setPageRosterMap((prev) => {
+          const updated: Record<string, Player[]> = {};
+          for (const [level, players] of Object.entries(prev)) {
+            if (patch.current_level === null) {
+              // Player released/bought out — remove from all levels
+              updated[level] = players.filter((p) => p.id !== playerId);
+            } else if (level === patch.current_level) {
+              // Player moved to this level — add if not already here, update IR status
+              const exists = players.some((p) => p.id === playerId);
+              if (exists) {
+                updated[level] = players.map((p) =>
+                  p.id === playerId
+                    ? {
+                        ...p,
+                        league_level: patch.current_level!,
+                        contract: p.contract
+                          ? { ...p.contract, on_ir: patch.on_ir }
+                          : p.contract,
+                      }
+                    : p,
+                );
               } else {
-                updated[level] = players;
+                // Find the player from another level and move them here
+                const allPlayers = Object.values(prev).flat();
+                const moving = allPlayers.find((p) => p.id === playerId);
+                if (moving) {
+                  updated[level] = [
+                    ...players,
+                    {
+                      ...moving,
+                      league_level: patch.current_level!,
+                      contract: moving.contract
+                        ? { ...moving.contract, on_ir: patch.on_ir }
+                        : moving.contract,
+                    },
+                  ];
+                } else {
+                  updated[level] = players;
+                }
               }
+            } else {
+              // Remove player from levels they're no longer on
+              updated[level] = players.filter((p) => p.id !== playerId);
             }
-          } else {
-            // Remove player from levels they're no longer on
-            updated[level] = players.filter((p) => p.id !== playerId);
           }
+          return updated;
+        });
+        // Invalidate stats cache since roster changed
+        statsCache.current = null;
+      } else {
+        // No patch data (e.g. extension) — force refresh
+        const orgId = viewedOrg?.id ?? userOrg?.id;
+        if (orgId) {
+          loadBootstrapForOrg(orgId, true).then(processBootstrapResult);
         }
-        return updated;
-      });
-      // Invalidate stats cache since roster changed
-      statsCache.current = null;
-    } else {
-      // No patch data (e.g. extension) — force refresh
-      const orgId = viewedOrg?.id ?? userOrg?.id;
-      if (orgId) {
-        loadBootstrapForOrg(orgId, true).then(processBootstrapResult);
       }
-    }
-  }, [viewedOrg, userOrg, loadBootstrapForOrg, processBootstrapResult]);
+    },
+    [viewedOrg, userOrg, loadBootstrapForOrg, processBootstrapResult],
+  );
 
   // --- Scouting Confirmation Modal ---
   const scoutConfirmModal = useModal();
@@ -760,16 +828,21 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     [scoutConfirmModal],
   );
 
-  const handleScoutingConfirmSuccess = useCallback((pointsRemaining?: number) => {
-    if (scoutConfirmPlayer) {
-      // Refresh player scouting data but skip budget re-fetch — we have it from the response
-      refreshPlayerScouting(scoutConfirmPlayer.id, false);
-    }
-    if (pointsRemaining != null) {
-      // Update budget locally from the scouting action response
-      setScoutingBudget((prev) => prev ? { ...prev, remaining_points: pointsRemaining } : prev);
-    }
-  }, [scoutConfirmPlayer, refreshPlayerScouting]);
+  const handleScoutingConfirmSuccess = useCallback(
+    (pointsRemaining?: number) => {
+      if (scoutConfirmPlayer) {
+        // Refresh player scouting data but skip budget re-fetch — we have it from the response
+        refreshPlayerScouting(scoutConfirmPlayer.id, false);
+      }
+      if (pointsRemaining != null) {
+        // Update budget locally from the scouting action response
+        setScoutingBudget((prev) =>
+          prev ? { ...prev, remaining_points: pointsRemaining } : prev,
+        );
+      }
+    },
+    [scoutConfirmPlayer, refreshPlayerScouting],
+  );
 
   // --- Stats fetching (cached per org to avoid re-fetching on category toggle) ---
   useEffect(() => {
@@ -778,7 +851,11 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     }
     const orgId = viewedOrg?.id ?? 0;
     // Return cached stats if we already fetched for this org + season
-    if (statsCache.current && statsCache.current.orgId === orgId && statsCache.current.lyId === leagueYearId) {
+    if (
+      statsCache.current &&
+      statsCache.current.orgId === orgId &&
+      statsCache.current.lyId === leagueYearId
+    ) {
       setPlayerStatsMap(statsCache.current.data);
       return;
     }
@@ -959,15 +1036,15 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     if (isAllView || !viewedOrg?.teams) return "";
     if (league === SimMLB) {
       const t = viewedOrg.teams["mlb"];
-      if (t) return getLogo(SimMLB, t.team_id, currentUser?.isRetro);
+      if (t) return getLogo(SimMLB, t.team_id, currentUser?.IsRetro);
     }
     if (league === SimCollegeBaseball) {
       const es = Object.values(viewedOrg.teams);
       if (es.length > 0)
-        return getLogo(SimCollegeBaseball, es[0].team_id, currentUser?.isRetro);
+        return getLogo(SimCollegeBaseball, es[0].team_id, currentUser?.IsRetro);
     }
     return "";
-  }, [viewedOrg, isAllView, league, currentUser?.isRetro]);
+  }, [viewedOrg, isAllView, league, currentUser?.IsRetro]);
 
   const showPitchers = filterType === "Pitcher";
   const showPosition = filterType === "Position";
@@ -986,7 +1063,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         ? getLogo(
             league === SimMLB ? SimMLB : SimCollegeBaseball,
             team.team_id,
-            currentUser?.isRetro,
+            currentUser?.IsRetro,
           )
         : "";
       return (
@@ -1005,7 +1082,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         </div>
       );
     },
-    [leagueOrgs, isCollege, league, currentUser?.isRetro],
+    [leagueOrgs, isCollege, league, currentUser?.IsRetro],
   );
 
   if (!userOrg && !isAllView) {
@@ -1086,7 +1163,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
                         ? getLogo(
                             league === SimMLB ? SimMLB : SimCollegeBaseball,
                             team.team_id,
-                            currentUser?.isRetro,
+                            currentUser?.IsRetro,
                           )
                         : undefined
                     }

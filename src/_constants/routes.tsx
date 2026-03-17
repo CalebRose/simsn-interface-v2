@@ -2,6 +2,7 @@ export default {
   HOME: "/",
   ADMIN: "/admin",
   USER: "/user",
+  USERS: "/users",
   LOGIN: "/login",
   REGISTER: "/register",
   HELP: "/help",

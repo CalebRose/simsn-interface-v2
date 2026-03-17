@@ -39,11 +39,11 @@ export const ProfilePage = () => {
   };
 
   const setRetro = async () => {
-    const newRetro = !currentUser?.isRetro;
+    const newRetro = !currentUser?.IsRetro;
     const updatedCurrentUser = { ...currentUser } as CurrentUser;
-    updatedCurrentUser.isRetro = newRetro;
+    updatedCurrentUser.IsRetro = newRetro;
     const payload = {
-      isRetro: newRetro,
+      IsRetro: newRetro,
     };
     setCurrentUser(updatedCurrentUser);
     await updateUserByUsername(currentUser!.username, payload);
@@ -144,7 +144,7 @@ export const ProfilePage = () => {
                 Retro
               </Text>
               <ToggleSwitch
-                checked={currentUser?.isRetro!!}
+                checked={currentUser?.IsRetro!!}
                 onChange={setRetro}
               />
             </div>

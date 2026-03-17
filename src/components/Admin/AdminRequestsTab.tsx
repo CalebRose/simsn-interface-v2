@@ -193,7 +193,7 @@ export const CHLRequestCard: React.FC<CHLRequestCardProps> = ({
   const requestLogo = getLogo(
     selectedLeague as League,
     request.TeamID,
-    currentUser?.isRetro,
+    currentUser?.IsRetro,
   );
   const teamColors = useTeamColors(
     chlTeam.ColorOne,
@@ -240,7 +240,7 @@ export const PHLRequestCard: React.FC<PHLRequestCardProps> = ({
   const requestLogo = getLogo(
     SimPHL as League,
     request.TeamID,
-    currentUser?.isRetro,
+    currentUser?.IsRetro,
   );
   const teamColors = useTeamColors(
     phlTeam.ColorOne,
@@ -293,7 +293,7 @@ export const CBBRequestCard: React.FC<CBBRequestCardProps> = ({
   const requestLogo = getLogo(
     SimCBB as League,
     request.TeamID,
-    currentUser?.isRetro,
+    currentUser?.IsRetro,
   );
   const teamColors = useTeamColors(
     cbbTeam.ColorOne,
@@ -340,7 +340,7 @@ export const NBARequestCard: React.FC<NBARequestCardProps> = ({
   const requestLogo = getLogo(
     SimNBA as League,
     request.NBATeamID,
-    currentUser?.isRetro,
+    currentUser?.IsRetro,
   );
   const teamColors = useMemo(() => {
     if (!nbaTeam) {
@@ -418,7 +418,7 @@ export const CFBRequestCard: React.FC<CFBRequestCardProps> = ({
   const requestLogo = getLogo(
     SimCFB as League,
     request.TeamID,
-    currentUser?.isRetro,
+    currentUser?.IsRetro,
   );
   const teamColors = useTeamColors(
     cfbTeam.ColorOne,
@@ -465,7 +465,7 @@ export const NFLRequestCard: React.FC<NFLRequestCardProps> = ({
   const requestLogo = getLogo(
     SimNFL as League,
     request.NFLTeamID,
-    currentUser?.isRetro,
+    currentUser?.IsRetro,
   );
   const teamColors = useMemo(() => {
     if (!nflTeam) {
@@ -526,17 +526,15 @@ interface CollegeBaseballRequestCardProps {
   oneItem: boolean;
 }
 
-export const CollegeBaseballRequestCard: React.FC<CollegeBaseballRequestCardProps> = ({
-  request,
-  org,
-  oneItem,
-}) => {
+export const CollegeBaseballRequestCard: React.FC<
+  CollegeBaseballRequestCardProps
+> = ({ request, org, oneItem }) => {
   const authStore = useAuthStore();
   const { currentUser } = authStore;
   const requestLogo = getLogo(
     SimMLB as League,
     request.OrgID,
-    currentUser?.isRetro,
+    currentUser?.IsRetro,
   );
   const { acceptCBBaseballRequest, rejectCBBaseballRequest } = useAdminPage();
   const accept = async () => {
@@ -580,7 +578,7 @@ export const MLBRequestCard: React.FC<MLBRequestCardProps> = ({
   const requestLogo = getLogo(
     SimMLB as League,
     request.OrgID,
-    currentUser?.isRetro,
+    currentUser?.IsRetro,
   );
   const { acceptMLBRequest, rejectMLBRequest } = useAdminPage();
   const accept = async () => {

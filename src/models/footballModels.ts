@@ -2421,6 +2421,7 @@ export class NFLCapsheet {
   }
 }
 export class NFLTeam {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

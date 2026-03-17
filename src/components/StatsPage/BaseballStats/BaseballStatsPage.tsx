@@ -19,9 +19,14 @@ import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { getLogo } from "../../../_utility/getLogo";
 import { BaseballService } from "../../../_services/baseballService";
 import {
-  BattingLeaderRow, PitchingLeaderRow, FieldingLeaderRow,
-  TeamBattingRow, TeamPitchingRow,
-  BattingSortField, PitchingSortField, FieldingSortField,
+  BattingLeaderRow,
+  PitchingLeaderRow,
+  FieldingLeaderRow,
+  TeamBattingRow,
+  TeamPitchingRow,
+  BattingSortField,
+  PitchingSortField,
+  FieldingSortField,
 } from "../../../models/baseball/baseballStatsModels";
 import { BaseballBattingTable } from "./BaseballBattingTable";
 import { BaseballPitchingTable } from "./BaseballPitchingTable";
@@ -34,11 +39,30 @@ import { BaseballTeamStatsTable } from "./BaseballTeamStatsTable";
 
 type StatsTab = "Batting" | "Pitching" | "Fielding" | "Team";
 
-const POSITION_CODES = ["c", "fb", "sb", "tb", "ss", "lf", "cf", "rf", "p", "dh"];
+const POSITION_CODES = [
+  "c",
+  "fb",
+  "sb",
+  "tb",
+  "ss",
+  "lf",
+  "cf",
+  "rf",
+  "p",
+  "dh",
+];
 
 const POSITION_LABELS: Record<string, string> = {
-  c: "C", fb: "1B", sb: "2B", tb: "3B", ss: "SS",
-  lf: "LF", cf: "CF", rf: "RF", p: "P", dh: "DH",
+  c: "C",
+  fb: "1B",
+  sb: "2B",
+  tb: "3B",
+  ss: "SS",
+  lf: "LF",
+  cf: "CF",
+  rf: "RF",
+  p: "P",
+  dh: "DH",
 };
 
 // ═══════════════════════════════════════════════
@@ -51,11 +75,20 @@ interface BaseballStatsPageProps {
 
 export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   const { currentUser } = useAuthStore();
-  const { allTeams, seasonContext, mlbOrganization, collegeOrganization, bootstrappedOrgId, loadBootstrapForOrg } = useSimBaseballStore();
+  const {
+    allTeams,
+    seasonContext,
+    mlbOrganization,
+    collegeOrganization,
+    bootstrappedOrgId,
+    loadBootstrapForOrg,
+  } = useSimBaseballStore();
 
   const isCollege = league === SimCollegeBaseball;
   const organization = isCollege ? collegeOrganization : mlbOrganization;
-  const primaryTeam = organization ? getPrimaryBaseballTeam(organization) : undefined;
+  const primaryTeam = organization
+    ? getPrimaryBaseballTeam(organization)
+    : undefined;
   const defaultLevel = isCollege ? 3 : 9;
 
   // Ensure bootstrap data matches the current league's org
@@ -68,20 +101,26 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   // Player modal (scouting-aware)
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalPlayerId, setModalPlayerId] = useState<number | null>(null);
-  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(
+    null,
+  );
 
   const orgId = organization?.id ?? 0;
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
 
-  const openPlayerModal = useCallback((playerId: number) => {
-    setModalPlayerId(playerId);
-    handleOpenModal();
-  }, [handleOpenModal]);
+  const openPlayerModal = useCallback(
+    (playerId: number) => {
+      setModalPlayerId(playerId);
+      handleOpenModal();
+    },
+    [handleOpenModal],
+  );
 
   const refreshBudget = useCallback(() => {
     if (orgId && leagueYearId) {
       BaseballService.GetScoutingBudget(orgId, leagueYearId)
-        .then(setScoutingBudget).catch(() => {});
+        .then(setScoutingBudget)
+        .catch(() => {});
     }
   }, [orgId, leagueYearId]);
 
@@ -91,7 +130,11 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   }, [refreshBudget]);
 
   // Team color theming
-  const teamColors = useTeamColors(primaryTeam?.color_one ?? undefined, primaryTeam?.color_two ?? undefined, primaryTeam?.color_three ?? undefined);
+  const teamColors = useTeamColors(
+    primaryTeam?.color_one ?? undefined,
+    primaryTeam?.color_two ?? undefined,
+    primaryTeam?.color_three ?? undefined,
+  );
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -102,8 +145,12 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   // Logo
   const logo = useMemo(() => {
     if (!primaryTeam) return "";
-    return getLogo(league === SimMLB ? SimMLB : SimCollegeBaseball, primaryTeam.team_id, currentUser?.isRetro);
-  }, [primaryTeam, league, currentUser?.isRetro]);
+    return getLogo(
+      league === SimMLB ? SimMLB : SimCollegeBaseball,
+      primaryTeam.team_id,
+      currentUser?.IsRetro,
+    );
+  }, [primaryTeam, league, currentUser?.IsRetro]);
 
   // --- State ---
   const [activeTab, setActiveTab] = useState<StatsTab>("Batting");
@@ -123,31 +170,42 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   // Filter state
   const [battingPosition, setBattingPosition] = useState<string | null>(null);
   const [fieldingPosition, setFieldingPosition] = useState<string | null>(null);
-  const [pitchingRole, setPitchingRole] = useState<"starter" | "reliever" | null>(null);
+  const [pitchingRole, setPitchingRole] = useState<
+    "starter" | "reliever" | null
+  >(null);
   const [minPA, setMinPA] = useState<number | null>(null);
   const [minIP, setMinIP] = useState<number | null>(null);
   const [minInn, setMinInn] = useState<number | null>(null);
 
   // Data
   const [battingLeaders, setBattingLeaders] = useState<BattingLeaderRow[]>([]);
-  const [pitchingLeaders, setPitchingLeaders] = useState<PitchingLeaderRow[]>([]);
-  const [fieldingLeaders, setFieldingLeaders] = useState<FieldingLeaderRow[]>([]);
+  const [pitchingLeaders, setPitchingLeaders] = useState<PitchingLeaderRow[]>(
+    [],
+  );
+  const [fieldingLeaders, setFieldingLeaders] = useState<FieldingLeaderRow[]>(
+    [],
+  );
   const [teamBatting, setTeamBatting] = useState<TeamBattingRow[]>([]);
   const [teamPitching, setTeamPitching] = useState<TeamPitchingRow[]>([]);
   const [totalPages, setTotalPages] = useState(1);
 
   // Team options
   const teamOptions = useMemo(() => {
-    const teams = (allTeams ?? []).filter((t) => t.team_level === selectedLevel);
+    const teams = (allTeams ?? []).filter(
+      (t) => t.team_level === selectedLevel,
+    );
     const opts: SelectOption[] = [{ value: "__all__", label: "All Teams" }];
-    for (const t of teams.sort((a, b) => a.team_full_name.localeCompare(b.team_full_name))) {
+    for (const t of teams.sort((a, b) =>
+      a.team_full_name.localeCompare(b.team_full_name),
+    )) {
       opts.push({ value: String(t.team_id), label: t.team_full_name });
     }
     return opts;
   }, [allTeams, selectedLevel]);
 
   const selectedTeamOption = useMemo(() => {
-    if (!selectedTeamId) return teamOptions.find((o) => o.value === "__all__") ?? null;
+    if (!selectedTeamId)
+      return teamOptions.find((o) => o.value === "__all__") ?? null;
     return teamOptions.find((o) => o.value === String(selectedTeamId)) ?? null;
   }, [teamOptions, selectedTeamId]);
 
@@ -197,14 +255,21 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   }, [activeTab]);
 
   const currentQualifyingValue = useMemo(() => {
-    const val = activeTab === "Batting" ? minPA : activeTab === "Pitching" ? minIP : minInn;
+    const val =
+      activeTab === "Batting"
+        ? minPA
+        : activeTab === "Pitching"
+          ? minIP
+          : minInn;
     return String(val ?? 0);
   }, [activeTab, minPA, minIP, minInn]);
 
   // Smart default order for sort fields
   const getDefaultOrder = (tab: StatsTab, sort: string): "asc" | "desc" => {
     if (tab === "Pitching") {
-      return ["era", "whip", "bb9", "hr9", "h9", "bb_pct"].includes(sort) ? "asc" : "desc";
+      return ["era", "whip", "bb9", "hr9", "h9", "bb_pct"].includes(sort)
+        ? "asc"
+        : "desc";
     }
     if (tab === "Batting") {
       return ["k_pct", "ab_hr"].includes(sort) ? "asc" : "desc";
@@ -213,33 +278,36 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   };
 
   // Header sort handler — passed to table components
-  const handleSort = useCallback((field: string) => {
-    if (activeTab === "Batting") {
-      const f = field as BattingSortField;
-      if (battingSort === f) {
-        setBattingOrder((o) => (o === "asc" ? "desc" : "asc"));
-      } else {
-        setBattingSort(f);
-        setBattingOrder(getDefaultOrder("Batting", f));
+  const handleSort = useCallback(
+    (field: string) => {
+      if (activeTab === "Batting") {
+        const f = field as BattingSortField;
+        if (battingSort === f) {
+          setBattingOrder((o) => (o === "asc" ? "desc" : "asc"));
+        } else {
+          setBattingSort(f);
+          setBattingOrder(getDefaultOrder("Batting", f));
+        }
+      } else if (activeTab === "Pitching") {
+        const f = field as PitchingSortField;
+        if (pitchingSort === f) {
+          setPitchingOrder((o) => (o === "asc" ? "desc" : "asc"));
+        } else {
+          setPitchingSort(f);
+          setPitchingOrder(getDefaultOrder("Pitching", f));
+        }
+      } else if (activeTab === "Fielding") {
+        const f = field as FieldingSortField;
+        if (fieldingSort === f) {
+          setFieldingOrder((o) => (o === "asc" ? "desc" : "asc"));
+        } else {
+          setFieldingSort(f);
+          setFieldingOrder(getDefaultOrder("Fielding", f));
+        }
       }
-    } else if (activeTab === "Pitching") {
-      const f = field as PitchingSortField;
-      if (pitchingSort === f) {
-        setPitchingOrder((o) => (o === "asc" ? "desc" : "asc"));
-      } else {
-        setPitchingSort(f);
-        setPitchingOrder(getDefaultOrder("Pitching", f));
-      }
-    } else if (activeTab === "Fielding") {
-      const f = field as FieldingSortField;
-      if (fieldingSort === f) {
-        setFieldingOrder((o) => (o === "asc" ? "desc" : "asc"));
-      } else {
-        setFieldingSort(f);
-        setFieldingOrder(getDefaultOrder("Fielding", f));
-      }
-    }
-  }, [activeTab, battingSort, pitchingSort, fieldingSort]);
+    },
+    [activeTab, battingSort, pitchingSort, fieldingSort],
+  );
 
   // --- Fetch data ---
   const fetchData = useCallback(async () => {
@@ -303,7 +371,25 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
       console.error("Failed to load stats", e);
     }
     setIsLoading(false);
-  }, [seasonContext, activeTab, selectedLevel, selectedTeamId, battingSort, battingOrder, pitchingSort, pitchingOrder, fieldingSort, fieldingOrder, battingPosition, fieldingPosition, pitchingRole, minPA, minIP, minInn, page]);
+  }, [
+    seasonContext,
+    activeTab,
+    selectedLevel,
+    selectedTeamId,
+    battingSort,
+    battingOrder,
+    pitchingSort,
+    pitchingOrder,
+    fieldingSort,
+    fieldingOrder,
+    battingPosition,
+    fieldingPosition,
+    pitchingRole,
+    minPA,
+    minIP,
+    minInn,
+    page,
+  ]);
 
   useEffect(() => {
     fetchData();
@@ -312,17 +398,47 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [activeTab, selectedLevel, selectedTeamId, battingSort, battingOrder, pitchingSort, pitchingOrder, fieldingSort, fieldingOrder, battingPosition, fieldingPosition, pitchingRole, minPA, minIP, minInn]);
+  }, [
+    activeTab,
+    selectedLevel,
+    selectedTeamId,
+    battingSort,
+    battingOrder,
+    pitchingSort,
+    pitchingOrder,
+    fieldingSort,
+    fieldingOrder,
+    battingPosition,
+    fieldingPosition,
+    pitchingRole,
+    minPA,
+    minIP,
+    minInn,
+  ]);
 
   const pageTitle = isCollege ? "College Baseball" : "MLB";
 
   // Current sort info for table components
-  const currentSort = activeTab === "Batting" ? battingSort : activeTab === "Pitching" ? pitchingSort : fieldingSort;
-  const currentOrder = activeTab === "Batting" ? battingOrder : activeTab === "Pitching" ? pitchingOrder : fieldingOrder;
+  const currentSort =
+    activeTab === "Batting"
+      ? battingSort
+      : activeTab === "Pitching"
+        ? pitchingSort
+        : fieldingSort;
+  const currentOrder =
+    activeTab === "Batting"
+      ? battingOrder
+      : activeTab === "Pitching"
+        ? pitchingOrder
+        : fieldingOrder;
 
   // --- Render ---
   if (!seasonContext) {
-    return <PageContainer><Text variant="h4">Loading...</Text></PageContainer>;
+    return (
+      <PageContainer>
+        <Text variant="h4">Loading...</Text>
+      </PageContainer>
+    );
   }
 
   return (
@@ -331,40 +447,65 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
         {/* Header */}
         <div
           className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{ backgroundColor: headerColor, borderBottom: `3px solid ${borderColor}` }}
+          style={{
+            backgroundColor: headerColor,
+            borderBottom: `3px solid ${borderColor}`,
+          }}
         >
-          {logo && <img src={logo} className="w-10 h-10 object-contain" alt="" />}
+          {logo && (
+            <img src={logo} className="w-10 h-10 object-contain" alt="" />
+          )}
           <div>
-            <Text variant="h4" classes={headerTextClass}>{pageTitle} Statistics</Text>
-            <Text variant="small" classes={`${headerTextClass} opacity-75`}>Season {seasonContext.league_year}</Text>
+            <Text variant="h4" classes={headerTextClass}>
+              {pageTitle} Statistics
+            </Text>
+            <Text variant="small" classes={`${headerTextClass} opacity-75`}>
+              Season {seasonContext.league_year}
+            </Text>
           </div>
         </div>
 
         {/* Tabs */}
         <TabGroup>
-          {(["Batting", "Pitching", "Fielding", "Team"] as StatsTab[]).map((tab) => (
-            <Tab
-              key={tab}
-              label={tab}
-              selected={activeTab === tab}
-              setSelected={(val) => setActiveTab(val as StatsTab)}
-            />
-          ))}
+          {(["Batting", "Pitching", "Fielding", "Team"] as StatsTab[]).map(
+            (tab) => (
+              <Tab
+                key={tab}
+                label={tab}
+                selected={activeTab === tab}
+                setSelected={(val) => setActiveTab(val as StatsTab)}
+              />
+            ),
+          )}
         </TabGroup>
 
         {/* Filters */}
-        <Border classes="p-4 mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+        <Border
+          classes="p-4 mb-2"
+          styles={{ borderTop: `3px solid ${headerColor}` }}
+        >
           <div className="flex flex-wrap items-end gap-3 sm:gap-4">
             {/* Position filter — Batting */}
             {activeTab === "Batting" && (
               <div>
-                <Text variant="small" classes="font-semibold mb-1">Position</Text>
+                <Text variant="small" classes="font-semibold mb-1">
+                  Position
+                </Text>
                 <ButtonGroup>
-                  <PillButton variant="primaryOutline" isSelected={battingPosition === null} onClick={() => setBattingPosition(null)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={battingPosition === null}
+                    onClick={() => setBattingPosition(null)}
+                  >
                     <Text variant="small">All</Text>
                   </PillButton>
                   {POSITION_CODES.filter((p) => p !== "p").map((pos) => (
-                    <PillButton key={pos} variant="primaryOutline" isSelected={battingPosition === pos} onClick={() => setBattingPosition(pos)}>
+                    <PillButton
+                      key={pos}
+                      variant="primaryOutline"
+                      isSelected={battingPosition === pos}
+                      onClick={() => setBattingPosition(pos)}
+                    >
                       <Text variant="small">{POSITION_LABELS[pos]}</Text>
                     </PillButton>
                   ))}
@@ -375,15 +516,29 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
             {/* Role filter — Pitching */}
             {activeTab === "Pitching" && (
               <div>
-                <Text variant="small" classes="font-semibold mb-1">Role</Text>
+                <Text variant="small" classes="font-semibold mb-1">
+                  Role
+                </Text>
                 <ButtonGroup>
-                  <PillButton variant="primaryOutline" isSelected={pitchingRole === null} onClick={() => setPitchingRole(null)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={pitchingRole === null}
+                    onClick={() => setPitchingRole(null)}
+                  >
                     <Text variant="small">All</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={pitchingRole === "starter"} onClick={() => setPitchingRole("starter")}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={pitchingRole === "starter"}
+                    onClick={() => setPitchingRole("starter")}
+                  >
                     <Text variant="small">Starters</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={pitchingRole === "reliever"} onClick={() => setPitchingRole("reliever")}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={pitchingRole === "reliever"}
+                    onClick={() => setPitchingRole("reliever")}
+                  >
                     <Text variant="small">Relievers</Text>
                   </PillButton>
                 </ButtonGroup>
@@ -393,13 +548,24 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
             {/* Position filter — Fielding */}
             {activeTab === "Fielding" && (
               <div>
-                <Text variant="small" classes="font-semibold mb-1">Position</Text>
+                <Text variant="small" classes="font-semibold mb-1">
+                  Position
+                </Text>
                 <ButtonGroup>
-                  <PillButton variant="primaryOutline" isSelected={fieldingPosition === null} onClick={() => setFieldingPosition(null)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={fieldingPosition === null}
+                    onClick={() => setFieldingPosition(null)}
+                  >
                     <Text variant="small">All</Text>
                   </PillButton>
                   {POSITION_CODES.map((pos) => (
-                    <PillButton key={pos} variant="primaryOutline" isSelected={fieldingPosition === pos} onClick={() => setFieldingPosition(pos)}>
+                    <PillButton
+                      key={pos}
+                      variant="primaryOutline"
+                      isSelected={fieldingPosition === pos}
+                      onClick={() => setFieldingPosition(pos)}
+                    >
                       <Text variant="small">{POSITION_LABELS[pos]}</Text>
                     </PillButton>
                   ))}
@@ -410,7 +576,9 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
             {/* Team filter (not for Team tab) */}
             {activeTab !== "Team" && (
               <div className="w-full sm:w-auto sm:min-w-[14rem]">
-                <Text variant="small" classes="font-semibold mb-1">Team</Text>
+                <Text variant="small" classes="font-semibold mb-1">
+                  Team
+                </Text>
                 <SelectDropdown
                   options={teamOptions}
                   value={selectedTeamOption}
@@ -428,10 +596,16 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
             {/* Level filter (MLB only) */}
             {!isCollege && levelOptions.length > 0 && (
               <div className="w-full sm:w-auto sm:min-w-[8rem]">
-                <Text variant="small" classes="font-semibold mb-1">Level</Text>
+                <Text variant="small" classes="font-semibold mb-1">
+                  Level
+                </Text>
                 <SelectDropdown
                   options={levelOptions}
-                  value={levelOptions.find((o) => o.value === String(selectedLevel)) ?? null}
+                  value={
+                    levelOptions.find(
+                      (o) => o.value === String(selectedLevel),
+                    ) ?? null
+                  }
                   onChange={(opt) => {
                     if (!opt) return;
                     setSelectedLevel(Number((opt as SelectOption).value));
@@ -443,10 +617,16 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
             {/* Qualifying minimum (not for Team tab) */}
             {activeTab !== "Team" && qualifyingOptions.length > 0 && (
               <div className="w-full sm:w-auto sm:min-w-[9rem]">
-                <Text variant="small" classes="font-semibold mb-1">Qualifying</Text>
+                <Text variant="small" classes="font-semibold mb-1">
+                  Qualifying
+                </Text>
                 <SelectDropdown
                   options={qualifyingOptions}
-                  value={qualifyingOptions.find((o) => o.value === currentQualifyingValue) ?? qualifyingOptions[0]}
+                  value={
+                    qualifyingOptions.find(
+                      (o) => o.value === currentQualifyingValue,
+                    ) ?? qualifyingOptions[0]
+                  }
                   onChange={(opt) => {
                     if (!opt) return;
                     const v = Number((opt as SelectOption).value) || null;
@@ -461,10 +641,15 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
         </Border>
 
         {/* Content */}
-        <Border classes="p-4" styles={{ borderTop: `3px solid ${headerColor}` }}>
+        <Border
+          classes="p-4"
+          styles={{ borderTop: `3px solid ${headerColor}` }}
+        >
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Text variant="body" classes="text-gray-500 dark:text-gray-400">Loading stats...</Text>
+              <Text variant="body" classes="text-gray-500 dark:text-gray-400">
+                Loading stats...
+              </Text>
             </div>
           ) : (
             <>
@@ -472,7 +657,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                 <BaseballBattingTable
                   leaders={battingLeaders}
                   league={league}
-                  isRetro={currentUser?.isRetro}
+                  IsRetro={currentUser?.IsRetro}
                   accentColor={headerColor}
                   onPlayerClick={openPlayerModal}
                   sortField={currentSort}
@@ -484,7 +669,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                 <BaseballPitchingTable
                   leaders={pitchingLeaders}
                   league={league}
-                  isRetro={currentUser?.isRetro}
+                  IsRetro={currentUser?.IsRetro}
                   accentColor={headerColor}
                   onPlayerClick={openPlayerModal}
                   sortField={currentSort}
@@ -496,7 +681,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                 <BaseballFieldingTable
                   leaders={fieldingLeaders}
                   league={league}
-                  isRetro={currentUser?.isRetro}
+                  IsRetro={currentUser?.IsRetro}
                   accentColor={headerColor}
                   onPlayerClick={openPlayerModal}
                   sortField={currentSort}
@@ -505,7 +690,13 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                 />
               )}
               {activeTab === "Team" && (
-                <BaseballTeamStatsTable batting={teamBatting} pitching={teamPitching} league={league} isRetro={currentUser?.isRetro} accentColor={headerColor} />
+                <BaseballTeamStatsTable
+                  batting={teamBatting}
+                  pitching={teamPitching}
+                  league={league}
+                  IsRetro={currentUser?.IsRetro}
+                  accentColor={headerColor}
+                />
               )}
 
               {/* Pagination */}
@@ -539,7 +730,10 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
       {modalPlayerId != null && (
         <BaseballScoutingModal
           isOpen={isModalOpen}
-          onClose={() => { setModalPlayerId(null); handleCloseModal(); }}
+          onClose={() => {
+            setModalPlayerId(null);
+            handleCloseModal();
+          }}
           playerId={modalPlayerId}
           orgId={orgId}
           leagueYearId={leagueYearId}
