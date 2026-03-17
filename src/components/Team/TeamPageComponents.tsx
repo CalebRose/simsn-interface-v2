@@ -42,7 +42,7 @@ interface TeamInfoProps {
   backgroundColor?: string;
   headerColor?: string;
   borderColor?: string;
-  isRetro?: boolean;
+  IsRetro?: boolean;
   isUserTeam?: boolean;
   openTradeModal?: () => void;
   openProposeTradeModal?: () => void;
@@ -72,7 +72,7 @@ export const TeamInfo: FC<TeamInfoProps> = ({
   backgroundColor,
   headerColor,
   borderColor,
-  isRetro = false,
+  IsRetro = false,
   openTradeModal,
   openProposeTradeModal,
   draftPickCount = 0,
@@ -80,7 +80,7 @@ export const TeamInfo: FC<TeamInfoProps> = ({
   const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const sectionBg = getThemeAwareDarkenColor(themeBackgroundColor, -5);
   const textColorClass = getTextColorBasedOnBg(themeBackgroundColor);
-  const logo = getLogo(League, id!!, isRetro);
+  const logo = getLogo(League, id!!, IsRetro);
   const { isMobile } = useResponsive();
   return (
     <Border

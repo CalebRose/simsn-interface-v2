@@ -271,7 +271,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
       return <Logo url={getLogo(SimCHL, croot.TeamID, false)} variant="tiny" />;
     }
     const tops = croot.LeadingTeams.filter((x) => x.Odds > 0).slice(0, 4);
-    if (!tops.length) return "None";
+    if (!tops.length || tops.length === 0) return "None";
     return tops.map((x) => (
       <Logo
         key={x.TeamID}

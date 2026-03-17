@@ -100,7 +100,7 @@ export const AvailableTeams = () => {
   const [sentRequestCollegeBaseball, setSentRequestCollegeBaseball] =
     useState(false);
   const { enqueueSnackbar } = useSnackbar();
-  const isRetro = currentUser?.isRetro;
+  const IsRetro = currentUser?.IsRetro;
 
   useEffect(() => {
     setTimeout(() => {
@@ -451,7 +451,7 @@ export const AvailableTeams = () => {
                   key={x.ID}
                   teamID={x.ID}
                   t={x}
-                  retro={isRetro}
+                  retro={IsRetro}
                   team={x.TeamName}
                   conference={x.Conference}
                   league={selectedLeague}
@@ -468,7 +468,7 @@ export const AvailableTeams = () => {
                   key={x.ID}
                   teamID={x.ID}
                   t={x}
-                  retro={isRetro}
+                  retro={IsRetro}
                   team={x.TeamName}
                   conference={x.Conference}
                   league={selectedLeague}
@@ -482,7 +482,7 @@ export const AvailableTeams = () => {
                   key={x.ID}
                   teamID={x.ID}
                   t={x}
-                  retro={isRetro}
+                  retro={IsRetro}
                   team={x.Team}
                   conference={x.Conference}
                   league={selectedLeague}
@@ -496,7 +496,7 @@ export const AvailableTeams = () => {
                   key={x.ID}
                   teamID={x.ID}
                   t={x}
-                  retro={isRetro}
+                  retro={IsRetro}
                   team={x.Team}
                   conference={x.Conference}
                   league={selectedLeague}
@@ -510,7 +510,7 @@ export const AvailableTeams = () => {
                   key={x.ID}
                   teamID={x.ID}
                   t={x}
-                  retro={isRetro}
+                  retro={IsRetro}
                   team={x.TeamName}
                   conference={x.Conference}
                   league={selectedLeague}
@@ -527,7 +527,7 @@ export const AvailableTeams = () => {
                   key={x.ID}
                   teamID={x.ID}
                   t={x}
-                  retro={isRetro}
+                  retro={IsRetro}
                   team={x.TeamName}
                   conference={x.Conference}
                   league={selectedLeague}
@@ -548,7 +548,7 @@ export const AvailableTeams = () => {
                       ColorTwo: primaryTeam?.color_two,
                       ColorThree: primaryTeam?.color_three,
                     }}
-                    retro={isRetro}
+                    retro={IsRetro}
                     team={x.org_abbrev}
                     conference={primaryTeam?.conference || ""}
                     league={selectedLeague}
@@ -575,7 +575,7 @@ export const AvailableTeams = () => {
                       ColorTwo: primaryTeam?.color_two,
                       ColorThree: primaryTeam?.color_three,
                     }}
-                    retro={isRetro}
+                    retro={IsRetro}
                     team={x.org_abbrev}
                     conference={primaryTeam?.conference || ""}
                     league={selectedLeague}
@@ -590,7 +590,7 @@ export const AvailableTeams = () => {
               selectedTeam={selectedTeam}
               data={selectedTeamData}
               league={selectedLeague}
-              retro={isRetro}
+              retro={IsRetro}
               sendRequest={sendRequest}
             />
           </div>

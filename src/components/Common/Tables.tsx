@@ -45,7 +45,7 @@ export const StandingsTable = ({
     { header: "T.L", accessor: "TotalLosses" },
   ];
   const rowRenderer = (item: any, index: number, backgroundColor: string) => {
-    const logoUrl = getLogo(league, item.TeamID, currentUser.isRetro);
+    const logoUrl = getLogo(league, item.TeamID, currentUser.IsRetro);
     return (
       <div
         key={index}
@@ -144,7 +144,7 @@ export const GamesTable = ({
         (item.AwayTeamID === ID && item.AwayTeamWin));
     const awayGame = item.HomeTeamID === ID || item.IsNeutral ? false : true;
     const gameWeek = item.Week;
-    const logoUrl = getLogo(league, opposingTeamID, currentUser.isRetro);
+    const logoUrl = getLogo(league, opposingTeamID, currentUser.IsRetro);
     const showResults = [SimCBB, SimNBA].includes(league)
       ? RevealBBAResults(item, ts, false)
       : false;

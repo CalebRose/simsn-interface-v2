@@ -109,12 +109,12 @@ export const getLandingCFBData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -239,12 +239,12 @@ export const getLandingNFLData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -375,12 +375,12 @@ export const getLandingCBBData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -511,12 +511,12 @@ export const getLandingNBAData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -651,12 +651,12 @@ export const getLandingCHLData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
 
     homeLabel = isUserTeamHome
@@ -790,12 +790,12 @@ export const getLandingPHLData = (
     homeLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].HomeTeamID : teamMatchUp[0].AwayTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
     awayLogo = getLogo(
       league,
       isUserTeamHome ? teamMatchUp[0].AwayTeamID : teamMatchUp[0].HomeTeamID,
-      currentUser?.isRetro,
+      currentUser?.IsRetro,
     );
 
     homeLabel = isUserTeamHome

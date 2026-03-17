@@ -42,12 +42,14 @@ import {
   GiSoccerKick,
   GiAmericanFootballPlayer,
   GiTicTacToe,
+  GiHammerDrop,
 } from "react-icons/gi";
 import {
   FaMedal,
   FaChalkboardTeacher,
   FaSortAmountUp,
   FaHandshake,
+  FaHammer,
 } from "react-icons/fa";
 
 // 🔑 Define Props Interface for LockIcon
@@ -325,4 +327,8 @@ export const ArrowRight: React.FC<LockIconProps> = ({ textColorClass }) => {
 
 export const ArrowLeft: React.FC<LockIconProps> = ({ textColorClass }) => {
   return <ArrowLeftIcon className={`size-5 ${textColorClass}`} />;
+};
+
+export const Hammer: React.FC<LockIconProps> = ({ textColorClass }) => {
+  return <GiHammerDrop className={`size-5 ${textColorClass}`} />;
 };

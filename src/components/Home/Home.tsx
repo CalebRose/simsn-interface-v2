@@ -104,6 +104,7 @@ export const Home = () => {
 
   const isParticipating = useMemo(() => {
     if (!currentUser) return false;
+    if (currentUser.IsBanned) return false;
     const { cbb_id, teamId, NFLTeamID, CHLTeamID, PHLTeamID, NBATeamID } =
       currentUser;
     if (
@@ -133,9 +134,14 @@ export const Home = () => {
     return true;
   }, [currentUser, collegeOrganization, mlbOrganization]);
 
+  const isBanned = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.IsBanned;
+  }, [currentUser]);
+
   return (
     <PageContainer isLoading={isLoadingData && isParticipating}>
-      {!isParticipating && (
+      {!isParticipating && !isBanned && (
         <>
           <Border
             direction="col"
@@ -170,42 +176,73 @@ export const Home = () => {
           </Border>
         </>
       )}
-      <div className="flex flex-col px-[1vw] md:px-2 mt-1">
-        <div className="flex flex-row mb-1">
-          <LeagueSelector
-            selectedLeague={selectedLeague as League}
-            onLeagueSelect={SetTeam}
-            teams={{
-              cfbTeam,
-              nflTeam,
-              cbbTeam,
-              nbaTeam,
-              chlTeam,
-              phlTeam,
-              collegeBaseballOrg: collegeOrganization,
-              mlbOrg: mlbOrganization,
-            }}
-          />
+      {isBanned && (
+        <>
+          <Border
+            direction="col"
+            classes="p-[2vw] md:p-4 h-full mt-[20vh] md:w-[85vw] lg:w-[80vw] xl:w-[40vw]"
+          >
+            <div className="flex mb-2 justify-center">
+              <img
+                src={`${simLogos.SimSN}`}
+                className="h-20 sm:h-40"
+                alt="SimSNLogo"
+              />
+            </div>
+            <div className="flex flex-row mb-2 justify-center">
+              <Text variant="body" classes="font-semibold">
+                You have been banned from participating in Simulation Sports
+                Network.
+              </Text>
+            </div>
+            <div className="flex flex-col gap-y-2 mb-4 justify-center">
+              <Text variant="small" classes="">
+                Due to violations of our community guidelines, your account has
+                been banned from participating in Simulation Sports Network and
+                your team roles have been revoked.
+              </Text>
+            </div>
+          </Border>
+        </>
+      )}
+      {!isBanned && (
+        <div className="flex flex-col px-[1vw] md:px-2 mt-1">
+          <div className="flex flex-row mb-1">
+            <LeagueSelector
+              selectedLeague={selectedLeague as League}
+              onLeagueSelect={SetTeam}
+              teams={{
+                cfbTeam,
+                nflTeam,
+                cbbTeam,
+                nbaTeam,
+                chlTeam,
+                phlTeam,
+                collegeBaseballOrg: collegeOrganization,
+                mlbOrg: mlbOrganization,
+              }}
+            />
+          </div>
+          {selectedTeam &&
+            (selectedLeague === SimCollegeBaseball ||
+              selectedLeague === SimMLB) && (
+              <BaseballLandingPage
+                organization={selectedTeam}
+                league={selectedLeague}
+                ts={ts}
+              />
+            )}
+          {selectedTeam &&
+            selectedLeague !== SimCollegeBaseball &&
+            selectedLeague !== SimMLB && (
+              <TeamLandingPage
+                team={selectedTeam}
+                league={selectedLeague}
+                ts={ts}
+              />
+            )}
         </div>
-        {selectedTeam &&
-          (selectedLeague === SimCollegeBaseball ||
-            selectedLeague === SimMLB) && (
-            <BaseballLandingPage
-              organization={selectedTeam}
-              league={selectedLeague}
-              ts={ts}
-            />
-          )}
-        {selectedTeam &&
-          selectedLeague !== SimCollegeBaseball &&
-          selectedLeague !== SimMLB && (
-            <TeamLandingPage
-              team={selectedTeam}
-              league={selectedLeague}
-              ts={ts}
-            />
-          )}
-      </div>
+      )}
     </PageContainer>
   );
 };

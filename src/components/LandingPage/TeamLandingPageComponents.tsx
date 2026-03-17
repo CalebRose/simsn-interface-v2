@@ -112,7 +112,7 @@ export const GamesBar = ({
     const opponentLogoUrl = getLogo(
       league,
       isHomeGame ? item.AwayTeamID : item.HomeTeamID,
-      currentUser.isRetro,
+      currentUser.IsRetro,
     );
     const gameDetails = item.isNeutral
       ? `vs ${opponentAbbr}`

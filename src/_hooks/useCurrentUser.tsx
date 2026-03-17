@@ -9,16 +9,21 @@ export interface CurrentUser {
   username: string;
   teamId?: number;
   NFLTeamID?: number;
+  NFLRole?: string;
   cbb_id?: number;
   NBATeamID?: number;
+  NBARole?: string;
   CHLTeamID?: number;
   PHLTeamID?: number;
+  PHLRole?: string;
   MLBOrgID?: number;
   CollegeBaseballOrgID?: number;
-  isRetro?: boolean;
+  IsRetro?: boolean;
+  IsSubscribed?: boolean;
   roleID: string | null;
   email: string;
   DefaultLeague: string | null;
+  IsBanned?: boolean;
 }
 type UseCurrentUserReturn = [
   CurrentUser | null,

@@ -9,8 +9,10 @@ import { PageContainer } from "../../../_design/Container";
 import { SelectDropdown } from "../../../_design/Select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import {
-  BaseballOrganization, BaseballSeasonContext,
-  ScheduleGame, ScheduleResponse,
+  BaseballOrganization,
+  BaseballSeasonContext,
+  ScheduleGame,
+  ScheduleResponse,
 } from "../../../models/baseball/baseballModels";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getLogo } from "../../../_utility/getLogo";
@@ -23,9 +25,15 @@ import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import {
   type ScheduleViewMode,
-  groupGamesIntoSeries, getGameResult, getSeriesRecord,
-  SUBWEEK_ORDER, SUBWEEK_LABELS,
-  TOTAL_WEEKS, MONTH_WEEKS, getWeekRangeForMonth, getMonthForWeek,
+  groupGamesIntoSeries,
+  getGameResult,
+  getSeriesRecord,
+  SUBWEEK_ORDER,
+  SUBWEEK_LABELS,
+  TOTAL_WEEKS,
+  MONTH_WEEKS,
+  getWeekRangeForMonth,
+  getMonthForWeek,
 } from "./baseballScheduleHelpers";
 import { BaseballBoxScoreModal } from "./BaseballBoxScoreModal";
 
@@ -44,19 +52,44 @@ interface BaseballScheduleViewProps {
 // ═══════════════════════════════════════════════
 
 const GAME_TYPE_BADGES: Record<string, { label: string; color: string }> = {
-  playoff: { label: "PO", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" },
-  allstar: { label: "ASG", color: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" },
-  wbc: { label: "WBC", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
+  playoff: {
+    label: "PO",
+    color:
+      "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+  },
+  allstar: {
+    label: "ASG",
+    color:
+      "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+  },
+  wbc: {
+    label: "WBC",
+    color: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  },
 };
 
 const GameTypeBadge = ({ gameType }: { gameType?: string }) => {
   if (!gameType || gameType === "regular") return null;
   const badge = GAME_TYPE_BADGES[gameType];
   if (!badge) return null;
-  return <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${badge.color}`}>{badge.label}</span>;
+  return (
+    <span
+      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${badge.color}`}
+    >
+      {badge.label}
+    </span>
+  );
 };
 
-const ResultBadge = ({ game, teamId, onClick }: { game: ScheduleGame; teamId: number; onClick?: (gameId: number) => void }) => {
+const ResultBadge = ({
+  game,
+  teamId,
+  onClick,
+}: {
+  game: ScheduleGame;
+  teamId: number;
+  onClick?: (gameId: number) => void;
+}) => {
   const r = getGameResult(game, teamId);
   if (r.pending) return <span className="text-xs text-gray-400">—</span>;
   if (r.cancelled) return <span className="text-xs text-gray-400">CAN</span>;
@@ -64,8 +97,13 @@ const ResultBadge = ({ game, teamId, onClick }: { game: ScheduleGame; teamId: nu
   const teamScore = isHome ? game.home_score : game.away_score;
   const oppScore = isHome ? game.away_score : game.home_score;
   const label = r.won ? "W" : r.lost ? "L" : "T";
-  const color = r.won ? "text-green-600 dark:text-green-400" : r.lost ? "text-red-600 dark:text-red-400" : "text-gray-500";
-  const clickable = onClick && game.game_outcome && game.game_outcome !== "CANCELLED";
+  const color = r.won
+    ? "text-green-600 dark:text-green-400"
+    : r.lost
+      ? "text-red-600 dark:text-red-400"
+      : "text-gray-500";
+  const clickable =
+    onClick && game.game_outcome && game.game_outcome !== "CANCELLED";
   return (
     <span
       className={`text-xs font-semibold ${color} ${clickable ? "cursor-pointer hover:underline" : ""}`}
@@ -80,11 +118,19 @@ const ResultBadge = ({ game, teamId, onClick }: { game: ScheduleGame; teamId: nu
 // Series card (weekly view)
 // ═══════════════════════════════════════════════
 
-const SeriesCard = ({ series, teamId, league, isRetro, accentColor, compact, onGameClick }: {
+const SeriesCard = ({
+  series,
+  teamId,
+  league,
+  IsRetro,
+  accentColor,
+  compact,
+  onGameClick,
+}: {
   series: ReturnType<typeof groupGamesIntoSeries>[0];
   teamId: number;
   league: string;
-  isRetro?: boolean;
+  IsRetro?: boolean;
   accentColor?: string;
   compact?: boolean;
   onGameClick?: (gameId: number) => void;
@@ -94,28 +140,43 @@ const SeriesCard = ({ series, teamId, league, isRetro, accentColor, compact, onG
   const oppId = isHome ? series.away_team_id : series.home_team_id;
   const oppAbbrev = isHome ? series.away_team_abbrev : series.home_team_abbrev;
   const oppName = isHome ? series.away_team_name : series.home_team_name;
-  const oppLogo = getLogo(leagueType, oppId, isRetro);
+  const oppLogo = getLogo(leagueType, oppId, IsRetro);
   const record = getSeriesRecord(series, teamId);
 
   return (
-    <div className={`rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden ${compact ? "" : "max-w-lg"}`}>
+    <div
+      className={`rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden ${compact ? "" : "max-w-lg"}`}
+    >
       {/* Series header */}
       <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
         {oppLogo && (
-          <img src={oppLogo} className="w-6 h-6 object-contain" alt={oppAbbrev}
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+          <img
+            src={oppLogo}
+            className="w-6 h-6 object-contain"
+            alt={oppAbbrev}
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
         )}
         <div className="flex-1 min-w-0">
           <Text variant="small" classes="font-semibold truncate">
             {isHome ? "vs" : "@"} {oppName}
           </Text>
-          <Text variant="small" classes="text-gray-400 dark:text-gray-500 text-xs">
+          <Text
+            variant="small"
+            classes="text-gray-400 dark:text-gray-500 text-xs"
+          >
             Week {series.season_week} · {series.games.length}-game series
           </Text>
         </div>
         <span
           className="text-xs font-bold px-2 py-0.5 rounded"
-          style={accentColor && record.label !== "—" ? { backgroundColor: `${accentColor}15`, color: accentColor } : undefined}
+          style={
+            accentColor && record.label !== "—"
+              ? { backgroundColor: `${accentColor}15`, color: accentColor }
+              : undefined
+          }
         >
           {record.label}
         </span>
@@ -125,8 +186,13 @@ const SeriesCard = ({ series, teamId, league, isRetro, accentColor, compact, onG
         {series.games.map((g) => {
           const isGameHome = g.home_team_id === teamId;
           return (
-            <div key={g.id} className="flex items-center gap-2 px-2 sm:px-3 py-1.5 text-sm">
-              <span className="text-xs text-gray-400 w-12">{SUBWEEK_LABELS[g.season_subweek] ?? g.season_subweek}</span>
+            <div
+              key={g.id}
+              className="flex items-center gap-2 px-2 sm:px-3 py-1.5 text-sm"
+            >
+              <span className="text-xs text-gray-400 w-12">
+                {SUBWEEK_LABELS[g.season_subweek] ?? g.season_subweek}
+              </span>
               <span className="flex-1 text-gray-600 dark:text-gray-300">
                 {isGameHome ? g.away_team_abbrev : `@ ${g.home_team_abbrev}`}
               </span>
@@ -143,15 +209,26 @@ const SeriesCard = ({ series, teamId, league, isRetro, accentColor, compact, onG
 // Game row (daily view)
 // ═══════════════════════════════════════════════
 
-const GameRow = ({ game, teamId, league, isRetro, onGameClick }: {
-  game: ScheduleGame; teamId: number | null; league: string; isRetro?: boolean; onGameClick?: (gameId: number) => void;
+const GameRow = ({
+  game,
+  teamId,
+  league,
+  IsRetro,
+  onGameClick,
+}: {
+  game: ScheduleGame;
+  teamId: number | null;
+  league: string;
+  IsRetro?: boolean;
+  onGameClick?: (gameId: number) => void;
 }) => {
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
-  const homeLogo = getLogo(leagueType, game.home_team_id, isRetro);
-  const awayLogo = getLogo(leagueType, game.away_team_id, isRetro);
+  const homeLogo = getLogo(leagueType, game.home_team_id, IsRetro);
+  const awayLogo = getLogo(leagueType, game.away_team_id, IsRetro);
   const completed = !!game.game_outcome;
 
-  const clickable = completed && onGameClick && game.game_outcome !== "CANCELLED";
+  const clickable =
+    completed && onGameClick && game.game_outcome !== "CANCELLED";
 
   return (
     <div
@@ -160,26 +237,56 @@ const GameRow = ({ game, teamId, league, isRetro, onGameClick }: {
     >
       {/* Away team */}
       <div className="flex items-center gap-2 w-40 min-w-0">
-        {awayLogo && <img src={awayLogo} className="w-5 h-5 object-contain shrink-0" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
-        <span className={`text-sm truncate ${game.winning_team_id === game.away_team_id ? "font-bold" : ""}`}>{game.away_team_abbrev}</span>
+        {awayLogo && (
+          <img
+            src={awayLogo}
+            className="w-5 h-5 object-contain shrink-0"
+            alt=""
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        )}
+        <span
+          className={`text-sm truncate ${game.winning_team_id === game.away_team_id ? "font-bold" : ""}`}
+        >
+          {game.away_team_abbrev}
+        </span>
       </div>
       {/* Score or vs */}
       <div className="w-20 text-center">
         {completed ? (
-          <span className="text-sm font-semibold">{game.away_score} - {game.home_score}</span>
+          <span className="text-sm font-semibold">
+            {game.away_score} - {game.home_score}
+          </span>
         ) : (
           <span className="text-xs text-gray-400">vs</span>
         )}
       </div>
       {/* Home team */}
       <div className="flex items-center gap-2 w-40 min-w-0">
-        {homeLogo && <img src={homeLogo} className="w-5 h-5 object-contain shrink-0" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
-        <span className={`text-sm truncate ${game.winning_team_id === game.home_team_id ? "font-bold" : ""}`}>{game.home_team_abbrev}</span>
+        {homeLogo && (
+          <img
+            src={homeLogo}
+            className="w-5 h-5 object-contain shrink-0"
+            alt=""
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
+          />
+        )}
+        <span
+          className={`text-sm truncate ${game.winning_team_id === game.home_team_id ? "font-bold" : ""}`}
+        >
+          {game.home_team_abbrev}
+        </span>
       </div>
       {/* Game type badge */}
       <GameTypeBadge gameType={game.game_type} />
       {/* Result badge (when filtered to a team) */}
-      {teamId && <ResultBadge game={game} teamId={teamId} onClick={onGameClick} />}
+      {teamId && (
+        <ResultBadge game={game} teamId={teamId} onClick={onGameClick} />
+      )}
     </div>
   );
 };
@@ -188,7 +295,11 @@ const GameRow = ({ game, teamId, league, isRetro, onGameClick }: {
 // Calendar cell (monthly view)
 // ═══════════════════════════════════════════════
 
-const CalendarCell = ({ game, teamId, onGameClick }: {
+const CalendarCell = ({
+  game,
+  teamId,
+  onGameClick,
+}: {
   game?: ScheduleGame;
   teamId: number | null;
   onGameClick?: (gameId: number) => void;
@@ -218,9 +329,16 @@ const CalendarCell = ({ game, teamId, onGameClick }: {
 
   let bgColor = "";
   let textColor = "";
-  if (r.won) { bgColor = "bg-green-50 dark:bg-green-900/20"; textColor = "text-green-700 dark:text-green-400"; }
-  else if (r.lost) { bgColor = "bg-red-50 dark:bg-red-900/20"; textColor = "text-red-700 dark:text-red-400"; }
-  else if (r.cancelled) { bgColor = "bg-gray-100 dark:bg-gray-800"; textColor = "text-gray-400"; }
+  if (r.won) {
+    bgColor = "bg-green-50 dark:bg-green-900/20";
+    textColor = "text-green-700 dark:text-green-400";
+  } else if (r.lost) {
+    bgColor = "bg-red-50 dark:bg-red-900/20";
+    textColor = "text-red-700 dark:text-red-400";
+  } else if (r.cancelled) {
+    bgColor = "bg-gray-100 dark:bg-gray-800";
+    textColor = "text-gray-400";
+  }
 
   const clickable = onGameClick && !r.pending && !r.cancelled;
 
@@ -229,7 +347,9 @@ const CalendarCell = ({ game, teamId, onGameClick }: {
       className={`px-2 py-2 text-center border border-gray-100 dark:border-gray-700 ${bgColor} ${clickable ? "cursor-pointer hover:opacity-80" : ""}`}
       onClick={clickable ? () => onGameClick(game.id) : undefined}
     >
-      <div className="text-xs font-medium">{prefix} {oppAbbrev}</div>
+      <div className="text-xs font-medium">
+        {prefix} {oppAbbrev}
+      </div>
       {game.game_type && game.game_type !== "regular" && (
         <GameTypeBadge gameType={game.game_type} />
       )}
@@ -237,7 +357,9 @@ const CalendarCell = ({ game, teamId, onGameClick }: {
         <div className="text-xs text-gray-400 mt-0.5">—</div>
       ) : (
         <div className={`text-xs font-semibold mt-0.5 ${textColor}`}>
-          {r.cancelled ? "CAN" : `${r.won ? "W" : r.lost ? "L" : "T"} ${teamScore}-${oppScore}`}
+          {r.cancelled
+            ? "CAN"
+            : `${r.won ? "W" : r.lost ? "L" : "T"} ${teamScore}-${oppScore}`}
         </div>
       )}
     </td>
@@ -248,7 +370,11 @@ const CalendarCell = ({ game, teamId, onGameClick }: {
 // Main component
 // ═══════════════════════════════════════════════
 
-export const BaseballScheduleView = ({ league, organization, seasonContext }: BaseballScheduleViewProps) => {
+export const BaseballScheduleView = ({
+  league,
+  organization,
+  seasonContext,
+}: BaseballScheduleViewProps) => {
   const { currentUser } = useAuthStore();
   const { allTeams } = useSimBaseballStore();
 
@@ -259,14 +385,17 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
   // --- Player modal ---
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalPlayerId, setModalPlayerId] = useState<number | null>(null);
-  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(
+    null,
+  );
   const orgId = organization.id;
   const leagueYearId = seasonContext.current_league_year_id;
 
   const refreshBudget = useCallback(() => {
     if (orgId && leagueYearId) {
       BaseballService.GetScoutingBudget(orgId, leagueYearId)
-        .then(setScoutingBudget).catch(() => {});
+        .then(setScoutingBudget)
+        .catch(() => {});
     }
   }, [orgId, leagueYearId]);
 
@@ -274,13 +403,20 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
     refreshBudget();
   }, [refreshBudget]);
 
-  const openPlayerModal = useCallback((playerId: number) => {
-    setModalPlayerId(playerId);
-    handleOpenModal();
-  }, [allPlayers, handleOpenModal]);
+  const openPlayerModal = useCallback(
+    (playerId: number) => {
+      setModalPlayerId(playerId);
+      handleOpenModal();
+    },
+    [allPlayers, handleOpenModal],
+  );
 
   // --- Team color theming ---
-  const teamColors = useTeamColors(primaryTeam?.color_one ?? undefined, primaryTeam?.color_two ?? undefined, primaryTeam?.color_three ?? undefined);
+  const teamColors = useTeamColors(
+    primaryTeam?.color_one ?? undefined,
+    primaryTeam?.color_two ?? undefined,
+    primaryTeam?.color_three ?? undefined,
+  );
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -290,11 +426,19 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
 
   // --- State ---
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("weekly");
-  const [selectedWeek, setSelectedWeek] = useState(seasonContext.current_week_index);
-  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(defaultTeamId);
+  const [selectedWeek, setSelectedWeek] = useState(
+    seasonContext.current_week_index,
+  );
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(
+    defaultTeamId,
+  );
   const [selectedSubweek, setSelectedSubweek] = useState<string>("a");
-  const [selectedMonth, setSelectedMonth] = useState(() => getMonthForWeek(seasonContext.current_week_index));
-  const [scheduleData, setScheduleData] = useState<ScheduleResponse | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState(() =>
+    getMonthForWeek(seasonContext.current_week_index),
+  );
+  const [scheduleData, setScheduleData] = useState<ScheduleResponse | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [boxScoreGameId, setBoxScoreGameId] = useState<number | null>(null);
 
@@ -306,35 +450,41 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
     const leagueLevel = defaultLevel;
     const teams = (allTeams ?? []).filter((t) => t.team_level === leagueLevel);
     const opts: SelectOption[] = [{ value: "__all__", label: "All Teams" }];
-    for (const t of teams.sort((a, b) => a.team_full_name.localeCompare(b.team_full_name))) {
+    for (const t of teams.sort((a, b) =>
+      a.team_full_name.localeCompare(b.team_full_name),
+    )) {
       opts.push({ value: String(t.team_id), label: t.team_full_name });
     }
     return opts;
   }, [allTeams, defaultLevel]);
 
   const selectedTeamOption = useMemo(() => {
-    if (!selectedTeamId) return teamOptions.find((o) => o.value === "__all__") ?? null;
+    if (!selectedTeamId)
+      return teamOptions.find((o) => o.value === "__all__") ?? null;
     return teamOptions.find((o) => o.value === String(selectedTeamId)) ?? null;
   }, [teamOptions, selectedTeamId]);
 
   // --- Fetch schedule ---
-  const fetchSchedule = useCallback(async (weekStart?: number, weekEnd?: number) => {
-    setIsLoading(true);
-    try {
-      const data = await BaseballService.GetSchedule({
-        season_year: seasonContext.league_year,
-        league_level: defaultLevel,
-        team_id: selectedTeamId ?? undefined,
-        week_start: weekStart,
-        week_end: weekEnd,
-        page_size: 500,
-      });
-      setScheduleData(data);
-    } catch (e) {
-      console.error("Failed to load schedule", e);
-    }
-    setIsLoading(false);
-  }, [seasonContext.league_year, defaultLevel, selectedTeamId]);
+  const fetchSchedule = useCallback(
+    async (weekStart?: number, weekEnd?: number) => {
+      setIsLoading(true);
+      try {
+        const data = await BaseballService.GetSchedule({
+          season_year: seasonContext.league_year,
+          league_level: defaultLevel,
+          team_id: selectedTeamId ?? undefined,
+          week_start: weekStart,
+          week_end: weekEnd,
+          page_size: 500,
+        });
+        setScheduleData(data);
+      } catch (e) {
+        console.error("Failed to load schedule", e);
+      }
+      setIsLoading(false);
+    },
+    [seasonContext.league_year, defaultLevel, selectedTeamId],
+  );
 
   // Refetch when view/week/month/team changes
   useEffect(() => {
@@ -358,21 +508,32 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
   }, [games, selectedWeek]);
 
   const dailyGames = useMemo(() => {
-    return games.filter((g) => g.season_week === selectedWeek && g.season_subweek === selectedSubweek);
+    return games.filter(
+      (g) =>
+        g.season_week === selectedWeek && g.season_subweek === selectedSubweek,
+    );
   }, [games, selectedWeek, selectedSubweek]);
 
   // --- Logo ---
   const logo = useMemo(() => {
     if (!primaryTeam) return "";
-    return getLogo(league === SimMLB ? SimMLB : SimCollegeBaseball, primaryTeam.team_id, currentUser?.isRetro);
-  }, [primaryTeam, league, currentUser?.isRetro]);
+    return getLogo(
+      league === SimMLB ? SimMLB : SimCollegeBaseball,
+      primaryTeam.team_id,
+      currentUser?.IsRetro,
+    );
+  }, [primaryTeam, league, currentUser?.IsRetro]);
 
   const pageTitle = primaryTeam?.team_full_name ?? organization.org_abbrev;
   const seasonLabel = `Season ${seasonContext.league_year}`;
 
   // --- Available subweeks for the current week ---
   const availableSubweeks = useMemo(() => {
-    const subs = new Set(games.filter((g) => g.season_week === selectedWeek).map((g) => g.season_subweek));
+    const subs = new Set(
+      games
+        .filter((g) => g.season_week === selectedWeek)
+        .map((g) => g.season_subweek),
+    );
     // Always show all 4 days so navigation is consistent
     return SUBWEEK_ORDER.filter((s) => subs.has(s));
   }, [games, selectedWeek]);
@@ -397,16 +558,27 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
     }
   };
 
-  const navigatorLabel = viewMode === "daily" ? "Day" : viewMode === "monthly" ? "Month" : viewMode === "season" ? "Season" : "Week";
+  const navigatorLabel =
+    viewMode === "daily"
+      ? "Day"
+      : viewMode === "monthly"
+        ? "Month"
+        : viewMode === "season"
+          ? "Season"
+          : "Week";
 
   // --- Calendar grid data for monthly + season views ---
   const calendarGameMap = useMemo(() => {
-    if (viewMode !== "monthly" && viewMode !== "season") return new Map<string, ScheduleGame>();
+    if (viewMode !== "monthly" && viewMode !== "season")
+      return new Map<string, ScheduleGame>();
     const map = new Map<string, ScheduleGame>();
     for (const g of games) {
       const key = `${g.season_week}-${g.season_subweek}`;
       if (selectedTeamId) {
-        if (g.home_team_id === selectedTeamId || g.away_team_id === selectedTeamId) {
+        if (
+          g.home_team_id === selectedTeamId ||
+          g.away_team_id === selectedTeamId
+        ) {
           map.set(key, g);
         }
       } else {
@@ -430,124 +602,207 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
         {/* Team-colored header */}
         <div
           className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{ backgroundColor: headerColor, borderBottom: `3px solid ${borderColor}` }}
+          style={{
+            backgroundColor: headerColor,
+            borderBottom: `3px solid ${borderColor}`,
+          }}
         >
-          {logo && <img src={logo} className="w-10 h-10 object-contain" alt={organization.org_abbrev} />}
+          {logo && (
+            <img
+              src={logo}
+              className="w-10 h-10 object-contain"
+              alt={organization.org_abbrev}
+            />
+          )}
           <div>
-            <Text variant="h4" classes={headerTextClass}>{pageTitle}</Text>
-            <Text variant="small" classes={`${headerTextClass} opacity-75`}>Schedule · {seasonLabel}</Text>
+            <Text variant="h4" classes={headerTextClass}>
+              {pageTitle}
+            </Text>
+            <Text variant="small" classes={`${headerTextClass} opacity-75`}>
+              Schedule · {seasonLabel}
+            </Text>
           </div>
           <div className="ml-auto min-w-[14rem]">
             <SelectDropdown
-              options={teamOptions} value={selectedTeamOption}
+              options={teamOptions}
+              value={selectedTeamOption}
               onChange={(opt) => {
                 if (!opt) return;
                 const v = (opt as SelectOption).value;
                 setSelectedTeamId(v === "__all__" ? null : Number(v));
               }}
-              isSearchable placeholder="Filter by team..."
-              styles={{ control: (base: any, state: any) => ({ ...base, minWidth: "14rem", backgroundColor: state.isFocused ? "#2d3748" : "#1a202c", borderColor: state.isFocused ? borderColor : "#4A5568" }) }}
+              isSearchable
+              placeholder="Filter by team..."
+              styles={{
+                control: (base: any, state: any) => ({
+                  ...base,
+                  minWidth: "14rem",
+                  backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                  borderColor: state.isFocused ? borderColor : "#4A5568",
+                }),
+              }}
             />
           </div>
         </div>
 
         {/* Controls */}
-        <Border classes="p-4 mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+        <Border
+          classes="p-4 mb-2"
+          styles={{ borderTop: `3px solid ${headerColor}` }}
+        >
           <div className="flex flex-wrap items-center gap-4">
             {/* View mode */}
             <div>
-              <Text variant="small" classes="font-semibold mb-1">View</Text>
+              <Text variant="small" classes="font-semibold mb-1">
+                View
+              </Text>
               <ButtonGroup>
-                <PillButton variant="primaryOutline" isSelected={viewMode === "daily"} onClick={() => setViewMode("daily")}>
+                <PillButton
+                  variant="primaryOutline"
+                  isSelected={viewMode === "daily"}
+                  onClick={() => setViewMode("daily")}
+                >
                   <Text variant="small">Daily</Text>
                 </PillButton>
-                <PillButton variant="primaryOutline" isSelected={viewMode === "weekly"} onClick={() => setViewMode("weekly")}>
+                <PillButton
+                  variant="primaryOutline"
+                  isSelected={viewMode === "weekly"}
+                  onClick={() => setViewMode("weekly")}
+                >
                   <Text variant="small">Weekly</Text>
                 </PillButton>
-                <PillButton variant="primaryOutline" isSelected={viewMode === "monthly"} onClick={() => setViewMode("monthly")}>
+                <PillButton
+                  variant="primaryOutline"
+                  isSelected={viewMode === "monthly"}
+                  onClick={() => setViewMode("monthly")}
+                >
                   <Text variant="small">Monthly</Text>
                 </PillButton>
-                <PillButton variant="primaryOutline" isSelected={viewMode === "season"} onClick={() => setViewMode("season")}>
+                <PillButton
+                  variant="primaryOutline"
+                  isSelected={viewMode === "season"}
+                  onClick={() => setViewMode("season")}
+                >
                   <Text variant="small">Season</Text>
                 </PillButton>
               </ButtonGroup>
             </div>
 
             {/* Navigator (hidden for season — shows everything) */}
-            {viewMode !== "season" && <div className="flex items-center gap-2">
-              <Text variant="small" classes="font-semibold">{navigatorLabel}</Text>
+            {viewMode !== "season" && (
+              <div className="flex items-center gap-2">
+                <Text variant="small" classes="font-semibold">
+                  {navigatorLabel}
+                </Text>
 
-              {/* Daily: sequential day navigation across weeks */}
-              {viewMode === "daily" && (
-                <>
-                  <button
-                    onClick={() => navigateDay(-1)}
-                    disabled={selectedWeek <= 1 && selectedSubweek === "a"}
-                    className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
-                  >←</button>
-                  <span className="text-sm font-semibold min-w-[8rem] text-center">
-                    Week {selectedWeek} · {SUBWEEK_LABELS[selectedSubweek]}
-                  </span>
-                  <button
-                    onClick={() => navigateDay(1)}
-                    disabled={selectedWeek >= TOTAL_WEEKS && selectedSubweek === "d"}
-                    className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
-                  >→</button>
-                </>
-              )}
+                {/* Daily: sequential day navigation across weeks */}
+                {viewMode === "daily" && (
+                  <>
+                    <button
+                      onClick={() => navigateDay(-1)}
+                      disabled={selectedWeek <= 1 && selectedSubweek === "a"}
+                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                    >
+                      ←
+                    </button>
+                    <span className="text-sm font-semibold min-w-[8rem] text-center">
+                      Week {selectedWeek} · {SUBWEEK_LABELS[selectedSubweek]}
+                    </span>
+                    <button
+                      onClick={() => navigateDay(1)}
+                      disabled={
+                        selectedWeek >= TOTAL_WEEKS && selectedSubweek === "d"
+                      }
+                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                    >
+                      →
+                    </button>
+                  </>
+                )}
 
-              {/* Weekly: week-by-week navigation */}
-              {viewMode === "weekly" && (
-                <>
-                  <button
-                    onClick={() => setSelectedWeek((w) => Math.max(1, w - 1))}
-                    disabled={selectedWeek <= 1}
-                    className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
-                  >←</button>
-                  <span className="text-sm font-semibold min-w-[3rem] text-center">{selectedWeek}</span>
-                  <button
-                    onClick={() => setSelectedWeek((w) => Math.min(TOTAL_WEEKS, w + 1))}
-                    disabled={selectedWeek >= TOTAL_WEEKS}
-                    className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
-                  >→</button>
-                </>
-              )}
+                {/* Weekly: week-by-week navigation */}
+                {viewMode === "weekly" && (
+                  <>
+                    <button
+                      onClick={() => setSelectedWeek((w) => Math.max(1, w - 1))}
+                      disabled={selectedWeek <= 1}
+                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                    >
+                      ←
+                    </button>
+                    <span className="text-sm font-semibold min-w-[3rem] text-center">
+                      {selectedWeek}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setSelectedWeek((w) => Math.min(TOTAL_WEEKS, w + 1))
+                      }
+                      disabled={selectedWeek >= TOTAL_WEEKS}
+                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                    >
+                      →
+                    </button>
+                  </>
+                )}
 
-              {/* Monthly: month-by-month navigation */}
-              {viewMode === "monthly" && (
-                <>
-                  <button
-                    onClick={() => setSelectedMonth((m) => Math.max(1, m - 1))}
-                    disabled={selectedMonth <= 1}
-                    className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
-                  >←</button>
-                  <span className="text-sm font-semibold min-w-[5rem] text-center">
-                    Month {selectedMonth}
-                  </span>
-                  <button
-                    onClick={() => setSelectedMonth((m) => Math.min(12, m + 1))}
-                    disabled={selectedMonth >= 12}
-                    className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
-                  >→</button>
-                </>
-              )}
+                {/* Monthly: month-by-month navigation */}
+                {viewMode === "monthly" && (
+                  <>
+                    <button
+                      onClick={() =>
+                        setSelectedMonth((m) => Math.max(1, m - 1))
+                      }
+                      disabled={selectedMonth <= 1}
+                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                    >
+                      ←
+                    </button>
+                    <span className="text-sm font-semibold min-w-[5rem] text-center">
+                      Month {selectedMonth}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setSelectedMonth((m) => Math.min(12, m + 1))
+                      }
+                      disabled={selectedMonth >= 12}
+                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                    >
+                      →
+                    </button>
+                  </>
+                )}
 
-              {/* Current week indicator */}
-              {viewMode === "weekly" && selectedWeek === seasonContext.current_week_index && (
-                <span className="text-xs text-green-600 dark:text-green-400 font-medium">Current</span>
-              )}
-              {viewMode === "monthly" && selectedMonth === getMonthForWeek(seasonContext.current_week_index) && (
-                <span className="text-xs text-green-600 dark:text-green-400 font-medium">Current</span>
-              )}
-            </div>}
+                {/* Current week indicator */}
+                {viewMode === "weekly" &&
+                  selectedWeek === seasonContext.current_week_index && (
+                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                      Current
+                    </span>
+                  )}
+                {viewMode === "monthly" &&
+                  selectedMonth ===
+                    getMonthForWeek(seasonContext.current_week_index) && (
+                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">
+                      Current
+                    </span>
+                  )}
+              </div>
+            )}
 
             {/* Day selector pills (daily view) */}
             {viewMode === "daily" && (
               <div>
-                <Text variant="small" classes="font-semibold mb-1">Jump to</Text>
+                <Text variant="small" classes="font-semibold mb-1">
+                  Jump to
+                </Text>
                 <ButtonGroup>
                   {SUBWEEK_ORDER.map((sw) => (
-                    <PillButton key={sw} variant="primaryOutline" isSelected={selectedSubweek === sw} onClick={() => setSelectedSubweek(sw)}>
+                    <PillButton
+                      key={sw}
+                      variant="primaryOutline"
+                      isSelected={selectedSubweek === sw}
+                      onClick={() => setSelectedSubweek(sw)}
+                    >
                       <Text variant="small">{SUBWEEK_LABELS[sw]}</Text>
                     </PillButton>
                   ))}
@@ -558,25 +813,37 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
         </Border>
 
         {/* Content */}
-        <Border classes="p-4" styles={{ borderTop: `3px solid ${headerColor}` }}>
+        <Border
+          classes="p-4"
+          styles={{ borderTop: `3px solid ${headerColor}` }}
+        >
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Text variant="body" classes="text-gray-500 dark:text-gray-400">Loading schedule...</Text>
+              <Text variant="body" classes="text-gray-500 dark:text-gray-400">
+                Loading schedule...
+              </Text>
             </div>
           ) : (
             <>
               {/* Weekly view */}
-              {viewMode === "weekly" && (
-                weeklySeriesList.length === 0 ? (
-                  <Text variant="body-small" classes="text-gray-400 py-8 text-center">No games found for Week {selectedWeek}.</Text>
+              {viewMode === "weekly" &&
+                (weeklySeriesList.length === 0 ? (
+                  <Text
+                    variant="body-small"
+                    classes="text-gray-400 py-8 text-center"
+                  >
+                    No games found for Week {selectedWeek}.
+                  </Text>
                 ) : weeklySeriesList.length === 1 ? (
                   /* Single series — display prominently centered */
                   <div className="flex justify-center">
                     <SeriesCard
                       series={weeklySeriesList[0]}
-                      teamId={selectedTeamId ?? weeklySeriesList[0].home_team_id}
+                      teamId={
+                        selectedTeamId ?? weeklySeriesList[0].home_team_id
+                      }
                       league={league}
-                      isRetro={currentUser?.isRetro}
+                      IsRetro={currentUser?.IsRetro}
                       accentColor={headerColor}
                       onGameClick={setBoxScoreGameId}
                     />
@@ -590,41 +857,54 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
                         series={series}
                         teamId={selectedTeamId ?? series.home_team_id}
                         league={league}
-                        isRetro={currentUser?.isRetro}
+                        IsRetro={currentUser?.IsRetro}
                         accentColor={headerColor}
                         compact
                         onGameClick={setBoxScoreGameId}
                       />
                     ))}
                   </div>
-                )
-              )}
+                ))}
 
               {/* Daily view */}
-              {viewMode === "daily" && (
-                dailyGames.length === 0 ? (
-                  <Text variant="body-small" classes="text-gray-400 py-8 text-center">
-                    No games on {SUBWEEK_LABELS[selectedSubweek]} of Week {selectedWeek}.
+              {viewMode === "daily" &&
+                (dailyGames.length === 0 ? (
+                  <Text
+                    variant="body-small"
+                    classes="text-gray-400 py-8 text-center"
+                  >
+                    No games on {SUBWEEK_LABELS[selectedSubweek]} of Week{" "}
+                    {selectedWeek}.
                   </Text>
                 ) : (
                   <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     {dailyGames.map((g) => (
-                      <GameRow key={g.id} game={g} teamId={selectedTeamId} league={league} isRetro={currentUser?.isRetro} onGameClick={setBoxScoreGameId} />
+                      <GameRow
+                        key={g.id}
+                        game={g}
+                        teamId={selectedTeamId}
+                        league={league}
+                        IsRetro={currentUser?.IsRetro}
+                        onGameClick={setBoxScoreGameId}
+                      />
                     ))}
                   </div>
-                )
-              )}
+                ))}
 
               {/* Monthly / Season calendar grid */}
               {(viewMode === "monthly" || viewMode === "season") && (
                 <div className="overflow-x-auto space-y-6">
-                  {(viewMode === "season" ? Array.from({ length: 12 }, (_, i) => i + 1) : [selectedMonth]).map((monthNum) => {
+                  {(viewMode === "season"
+                    ? Array.from({ length: 12 }, (_, i) => i + 1)
+                    : [selectedMonth]
+                  ).map((monthNum) => {
                     const [mStart, mEnd] = getWeekRangeForMonth(monthNum);
                     const weeks: number[] = [];
                     for (let w = mStart; w <= mEnd; w++) weeks.push(w);
 
                     // Month record
-                    let monthW = 0, monthL = 0;
+                    let monthW = 0,
+                      monthL = 0;
                     if (selectedTeamId) {
                       for (const wk of weeks) {
                         for (const sw of SUBWEEK_ORDER) {
@@ -646,34 +926,52 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
                             className="flex items-center justify-between px-3 py-2 rounded-t-lg"
                             style={{ backgroundColor: `${headerColor}15` }}
                           >
-                            <Text variant="body" classes="font-bold">Month {monthNum}</Text>
+                            <Text variant="body" classes="font-bold">
+                              Month {monthNum}
+                            </Text>
                             {selectedTeamId && (monthW > 0 || monthL > 0) && (
-                              <span className="text-sm font-semibold" style={{ color: headerColor }}>{monthW}-{monthL}</span>
+                              <span
+                                className="text-sm font-semibold"
+                                style={{ color: headerColor }}
+                              >
+                                {monthW}-{monthL}
+                              </span>
                             )}
                           </div>
                         )}
                         <table className="w-full border-collapse">
                           <thead>
                             <tr className="border-b-2 border-gray-200 dark:border-gray-600">
-                              <th className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-left">Week</th>
+                              <th className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-left">
+                                Week
+                              </th>
                               {SUBWEEK_ORDER.map((sw) => (
-                                <th key={sw} className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center min-w-[5rem]">
+                                <th
+                                  key={sw}
+                                  className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center min-w-[5rem]"
+                                >
                                   {SUBWEEK_LABELS[sw]}
                                 </th>
                               ))}
                               {selectedTeamId && (
-                                <th className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center">Record</th>
+                                <th className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center">
+                                  Record
+                                </th>
                               )}
                             </tr>
                           </thead>
                           <tbody>
                             {weeks.map((weekNum) => {
-                              const isCurrent = weekNum === seasonContext.current_week_index;
+                              const isCurrent =
+                                weekNum === seasonContext.current_week_index;
                               let weekRecord = "";
                               if (selectedTeamId) {
-                                let w = 0, l = 0;
+                                let w = 0,
+                                  l = 0;
                                 for (const sw of SUBWEEK_ORDER) {
-                                  const g = calendarGameMap.get(`${weekNum}-${sw}`);
+                                  const g = calendarGameMap.get(
+                                    `${weekNum}-${sw}`,
+                                  );
                                   if (g) {
                                     const r = getGameResult(g, selectedTeamId);
                                     if (r.won) w++;
@@ -683,13 +981,31 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
                                 if (w > 0 || l > 0) weekRecord = `${w}-${l}`;
                               }
                               return (
-                                <tr key={weekNum} className={isCurrent ? "bg-blue-50/50 dark:bg-blue-900/10" : ""}>
+                                <tr
+                                  key={weekNum}
+                                  className={
+                                    isCurrent
+                                      ? "bg-blue-50/50 dark:bg-blue-900/10"
+                                      : ""
+                                  }
+                                >
                                   <td className="px-3 py-2 text-sm font-medium whitespace-nowrap border border-gray-100 dark:border-gray-700">
                                     Wk {weekNum}
-                                    {isCurrent && <span className="ml-1 text-xs text-green-600 dark:text-green-400">●</span>}
+                                    {isCurrent && (
+                                      <span className="ml-1 text-xs text-green-600 dark:text-green-400">
+                                        ●
+                                      </span>
+                                    )}
                                   </td>
                                   {SUBWEEK_ORDER.map((sw) => (
-                                    <CalendarCell key={sw} game={calendarGameMap.get(`${weekNum}-${sw}`)} teamId={selectedTeamId} onGameClick={setBoxScoreGameId} />
+                                    <CalendarCell
+                                      key={sw}
+                                      game={calendarGameMap.get(
+                                        `${weekNum}-${sw}`,
+                                      )}
+                                      teamId={selectedTeamId}
+                                      onGameClick={setBoxScoreGameId}
+                                    />
                                   ))}
                                   {selectedTeamId && (
                                     <td className="px-3 py-2 text-sm text-center font-medium border border-gray-100 dark:border-gray-700">
@@ -704,11 +1020,16 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
                           {selectedTeamId && (
                             <tfoot>
                               <tr className="border-t-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50">
-                                <td className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase" colSpan={SUBWEEK_ORDER.length + 1}>
+                                <td
+                                  className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase"
+                                  colSpan={SUBWEEK_ORDER.length + 1}
+                                >
                                   Month {monthNum} Total
                                 </td>
                                 <td className="px-3 py-2 text-sm text-center font-bold">
-                                  {monthW > 0 || monthL > 0 ? `${monthW}-${monthL}` : "—"}
+                                  {monthW > 0 || monthL > 0
+                                    ? `${monthW}-${monthL}`
+                                    : "—"}
                                 </td>
                               </tr>
                             </tfoot>
@@ -722,12 +1043,21 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
                   {viewMode === "season" && selectedTeamId && (
                     <div
                       className="flex items-center justify-between px-4 py-3 rounded-lg"
-                      style={{ backgroundColor: `${headerColor}20`, border: `2px solid ${headerColor}` }}
+                      style={{
+                        backgroundColor: `${headerColor}20`,
+                        border: `2px solid ${headerColor}`,
+                      }}
                     >
-                      <Text variant="body" classes="font-bold">Season Total</Text>
-                      <span className="text-base font-bold" style={{ color: headerColor }}>
+                      <Text variant="body" classes="font-bold">
+                        Season Total
+                      </Text>
+                      <span
+                        className="text-base font-bold"
+                        style={{ color: headerColor }}
+                      >
                         {(() => {
-                          let w = 0, l = 0;
+                          let w = 0,
+                            l = 0;
                           for (let wk = 1; wk <= TOTAL_WEEKS; wk++) {
                             for (const sw of SUBWEEK_ORDER) {
                               const g = calendarGameMap.get(`${wk}-${sw}`);
@@ -755,7 +1085,7 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
           isOpen={boxScoreGameId !== null}
           onClose={() => setBoxScoreGameId(null)}
           league={league}
-          isRetro={currentUser?.isRetro}
+          IsRetro={currentUser?.IsRetro}
           onPlayerClick={openPlayerModal}
         />
 
@@ -763,7 +1093,10 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
         {modalPlayerId != null && (
           <BaseballScoutingModal
             isOpen={isModalOpen}
-            onClose={() => { setModalPlayerId(null); handleCloseModal(); }}
+            onClose={() => {
+              setModalPlayerId(null);
+              handleCloseModal();
+            }}
             playerId={modalPlayerId}
             orgId={orgId}
             leagueYearId={leagueYearId}

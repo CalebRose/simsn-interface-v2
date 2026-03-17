@@ -34,7 +34,7 @@ interface ProfileTeamCardProps {
   borderColor: string;
   secondaryBorderColor: string;
   league: League;
-  isRetro?: boolean;
+  IsRetro?: boolean;
   removeUser: () => void;
 }
 
@@ -44,14 +44,14 @@ const ProfileTeamCard: React.FC<ProfileTeamCardProps> = ({
   conference,
   league,
   removeUser,
-  isRetro,
+  IsRetro,
   backgroundColor,
   borderColor,
   secondaryBorderColor,
   role,
   textColorClass,
 }) => {
-  const logoUrl = getLogo(league, teamID, isRetro);
+  const logoUrl = getLogo(league, teamID, IsRetro);
   return (
     <>
       <Border classes="w-full" styles={{ backgroundColor, borderColor }}>
@@ -61,7 +61,12 @@ const ProfileTeamCard: React.FC<ProfileTeamCardProps> = ({
             classes="items-center justify-center self-center mt-1"
           >
             <div className="w-full p-4">
-              <Logo url={logoUrl} variant="normal" classes="" containerClass="p-4 items-center justify-center" />
+              <Logo
+                url={logoUrl}
+                variant="normal"
+                classes=""
+                containerClass="p-4 items-center justify-center"
+              />
             </div>
           </Border>
           <div className="flex flex-col justify-center p-2 mx-auto mr-[1rem] flex-grow">
@@ -96,7 +101,7 @@ export const ProfileCHLTeamCard: React.FC<ProfileCHLTeamCardProps> = () => {
   const teamColors = useTeamColors(
     chlTeam?.ColorOne,
     chlTeam?.ColorTwo,
-    chlTeam?.ColorThree
+    chlTeam?.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -110,8 +115,8 @@ export const ProfileCHLTeamCard: React.FC<ProfileCHLTeamCardProps> = () => {
     cu.CHLTeamID = 0;
     setCurrentUser(cu as CurrentUser);
     const payload = {
-      CHLTeamID: 0
-    }
+      CHLTeamID: 0,
+    };
     await updateUserByUsername(currentUser!.username, payload);
   };
   return (
@@ -127,7 +132,7 @@ export const ProfileCHLTeamCard: React.FC<ProfileCHLTeamCardProps> = () => {
             secondaryBorderColor={secondaryBorderColor}
             league={SimCHL}
             textColorClass={textColorClass}
-            isRetro={currentUser!.isRetro}
+            IsRetro={currentUser!.IsRetro}
             removeUser={() => handleOpenModal()}
           />
           <ProfileTeamCardModal
@@ -195,8 +200,8 @@ export const ProfilePHLTeamCard: React.FC<ProfilePHLTeamCardProps> = () => {
     cu.PHLTeamID = 0;
     setCurrentUser(cu as CurrentUser);
     const payload = {
-      PHLTeamID: 0
-    }
+      PHLTeamID: 0,
+    };
     await updateUserByUsername(currentUser!.username, payload);
     return await removeUserfromPHLTeamCall(dto);
   };
@@ -214,7 +219,7 @@ export const ProfilePHLTeamCard: React.FC<ProfilePHLTeamCardProps> = () => {
             league={SimPHL}
             role={role}
             textColorClass={textColorClass}
-            isRetro={currentUser!.isRetro}
+            IsRetro={currentUser!.IsRetro}
             removeUser={handleOpenModal}
           />
           <ProfileTeamCardModal

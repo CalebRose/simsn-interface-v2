@@ -26,6 +26,7 @@ import {
   Promises,
   Draft,
   PickUp,
+  FranchiseTag,
 } from "../../_constants/constants";
 import {
   getCHLAttributes,
@@ -1605,6 +1606,7 @@ interface NFLRosterTableProps {
   category?: string;
   openModal: (action: ModalAction, player: NFLPlayer) => void;
   openExtensionModal: (player: NFLPlayer) => void;
+  openFranchiseTagModal: (player: NFLPlayer) => void;
   disable: boolean;
 }
 
@@ -1619,6 +1621,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
   category,
   openModal,
   openExtensionModal,
+  openFranchiseTagModal,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -1842,6 +1845,8 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
                 openModal(PracticeSquad, item);
               } else if (selectedOption?.value === "tradeBlock") {
                 openModal(TradeBlock, item);
+              } else if (selectedOption?.value === "franchise") {
+                openFranchiseTagModal(item);
               } else if (selectedOption?.value === "extension") {
                 openExtensionModal(item);
               } else {
