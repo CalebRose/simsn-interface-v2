@@ -1,4 +1,4 @@
-import { ChangeEvent } from "react";
+import { ChangeEvent, useMemo } from "react";
 import {
   SimCBB,
   SimCFB,
@@ -28,6 +28,10 @@ export const ProfilePage = () => {
     isCHLUser,
     isPHLUser,
   } = useAuthStore();
+
+  const isSubscriber = useMemo(() => {
+    return currentUser?.IsSubscribed || false;
+  }, [currentUser]);
   const setDefaultLeague = async (league: string) => {
     const updatedCurrentUser = { ...currentUser } as CurrentUser;
     updatedCurrentUser.DefaultLeague = league;
@@ -139,15 +143,17 @@ export const ProfilePage = () => {
             Actions
           </Text>
           <div className="justify-center flex flex-row gap-x-8">
-            <div className="flex flex-col">
-              <Text variant="body-small" className="text-start">
-                Retro
-              </Text>
-              <ToggleSwitch
-                checked={currentUser?.IsRetro!!}
-                onChange={setRetro}
-              />
-            </div>
+            {(isSubscriber || currentUser?.IsRetro) && (
+              <div className="flex flex-col">
+                <Text variant="body-small" className="text-start">
+                  Retro
+                </Text>
+                <ToggleSwitch
+                  checked={currentUser?.IsRetro!!}
+                  onChange={setRetro}
+                />
+              </div>
+            )}
             <div className="flex flex-col">
               <Text variant="body-small" className="text-start mb-2">
                 Theme

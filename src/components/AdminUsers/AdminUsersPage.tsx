@@ -33,7 +33,7 @@ export const AdminUsersPage: FC = () => {
     <>
       <PageContainer direction="col" isLoading={isLoading} title="Manage Users">
         <Border classes="w-[95vw] px-4 py-4">
-          <div className="grid grid-flow-row grid-cols-4 space-x-2">
+          <div className="grid grid-flow-row grid-cols-2 md:grid-cols-4 space-x-2">
             <div className="flex items-center">
               <Text variant="h6" className="text-start mb-2">
                 User Count: {filteredUsers ? filteredUsers.length : "—"}
@@ -48,7 +48,7 @@ export const AdminUsersPage: FC = () => {
                 onChange={() => setViewActiveUsers((prev) => !prev)}
               />
             </div>
-            <div className="flex flex-row gap-x-4 items-center">
+            <div className="col-span-2 flex flex-row gap-x-4 items-center">
               <Text variant="h6" className="text-start mb-2">
                 Search
               </Text>
@@ -60,7 +60,7 @@ export const AdminUsersPage: FC = () => {
             </div>
           </div>
         </Border>
-        <div className="max-h-[75vh] overflow-auto">
+        <div className="max-h-[75vh] overflow-auto max-w-[95vw]">
           {filteredUsers && filteredUsers.length > 0 && (
             <AdminUsersTable
               users={filteredUsers}
