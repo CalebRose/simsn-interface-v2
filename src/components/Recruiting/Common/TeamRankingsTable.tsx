@@ -64,7 +64,7 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
   const CFBRowRenderer = (
     item: FootballTeamProfile,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const cfbTeam = teamMap[item.ID];
     if (!cfbTeam) {
@@ -134,8 +134,12 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
   const CHLRowRenderer = (
     item: HockeyTeamProfile,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
+    if (!teamMap) {
+      return <></>;
+    }
+
     const chlTeam = teamMap[item.ID];
     if (!chlTeam) {
       return <></>; // or some fallback UI
@@ -204,7 +208,7 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
   const CBBRowRenderer = (
     item: TeamRecruitingProfile,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const cbbTeam = teamMap[item.ID] as CBBTeam;
     if (!cbbTeam) {
@@ -270,7 +274,7 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
   };
 
   const rowRenderer = (
-    league: League
+    league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimCHL) {
       return CHLRowRenderer;

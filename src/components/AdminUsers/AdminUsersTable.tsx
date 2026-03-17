@@ -85,64 +85,52 @@ export const AdminUsersTable: FC<AdminUsersTableProps> = ({
               <Text variant="small">{item.DefaultLeague ?? "—"}</Text>
             </TableCell>
             <TableCell classes="text-center">
-              <Text variant="small">
-                {item.teamId !== undefined && item.teamId > 0 ? (
-                  <Logo url={cfbLogo} variant="xs" />
-                ) : (
-                  "—"
-                )}
-              </Text>
+              {item.teamId !== undefined && item.teamId > 0 ? (
+                <Logo url={cfbLogo} variant="xs" />
+              ) : (
+                "—"
+              )}
             </TableCell>
             <TableCell classes="text-center">
-              <Text variant="small">
-                {item.NFLTeamID !== undefined && item.NFLTeamID > 0 ? (
-                  <Logo url={nflLogo} variant="xs" />
-                ) : (
-                  "—"
-                )}
-              </Text>
+              {item.NFLTeamID !== undefined && item.NFLTeamID > 0 ? (
+                <Logo url={nflLogo} variant="xs" />
+              ) : (
+                "—"
+              )}
             </TableCell>
             <TableCell classes="text-center">
               <Text variant="small">{item.NFLRole ?? "—"}</Text>
             </TableCell>
             <TableCell classes="text-center">
-              <Text variant="small">
-                {item.cbb_id !== undefined && item.cbb_id > 0 ? (
-                  <Logo url={cbbLogo} variant="xs" />
-                ) : (
-                  "—"
-                )}
-              </Text>
+              {item.cbb_id !== undefined && item.cbb_id > 0 ? (
+                <Logo url={cbbLogo} variant="xs" />
+              ) : (
+                "—"
+              )}
             </TableCell>
             <TableCell classes="text-center">
-              <Text variant="small">
-                {item.NBATeamID !== undefined && item.NBATeamID > 0 ? (
-                  <Logo url={nbaLogo} variant="xs" />
-                ) : (
-                  "—"
-                )}
-              </Text>
+              {item.NBATeamID !== undefined && item.NBATeamID > 0 ? (
+                <Logo url={nbaLogo} variant="xs" />
+              ) : (
+                "—"
+              )}
             </TableCell>
             <TableCell classes="text-center">
               <Text variant="small">{item.NBARole ?? "—"}</Text>
             </TableCell>
             <TableCell classes="text-center">
-              <Text variant="small">
-                {item.CHLTeamID !== undefined && item.CHLTeamID > 0 ? (
-                  <Logo url={chlLogo} variant="xs" />
-                ) : (
-                  "—"
-                )}
-              </Text>
+              {item.CHLTeamID !== undefined && item.CHLTeamID > 0 ? (
+                <Logo url={chlLogo} variant="xs" />
+              ) : (
+                "—"
+              )}
             </TableCell>
             <TableCell classes="text-center">
-              <Text variant="small">
-                {item.PHLTeamID !== undefined && item.PHLTeamID > 0 ? (
-                  <Logo url={phlLogo} variant="xs" />
-                ) : (
-                  "—"
-                )}
-              </Text>
+              {item.PHLTeamID !== undefined && item.PHLTeamID > 0 ? (
+                <Logo url={phlLogo} variant="xs" />
+              ) : (
+                "—"
+              )}
             </TableCell>
             <TableCell classes="text-center">
               <Text variant="small">{item.PHLRole ?? "—"}</Text>

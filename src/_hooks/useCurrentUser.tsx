@@ -24,6 +24,7 @@ export interface CurrentUser {
   email: string;
   DefaultLeague: string | null;
   IsBanned?: boolean;
+  Reports?: number;
 }
 type UseCurrentUserReturn = [
   CurrentUser | null,
