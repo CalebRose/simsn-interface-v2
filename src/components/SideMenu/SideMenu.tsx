@@ -36,7 +36,12 @@ export const SideMenu = ({}) => {
     isNFLUser,
     isPHLUser,
   } = useAuthStore();
-  const { isCollegeBaseballUser, isMlbUser, collegeOrganization, mlbOrganization } = useSimBaseballStore();
+  const {
+    isCollegeBaseballUser,
+    isMlbUser,
+    collegeOrganization,
+    mlbOrganization,
+  } = useSimBaseballStore();
   const { isOpen, isDropdownOpen, toggleMenu, toggleDropdown, dropdowns } =
     useSideMenu();
   const { isDesktop } = useResponsive();
@@ -45,104 +50,140 @@ export const SideMenu = ({}) => {
   const textColor = getTextColorBasedOnBg(baseColor);
   const navigate = useNavigate();
   // ✅ Generate logos based on current user
-  const { cfbLogo, nflLogo, cbbLogo, nbaLogo, chlLogo, phlLogo, collegeBaseballLogo, mlbLogo, logo } =
-    useMemo(() => {
-      let cfbLogo = "";
-      let nflLogo = "";
-      let cbbLogo = "";
-      let nbaLogo = "";
-      let chlLogo = "";
-      let phlLogo = "";
-      let collegeBaseballLogo = "";
-      let mlbLogo = "";
-      let logo = "";
+  const {
+    cfbLogo,
+    nflLogo,
+    cbbLogo,
+    nbaLogo,
+    chlLogo,
+    phlLogo,
+    collegeBaseballLogo,
+    mlbLogo,
+    logo,
+  } = useMemo(() => {
+    let cfbLogo = "";
+    let nflLogo = "";
+    let cbbLogo = "";
+    let nbaLogo = "";
+    let chlLogo = "";
+    let phlLogo = "";
+    let collegeBaseballLogo = "";
+    let mlbLogo = "";
+    let logo = "";
 
-      if (currentUser) {
-        const {
-          teamId,
-          NFLTeamID,
-          cbb_id,
-          NBATeamID,
-          CHLTeamID,
-          PHLTeamID,
-          isRetro,
-          DefaultLeague,
-        } = currentUser;
+    if (currentUser) {
+      const {
+        teamId,
+        NFLTeamID,
+        cbb_id,
+        NBATeamID,
+        CHLTeamID,
+        PHLTeamID,
+        IsRetro,
+        DefaultLeague,
+      } = currentUser;
 
-        if (teamId) {
-          cfbLogo = getLogo(SimCFB, teamId, isRetro);
+      if (teamId) {
+        cfbLogo = getLogo(SimCFB, teamId, IsRetro);
+      }
+      if (NFLTeamID) {
+        nflLogo = getLogo(SimNFL, NFLTeamID, IsRetro);
+      }
+      if (cbb_id) {
+        cbbLogo = getLogo(SimCBB, cbb_id, IsRetro);
+      }
+      if (NBATeamID) {
+        nbaLogo = getLogo(SimNBA, NBATeamID, IsRetro);
+      }
+      if (CHLTeamID) {
+        chlLogo = getLogo(SimCHL, CHLTeamID, IsRetro);
+      }
+      if (PHLTeamID) {
+        phlLogo = getLogo(SimPHL, PHLTeamID, IsRetro);
+      }
+      if (collegeOrganization && collegeOrganization.teams) {
+        const teamEntries = Object.values(collegeOrganization.teams);
+        if (teamEntries.length > 0) {
+          collegeBaseballLogo = getLogo(
+            SimCollegeBaseball,
+            teamEntries[0].team_id,
+            IsRetro,
+          );
         }
-        if (NFLTeamID) {
-          nflLogo = getLogo(SimNFL, NFLTeamID, isRetro);
-        }
-        if (cbb_id) {
-          cbbLogo = getLogo(SimCBB, cbb_id, isRetro);
-        }
-        if (NBATeamID) {
-          nbaLogo = getLogo(SimNBA, NBATeamID, isRetro);
-        }
-        if (CHLTeamID) {
-          chlLogo = getLogo(SimCHL, CHLTeamID, isRetro);
-        }
-        if (PHLTeamID) {
-          phlLogo = getLogo(SimPHL, PHLTeamID, isRetro);
-        }
-        if (collegeOrganization && collegeOrganization.teams) {
-          const teamEntries = Object.values(collegeOrganization.teams);
-          if (teamEntries.length > 0) {
-            collegeBaseballLogo = getLogo(SimCollegeBaseball, teamEntries[0].team_id, isRetro);
-          }
-        }
-        if (mlbOrganization && mlbOrganization.teams) {
-          const mlbTeam = mlbOrganization.teams["mlb"];
-          if (mlbTeam) {
-            mlbLogo = getLogo(SimMLB, mlbTeam.team_id, isRetro);
-          }
-        }
-
-        switch (DefaultLeague) {
-          case SimCFB:
-            logo = cfbLogo;
-            break;
-          case SimNFL:
-            logo = nflLogo;
-            break;
-          case SimCBB:
-            logo = cbbLogo;
-            break;
-          case SimNBA:
-            logo = nbaLogo;
-            break;
-          case SimCHL:
-            logo = chlLogo;
-            break;
-          case SimPHL:
-            logo = phlLogo;
-            break;
-          case SimCollegeBaseball:
-            logo = collegeBaseballLogo;
-            break;
-          case SimMLB:
-            logo = mlbLogo;
-            break;
-          default:
-            // Fallback priority if DefaultLeague is not defined
-            logo =
-              cfbLogo ||
-              nflLogo ||
-              cbbLogo ||
-              nbaLogo ||
-              chlLogo ||
-              phlLogo ||
-              mlbLogo ||
-              collegeBaseballLogo ||
-              "";
-            break;
+      }
+      if (mlbOrganization && mlbOrganization.teams) {
+        const mlbTeam = mlbOrganization.teams["mlb"];
+        if (mlbTeam) {
+          mlbLogo = getLogo(SimMLB, mlbTeam.team_id, IsRetro);
         }
       }
 
-      return { cfbLogo, nflLogo, cbbLogo, nbaLogo, chlLogo, phlLogo, collegeBaseballLogo, mlbLogo, logo };
-    }, [currentUser, collegeOrganization, mlbOrganization]);
+      switch (DefaultLeague) {
+        case SimCFB:
+          logo = cfbLogo;
+          break;
+        case SimNFL:
+          logo = nflLogo;
+          break;
+        case SimCBB:
+          logo = cbbLogo;
+          break;
+        case SimNBA:
+          logo = nbaLogo;
+          break;
+        case SimCHL:
+          logo = chlLogo;
+          break;
+        case SimPHL:
+          logo = phlLogo;
+          break;
+        case SimCollegeBaseball:
+          logo = collegeBaseballLogo;
+          break;
+        case SimMLB:
+          logo = mlbLogo;
+          break;
+        default:
+          // Fallback priority if DefaultLeague is not defined
+          logo =
+            cfbLogo ||
+            nflLogo ||
+            cbbLogo ||
+            nbaLogo ||
+            chlLogo ||
+            phlLogo ||
+            mlbLogo ||
+            collegeBaseballLogo ||
+            "";
+          break;
+      }
+    }
+
+    return {
+      cfbLogo,
+      nflLogo,
+      cbbLogo,
+      nbaLogo,
+      chlLogo,
+      phlLogo,
+      collegeBaseballLogo,
+      mlbLogo,
+      logo,
+    };
+  }, [currentUser, collegeOrganization, mlbOrganization]);
+
+  const isBanned = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.IsBanned;
+  }, [currentUser]);
+
+  const isCommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return (
+      currentUser.roleID === "Admin" ||
+      currentUser.roleID?.includes("Commissioner")
+    );
+  }, [currentUser]);
 
   // ✅ Handle Logout
   const logout = async () => {
@@ -179,6 +220,7 @@ export const SideMenu = ({}) => {
           <div className="flex items-center">
             <button
               onClick={toggleMenu}
+              disabled={isBanned}
               className="inline-flex items-center p-2 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
             >
               <span className="sr-only">Open sidebar</span>
@@ -234,11 +276,18 @@ export const SideMenu = ({}) => {
                         isRoute={true}
                         route={routes.USER}
                       />
-                      {currentUser.roleID === "Admin" && (
+                      {isCommissioner && !isBanned && (
                         <NavDropdownItem
                           label="Admin"
                           isRoute={true}
                           route="/admin"
+                        />
+                      )}
+                      {currentUser.roleID === "Admin" && !isBanned && (
+                        <NavDropdownItem
+                          label="Users"
+                          isRoute={true}
+                          route="/users"
                         />
                       )}
                       <NavDropdownItem label="Sign Out" click={logout} />

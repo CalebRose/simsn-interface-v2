@@ -180,8 +180,8 @@ export const TeamSchedule = ({
                       game.userWin
                         ? "text-green-500"
                         : game.userLoss
-                        ? "text-red-500"
-                        : textColorClass
+                          ? "text-red-500"
+                          : textColorClass
                     } ${
                       game.gameScore === "TBC"
                         ? "opacity-50 cursor-not-allowed"
@@ -355,7 +355,7 @@ export const WeeklySchedule = ({
                     variant="xs"
                     classes="w-4 h-4"
                     containerClass="flex-shrink-0 p-2"
-                    url={getLogo(league, game.HomeTeamID, currentUser?.isRetro)}
+                    url={getLogo(league, game.HomeTeamID, currentUser?.IsRetro)}
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
@@ -372,7 +372,7 @@ export const WeeklySchedule = ({
                     variant="xs"
                     classes="w-4 h-4"
                     containerClass="flex-shrink-0 p-2"
-                    url={getLogo(league, game.AwayTeamID, currentUser?.isRetro)}
+                    url={getLogo(league, game.AwayTeamID, currentUser?.IsRetro)}
                   />
                   <ClickableTeamLabel
                     textVariant="xs"
@@ -541,7 +541,7 @@ export const TeamStandings = ({
                   variant="xs"
                   classes="w-4 h-4 p-0"
                   containerClass="flex-shrink-0 p-2"
-                  url={getLogo(league, standing.TeamID, currentUser?.isRetro)}
+                  url={getLogo(league, standing.TeamID, currentUser?.IsRetro)}
                 />
                 <ClickableTeamLabel
                   textVariant="xs"
@@ -669,7 +669,7 @@ export const LeagueStandings = ({
             (team: any, index: number) => ({
               ...team,
               Rank: index + 1,
-            })
+            }),
           );
 
           return (
@@ -764,7 +764,7 @@ export const LeagueStandings = ({
                           url={getLogo(
                             league,
                             standing.TeamID,
-                            currentUser?.isRetro
+                            currentUser?.IsRetro,
                           )}
                         />
                         <ClickableTeamLabel

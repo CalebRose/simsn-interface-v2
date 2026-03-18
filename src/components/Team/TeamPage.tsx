@@ -73,6 +73,7 @@ import {
 import { PromiseModal } from "../Common/PromiseModal";
 import { ExtensionOfferModal } from "../Common/ExtensionOfferModal";
 import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
+import { FranchiseTagModal } from "../Common/FranchiseTagModal";
 
 interface TeamPageProps {
   league: League;
@@ -295,7 +296,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
       <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
         <TeamInfo
           id={selectedTeam?.ID}
-          isRetro={currentUser?.isRetro}
+          IsRetro={currentUser?.IsRetro}
           League={league}
           Team={selectedTeam}
           ts={ts}
@@ -716,7 +717,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
       <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
         <TeamInfo
           id={selectedTeam?.ID}
-          isRetro={currentUser?.isRetro}
+          IsRetro={currentUser?.IsRetro}
           Roster={selectedRoster}
           Team={selectedTeam}
           isUserTeam={selectedTeam!.ID === phlTeam!.ID}
@@ -1039,7 +1040,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
       <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
         <TeamInfo
           id={selectedTeam?.ID}
-          isRetro={currentUser?.isRetro}
+          IsRetro={currentUser?.IsRetro}
           League={league}
           ts={ts}
           Roster={selectedRoster}
@@ -1172,6 +1173,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   const manageTradesModal = useModal();
   const proposeTradeModal = useModal();
   const extensionModal = useModal();
+  const franchiseTagModal = useModal();
   let { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
@@ -1245,6 +1247,11 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return null;
   }, [nflCapsheetMap, selectedTeam]);
+
+  const openFranchiseTagModal = (player: NFLPlayer) => {
+    franchiseTagModal.handleOpenModal();
+    setModalPlayer(player);
+  };
 
   const playerContract = useMemo(() => {
     if (modalPlayer && nflContractMap) {
@@ -1408,6 +1415,13 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
           cancelOffer={CancelExtensionOffer}
         />
       )}
+      {modalPlayer && (
+        <FranchiseTagModal
+          isOpen={franchiseTagModal.isModalOpen}
+          onClose={franchiseTagModal.handleCloseModal}
+          player={modalPlayer!!}
+        />
+      )}
       <ManageTradeModal
         isOpen={manageTradesModal.isModalOpen}
         onClose={manageTradesModal.handleCloseModal}
@@ -1457,7 +1471,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       <div className="flex flex-row">
         <TeamInfo
           id={selectedTeam?.ID}
-          isRetro={currentUser?.isRetro}
+          IsRetro={currentUser?.IsRetro}
           Roster={selectedRoster}
           Team={selectedTeam}
           League={league}
@@ -1549,6 +1563,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             borderColor={borderColor}
             openModal={openModal}
             openExtensionModal={openExtensionModal}
+            openFranchiseTagModal={openFranchiseTagModal}
             disable={selectedTeam!.ID !== nflTeam!.ID}
           />
         </Border>
@@ -1693,7 +1708,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
       <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
         <TeamInfo
           id={selectedTeam?.ID}
-          isRetro={currentUser?.isRetro}
+          IsRetro={currentUser?.IsRetro}
           League={league}
           ts={ts}
           Roster={selectedRoster}
@@ -1897,7 +1912,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
       <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
         <TeamInfo
           id={selectedTeam?.ID}
-          isRetro={currentUser?.isRetro}
+          IsRetro={currentUser?.IsRetro}
           League={league}
           ts={ts}
           Roster={selectedRoster}

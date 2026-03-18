@@ -82,7 +82,12 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
   } = useNFLDraft();
 
   const isAdmin = useMemo(() => {
-    return currentUser?.roleID === "Admin";
+    if (!currentUser) return false;
+    if (!currentUser.roleID) return false;
+    return (
+      currentUser?.roleID === "Admin" ||
+      currentUser?.roleID?.includes("NFL Commissioner")
+    );
   }, [currentUser]);
 
   const rawTeamColors = useTeamColors(
@@ -204,6 +209,11 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
           defensiveSystem={defensiveSystem}
           teamNeedsList={teamNeedsList}
           league={SimNFL}
+          currentPick={currentPick}
+          currentRound={draftState.currentRound}
+          pickNumber={draftState.currentPick}
+          timeLeft={seconds}
+          isPaused={draftState.isPaused}
         />
         <div className="flex flex-col gap-2">
           {activeTab !== BigBoard && (

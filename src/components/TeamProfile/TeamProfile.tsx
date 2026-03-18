@@ -129,7 +129,7 @@ const CFBTeamProfilePage = ({ league }: TeamProfilePageProps) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
@@ -149,7 +149,7 @@ const CFBTeamProfilePage = ({ league }: TeamProfilePageProps) => {
   };
 
   if (selectedTeam) {
-    selectedTeamLogo = getLogo(league, selectedTeam?.ID, currentUser?.isRetro);
+    selectedTeamLogo = getLogo(league, selectedTeam?.ID, currentUser?.IsRetro);
   }
 
   const teamHistoryProfile = useMemo(() => {
@@ -168,16 +168,16 @@ const CFBTeamProfilePage = ({ league }: TeamProfilePageProps) => {
     const processedRivalries = processRivalries(
       teamProfile,
       selectedTeam,
-      cfbTeamMap
+      cfbTeamMap,
     );
     const processedTrophies = processTeamTrophies(
       teamProfile.CollegeGames || [],
-      selectedTeam.ID
+      selectedTeam.ID,
     );
     const processedBowlGames = processBowlGames(
       teamProfile.CollegeGames || [],
       selectedTeam.ID,
-      cfbTeamMap
+      cfbTeamMap,
     );
 
     return {

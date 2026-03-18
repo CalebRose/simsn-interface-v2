@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import {
   AddPortalPlayerType,
   AddRecruitType,
@@ -6,6 +6,7 @@ import {
   CancelOffer,
   Cut,
   DrafteeInfoType,
+  FranchiseTag,
   InfoType,
   League,
   ModalAction,
@@ -59,6 +60,7 @@ interface ActionModalProps {
   toggleScholarship?: (dto: any) => Promise<void>;
   scoutAttribute?: (dto: any) => Promise<void>;
   cancelFAOffer?: (dto: any) => Promise<void>;
+  tagPlayer?: (PlayerID: string, tagType: string) => Promise<void>;
 }
 
 export const ActionModal: FC<ActionModalProps> = ({
@@ -85,6 +87,7 @@ export const ActionModal: FC<ActionModalProps> = ({
   affiliatePlayer,
   tradeBlockPlayer,
   sendToPracticeSquad,
+  tagPlayer,
   attribute = "",
 }) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -275,55 +278,46 @@ export const ActionModal: FC<ActionModalProps> = ({
     }
     onClose();
   };
-  let title = "";
-  switch (modalAction) {
-    case Affiliate:
-      title = `Send ${playerLabel} to Affiliate Team?`;
-      break;
-    case Cut:
-      title = `Cut ${playerLabel}?`;
-      break;
-    case Redshirt:
-      title = `Redshirt ${playerLabel}?`;
-      break;
-    case Promise:
-      title = `Promise ${playerLabel}?`;
-      break;
-    case TradeBlock:
-      title = `Change Trade Status for ${playerLabel}?`;
-      break;
-    case PracticeSquad:
-      title = `Change Practice Squad Status for ${playerLabel}?`;
-      break;
-    case InfoType:
-    case RecruitInfoType:
-    case PortalInfoType:
-    case DrafteeInfoType:
-      title = `${playerID} ${playerLabel}`;
-      break;
-    case AddRecruitType:
-      title = `Add Recruit ${playerLabel} to Board?`;
-      break;
-    case AddPortalPlayerType:
-      title = `Add Portal Player ${playerLabel} to Board?`;
-      break;
-    case ToggleScholarshipType:
-      title =
-        attribute === ScholarshipOffered
+  const title = useMemo(() => {
+    switch (modalAction) {
+      case Affiliate:
+        return `Send ${playerLabel} to Affiliate Team?`;
+      case Cut:
+        return `Cut ${playerLabel}?`;
+      case Redshirt:
+        return `Redshirt ${playerLabel}?`;
+      case Promise:
+        return `Promise ${playerLabel}?`;
+      case TradeBlock:
+        return `Change Trade Status for ${playerLabel}?`;
+      case PracticeSquad:
+        return `Change Practice Squad Status for ${playerLabel}?`;
+      case InfoType:
+      case RecruitInfoType:
+      case PortalInfoType:
+      case DrafteeInfoType:
+        return `${playerID} ${playerLabel}`;
+      case AddRecruitType:
+        return `Add Recruit ${playerLabel} to Board?`;
+      case AddPortalPlayerType:
+        return `Add Portal Player ${playerLabel} to Board?`;
+      case ToggleScholarshipType:
+        return attribute === ScholarshipOffered
           ? `Offer Scholarship on Recruit?`
           : `Revoke Scholarship on Recruit?`;
-      break;
-    case RemoveRecruitType:
-    case RemovePortalPlayerType:
-      title = `Remove ${playerLabel} from Board?`;
-      break;
-    case ScoutAttributeType:
-      title = `Scout ${attribute} Attribute?`;
-      break;
-    case CancelOffer:
-      title = `Cancel FA Offer for ${playerLabel}?`;
-      break;
-  }
+      case RemoveRecruitType:
+      case RemovePortalPlayerType:
+        return `Remove ${playerLabel} from Board?`;
+      case ScoutAttributeType:
+        return `Scout ${attribute} Attribute?`;
+      case CancelOffer:
+        return `Cancel FA Offer for ${playerLabel}?`;
+      case FranchiseTag:
+        return `Franchise Tag ${playerLabel}?`;
+      default:
+        return "";
+    }
+  }, [modalAction, playerLabel, playerID, attribute]);
   return (
     <>
       <Modal
@@ -575,6 +569,15 @@ export const ActionModal: FC<ActionModalProps> = ({
             )}
           </>
         )}
+        {modalAction === FranchiseTag && (
+          <>
+            <Text className="mb4 text-start">
+              Are you sure you want to franchise tag{" "}
+              <strong>{playerLabel}</strong>?
+            </Text>
+          </>
+        )}
+
         {modalAction === InfoType && (
           <PlayerInfoModalBody
             league={league}

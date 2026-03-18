@@ -272,7 +272,7 @@ export const Table = <T,>({
   return (
     <div className="overflow-x-auto w-full">
       <div
-        className={`sm:table table-auto w-full border-b-2`}
+        className={`table table-auto w-full border-b-2`}
         style={{ backgroundColor, borderColor }}
       >
         {/* Header */}
@@ -329,7 +329,7 @@ export const TableCell: FC<TableCellProps> = ({ children, classes }) => {
   const extraClasses = classes ? classes : "";
   return (
     <div
-      className={`table-cell align-middle ${extraClasses} flex-wrap sm:flex-nowrap sm:px-[0.3vw] pb-1 sm:py-[0.25vw] whitespace-nowrap`}
+      className={`table-cell align-middle ${extraClasses} flex-nowrap px-[0.3vw] pb-1 py-[0.25vw] whitespace-nowrap`}
     >
       {children}
     </div>

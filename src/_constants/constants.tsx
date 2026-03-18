@@ -71,12 +71,14 @@ export const Help2 = "Help2";
 export const Help3 = "Help3";
 export const Help4 = "Help4";
 export const TradeBlock = "TradeBlock";
+export const FranchiseTag = "FranchiseTag";
 export type ModalAction =
   | typeof Cut
   | typeof Promise
   | typeof Redshirt
   | typeof InfoType
   | typeof PickUp
+  | typeof FranchiseTag
   | typeof RecruitInfoType
   | typeof PortalInfoType
   | typeof DrafteeInfoType

@@ -1,17 +1,33 @@
 import { useState } from "react";
-import { BattingLeaderRow, BattingSortField } from "../../../models/baseball/baseballStatsModels";
+import {
+  BattingLeaderRow,
+  BattingSortField,
+} from "../../../models/baseball/baseballStatsModels";
 import { getLogo } from "../../../_utility/getLogo";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getStatsHeaderStyle } from "./statsHeaderStyle";
 import { useAuthStore } from "../../../context/AuthContext";
 import "../../Team/baseball/baseballMobile.css";
 
-const POS_SORT_ORDER = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "SP", "RP", "P"];
+const POS_SORT_ORDER = [
+  "C",
+  "1B",
+  "2B",
+  "3B",
+  "SS",
+  "LF",
+  "CF",
+  "RF",
+  "DH",
+  "SP",
+  "RP",
+  "P",
+];
 
 interface Props {
   leaders: BattingLeaderRow[];
   league: string;
-  isRetro?: boolean;
+  IsRetro?: boolean;
   accentColor?: string;
   onPlayerClick?: (playerId: number) => void;
   sortField?: string;
@@ -55,32 +71,97 @@ const COLUMNS: Column[] = [
   { label: "OBP", key: "obp", sortKey: "obp" },
   { label: "SLG", key: "slg", sortKey: "slg" },
   { label: "OPS", key: "ops", sortKey: "ops", bold: true },
-  { label: "ISO", key: "iso", sortKey: "iso", advanced: true, tooltip: "Isolated Power (SLG - AVG)" },
-  { label: "BABIP", key: "babip", sortKey: "babip", advanced: true, tooltip: "Batting Average on Balls in Play" },
-  { label: "BB%", key: "bb_pct", sortKey: "bb_pct", advanced: true, tooltip: "Walk Rate" },
-  { label: "K%", key: "k_pct", sortKey: "k_pct", advanced: true, tooltip: "Strikeout Rate" },
-  { label: "BB/K", key: "bb_k", sortKey: "bb_k", advanced: true, tooltip: "Walk-to-Strikeout Ratio" },
-  { label: "XBH%", key: "xbh_pct", sortKey: "xbh_pct", advanced: true, tooltip: "Extra-Base Hit Rate" },
-  { label: "SB%", key: "sb_pct", sortKey: "sb_pct", advanced: true, tooltip: "Stolen Base Success Rate" },
+  {
+    label: "ISO",
+    key: "iso",
+    sortKey: "iso",
+    advanced: true,
+    tooltip: "Isolated Power (SLG - AVG)",
+  },
+  {
+    label: "BABIP",
+    key: "babip",
+    sortKey: "babip",
+    advanced: true,
+    tooltip: "Batting Average on Balls in Play",
+  },
+  {
+    label: "BB%",
+    key: "bb_pct",
+    sortKey: "bb_pct",
+    advanced: true,
+    tooltip: "Walk Rate",
+  },
+  {
+    label: "K%",
+    key: "k_pct",
+    sortKey: "k_pct",
+    advanced: true,
+    tooltip: "Strikeout Rate",
+  },
+  {
+    label: "BB/K",
+    key: "bb_k",
+    sortKey: "bb_k",
+    advanced: true,
+    tooltip: "Walk-to-Strikeout Ratio",
+  },
+  {
+    label: "XBH%",
+    key: "xbh_pct",
+    sortKey: "xbh_pct",
+    advanced: true,
+    tooltip: "Extra-Base Hit Rate",
+  },
+  {
+    label: "SB%",
+    key: "sb_pct",
+    sortKey: "sb_pct",
+    advanced: true,
+    tooltip: "Stolen Base Success Rate",
+  },
 ];
 
-const SortIndicator = ({ field, sortField, sortOrder }: { field?: string; sortField?: string; sortOrder?: string }) => {
+const SortIndicator = ({
+  field,
+  sortField,
+  sortOrder,
+}: {
+  field?: string;
+  sortField?: string;
+  sortOrder?: string;
+}) => {
   if (!field || field !== sortField) return null;
-  return <span className="ml-0.5 text-[10px]">{sortOrder === "asc" ? "▲" : "▼"}</span>;
+  return (
+    <span className="ml-0.5 text-[10px]">
+      {sortOrder === "asc" ? "▲" : "▼"}
+    </span>
+  );
 };
 
-export const BaseballBattingTable = ({ leaders, league, isRetro, accentColor, onPlayerClick, sortField, sortOrder, onSort }: Props) => {
+export const BaseballBattingTable = ({
+  leaders,
+  league,
+  IsRetro,
+  accentColor,
+  onPlayerClick,
+  sortField,
+  sortOrder,
+  onSort,
+}: Props) => {
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
   const { isDarkMode } = useAuthStore();
   const headerStyle = getStatsHeaderStyle(accentColor, isDarkMode);
   const [posSortDir, setPosSortDir] = useState<"asc" | "desc" | null>(null);
 
-  const displayLeaders = posSortDir ? [...leaders].sort((a, b) => {
-    const ai = POS_SORT_ORDER.indexOf((a.position ?? "").toUpperCase());
-    const bi = POS_SORT_ORDER.indexOf((b.position ?? "").toUpperCase());
-    const diff = (ai >= 0 ? ai : 99) - (bi >= 0 ? bi : 99);
-    return posSortDir === "asc" ? diff : -diff;
-  }) : leaders;
+  const displayLeaders = posSortDir
+    ? [...leaders].sort((a, b) => {
+        const ai = POS_SORT_ORDER.indexOf((a.position ?? "").toUpperCase());
+        const bi = POS_SORT_ORDER.indexOf((b.position ?? "").toUpperCase());
+        const diff = (ai >= 0 ? ai : 99) - (bi >= 0 ? bi : 99);
+        return posSortDir === "asc" ? diff : -diff;
+      })
+    : leaders;
 
   const getValue = (row: BattingLeaderRow, col: Column): string | number => {
     if (col.format) return col.format(row);
@@ -97,10 +178,14 @@ export const BaseballBattingTable = ({ leaders, league, isRetro, accentColor, on
           >
             {COLUMNS.map((col) => {
               const isSortable = (!!col.sortKey && !!onSort) || col.localSort;
-              const isActive = col.sortKey === sortField || (col.localSort && posSortDir != null);
+              const isActive =
+                col.sortKey === sortField ||
+                (col.localSort && posSortDir != null);
               const handleClick = () => {
                 if (col.localSort) {
-                  setPosSortDir((prev) => prev === "asc" ? "desc" : prev === "desc" ? null : "asc");
+                  setPosSortDir((prev) =>
+                    prev === "asc" ? "desc" : prev === "desc" ? null : "asc",
+                  );
                 } else if (col.sortKey && onSort) {
                   setPosSortDir(null);
                   onSort(col.sortKey);
@@ -114,7 +199,17 @@ export const BaseballBattingTable = ({ leaders, league, isRetro, accentColor, on
                   onClick={isSortable ? handleClick : undefined}
                 >
                   {col.label}
-                  {col.localSort && posSortDir ? <span className="ml-0.5 text-[10px]">{posSortDir === "asc" ? "▲" : "▼"}</span> : <SortIndicator field={col.sortKey} sortField={sortField} sortOrder={sortOrder} />}
+                  {col.localSort && posSortDir ? (
+                    <span className="ml-0.5 text-[10px]">
+                      {posSortDir === "asc" ? "▲" : "▼"}
+                    </span>
+                  ) : (
+                    <SortIndicator
+                      field={col.sortKey}
+                      sortField={sortField}
+                      sortOrder={sortOrder}
+                    />
+                  )}
                 </th>
               );
             })}
@@ -122,7 +217,7 @@ export const BaseballBattingTable = ({ leaders, league, isRetro, accentColor, on
         </thead>
         <tbody>
           {displayLeaders.map((row, idx) => {
-            const logo = getLogo(leagueType, row.team_id, isRetro);
+            const logo = getLogo(leagueType, row.team_id, IsRetro);
             return (
               <tr
                 key={row.player_id}
@@ -130,29 +225,66 @@ export const BaseballBattingTable = ({ leaders, league, isRetro, accentColor, on
               >
                 {COLUMNS.map((col) => {
                   if (col.key === "rank") {
-                    return <td key={col.key} className="px-2 py-2.5 sm:py-1.5 text-center text-gray-400">{row.rank}</td>;
+                    return (
+                      <td
+                        key={col.key}
+                        className="px-2 py-2.5 sm:py-1.5 text-center text-gray-400"
+                      >
+                        {row.rank}
+                      </td>
+                    );
                   }
                   if (col.key === "name") {
                     return (
-                      <td key={col.key} className="px-2 py-2.5 sm:py-1.5 font-medium sticky left-0 z-10 bg-inherit">
+                      <td
+                        key={col.key}
+                        className="px-2 py-2.5 sm:py-1.5 font-medium sticky left-0 z-10 bg-inherit"
+                      >
                         {onPlayerClick ? (
-                          <span className="cursor-pointer hover:underline hover:text-blue-500" onClick={() => onPlayerClick(row.player_id)}>{row.name}</span>
-                        ) : row.name}
+                          <span
+                            className="cursor-pointer hover:underline hover:text-blue-500"
+                            onClick={() => onPlayerClick(row.player_id)}
+                          >
+                            {row.name}
+                          </span>
+                        ) : (
+                          row.name
+                        )}
                       </td>
                     );
                   }
                   if (col.key === "team_abbrev") {
                     return (
-                      <td key={col.key} className="px-2 py-2.5 sm:py-1.5 text-center">
+                      <td
+                        key={col.key}
+                        className="px-2 py-2.5 sm:py-1.5 text-center"
+                      >
                         <div className="flex items-center justify-center gap-1">
-                          {logo && <img src={logo} className="w-4 h-4 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
+                          {logo && (
+                            <img
+                              src={logo}
+                              className="w-4 h-4 object-contain"
+                              alt=""
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display =
+                                  "none";
+                              }}
+                            />
+                          )}
                           <span className="text-xs">{row.team_abbrev}</span>
                         </div>
                       </td>
                     );
                   }
                   if (col.key === "position") {
-                    return <td key={col.key} className="px-2 py-2.5 sm:py-1.5 text-center text-xs uppercase">{row.position || "—"}</td>;
+                    return (
+                      <td
+                        key={col.key}
+                        className="px-2 py-2.5 sm:py-1.5 text-center text-xs uppercase"
+                      >
+                        {row.position || "—"}
+                      </td>
+                    );
                   }
                   const isActive = col.sortKey === sortField;
                   return (
@@ -169,7 +301,10 @@ export const BaseballBattingTable = ({ leaders, league, isRetro, accentColor, on
           })}
           {leaders.length === 0 && (
             <tr>
-              <td colSpan={COLUMNS.length} className="px-4 py-8 text-center text-gray-400">
+              <td
+                colSpan={COLUMNS.length}
+                className="px-4 py-8 text-center text-gray-400"
+              >
                 No batting data available.
               </td>
             </tr>

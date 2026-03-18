@@ -110,7 +110,12 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
   const adminProposalsModal = useModal();
 
   const isAdmin = useMemo(() => {
-    return currentUser?.roleID === "Admin";
+    if (!currentUser) return false;
+    if (!currentUser.roleID) return false;
+    return (
+      currentUser?.roleID === "Admin" ||
+      currentUser?.roleID?.includes("PHL Commissioner")
+    );
   }, [currentUser]);
 
   const rawTeamColors = useTeamColors(

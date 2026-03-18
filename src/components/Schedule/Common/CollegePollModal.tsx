@@ -110,7 +110,7 @@ interface CollegePollRowProps {
   teamMap: any;
   standingsMap: any;
   league: League;
-  isRetro: boolean;
+  IsRetro: boolean;
 }
 
 const CollegePollRow: FC<CollegePollRowProps> = ({
@@ -121,7 +121,7 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
   teamMap,
   standingsMap,
   league,
-  isRetro,
+  IsRetro,
 }) => {
   const team = useMemo(() => {
     let t = teamMap[poll.TeamID];
@@ -148,8 +148,8 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
   }, [team, league]);
   const logo = useMemo(() => {
     if (!team) return "";
-    return getLogo(league, team.ID, isRetro);
-  }, [league, team, isRetro]);
+    return getLogo(league, team.ID, IsRetro);
+  }, [league, team, IsRetro]);
   const description = useMemo(() => {
     const standings = standingsMap[poll.TeamID];
     if (standings) {
@@ -220,7 +220,7 @@ export const HCKCollegePollModal: FC<CollegePollModalProps> = ({
   const teamColors = useTeamColors(
     chlTeam?.ColorOne,
     chlTeam?.ColorTwo,
-    chlTeam?.ColorThree
+    chlTeam?.ColorThree,
   );
   const seasonOptions = useMemo(() => {
     if (!ts) {
@@ -249,7 +249,7 @@ export const HCKCollegePollModal: FC<CollegePollModalProps> = ({
 
   const CurrentCollegePoll = useMemo(() => {
     const pollIdx = collegePolls.findIndex(
-      (x) => x.WeekID === Number(selectedWeek)
+      (x) => x.WeekID === Number(selectedWeek),
     );
     const pollArr: any[] = [];
     if (pollIdx < 0) {
@@ -338,7 +338,7 @@ export const HCKCollegePollModal: FC<CollegePollModalProps> = ({
               teamMap={chlTeamMap}
               standingsMap={chlStandingsMap}
               league={league}
-              isRetro={currentUser?.isRetro || false}
+              IsRetro={currentUser?.IsRetro || false}
             />
           ))}
       </div>
@@ -361,7 +361,7 @@ export const BBACollegePollModal: FC<CollegePollModalProps> = ({
   const teamColors = useTeamColors(
     cbbTeam?.ColorOne,
     cbbTeam?.ColorTwo,
-    cbbTeam?.ColorThree
+    cbbTeam?.ColorThree,
   );
   const seasonOptions = useMemo(() => {
     if (!ts) {
@@ -390,7 +390,7 @@ export const BBACollegePollModal: FC<CollegePollModalProps> = ({
 
   const CurrentCollegePoll = useMemo(() => {
     const pollIdx = collegePolls.findIndex(
-      (x) => x.WeekID === Number(selectedWeek)
+      (x) => x.WeekID === Number(selectedWeek),
     );
 
     const pollArr: any[] = [];
@@ -480,7 +480,7 @@ export const BBACollegePollModal: FC<CollegePollModalProps> = ({
               teamMap={cbbTeamMap}
               standingsMap={cbbStandingsMap}
               league={league}
-              isRetro={currentUser?.isRetro || false}
+              IsRetro={currentUser?.IsRetro || false}
             />
           ))}
       </div>
@@ -508,7 +508,7 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
   const teamColors = useTeamColors(
     cfbTeam?.ColorOne,
     cfbTeam?.ColorTwo,
-    cfbTeam?.ColorThree
+    cfbTeam?.ColorThree,
   );
   const seasonOptions = useMemo(() => {
     if (!ts) {
@@ -537,7 +537,7 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
 
   const CurrentCollegePoll = useMemo(() => {
     const pollIdx = collegePolls.findIndex(
-      (x) => x.WeekID === Number(selectedWeek)
+      (x) => x.WeekID === Number(selectedWeek),
     );
 
     const pollArr: any[] = [];
@@ -627,7 +627,7 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
               teamMap={cfbTeamMap}
               standingsMap={cfbStandingsMap}
               league={league}
-              isRetro={currentUser?.isRetro || false}
+              IsRetro={currentUser?.IsRetro || false}
             />
           ))}
       </div>

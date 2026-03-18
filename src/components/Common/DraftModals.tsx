@@ -43,7 +43,7 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
   if (!chlTeam) {
     chlTeam = chlTeamMap[player.TeamID];
   }
-  const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.IsRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
 
   const abbr = chlTeam ? chlTeam.Abbreviation : "";

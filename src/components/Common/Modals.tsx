@@ -71,7 +71,13 @@ import { ratingColor as ovrRatingColor } from "../Team/baseball/baseballColorCon
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { displayLevel } from "../../_utility/baseballHelpers";
 import { BaseballService } from "../../_services/baseballService";
-import { InjuryHistoryItem, PositionUsageRow, PlayerStatsResponse } from "../../models/baseball/baseballStatsModels";
+import {
+  InjuryHistoryItem,
+  PositionUsageRow,
+  PlayerStatsResponse,
+} from "../../models/baseball/baseballStatsModels";
+import { tagData } from "../../_constants/tagData";
+import { Button, ButtonGrid } from "../../_design/Buttons";
 
 interface PlayerInfoModalBodyProps {
   league: League;
@@ -129,7 +135,7 @@ export const CHLPlayerInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
   const { currentUser } = useAuthStore();
   const { chlTeamMap } = useSimHCKStore();
   const team = chlTeamMap[player.TeamID];
-  const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.IsRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
 
   return (
@@ -450,7 +456,7 @@ export const PHLPlayerInfoModalBody: FC<PHLPlayerInfoModalBodyProps> = ({
   const { phlTeamMap, chlTeamMap } = useSimHCKStore();
   const team = phlTeamMap[player.TeamID];
   const chlTeam = chlTeamMap[player.CollegeID];
-  const teamLogo = getLogo(SimPHL, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimPHL, player.TeamID, currentUser?.IsRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
   let rawValue = 0;
   let totalValue = "";
@@ -802,7 +808,7 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
   const { currentUser } = useAuthStore();
   const { cfbTeamMap } = useSimFBAStore();
   const team = cfbTeamMap ? cfbTeamMap[player.TeamID] : null;
-  const teamLogo = getLogo(SimCFB, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCFB, player.TeamID, currentUser?.IsRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
   const priorityAttributes = setPriorityCFBAttributes(player);
 
@@ -949,7 +955,7 @@ export const NFLPlayerInfoModalBody: FC<NFLPlayerInfoModalBodyProps> = ({
   const { currentUser } = useAuthStore();
   const { proTeamMap: nflTeamMap, cfbTeamMap } = useSimFBAStore();
   const team = nflTeamMap ? nflTeamMap[player.TeamID] : null;
-  const teamLogo = getLogo(SimNFL, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimNFL, player.TeamID, currentUser?.IsRetro);
   const cfbTeam = cfbTeamMap?.[player.CollegeID];
   const heightObj = HeightToFeetAndInches(player.Height);
   const priorityAttributes = setPriorityNFLAttributes(
@@ -1166,7 +1172,7 @@ export const NFLDepthChartInfoModalBody: FC<
   const { currentUser } = useAuthStore();
   const { proTeamMap: nflTeamMap, cfbTeamMap } = useSimFBAStore();
   const team = nflTeamMap ? nflTeamMap[player.TeamID] : null;
-  const teamLogo = getLogo(SimNFL, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimNFL, player.TeamID, currentUser?.IsRetro);
   const cfbTeam = cfbTeamMap?.[player.CollegeID];
   const heightObj = HeightToFeetAndInches(player.Height);
   const priorityAttributes = setPriorityNFLAttributes(
@@ -1321,7 +1327,7 @@ export const CHLCrootInfoModalBody: FC<CHLCrootInfoModalBodyProps> = ({
   const { currentUser } = useAuthStore();
   const { chlTeamMap } = useSimHCKStore();
   const team = chlTeamMap[player.TeamID];
-  const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.IsRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
   const tendency = GetRecruitingTendency(player.RecruitModifier);
   const hasSigned = player.TeamID > 0;
@@ -1678,7 +1684,7 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
   const { currentUser } = useAuthStore();
   const { cfbTeamMap } = useSimFBAStore();
   const team = cfbTeamMap![player.TeamID];
-  const teamLogo = getLogo(SimCFB, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCFB, player.TeamID, currentUser?.IsRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
   const tendency = GetRecruitingTendency(player.RecruitModifier);
   const hasSigned = player.TeamID > 0;
@@ -1953,7 +1959,7 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
   }, [recruitProfile]);
 
   const team = cbbTeamMap ? cbbTeamMap[player.TeamID] : null;
-  const teamLogo = getLogo(SimCBB, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCBB, player.TeamID, currentUser?.IsRetro);
   const priorityAttributes = getPriorityCBBCrootAttributes(player);
   const hasSigned = player.TeamID > 0;
   return (
@@ -2143,7 +2149,7 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
   const { currentUser } = useAuthStore();
   const { cbbTeamMap } = useSimBBAStore();
   const team = cbbTeamMap ? cbbTeamMap[player.TeamID] : null;
-  const teamLogo = getLogo(SimCBB, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCBB, player.TeamID, currentUser?.IsRetro);
   const priorityAttributes = getPriorityCBBAttributes(player);
   const heightObj = HeightToFeetAndInches(player.Height);
   return (
@@ -2272,8 +2278,8 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
   }, [nbaTeamMap, player.TeamID]);
 
   const teamLogo = useMemo(() => {
-    return getLogo(SimNBA, player.TeamID, currentUser?.isRetro);
-  }, [player.TeamID, currentUser?.isRetro]);
+    return getLogo(SimNBA, player.TeamID, currentUser?.IsRetro);
+  }, [player.TeamID, currentUser?.IsRetro]);
 
   const cbbTeam = useMemo(() => {
     return player.IsIntGenerated
@@ -2482,7 +2488,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
   const { currentUser } = useAuthStore();
   const { chlTeamMap, transferProfileMapByPlayerID } = useSimHCKStore();
   const team = chlTeamMap[player.TeamID];
-  const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCHL, player.TeamID, currentUser?.IsRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
 
   const transferProfiles = useMemo(() => {
@@ -2892,7 +2898,7 @@ export const CBBPortalInfoModalBody: FC<CBBPortalInfoModalBodyProps> = ({
   const { currentUser } = useAuthStore();
   const { cbbTeamMap, transferProfileMapByPlayerID } = useSimBBAStore();
   const team = cbbTeamMap![player.TeamID];
-  const teamLogo = getLogo(SimCBB, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCBB, player.TeamID, currentUser?.IsRetro);
 
   const transferProfiles = useMemo(() => {
     if (!player) return [];
@@ -3113,7 +3119,7 @@ export const CFBPortalInfoModalBody: FC<CFBPortalInfoModalBodyProps> = ({
   const [selectedTab, setSelectedTab] = useState<string>("Attributes");
   const { cfbTeamMap, transferProfileMapByPlayerID } = useSimFBAStore();
   const team = cfbTeamMap![player.TeamID];
-  const teamLogo = getLogo(SimCFB, player.TeamID, currentUser?.isRetro);
+  const teamLogo = getLogo(SimCFB, player.TeamID, currentUser?.IsRetro);
 
   const transferProfiles = useMemo(() => {
     if (!player) return [];
@@ -3357,16 +3363,24 @@ const BaseballStatCell = ({
   // Handle both numeric (20-80) and letter grade (string) values
   const isGrade = typeof value === "string";
   const color = isGrade
-    ? (value.startsWith("A") ? "text-green-600 dark:text-green-400"
-      : value.startsWith("B") ? "text-blue-600 dark:text-blue-400"
-      : value.startsWith("C") ? "text-yellow-600 dark:text-yellow-400"
-      : value.startsWith("D") ? "text-orange-600 dark:text-orange-400"
-      : "text-red-600 dark:text-red-400")
-    : (value >= 70 ? "text-green-600 dark:text-green-400"
-      : value >= 60 ? "text-blue-600 dark:text-blue-400"
-      : value >= 50 ? ""
-      : value >= 40 ? "text-yellow-600 dark:text-yellow-400"
-      : "text-red-600 dark:text-red-400");
+    ? value.startsWith("A")
+      ? "text-green-600 dark:text-green-400"
+      : value.startsWith("B")
+        ? "text-blue-600 dark:text-blue-400"
+        : value.startsWith("C")
+          ? "text-yellow-600 dark:text-yellow-400"
+          : value.startsWith("D")
+            ? "text-orange-600 dark:text-orange-400"
+            : "text-red-600 dark:text-red-400"
+    : value >= 70
+      ? "text-green-600 dark:text-green-400"
+      : value >= 60
+        ? "text-blue-600 dark:text-blue-400"
+        : value >= 50
+          ? ""
+          : value >= 40
+            ? "text-yellow-600 dark:text-yellow-400"
+            : "text-red-600 dark:text-red-400";
   return (
     <div className="flex flex-col px-1">
       <Text variant="small" classes="font-semibold whitespace-nowrap">
@@ -3388,7 +3402,10 @@ const BaseballStatCell = ({
   );
 };
 
-const BaseballContractRow: FC<{ contract: BaseballPlayerContract; league: League }> = ({ contract, league }) => {
+const BaseballContractRow: FC<{
+  contract: BaseballPlayerContract;
+  league: League;
+}> = ({ contract, league }) => {
   const isCollege = league === SimCollegeBaseball;
 
   if (isCollege) {
@@ -3396,17 +3413,30 @@ const BaseballContractRow: FC<{ contract: BaseballPlayerContract; league: League
     return (
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mt-3 pt-3 border-t dark:border-gray-600">
         <div className="flex flex-col">
-          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Class</Text>
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Class
+          </Text>
           <Text variant="small">{classYear.label || "—"}</Text>
         </div>
         <div className="flex flex-col">
-          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Year</Text>
-          <Text variant="small">{contract.current_year} of {contract.years}</Text>
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Year
+          </Text>
+          <Text variant="small">
+            {contract.current_year} of {contract.years}
+          </Text>
         </div>
         {contract.is_extension && (
           <div className="flex flex-col">
-            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Redshirt</Text>
-            <Text variant="small" classes="text-yellow-600 dark:text-yellow-400">Yes</Text>
+            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+              Redshirt
+            </Text>
+            <Text
+              variant="small"
+              classes="text-yellow-600 dark:text-yellow-400"
+            >
+              Yes
+            </Text>
           </div>
         )}
       </div>
@@ -3415,30 +3445,46 @@ const BaseballContractRow: FC<{ contract: BaseballPlayerContract; league: League
 
   // MLB contract
   const salary = contract.current_year_detail?.base_salary;
-  const fmt = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  const fmt = (n: number) =>
+    `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
   const salaryDisplay = salary != null ? fmt(salary) : "—";
   const bonusDisplay = contract.bonus ? fmt(contract.bonus) : "—";
 
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 gap-4 mt-3 pt-3 border-t dark:border-gray-600">
       <div className="flex flex-col">
-        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Contract</Text>
-        <Text variant="small">Yr {contract.current_year} of {contract.years}</Text>
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          Contract
+        </Text>
+        <Text variant="small">
+          Yr {contract.current_year} of {contract.years}
+        </Text>
       </div>
       <div className="flex flex-col">
-        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Salary</Text>
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          Salary
+        </Text>
         <Text variant="small">{salaryDisplay}</Text>
       </div>
       {contract.bonus > 0 && (
         <div className="flex flex-col">
-          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">Bonus</Text>
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            Bonus
+          </Text>
           <Text variant="small">{bonusDisplay}</Text>
         </div>
       )}
       {contract.on_ir && (
         <div className="flex flex-col">
-          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">IL Status</Text>
-          <Text variant="small" classes="text-red-600 dark:text-red-400 font-semibold">On IL</Text>
+          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+            IL Status
+          </Text>
+          <Text
+            variant="small"
+            classes="text-red-600 dark:text-red-400 font-semibold"
+          >
+            On IL
+          </Text>
         </div>
       )}
     </div>
@@ -3450,7 +3496,8 @@ export const BaseballPlayerInfoModalBody: FC<
 > = ({ player, league }) => {
   const [selectedTab, setSelectedTab] = useState<string>("Batting");
   const { currentUser } = useAuthStore();
-  const { mlbOrganization, collegeOrganization, seasonContext, allTeams } = useSimBaseballStore();
+  const { mlbOrganization, collegeOrganization, seasonContext, allTeams } =
+    useSimBaseballStore();
 
   // Injury history
   const [injuryHistory, setInjuryHistory] = useState<InjuryHistoryItem[]>([]);
@@ -3461,7 +3508,9 @@ export const BaseballPlayerInfoModalBody: FC<
   const [posUsageLoading, setPosUsageLoading] = useState(false);
 
   // Player statistics
-  const [playerStats, setPlayerStats] = useState<PlayerStatsResponse | null>(null);
+  const [playerStats, setPlayerStats] = useState<PlayerStatsResponse | null>(
+    null,
+  );
   const [statsLoading, setStatsLoading] = useState(false);
 
   useEffect(() => {
@@ -3470,7 +3519,9 @@ export const BaseballPlayerInfoModalBody: FC<
     const load = async () => {
       setInjuryLoading(true);
       try {
-        const data = await BaseballService.GetInjuryHistory({ player_id: player.id });
+        const data = await BaseballService.GetInjuryHistory({
+          player_id: player.id,
+        });
         if (!cancelled) setInjuryHistory(data.events);
       } catch {
         if (!cancelled) setInjuryHistory([]);
@@ -3478,7 +3529,9 @@ export const BaseballPlayerInfoModalBody: FC<
       if (!cancelled) setInjuryLoading(false);
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedTab, player.id]);
 
   useEffect(() => {
@@ -3499,7 +3552,9 @@ export const BaseballPlayerInfoModalBody: FC<
       if (!cancelled) setPosUsageLoading(false);
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedTab, player.id, seasonContext?.current_league_year_id]);
 
   useEffect(() => {
@@ -3518,7 +3573,9 @@ export const BaseballPlayerInfoModalBody: FC<
       if (!cancelled) setStatsLoading(false);
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedTab, player.id, seasonContext?.current_league_year_id]);
 
   const heightObj = HeightToFeetAndInches(player.height);
@@ -3536,7 +3593,7 @@ export const BaseballPlayerInfoModalBody: FC<
     ? getLogo(
         league === SimMLB ? SimMLB : SimCollegeBaseball,
         team.team_id,
-        currentUser?.isRetro,
+        currentUser?.IsRetro,
       )
     : "";
 
@@ -3750,22 +3807,40 @@ export const BaseballPlayerInfoModalBody: FC<
               <BaseballStatCell label="Pickoff" value={r.pickoff_display} pot={pot.pickoff_pot} isAffected={affected.has("pickoff")} />
             </div>
             <div className="border-t dark:border-gray-600 pt-3">
-              <Text variant="small" classes="font-semibold mb-2">Pitch Arsenal</Text>
+              <Text variant="small" classes="font-semibold mb-2">
+                Pitch Arsenal
+              </Text>
               <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
                 {[1, 2, 3, 4, 5].map((i) => {
-                  const name = player[`pitch${i}_name` as keyof BaseballPlayer] as string | null;
-                  const ovr = r[`pitch${i}_ovr` as keyof typeof r] as number | null;
+                  const name = player[
+                    `pitch${i}_name` as keyof BaseballPlayer
+                  ] as string | null;
+                  const ovr = r[`pitch${i}_ovr` as keyof typeof r] as
+                    | number
+                    | null;
                   if (!name) return null;
                   return (
                     <div key={i} className="flex flex-col px-1">
-                      <Text variant="small" classes="font-semibold whitespace-nowrap">{name}</Text>
-                      <Text variant="small" classes={`whitespace-nowrap ${
-                        (ovr ?? 0) >= 70 ? "text-green-600 dark:text-green-400" :
-                        (ovr ?? 0) >= 60 ? "text-blue-600 dark:text-blue-400" :
-                        (ovr ?? 0) >= 50 ? "" :
-                        (ovr ?? 0) >= 40 ? "text-yellow-600 dark:text-yellow-400" :
-                        "text-red-600 dark:text-red-400"
-                      }`}>
+                      <Text
+                        variant="small"
+                        classes="font-semibold whitespace-nowrap"
+                      >
+                        {name}
+                      </Text>
+                      <Text
+                        variant="small"
+                        classes={`whitespace-nowrap ${
+                          (ovr ?? 0) >= 70
+                            ? "text-green-600 dark:text-green-400"
+                            : (ovr ?? 0) >= 60
+                              ? "text-blue-600 dark:text-blue-400"
+                              : (ovr ?? 0) >= 50
+                                ? ""
+                                : (ovr ?? 0) >= 40
+                                  ? "text-yellow-600 dark:text-yellow-400"
+                                  : "text-red-600 dark:text-red-400"
+                        }`}
+                      >
                         {ovr ?? "—"}
                       </Text>
                     </div>
@@ -3780,46 +3855,73 @@ export const BaseballPlayerInfoModalBody: FC<
           <div className="space-y-4">
             {/* Position Ratings with XP modifier */}
             <div>
-              <Text variant="small" classes="font-semibold mb-2">Position Ratings</Text>
+              <Text variant="small" classes="font-semibold mb-2">
+                Position Ratings
+              </Text>
               <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
-                {([
-                  { label: "C", key: "c", ratingKey: "c_rating" },
-                  { label: "1B", key: "fb", ratingKey: "fb_rating" },
-                  { label: "2B", key: "sb", ratingKey: "sb_rating" },
-                  { label: "3B", key: "tb", ratingKey: "tb_rating" },
-                  { label: "SS", key: "ss", ratingKey: "ss_rating" },
-                  { label: "LF", key: "lf", ratingKey: "lf_rating" },
-                  { label: "CF", key: "cf", ratingKey: "cf_rating" },
-                  { label: "RF", key: "rf", ratingKey: "rf_rating" },
-                  { label: "DH", key: "dh", ratingKey: "dh_rating" },
-                  ...(isPitcher ? [
-                    { label: "SP", key: "sp", ratingKey: "sp_rating" },
-                    { label: "RP", key: "rp", ratingKey: "rp_rating" },
-                  ] : []),
-                ] as { label: string; key: string; ratingKey: keyof typeof r }[]).map((pos) => {
+                {(
+                  [
+                    { label: "C", key: "c", ratingKey: "c_rating" },
+                    { label: "1B", key: "fb", ratingKey: "fb_rating" },
+                    { label: "2B", key: "sb", ratingKey: "sb_rating" },
+                    { label: "3B", key: "tb", ratingKey: "tb_rating" },
+                    { label: "SS", key: "ss", ratingKey: "ss_rating" },
+                    { label: "LF", key: "lf", ratingKey: "lf_rating" },
+                    { label: "CF", key: "cf", ratingKey: "cf_rating" },
+                    { label: "RF", key: "rf", ratingKey: "rf_rating" },
+                    { label: "DH", key: "dh", ratingKey: "dh_rating" },
+                    ...(isPitcher
+                      ? [
+                          { label: "SP", key: "sp", ratingKey: "sp_rating" },
+                          { label: "RP", key: "rp", ratingKey: "rp_rating" },
+                        ]
+                      : []),
+                  ] as {
+                    label: string;
+                    key: string;
+                    ratingKey: keyof typeof r;
+                  }[]
+                ).map((pos) => {
                   const rating = r[pos.ratingKey] as number | null;
                   const xpMod = player.defensive_xp_mod?.[pos.key];
                   if (rating == null) return null;
                   const ratingColor =
-                    rating >= 70 ? "text-green-600 dark:text-green-400" :
-                    rating >= 60 ? "text-blue-600 dark:text-blue-400" :
-                    rating >= 50 ? "" :
-                    rating >= 40 ? "text-yellow-600 dark:text-yellow-400" :
-                    "text-red-600 dark:text-red-400";
-                  const xpColor = xpMod != null
-                    ? xpMod >= 0.03 ? "text-green-600 dark:text-green-400"
-                    : xpMod >= 0 ? "text-blue-600 dark:text-blue-400"
-                    : xpMod >= -0.10 ? "text-yellow-600 dark:text-yellow-400"
-                    : "text-red-600 dark:text-red-400"
-                    : "";
+                    rating >= 70
+                      ? "text-green-600 dark:text-green-400"
+                      : rating >= 60
+                        ? "text-blue-600 dark:text-blue-400"
+                        : rating >= 50
+                          ? ""
+                          : rating >= 40
+                            ? "text-yellow-600 dark:text-yellow-400"
+                            : "text-red-600 dark:text-red-400";
+                  const xpColor =
+                    xpMod != null
+                      ? xpMod >= 0.03
+                        ? "text-green-600 dark:text-green-400"
+                        : xpMod >= 0
+                          ? "text-blue-600 dark:text-blue-400"
+                          : xpMod >= -0.1
+                            ? "text-yellow-600 dark:text-yellow-400"
+                            : "text-red-600 dark:text-red-400"
+                      : "";
                   return (
                     <div key={pos.key} className="flex flex-col px-1">
-                      <Text variant="small" classes="font-semibold whitespace-nowrap">{pos.label}</Text>
-                      <Text variant="small" classes={`whitespace-nowrap ${ratingColor}`}>
+                      <Text
+                        variant="small"
+                        classes="font-semibold whitespace-nowrap"
+                      >
+                        {pos.label}
+                      </Text>
+                      <Text
+                        variant="small"
+                        classes={`whitespace-nowrap ${ratingColor}`}
+                      >
                         {rating}
                         {xpMod != null && (
                           <span className={`ml-1 text-[10px] ${xpColor}`}>
-                            {xpMod >= 0 ? "+" : ""}{(xpMod * 100).toFixed(0)}%
+                            {xpMod >= 0 ? "+" : ""}
+                            {(xpMod * 100).toFixed(0)}%
                           </span>
                         )}
                       </Text>
@@ -3831,11 +3933,17 @@ export const BaseballPlayerInfoModalBody: FC<
 
             {/* Position Usage (games started) */}
             <div className="border-t dark:border-gray-600 pt-3">
-              <Text variant="small" classes="font-semibold mb-2">Season Position Usage</Text>
+              <Text variant="small" classes="font-semibold mb-2">
+                Season Position Usage
+              </Text>
               {posUsageLoading ? (
-                <Text variant="small" classes="text-gray-400 py-2 text-center">Loading...</Text>
+                <Text variant="small" classes="text-gray-400 py-2 text-center">
+                  Loading...
+                </Text>
               ) : positionUsage.length === 0 ? (
-                <Text variant="small" classes="text-gray-400 py-2 text-center">No position usage data this season.</Text>
+                <Text variant="small" classes="text-gray-400 py-2 text-center">
+                  No position usage data this season.
+                </Text>
               ) : (
                 <table className="w-full border-collapse text-xs">
                   <thead>
@@ -3851,15 +3959,35 @@ export const BaseballPlayerInfoModalBody: FC<
                       .sort((a, b) => b.starts - a.starts)
                       .map((pu) => {
                         const posDisplay: Record<string, string> = {
-                          c: "C", fb: "1B", sb: "2B", tb: "3B", ss: "SS",
-                          lf: "LF", cf: "CF", rf: "RF", dh: "DH", p: "P",
+                          c: "C",
+                          fb: "1B",
+                          sb: "2B",
+                          tb: "3B",
+                          ss: "SS",
+                          lf: "LF",
+                          cf: "CF",
+                          rf: "RF",
+                          dh: "DH",
+                          p: "P",
                         };
                         return (
-                          <tr key={pu.position_code} className="border-b border-gray-100 dark:border-gray-700">
-                            <td className="px-2 py-1.5 font-medium">{posDisplay[pu.position_code] ?? pu.position_code.toUpperCase()}</td>
-                            <td className="px-2 py-1.5 text-center font-semibold">{pu.starts}</td>
-                            <td className="px-2 py-1.5 text-center text-gray-500">{pu.vs_l_starts}</td>
-                            <td className="px-2 py-1.5 text-center text-gray-500">{pu.vs_r_starts}</td>
+                          <tr
+                            key={pu.position_code}
+                            className="border-b border-gray-100 dark:border-gray-700"
+                          >
+                            <td className="px-2 py-1.5 font-medium">
+                              {posDisplay[pu.position_code] ??
+                                pu.position_code.toUpperCase()}
+                            </td>
+                            <td className="px-2 py-1.5 text-center font-semibold">
+                              {pu.starts}
+                            </td>
+                            <td className="px-2 py-1.5 text-center text-gray-500">
+                              {pu.vs_l_starts}
+                            </td>
+                            <td className="px-2 py-1.5 text-center text-gray-500">
+                              {pu.vs_r_starts}
+                            </td>
                           </tr>
                         );
                       })}
@@ -3873,9 +4001,13 @@ export const BaseballPlayerInfoModalBody: FC<
         {selectedTab === "Injuries" && (
           <div className="w-full">
             {injuryLoading ? (
-              <Text variant="small" classes="text-gray-400 py-4 text-center">Loading injury history...</Text>
+              <Text variant="small" classes="text-gray-400 py-4 text-center">
+                Loading injury history...
+              </Text>
             ) : injuryHistory.length === 0 ? (
-              <Text variant="small" classes="text-gray-400 py-4 text-center">No injury history found.</Text>
+              <Text variant="small" classes="text-gray-400 py-4 text-center">
+                No injury history found.
+              </Text>
             ) : (
               <table className="w-full border-collapse text-xs">
                 <thead>
@@ -3888,15 +4020,30 @@ export const BaseballPlayerInfoModalBody: FC<
                 </thead>
                 <tbody>
                   {injuryHistory.map((evt) => (
-                    <tr key={evt.event_id} className="border-b border-gray-100 dark:border-gray-700">
+                    <tr
+                      key={evt.event_id}
+                      className="border-b border-gray-100 dark:border-gray-700"
+                    >
                       <td className="px-2 py-1.5">{evt.injury_name}</td>
-                      <td className="px-2 py-1.5 text-center">{evt.weeks_assigned}w</td>
                       <td className="px-2 py-1.5 text-center">
-                        <span className={evt.weeks_remaining > 0 ? "text-red-600 dark:text-red-400 font-semibold" : "text-green-600 dark:text-green-400"}>
-                          {evt.weeks_remaining > 0 ? `${evt.weeks_remaining}w` : "Healed"}
+                        {evt.weeks_assigned}w
+                      </td>
+                      <td className="px-2 py-1.5 text-center">
+                        <span
+                          className={
+                            evt.weeks_remaining > 0
+                              ? "text-red-600 dark:text-red-400 font-semibold"
+                              : "text-green-600 dark:text-green-400"
+                          }
+                        >
+                          {evt.weeks_remaining > 0
+                            ? `${evt.weeks_remaining}w`
+                            : "Healed"}
                         </span>
                       </td>
-                      <td className="px-2 py-1.5 text-gray-500">{evt.created_at}</td>
+                      <td className="px-2 py-1.5 text-gray-500">
+                        {evt.created_at}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -3908,15 +4055,21 @@ export const BaseballPlayerInfoModalBody: FC<
         {selectedTab === "Statistics" && (
           <div className="w-full space-y-4">
             {statsLoading ? (
-              <Text variant="small" classes="text-gray-400 py-4 text-center">Loading statistics...</Text>
+              <Text variant="small" classes="text-gray-400 py-4 text-center">
+                Loading statistics...
+              </Text>
             ) : !playerStats ? (
-              <Text variant="small" classes="text-gray-400 py-4 text-center">No statistics available.</Text>
+              <Text variant="small" classes="text-gray-400 py-4 text-center">
+                No statistics available.
+              </Text>
             ) : (
               <>
                 {/* Batting Stats */}
                 {playerStats.batting && playerStats.batting.length > 0 && (
                   <div>
-                    <Text variant="small" classes="font-semibold mb-2">Batting</Text>
+                    <Text variant="small" classes="font-semibold mb-2">
+                      Batting
+                    </Text>
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse text-xs">
                         <thead>
@@ -3939,21 +4092,46 @@ export const BaseballPlayerInfoModalBody: FC<
                         </thead>
                         <tbody>
                           {playerStats.batting.map((s, i) => (
-                            <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                              <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
+                            <tr
+                              key={i}
+                              className="border-b border-gray-100 dark:border-gray-700"
+                            >
+                              <td className="px-1.5 py-1 font-medium">
+                                {s.team_abbrev}
+                              </td>
                               <td className="px-1.5 py-1 text-center">{s.g}</td>
-                              <td className="px-1.5 py-1 text-center">{s.ab}</td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.ab}
+                              </td>
                               <td className="px-1.5 py-1 text-center">{s.r}</td>
                               <td className="px-1.5 py-1 text-center">{s.h}</td>
-                              <td className="px-1.5 py-1 text-center">{s["2b"]}</td>
-                              <td className="px-1.5 py-1 text-center">{s["3b"]}</td>
-                              <td className="px-1.5 py-1 text-center">{s.hr}</td>
-                              <td className="px-1.5 py-1 text-center">{s.rbi}</td>
-                              <td className="px-1.5 py-1 text-center">{s.bb}</td>
-                              <td className="px-1.5 py-1 text-center">{s.so}</td>
-                              <td className="px-1.5 py-1 text-center">{s.sb}</td>
-                              <td className="px-1.5 py-1 text-center font-semibold">{s.avg}</td>
-                              <td className="px-1.5 py-1 text-center font-semibold">{s.obp}</td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s["2b"]}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s["3b"]}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.hr}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.rbi}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.bb}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.so}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.sb}
+                              </td>
+                              <td className="px-1.5 py-1 text-center font-semibold">
+                                {s.avg}
+                              </td>
+                              <td className="px-1.5 py-1 text-center font-semibold">
+                                {s.obp}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -3965,7 +4143,9 @@ export const BaseballPlayerInfoModalBody: FC<
                 {/* Pitching Stats */}
                 {playerStats.pitching && playerStats.pitching.length > 0 && (
                   <div>
-                    <Text variant="small" classes="font-semibold mb-2">Pitching</Text>
+                    <Text variant="small" classes="font-semibold mb-2">
+                      Pitching
+                    </Text>
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse text-xs">
                         <thead>
@@ -3990,23 +4170,50 @@ export const BaseballPlayerInfoModalBody: FC<
                         </thead>
                         <tbody>
                           {playerStats.pitching.map((s, i) => (
-                            <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                              <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
+                            <tr
+                              key={i}
+                              className="border-b border-gray-100 dark:border-gray-700"
+                            >
+                              <td className="px-1.5 py-1 font-medium">
+                                {s.team_abbrev}
+                              </td>
                               <td className="px-1.5 py-1 text-center">{s.g}</td>
-                              <td className="px-1.5 py-1 text-center">{s.gs}</td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.gs}
+                              </td>
                               <td className="px-1.5 py-1 text-center">{s.w}</td>
                               <td className="px-1.5 py-1 text-center">{s.l}</td>
-                              <td className="px-1.5 py-1 text-center">{s.sv}</td>
-                              <td className="px-1.5 py-1 text-center">{s.hld}</td>
-                              <td className="px-1.5 py-1 text-center">{s.bs}</td>
-                              <td className="px-1.5 py-1 text-center">{s.qs}</td>
-                              <td className="px-1.5 py-1 text-center">{s.ip}</td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.sv}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.hld}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.bs}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.qs}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.ip}
+                              </td>
                               <td className="px-1.5 py-1 text-center">{s.h}</td>
-                              <td className="px-1.5 py-1 text-center">{s.er}</td>
-                              <td className="px-1.5 py-1 text-center">{s.bb}</td>
-                              <td className="px-1.5 py-1 text-center">{s.so}</td>
-                              <td className="px-1.5 py-1 text-center font-semibold">{s.era}</td>
-                              <td className="px-1.5 py-1 text-center font-semibold">{s.whip}</td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.er}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.bb}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.so}
+                              </td>
+                              <td className="px-1.5 py-1 text-center font-semibold">
+                                {s.era}
+                              </td>
+                              <td className="px-1.5 py-1 text-center font-semibold">
+                                {s.whip}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -4018,7 +4225,9 @@ export const BaseballPlayerInfoModalBody: FC<
                 {/* Fielding Stats */}
                 {playerStats.fielding && playerStats.fielding.length > 0 && (
                   <div>
-                    <Text variant="small" classes="font-semibold mb-2">Fielding</Text>
+                    <Text variant="small" classes="font-semibold mb-2">
+                      Fielding
+                    </Text>
                     <div className="overflow-x-auto">
                       <table className="w-full border-collapse text-xs">
                         <thead>
@@ -4034,12 +4243,23 @@ export const BaseballPlayerInfoModalBody: FC<
                         </thead>
                         <tbody>
                           {playerStats.fielding.map((s, i) => (
-                            <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                              <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
-                              <td className="px-1.5 py-1 text-center">{s.pos}</td>
+                            <tr
+                              key={i}
+                              className="border-b border-gray-100 dark:border-gray-700"
+                            >
+                              <td className="px-1.5 py-1 font-medium">
+                                {s.team_abbrev}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.pos}
+                              </td>
                               <td className="px-1.5 py-1 text-center">{s.g}</td>
-                              <td className="px-1.5 py-1 text-center">{s.inn}</td>
-                              <td className="px-1.5 py-1 text-center">{s.po}</td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.inn}
+                              </td>
+                              <td className="px-1.5 py-1 text-center">
+                                {s.po}
+                              </td>
                               <td className="px-1.5 py-1 text-center">{s.a}</td>
                               <td className="px-1.5 py-1 text-center">{s.e}</td>
                             </tr>
@@ -4050,9 +4270,16 @@ export const BaseballPlayerInfoModalBody: FC<
                   </div>
                 )}
 
-                {playerStats.batting?.length === 0 && playerStats.pitching?.length === 0 && playerStats.fielding?.length === 0 && (
-                  <Text variant="small" classes="text-gray-400 py-4 text-center">No statistics recorded this season.</Text>
-                )}
+                {playerStats.batting?.length === 0 &&
+                  playerStats.pitching?.length === 0 &&
+                  playerStats.fielding?.length === 0 && (
+                    <Text
+                      variant="small"
+                      classes="text-gray-400 py-4 text-center"
+                    >
+                      No statistics recorded this season.
+                    </Text>
+                  )}
               </>
             )}
           </div>

@@ -27,12 +27,19 @@ import { getLogo } from "../../_utility/getLogo";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { useAuthStore } from "../../context/AuthContext";
 import { useResponsive } from "../../_hooks/useMobile";
-import { displayLevel, LEVEL_ORDER, LEVEL_TO_NUMERIC } from "../../_utility/baseballHelpers";
+import {
+  displayLevel,
+  LEVEL_ORDER,
+  LEVEL_TO_NUMERIC,
+} from "../../_utility/baseballHelpers";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { BaseballBoxScoreModal } from "../Schedule/BaseballSchedule/BaseballBoxScoreModal";
-import { BattingLeaderRow, PitchingLeaderRow } from "../../models/baseball/baseballStatsModels";
+import {
+  BattingLeaderRow,
+  PitchingLeaderRow,
+} from "../../models/baseball/baseballStatsModels";
 import PlayerPicture from "../../_utility/usePlayerFaces";
 
 interface BaseballLandingPageProps {
@@ -76,14 +83,17 @@ export const BaseballLandingPage = ({
   // --- Player modal ---
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalPlayerId, setModalPlayerId] = useState<number | null>(null);
-  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(
+    null,
+  );
   const orgId = userOrg.id;
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
 
   const refreshBudget = useCallback(() => {
     if (orgId && leagueYearId) {
       BaseballService.GetScoutingBudget(orgId, leagueYearId)
-        .then(setScoutingBudget).catch(() => {});
+        .then(setScoutingBudget)
+        .catch(() => {});
     }
   }, [orgId, leagueYearId]);
 
@@ -91,10 +101,13 @@ export const BaseballLandingPage = ({
     refreshBudget();
   }, [refreshBudget]);
 
-  const openPlayerModal = useCallback((playerId: number) => {
-    setModalPlayerId(playerId);
-    handleOpenModal();
-  }, [handleOpenModal]);
+  const openPlayerModal = useCallback(
+    (playerId: number) => {
+      setModalPlayerId(playerId);
+      handleOpenModal();
+    },
+    [handleOpenModal],
+  );
 
   // --- Org selector: view any org ---
   const [viewedOrgId, setViewedOrgId] = useState<number | null>(null);
@@ -117,22 +130,28 @@ export const BaseballLandingPage = ({
 
   // --- Level navigation ---
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
-  const defaultLevel = league === SimCollegeBaseball
-    ? Object.keys(viewedOrg.teams ?? {})[0] ?? "college"
-    : "mlb";
+  const defaultLevel =
+    league === SimCollegeBaseball
+      ? (Object.keys(viewedOrg.teams ?? {})[0] ?? "college")
+      : "mlb";
   const activeLevel = selectedLevel ?? defaultLevel;
 
   const activeTeam: BaseballTeam | null = useMemo(() => {
     return viewedOrg.teams?.[activeLevel] ?? null;
   }, [viewedOrg, activeLevel]);
   const activeTeamId = activeTeam?.team_id ?? null;
-  const activeNumericLevel = activeTeam?.team_level ?? LEVEL_TO_NUMERIC[activeLevel] ?? null;
+  const activeNumericLevel =
+    activeTeam?.team_level ?? LEVEL_TO_NUMERIC[activeLevel] ?? null;
 
   // Box score modal
   const [boxScoreGameId, setBoxScoreGameId] = useState<number | null>(null);
 
   // Team color theming
-  const teamColors = useTeamColors(activeTeam?.color_one ?? undefined, activeTeam?.color_two ?? undefined, activeTeam?.color_three ?? undefined);
+  const teamColors = useTeamColors(
+    activeTeam?.color_one ?? undefined,
+    activeTeam?.color_two ?? undefined,
+    activeTeam?.color_three ?? undefined,
+  );
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -163,8 +182,12 @@ export const BaseballLandingPage = ({
   // Logo for current view
   const logo = useMemo(() => {
     if (!activeTeam) return "";
-    return getLogo(league === SimMLB ? SimMLB : SimCollegeBaseball, activeTeam.team_id, currentUser?.isRetro);
-  }, [activeTeam, league, currentUser?.isRetro]);
+    return getLogo(
+      league === SimMLB ? SimMLB : SimCollegeBaseball,
+      activeTeam.team_id,
+      currentUser?.IsRetro,
+    );
+  }, [activeTeam, league, currentUser?.IsRetro]);
 
   const roleDisplay = useMemo(() => {
     if (!viewedOrg) return "";
@@ -174,7 +197,8 @@ export const BaseballLandingPage = ({
     const roles: string[] = [];
     if (viewedOrg.owner_name) roles.push(`Owner: ${viewedOrg.owner_name}`);
     if (viewedOrg.gm_name) roles.push(`GM: ${viewedOrg.gm_name}`);
-    if (viewedOrg.manager_name) roles.push(`Manager: ${viewedOrg.manager_name}`);
+    if (viewedOrg.manager_name)
+      roles.push(`Manager: ${viewedOrg.manager_name}`);
     if (viewedOrg.scout_name) roles.push(`Scout: ${viewedOrg.scout_name}`);
     return roles.join(" | ");
   }, [viewedOrg, league]);
@@ -182,14 +206,15 @@ export const BaseballLandingPage = ({
   const seasonLabel = seasonContext
     ? `Season ${seasonContext.league_year}, Week ${seasonContext.current_week_index}`
     : ts
-    ? `Season ${ts.Season}, Week ${ts.Week}`
-    : "";
+      ? `Season ${ts.Season}, Week ${ts.Week}`
+      : "";
 
   const pageTitle = useMemo(() => {
     if (!viewedOrg) return "";
     if (selectedLevel) {
       const team = viewedOrg.teams?.[selectedLevel];
-      if (league === SimCollegeBaseball && team?.team_full_name) return team.team_full_name;
+      if (league === SimCollegeBaseball && team?.team_full_name)
+        return team.team_full_name;
       if (team?.team_full_name) return team.team_full_name;
       return `${viewedOrg.org_abbrev} ${displayLevel(selectedLevel)}`;
     }
@@ -228,10 +253,14 @@ export const BaseballLandingPage = ({
           label: team?.team_full_name || org.org_abbrev,
         });
       }
-      return Object.keys(conferenceMap).sort().map((conf) => ({
-        label: conf,
-        options: conferenceMap[conf].sort((a, b) => a.label.localeCompare(b.label)),
-      }));
+      return Object.keys(conferenceMap)
+        .sort()
+        .map((conf) => ({
+          label: conf,
+          options: conferenceMap[conf].sort((a, b) =>
+            a.label.localeCompare(b.label),
+          ),
+        }));
     }
     return leagueOrgs.map((org) => ({
       value: String(org.id),
@@ -242,7 +271,10 @@ export const BaseballLandingPage = ({
   const selectedOrgOption = useMemo(() => {
     const id = String(viewedOrg.id);
     if (isCollege) {
-      for (const group of orgOptions as { label: string; options: SelectOption[] }[]) {
+      for (const group of orgOptions as {
+        label: string;
+        options: SelectOption[];
+      }[]) {
         const found = group.options.find((o) => o.value === id);
         if (found) return found;
       }
@@ -254,7 +286,8 @@ export const BaseballLandingPage = ({
   // --- Filtered data ---
 
   const teamStandings = useMemo(() => {
-    if (!standings || standings.length === 0 || activeNumericLevel == null) return [];
+    if (!standings || standings.length === 0 || activeNumericLevel == null)
+      return [];
     return standings
       .filter((s) => s.team_level === activeNumericLevel)
       .sort((a, b) => b.wins - a.wins || a.losses - b.losses);
@@ -280,7 +313,9 @@ export const BaseballLandingPage = ({
       // Sort each division by wins desc
       for (const conf of Object.keys(confMap)) {
         for (const div of Object.keys(confMap[conf])) {
-          confMap[conf][div].sort((a, b) => b.wins - a.wins || a.losses - b.losses);
+          confMap[conf][div].sort(
+            (a, b) => b.wins - a.wins || a.losses - b.losses,
+          );
         }
       }
       return { type: "division" as const, conferences: confMap };
@@ -309,7 +344,10 @@ export const BaseballLandingPage = ({
       return { seasonGames: [], nextGame: null, firstUpcomingIdx: 0 };
     }
     const teamGames = allGames
-      .filter((g) => g.home_team_id === activeTeamId || g.away_team_id === activeTeamId)
+      .filter(
+        (g) =>
+          g.home_team_id === activeTeamId || g.away_team_id === activeTeamId,
+      )
       .sort((a, b) => a.week - b.week || a.game_day.localeCompare(b.game_day));
 
     let foundIdx = teamGames.length;
@@ -321,17 +359,26 @@ export const BaseballLandingPage = ({
         break;
       }
     }
-    return { seasonGames: teamGames, nextGame: foundGame, firstUpcomingIdx: foundIdx };
+    return {
+      seasonGames: teamGames,
+      nextGame: foundGame,
+      firstUpcomingIdx: foundIdx,
+    };
   }, [allGames, activeTeamId]);
 
   const teamNotifications = useMemo(() => {
     if (!isOwnOrg || !notifications || notifications.length === 0) return [];
-    return [...notifications].filter((n) => n.org_id === viewedOrg.id).reverse();
+    return [...notifications]
+      .filter((n) => n.org_id === viewedOrg.id)
+      .reverse();
   }, [notifications, viewedOrg.id, isOwnOrg]);
 
   const teamNews = useMemo(() => {
     if (!news || news.length === 0) return [];
-    return [...news].filter((n) => n.org_id === viewedOrg.id).slice(-10).reverse();
+    return [...news]
+      .filter((n) => n.org_id === viewedOrg.id)
+      .slice(-10)
+      .reverse();
   }, [news, viewedOrg.id]);
 
   const teamInjuries = useMemo(() => {
@@ -367,7 +414,12 @@ export const BaseballLandingPage = ({
   };
 
   useEffect(() => {
-    if (!seasonContext?.current_league_year_id || !activeNumericLevel || !activeTeamId) return;
+    if (
+      !seasonContext?.current_league_year_id ||
+      !activeNumericLevel ||
+      !activeTeamId
+    )
+      return;
     let cancelled = false;
     const fetchLeaders = async () => {
       setLeadersLoading(true);
@@ -395,10 +447,14 @@ export const BaseballLandingPage = ({
         if (cancelled) return;
 
         // Batting: sort by AB desc, take top 11, find AVG leader and HR leader
-        const byAB = [...(battingRes.leaders ?? [])].sort((a, b) => b.ab - a.ab);
+        const byAB = [...(battingRes.leaders ?? [])].sort(
+          (a, b) => b.ab - a.ab,
+        );
         const top11 = byAB.slice(0, 11);
         if (top11.length > 0) {
-          const bestAvg = [...top11].sort((a, b) => parseFloat(b.avg) - parseFloat(a.avg))[0];
+          const bestAvg = [...top11].sort(
+            (a, b) => parseFloat(b.avg) - parseFloat(a.avg),
+          )[0];
           const bestHR = [...top11].sort((a, b) => b.hr - a.hr)[0];
           setAvgLeader(bestAvg);
           setHrLeader(bestHR.hr > 0 ? bestHR : null);
@@ -408,18 +464,25 @@ export const BaseballLandingPage = ({
         }
 
         // Pitching: sort by IP desc, top 5 are starters, rest are relievers
-        const pitchers = [...(pitchingRes.leaders ?? [])].sort((a, b) => parseIP(b.ip) - parseIP(a.ip));
+        const pitchers = [...(pitchingRes.leaders ?? [])].sort(
+          (a, b) => parseIP(b.ip) - parseIP(a.ip),
+        );
         const topStarters = pitchers.slice(0, 5);
         const relievers = pitchers.slice(5);
         if (topStarters.length > 0) {
-          const bestSP = [...topStarters].sort((a, b) => parseFloat(a.era) - parseFloat(b.era))[0];
+          const bestSP = [...topStarters].sort(
+            (a, b) => parseFloat(a.era) - parseFloat(b.era),
+          )[0];
           setSpLeader(bestSP);
         } else {
           setSpLeader(null);
         }
         if (relievers.length > 0) {
           // Best reliever: lowest ERA among non-top-5 IP pitchers with at least 1 game
-          const bestRP = [...relievers].filter((p) => p.g > 0).sort((a, b) => parseFloat(a.era) - parseFloat(b.era))[0] ?? null;
+          const bestRP =
+            [...relievers]
+              .filter((p) => p.g > 0)
+              .sort((a, b) => parseFloat(a.era) - parseFloat(b.era))[0] ?? null;
           setRpLeader(bestRP);
         } else {
           setRpLeader(null);
@@ -430,33 +493,74 @@ export const BaseballLandingPage = ({
       if (!cancelled) setLeadersLoading(false);
     };
     fetchLeaders();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [seasonContext?.current_league_year_id, activeNumericLevel, activeTeamId]);
 
-  const formatOrgLabel = useCallback((option: SelectOption) => {
-    const org = leagueOrgs.find((o) => String(o.id) === option.value);
-    if (!org) return <span>{option.label}</span>;
-    const team = isCollege ? Object.values(org.teams ?? {})[0] : org.teams?.["mlb"];
-    const logoUrl = team ? getLogo(league === SimMLB ? SimMLB : SimCollegeBaseball, team.team_id, currentUser?.isRetro) : "";
-    return (
-      <div className="flex items-center gap-2">
-        {logoUrl && <img src={logoUrl} className="w-5 h-5 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
-        <span>{option.label}</span>
-      </div>
-    );
-  }, [leagueOrgs, isCollege, league, currentUser?.isRetro]);
+  const formatOrgLabel = useCallback(
+    (option: SelectOption) => {
+      const org = leagueOrgs.find((o) => String(o.id) === option.value);
+      if (!org) return <span>{option.label}</span>;
+      const team = isCollege
+        ? Object.values(org.teams ?? {})[0]
+        : org.teams?.["mlb"];
+      const logoUrl = team
+        ? getLogo(
+            league === SimMLB ? SimMLB : SimCollegeBaseball,
+            team.team_id,
+            currentUser?.IsRetro,
+          )
+        : "";
+      return (
+        <div className="flex items-center gap-2">
+          {logoUrl && (
+            <img
+              src={logoUrl}
+              className="w-5 h-5 object-contain"
+              alt=""
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          )}
+          <span>{option.label}</span>
+        </div>
+      );
+    },
+    [leagueOrgs, isCollege, league, currentUser?.IsRetro],
+  );
 
   return (
     <div className="flex flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6">
       {/* Team-colored header bar */}
       <div
         className={`flex items-center gap-3 mb-2 flex-wrap rounded-lg px-3 py-2 ${headerTextClass}`}
-        style={{ backgroundColor: headerColor, borderBottom: `3px solid ${borderColor}` }}
+        style={{
+          backgroundColor: headerColor,
+          borderBottom: `3px solid ${borderColor}`,
+        }}
       >
-        {logo && <img src={logo} className="w-10 h-10 object-contain" alt={viewedOrg.org_abbrev} />}
+        {logo && (
+          <img
+            src={logo}
+            className="w-10 h-10 object-contain"
+            alt={viewedOrg.org_abbrev}
+          />
+        )}
         <div className="flex flex-col">
-          <Text variant="h5" classes={`font-semibold ${headerTextClass}`}>{pageTitle}</Text>
-          {seasonLabel && <Text variant="small" classes={headerTextClass} style={{ opacity: 0.8 }}>{seasonLabel}</Text>}
+          <Text variant="h5" classes={`font-semibold ${headerTextClass}`}>
+            {pageTitle}
+          </Text>
+          {seasonLabel && (
+            <Text
+              variant="small"
+              classes={headerTextClass}
+              style={{ opacity: 0.8 }}
+            >
+              {seasonLabel}
+            </Text>
+          )}
         </div>
         <div className="ml-auto">
           <SelectDropdown
@@ -477,7 +581,9 @@ export const BaseballLandingPage = ({
                 minWidth: isMobile ? "60vw" : "280px",
                 maxWidth: "400px",
                 padding: "0.2rem",
-                boxShadow: state.isFocused ? `0 0 0 1px ${borderColor}` : "none",
+                boxShadow: state.isFocused
+                  ? `0 0 0 1px ${borderColor}`
+                  : "none",
                 borderRadius: "8px",
                 transition: "all 0.2s ease",
               }),
@@ -485,7 +591,10 @@ export const BaseballLandingPage = ({
           />
         </div>
         {!isOwnOrg && (
-          <span className={`text-xs italic ${headerTextClass}`} style={{ opacity: 0.7 }}>
+          <span
+            className={`text-xs italic ${headerTextClass}`}
+            style={{ opacity: 0.7 }}
+          >
             Viewing — roster actions disabled
           </span>
         )}
@@ -503,19 +612,36 @@ export const BaseballLandingPage = ({
             return (
               <button
                 key={level}
-                onClick={() => setSelectedLevel(level === defaultLevel ? null : level)}
+                onClick={() =>
+                  setSelectedLevel(level === defaultLevel ? null : level)
+                }
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-all cursor-pointer border-2
-                  ${!isActive
-                    ? "border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400 bg-white dark:bg-gray-800"
-                    : "font-semibold"
+                  ${
+                    !isActive
+                      ? "border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400 bg-white dark:bg-gray-800"
+                      : "font-semibold"
                   }`}
-                style={isActive ? { borderColor: headerColor, backgroundColor: `${headerColor}15`, color: headerColor } : undefined}
+                style={
+                  isActive
+                    ? {
+                        borderColor: headerColor,
+                        backgroundColor: `${headerColor}15`,
+                        color: headerColor,
+                      }
+                    : undefined
+                }
               >
                 <img
-                  src={getLogo(league === SimMLB ? SimMLB : SimCollegeBaseball, team.team_id, currentUser?.isRetro)}
+                  src={getLogo(
+                    league === SimMLB ? SimMLB : SimCollegeBaseball,
+                    team.team_id,
+                    currentUser?.IsRetro,
+                  )}
                   className="w-5 h-5 object-contain"
                   alt=""
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
                 />
                 <span>{displayLevel(level)}</span>
                 {team.team_abbrev && (
@@ -547,15 +673,28 @@ export const BaseballLandingPage = ({
         {/* Left Column: Standings + Matchup */}
         <div className="flex md:gap-[2vw] lg:gap-4 flex-col-reverse md:flex-row">
           {/* Standings */}
-          <Border classes="py-0 px-0 w-full md:max-w-[45vw] lg:max-w-[30rem]" styles={{ borderTop: `3px solid ${headerColor}` }}>
+          <Border
+            classes="py-0 px-0 w-full md:max-w-[45vw] lg:max-w-[30rem]"
+            styles={{ borderTop: `3px solid ${headerColor}` }}
+          >
             <div className="p-3">
               <Text variant="h5" classes="mb-2 font-semibold">
-                {isCollege ? "Standings" : `${displayLevel(activeLevel)} Standings`}
+                {isCollege
+                  ? "Standings"
+                  : `${displayLevel(activeLevel)} Standings`}
               </Text>
               {isDataStale ? (
-                <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">Loading...</Text>
+                <Text
+                  variant="body-small"
+                  classes="text-gray-500 dark:text-gray-400"
+                >
+                  Loading...
+                </Text>
               ) : teamStandings.length === 0 ? (
-                <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">
+                <Text
+                  variant="body-small"
+                  classes="text-gray-500 dark:text-gray-400"
+                >
                   No standings available.
                 </Text>
               ) : (
@@ -563,63 +702,80 @@ export const BaseballLandingPage = ({
                   {groupedStandings?.type === "division" ? (
                     // MLB-style: Conference → Division grouping
                     <div className="space-y-3">
-                      {Object.keys(groupedStandings.conferences).sort((a, b) => {
-                        const userConf = activeTeam?.conference;
-                        if (userConf) {
-                          if (a === userConf && b !== userConf) return -1;
-                          if (b === userConf && a !== userConf) return 1;
-                        }
-                        return a.localeCompare(b);
-                      }).map((conf) => (
-                        <div key={conf}>
-                          <Text variant="body-small" classes="font-bold mb-1 px-1">{conf}</Text>
-                          {Object.keys(groupedStandings.conferences[conf]).sort().map((div) => {
-                            const divStandings = groupedStandings.conferences[conf][div];
-                            return (
-                              <div key={div} className="mb-2">
-                                <div className="text-xs font-semibold uppercase px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                                  {div}
-                                </div>
-                                <StandingsTable
-                                  rows={divStandings}
-                                  activeTeamId={activeTeamId}
-                                  league={league}
-                                  currentUser={currentUser}
-                                  highlightColor={headerColor}
-                                />
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ))}
+                      {Object.keys(groupedStandings.conferences)
+                        .sort((a, b) => {
+                          const userConf = activeTeam?.conference;
+                          if (userConf) {
+                            if (a === userConf && b !== userConf) return -1;
+                            if (b === userConf && a !== userConf) return 1;
+                          }
+                          return a.localeCompare(b);
+                        })
+                        .map((conf) => (
+                          <div key={conf}>
+                            <Text
+                              variant="body-small"
+                              classes="font-bold mb-1 px-1"
+                            >
+                              {conf}
+                            </Text>
+                            {Object.keys(groupedStandings.conferences[conf])
+                              .sort()
+                              .map((div) => {
+                                const divStandings =
+                                  groupedStandings.conferences[conf][div];
+                                return (
+                                  <div key={div} className="mb-2">
+                                    <div className="text-xs font-semibold uppercase px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                      {div}
+                                    </div>
+                                    <StandingsTable
+                                      rows={divStandings}
+                                      activeTeamId={activeTeamId}
+                                      league={league}
+                                      currentUser={currentUser}
+                                      highlightColor={headerColor}
+                                    />
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        ))}
                     </div>
                   ) : groupedStandings?.type === "conference" ? (
                     // Conference-only grouping
                     <div className="space-y-3">
-                      {Object.keys(groupedStandings.conferences).sort((a, b) => {
-                        const userConf = activeTeam?.conference;
-                        if (userConf) {
-                          if (a === userConf && b !== userConf) return -1;
-                          if (b === userConf && a !== userConf) return 1;
-                        }
-                        return a.localeCompare(b);
-                      }).map((conf) => {
-                        const confStandings = (groupedStandings.conferences as Record<string, BaseballStanding[]>)[conf];
-                        return (
-                          <div key={conf}>
-                            <div className="text-xs font-semibold uppercase px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 mb-0.5">
-                              {conf}
+                      {Object.keys(groupedStandings.conferences)
+                        .sort((a, b) => {
+                          const userConf = activeTeam?.conference;
+                          if (userConf) {
+                            if (a === userConf && b !== userConf) return -1;
+                            if (b === userConf && a !== userConf) return 1;
+                          }
+                          return a.localeCompare(b);
+                        })
+                        .map((conf) => {
+                          const confStandings = (
+                            groupedStandings.conferences as Record<
+                              string,
+                              BaseballStanding[]
+                            >
+                          )[conf];
+                          return (
+                            <div key={conf}>
+                              <div className="text-xs font-semibold uppercase px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 mb-0.5">
+                                {conf}
+                              </div>
+                              <StandingsTable
+                                rows={confStandings}
+                                activeTeamId={activeTeamId}
+                                league={league}
+                                currentUser={currentUser}
+                                highlightColor={headerColor}
+                              />
                             </div>
-                            <StandingsTable
-                              rows={confStandings}
-                              activeTeamId={activeTeamId}
-                              league={league}
-                              currentUser={currentUser}
-                              highlightColor={headerColor}
-                            />
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                   ) : (
                     // Flat list (no conference/division data)
@@ -639,26 +795,45 @@ export const BaseballLandingPage = ({
           {/* Middle Column: Matchup + Inbox + News */}
           <div className="flex flex-col items-center md:h-auto w-full md:w-[50vw] lg:w-[32em]">
             {/* Next Game Matchup */}
-            <Border classes="py-0 px-0 w-full mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+            <Border
+              classes="py-0 px-0 w-full mb-2"
+              styles={{ borderTop: `3px solid ${headerColor}` }}
+            >
               <div className="p-3">
-                <Text variant="h5" classes="mb-2 font-semibold">Next Game</Text>
+                <Text variant="h5" classes="mb-2 font-semibold">
+                  Next Game
+                </Text>
                 {isDataStale ? (
-                  <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">Loading...</Text>
+                  <Text
+                    variant="body-small"
+                    classes="text-gray-500 dark:text-gray-400"
+                  >
+                    Loading...
+                  </Text>
                 ) : nextGame ? (
                   <div className="flex items-center justify-center gap-4 py-3">
                     <div className="flex flex-col items-center">
                       <img
-                        src={getLogo(league === SimMLB ? SimMLB : SimCollegeBaseball, nextGame.away_team_id, currentUser?.isRetro)}
+                        src={getLogo(
+                          league === SimMLB ? SimMLB : SimCollegeBaseball,
+                          nextGame.away_team_id,
+                          currentUser?.IsRetro,
+                        )}
                         className="w-12 h-12 object-contain"
                         alt={abbrev(nextGame.away_team_id)}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
                       />
                       <Text variant="body-small" classes="font-semibold mt-1">
                         {abbrev(nextGame.away_team_id)}
                       </Text>
                     </div>
                     <div className="flex flex-col items-center">
-                      <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">
+                      <Text
+                        variant="body-small"
+                        classes="text-gray-500 dark:text-gray-400"
+                      >
                         Week {nextGame.week}
                       </Text>
                       <Text variant="h4" classes="font-bold">
@@ -667,10 +842,16 @@ export const BaseballLandingPage = ({
                     </div>
                     <div className="flex flex-col items-center">
                       <img
-                        src={getLogo(league === SimMLB ? SimMLB : SimCollegeBaseball, nextGame.home_team_id, currentUser?.isRetro)}
+                        src={getLogo(
+                          league === SimMLB ? SimMLB : SimCollegeBaseball,
+                          nextGame.home_team_id,
+                          currentUser?.IsRetro,
+                        )}
                         className="w-12 h-12 object-contain"
                         alt={abbrev(nextGame.home_team_id)}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
                       />
                       <Text variant="body-small" classes="font-semibold mt-1">
                         {abbrev(nextGame.home_team_id)}
@@ -678,7 +859,10 @@ export const BaseballLandingPage = ({
                     </div>
                   </div>
                 ) : (
-                  <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">
+                  <Text
+                    variant="body-small"
+                    classes="text-gray-500 dark:text-gray-400"
+                  >
                     No upcoming games.
                   </Text>
                 )}
@@ -687,18 +871,29 @@ export const BaseballLandingPage = ({
 
             {/* Injuries (mobile) */}
             {isMobile && !isDataStale && (
-              <Border classes="py-0 px-0 w-full mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+              <Border
+                classes="py-0 px-0 w-full mb-2"
+                styles={{ borderTop: `3px solid ${headerColor}` }}
+              >
                 <BaseballInjuriesSection injuries={teamInjuries} />
               </Border>
             )}
 
             {/* Team Inbox (only for own org) */}
             {isOwnOrg && (
-              <Border classes="py-0 px-0 w-full mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+              <Border
+                classes="py-0 px-0 w-full mb-2"
+                styles={{ borderTop: `3px solid ${headerColor}` }}
+              >
                 <div className="p-3">
-                  <Text variant="h5" classes="mb-2 font-semibold">Team Inbox</Text>
+                  <Text variant="h5" classes="mb-2 font-semibold">
+                    Team Inbox
+                  </Text>
                   {teamNotifications.length === 0 ? (
-                    <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">
+                    <Text
+                      variant="body-small"
+                      classes="text-gray-500 dark:text-gray-400"
+                    >
                       Your inbox is empty.
                     </Text>
                   ) : (
@@ -741,11 +936,19 @@ export const BaseballLandingPage = ({
             )}
 
             {/* Team News */}
-            <Border classes="py-0 px-0 w-full" styles={{ borderTop: `3px solid ${headerColor}` }}>
+            <Border
+              classes="py-0 px-0 w-full"
+              styles={{ borderTop: `3px solid ${headerColor}` }}
+            >
               <div className="p-3">
-                <Text variant="h5" classes="mb-2 font-semibold">Team News</Text>
+                <Text variant="h5" classes="mb-2 font-semibold">
+                  Team News
+                </Text>
                 {teamNews.length === 0 ? (
-                  <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">
+                  <Text
+                    variant="body-small"
+                    classes="text-gray-500 dark:text-gray-400"
+                  >
                     No news to show.
                   </Text>
                 ) : (
@@ -768,19 +971,31 @@ export const BaseballLandingPage = ({
         {/* Right Column: Org Info + Financials + Injuries + Stats */}
         <div className="flex flex-col items-start pt-1 md:pt-0 h-full md:h-auto md:w-[30vw] lg:w-[32em] md:min-w-[20em] lg:min-w-[20em] md:max-w-[35vw] lg:max-w-[30em]">
           {/* Org Info */}
-          <Border classes="py-0 px-0 w-full mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+          <Border
+            classes="py-0 px-0 w-full mb-2"
+            styles={{ borderTop: `3px solid ${headerColor}` }}
+          >
             <div className="p-3">
               <Text variant="h5" classes="mb-2 font-semibold">
                 {selectedLevel ? displayLevel(selectedLevel) : "Organization"}
               </Text>
               <div className="flex items-center gap-3 mb-2">
                 {logo && (
-                  <img src={logo} className="w-10 h-10 object-contain" alt={viewedOrg.org_abbrev} />
+                  <img
+                    src={logo}
+                    className="w-10 h-10 object-contain"
+                    alt={viewedOrg.org_abbrev}
+                  />
                 )}
                 <div>
-                  <Text variant="body" classes="font-semibold">{pageTitle}</Text>
+                  <Text variant="body" classes="font-semibold">
+                    {pageTitle}
+                  </Text>
                   {seasonLabel && (
-                    <Text variant="small" classes="text-gray-500 dark:text-gray-400">
+                    <Text
+                      variant="small"
+                      classes="text-gray-500 dark:text-gray-400"
+                    >
                       {seasonLabel}
                     </Text>
                   )}
@@ -794,13 +1009,24 @@ export const BaseballLandingPage = ({
 
           {/* Financials (MLB) or Roster Breakdown link (College) */}
           {isCollege ? (
-            <Border classes="py-0 px-0 w-full mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+            <Border
+              classes="py-0 px-0 w-full mb-2"
+              styles={{ borderTop: `3px solid ${headerColor}` }}
+            >
               <div className="p-3">
-                <Text variant="h5" classes="mb-2 font-semibold">Roster</Text>
+                <Text variant="h5" classes="mb-2 font-semibold">
+                  Roster
+                </Text>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">Players</span>
-                    <span className="font-semibold">{Object.values(viewedOrg.teams ?? {}).length > 0 ? "View breakdown" : "—"}</span>
+                    <span className="text-gray-500 dark:text-gray-400">
+                      Players
+                    </span>
+                    <span className="font-semibold">
+                      {Object.values(viewedOrg.teams ?? {}).length > 0
+                        ? "View breakdown"
+                        : "—"}
+                    </span>
                   </div>
                 </div>
                 <button
@@ -812,11 +1038,21 @@ export const BaseballLandingPage = ({
               </div>
             </Border>
           ) : (
-            <Border classes="py-0 px-0 w-full mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+            <Border
+              classes="py-0 px-0 w-full mb-2"
+              styles={{ borderTop: `3px solid ${headerColor}` }}
+            >
               <div className="p-3">
-                <Text variant="h5" classes="mb-2 font-semibold">Financials</Text>
+                <Text variant="h5" classes="mb-2 font-semibold">
+                  Financials
+                </Text>
                 {isDataStale ? (
-                  <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">Loading...</Text>
+                  <Text
+                    variant="body-small"
+                    classes="text-gray-500 dark:text-gray-400"
+                  >
+                    Loading...
+                  </Text>
                 ) : (
                   <FinancialsSection
                     financials={financials}
@@ -835,17 +1071,30 @@ export const BaseballLandingPage = ({
 
           {/* Injuries (desktop) */}
           {!isMobile && !isDataStale && (
-            <Border classes="py-0 px-0 w-full mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+            <Border
+              classes="py-0 px-0 w-full mb-2"
+              styles={{ borderTop: `3px solid ${headerColor}` }}
+            >
               <BaseballInjuriesSection injuries={teamInjuries} />
             </Border>
           )}
 
           {/* Team Leaders */}
-          <Border classes="py-0 px-0 w-full" styles={{ borderTop: `3px solid ${headerColor}` }}>
+          <Border
+            classes="py-0 px-0 w-full"
+            styles={{ borderTop: `3px solid ${headerColor}` }}
+          >
             <div className="p-3">
-              <Text variant="h5" classes="mb-2 font-semibold">Team Leaders</Text>
+              <Text variant="h5" classes="mb-2 font-semibold">
+                Team Leaders
+              </Text>
               {leadersLoading ? (
-                <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">Loading leaders...</Text>
+                <Text
+                  variant="body-small"
+                  classes="text-gray-500 dark:text-gray-400"
+                >
+                  Loading leaders...
+                </Text>
               ) : (
                 <div className="space-y-3">
                   {avgLeader && (
@@ -901,7 +1150,10 @@ export const BaseballLandingPage = ({
                   )}
 
                   {!avgLeader && !spLeader && !rpLeader && (
-                    <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">
+                    <Text
+                      variant="body-small"
+                      classes="text-gray-500 dark:text-gray-400"
+                    >
                       No stats available yet.
                     </Text>
                   )}
@@ -918,7 +1170,7 @@ export const BaseballLandingPage = ({
         isOpen={boxScoreGameId !== null}
         onClose={() => setBoxScoreGameId(null)}
         league={league}
-        isRetro={currentUser?.isRetro}
+        IsRetro={currentUser?.IsRetro}
         onPlayerClick={openPlayerModal}
       />
 
@@ -926,7 +1178,10 @@ export const BaseballLandingPage = ({
       {modalPlayerId != null && (
         <BaseballScoutingModal
           isOpen={isModalOpen}
-          onClose={() => { setModalPlayerId(null); handleCloseModal(); }}
+          onClose={() => {
+            setModalPlayerId(null);
+            handleCloseModal();
+          }}
           playerId={modalPlayerId}
           orgId={orgId}
           leagueYearId={leagueYearId}
@@ -941,7 +1196,8 @@ export const BaseballLandingPage = ({
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-const formatMoney = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+const formatMoney = (n: number) =>
+  `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
 const FinancialsSection = ({
   financials,
@@ -955,14 +1211,18 @@ const FinancialsSection = ({
       <div className="space-y-1 text-sm">
         <div className="flex justify-between">
           <span className="text-gray-500 dark:text-gray-400">Cash Balance</span>
-          <span className="font-semibold">{formatMoney(Number(fallbackCash ?? 0))}</span>
+          <span className="font-semibold">
+            {formatMoney(Number(fallbackCash ?? 0))}
+          </span>
         </div>
       </div>
     );
   }
 
   const { summary, obligations, future_obligations } = financials;
-  const futureYears = future_obligations ? Object.entries(future_obligations).sort(([a], [b]) => a.localeCompare(b)) : [];
+  const futureYears = future_obligations
+    ? Object.entries(future_obligations).sort(([a], [b]) => a.localeCompare(b))
+    : [];
 
   return (
     <div className="space-y-3 text-sm">
@@ -970,16 +1230,28 @@ const FinancialsSection = ({
       {summary && (
         <div className="space-y-1">
           <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Current Balance</span>
-            <span className="font-bold text-base">{formatMoney(summary.ending_balance)}</span>
+            <span className="text-gray-500 dark:text-gray-400">
+              Current Balance
+            </span>
+            <span className="font-bold text-base">
+              {formatMoney(summary.ending_balance)}
+            </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Season Revenue</span>
-            <span className="text-green-600 dark:text-green-400">+{formatMoney(summary.season_revenue)}</span>
+            <span className="text-gray-500 dark:text-gray-400">
+              Season Revenue
+            </span>
+            <span className="text-green-600 dark:text-green-400">
+              +{formatMoney(summary.season_revenue)}
+            </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Season Expenses</span>
-            <span className="text-red-600 dark:text-red-400">-{formatMoney(summary.season_expenses)}</span>
+            <span className="text-gray-500 dark:text-gray-400">
+              Season Expenses
+            </span>
+            <span className="text-red-600 dark:text-red-400">
+              -{formatMoney(summary.season_expenses)}
+            </span>
           </div>
         </div>
       )}
@@ -991,12 +1263,16 @@ const FinancialsSection = ({
             {obligations.league_year} Obligations
           </Text>
           <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Active Salary</span>
+            <span className="text-gray-500 dark:text-gray-400">
+              Active Salary
+            </span>
             <span>{formatMoney(obligations.totals.active_salary)}</span>
           </div>
           {obligations.totals.inactive_salary > 0 && (
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">Inactive Salary</span>
+              <span className="text-gray-500 dark:text-gray-400">
+                Inactive Salary
+              </span>
               <span>{formatMoney(obligations.totals.inactive_salary)}</span>
             </div>
           )}
@@ -1008,7 +1284,9 @@ const FinancialsSection = ({
           )}
           {obligations.totals.signing_bonus > 0 && (
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">Signing Bonuses</span>
+              <span className="text-gray-500 dark:text-gray-400">
+                Signing Bonuses
+              </span>
               <span>{formatMoney(obligations.totals.signing_bonus)}</span>
             </div>
           )}
@@ -1022,14 +1300,19 @@ const FinancialsSection = ({
       {/* Future Obligations */}
       {futureYears.length > 0 && (
         <div className="border-t dark:border-gray-600 pt-2 space-y-1">
-          <Text variant="small" classes="font-semibold">Future Commitments</Text>
+          <Text variant="small" classes="font-semibold">
+            Future Commitments
+          </Text>
           {futureYears.map(([year, amount]) => (
             <div key={year} className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">{year}</span>
               <span>{formatMoney(amount)}</span>
             </div>
           ))}
-          <Text variant="small" classes="text-gray-400 dark:text-gray-500 text-xs italic">
+          <Text
+            variant="small"
+            classes="text-gray-400 dark:text-gray-500 text-xs italic"
+          >
             Committed contracts only — see Contracts tab for projected renewals
           </Text>
         </div>
@@ -1038,9 +1321,15 @@ const FinancialsSection = ({
   );
 };
 
-const BaseballInjuriesSection = ({ injuries }: { injuries: BaseballInjury[] }) => (
+const BaseballInjuriesSection = ({
+  injuries,
+}: {
+  injuries: BaseballInjury[];
+}) => (
   <div className="p-3">
-    <Text variant="h5" classes="mb-2 font-semibold">Injury Report</Text>
+    <Text variant="h5" classes="mb-2 font-semibold">
+      Injury Report
+    </Text>
     {injuries.length === 0 ? (
       <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">
         No injuries to report.
@@ -1100,10 +1389,21 @@ const LeaderCard = ({
       />
     </div>
     <div className="flex flex-col min-w-0 items-start">
-      <Text variant="small" classes={`font-semibold ${labelColor}`}>{label}</Text>
-      <Text variant="body" classes="font-semibold truncate">{name}</Text>
-      <Text variant="small" classes="font-medium text-left">{statLine}</Text>
-      <Text variant="small" classes="text-gray-500 dark:text-gray-400 text-left">{details}</Text>
+      <Text variant="small" classes={`font-semibold ${labelColor}`}>
+        {label}
+      </Text>
+      <Text variant="body" classes="font-semibold truncate">
+        {name}
+      </Text>
+      <Text variant="small" classes="font-medium text-left">
+        {statLine}
+      </Text>
+      <Text
+        variant="small"
+        classes="text-gray-500 dark:text-gray-400 text-left"
+      >
+        {details}
+      </Text>
     </div>
   </div>
 );
@@ -1177,73 +1477,100 @@ const BaseballGamesBar = ({
             ref={scrollRef}
             className="flex flex-row gap-2 overflow-x-auto w-full px-8 py-1"
           >
-        {games.map((game, idx) => {
-          const isHome = game.home_team_id === activeTeamId;
-          const opponentId = isHome ? game.away_team_id : game.home_team_id;
-          const opponentAbbrev = abbrev(opponentId);
-          const prefix = isHome ? "vs" : "@";
-          const teamScore = isHome ? game.home_score : game.away_score;
-          const oppScore = isHome ? game.away_score : game.home_score;
-          const isComplete = !!game.is_complete;
-          const won = isComplete && teamScore > oppScore;
-          const lost = isComplete && teamScore < oppScore;
-          const isNextGame = idx === firstUpcomingIdx;
+            {games.map((game, idx) => {
+              const isHome = game.home_team_id === activeTeamId;
+              const opponentId = isHome ? game.away_team_id : game.home_team_id;
+              const opponentAbbrev = abbrev(opponentId);
+              const prefix = isHome ? "vs" : "@";
+              const teamScore = isHome ? game.home_score : game.away_score;
+              const oppScore = isHome ? game.away_score : game.home_score;
+              const isComplete = !!game.is_complete;
+              const won = isComplete && teamScore > oppScore;
+              const lost = isComplete && teamScore < oppScore;
+              const isNextGame = idx === firstUpcomingIdx;
 
-          let cardBg = isHome
-            ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600"
-            : "bg-white dark:bg-gray-800/60 border-gray-200 dark:border-gray-600/60";
-          if (isComplete) {
-            if (won) cardBg = "bg-green-50 dark:bg-green-900/20 border-green-500";
-            else if (lost) cardBg = "bg-red-50 dark:bg-red-900/20 border-red-500";
-            else cardBg = "bg-gray-100 dark:bg-gray-700 border-gray-400";
-          }
+              let cardBg = isHome
+                ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600"
+                : "bg-white dark:bg-gray-800/60 border-gray-200 dark:border-gray-600/60";
+              if (isComplete) {
+                if (won)
+                  cardBg = "bg-green-50 dark:bg-green-900/20 border-green-500";
+                else if (lost)
+                  cardBg = "bg-red-50 dark:bg-red-900/20 border-red-500";
+                else cardBg = "bg-gray-100 dark:bg-gray-700 border-gray-400";
+              }
 
-          return (
-            <div
-              key={game.id}
-              className={`flex flex-col items-center shrink-0 w-28 md:w-32 lg:w-36 rounded-lg border-2 px-2 py-1.5 ${cardBg} ${isComplete && onGameClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
-              style={isNextGame ? { boxShadow: `0 0 0 2px ${accentColor || '#60a5fa'}`, outline: '1px solid transparent', outlineOffset: '1px' } : undefined}
-              onClick={isComplete && onGameClick ? () => onGameClick(game.id) : undefined}
-            >
-              {/* Week */}
-              <span className="text-[0.6rem] text-gray-500 dark:text-gray-400">
-                Wk {game.week}{game.game_day ? ` ${game.game_day.toUpperCase()}` : ""}
-              </span>
-
-              {/* Opponent logo */}
-              <img
-                src={getLogo(leagueType, opponentId, currentUser?.isRetro)}
-                className="w-7 h-7 md:w-8 md:h-8 object-contain my-0.5"
-                alt={opponentAbbrev}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-
-              {/* Matchup */}
-              <span className="text-xs font-semibold">
-                {prefix} {opponentAbbrev}
-              </span>
-
-              {/* Result */}
-              {isComplete ? (
-                <div className="flex flex-col items-center mt-0.5">
-                  <span className={`text-sm font-bold ${won ? "text-green-600 dark:text-green-400" : lost ? "text-red-600 dark:text-red-400" : ""}`}>
-                    {teamScore} - {oppScore}
+              return (
+                <div
+                  key={game.id}
+                  className={`flex flex-col items-center shrink-0 w-28 md:w-32 lg:w-36 rounded-lg border-2 px-2 py-1.5 ${cardBg} ${isComplete && onGameClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+                  style={
+                    isNextGame
+                      ? {
+                          boxShadow: `0 0 0 2px ${accentColor || "#60a5fa"}`,
+                          outline: "1px solid transparent",
+                          outlineOffset: "1px",
+                        }
+                      : undefined
+                  }
+                  onClick={
+                    isComplete && onGameClick
+                      ? () => onGameClick(game.id)
+                      : undefined
+                  }
+                >
+                  {/* Week */}
+                  <span className="text-[0.6rem] text-gray-500 dark:text-gray-400">
+                    Wk {game.week}
+                    {game.game_day ? ` ${game.game_day.toUpperCase()}` : ""}
                   </span>
-                  <span className={`text-[0.55rem] font-bold uppercase tracking-wider px-1.5 py-px rounded mt-0.5 ${
-                    won ? "bg-green-600 text-white" : lost ? "bg-red-600 text-white" : "bg-gray-500 text-white"
-                  }`}>
-                    {won ? "W" : lost ? "L" : "T"}
+
+                  {/* Opponent logo */}
+                  <img
+                    src={getLogo(leagueType, opponentId, currentUser?.IsRetro)}
+                    className="w-7 h-7 md:w-8 md:h-8 object-contain my-0.5"
+                    alt={opponentAbbrev}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+
+                  {/* Matchup */}
+                  <span className="text-xs font-semibold">
+                    {prefix} {opponentAbbrev}
                   </span>
+
+                  {/* Result */}
+                  {isComplete ? (
+                    <div className="flex flex-col items-center mt-0.5">
+                      <span
+                        className={`text-sm font-bold ${won ? "text-green-600 dark:text-green-400" : lost ? "text-red-600 dark:text-red-400" : ""}`}
+                      >
+                        {teamScore} - {oppScore}
+                      </span>
+                      <span
+                        className={`text-[0.55rem] font-bold uppercase tracking-wider px-1.5 py-px rounded mt-0.5 ${
+                          won
+                            ? "bg-green-600 text-white"
+                            : lost
+                              ? "bg-red-600 text-white"
+                              : "bg-gray-500 text-white"
+                        }`}
+                      >
+                        {won ? "W" : lost ? "L" : "T"}
+                      </span>
+                    </div>
+                  ) : (
+                    <span
+                      className={`text-[0.65rem] mt-1 ${isNextGame ? "font-bold text-blue-500" : "text-gray-400 dark:text-gray-500"}`}
+                    >
+                      {isNextGame ? "NEXT" : "—"}
+                    </span>
+                  )}
                 </div>
-              ) : (
-                <span className={`text-[0.65rem] mt-1 ${isNextGame ? "font-bold text-blue-500" : "text-gray-400 dark:text-gray-500"}`}>
-                  {isNextGame ? "NEXT" : "—"}
-                </span>
-              )}
-            </div>
-          );
-        })}
-      </div>
+              );
+            })}
+          </div>
 
           {/* Right scroll button */}
           <button
@@ -1282,51 +1609,64 @@ const StandingsTable = ({
 
   return (
     <div className="compact-table overflow-x-auto">
-    <table className="w-full text-sm text-left">
-      <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700 sticky top-0">
-        <tr>
-          <th className="px-2 py-1">#</th>
-          <th className="px-2 py-1">Team</th>
-          <th className="px-2 py-1">W</th>
-          <th className="px-2 py-1">L</th>
-          <th className="px-2 py-1">PCT</th>
-          <th className="px-2 py-1">GB</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((s, idx) => {
-          const gb = leader
-            ? ((leader.wins - s.wins) + (s.losses - leader.losses)) / 2
-            : 0;
-          return (
-            <tr
-              key={s.team_id}
-              className={`border-b dark:border-gray-600 ${
-                s.team_id === activeTeamId
-                  ? "font-semibold"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-700"
-              }`}
-              style={s.team_id === activeTeamId && highlightColor ? { backgroundColor: `${highlightColor}20`, borderLeft: `3px solid ${highlightColor}` } : undefined}
-            >
-              <td className="px-2 py-1">{idx + 1}</td>
-              <td className="px-2 py-1 flex items-center gap-1">
-                <img
-                  src={getLogo(league === SimMLB ? SimMLB : SimCollegeBaseball, s.team_id, currentUser?.isRetro)}
-                  className="w-5 h-5 object-contain"
-                  alt={s.team_abbrev}
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                />
-                {s.team_abbrev}
-              </td>
-              <td className="px-2 py-1">{s.wins}</td>
-              <td className="px-2 py-1">{s.losses}</td>
-              <td className="px-2 py-1">{s.win_pct?.toFixed(3)}</td>
-              <td className="px-2 py-1">{formatGB(gb)}</td>
-            </tr>
-          );
-        })}
-      </tbody>
-    </table>
+      <table className="w-full text-sm text-left">
+        <thead className="text-xs uppercase bg-gray-50 dark:bg-gray-700 sticky top-0">
+          <tr>
+            <th className="px-2 py-1">#</th>
+            <th className="px-2 py-1">Team</th>
+            <th className="px-2 py-1">W</th>
+            <th className="px-2 py-1">L</th>
+            <th className="px-2 py-1">PCT</th>
+            <th className="px-2 py-1">GB</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((s, idx) => {
+            const gb = leader
+              ? (leader.wins - s.wins + (s.losses - leader.losses)) / 2
+              : 0;
+            return (
+              <tr
+                key={s.team_id}
+                className={`border-b dark:border-gray-600 ${
+                  s.team_id === activeTeamId
+                    ? "font-semibold"
+                    : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
+                style={
+                  s.team_id === activeTeamId && highlightColor
+                    ? {
+                        backgroundColor: `${highlightColor}20`,
+                        borderLeft: `3px solid ${highlightColor}`,
+                      }
+                    : undefined
+                }
+              >
+                <td className="px-2 py-1">{idx + 1}</td>
+                <td className="px-2 py-1 flex items-center gap-1">
+                  <img
+                    src={getLogo(
+                      league === SimMLB ? SimMLB : SimCollegeBaseball,
+                      s.team_id,
+                      currentUser?.IsRetro,
+                    )}
+                    className="w-5 h-5 object-contain"
+                    alt={s.team_abbrev}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                  {s.team_abbrev}
+                </td>
+                <td className="px-2 py-1">{s.wins}</td>
+                <td className="px-2 py-1">{s.losses}</td>
+                <td className="px-2 py-1">{s.win_pct?.toFixed(3)}</td>
+                <td className="px-2 py-1">{formatGB(gb)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 };

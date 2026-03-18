@@ -254,6 +254,7 @@ interface SimFBAContextProps {
     points: number,
   ) => void;
   scoutPortalAttribute: (dto: any) => Promise<void>;
+  tagNFLPlayer: (dto: any) => Promise<void>;
   playerFaces: {
     [key: number]: FaceDataResponse;
   };
@@ -445,6 +446,7 @@ const defaultContext: SimFBAContextProps = {
   revealScoutingAttribute: async () => {},
   removePlayerFromScoutBoard: async () => {},
   exportDraftPicks: async () => {},
+  tagNFLPlayer: async () => {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -2538,6 +2540,39 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     [enqueueSnackbar],
   );
 
+  const tagNFLPlayer = useCallback(
+    async (dto: any) => {
+      if (!nflTeam) return;
+      if (nflTeam?.UsedTagThisSeason) {
+        enqueueSnackbar(
+          "WARNING! You have already used a franchise tag this season.",
+          {
+            variant: "warning",
+            autoHideDuration: 3000,
+          },
+        );
+        return;
+      }
+      const res = await PlayerService.FBATagPlayer(dto);
+
+      if (res) {
+        enqueueSnackbar("Player tagged successfully!", {
+          variant: "success",
+          autoHideDuration: 3000,
+        });
+
+        setNFLTeam((prev: NFLTeam | null) => {
+          if (!prev) return prev;
+          return new NFLTeam({
+            ...prev,
+            UsedTagThisSeason: true,
+          });
+        });
+      }
+    },
+    [nflTeam],
+  );
+
   return (
     <SimFBAContext.Provider
       value={{
@@ -2695,6 +2730,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         revealScoutingAttribute,
         removePlayerFromScoutBoard,
         exportDraftPicks,
+        tagNFLPlayer,
       }}
     >
       {children}

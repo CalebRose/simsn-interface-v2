@@ -24,15 +24,22 @@ interface BaseballFinancialsPageProps {
   league: string;
 }
 
-export const BaseballFinancialsPage = ({ league }: BaseballFinancialsPageProps) => {
+export const BaseballFinancialsPage = ({
+  league,
+}: BaseballFinancialsPageProps) => {
   const { currentUser } = useAuthStore();
-  const { organizations, mlbOrganization, collegeOrganization, financials, seasonContext, loadBootstrapForOrg } =
-    useSimBaseballStore();
+  const {
+    organizations,
+    mlbOrganization,
+    collegeOrganization,
+    financials,
+    seasonContext,
+    loadBootstrapForOrg,
+  } = useSimBaseballStore();
 
   const [selectedTab, setSelectedTab] = useState(OVERVIEW_TAB);
 
-  const userOrg =
-    league === SimMLB ? mlbOrganization : collegeOrganization;
+  const userOrg = league === SimMLB ? mlbOrganization : collegeOrganization;
 
   // --- Org selector ---
   const [viewedOrgId, setViewedOrgId] = useState<number | null>(null);
@@ -53,8 +60,14 @@ export const BaseballFinancialsPage = ({ league }: BaseballFinancialsPageProps) 
 
   const orgOptions: SelectOption[] = useMemo(() => {
     return leagueOrgs.map((org) => {
-      const t = league === SimMLB ? org.teams?.["mlb"] : Object.values(org.teams ?? {})[0];
-      return { value: String(org.id), label: t?.team_full_name || org.org_abbrev };
+      const t =
+        league === SimMLB
+          ? org.teams?.["mlb"]
+          : Object.values(org.teams ?? {})[0];
+      return {
+        value: String(org.id),
+        label: t?.team_full_name || org.org_abbrev,
+      };
     });
   }, [leagueOrgs, league]);
 
@@ -79,7 +92,7 @@ export const BaseballFinancialsPage = ({ league }: BaseballFinancialsPageProps) 
     if (league === SimMLB) {
       const mlbTeam = organization.teams["mlb"];
       if (mlbTeam)
-        return getLogo(SimMLB, mlbTeam.team_id, currentUser?.isRetro);
+        return getLogo(SimMLB, mlbTeam.team_id, currentUser?.IsRetro);
     }
     if (league === SimCollegeBaseball) {
       const teamEntries = Object.values(organization.teams);
@@ -87,11 +100,11 @@ export const BaseballFinancialsPage = ({ league }: BaseballFinancialsPageProps) 
         return getLogo(
           SimCollegeBaseball,
           teamEntries[0].team_id,
-          currentUser?.isRetro,
+          currentUser?.IsRetro,
         );
     }
     return "";
-  }, [organization, league, currentUser?.isRetro]);
+  }, [organization, league, currentUser?.IsRetro]);
 
   const pageTitle = useMemo(() => {
     if (!organization) return "";
