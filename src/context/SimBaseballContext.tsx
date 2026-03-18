@@ -143,7 +143,7 @@ interface SimBaseballContextProps {
   isBootstrapLoading: boolean;
   // Actions
   loadBootstrapForOrg: (orgId: number, forceRefresh?: boolean) => Promise<any>;
-  getAllCachedOrgPlayers: () => { players: Player[]; allTeams: BaseballTeam[] } | null;
+  getAllCachedOrgPlayers: () => { players: Player[]; allTeams: BaseballTeam[]; cachedOrgCount: number } | null;
   toggleNotificationAsRead: (notificationId: number) => void;
   deleteNotification: (notificationId: number) => void;
 }
@@ -216,6 +216,26 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   const [isBootstrapLoading, setIsBootstrapLoading] = useState(false);
   // Tracks whether initial data load is complete (active org loaded)
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  // Invalidate caches when websocket signals a sim advance / data change
+  const prevTimestamp = useRef(baseball_Timestamp);
+  useEffect(() => {
+    if (!baseball_Timestamp || baseball_Timestamp === prevTimestamp.current) return;
+    prevTimestamp.current = baseball_Timestamp;
+    // Clear in-memory cache so next loadBootstrapForOrg fetches fresh data
+    bootstrapCache.current.clear();
+    // Clear sessionStorage cache for all orgs
+    try {
+      for (const key of Object.keys(sessionStorage)) {
+        if (key.startsWith(CACHE_KEY_PREFIX)) sessionStorage.removeItem(key);
+      }
+    } catch { /* sessionStorage unavailable */ }
+    // Re-fetch active org's data
+    const activeOrg = mlbOrganization || collegeOrganization;
+    if (activeOrg) {
+      loadBootstrapForOrg(activeOrg.id, true);
+    }
+  }, [baseball_Timestamp]);
 
   const mlbOrganization = useMemo(() => {
     if (!currentUser || !organizations || organizations.length === 0) return null;
@@ -341,31 +361,40 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   }, []);
 
   /**
-   * Fetch stamina data from the roster endpoint and merge it into
-   * a rosterMap. The bootstrap endpoint doesn't include stamina/has_fatigue_data,
+   * Fetch live roster data (stamina, fatigue, injury) from the roster endpoint and
+   * merge it into a rosterMap. The bootstrap endpoint doesn't include these fields,
    * so we supplement from the roster API.
    */
-  const fetchAndMergeStamina = useCallback(async (
+  const fetchAndMergeRosterLiveData = useCallback(async (
     orgAbbrev: string,
     rosterMap: Record<string, Player[]>,
   ): Promise<Record<string, Player[]>> => {
     try {
-      console.log("[fetchAndMergeStamina] fetching roster for org:", orgAbbrev);
+      console.log("[fetchAndMergeRosterLiveData] fetching roster for org:", orgAbbrev);
       const rawResponse: any = await BaseballService.GetOrgRoster(orgAbbrev);
-      console.log("[fetchAndMergeStamina] raw response type:", typeof rawResponse, "isArray:", Array.isArray(rawResponse), "keys:", rawResponse ? Object.keys(rawResponse).slice(0, 10) : null);
+      console.log("[fetchAndMergeRosterLiveData] raw response type:", typeof rawResponse, "isArray:", Array.isArray(rawResponse), "keys:", rawResponse ? Object.keys(rawResponse).slice(0, 10) : null);
       // Extract player array — handle both array and object-with-players shapes
       const rosterPlayers: any[] = Array.isArray(rawResponse) ? rawResponse : (rawResponse?.players ?? rawResponse?.roster ?? rawResponse?.Players ?? rawResponse?.Roster ?? []);
-      console.log("[fetchAndMergeStamina] players:", { count: rosterPlayers.length, sample: rosterPlayers[0] ? { id: rosterPlayers[0].id, stamina: rosterPlayers[0].stamina, has_fatigue_data: rosterPlayers[0].has_fatigue_data } : null });
+      console.log("[fetchAndMergeRosterLiveData] players:", { count: rosterPlayers.length, sample: rosterPlayers[0] ? { id: rosterPlayers[0].id, stamina: rosterPlayers[0].stamina, has_fatigue_data: rosterPlayers[0].has_fatigue_data, is_injured: rosterPlayers[0].is_injured, listed_position: rosterPlayers[0].listed_position ?? rosterPlayers[0].bio?.listed_position } : null });
       if (rosterPlayers.length === 0) return rosterMap;
 
-      // Build a lookup: player_id → { stamina, has_fatigue_data }
-      const staminaMap = new Map<number, { stamina?: number; has_fatigue_data?: boolean }>();
+      // Build a lookup: player_id → live fields (stamina, fatigue, injury, position)
+      const liveDataMap = new Map<number, {
+        stamina?: number;
+        has_fatigue_data?: boolean;
+        is_injured?: boolean;
+        injury_details?: any[];
+        listed_position?: string | null;
+      }>();
       for (const p of rosterPlayers) {
         const pid = p.id ?? p.player_id;
         if (pid != null) {
-          staminaMap.set(pid, {
+          liveDataMap.set(pid, {
             stamina: p.stamina,
             has_fatigue_data: p.has_fatigue_data,
+            is_injured: p.is_injured ?? false,
+            injury_details: p.injury_details ?? [],
+            listed_position: p.listed_position ?? p.bio?.listed_position ?? null,
           });
         }
       }
@@ -373,13 +402,21 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
       const patched: Record<string, Player[]> = {};
       for (const [key, players] of Object.entries(rosterMap)) {
         patched[key] = players.map((p) => {
-          const data = staminaMap.get(p.id);
-          return data ? { ...p, stamina: data.stamina, has_fatigue_data: data.has_fatigue_data } : p;
+          const data = liveDataMap.get(p.id);
+          if (!data) return p;
+          return {
+            ...p,
+            stamina: data.stamina,
+            has_fatigue_data: data.has_fatigue_data,
+            is_injured: data.is_injured,
+            injury_details: data.injury_details,
+            ...(data.listed_position != null && { listed_position: data.listed_position }),
+          };
         });
       }
       return patched;
     } catch (e) {
-      console.error("Failed to fetch stamina data:", e);
+      console.error("Failed to fetch roster live data:", e);
       return rosterMap;
     }
   }, []);
@@ -434,7 +471,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
     if (org?.org_abbrev) {
       const cached = bootstrapCache.current.get(activeOrgId);
       if (cached) {
-        const patchedMap = await fetchAndMergeStamina(org.org_abbrev, cached.rosterMap);
+        const patchedMap = await fetchAndMergeRosterLiveData(org.org_abbrev, cached.rosterMap);
         const patchedBootstrap = { ...cached, rosterMap: patchedMap };
         bootstrapCache.current.set(activeOrgId, patchedBootstrap);
         applyBootstrap(activeOrgId, patchedBootstrap);
@@ -528,7 +565,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         if (Object.keys(sharedFaces).length > 0) setGlobalFaces(sharedFaces);
       })
       .catch((e) => console.error("Background all-orgs cache fill failed:", e));
-  }, [processAndCacheOrgData, organizations, fetchAndMergeStamina]);
+  }, [processAndCacheOrgData, organizations, fetchAndMergeRosterLiveData]);
 
   /** Apply cached bootstrap data to active state (no network call). */
   const applyBootstrap = useCallback((orgId: number, data: BootstrapData) => {
@@ -545,14 +582,14 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
     if (!forceRefresh && bootstrapCache.current.has(orgId)) {
       let cached = bootstrapCache.current.get(orgId)!;
 
-      // Check if stamina has been patched for this cached data.
-      // If any player has stamina undefined, we need to fetch it.
+      // Check if live data has been patched for this cached data.
+      // Fetch if ANY player is missing stamina or injury data (not just all-or-nothing).
       const allPlayers = Object.values(cached.rosterMap).flat();
-      const needsStamina = allPlayers.length > 0 && allPlayers.every((p) => p.stamina === undefined);
+      const needsStamina = allPlayers.length > 0 && allPlayers.some((p) => p.stamina === undefined || p.is_injured === undefined);
       if (needsStamina) {
         const org = organizations.find((o) => o.id === orgId);
         if (org?.org_abbrev) {
-          const patchedMap = await fetchAndMergeStamina(org.org_abbrev, cached.rosterMap);
+          const patchedMap = await fetchAndMergeRosterLiveData(org.org_abbrev, cached.rosterMap);
           cached = { ...cached, rosterMap: patchedMap };
           bootstrapCache.current.set(orgId, cached);
         }
@@ -586,7 +623,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
       // Patch stamina from roster endpoint (bootstrap doesn't include it)
       const org = organizations.find((o) => o.id === orgId);
       if (org?.org_abbrev) {
-        const patchedMap = await fetchAndMergeStamina(org.org_abbrev, bootstrapData.rosterMap);
+        const patchedMap = await fetchAndMergeRosterLiveData(org.org_abbrev, bootstrapData.rosterMap);
         const patchedBootstrap = { ...bootstrapData, rosterMap: patchedMap };
         bootstrapCache.current.set(orgId, patchedBootstrap);
         applyBootstrap(orgId, patchedBootstrap);
@@ -602,7 +639,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
       setIsBootstrapLoading(false);
       return null;
     }
-  }, [applyBootstrap, processAndCacheOrgData, organizations, fetchAndMergeStamina]);
+  }, [applyBootstrap, processAndCacheOrgData, organizations, fetchAndMergeRosterLiveData]);
 
   const toggleNotificationAsRead = useCallback(
     async (notificationId: number) => {
@@ -658,7 +695,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
    * Return all players from the in-memory bootstrap cache (no network call).
    * Returns null if the cache hasn't been populated yet.
    */
-  const getAllCachedOrgPlayers = useCallback((): { players: Player[]; allTeams: BaseballTeam[] } | null => {
+  const getAllCachedOrgPlayers = useCallback((): { players: Player[]; allTeams: BaseballTeam[]; cachedOrgCount: number } | null => {
     if (bootstrapCache.current.size === 0) return null;
     const players: Player[] = [];
     let allTeams: BaseballTeam[] = [];
@@ -670,7 +707,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         allTeams = data.allTeams;
       }
     }
-    return { players, allTeams };
+    return { players, allTeams, cachedOrgCount: bootstrapCache.current.size };
   }, []);
 
   // Merge global faces with any bootstrap-specific faces (global takes priority for coverage)

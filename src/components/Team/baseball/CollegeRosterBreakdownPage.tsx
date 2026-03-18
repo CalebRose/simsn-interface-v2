@@ -17,6 +17,7 @@ import {
   normalizePlayer, getClassYear, isDraftEligible,
   numericToLetterGrade,
 } from "../../../_utility/baseballHelpers";
+import { gradeColor } from "./baseballColorConfig";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
@@ -77,7 +78,7 @@ const PlayerRow = ({ p, onPlayerClick }: { p: Player; onPlayerClick?: (p: Player
     <tr className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
       <td className={`${td} font-medium cursor-pointer`} onClick={() => onPlayerClick?.(p)}>{p.firstname} {p.lastname}</td>
       <td className={`${td} text-center`}>{p.ptype === "Pitcher" ? "P" : "Pos"}</td>
-      <td className={`${td} text-center font-semibold`}>{ovr}</td>
+      <td className={`${td} text-center font-semibold ${gradeColor(ovr)}`}>{ovr}</td>
       <td className={`${td} text-center`}>{p.age}</td>
       <td className={`${td} text-center`}>
         {p.bat_hand ?? "—"}/{p.pitch_hand ?? "—"}

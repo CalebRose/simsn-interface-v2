@@ -217,7 +217,7 @@ export interface GameResultsResponse {
 // ═══════════════════════════════════════════════
 
 export type BattingSortField =
-  | "avg" | "hr" | "rbi" | "hits" | "sb" | "ops"
+  | "avg" | "hr" | "rbi" | "h" | "sb" | "ops"
   | "obp" | "slg" | "iso" | "babip" | "bb_pct" | "k_pct" | "bb_k" | "ab_hr" | "xbh_pct" | "sb_pct"
   | "pa" | "tb" | "r" | "bb" | "so" | "cs" | "2b" | "3b" | "g" | "ab";
 export type PitchingSortField =

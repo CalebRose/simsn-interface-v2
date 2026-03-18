@@ -28,6 +28,7 @@ import {
   TOTAL_WEEKS, MONTH_WEEKS, getWeekRangeForMonth, getMonthForWeek,
 } from "./baseballScheduleHelpers";
 import { BaseballBoxScoreModal } from "./BaseballBoxScoreModal";
+import { SeriesDetailCard } from "./SeriesDetailCard";
 
 // ═══════════════════════════════════════════════
 // Props
@@ -114,7 +115,7 @@ const SeriesCard = ({ series, teamId, league, isRetro, accentColor, compact, onG
           </Text>
         </div>
         <span
-          className="text-xs font-bold px-2 py-0.5 rounded"
+          className="text-xs font-bold px-2 py-0.5 rounded dark:!text-white"
           style={accentColor && record.label !== "—" ? { backgroundColor: `${accentColor}15`, color: accentColor } : undefined}
         >
           {record.label}
@@ -277,9 +278,17 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
   const openPlayerModal = useCallback((playerId: number) => {
     setModalPlayerId(playerId);
     handleOpenModal();
-  }, [allPlayers, handleOpenModal]);
+  }, [handleOpenModal]);
 
   // --- Team color theming ---
+  const teamColorsById = useMemo(() => {
+    const map: Record<number, { colorOne: string; colorTwo: string }> = {};
+    for (const t of allTeams ?? []) {
+      map[t.team_id] = { colorOne: t.color_one ?? "#4B5563", colorTwo: t.color_two ?? "#4B5563" };
+    }
+    return map;
+  }, [allTeams]);
+
   const teamColors = useTeamColors(primaryTeam?.color_one ?? undefined, primaryTeam?.color_two ?? undefined, primaryTeam?.color_three ?? undefined);
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
@@ -569,30 +578,17 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
               {viewMode === "weekly" && (
                 weeklySeriesList.length === 0 ? (
                   <Text variant="body-small" classes="text-gray-400 py-8 text-center">No games found for Week {selectedWeek}.</Text>
-                ) : weeklySeriesList.length === 1 ? (
-                  /* Single series — display prominently centered */
-                  <div className="flex justify-center">
-                    <SeriesCard
-                      series={weeklySeriesList[0]}
-                      teamId={selectedTeamId ?? weeklySeriesList[0].home_team_id}
-                      league={league}
-                      isRetro={currentUser?.isRetro}
-                      accentColor={headerColor}
-                      onGameClick={setBoxScoreGameId}
-                    />
-                  </div>
                 ) : (
-                  /* Multiple series — grid layout */
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
+                  <div className="flex flex-col gap-4">
                     {weeklySeriesList.map((series) => (
-                      <SeriesCard
+                      <SeriesDetailCard
                         key={`${series.season_week}-${series.home_team_id}-${series.away_team_id}`}
                         series={series}
                         teamId={selectedTeamId ?? series.home_team_id}
                         league={league}
                         isRetro={currentUser?.isRetro}
                         accentColor={headerColor}
-                        compact
+                        teamColorsById={teamColorsById}
                         onGameClick={setBoxScoreGameId}
                       />
                     ))}
@@ -607,9 +603,27 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
                     No games on {SUBWEEK_LABELS[selectedSubweek]} of Week {selectedWeek}.
                   </Text>
                 ) : (
-                  <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <div className="flex flex-col gap-4">
                     {dailyGames.map((g) => (
-                      <GameRow key={g.id} game={g} teamId={selectedTeamId} league={league} isRetro={currentUser?.isRetro} onGameClick={setBoxScoreGameId} />
+                      <SeriesDetailCard
+                        key={g.id}
+                        series={{
+                          season_week: g.season_week,
+                          home_team_id: g.home_team_id,
+                          home_team_abbrev: g.home_team_abbrev,
+                          home_team_name: g.home_team_name,
+                          away_team_id: g.away_team_id,
+                          away_team_abbrev: g.away_team_abbrev,
+                          away_team_name: g.away_team_name,
+                          games: [g],
+                        }}
+                        teamId={selectedTeamId ?? g.home_team_id}
+                        league={league}
+                        isRetro={currentUser?.isRetro}
+                        accentColor={headerColor}
+                        teamColorsById={teamColorsById}
+                        onGameClick={setBoxScoreGameId}
+                      />
                     ))}
                   </div>
                 )
@@ -648,7 +662,7 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
                           >
                             <Text variant="body" classes="font-bold">Month {monthNum}</Text>
                             {selectedTeamId && (monthW > 0 || monthL > 0) && (
-                              <span className="text-sm font-semibold" style={{ color: headerColor }}>{monthW}-{monthL}</span>
+                              <span className="text-sm font-semibold dark:!text-white" style={{ color: headerColor }}>{monthW}-{monthL}</span>
                             )}
                           </div>
                         )}
@@ -725,7 +739,7 @@ export const BaseballScheduleView = ({ league, organization, seasonContext }: Ba
                       style={{ backgroundColor: `${headerColor}20`, border: `2px solid ${headerColor}` }}
                     >
                       <Text variant="body" classes="font-bold">Season Total</Text>
-                      <span className="text-base font-bold" style={{ color: headerColor }}>
+                      <span className="text-base font-bold dark:!text-white" style={{ color: headerColor }}>
                         {(() => {
                           let w = 0, l = 0;
                           for (let wk = 1; wk <= TOTAL_WEEKS; wk++) {

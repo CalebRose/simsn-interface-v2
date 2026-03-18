@@ -1,4 +1,66 @@
 import { ScheduleGame, ScheduleSeries } from "../../../models/baseball/baseballModels";
+import { BoxScoreResponse } from "../../../models/baseball/baseballStatsModels";
+
+// ─── Lineup display helpers ───────────────────────────────────────────────────
+
+export const LINEUP_POSITION_ORDER = ["SP", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"] as const;
+export type LineupPosition = typeof LINEUP_POSITION_ORDER[number];
+export type StartingLineup = Partial<Record<LineupPosition, string>>;
+
+// Maps defense dict / batting line position codes → display positions
+// (same codes used by BaseballBoxScoreModal POS_DISPLAY)
+const POS_CODE_MAP: Record<string, LineupPosition> = {
+  c: "C", fb: "1B", sb: "2B", tb: "3B", ss: "SS",
+  lf: "LF", cf: "CF", rf: "RF", dh: "DH",
+};
+
+function extractLineupForSide(
+  pitching: BoxScoreResponse["pitching"]["home"],
+  batting: BoxScoreResponse["batting"]["home"],
+  defense?: Record<string, number>,
+): StartingLineup {
+  const lineup: StartingLineup = {};
+
+  // SP: starting pitcher (gs === 1)
+  const sp = pitching.find((p) => p.gs === 1);
+  if (sp) lineup["SP"] = sp.name;
+
+  // Build player_id → name lookup from batting lines
+  const nameById: Record<number, string> = {};
+  for (const b of batting) nameById[b.player_id] = b.name;
+
+  const starters = batting.filter((b) => (b.batting_order ?? 0) >= 1 && (b.batting_order ?? 0) <= 9);
+
+  if (defense && Object.keys(defense).length > 0) {
+    // Primary: use defense dict (position_code → player_id) for the 8 fielding positions
+    const defendingIds = new Set(Object.values(defense));
+    for (const [code, pid] of Object.entries(defense)) {
+      const pos = POS_CODE_MAP[code.toLowerCase()];
+      if (pos) lineup[pos] = nameById[pid] ?? `#${pid}`;
+    }
+    // DH is never in the defense dict — find the starter whose player_id isn't a fielder
+    // (mirrors boxscore modal: if no pos and not in posMap → DH)
+    const dh = starters.find((b) => !defendingIds.has(b.player_id));
+    if (dh) lineup["DH"] = dh.name;
+  } else {
+    // Fallback: batting lines filtered to starters (batting_order 1–9)
+    // A starter with no pos (or pos "dh") is the DH — same logic as boxscore modal line 335
+    for (const b of starters) {
+      const raw = b.pos?.toLowerCase() ?? "";
+      const pos: LineupPosition = raw ? (POS_CODE_MAP[raw] ?? "DH") : "DH";
+      if (!lineup[pos]) lineup[pos] = b.name;
+    }
+  }
+
+  return lineup;
+}
+
+export function extractStartingLineups(boxScore: BoxScoreResponse): { home: StartingLineup; away: StartingLineup } {
+  return {
+    home: extractLineupForSide(boxScore.pitching.home, boxScore.batting.home, boxScore.defense?.home),
+    away: extractLineupForSide(boxScore.pitching.away, boxScore.batting.away, boxScore.defense?.away),
+  };
+}
 
 export const SUBWEEK_ORDER = ["a", "b", "c", "d"];
 export const SUBWEEK_LABELS: Record<string, string> = {

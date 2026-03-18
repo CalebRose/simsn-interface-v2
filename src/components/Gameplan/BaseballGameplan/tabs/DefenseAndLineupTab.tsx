@@ -275,10 +275,9 @@ export const DefenseAndLineupTab = ({ teamId, players }: DefenseAndLineupTabProp
     setIsSaving(true);
     setMessage("");
     try {
-      const saved = await BaseballService.SaveDefensePlan(teamId, { assignments });
-      const savedAssignments = (saved.assignments ?? assignments).map(normalizeAssignment);
-      setAssignments(savedAssignments);
-      baselineRef.current = JSON.stringify(savedAssignments);
+      await BaseballService.SaveDefensePlan(teamId, { assignments });
+      // Keep local state as source of truth — don't overwrite with response
+      baselineRef.current = JSON.stringify(assignments);
       setMessage("Saved successfully");
     } catch (err: any) {
       const detail = err?.message && err.message !== "Failed to fetch"

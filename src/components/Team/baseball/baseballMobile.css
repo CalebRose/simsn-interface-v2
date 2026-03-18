@@ -170,6 +170,12 @@
 }
 
 @media screen and (max-width: 900px) {
+  /* Disable sticky columns inside compact-table on mobile — they float over content */
+  .compact-table table .sticky {
+    position: static !important;
+    z-index: auto !important;
+  }
+
   .compact-table table thead,
   .compact-table table tfoot {
     display: table-header-group !important;

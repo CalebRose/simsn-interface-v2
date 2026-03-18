@@ -65,7 +65,9 @@ import {
   HockeyPlayerStatsModalView,
 } from "./PlayerStatsModalView";
 import { Player as BaseballPlayer, PlayerContract as BaseballPlayerContract } from "../../models/baseball/baseballModels";
+import { injuryEffects, affectedAttributeKeys } from "../../_utility/injuryUtils";
 import { getClassYear } from "../../_utility/baseballHelpers";
+import { ratingColor as ovrRatingColor } from "../Team/baseball/baseballColorConfig";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { displayLevel } from "../../_utility/baseballHelpers";
 import { BaseballService } from "../../_services/baseballService";
@@ -3343,11 +3345,13 @@ const BaseballStatCell = ({
   value,
   pot,
   isFuzzed,
+  isAffected,
 }: {
   label: string;
   value: number | string | null;
   pot?: string | null;
   isFuzzed?: boolean;
+  isAffected?: boolean;
 }) => {
   if (value == null) return null;
   // Handle both numeric (20-80) and letter grade (string) values
@@ -3370,6 +3374,7 @@ const BaseballStatCell = ({
       </Text>
       <Text variant="small" classes={`whitespace-nowrap ${color}`}>
         {isFuzzed && <span className="text-gray-400">~</span>}{typeof value === "number" ? Math.round(value) : value}
+        {isAffected && <span className="ml-0.5 text-red-500 text-[10px]">↓</span>}
         {pot && pot !== "?" && (
           <span className="ml-0.5 text-xs text-gray-500 dark:text-gray-400">
             ({pot})
@@ -3538,6 +3543,7 @@ export const BaseballPlayerInfoModalBody: FC<
   const r = player.ratings;
   const pot = player.potentials;
   const isPitcher = player.ptype === "Pitcher";
+  const affected = affectedAttributeKeys(player);
 
   return (
     <div className="flex flex-col w-full">
@@ -3582,7 +3588,7 @@ export const BaseballPlayerInfoModalBody: FC<
           <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
             Overall
           </Text>
-          <Text variant="small">{player.displayovr ?? "—"}</Text>
+          <Text variant="small" classes={`font-semibold ${player.displayovr != null ? ovrRatingColor(Number(player.displayovr)) : "text-gray-400"}`}>{player.displayovr ?? "—"}</Text>
         </div>
 
         <div className="flex flex-col">
@@ -3633,6 +3639,46 @@ export const BaseballPlayerInfoModalBody: FC<
         <BaseballContractRow contract={player.contract} league={league} />
       )}
 
+      {/* Active Injuries */}
+      {player.is_injured && (player.injury_details ?? []).length > 0 && (
+        <div className="mt-4 p-3 rounded-lg border border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20">
+          <Text variant="small" classes="font-bold text-orange-600 dark:text-orange-400 mb-2">
+            Active Injuries
+          </Text>
+          {(player.injury_details ?? []).map((inj) => {
+            const progress = inj.weeks_assigned > 0
+              ? Math.round(((inj.weeks_assigned - inj.weeks_remaining) / inj.weeks_assigned) * 100)
+              : 100;
+            const effects = injuryEffects({ ...player, injury_details: [inj] });
+            return (
+              <div key={inj.event_id} className="mb-2 last:mb-0">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-semibold">⚠ {inj.injury_name}</span>
+                  <span className="text-xs text-gray-500">{inj.weeks_remaining}w remaining</span>
+                </div>
+                <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 mb-1.5">
+                  <div className="h-full rounded-full bg-orange-400" style={{ width: `${progress}%` }} />
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {effects.map((e) => (
+                    <span
+                      key={e.attr}
+                      className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                        e.attr === "stamina_pct"
+                          ? "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400"
+                          : "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300"
+                      }`}
+                    >
+                      {e.attr === "stamina_pct" ? "BENCHED" : `${e.displayName} −${e.pct}%`}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Tabs */}
       <div className="flex flex-col mt-4 pt-4 border-t dark:border-gray-600">
         <TabGroup classes="mb-3">
@@ -3672,36 +3718,36 @@ export const BaseballPlayerInfoModalBody: FC<
 
         {selectedTab === "Batting" && (
           <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
-            <BaseballStatCell label="Contact" value={r.contact_display} pot={pot.contact_pot} />
-            <BaseballStatCell label="Power" value={r.power_display} pot={pot.power_pot} />
-            <BaseballStatCell label="Eye" value={r.eye_display} pot={pot.eye_pot} />
-            <BaseballStatCell label="Discipline" value={r.discipline_display} pot={pot.discipline_pot} />
-            <BaseballStatCell label="Speed" value={r.speed_display} pot={pot.speed_pot} />
-            <BaseballStatCell label="Base Reaction" value={r.basereaction_display} pot={pot.basereaction_pot} />
-            <BaseballStatCell label="Baserunning" value={r.baserunning_display} pot={pot.baserunning_pot} />
+            <BaseballStatCell label="Contact" value={r.contact_display} pot={pot.contact_pot} isAffected={affected.has("contact")} />
+            <BaseballStatCell label="Power" value={r.power_display} pot={pot.power_pot} isAffected={affected.has("power")} />
+            <BaseballStatCell label="Eye" value={r.eye_display} pot={pot.eye_pot} isAffected={affected.has("eye")} />
+            <BaseballStatCell label="Discipline" value={r.discipline_display} pot={pot.discipline_pot} isAffected={affected.has("discipline")} />
+            <BaseballStatCell label="Speed" value={r.speed_display} pot={pot.speed_pot} isAffected={affected.has("speed")} />
+            <BaseballStatCell label="Base Reaction" value={r.basereaction_display} pot={pot.basereaction_pot} isAffected={affected.has("basereaction")} />
+            <BaseballStatCell label="Baserunning" value={r.baserunning_display} pot={pot.baserunning_pot} isAffected={affected.has("baserunning")} />
           </div>
         )}
 
         {selectedTab === "Fielding" && (
           <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
-            <BaseballStatCell label="Field Catch" value={r.fieldcatch_display} pot={pot.fieldcatch_pot} />
-            <BaseballStatCell label="Field React" value={r.fieldreact_display} pot={pot.fieldreact_pot} />
-            <BaseballStatCell label="Field Spot" value={r.fieldspot_display} pot={pot.fieldspot_pot} />
-            <BaseballStatCell label="Throw Acc" value={r.throwacc_display} pot={pot.throwacc_pot} />
-            <BaseballStatCell label="Throw Pow" value={r.throwpower_display} pot={pot.throwpower_pot} />
-            <BaseballStatCell label="Catch Frame" value={r.catchframe_display} pot={pot.catchframe_pot} />
-            <BaseballStatCell label="Catch Seq" value={r.catchsequence_display} pot={pot.catchsequence_pot} />
+            <BaseballStatCell label="Field Catch" value={r.fieldcatch_display} pot={pot.fieldcatch_pot} isAffected={affected.has("fieldcatch")} />
+            <BaseballStatCell label="Field React" value={r.fieldreact_display} pot={pot.fieldreact_pot} isAffected={affected.has("fieldreact")} />
+            <BaseballStatCell label="Field Spot" value={r.fieldspot_display} pot={pot.fieldspot_pot} isAffected={affected.has("fieldspot")} />
+            <BaseballStatCell label="Throw Acc" value={r.throwacc_display} pot={pot.throwacc_pot} isAffected={affected.has("throwacc")} />
+            <BaseballStatCell label="Throw Pow" value={r.throwpower_display} pot={pot.throwpower_pot} isAffected={affected.has("throwpower")} />
+            <BaseballStatCell label="Catch Frame" value={r.catchframe_display} pot={pot.catchframe_pot} isAffected={affected.has("catchframe")} />
+            <BaseballStatCell label="Catch Seq" value={r.catchsequence_display} pot={pot.catchsequence_pot} isAffected={affected.has("catchsequence")} />
           </div>
         )}
 
         {selectedTab === "Pitching" && isPitcher && (
           <div className="space-y-3">
             <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
-              <BaseballStatCell label="Endurance" value={r.pendurance_display} pot={pot.pendurance_pot} />
-              <BaseballStatCell label="Control" value={r.pgencontrol_display} pot={pot.pgencontrol_pot} />
-              <BaseballStatCell label="Velocity" value={r.pthrowpower_display} pot={pot.pthrowpower_pot} />
-              <BaseballStatCell label="Sequencing" value={r.psequencing_display} pot={pot.psequencing_pot} />
-              <BaseballStatCell label="Pickoff" value={r.pickoff_display} pot={pot.pickoff_pot} />
+              <BaseballStatCell label="Endurance" value={r.pendurance_display} pot={pot.pendurance_pot} isAffected={affected.has("pendurance")} />
+              <BaseballStatCell label="Control" value={r.pgencontrol_display} pot={pot.pgencontrol_pot} isAffected={affected.has("pgencontrol")} />
+              <BaseballStatCell label="Velocity" value={r.pthrowpower_display} pot={pot.pthrowpower_pot} isAffected={affected.has("pthrowpower")} />
+              <BaseballStatCell label="Sequencing" value={r.psequencing_display} pot={pot.psequencing_pot} isAffected={affected.has("psequencing")} />
+              <BaseballStatCell label="Pickoff" value={r.pickoff_display} pot={pot.pickoff_pot} isAffected={affected.has("pickoff")} />
             </div>
             <div className="border-t dark:border-gray-600 pt-3">
               <Text variant="small" classes="font-semibold mb-2">Pitch Arsenal</Text>

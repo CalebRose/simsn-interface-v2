@@ -199,8 +199,10 @@ export const normalizePlayer = (raw: any): Player => {
       ratings:       normalizeRatings(raw.ratings ?? {}),
       potentials:    raw.potentials ?? {},
       visibility_context: raw.visibility_context,
-      stamina:         raw.stamina,
+      stamina:          raw.stamina,
       has_fatigue_data: raw.has_fatigue_data,
+      is_injured:       raw.is_injured ?? false,
+      injury_details:   raw.injury_details ?? [],
     } as Player;
   }
 
@@ -344,8 +346,10 @@ export const normalizePlayer = (raw: any): Player => {
     ratings,
     potentials,
     visibility_context: raw.visibility_context,
-    stamina:         raw.stamina,
+    stamina:          raw.stamina,
     has_fatigue_data: raw.has_fatigue_data,
+    is_injured:       raw.is_injured ?? false,
+    injury_details:   raw.injury_details ?? [],
   };
 };
 

@@ -378,7 +378,7 @@ export const BaseballLandingPage = ({
             league_year_id: seasonContext.current_league_year_id,
             league_level: activeNumericLevel,
             team_id: activeTeamId,
-            sort: "hits",
+            sort: "h",
             min_ab: 0,
             page_size: 30,
           }),
