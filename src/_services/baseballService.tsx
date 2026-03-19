@@ -62,6 +62,7 @@ import {
 } from "../models/baseball/baseballStatsModels";
 import {
     PlayoffBracketResponse,
+    PendingGamesResponse,
     AllStarRostersResponse, AllStarResultsResponse,
     WBCTeamsResponse, WBCRostersResponse,
     SpecialEventsResponse,
@@ -478,6 +479,9 @@ export const BaseballService = {
     },
     GetPlayoffBracket: async (leagueYearId: number, leagueLevel: number): Promise<PlayoffBracketResponse> => {
         return await GetCall<PlayoffBracketResponse>(`${baseballUrl}playoffs/bracket/${leagueYearId}/${leagueLevel}`);
+    },
+    GetPendingPlayoffGames: async (leagueYearId: number, leagueLevel: number): Promise<PendingGamesResponse> => {
+        return await GetCall<PendingGamesResponse>(`${baseballUrl}playoffs/pending-games/${leagueYearId}/${leagueLevel}`);
     },
     GetAllStarRosters: async (eventId: number): Promise<AllStarRostersResponse> => {
         return await GetCall<AllStarRostersResponse>(`${baseballUrl}allstar/${eventId}/rosters`);

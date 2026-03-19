@@ -44,7 +44,7 @@ export const LoadingMessages = [
   "Trivia: The first simMLB champion hasn't been decided yet, but 10:1 odds on the Dodgers buying it. Not the simDodgers. The actual real life Dodgers will just pay us money.",
   "Carlos Del Cid of the Kansas City Royals once inside the park home runned 6 times in a test game by running faster than the ball ",
   "In simBaseball contact dictates how well your player can get the bat into the sweet spot.",
-  "In simBasebal power informs how much impact getting into the sweet spot has on the ball placement.", 
+  "In simBaseball power informs how much impact getting into the sweet spot has on the ball placement.", 
   "In simBaseball eye informs whether your player can make decisions on action or randomly hacks without information.",
   "In simBaseball discipline informs whether your player cares about making the right choice even if they know what's happening.",
   "In simBaseball speed makes player go zoom.",

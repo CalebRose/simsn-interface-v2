@@ -15,15 +15,10 @@ import { getLogo } from "../../../_utility/getLogo";
 import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
 import { BaseballService } from "../../../_services/baseballService";
 import {
-  PlayoffBracketResponse,
-  PlayoffSeries,
-  CWSBracketEntry,
-  MLB_ROUND_ORDER,
-  MILB_ROUND_ORDER,
-  CWS_ROUND_ORDER,
-  ROUND_LABELS,
-  BootstrapPlayoffEvent,
-  bootstrapPlayoffToBracket,
+  PlayoffBracketResponse, PlayoffSeries, CWSBracketEntry, PendingGame,
+  MLB_ROUND_ORDER, MILB_ROUND_ORDER, CWS_ROUND_ORDER, ROUND_LABELS,
+  SERIES_LENGTH_LABEL, CLINCH_WINS,
+  BootstrapPlayoffEvent, bootstrapPlayoffToBracket,
 } from "../../../models/baseball/baseballEventModels";
 import "../../Team/baseball/baseballMobile.css";
 
@@ -54,10 +49,22 @@ const SeriesCard = ({
   const isWinnerA = series.winner?.id === series.team_a.id;
   const isWinnerB = series.winner?.id === series.team_b.id;
 
+  const clinchWins = CLINCH_WINS[series.series_length] ?? 1;
+  const gameNumber = series.status === "active" ? series.wins_a + series.wins_b + 1 : null;
+
   return (
-    <div
-      className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-full sm:min-w-[14rem]`}
-    >
+    <div className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-full sm:min-w-[14rem]`}>
+      {/* Series format header */}
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 font-semibold">
+          {SERIES_LENGTH_LABEL[series.series_length] ?? `Bo${series.series_length}`}
+        </span>
+        {gameNumber && (
+          <span className="text-[10px] text-blue-500 dark:text-blue-400 font-medium">
+            Game {gameNumber}
+          </span>
+        )}
+      </div>
       {/* Team A */}
       <div
         className={`flex items-center justify-between gap-2 py-1 ${isWinnerA ? "font-bold" : isWinnerB ? "opacity-50" : ""}`}
@@ -80,9 +87,12 @@ const SeriesCard = ({
             </span>
           )}
         </div>
-        <span className="text-sm font-semibold tabular-nums">
-          {series.wins_a}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-semibold tabular-nums">{series.wins_a}</span>
+          {series.status !== "complete" && (
+            <span className="text-[10px] text-gray-400 tabular-nums">/ {clinchWins}</span>
+          )}
+        </div>
       </div>
       {/* Divider */}
       <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
@@ -108,9 +118,12 @@ const SeriesCard = ({
             </span>
           )}
         </div>
-        <span className="text-sm font-semibold tabular-nums">
-          {series.wins_b}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm font-semibold tabular-nums">{series.wins_b}</span>
+          {series.status !== "complete" && (
+            <span className="text-[10px] text-gray-400 tabular-nums">/ {clinchWins}</span>
+          )}
+        </div>
       </div>
       {/* Status badge */}
       <div className="mt-1.5 text-center">
@@ -134,24 +147,53 @@ const SeriesCard = ({
   );
 };
 
+/** Placeholder card for teams with first-round byes (MLB seeds 1 & 2). */
+const ByeCard = ({
+  team, league, isRetro,
+}: {
+  team: { id: number; abbrev: string; seed: number };
+  league: string;
+  isRetro?: boolean;
+}) => {
+  const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
+  const logo = getLogo(leagueType, team.id, isRetro);
+  return (
+    <div className="border-2 rounded-lg p-3 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 min-w-full sm:min-w-[14rem]">
+      <div className="flex items-center justify-between gap-2 py-1 font-semibold">
+        <div className="flex items-center gap-2">
+          {logo && <img src={logo} className="w-5 h-5 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
+          <span className="text-sm">{team.abbrev}</span>
+          <span className="text-[11px] sm:text-[10px] text-gray-400">({team.seed})</span>
+        </div>
+      </div>
+      <div className="mt-1 text-center">
+        <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+          First-Round Bye
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const RoundColumn = ({
-  roundKey,
-  seriesList,
-  league,
-  IsRetro,
-  conference,
+  roundKey, seriesList, league, IsRetro, conference, byeTeams,
 }: {
   roundKey: string;
   seriesList: PlayoffSeries[];
   league: string;
   IsRetro?: boolean;
   conference?: string | null;
+  byeTeams?: { id: number; abbrev: string; seed: number }[];
 }) => {
-  const filtered = conference
-    ? seriesList.filter(
-        (s) => s.conference === conference || s.conference === null,
-      )
-    : seriesList;
+  const filtered = conference ? seriesList.filter((s) => s.conference === conference || s.conference === null) : seriesList;
+  const showByes = roundKey === "WC" && byeTeams && byeTeams.length > 0;
+  const filteredByes = showByes && conference
+    ? byeTeams!.filter((bt) => {
+        // Match bye teams to the conference by checking DS series
+        return true; // Bye teams are shown for all conferences when we can't filter
+      })
+    : byeTeams;
+
   return (
     <div className="flex flex-col items-center gap-4">
       <Text
@@ -160,7 +202,10 @@ const RoundColumn = ({
       >
         {ROUND_LABELS[roundKey] ?? roundKey}
       </Text>
-      {filtered.length === 0 ? (
+      {showByes && filteredByes && filteredByes.map((bt) => (
+        <ByeCard key={bt.id} team={bt} league={league} isRetro={IsRetro} />
+      ))}
+      {filtered.length === 0 && !showByes ? (
         <div className="text-xs text-gray-400 italic">TBD</div>
       ) : (
         filtered.map((s) => (
@@ -173,6 +218,53 @@ const RoundColumn = ({
         ))
       )}
     </div>
+  );
+};
+
+// ═══════════════════════════════════════════════
+// Up Next — Pending Games
+// ═══════════════════════════════════════════════
+
+const UpNextSection = ({
+  games, headerColor,
+}: {
+  games: PendingGame[];
+  headerColor: string;
+}) => {
+  if (games.length === 0) return null;
+
+  return (
+    <Border classes="p-4 mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+      <Text variant="h5" classes="mb-3">Up Next</Text>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {games.map((g) => {
+          const gameInSeries = g.wins_a + g.wins_b + 1;
+          const clinch = CLINCH_WINS[g.series_length] ?? 1;
+          return (
+            <div
+              key={g.game_id}
+              className="flex items-center justify-between gap-3 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+            >
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{g.away_abbrev}</span>
+                  <span className="text-[10px] text-gray-400">@</span>
+                  <span className="text-sm font-medium">{g.home_abbrev}</span>
+                </div>
+                <span className="text-[10px] text-gray-400">
+                  {ROUND_LABELS[g.round] ?? g.round} &middot; Game {gameInSeries}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] text-gray-400 tabular-nums">
+                  {g.wins_a}-{g.wins_b} (need {clinch})
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Border>
   );
 };
 
@@ -291,6 +383,7 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
   // Level state (MLB only: MLB/AAA/AA/High-A/A)
   const [selectedLevel, setSelectedLevel] = useState<number>(isCollege ? 3 : 9);
   const [bracket, setBracket] = useState<PlayoffBracketResponse | null>(null);
+  const [pendingGames, setPendingGames] = useState<PendingGame[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeConference, setActiveConference] = useState<string | null>(null);
 
@@ -319,20 +412,24 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
     if (!seasonContext) return;
     if (bootstrapBracket) {
       setBracket(bootstrapBracket);
-      return;
+    } else {
+      setIsLoading(true);
+      try {
+        const data = await BaseballService.GetPlayoffBracket(seasonContext.current_league_year_id, selectedLevel);
+        setBracket(data);
+      } catch (e) {
+        console.error("Failed to load playoff bracket", e);
+        setBracket(null);
+      }
+      setIsLoading(false);
     }
-    setIsLoading(true);
+    // Fetch pending games in parallel (no bootstrap source for these)
     try {
-      const data = await BaseballService.GetPlayoffBracket(
-        seasonContext.current_league_year_id,
-        selectedLevel,
-      );
-      setBracket(data);
-    } catch (e) {
-      console.error("Failed to load playoff bracket", e);
-      setBracket(null);
+      const pg = await BaseballService.GetPendingPlayoffGames(seasonContext.current_league_year_id, selectedLevel);
+      setPendingGames(pg.games ?? []);
+    } catch {
+      setPendingGames([]);
     }
-    setIsLoading(false);
   }, [seasonContext, selectedLevel, bootstrapBracket]);
 
   useEffect(() => {
@@ -355,6 +452,42 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
       seriesList.some((s) => s.conference === "AL" || s.conference === "NL"),
     );
   }, [isMLB, bracket]);
+
+  // Derive bye teams (MLB seeds 1 & 2 per conference — appear in DS but not WC)
+  const byeTeams = useMemo(() => {
+    if (!isMLB || !bracket?.rounds?.DS) return [];
+    const dsSeries = bracket.rounds.DS;
+    const wcTeamIds = new Set(
+      (bracket.rounds.WC ?? []).flatMap((s) => [s.team_a.id, s.team_b.id]),
+    );
+    const byes: { id: number; abbrev: string; seed: number }[] = [];
+    for (const ds of dsSeries) {
+      // The bye team is the one that didn't appear in WC
+      if (!wcTeamIds.has(ds.team_a.id)) {
+        byes.push({ id: ds.team_a.id, abbrev: ds.team_a.abbrev, seed: ds.team_a.seed });
+      }
+      if (!wcTeamIds.has(ds.team_b.id)) {
+        byes.push({ id: ds.team_b.id, abbrev: ds.team_b.abbrev, seed: ds.team_b.seed });
+      }
+    }
+    return byes;
+  }, [isMLB, bracket]);
+
+  // Filter pending games by active conference
+  const filteredPendingGames = useMemo(() => {
+    if (!activeConference) return pendingGames;
+    // Match pending games to series conference via series_id lookup
+    if (!bracket) return pendingGames;
+    const conferenceSeriesIds = new Set<number>();
+    for (const seriesList of Object.values(bracket.rounds)) {
+      for (const s of seriesList) {
+        if (s.conference === activeConference || s.conference === null) {
+          conferenceSeriesIds.add(s.series_id);
+        }
+      }
+    }
+    return pendingGames.filter((g) => conferenceSeriesIds.has(g.series_id));
+  }, [pendingGames, activeConference, bracket]);
 
   const pageTitle = isCollege ? "College World Series" : "Playoffs";
 
@@ -439,6 +572,11 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
           </TabGroup>
         )}
 
+        {/* Up Next — Pending Games */}
+        {hasData && filteredPendingGames.length > 0 && (
+          <UpNextSection games={filteredPendingGames} headerColor={headerColor} />
+        )}
+
         {/* Content */}
         <Border
           classes="p-4"
@@ -472,6 +610,7 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
                         league={league}
                         IsRetro={currentUser?.IsRetro}
                         conference={activeConference}
+                        byeTeams={isMLB ? byeTeams : undefined}
                       />
                     );
                   })}

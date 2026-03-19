@@ -245,9 +245,7 @@ export const AllStarGamePage = () => {
         >
           {!allStarEvent ? (
             <div className="flex items-center justify-center py-12">
-              <Text variant="body" classes="text-gray-400">
-                No All-Star Game event found for this season.
-              </Text>
+              <Text variant="body" classes="text-gray-400">No All-Star Game Scheduled or Played Yet This Season!</Text>
             </div>
           ) : (
             <>

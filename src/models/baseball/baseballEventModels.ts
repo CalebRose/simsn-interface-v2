@@ -45,7 +45,7 @@ export interface PlayoffBracketResponse {
 export const MLB_ROUND_ORDER = ["WC", "DS", "CS", "WS"] as const;
 export const MILB_ROUND_ORDER = ["QF", "SF", "F"] as const;
 export const CWS_ROUND_ORDER = [
-  "CWS_W1", "CWS_L1", "CWS_W2", "CWS_L2", "CWS_F1",
+  "CWS_W1", "CWS_W2", "CWS_W3", "CWS_L1", "CWS_L2", "CWS_L3", "CWS_F1", "CWS_F2",
 ] as const;
 
 export const ROUND_LABELS: Record<string, string> = {
@@ -57,10 +57,52 @@ export const ROUND_LABELS: Record<string, string> = {
   SF: "Semifinals",
   F: "Finals",
   CWS_W1: "Winners Round 1",
-  CWS_L1: "Losers Round 1",
   CWS_W2: "Winners Round 2",
+  CWS_W3: "Winners Round 3",
+  CWS_L1: "Losers Round 1",
   CWS_L2: "Losers Round 2",
+  CWS_L3: "Losers Round 3",
   CWS_F1: "Championship",
+  CWS_F2: "Championship (If Necessary)",
+};
+
+// --- Pending Games ---
+
+export interface PendingGame {
+  game_id: number;
+  away_team: number;
+  home_team: number;
+  away_abbrev: string;
+  home_abbrev: string;
+  season_week: number;
+  season_subweek: string;
+  series_id: number;
+  round: string;
+  series_number: number;
+  wins_a: number;
+  wins_b: number;
+  series_length: number;
+  series_status: SeriesStatus;
+}
+
+export interface PendingGamesResponse {
+  games: PendingGame[];
+}
+
+// --- Series helpers ---
+
+export const SERIES_LENGTH_LABEL: Record<number, string> = {
+  1: "Single Game",
+  3: "Best of 3",
+  5: "Best of 5",
+  7: "Best of 7",
+};
+
+export const CLINCH_WINS: Record<number, number> = {
+  1: 1,
+  3: 2,
+  5: 3,
+  7: 4,
 };
 
 // --- All-Star Game ---
