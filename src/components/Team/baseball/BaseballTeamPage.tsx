@@ -1,4 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { exportToCsv } from "../../../_utility/csvExport";
+import {
+  INFO_HEADERS, ALL_ATTR_HEADERS,
+  POT_HEADERS, CONTRACT_HEADERS, BATTING_STAT_HEADERS, PITCHING_STAT_HEADERS,
+  FULL_EXPORT_HEADERS,
+  playerInfoRow, playerAllAttrRow,
+  playerPotRow, playerContractRow, playerBattingStatsRow, playerPitchingStatsRow,
+  buildFullExportRow,
+  type StatsMapForExport,
+} from "../../../_utility/rosterCsvExport";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { PillButton, ButtonGroup } from "../../../_design/Buttons";
@@ -286,6 +296,8 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     loadBootstrapForOrg,
     getAllCachedOrgPlayers,
     seasonContext,
+    rosterMap: contextRosterMap,
+    bootstrappedOrgId,
   } = useSimBaseballStore();
 
   const userOrg = league === SimMLB ? mlbOrganization : collegeOrganization;
@@ -345,6 +357,22 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       loadBootstrapForOrg(userOrg.id).then(processBootstrapResult);
     }
   }, [userOrg?.id]);
+
+  // Re-sync pageRosterMap when context rosterMap updates (e.g. after sim advance)
+  // Only applies when viewing the user's own org (bootstrappedOrgId matches)
+  useEffect(() => {
+    const currentViewId = viewedOrgId != null ? Number(viewedOrgId) : userOrg?.id;
+    if (!currentViewId || isAllView) return;
+    if (bootstrappedOrgId !== currentViewId) return;
+    const contextPlayers = Object.values(contextRosterMap).flat();
+    if (contextPlayers.length === 0) return;
+    // Normalize and update — fresh data from context replaces stale pageRosterMap
+    const normalized: Record<string, Player[]> = {};
+    for (const [key, players] of Object.entries(contextRosterMap)) {
+      normalized[key] = players.map(normalizePlayer);
+    }
+    setPageRosterMap(normalized);
+  }, [contextRosterMap, bootstrappedOrgId]);
 
   // ── Scouting overlay (college + MLB) ──
   interface ScoutingOverlayEntry {
@@ -587,18 +615,20 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
   const loadAllOrgPlayers = useCallback(async () => {
     setIsLoadingAll(true);
+    const leaguePlayerFilter = (p: Player) => {
+      if (league === SimMLB) return LEVEL_ORDER.includes(p.league_level);
+      return p.league_level === "college";
+    };
     try {
-      // Try reading from the in-memory bootstrap cache first (no network calls)
+      // Only use cache if it contains data for ALL known orgs in this league —
+      // a partial cache (e.g. only the user's own org) would show incorrect results.
       const cached = getAllCachedOrgPlayers();
-      if (cached && cached.players.length > 0) {
-        const leaguePlayerFilter = (p: Player) => {
-          if (league === SimMLB) return LEVEL_ORDER.includes(p.league_level);
-          return p.league_level === "college";
-        };
+      const cacheIsComplete = cached != null && cached.cachedOrgCount >= leagueOrgs.length && leagueOrgs.length > 0;
+      if (cacheIsComplete) {
         setAllOrgPlayers(cached.players.filter(leaguePlayerFilter));
         if (cached.allTeams.length > 0) setPageAllTeams(cached.allTeams);
       } else {
-        // Cache not ready — fall back to single all-orgs endpoint
+        // Cache incomplete — fetch all orgs from the API
         const allData = await BaseballService.GetAllBootstrapData();
         const players: Player[] = [];
         if (allData.Orgs) {
@@ -610,19 +640,20 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
             }
           }
         }
-        setAllOrgPlayers(players);
+        setAllOrgPlayers(players.filter(leaguePlayerFilter));
         if (allData.AllTeams?.length > 0) setPageAllTeams(allData.AllTeams);
       }
     } catch (e) {
       console.error("Failed to load all org players", e);
     }
     setIsLoadingAll(false);
-  }, [league, getAllCachedOrgPlayers]);
+  }, [league, getAllCachedOrgPlayers, leagueOrgs]);
 
   // --- Filters & category ---
   const defaultLevel = league === SimMLB ? "mlb" : "college";
   const [filterLevel, setFilterLevel] = useState<string>(defaultLevel);
   const [filterType, setFilterType] = useState<string>("all");
+  const [filterInjury, setFilterInjury] = useState<"all" | "healthy" | "injured">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState<BaseballCategory>(Attributes);
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
@@ -632,6 +663,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     new Map(),
   );
   const [statsLoading, setStatsLoading] = useState(false);
+  const [isExportingFull, setIsExportingFull] = useState(false);
 
   // Team color theming — reflects the selected level's team colors
   const activeColorTeam = useMemo(() => {
@@ -989,6 +1021,11 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     const filtered = allPlayers
       .filter((p) => p.league_level === filterLevel)
       .filter((p) => filterType === "all" || p.ptype === filterType)
+      .filter((p) => {
+        if (filterInjury === "healthy") return !p.is_injured;
+        if (filterInjury === "injured") return p.is_injured === true;
+        return true;
+      })
       .filter(
         (p) =>
           searchTerm === "" ||
@@ -1014,6 +1051,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     allPlayers,
     filterLevel,
     filterType,
+    filterInjury,
     searchTerm,
     sortConfig,
     playerStatsMap,
@@ -1045,6 +1083,92 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     }
     return "";
   }, [viewedOrg, isAllView, league, currentUser?.IsRetro]);
+
+  // --- CSV Export ---
+
+  /** "Export View": exports filteredPlayers with columns matching current category. */
+  const handleExportView = useCallback(() => {
+    if (filteredPlayers.length === 0) return;
+    const teamSlug = isAllView ? "all-orgs" : (viewedOrg?.org_abbrev ?? "roster").toLowerCase();
+
+    if (category === "Attributes") {
+      const headers = [...INFO_HEADERS, ...ALL_ATTR_HEADERS];
+      const rows = filteredPlayers.map((p) => [
+        ...playerInfoRow(p),
+        ...playerAllAttrRow(p),
+      ]);
+      exportToCsv(`${teamSlug}-roster-attributes`, headers, rows);
+
+    } else if (category === "Potentials") {
+      const headers = [...INFO_HEADERS, ...POT_HEADERS];
+      const rows = filteredPlayers.map((p) => [
+        ...playerInfoRow(p),
+        ...playerPotRow(p),
+      ]);
+      exportToCsv(`${teamSlug}-roster-potentials`, headers, rows);
+
+    } else if (category === "Contracts") {
+      const headers = [...INFO_HEADERS, ...CONTRACT_HEADERS];
+      const rows = filteredPlayers.map((p) => [
+        ...playerInfoRow(p),
+        ...playerContractRow(p),
+      ]);
+      exportToCsv(`${teamSlug}-roster-contracts`, headers, rows);
+
+    } else if (category === "Stats") {
+      if (filterType === "Pitcher") {
+        const headers = [...INFO_HEADERS, ...PITCHING_STAT_HEADERS];
+        const rows = filteredPlayers.map((p) => [
+          ...playerInfoRow(p),
+          ...playerPitchingStatsRow(playerStatsMap.get(p.id) as any),
+        ]);
+        exportToCsv(`${teamSlug}-pitching-stats`, headers, rows);
+      } else {
+        const headers = [...INFO_HEADERS, ...BATTING_STAT_HEADERS];
+        const rows = filteredPlayers.map((p) => [
+          ...playerInfoRow(p),
+          ...playerBattingStatsRow(playerStatsMap.get(p.id) as any),
+        ]);
+        exportToCsv(`${teamSlug}-batting-stats`, headers, rows);
+      }
+    }
+  }, [filteredPlayers, category, filterType, playerStatsMap, isAllView, viewedOrg]);
+
+  /** "Export Full Roster": exports allPlayers with all columns combined, fetching stats if needed. */
+  const handleExportFull = useCallback(async () => {
+    if (isExportingFull) return;
+    setIsExportingFull(true);
+    try {
+      const teamSlug = isAllView ? "all-orgs" : (viewedOrg?.org_abbrev ?? "roster").toLowerCase();
+
+      // Resolve stats map — fetch if not yet loaded (and we have org context)
+      let statsMap: StatsMapForExport = playerStatsMap as StatsMapForExport;
+      if (statsMap.size === 0 && !isAllView && leagueYearId && effectiveOrgId) {
+        const [battingRes, pitchingRes] = await Promise.all([
+          BaseballService.GetBattingLeaders({
+            league_year_id: leagueYearId,
+            org_id: effectiveOrgId,
+            page_size: 500,
+          }),
+          BaseballService.GetPitchingLeaders({
+            league_year_id: leagueYearId,
+            org_id: effectiveOrgId,
+            page_size: 500,
+          }),
+        ]);
+        const fetched: StatsMapForExport = new Map();
+        for (const row of battingRes.leaders) fetched.set(row.player_id, row);
+        for (const row of pitchingRes.leaders) fetched.set(row.player_id, row);
+        statsMap = fetched;
+      }
+
+      const rows = allPlayers.map((p) => buildFullExportRow(p, statsMap));
+      exportToCsv(`${teamSlug}-full-roster`, FULL_EXPORT_HEADERS, rows);
+    } catch (e) {
+      console.error("Full roster export failed", e);
+    }
+    setIsExportingFull(false);
+  }, [isExportingFull, isAllView, viewedOrg, allPlayers, playerStatsMap, leagueYearId, effectiveOrgId]);
 
   const showPitchers = filterType === "Pitcher";
   const showPosition = filterType === "Position";
@@ -1228,6 +1352,36 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
             </ButtonGroup>
           </div>
 
+          {/* Availability Filter */}
+          <div className="mb-3">
+            <Text variant="small" classes="font-semibold mb-1">
+              Availability
+            </Text>
+            <ButtonGroup>
+              <PillButton
+                variant="primaryOutline"
+                isSelected={filterInjury === "all"}
+                onClick={() => setFilterInjury("all")}
+              >
+                <Text variant="small">All</Text>
+              </PillButton>
+              <PillButton
+                variant="primaryOutline"
+                isSelected={filterInjury === "healthy"}
+                onClick={() => setFilterInjury("healthy")}
+              >
+                <Text variant="small">Healthy</Text>
+              </PillButton>
+              <PillButton
+                variant="primaryOutline"
+                isSelected={filterInjury === "injured"}
+                onClick={() => setFilterInjury("injured")}
+              >
+                <Text variant="small">Injured</Text>
+              </PillButton>
+            </ButtonGroup>
+          </div>
+
           {/* Category Toggle */}
           <div className="mb-3">
             <Text variant="small" classes="font-semibold mb-1">
@@ -1265,8 +1419,8 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
             </ButtonGroup>
           </div>
 
-          {/* Search + Count */}
-          <div className="flex items-center gap-3">
+          {/* Search + Count + Export */}
+          <div className="flex flex-wrap items-center gap-3">
             <input
               type="text"
               value={searchTerm}
@@ -1282,10 +1436,31 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
                 Loading scouting data...
               </Text>
             )}
+
+            {/* Export buttons */}
+            <div className="flex items-center gap-2 ml-auto">
+              <PillButton
+                variant="primaryOutline"
+                onClick={handleExportView}
+                disabled={filteredPlayers.length === 0}
+              >
+                <Text variant="small">↓ Current View</Text>
+              </PillButton>
+              {!isAllView && (
+                <PillButton
+                  variant="primaryOutline"
+                  onClick={handleExportFull}
+                  disabled={isExportingFull || allPlayers.length === 0}
+                >
+                  <Text variant="small">{isExportingFull ? "Exporting..." : "↓ Full Roster"}</Text>
+                </PillButton>
+              )}
+            </div>
+
             {scoutingBudget && (
               <Text
                 variant="small"
-                classes="text-gray-500 dark:text-gray-400 ml-auto"
+                classes="text-gray-500 dark:text-gray-400"
               >
                 Scouting: {scoutingBudget.remaining_points}/
                 {scoutingBudget.total_points} pts

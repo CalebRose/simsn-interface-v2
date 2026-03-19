@@ -142,7 +142,7 @@ export const BaseballFieldingTable = ({
     : leaders;
 
   return (
-    <div className="overflow-x-auto baseball-table-wrapper">
+    <div className="overflow-x-auto baseball-table-wrapper compact-table">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr

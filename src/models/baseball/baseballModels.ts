@@ -271,6 +271,15 @@ export interface PlayerContract {
     current_year_detail: ContractYearDetail;
 }
 
+export interface InjuryDetail {
+    event_id:       number;
+    injury_type_id: number;
+    injury_name:    string;
+    weeks_remaining: number;
+    weeks_assigned:  number;
+    effects:         Record<string, number>; // e.g. { contact: 0.7, speed: 0.7, stamina_pct: 0.0 }
+}
+
 export interface Player {
     id:                  number;
     firstname:           string;
@@ -300,6 +309,8 @@ export interface Player {
     visibility_context?: VisibilityContext;
     stamina?:            number;          // 0-100, 100 = fully rested
     has_fatigue_data?:   boolean;         // true = real fatigue record, false = no data yet
+    is_injured?:         boolean;         // true = has at least one active injury
+    injury_details?:     InjuryDetail[];  // active injuries with attribute effects
 }
 
 export interface ListedPositionResponse {

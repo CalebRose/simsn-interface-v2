@@ -5,6 +5,7 @@ import { BattingLeaderRow, PitchingLeaderRow } from "../../../models/baseball/ba
 import { Attributes, Potentials, Contracts } from "../../../_constants/constants";
 import { displayLevel, displayPlayerTeam, LEVEL_ORDER, getClassYear, numericToLetterGrade, resolveDisplayValue, letterGradeToNumeric } from "../../../_utility/baseballHelpers";
 import { ratingColor, potColor, staminaColor } from "./baseballColorConfig";
+import { isPlayerBenched, injuryTooltip } from "../../../_utility/injuryUtils";
 
 // ═══════════════════════════════════════════════
 // Types
@@ -384,14 +385,24 @@ const staminaBarBg = (v: number): string => {
   return "bg-red-500";
 };
 
-const StaminaBarCell = ({ value }: { value: number }) => (
-  <div className="flex items-center gap-1 min-w-[48px]">
-    <div className="flex-1 h-2.5 rounded-full bg-gray-700 overflow-hidden">
-      <div className={`h-full rounded-full ${staminaBarBg(value)}`} style={{ width: `${value}%` }} />
+const StaminaBarCell = ({ value: rawValue, isInjured }: { value: number | undefined; isInjured?: boolean }) => {
+  const value = rawValue ?? 100;
+  if (isInjured && value === 0) {
+    return (
+      <div className="flex items-center min-w-[48px]">
+        <span className="text-[10px] font-bold text-red-500 dark:text-red-400">OUT</span>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1 min-w-[48px]">
+      <div className="flex-1 h-2.5 rounded-full bg-gray-700 overflow-hidden">
+        <div className={`h-full rounded-full ${staminaBarBg(value)}`} style={{ width: `${value}%` }} />
+      </div>
+      <span className={`text-[10px] font-semibold w-5 text-right ${staminaColor(value)}`}>{value}</span>
     </div>
-    <span className={`text-[10px] font-semibold w-5 text-right ${staminaColor(value)}`}>{value}</span>
-  </div>
-);
+  );
+};
 
 const PitchCell = ({ name, label }: { name: string | null; label?: string }) => (
   <td data-label={label} className={`${td} text-center text-xs whitespace-nowrap`}>{name || "—"}</td>
@@ -412,6 +423,14 @@ export const NameCell = ({ p }: { p: Player }) => (
     {p.firstname} {p.lastname}
     {p.contract?.on_ir && (
       <span className="ml-1 px-1 py-0.5 text-[10px] font-bold rounded bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400">IR</span>
+    )}
+    {p.is_injured && (
+      <span
+        className="ml-1 px-1 py-0.5 text-[10px] font-bold rounded bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400"
+        title={injuryTooltip(p) ?? undefined}
+      >
+        INJ
+      </span>
     )}
   </td>
 );
@@ -524,9 +543,11 @@ export const InfoCells = ({ p, orgAbbrev, isCollege, ageOverride, onPositionOver
   onPositionOverride?: (playerId: number, positionCode: string | null) => void;
 }) => {
   const classYear = isCollege ? getClassYear(p.contract) : null;
-  // OVR: if displayovr is already a string grade, show as-is; if numeric + college, convert
-  const ovrResolved = p.displayovr != null ? resolveDisplayValue(
-    isCollege && !isNaN(Number(p.displayovr)) ? numericToLetterGrade(Number(p.displayovr)) : p.displayovr
+  // OVR: displayovr may arrive as a numeric string ("75") — always parse to number first so
+  // resolveDisplayValue uses the numeric color path rather than the letter-grade fallback (red).
+  const ovrNumeric = p.displayovr != null && !isNaN(Number(p.displayovr)) ? Number(p.displayovr) : null;
+  const ovrResolved = ovrNumeric != null ? resolveDisplayValue(
+    isCollege ? numericToLetterGrade(ovrNumeric) : ovrNumeric
   ) : null;
   return (
     <>
@@ -572,7 +593,7 @@ export const AllAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
       <StatCell value={p.ratings.throwpower_display} isFuzzed={af} label="ThrowPow" />
       <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {<StaminaBarCell value={p.stamina ?? 100} />
+        {<StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
         }
       </td>
     </>
@@ -600,7 +621,7 @@ export const AllPotCells = ({ p }: { p: Player }) => {
       <PotentialCell pot={p.potentials.throwpower_pot} isFuzzed={pf} label="ThrowPow" />
       <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {<StaminaBarCell value={p.stamina ?? 100} />
+        {<StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
         }
       </td>
     </>
@@ -626,7 +647,7 @@ export const PosAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
       <StatCell value={p.ratings.catchsequence_display} isFuzzed={af} label="CatchSeq" />
       <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={af} label="Pos Rtg" />
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {<StaminaBarCell value={p.stamina ?? 100} />
+        {<StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
         }
       </td>
     </>
@@ -652,7 +673,7 @@ export const PosPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?: 
       <PotentialCell pot={p.potentials.catchsequence_pot} isFuzzed={pf} label="CatchSeq" />
       <RatingCell value={getPrimaryPositionRating(p)} isFuzzed={isFuzzed} label="Pos Rtg" />
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {<StaminaBarCell value={p.stamina ?? 100} />
+        {<StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
         }
       </td>
     </>
@@ -677,7 +698,7 @@ export const PitchAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean 
       <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} label="P4" />
       <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} label="P5" />
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {<StaminaBarCell value={p.stamina ?? 100} />
+        {<StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
         }
       </td>
     </>
@@ -702,7 +723,7 @@ export const PitchPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?
       <PitchOvrCell name={p.pitch4_name} ovr={p.ratings.pitch4_ovr} label="P4" />
       <PitchOvrCell name={p.pitch5_name} ovr={p.ratings.pitch5_ovr} label="P5" />
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {<StaminaBarCell value={p.stamina ?? 100} />
+        {<StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
         }
       </td>
     </>
@@ -818,12 +839,12 @@ export const AllPlayersTable = ({ players, orgAbbrev, onPlayerClick, sortConfig,
         <GroupedTableHeader groups={groups} sortConfig={sortConfig} onSort={onSort} />
         <tbody>
           {players.map((p) => (
-            <tr key={p.id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onClick={() => onPlayerClick(p)}>
+            <tr key={p.id} className={`border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer${isPlayerBenched(p) ? " opacity-50" : ""}`} onClick={() => onPlayerClick(p)}>
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
               {category === Attributes && <AllAttrCells p={p} isFuzzed={isFuzzed} />}
               {category === Potentials && <AllPotCells p={p} />}
-              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
-              {category === Stats && <><BattingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
+              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina} isInjured={p.is_injured} /></td></>}
+              {category === Stats && <><BattingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina} isInjured={p.is_injured} /></td></>}
               {renderActions && (
                 <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}
@@ -852,12 +873,12 @@ export const PositionTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, o
         <GroupedTableHeader groups={groups} sortConfig={sortConfig} onSort={onSort} />
         <tbody>
           {players.map((p) => (
-            <tr key={p.id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onClick={() => onPlayerClick(p)}>
+            <tr key={p.id} className={`border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer${isPlayerBenched(p) ? " opacity-50" : ""}`} onClick={() => onPlayerClick(p)}>
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
               {category === Attributes && <PosAttrCells p={p} isFuzzed={isFuzzed} />}
               {category === Potentials && <PosPotCells p={p} isFuzzed={isFuzzed} potFuzzed={potFuzzed} />}
-              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
-              {category === Stats && <><BattingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
+              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina} isInjured={p.is_injured} /></td></>}
+              {category === Stats && <><BattingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina} isInjured={p.is_injured} /></td></>}
               {renderActions && (
                 <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}
@@ -886,12 +907,12 @@ export const PitcherTable = ({ players, orgAbbrev, onPlayerClick, sortConfig, on
         <GroupedTableHeader groups={groups} sortConfig={sortConfig} onSort={onSort} />
         <tbody>
           {players.map((p) => (
-            <tr key={p.id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer" onClick={() => onPlayerClick(p)}>
+            <tr key={p.id} className={`border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer${isPlayerBenched(p) ? " opacity-50" : ""}`} onClick={() => onPlayerClick(p)}>
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
               {category === Attributes && <PitchAttrCells p={p} isFuzzed={isFuzzed} />}
               {category === Potentials && <PitchPotCells p={p} isFuzzed={isFuzzed} potFuzzed={potFuzzed} />}
-              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
-              {category === Stats && <><PitchingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina ?? 100} /></td></>}
+              {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina} isInjured={p.is_injured} /></td></>}
+              {category === Stats && <><PitchingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina} isInjured={p.is_injured} /></td></>}
               {renderActions && (
                 <td data-label="Actions" className={`${td} bb-cell-actions text-center`} onClick={(e) => e.stopPropagation()}>
                   {renderActions(p)}

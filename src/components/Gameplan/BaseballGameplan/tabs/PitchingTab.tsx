@@ -348,9 +348,9 @@ const RotationSection = ({
     setIsSaving(true);
     setMessage("");
     try {
-      const saved = await BaseballService.SaveRotation(teamId, rotation);
-      setRotation(saved);
-      baselineRef.current = JSON.stringify(saved);
+      await BaseballService.SaveRotation(teamId, rotation);
+      // Keep local state as source of truth — don't overwrite with response
+      baselineRef.current = JSON.stringify(rotation);
       setMessage("Saved successfully");
     } catch (err: any) {
       const detail = err?.message && err.message !== "Failed to fetch"
@@ -641,9 +641,8 @@ const BullpenSection = ({
     setIsSaving(true);
     setMessage("");
     try {
-      const saved = await BaseballService.SaveBullpen(teamId, bullpen);
-      setBullpen(saved);
-      baselineRef.current = JSON.stringify(saved);
+      await BaseballService.SaveBullpen(teamId, bullpen);
+      baselineRef.current = JSON.stringify(bullpen);
       setMessage("Saved successfully");
     } catch (err: any) {
       const detail = err?.message && err.message !== "Failed to fetch"
@@ -894,9 +893,8 @@ const TeamStrategySection = ({ teamId }: { teamId: number }) => {
     setIsSaving(true);
     setMessage("");
     try {
-      const saved = await BaseballService.SaveTeamStrategy(teamId, strategy);
-      setStrategy(saved);
-      baselineRef.current = JSON.stringify(saved);
+      await BaseballService.SaveTeamStrategy(teamId, strategy);
+      baselineRef.current = JSON.stringify(strategy);
       setMessage("Saved successfully");
     } catch (err: any) {
       const detail = err?.message && err.message !== "Failed to fetch"

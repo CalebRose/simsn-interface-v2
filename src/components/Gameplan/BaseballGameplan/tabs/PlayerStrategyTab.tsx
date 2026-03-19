@@ -177,18 +177,47 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
     setIsSaving(true);
     setMessage("");
     try {
-      const saved = await BaseballService.SavePlayerStrategy(orgId, selectedPlayerId, editing);
+      const { id: _id, org_id: _oid, player_id: _pid, user_id: _uid, ...payload } = editing;
+      const saved = await BaseballService.SavePlayerStrategy(orgId, selectedPlayerId, payload);
+
+      // Merge: keep the user's editing values, but adopt the id/metadata from the response
+      // so that future saves are UPDATEs rather than INSERTs.
+      const merged: PlayerStrategy = {
+        ...editing,
+        id: saved.id,
+        org_id: saved.org_id ?? orgId,
+        player_id: saved.player_id ?? selectedPlayerId,
+      };
+
       setStrategies((prev) => {
         const idx = prev.findIndex((s) => s.player_id === selectedPlayerId);
         if (idx >= 0) {
           const updated = [...prev];
-          updated[idx] = saved;
+          updated[idx] = merged;
           return updated;
         }
-        return [...prev, saved];
+        return [...prev, merged];
       });
-      setEditing(saved);
-      setMessage("Saved successfully");
+      setEditing(merged);
+
+      // Detect if the backend returned stale data
+      const COMPARE_KEYS: (keyof PlayerStrategy)[] = [
+        "plate_approach", "pitching_approach", "baserunning_approach",
+        "usage_preference", "stealfreq", "pickofffreq", "pulltend", "pitchpull",
+      ];
+      const mismatch = COMPARE_KEYS.some((k) => {
+        const sent = (payload as any)[k];
+        const returned = (saved as any)[k];
+        return sent !== returned && !(sent == null && returned == null);
+      });
+      const pitchMismatch = JSON.stringify(payload.pitchchoices) !== JSON.stringify(saved.pitchchoices);
+
+      if (mismatch || pitchMismatch) {
+        console.warn("[PlayerStrategy] Response values differ from sent payload", { sent: payload, returned: saved });
+        setMessage("Saved — but server returned different values. Refresh to verify.");
+      } else {
+        setMessage("Saved successfully");
+      }
     } catch (err: any) {
       const detail = err?.message && err.message !== "Failed to fetch"
         ? err.message
@@ -351,7 +380,7 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     <span className="text-xs text-gray-500">Throws: {selectedPlayer.pitch_hand}</span>
                   )}
                   {selectedPlayer.displayovr && (
-                    <span className="text-xs font-semibold">OVR: {selectedPlayer.displayovr}</span>
+                    <span className={`text-xs font-semibold ${ratingColor(Number(selectedPlayer.displayovr))}`}>OVR: {selectedPlayer.displayovr}</span>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center">
@@ -403,7 +432,7 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                   </FieldRow>
                 </Tooltip>
 
-                <Tooltip text="How often this player attempts steals. Higher values mean more steal attempts per opportunity.">
+                <Tooltip text="Percentage chance this player attempts steal on a pitch action. League average is around 1.87. 100 would mean every single pitch attempt would have a steal opportunity until scoring or getting thrown out.">
                   <FieldRow label="Steal Frequency">
                     <div className="flex items-center gap-1 mb-1 justify-center">
                       <button

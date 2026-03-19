@@ -1,16 +1,16 @@
 import { useState, useMemo } from "react";
-import {
-  TeamBattingRow,
-  TeamPitchingRow,
-} from "../../../models/baseball/baseballStatsModels";
+import { TeamBattingRow, TeamPitchingRow } from "../../../models/baseball/baseballStatsModels";
+import { BaseballStanding } from "../../../models/baseball/baseballModels";
 import { getLogo } from "../../../_utility/getLogo";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getStatsHeaderStyle } from "./statsHeaderStyle";
 import { useAuthStore } from "../../../context/AuthContext";
+import "../../Team/baseball/baseballMobile.css";
 
 interface Props {
   batting: TeamBattingRow[];
   pitching: TeamPitchingRow[];
+  standings?: BaseballStanding[];
   league: string;
   IsRetro?: boolean;
   accentColor?: string;
@@ -130,13 +130,7 @@ const parseNum = (v: string | number): number => {
   return isNaN(n) ? 0 : n;
 };
 
-export const BaseballTeamStatsTable = ({
-  batting,
-  pitching,
-  league,
-  IsRetro,
-  accentColor,
-}: Props) => {
+export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, isRetro, accentColor }: Props) => {
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
   const { isDarkMode } = useAuthStore();
   const headerStyle = getStatsHeaderStyle(accentColor, isDarkMode);
@@ -148,6 +142,13 @@ export const BaseballTeamStatsTable = ({
     for (const p of pitching) m.set(p.team_id, p);
     return m;
   }, [pitching]);
+
+  // Build a map of team_id → games played from standings (wins + losses), the authoritative source
+  const standingsGPMap = useMemo(() => {
+    const m = new Map<number, number>();
+    for (const s of standings ?? []) m.set(s.team_id, s.wins + s.losses);
+    return m;
+  }, [standings]);
 
   const handleSort = (field: TeamSortField) => {
     if (sortField === field) {
@@ -168,6 +169,9 @@ export const BaseballTeamStatsTable = ({
         const pb = pitchingMap.get(b.team_id);
         va = pa ? parseNum((pa as any)[pKey] ?? 0) : 0;
         vb = pb ? parseNum((pb as any)[pKey] ?? 0) : 0;
+      } else if (sortField === "g") {
+        va = standingsGPMap.get(a.team_id) ?? 0;
+        vb = standingsGPMap.get(b.team_id) ?? 0;
       } else {
         va = parseNum((a as any)[sortField] ?? 0);
         vb = parseNum((b as any)[sortField] ?? 0);
@@ -175,7 +179,7 @@ export const BaseballTeamStatsTable = ({
       return sortOrder === "asc" ? va - vb : vb - va;
     });
     return rows;
-  }, [batting, pitchingMap, sortField, sortOrder]);
+  }, [batting, pitchingMap, standingsGPMap, sortField, sortOrder]);
 
   const SortHeader = ({
     label,
@@ -203,7 +207,7 @@ export const BaseballTeamStatsTable = ({
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto compact-table">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr
@@ -272,12 +276,13 @@ export const BaseballTeamStatsTable = ({
                 </td>
                 {BATTING_COLS.map((col) => {
                   const isActive = sortField === col.sortKey;
+                  // G column: use standings GP (wins+losses) as the authoritative source
+                  const val = col.key === "g"
+                    ? (standingsGPMap.get(b.team_id) ?? "—")
+                    : (b as any)[col.key] ?? "—";
                   return (
-                    <td
-                      key={col.sortKey}
-                      className={`px-2 py-1.5 text-center ${col.bold ? "font-semibold" : ""} ${isActive ? "bg-yellow-50/60 dark:bg-yellow-900/15" : ""}`}
-                    >
-                      {(b as any)[col.key] ?? "—"}
+                    <td key={col.sortKey} className={`px-2 py-1.5 text-center ${col.bold ? "font-semibold" : ""} ${isActive ? "bg-yellow-50/60 dark:bg-yellow-900/15" : ""}`}>
+                      {val}
                     </td>
                   );
                 })}

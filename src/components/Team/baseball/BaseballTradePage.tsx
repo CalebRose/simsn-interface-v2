@@ -9,6 +9,7 @@ import {
     SalaryRetention,
 } from "../../../models/baseball/baseballTradeModels";
 import { normalizePlayer, displayLevel, LEVEL_ORDER } from "../../../_utility/baseballHelpers";
+import { ratingColor } from "./baseballColorConfig";
 import { Text } from "../../../_design/Typography";
 import { Button, PillButton, ButtonGroup } from "../../../_design/Buttons";
 import { Border } from "../../../_design/Borders";
@@ -237,7 +238,7 @@ const PlayerPickerTable: FC<PlayerPickerTableProps> = ({
                                     <td className="px-2 py-1 text-gray-400">
                                         {p.ptype === "Pitcher" ? "P" : "Pos"}
                                     </td>
-                                    <td className="px-2 py-1 text-center text-white">
+                                    <td className={`px-2 py-1 text-center font-semibold ${p.displayovr != null ? ratingColor(Number(p.displayovr)) : "text-gray-400"}`}>
                                         {p.displayovr ?? "—"}
                                     </td>
                                     <td className="px-2 py-1 text-gray-400">
@@ -302,8 +303,11 @@ const SelectedPlayerCard: FC<SelectedPlayerCardProps> = ({
                         {player.firstname} {player.lastname}
                     </Text>
                     <Text variant="xs" classes="text-gray-400">
-                        {player.ptype} — OVR {player.displayovr ?? "?"} —{" "}
-                        {displayLevel(player.league_level)}
+                        {player.ptype} — OVR{" "}
+                        <span className={player.displayovr != null ? ratingColor(Number(player.displayovr)) : ""}>
+                            {player.displayovr ?? "?"}
+                        </span>{" "}
+                        — {displayLevel(player.league_level)}
                         {salary != null && salary > 0 && ` — $${salary.toLocaleString()}`}
                     </Text>
                 </div>

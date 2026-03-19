@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { exportToCsv } from "../../../_utility/csvExport";
 import { Text } from "../../../_design/Typography";
 import { Border } from "../../../_design/Borders";
 import { PillButton, ButtonGroup } from "../../../_design/Buttons";
@@ -75,14 +76,7 @@ interface BaseballStatsPageProps {
 
 export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   const { currentUser } = useAuthStore();
-  const {
-    allTeams,
-    seasonContext,
-    mlbOrganization,
-    collegeOrganization,
-    bootstrappedOrgId,
-    loadBootstrapForOrg,
-  } = useSimBaseballStore();
+  const { allTeams, seasonContext, mlbOrganization, collegeOrganization, bootstrappedOrgId, loadBootstrapForOrg, standings } = useSimBaseballStore();
 
   const isCollege = league === SimCollegeBaseball;
   const organization = isCollege ? collegeOrganization : mlbOrganization;
@@ -155,6 +149,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   // --- State ---
   const [activeTab, setActiveTab] = useState<StatsTab>("Batting");
   const [isLoading, setIsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<number>(defaultLevel);
   const [page, setPage] = useState(1);
@@ -308,6 +303,128 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
     },
     [activeTab, battingSort, pitchingSort, fieldingSort],
   );
+
+  // --- CSV Export ---
+  const handleExport = useCallback(async () => {
+    if (!seasonContext || isExporting) return;
+    setIsExporting(true);
+    try {
+      const lyId = seasonContext.current_league_year_id;
+      const levelLabel = isCollege ? "college" : String(selectedLevel);
+      const tabLower = activeTab.toLowerCase();
+
+      if (activeTab === "Batting") {
+        const data = await BaseballService.GetBattingLeaders({
+          league_year_id: lyId,
+          league_level: selectedLevel,
+          team_id: selectedTeamId ?? undefined,
+          sort: battingSort,
+          order: battingOrder,
+          position: battingPosition ?? undefined,
+          min_pa: minPA ?? undefined,
+          page_size: 9999,
+        });
+        const headers = [
+          "Player", "Team", "Pos",
+          "G", "PA", "AB", "H", "2B", "3B", "HR", "ITPHR", "RBI", "R", "BB", "SO", "SB", "CS", "TB",
+          "AVG", "OBP", "SLG", "OPS", "ISO", "BABIP", "BB%", "K%", "BB/K", "XBH%", "SB%",
+        ];
+        const rows = data.leaders.map((r) => [
+          r.name, r.team_abbrev, r.position ?? "",
+          r.g, r.pa, r.ab, r.h, r["2b"], r["3b"], r.hr, r.itphr, r.rbi, r.r, r.bb, r.so, r.sb, r.cs, r.tb,
+          r.avg, r.obp, r.slg, r.ops, r.iso, r.babip, r.bb_pct, r.k_pct, r.bb_k, r.xbh_pct, r.sb_pct,
+        ]);
+        exportToCsv(`${levelLabel}-${tabLower}-stats`, headers, rows);
+
+      } else if (activeTab === "Pitching") {
+        const data = await BaseballService.GetPitchingLeaders({
+          league_year_id: lyId,
+          league_level: selectedLevel,
+          team_id: selectedTeamId ?? undefined,
+          sort: pitchingSort,
+          order: pitchingOrder,
+          role: pitchingRole ?? undefined,
+          min_ip: minIP ?? undefined,
+          page_size: 9999,
+        });
+        const headers = [
+          "Player", "Team",
+          "G", "GS", "W", "L", "SV", "HLD", "BS", "QS",
+          "IP", "H", "R", "ER", "BB", "SO", "HR", "ITPHR",
+          "ERA", "WHIP", "K/9", "BB/9", "HR/9", "H/9", "K/BB", "W%", "K%", "BB%", "BABIP", "IP/GS",
+        ];
+        const rows = data.leaders.map((r) => [
+          r.name, r.team_abbrev,
+          r.g, r.gs, r.w, r.l, r.sv, r.hld, r.bs, r.qs,
+          r.ip, r.h, r.r, r.er, r.bb, r.so, r.hr, r.itphr,
+          r.era, r.whip, r.k9, r.bb9, r.hr9, r.h9, r.k_bb, r.w_pct, r.k_pct, r.bb_pct, r.babip, r.ip_gs,
+        ]);
+        exportToCsv(`${levelLabel}-${tabLower}-stats`, headers, rows);
+
+      } else if (activeTab === "Fielding") {
+        const data = await BaseballService.GetFieldingLeaders({
+          league_year_id: lyId,
+          league_level: selectedLevel,
+          team_id: selectedTeamId ?? undefined,
+          sort: fieldingSort,
+          order: fieldingOrder,
+          position_code: fieldingPosition ?? undefined,
+          min_inn: minInn ?? undefined,
+          page_size: 9999,
+        });
+        const headers = [
+          "Player", "Team", "Pos",
+          "G", "Inn", "PO", "A", "E", "FPCT",
+          "TC", "TC/G", "RF/G", "PO/Inn", "A/Inn", "E/Inn",
+        ];
+        const rows = data.leaders.map((r) => [
+          r.name, r.team_abbrev, r.pos,
+          r.g, r.inn, r.po, r.a, r.e, r.fpct,
+          r.tc, r.tc_g, r.rf_g, r.po_inn, r.a_inn, r.e_inn,
+        ]);
+        exportToCsv(`${levelLabel}-${tabLower}-stats`, headers, rows);
+
+      } else if (activeTab === "Team") {
+        // Team tab uses already-loaded state — no extra fetch needed
+        const pitchingMap = new Map(teamPitching.map((p) => [p.team_id, p]));
+        const gpMap = new Map(
+          (standings ?? []).map((s) => [s.team_id, s.wins + s.losses]),
+        );
+        const headers = [
+          "Team",
+          // Batting
+          "G", "PA", "R", "H", "HR", "ITPHR", "RBI", "SB", "BB", "SO",
+          "AVG", "OBP", "SLG", "OPS", "BABIP",
+          // Pitching
+          "W", "L", "SV", "HLD", "BS", "QS",
+          "IP", "P_R", "ER", "P_HR", "P_ITPHR", "P_BB", "P_SO",
+          "ERA", "WHIP", "K/9", "BB/9", "HR/9",
+        ];
+        const rows = teamBatting.map((b) => {
+          const p = pitchingMap.get(b.team_id);
+          return [
+            b.team_abbrev,
+            gpMap.get(b.team_id) ?? b.g,
+            b.pa, b.r, b.h, b.hr, b.itphr, b.rbi, b.sb, b.bb, b.so,
+            b.avg, b.obp, b.slg, b.ops, b.babip,
+            p?.w ?? "", p?.l ?? "", p?.sv ?? "", p?.hld ?? "", p?.bs ?? "", p?.qs ?? "",
+            p?.ip ?? "", p?.r ?? "", p?.er ?? "", p?.hr ?? "", p?.itphr ?? "", p?.bb ?? "", p?.so ?? "",
+            p?.era ?? "", p?.whip ?? "", p?.k9 ?? "", p?.bb9 ?? "", p?.hr9 ?? "",
+          ];
+        });
+        exportToCsv(`${levelLabel}-team-stats`, headers, rows);
+      }
+    } catch (e) {
+      console.error("Export failed", e);
+    }
+    setIsExporting(false);
+  }, [
+    seasonContext, isExporting, activeTab, isCollege, selectedLevel, selectedTeamId,
+    battingSort, battingOrder, battingPosition, minPA,
+    pitchingSort, pitchingOrder, pitchingRole, minIP,
+    fieldingSort, fieldingOrder, fieldingPosition, minInn,
+    teamBatting, teamPitching, standings,
+  ]);
 
   // --- Fetch data ---
   const fetchData = useCallback(async () => {
@@ -637,6 +754,17 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                 />
               </div>
             )}
+
+            {/* Export CSV */}
+            <div className="ml-auto flex items-end">
+              <PillButton
+                variant="primaryOutline"
+                onClick={handleExport}
+                disabled={isExporting || isLoading}
+              >
+                <Text variant="small">{isExporting ? "Exporting..." : "↓ Download Stats"}</Text>
+              </PillButton>
+            </div>
           </div>
         </Border>
 
@@ -690,13 +818,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                 />
               )}
               {activeTab === "Team" && (
-                <BaseballTeamStatsTable
-                  batting={teamBatting}
-                  pitching={teamPitching}
-                  league={league}
-                  IsRetro={currentUser?.IsRetro}
-                  accentColor={headerColor}
-                />
+                <BaseballTeamStatsTable batting={teamBatting} pitching={teamPitching} standings={standings} league={league} isRetro={currentUser?.isRetro} accentColor={headerColor} />
               )}
 
               {/* Pagination */}

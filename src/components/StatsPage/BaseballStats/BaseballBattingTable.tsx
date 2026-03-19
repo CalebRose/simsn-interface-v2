@@ -55,7 +55,7 @@ const COLUMNS: Column[] = [
   { label: "G", key: "g", sortKey: "g" },
   { label: "PA", key: "pa", sortKey: "pa" },
   { label: "AB", key: "ab", sortKey: "ab" },
-  { label: "H", key: "h", sortKey: "hits" },
+  { label: "H", key: "h", sortKey: "h" },
   { label: "2B", key: "2b", sortKey: "2b" },
   { label: "3B", key: "3b", sortKey: "3b" },
   { label: "HR", key: "hr", sortKey: "hr", bold: true },
@@ -169,7 +169,7 @@ export const BaseballBattingTable = ({
   };
 
   return (
-    <div className="overflow-x-auto baseball-table-wrapper">
+    <div className="overflow-x-auto baseball-table-wrapper compact-table">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr
