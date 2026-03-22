@@ -30,7 +30,7 @@ import { getLineup } from "./lineupHelper";
 export const useCHLLineupUtils = (
   chlTeam?: CollegeTeam,
   chlRosterMap?: Record<number, CollegePlayer[]>,
-  currentLineups?: CollegeLineup[]
+  currentLineups?: CollegeLineup[],
 ) => {
   const chlTeamRoster = useMemo(() => {
     if (chlTeam && chlRosterMap) {
@@ -38,6 +38,13 @@ export const useCHLLineupUtils = (
     }
     return null;
   }, [chlRosterMap, chlTeam]);
+
+  const eligiblePlayers = useMemo(() => {
+    if (!chlTeamRoster) return [];
+    return chlTeamRoster.filter(
+      (player) => !player.IsInjured && !player.IsRedshirting,
+    );
+  }, [chlTeamRoster]);
 
   const chlTeamRosterMap = useMemo(() => {
     if (chlTeamRoster) {
@@ -95,15 +102,15 @@ export const useCHLLineupUtils = (
       value: number,
       key: string,
       min: number,
-      max: number
+      max: number,
     ) => {
       if (value > max)
         errList.push(
-          `${key} is set to ${value}, whereas the max allowed is ${max}.`
+          `${key} is set to ${value}, whereas the max allowed is ${max}.`,
         );
       if (value < min)
         errList.push(
-          `${key} is set to ${value}, whereas the minimum allowed is ${min}.`
+          `${key} is set to ${value}, whereas the minimum allowed is ${min}.`,
         );
     };
 
@@ -115,20 +122,20 @@ export const useCHLLineupUtils = (
       if (!player || player.ID === 0) return;
       if (player.IsInjured) {
         errList.push(
-          `${player.Position} ${player.FirstName} ${player.LastName} is currently injured and will be out for approximately ${player.DaysOfRecovery} days.`
+          `${player.Position} ${player.FirstName} ${player.LastName} is currently injured and will be out for approximately ${player.DaysOfRecovery} days.`,
         );
       }
 
       if (player.IsRedshirting) {
         errList.push(
-          `${player.Position} ${player.FirstName} ${player.LastName} is currently redshirting and cannot play.`
+          `${player.Position} ${player.FirstName} ${player.LastName} is currently redshirting and cannot play.`,
         );
       }
       const playerLabel = `${lineupLabel}: ${player.Position} ${player.FirstName} ${player.LastName}`;
 
       if (playerMap[playerID] === true) {
         errList.push(
-          `${player.Position} ${player.FirstName} ${player.LastName} is already on an existing line.`
+          `${player.Position} ${player.FirstName} ${player.LastName} is already on an existing line.`,
         );
       }
       playerMap[playerID] = true;
@@ -139,7 +146,7 @@ export const useCHLLineupUtils = (
             player[`${zone}Agility`],
             `${playerLabel} ${zone} Agility`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}Pass`]) {
@@ -147,7 +154,7 @@ export const useCHLLineupUtils = (
             player[`${zone}Pass`],
             `${playerLabel} ${zone} Pass`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}PassBack`]) {
@@ -155,7 +162,7 @@ export const useCHLLineupUtils = (
             player[`${zone}PassBack`],
             `${playerLabel} ${zone} Pass Back`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}LongPass`]) {
@@ -163,7 +170,7 @@ export const useCHLLineupUtils = (
             player[`${zone}LongPass`],
             `${playerLabel} ${zone} Long Pass`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}BodyCheck`]) {
@@ -171,7 +178,7 @@ export const useCHLLineupUtils = (
             player[`${zone}BodyCheck`],
             `${playerLabel} ${zone} Body Check`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}StickCheck`]) {
@@ -179,7 +186,7 @@ export const useCHLLineupUtils = (
             player[`${zone}StickCheck`],
             `${playerLabel} ${zone} Stick Check`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}Shot`]) {
@@ -187,7 +194,7 @@ export const useCHLLineupUtils = (
             player[`${zone}Shot`],
             `${playerLabel} ${zone} Shot`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}BodyCheck`]) {
@@ -195,7 +202,7 @@ export const useCHLLineupUtils = (
             player[`${zone}BodyCheck`],
             `${playerLabel} ${zone} Body Check`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}StickCheck`]) {
@@ -203,7 +210,7 @@ export const useCHLLineupUtils = (
             player[`${zone}StickCheck`],
             `${playerLabel} ${zone} Stick Check`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
       });
@@ -223,7 +230,7 @@ export const useCHLLineupUtils = (
           zoneValue,
           `${zone} Lineup Allocations`,
           limits.min,
-          limits.max
+          limits.max,
         );
         const defenseValue =
           Number(lineup[`${zone}BodyCheck`] || 0) +
@@ -234,7 +241,7 @@ export const useCHLLineupUtils = (
             lineup[`${zone}Agility`],
             `${zone} Agility Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}Pass`]) {
@@ -242,7 +249,7 @@ export const useCHLLineupUtils = (
             lineup[`${zone}Pass`],
             `${zone} Pass Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}PassBack`]) {
@@ -250,7 +257,7 @@ export const useCHLLineupUtils = (
             lineup[`${zone}PassBack`],
             `${zone} Pass Back Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}LongPass`]) {
@@ -258,7 +265,7 @@ export const useCHLLineupUtils = (
             lineup[`${zone}LongPass`],
             `${zone} Long Pass Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}Shot`]) {
@@ -266,7 +273,7 @@ export const useCHLLineupUtils = (
             lineup[`${zone}Shot`],
             `${zone} Shot Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}BodyCheck`]) {
@@ -274,7 +281,7 @@ export const useCHLLineupUtils = (
             lineup[`${zone}BodyCheck`],
             `${zone} Body Check Allocation`,
             0,
-            15
+            15,
           );
         }
         if (lineup[`${zone}StickCheck`]) {
@@ -282,7 +289,7 @@ export const useCHLLineupUtils = (
             lineup[`${zone}StickCheck`],
             `${zone} Stick Check Allocation`,
             0,
-            15
+            15,
           );
         }
       });
@@ -301,6 +308,7 @@ export const useCHLLineupUtils = (
   }, [currentLineups, chlTeamRosterMap]);
 
   return {
+    eligiblePlayers,
     chlTeamRoster,
     chlTeamRosterMap,
     lineupCategories,
@@ -312,7 +320,7 @@ export const useCHLLineupUtils = (
 export const usePHLLineupUtils = (
   phlTeam?: ProfessionalTeam,
   phlRosterMap?: Record<number, ProfessionalPlayer[]>,
-  currentLineups?: ProfessionalLineup[]
+  currentLineups?: ProfessionalLineup[],
 ) => {
   const phlTeamRoster = useMemo(() => {
     if (phlTeam && phlRosterMap) {
@@ -320,6 +328,13 @@ export const usePHLLineupUtils = (
     }
     return null;
   }, [phlRosterMap, phlTeam]);
+
+  const eligiblePlayers = useMemo(() => {
+    if (!phlTeamRoster) return [];
+    return phlTeamRoster.filter(
+      (player) => !player.IsInjured && !player.IsAffiliatePlayer,
+    );
+  }, [phlTeamRoster]);
 
   const phlTeamRosterMap = useMemo(() => {
     if (phlTeamRoster) {
@@ -377,15 +392,15 @@ export const usePHLLineupUtils = (
       value: number,
       key: string,
       min: number,
-      max: number
+      max: number,
     ) => {
       if (value > max)
         errList.push(
-          `${key} is set to ${value}, whereas the max allowed is ${max}.`
+          `${key} is set to ${value}, whereas the max allowed is ${max}.`,
         );
       if (value < min)
         errList.push(
-          `${key} is set to ${value}, whereas the minimum allowed is ${min}.`
+          `${key} is set to ${value}, whereas the minimum allowed is ${min}.`,
         );
     };
 
@@ -399,19 +414,19 @@ export const usePHLLineupUtils = (
 
       if (player.IsInjured) {
         errList.push(
-          `${player.Position} ${player.FirstName} ${player.LastName} is currently injured and will be out for approximately ${player.DaysOfRecovery} days.`
+          `${player.Position} ${player.FirstName} ${player.LastName} is currently injured and will be out for approximately ${player.DaysOfRecovery} days.`,
         );
       }
 
       if (player.IsAffiliatePlayer) {
         errList.push(
-          `${player.Position} ${player.FirstName} ${player.LastName} is currently on the affiliate team and cannot play.`
+          `${player.Position} ${player.FirstName} ${player.LastName} is currently on the affiliate team and cannot play.`,
         );
       }
 
       if (playerMap[playerID] === true) {
         errList.push(
-          `${player.Position} ${player.FirstName} ${player.LastName} is already on an existing line.`
+          `${player.Position} ${player.FirstName} ${player.LastName} is already on an existing line.`,
         );
       }
       playerMap[playerID] = true;
@@ -422,7 +437,7 @@ export const usePHLLineupUtils = (
             player[`${zone}Agility`],
             `${playerLabel} ${zone} Agility`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}Pass`]) {
@@ -430,7 +445,7 @@ export const usePHLLineupUtils = (
             player[`${zone}Pass`],
             `${playerLabel} ${zone} Pass`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}PassBack`]) {
@@ -438,7 +453,7 @@ export const usePHLLineupUtils = (
             player[`${zone}PassBack`],
             `${playerLabel} ${zone} Pass Back`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}LongPass`]) {
@@ -446,7 +461,7 @@ export const usePHLLineupUtils = (
             player[`${zone}LongPass`],
             `${playerLabel} ${zone} Long Pass`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}BodyCheck`]) {
@@ -454,7 +469,7 @@ export const usePHLLineupUtils = (
             player[`${zone}BodyCheck`],
             `${playerLabel} ${zone} Body Check`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}StickCheck`]) {
@@ -462,7 +477,7 @@ export const usePHLLineupUtils = (
             player[`${zone}StickCheck`],
             `${playerLabel} ${zone} Stick Check`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}Shot`]) {
@@ -470,7 +485,7 @@ export const usePHLLineupUtils = (
             player[`${zone}Shot`],
             `${playerLabel} ${zone} Shot`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}BodyCheck`]) {
@@ -478,7 +493,7 @@ export const usePHLLineupUtils = (
             player[`${zone}BodyCheck`],
             `${playerLabel} ${zone} Body Check`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
         if (player[`${zone}StickCheck`]) {
@@ -486,7 +501,7 @@ export const usePHLLineupUtils = (
             player[`${zone}StickCheck`],
             `${playerLabel} ${zone} Stick Check`,
             playerLimits.min,
-            playerLimits.max
+            playerLimits.max,
           );
         }
       });
@@ -506,7 +521,7 @@ export const usePHLLineupUtils = (
           zoneValue,
           `${zone} Lineup Allocations`,
           limits.min,
-          limits.max
+          limits.max,
         );
         const defenseValue =
           Number(lineup[`${zone}BodyCheck`] || 0) +
@@ -517,7 +532,7 @@ export const usePHLLineupUtils = (
             lineup[`${zone}Agility`],
             `${zone} Agility Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}Pass`]) {
@@ -525,7 +540,7 @@ export const usePHLLineupUtils = (
             lineup[`${zone}Pass`],
             `${zone} Pass Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}PassBack`]) {
@@ -533,7 +548,7 @@ export const usePHLLineupUtils = (
             lineup[`${zone}PassBack`],
             `${zone} Pass Back Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}LongPass`]) {
@@ -541,7 +556,7 @@ export const usePHLLineupUtils = (
             lineup[`${zone}LongPass`],
             `${zone} Long Pass Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}Shot`]) {
@@ -549,7 +564,7 @@ export const usePHLLineupUtils = (
             lineup[`${zone}Shot`],
             `${zone} Shot Allocation`,
             individualLimits.min,
-            individualLimits.max
+            individualLimits.max,
           );
         }
         if (lineup[`${zone}BodyCheck`]) {
@@ -557,7 +572,7 @@ export const usePHLLineupUtils = (
             lineup[`${zone}BodyCheck`],
             `${zone} Body Check Allocation`,
             0,
-            15
+            15,
           );
         }
         if (lineup[`${zone}StickCheck`]) {
@@ -565,7 +580,7 @@ export const usePHLLineupUtils = (
             lineup[`${zone}StickCheck`],
             `${zone} Stick Check Allocation`,
             0,
-            15
+            15,
           );
         }
       });
@@ -584,6 +599,7 @@ export const usePHLLineupUtils = (
   }, [currentLineups, phlTeamRosterMap]);
 
   return {
+    eligiblePlayers,
     phlTeamRoster,
     phlTeamRosterMap,
     lineupCategories,
