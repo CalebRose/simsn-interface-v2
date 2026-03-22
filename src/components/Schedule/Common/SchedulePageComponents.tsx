@@ -128,92 +128,94 @@ export const TeamSchedule = ({
               playerMap={playerMap}
               teamMap={teamMap}
             />
-            {processedSchedule.map((game, index) => (
-              <div
-                key={`${game.ID}-${game.Week}-${index}`}
-                className={`grid ${
-                  isFootball ? "grid-cols-7" : "grid-cols-5"
-                } border-b border-b-[#34455d] items-center`}
-                style={{
-                  backgroundColor:
-                    index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
-                  order: index, // Force display order for Safari mobile
-                }}
-              >
-                <div className="text-left col-span-1">
-                  <Text variant="xs" className="font-semibold">
-                    {game.weekLabel}
-                  </Text>
-                </div>
-                {isFootball && (
-                  <div className="text-left col-span-2">
-                    <Text variant="xs" className="font-semibold opacity-70">
-                      {game.TimeSlot.split(" ").slice(0, 2).join(" ")}
+            {processedSchedule &&
+              processedSchedule.map((game, index) => (
+                <div
+                  key={`${game.ID}-${game.Week}-${index}`}
+                  className={`grid ${
+                    isFootball ? "grid-cols-7" : "grid-cols-5"
+                  } border-b border-b-[#34455d] items-center`}
+                  style={{
+                    backgroundColor:
+                      index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
+                    order: index, // Force display order for Safari mobile
+                  }}
+                >
+                  <div className="text-left col-span-1">
+                    <Text variant="xs" className="font-semibold">
+                      {game.weekLabel}
                     </Text>
                   </div>
-                )}
-                <div className="flex items-center col-span-2 justify-start text-center">
-                  <Text variant="xs" className="font-semibold text-center">
-                    {game.gameLocation}
-                  </Text>
-                  <Logo
-                    variant="xs"
-                    classes="w-4 h-4"
-                    containerClass="flex-shrink-0 p-2"
-                    url={game.opponentLogo}
-                  />
-                  <ClickableTeamLabel
-                    textVariant="xs"
-                    label={`${game.opponentLabel}${
-                      teamRecordMap && teamRecordMap[game.opponentID]
-                        ? ` (${teamRecordMap[game.opponentID]})`
-                        : ""
-                    }`}
-                    teamID={game.opponentID}
-                    textColorClass={textColorClass}
-                    league={league}
-                  />
+                  {isFootball && (
+                    <div className="text-left col-span-2">
+                      <Text variant="xs" className="font-semibold opacity-70">
+                        {game.TimeSlot &&
+                          game.TimeSlot.split(" ").slice(0, 2).join(" ")}
+                      </Text>
+                    </div>
+                  )}
+                  <div className="flex items-center col-span-2 justify-start text-center">
+                    <Text variant="xs" className="font-semibold text-center">
+                      {game.gameLocation}
+                    </Text>
+                    <Logo
+                      variant="xs"
+                      classes="w-4 h-4"
+                      containerClass="flex-shrink-0 p-2"
+                      url={game.opponentLogo}
+                    />
+                    <ClickableTeamLabel
+                      textVariant="xs"
+                      label={`${game.opponentLabel}${
+                        teamRecordMap && teamRecordMap[game.opponentID]
+                          ? ` (${teamRecordMap[game.opponentID]})`
+                          : ""
+                      }`}
+                      teamID={game.opponentID}
+                      textColorClass={textColorClass}
+                      league={league}
+                    />
+                  </div>
+                  <div className="text-center col-span-1">
+                    <ClickableGameLabel
+                      textColorClass={`${
+                        game.userWin
+                          ? "text-green-500"
+                          : game.userLoss
+                            ? "text-red-500"
+                            : textColorClass
+                      } ${
+                        game.gameScore === "TBC"
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      }`}
+                      disable={game.gameScore === "TBC"}
+                      openModal={() => {
+                        setSelectedGame(game);
+                        gameModal.handleOpenModal();
+                      }}
+                      label={game.headerGameScore}
+                    />
+                  </div>
+                  <div className="flex text-center justify-center col-span-1">
+                    <Button
+                      size="sm"
+                      classes={`flex bg-transparent rounded-full size-10 items-center ${
+                        game.gameScore === "TBC"
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      }`}
+                      disabled={game.gameScore === "TBC"}
+                      onClick={() => {
+                        setSelectedGame(game);
+                        gameModal.handleOpenModal();
+                      }}
+                    >
+                      <InformationCircle />
+                    </Button>
+                  </div>
                 </div>
-                <div className="text-center col-span-1">
-                  <ClickableGameLabel
-                    textColorClass={`${
-                      game.userWin
-                        ? "text-green-500"
-                        : game.userLoss
-                          ? "text-red-500"
-                          : textColorClass
-                    } ${
-                      game.gameScore === "TBC"
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }`}
-                    disable={game.gameScore === "TBC"}
-                    openModal={() => {
-                      setSelectedGame(game);
-                      gameModal.handleOpenModal();
-                    }}
-                    label={game.headerGameScore}
-                  />
-                </div>
-                <div className="flex text-center justify-center col-span-1">
-                  <Button
-                    size="sm"
-                    classes={`flex bg-transparent rounded-full size-10 items-center ${
-                      game.gameScore === "TBC"
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }`}
-                    disabled={game.gameScore === "TBC"}
-                    onClick={() => {
-                      setSelectedGame(game);
-                      gameModal.handleOpenModal();
-                    }}
-                  >
-                    <InformationCircle />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </SectionCards>

@@ -1178,24 +1178,21 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         return;
       }
       const res = await PlayerService.SendPHLPlayerToAffiliate(playerID);
-      setProRosterMap((prevMap) => {
-        const teamRoster = prevMap[teamID];
-        if (!teamRoster) return prevMap;
-
-        return {
-          ...prevMap,
-          [teamID]: teamRoster.map((player) =>
-            player.ID === playerID
-              ? new ProfessionalPlayer({
-                  ...player,
-                  IsIsAffiliatePlayer: !player.IsAffiliatePlayer,
-                })
-              : player,
-          ),
-        };
+      enqueueSnackbar("Player has been sent to affiliate team!", {
+        variant: "success",
+        autoHideDuration: 3000,
       });
+      const rosterMap = { ...proRosterMap };
+      const playerIDX = rosterMap[teamID].findIndex(
+        (player) => player.ID === playerID,
+      );
+      if (playerIDX > -1) {
+        rosterMap[teamID][playerIDX].IsAffiliatePlayer =
+          !rosterMap[teamID][playerIDX].IsAffiliatePlayer;
+        setProRosterMap(rosterMap);
+      }
     },
-    [proRosterMap],
+    [proRosterMap, proContractMap],
   );
 
   const updateCHLRosterMap = (newMap: Record<number, CollegePlayer[]>) => {
