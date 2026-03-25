@@ -55,7 +55,7 @@ export const useCHLRecruiting = () => {
   const [statuses, setStatuses] = useState<string[]>([]);
   const [selectedTeams, setSelectedTeams] = useState<any[]>([]);
   const [selectedClassView, setSelectedClassView] = useState<number>(
-    chlTeam!.ID
+    chlTeam!.ID,
   );
   const [conferences, setConferences] = useState<any[]>([]);
   const [attribute, setAttribute] = useState<string>("");
@@ -131,7 +131,7 @@ export const useCHLRecruiting = () => {
   const pageSize = 100;
 
   const teamRankList = useMemo(() => {
-    const teamsList = [...chlTeams];
+    const teamsList = [...chlTeams].filter((team) => team.LeagueID === 1);
     let profileList: RecruitingTeamProfile[] = [];
     teamsList.forEach((team) => {
       profileList.push(teamProfileMap[team.ID]);
@@ -220,7 +220,7 @@ export const useCHLRecruiting = () => {
 
   const openModal = (
     action: ModalAction,
-    player: HockeyCroot | FootballCroot | BasketballCroot
+    player: HockeyCroot | FootballCroot | BasketballCroot,
   ) => {
     handleOpenModal();
     setModalAction(action);

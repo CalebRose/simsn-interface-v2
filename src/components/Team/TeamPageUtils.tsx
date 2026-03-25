@@ -2297,7 +2297,6 @@ export const getCBBAttributes = (
   isMobile: boolean,
   category: string,
 ) => {
-  console.log({ player });
   const attributes = [
     { label: "ID", value: `${player.ID}` },
     { label: "Name", value: `${player.FirstName} ${player.LastName}` },

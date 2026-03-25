@@ -139,7 +139,6 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
     if (!teamMap) {
       return <></>;
     }
-
     const chlTeam = teamMap[item.ID];
     if (!chlTeam) {
       return <></>; // or some fallback UI

@@ -215,8 +215,8 @@ export const HCKCollegePollModal: FC<CollegePollModalProps> = ({
     useSimHCKStore();
 
   const { isMobile } = useResponsive();
-  const [selectedWeek, setSelectedWeek] = useState<number>(2501);
-  const [selectedSeason, setSelectedSeason] = useState<number>(1); // SEASON ID
+  const [selectedWeek, setSelectedWeek] = useState<number>(ts.WeekID);
+  const [selectedSeason, setSelectedSeason] = useState<number>(ts.SeasonID); // SEASON ID
   const teamColors = useTeamColors(
     chlTeam?.ColorOne,
     chlTeam?.ColorTwo,

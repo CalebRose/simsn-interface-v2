@@ -288,6 +288,7 @@ interface SimFBAContextProps {
   revealScoutingAttribute: (dto: any) => Promise<void>;
   removePlayerFromScoutBoard: (id: number) => Promise<void>;
   exportDraftPicks: (dto: any) => Promise<void>;
+  setNFLDraftPicks: (draftPicks: any[]) => void;
 }
 
 // ✅ Initial Context State
@@ -447,6 +448,7 @@ const defaultContext: SimFBAContextProps = {
   removePlayerFromScoutBoard: async () => {},
   exportDraftPicks: async () => {},
   tagNFLPlayer: async () => {},
+  setNFLDraftPicks: () => {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -2007,31 +2009,47 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     });
   }, []);
 
-  const syncAcceptedTrade = useCallback(async (dto: NFLTradeProposal) => {
-    const res = await TradeService.FBAConfirmAcceptedTrade(dto.ID);
+  const syncAcceptedTrade = useCallback(
+    async (dto: NFLTradeProposal) => {
+      const res = await TradeService.FBAConfirmAcceptedTrade(dto.ID);
+      enqueueSnackbar(`Trade Processed!`, {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+      setTradeProposalsMap((tp) => {
+        const team = tp[dto.NFLTeamID];
+        if (!team) return tp;
+        return {
+          ...tp,
+          [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter(
+            (x) => x.ID !== dto.ID,
+          ),
+        };
+      });
+    },
+    [tradeProposalsMap],
+  );
 
-    setTradeProposalsMap((tp) => {
-      const team = tp[dto.NFLTeamID];
-      if (!team) return tp;
-      return {
-        ...tp,
-        [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter((x) => x.ID !== dto.ID),
-      };
-    });
-  }, []);
-
-  const vetoTrade = useCallback(async (dto: NFLTradeProposal) => {
-    const res = await TradeService.FBAVetoAcceptedTrade(dto.ID);
-
-    setTradeProposalsMap((tp) => {
-      const team = tp[dto.NFLTeamID];
-      if (!team) return tp;
-      return {
-        ...tp,
-        [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter((x) => x.ID !== dto.ID),
-      };
-    });
-  }, []);
+  const vetoTrade = useCallback(
+    async (dto: NFLTradeProposal) => {
+      const res = await TradeService.FBAVetoAcceptedTrade(dto.ID);
+      enqueueSnackbar(`Trade Vetoed!`, {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+      setTradeProposalsMap((tp) => {
+        const team = tp[dto.NFLTeamID];
+        if (!team) return tp;
+        return {
+          ...tp,
+          [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter(
+            (x) => x.ID !== dto.ID,
+          ),
+        };
+      });
+    },
+    [tradeProposalsMap],
+  );
 
   const submitCollegePoll = useCallback(async (dto: any) => {
     const res = await CollegePollService.FBASubmitPoll(dto);
@@ -2731,6 +2749,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         removePlayerFromScoutBoard,
         exportDraftPicks,
         tagNFLPlayer,
+        setNFLDraftPicks,
       }}
     >
       {children}

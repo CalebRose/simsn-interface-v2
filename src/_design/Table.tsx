@@ -273,7 +273,12 @@ export const Table = <T,>({
     <div className="overflow-x-auto w-full">
       <div
         className={`table table-auto w-full border-b-2`}
-        style={{ backgroundColor, borderColor }}
+        style={{
+          backgroundColor,
+          borderColor,
+          borderSpacing: 0,
+          borderCollapse: "collapse",
+        }}
       >
         {/* Header */}
         <div className="table-header-group sticky top-0">
@@ -285,14 +290,14 @@ export const Table = <T,>({
               <div
                 key={col.accessor}
                 title={col.accessor}
-                className="table-cell border-b-2 px-[0.6vw] py-[0.25vw] font-semibold whitespace-nowrap cursor-pointer"
+                className="table-cell border-b-2 px-2 py-1 font-semibold whitespace-nowrap cursor-pointer"
                 style={{
                   backgroundColor: backgroundColor,
                   borderColor: borderColor,
                 }}
                 onClick={() => handleSort(col.accessor)}
               >
-                <div className="flex flex-row gap-x-[0.5vw]">
+                <div className="flex flex-row gap-x-1">
                   <Text variant="body-small">{col.header}</Text>
                   {sortState.key === col.accessor
                     ? sortState.order === "asc"
@@ -329,7 +334,7 @@ export const TableCell: FC<TableCellProps> = ({ children, classes }) => {
   const extraClasses = classes ? classes : "";
   return (
     <div
-      className={`table-cell align-middle ${extraClasses} flex-nowrap px-[0.3vw] pb-1 py-[0.25vw] whitespace-nowrap`}
+      className={`table-cell align-middle ${extraClasses} flex-nowrap px-1 py-1 whitespace-nowrap`}
     >
       {children}
     </div>

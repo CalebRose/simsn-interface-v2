@@ -62,7 +62,7 @@ export const getScheduleCFBData = (
   league: League,
   allCFBStandings: CFBStandings[],
   allCollegeGames: CollegeGame[],
-  allCollegeTeams: CollegeTeam[]
+  allCollegeTeams: CollegeTeam[],
 ) => {
   const seasonYear = Number(selectedSeason);
   const seasonID = seasonYear - 2020; // backend SeasonID mapping
@@ -71,30 +71,30 @@ export const getScheduleCFBData = (
     .filter(
       (standings) =>
         standings.Season === seasonYear &&
-        standings.ConferenceID === team.ConferenceID
+        standings.ConferenceID === team.ConferenceID,
     )
     .map((standings, index) => ({ ...standings, Rank: index + 1 }));
 
   const teamAbbrMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.TeamAbbr])
+    allCollegeTeams.map((team) => [team.ID, team.TeamAbbr]),
   );
 
   const teamNameMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.TeamName])
+    allCollegeTeams.map((team) => [team.ID, team.TeamName]),
   );
 
   const teamMascotMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.Mascot])
+    allCollegeTeams.map((team) => [team.ID, team.Mascot]),
   );
 
   const seasonGames = allCollegeGames.filter(
-    (game) => game.SeasonID === seasonID
+    (game) => game.SeasonID === seasonID,
   );
 
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = seasonGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability
@@ -117,7 +117,6 @@ export const getScheduleCFBData = (
       HomeTeamLogo: getLogo(league, game.HomeTeamID, false),
       AwayTeamLogo: getLogo(league, game.AwayTeamID, false),
     }));
-
 
   const groupedWeeklyGames = seasonGames.reduce((acc: any, game) => {
     if (!acc[game.Week]) {
@@ -152,7 +151,7 @@ export const getScheduleNFLData = (
   league: League,
   allNFLStandings: NFLStandings[],
   allNFLGames: NFLGame[],
-  allNFLTeams: NFLTeam[]
+  allNFLTeams: NFLTeam[],
 ) => {
   const seasonYear = Number(selectedSeason);
   const seasonID = seasonYear - 2020; // backend SeasonID mapping
@@ -161,20 +160,20 @@ export const getScheduleNFLData = (
     .filter(
       (standings) =>
         standings.Season === seasonYear &&
-        standings.ConferenceID === team.ConferenceID
+        standings.ConferenceID === team.ConferenceID,
     )
     .map((standings, index) => ({ ...standings, Rank: index + 1 }));
 
   const teamAbbrMap = new Map(
-    allNFLTeams.map((team) => [team.ID, team.TeamAbbr])
+    allNFLTeams.map((team) => [team.ID, team.TeamAbbr]),
   );
 
   const teamNameMap = new Map(
-    allNFLTeams.map((team) => [team.ID, team.TeamName])
+    allNFLTeams.map((team) => [team.ID, team.TeamName]),
   );
 
   const teamMascotMap = new Map(
-    allNFLTeams.map((team) => [team.ID, team.Mascot])
+    allNFLTeams.map((team) => [team.ID, team.Mascot]),
   );
 
   const seasonGames = allNFLGames.filter((game) => game.SeasonID === seasonID);
@@ -182,7 +181,7 @@ export const getScheduleNFLData = (
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = seasonGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability
@@ -240,7 +239,7 @@ export const getScheduleCHLData = (
   league: League,
   allCHLStandings: CHLStandings[],
   allCollegeGames: CHLGame[],
-  allCollegeTeams: CHLTeam[]
+  allCollegeTeams: CHLTeam[],
 ) => {
   // Team Standings
   const teamStandings = allCHLStandings
@@ -252,24 +251,27 @@ export const getScheduleCHLData = (
     }));
 
   const teamAbbrMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.Abbreviation])
+    allCollegeTeams.map((team) => [team.ID, team.Abbreviation]),
   );
 
   const teamNameMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.TeamName])
+    allCollegeTeams.map((team) => [team.ID, team.TeamName]),
   );
 
   const teamMascotMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.Mascot])
+    allCollegeTeams.map((team) => [team.ID, team.Mascot]),
   );
 
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allCollegeGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability
+      if (a.LeagueID !== b.LeagueID) {
+        return a.LeagueID - b.LeagueID;
+      }
       if (a.Week !== b.Week) {
         return a.Week - b.Week;
       }
@@ -291,23 +293,25 @@ export const getScheduleCHLData = (
     }));
 
   // Weekly Games
-  const groupedWeeklyGames = allCollegeGames.reduce((acc: any, game) => {
-    if (!acc[game.Week]) {
-      acc[game.Week] = [];
-    }
-    acc[game.Week].push({
-      ...game,
-      HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
-      AwayTeamAbbr: teamAbbrMap.get(game.AwayTeamID),
-      HomeTeamName: teamNameMap.get(game.HomeTeamID),
-      HomeTeamMascot: teamMascotMap.get(game.HomeTeamID),
-      AwayTeamName: teamNameMap.get(game.AwayTeamID),
-      AwayTeamMascot: teamMascotMap.get(game.AwayTeamID),
-      HomeTeamLogo: getLogo(league, game.HomeTeamID, false),
-      AwayTeamLogo: getLogo(league, game.AwayTeamID, false),
-    });
-    return acc;
-  }, {});
+  const groupedWeeklyGames = allCollegeGames
+    .sort((a, b) => a.LeagueID - b.LeagueID)
+    .reduce((acc: any, game) => {
+      if (!acc[game.Week]) {
+        acc[game.Week] = [];
+      }
+      acc[game.Week].push({
+        ...game,
+        HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
+        AwayTeamAbbr: teamAbbrMap.get(game.AwayTeamID),
+        HomeTeamName: teamNameMap.get(game.HomeTeamID),
+        HomeTeamMascot: teamMascotMap.get(game.HomeTeamID),
+        AwayTeamName: teamNameMap.get(game.AwayTeamID),
+        AwayTeamMascot: teamMascotMap.get(game.AwayTeamID),
+        HomeTeamLogo: getLogo(league, game.HomeTeamID, false),
+        AwayTeamLogo: getLogo(league, game.AwayTeamID, false),
+      });
+      return acc;
+    }, {});
 
   return {
     teamStandings,
@@ -324,7 +328,7 @@ export const getSchedulePHLData = (
   league: League,
   allPHLStandings: PHLStandings[],
   allPHLGames: PHLGame[],
-  allPHLTeams: PHLTeam[]
+  allPHLTeams: PHLTeam[],
 ) => {
   // Team Standings
   const teamStandings = allPHLStandings
@@ -336,21 +340,21 @@ export const getSchedulePHLData = (
     }));
 
   const teamAbbrMap = new Map(
-    allPHLTeams.map((team) => [team.ID, team.Abbreviation])
+    allPHLTeams.map((team) => [team.ID, team.Abbreviation]),
   );
 
   const teamNameMap = new Map(
-    allPHLTeams.map((team) => [team.ID, team.TeamName])
+    allPHLTeams.map((team) => [team.ID, team.TeamName]),
   );
 
   const teamMascotMap = new Map(
-    allPHLTeams.map((team) => [team.ID, team.Mascot])
+    allPHLTeams.map((team) => [team.ID, team.Mascot]),
   );
 
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allPHLGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability
@@ -408,7 +412,7 @@ export const getScheduleCBBData = (
   league: League,
   allCHLStandings: CollegeStandings[],
   allCollegeGames: CBBGame[],
-  allCollegeTeams: CBBTeam[]
+  allCollegeTeams: CBBTeam[],
 ) => {
   // Team Standings
   const teamStandings = allCHLStandings
@@ -420,21 +424,21 @@ export const getScheduleCBBData = (
     }));
 
   const teamAbbrMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.Abbr])
+    allCollegeTeams.map((team) => [team.ID, team.Abbr]),
   );
 
   const teamNameMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.Team])
+    allCollegeTeams.map((team) => [team.ID, team.Team]),
   );
 
   const teamMascotMap = new Map(
-    allCollegeTeams.map((team) => [team.ID, team.Nickname])
+    allCollegeTeams.map((team) => [team.ID, team.Nickname]),
   );
 
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allCollegeGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability
@@ -492,7 +496,7 @@ export const getScheduleNBAData = (
   league: League,
   allNBAStandings: NBAStandings[],
   allNBAGames: NBAMatch[],
-  allNBATeams: NBATeam[]
+  allNBATeams: NBATeam[],
 ) => {
   // Team Standings
   const teamStandings = allNBAStandings
@@ -509,13 +513,13 @@ export const getScheduleNBAData = (
   const teamNameMap = new Map(allNBATeams.map((team) => [team.ID, team.Team]));
 
   const teamMascotMap = new Map(
-    allNBATeams.map((team) => [team.ID, team.Nickname])
+    allNBATeams.map((team) => [team.ID, team.Nickname]),
   );
 
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allNBAGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID
+      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability
@@ -571,7 +575,7 @@ export const processSchedule = (
   team: any,
   ts: any,
   league: League,
-  resultsOverride: boolean
+  resultsOverride: boolean,
 ) => {
   let weekCounter: { [key: number]: number } = {};
   return schedule
@@ -600,12 +604,12 @@ export const processSchedule = (
       const opponentLogo = getLogo(
         league,
         isHomeGame ? game.AwayTeamID : game.HomeTeamID,
-        false
+        false,
       );
       const userLogo = getLogo(
         league,
         isHomeGame ? game.HomeTeamID : game.AwayTeamID,
-        false
+        false,
       );
 
       const opponentID = isHomeGame ? game.AwayTeamID : game.HomeTeamID;
@@ -690,11 +694,16 @@ export const processWeeklyGames = (
   schedule: any[],
   ts: any,
   league: League,
-  resultsOverride: boolean
+  resultsOverride: boolean,
 ) => {
   const sortGames = (games: any[]) => {
     if (league === SimCHL || league === SimPHL) {
-      return games.sort((a, b) => (a.GameDay > b.GameDay ? 1 : -1));
+      return games.sort((a, b) => {
+        if (a.LeagueID !== b.LeagueID) {
+          return a.LeagueID - b.LeagueID;
+        }
+        return a.GameDay > b.GameDay ? 1 : -1;
+      });
     }
     if (league === SimCFB || league === SimNFL) {
       return sortFootballGames(games, league);
@@ -760,12 +769,12 @@ export const processLeagueStandings = (
   standings: any[],
   customOrder: string[],
   league: League,
-  category?: string
+  category?: string,
 ) => {
   if (league === SimCHL) {
     standings = standings.map((team) => {
       const conference = CHLConferenceNames.find(
-        (conf) => conf.value === team.ConferenceID.toString()
+        (conf) => conf.value === team.ConferenceID.toString(),
       );
       return {
         ...team,
@@ -777,7 +786,7 @@ export const processLeagueStandings = (
     if (category === Divisions) {
       standings = standings.map((team) => {
         const division = PHLDivisionNames.find(
-          (div) => div.value === team.DivisionID.toString()
+          (div) => div.value === team.DivisionID.toString(),
         );
         return {
           ...team,
@@ -788,7 +797,7 @@ export const processLeagueStandings = (
     } else {
       standings = standings.map((team) => {
         const conference = PHLConferenceNames.find(
-          (conf) => conf.value === team.ConferenceID.toString()
+          (conf) => conf.value === team.ConferenceID.toString(),
         );
         return {
           ...team,
@@ -811,8 +820,8 @@ export const processLeagueStandings = (
       league === SimNFL && category === Divisions
         ? team.GroupKey
         : category === Divisions
-        ? team.DivisionName
-        : team.ConferenceName;
+          ? team.DivisionName
+          : team.ConferenceName;
 
     if (!acc[groupKey]) {
       acc[groupKey] = [];

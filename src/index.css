@@ -2,10 +2,18 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 #root {
   margin: 0 auto;
   /* padding: 2rem; */
   text-align: center;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 :root {

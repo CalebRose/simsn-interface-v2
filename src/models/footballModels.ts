@@ -5603,6 +5603,8 @@ export class BootstrapData {
 export class TeamRequestsResponse {
   CollegeRequests: TeamRequest[];
   ProRequests: NFLRequest[];
+  AcceptedTrades: NFLTradeProposal[];
+  DraftPicks: NFLDraftPick[];
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -5611,6 +5613,11 @@ export class TeamRequestsResponse {
       TeamRequest,
     );
     this.ProRequests = this.convertValues(source["ProRequests"], NFLRequest);
+    this.AcceptedTrades = this.convertValues(
+      source["AcceptedTrades"],
+      NFLTradeProposal,
+    );
+    this.DraftPicks = this.convertValues(source["DraftPicks"], NFLDraftPick);
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

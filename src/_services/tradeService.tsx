@@ -64,7 +64,7 @@ export const TradeService = {
   },
 
   FBACreateTradeProposal: async (dto: NFLTradeProposalDTO): Promise<void> => {
-    await PostCall(`${fbaUrl}trades/nfl/create/proposal`, dto);
+    await PostCallNoResponse(`${fbaUrl}trades/nfl/create/proposal`, dto);
   },
 
   FBAProcessDraftTrade: async (dto: any): Promise<void> => {

@@ -18,6 +18,7 @@ import {
   NFLRequest,
   TeamRequest as CFBRequest,
   TeamRequestsResponse as FBARequestResponse,
+  NFLTradeProposal,
 } from "../models/footballModels";
 import {
   League,
@@ -35,6 +36,7 @@ import {
   Request as CBBRequest,
   NBARequest,
   NBATeam,
+  NBATradeProposal,
 } from "../models/basketballModels";
 import {
   CollegeBaseballTeamRequest,
@@ -66,12 +68,18 @@ interface AdminPageContextType {
   rejectNFLRequest: (request: NFLRequest) => Promise<void>;
   fbaCFBRequests: CFBRequest[];
   fbaNFLRequests: NFLRequest[];
+  fbaTradeProposals: NFLTradeProposal[];
   bbaCBBRequests: CBBRequest[];
   bbaNBARequests: NBARequest[];
+  bbaTradeProposals: NBATradeProposal[];
   baseballCBRequests: CollegeBaseballTeamRequest[];
   baseballMLBRequests: MLBTeamRequest[];
-  acceptCBBaseballRequest: (request: CollegeBaseballTeamRequest) => Promise<void>;
-  rejectCBBaseballRequest: (request: CollegeBaseballTeamRequest) => Promise<void>;
+  acceptCBBaseballRequest: (
+    request: CollegeBaseballTeamRequest,
+  ) => Promise<void>;
+  rejectCBBaseballRequest: (
+    request: CollegeBaseballTeamRequest,
+  ) => Promise<void>;
   acceptMLBRequest: (request: MLBTeamRequest) => Promise<void>;
   rejectMLBRequest: (request: MLBTeamRequest) => Promise<void>;
   selectedTab: string;
@@ -102,14 +110,29 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   );
   const [fbaCFBRequests, setFBACFBRequests] = useState<CFBRequest[]>([]);
   const [fbaNFLRequests, setFBANFLRequests] = useState<NFLRequest[]>([]);
+  const [fbaTradeProposals, setFBATradePropsals] = useState<NFLTradeProposal[]>(
+    [],
+  );
   const [bbaCBBRequests, setBBACBBRequests] = useState<CBBRequest[]>([]);
   const [bbaNBARequests, setBBANBARequests] = useState<NBARequest[]>([]);
-  const [baseballCBRequests, setBaseballCBRequests] = useState<CollegeBaseballTeamRequest[]>([]);
-  const [baseballMLBRequests, setBaseballMLBRequests] = useState<MLBTeamRequest[]>([]);
+  const [bbaTradeProposals, setBBATradePropsals] = useState<NBATradeProposal[]>(
+    [],
+  );
+  const [baseballCBRequests, setBaseballCBRequests] = useState<
+    CollegeBaseballTeamRequest[]
+  >([]);
+  const [baseballMLBRequests, setBaseballMLBRequests] = useState<
+    MLBTeamRequest[]
+  >([]);
 
   const { addUserToCHLTeam, addUserToPHLTeam } = useSimHCKStore();
-  const { addUserToCFBTeam, addUserToNFLTeam, cfbTeamMap, proTeamMap } =
-    useSimFBAStore();
+  const {
+    addUserToCFBTeam,
+    addUserToNFLTeam,
+    cfbTeamMap,
+    proTeamMap,
+    setNFLDraftPicks,
+  } = useSimFBAStore();
   const { addUserToCBBTeam, addUserToNBATeam, cbbTeamMap, nbaTeamMap } =
     useSimBBAStore();
 
@@ -159,6 +182,8 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
     );
     setFBACFBRequests(filteredCFBRequests);
     setFBANFLRequests(model.ProRequests);
+    setFBATradePropsals(model.AcceptedTrades);
+    setNFLDraftPicks(model.DraftPicks);
   };
   const getBasketballRequests = async () => {
     const res = await RequestService.GetCBBTeamRequests();
@@ -172,7 +197,9 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   };
 
   const getBaseballRequests = async () => {
-    const cbRes = await RequestService.GetLeagueRequests(SimCollegeBaseball as League);
+    const cbRes = await RequestService.GetLeagueRequests(
+      SimCollegeBaseball as League,
+    );
     if (cbRes) {
       setBaseballCBRequests(Array.isArray(cbRes) ? cbRes : []);
     }
@@ -455,6 +482,8 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
         bbaNBARequests,
         baseballCBRequests,
         baseballMLBRequests,
+        fbaTradeProposals,
+        bbaTradeProposals,
         acceptCBBaseballRequest,
         rejectCBBaseballRequest,
         acceptMLBRequest,

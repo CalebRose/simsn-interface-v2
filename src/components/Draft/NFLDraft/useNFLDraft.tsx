@@ -457,8 +457,6 @@ export const useNFLDraft = () => {
       draftMap[pick.DraftRound].push(pick);
     });
 
-    console.log({ draftMap, currentSeasonDraftPicks });
-
     // Update this once the NFL season is complete
     // handleManualDraftStateUpdate({
     //   allDraftPicks: draftMap,
