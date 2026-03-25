@@ -69,6 +69,7 @@ import { FaceDataService } from "../_services/faceDataService";
 import { TransferPortalService } from "../_services/transferPortalService";
 import { GenerateNumberFromRange } from "../_helper/utilHelper";
 import { notificationService } from "../_services/notificationService";
+import { DraftService } from "../_services/draftService";
 
 // ✅ Define Types for Context
 interface SimBBAContextProps {
@@ -220,6 +221,8 @@ interface SimBBAContextProps {
     isPro: boolean,
   ) => Promise<void>;
   deleteNotification: (notificationID: number, isPro: boolean) => Promise<void>;
+  exportNBADraftees: () => Promise<void>;
+  exportNBAFreeAgents: () => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -358,6 +361,8 @@ const defaultContext: SimBBAContextProps = {
   toggleNotificationAsRead: async () => {},
   deleteNotification: async () => {},
   ExportBBRoster: async () => {},
+  exportNBADraftees: async () => {},
+  exportNBAFreeAgents: async () => {},
 };
 
 export const SimBBAContext = createContext<SimBBAContextProps>(defaultContext);
@@ -1747,6 +1752,22 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
   };
 
+  const exportNBADraftees = useCallback(async () => {
+    await DraftService.ExportNFLDraftees();
+    enqueueSnackbar("Exporting NBA Draftees...", {
+      variant: "warning",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
+  const exportNBAFreeAgents = useCallback(async () => {
+    await FreeAgencyService.ExportNBAFreeAgents();
+    enqueueSnackbar("Exporting NBA Free Agents...", {
+      variant: "warning",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
   return (
     <SimBBAContext.Provider
       value={{
@@ -1883,6 +1904,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         deleteNotification,
         ExportBBRoster,
         scoutCrootAttribute,
+        exportNBADraftees,
+        exportNBAFreeAgents,
       }}
     >
       {children}

@@ -42,6 +42,7 @@ export const PHLFreeAgency = () => {
     CancelFreeAgencyOffer,
     SaveWaiverWireOffer,
     CancelWaiverWireOffer,
+    exportPHLFreeAgents,
   } = hkStore;
   const {
     teamCapsheet,
@@ -239,6 +240,13 @@ export const PHLFreeAgency = () => {
                   onClick={aiSettingsModal.handleOpenModal}
                 >
                   Settings
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={exportPHLFreeAgents}
+                >
+                  Export
                 </Button>
               </ButtonGroup>
             </Border>

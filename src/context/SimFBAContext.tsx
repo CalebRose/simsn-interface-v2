@@ -289,6 +289,8 @@ interface SimFBAContextProps {
   removePlayerFromScoutBoard: (id: number) => Promise<void>;
   exportDraftPicks: (dto: any) => Promise<void>;
   setNFLDraftPicks: (draftPicks: any[]) => void;
+  exportNFLDraftees: () => Promise<void>;
+  exportNFLFreeAgents: () => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -449,6 +451,8 @@ const defaultContext: SimFBAContextProps = {
   exportDraftPicks: async () => {},
   tagNFLPlayer: async () => {},
   setNFLDraftPicks: () => {},
+  exportNFLDraftees: async () => {},
+  exportNFLFreeAgents: async () => {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -2558,6 +2562,22 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     [enqueueSnackbar],
   );
 
+  const exportNFLDraftees = useCallback(async () => {
+    await DraftService.ExportNFLDraftees();
+    enqueueSnackbar("Exporting NFL Draftees...", {
+      variant: "warning",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
+  const exportNFLFreeAgents = useCallback(async () => {
+    await FreeAgencyService.ExportNFLFreeAgents();
+    enqueueSnackbar("Exporting NFL Free Agents...", {
+      variant: "warning",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
   const tagNFLPlayer = useCallback(
     async (dto: any) => {
       if (!nflTeam) return;
@@ -2750,6 +2770,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         exportDraftPicks,
         tagNFLPlayer,
         setNFLDraftPicks,
+        exportNFLDraftees,
+        exportNFLFreeAgents,
       }}
     >
       {children}
