@@ -288,6 +288,9 @@ interface SimFBAContextProps {
   revealScoutingAttribute: (dto: any) => Promise<void>;
   removePlayerFromScoutBoard: (id: number) => Promise<void>;
   exportDraftPicks: (dto: any) => Promise<void>;
+  setNFLDraftPicks: (draftPicks: any[]) => void;
+  exportNFLDraftees: () => Promise<void>;
+  exportNFLFreeAgents: () => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -447,6 +450,9 @@ const defaultContext: SimFBAContextProps = {
   removePlayerFromScoutBoard: async () => {},
   exportDraftPicks: async () => {},
   tagNFLPlayer: async () => {},
+  setNFLDraftPicks: () => {},
+  exportNFLDraftees: async () => {},
+  exportNFLFreeAgents: async () => {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -2007,31 +2013,47 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     });
   }, []);
 
-  const syncAcceptedTrade = useCallback(async (dto: NFLTradeProposal) => {
-    const res = await TradeService.FBAConfirmAcceptedTrade(dto.ID);
+  const syncAcceptedTrade = useCallback(
+    async (dto: NFLTradeProposal) => {
+      const res = await TradeService.FBAConfirmAcceptedTrade(dto.ID);
+      enqueueSnackbar(`Trade Processed!`, {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+      setTradeProposalsMap((tp) => {
+        const team = tp[dto.NFLTeamID];
+        if (!team) return tp;
+        return {
+          ...tp,
+          [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter(
+            (x) => x.ID !== dto.ID,
+          ),
+        };
+      });
+    },
+    [tradeProposalsMap],
+  );
 
-    setTradeProposalsMap((tp) => {
-      const team = tp[dto.NFLTeamID];
-      if (!team) return tp;
-      return {
-        ...tp,
-        [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter((x) => x.ID !== dto.ID),
-      };
-    });
-  }, []);
-
-  const vetoTrade = useCallback(async (dto: NFLTradeProposal) => {
-    const res = await TradeService.FBAVetoAcceptedTrade(dto.ID);
-
-    setTradeProposalsMap((tp) => {
-      const team = tp[dto.NFLTeamID];
-      if (!team) return tp;
-      return {
-        ...tp,
-        [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter((x) => x.ID !== dto.ID),
-      };
-    });
-  }, []);
+  const vetoTrade = useCallback(
+    async (dto: NFLTradeProposal) => {
+      const res = await TradeService.FBAVetoAcceptedTrade(dto.ID);
+      enqueueSnackbar(`Trade Vetoed!`, {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+      setTradeProposalsMap((tp) => {
+        const team = tp[dto.NFLTeamID];
+        if (!team) return tp;
+        return {
+          ...tp,
+          [dto.NFLTeamID]: [...tp[dto.NFLTeamID]].filter(
+            (x) => x.ID !== dto.ID,
+          ),
+        };
+      });
+    },
+    [tradeProposalsMap],
+  );
 
   const submitCollegePoll = useCallback(async (dto: any) => {
     const res = await CollegePollService.FBASubmitPoll(dto);
@@ -2540,6 +2562,22 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     [enqueueSnackbar],
   );
 
+  const exportNFLDraftees = useCallback(async () => {
+    await DraftService.ExportNFLDraftees();
+    enqueueSnackbar("Exporting NFL Draftees...", {
+      variant: "warning",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
+  const exportNFLFreeAgents = useCallback(async () => {
+    await FreeAgencyService.ExportNFLFreeAgents();
+    enqueueSnackbar("Exporting NFL Free Agents...", {
+      variant: "warning",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
   const tagNFLPlayer = useCallback(
     async (dto: any) => {
       if (!nflTeam) return;
@@ -2731,6 +2769,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         removePlayerFromScoutBoard,
         exportDraftPicks,
         tagNFLPlayer,
+        setNFLDraftPicks,
+        exportNFLDraftees,
+        exportNFLFreeAgents,
       }}
     >
       {children}

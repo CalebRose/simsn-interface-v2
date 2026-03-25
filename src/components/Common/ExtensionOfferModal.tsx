@@ -331,7 +331,6 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
         TeamID: capsheet.ID,
         AAV: aavValue,
       });
-      console.log({ dto });
       await confirmOffer(dto);
     }
 

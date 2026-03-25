@@ -258,6 +258,8 @@ interface SimHCKContextProps {
   removePlayerFromScoutBoard: (id: number) => Promise<void>;
   exportDraftPicks: (dto: any) => Promise<void>;
   bringUpCollegePlayer: (draftPickID: number) => Promise<void>;
+  exportPHLDraftees: () => Promise<void>;
+  exportPHLFreeAgents: () => Promise<void>;
 }
 
 // ✅ Default context value
@@ -410,6 +412,8 @@ const defaultContext: SimHCKContextProps = {
   bringUpCollegePlayer: async () => {},
   toggleNotificationAsRead: async () => {},
   deleteNotification: async () => {},
+  exportPHLDraftees: async () => {},
+  exportPHLFreeAgents: async () => {},
 };
 
 // ✅ Create the context
@@ -2266,6 +2270,22 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     [setCollegeNotifications, setProNotifications],
   );
 
+  const exportPHLDraftees = useCallback(async () => {
+    await DraftService.ExportPHLDraftees();
+    enqueueSnackbar("Exporting PHL Draftees...", {
+      variant: "warning",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
+  const exportPHLFreeAgents = useCallback(async () => {
+    await FreeAgencyService.ExportPHLFreeAgents();
+    enqueueSnackbar("Exporting PHL Free Agents...", {
+      variant: "warning",
+      autoHideDuration: 3000,
+    });
+  }, []);
+
   return (
     <SimHCKContext.Provider
       value={{
@@ -2417,6 +2437,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         bringUpCollegePlayer,
         toggleNotificationAsRead,
         deleteNotification,
+        exportPHLDraftees,
+        exportPHLFreeAgents,
       }}
     >
       {children}

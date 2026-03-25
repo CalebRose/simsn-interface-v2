@@ -126,10 +126,18 @@ export const RecruitService = {
   },
 
   ExportCFBCroots: async () => {
-    await GetExportCall(`${fbaUrl}recruits/export/all/`, "blob");
+    await GetExportCall(
+      `${fbaUrl}recruits/export/all/`,
+      "blob",
+      "cfb_recruits_export",
+    );
   },
 
   ExportCBBCroots: async () => {
-    await GetExportCall(`${bbaUrl}croots/export/all/`, "blob");
+    await GetExportCall(
+      `${bbaUrl}croots/export/all/`,
+      "blob",
+      "cbb_recruits_export",
+    );
   },
 };

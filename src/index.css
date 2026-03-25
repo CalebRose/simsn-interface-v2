@@ -2,10 +2,18 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 #root {
   margin: 0 auto;
   /* padding: 2rem; */
   text-align: center;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 :root {
@@ -1547,7 +1555,6 @@ hr.solid {
 .notification-unread {
   border-left: 4px solid var(--accent-primary);
   background-color: var(--accent-primary);
-  background-opacity: 0.1;
   padding-left: 0.5rem;
 }
 

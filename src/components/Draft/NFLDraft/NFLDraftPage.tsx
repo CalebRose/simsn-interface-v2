@@ -30,6 +30,7 @@ import { DraftSidebar } from "../common/DraftSidebar";
 import { DraftWarRoom } from "../common/WarRoom";
 import { BigDraftBoard } from "../common/BigBoard";
 import { DraftAdminBoard } from "../common/AdminBoard";
+import { useSimFBAStore } from "../../../context/SimFBAContext";
 
 interface NFLDraftPageProps {
   league: League;
@@ -37,7 +38,7 @@ interface NFLDraftPageProps {
 
 export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
   const { currentUser } = useAuthStore();
-
+  const { exportNFLDraftees } = useSimFBAStore();
   const {
     nflDraftees,
     selectedTeam,
@@ -275,6 +276,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                 spentPoints={teamWarRoom?.SpentPoints || 0}
                 openModal={handlePlayerModal}
                 league={SimNFL}
+                exportDraftBoard={exportNFLDraftees}
               />
             )}
             {activeTab === ScoutBoard && (

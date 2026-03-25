@@ -1,5 +1,5 @@
 import { fbaUrl, bbaUrl, hckUrl } from "../_constants/urls";
-import { PostCall } from "../_helper/fetchHelper";
+import { GetExportCall, PostCall } from "../_helper/fetchHelper";
 import {
   NBAContractOffer,
   NBAContractOfferDTO,
@@ -139,5 +139,27 @@ export const FreeAgencyService = {
     dto: NFLExtensionOffer,
   ): Promise<NFLExtensionOffer> => {
     return await PostCall(`${fbaUrl}nfl/extension/cancel/offer`, dto);
+  },
+
+  ExportNFLFreeAgents: async (): Promise<any> => {
+    return await GetExportCall(
+      `${fbaUrl}nfl/export/freeagents`,
+      "blob",
+      "nfl_freeagents_export",
+    );
+  },
+  ExportNBAFreeAgents: async (): Promise<any> => {
+    return await GetExportCall(
+      `${bbaUrl}export/nba/freeagents`,
+      "blob",
+      "nba_freeagents_export",
+    );
+  },
+  ExportPHLFreeAgents: async (): Promise<any> => {
+    return await GetExportCall(
+      `${hckUrl}export/pro/freeagents`,
+      "blob",
+      "phl_freeagents_export",
+    );
   },
 };

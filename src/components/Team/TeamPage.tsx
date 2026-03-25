@@ -1180,7 +1180,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const { isDesktop } = useResponsive();
+  const { isMobile, isDesktop } = useResponsive();
   let darkerBackgroundColor = darkenColor(backgroundColor, -5);
 
   const selectedRoster = useMemo(() => {
@@ -1510,37 +1510,40 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
               onChange={selectTeamOption}
             />
           </div>
-          <div className="flex flex-row gap-x-1 sm:gap-x-4 md:gap-x-2">
+          <div className="flex flex-row gap-x-1 sm:gap-x-2">
+            <Button
+              size={isMobile ? "xs" : "sm"}
+              isSelected={category === Overview}
+              onClick={() => setCategory(Overview)}
+            >
+              <Text variant="small">Overview</Text>
+            </Button>
+
+            <Button
+              size={isMobile ? "xs" : "sm"}
+              isSelected={category === Contracts}
+              onClick={() => setCategory(Contracts)}
+            >
+              <Text variant="small">Contracts</Text>
+            </Button>
             {isDesktop && (
               <Button
-                size="sm"
-                isSelected={category === Overview}
-                onClick={() => setCategory(Overview)}
-              >
-                <Text variant="small">Overview</Text>
-              </Button>
-            )}
-            {isDesktop && (
-              <Button
-                size="sm"
-                isSelected={category === Contracts}
-                onClick={() => setCategory(Contracts)}
-              >
-                <Text variant="small">Contracts</Text>
-              </Button>
-            )}
-            {isDesktop && (
-              <Button
-                size="sm"
+                size={isMobile ? "xs" : "sm"}
                 isSelected={category === Attributes}
                 onClick={() => setCategory(Attributes)}
               >
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
-            <Button variant="primary" size="sm" onClick={exportRoster}>
-              <Text variant="small">Export</Text>
-            </Button>
+            {isDesktop && (
+              <Button
+                variant="primary"
+                size={isMobile ? "xs" : "sm"}
+                onClick={exportRoster}
+              >
+                <Text variant="small">Export</Text>
+              </Button>
+            )}
           </div>
         </Border>
       </div>

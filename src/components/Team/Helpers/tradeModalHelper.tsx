@@ -1,4 +1,5 @@
 import {
+  NFLTradeOption,
   NFLTradeProposal,
   NFLTradeProposalDTO,
 } from "../../../models/footballModels";
@@ -76,6 +77,7 @@ export const mapHCKTradeProposals = (
 export const mapFBATradeProposals = (
   proposals: NFLTradeProposal[],
   teamID: number,
+  isReceiving: boolean,
 ): NFLTradeProposal[] => {
   const list: NFLTradeProposal[] = [];
   if (!proposals || proposals.length === 0) return list;
@@ -87,7 +89,7 @@ export const mapFBATradeProposals = (
         (x) => x.NFLTeamID === teamID,
       ),
       RecepientTeamTradeOptions: item.RecepientTeamTradeOptions.filter(
-        (x) => x.NFLTeamID !== teamID,
+        (x) => x.NFLTeamID === item.RecepientTeamID,
       ),
     });
     list.push(obj);
@@ -105,6 +107,24 @@ export const mapTradeOptions = (
     const item = options[i];
     if (item.TeamID === teamID) {
       const obj = new TradeOption({
+        ...item,
+      });
+      list.push(obj);
+    }
+  }
+  return list;
+};
+
+export const mapNFLTradeOptions = (
+  options: NFLTradeOption[],
+  teamID: number,
+): NFLTradeOption[] => {
+  const list: NFLTradeOption[] = [];
+  if (!options || options.length === 0) return list;
+  for (let i = 0; i < options.length; i++) {
+    const item = options[i];
+    if (item.NFLTeamID === teamID) {
+      const obj = new NFLTradeOption({
         ...item,
       });
       list.push(obj);

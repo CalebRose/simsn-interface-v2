@@ -37,7 +37,11 @@ export const TransferPortalService = {
   },
 
   ExportHCKPortal: async () => {
-    await GetExportCall(`${hckUrl}portal/export/players/`, "blob");
+    await GetExportCall(
+      `${hckUrl}portal/export/players/`,
+      "blob",
+      "chl_portal_list",
+    );
   },
 
   BBACreateTransferPortalProfile: async (
@@ -65,7 +69,11 @@ export const TransferPortalService = {
   },
 
   ExportBBAPortal: async () => {
-    await GetExportCall(`${bbaUrl}portal/export/players/`, "blob");
+    await GetExportCall(
+      `${bbaUrl}portal/export/players/`,
+      "blob",
+      "cbb_portal_list",
+    );
   },
 
   FBACreateTransferPortalProfile: async (
@@ -97,6 +105,10 @@ export const TransferPortalService = {
   },
 
   ExportCFBPortal: async () => {
-    await GetExportCall(`${fbaUrl}portal/export/players/`, "blob");
+    await GetExportCall(
+      `${fbaUrl}portal/export/players/`,
+      "blob",
+      "cfb_portal_list",
+    );
   },
 };

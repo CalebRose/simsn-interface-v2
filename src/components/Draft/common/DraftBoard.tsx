@@ -50,6 +50,7 @@ interface DraftBoardProps {
   openModal: (action: ModalAction, player: Draftee | DraftablePlayer) => void;
   offensiveSystemsInformation?: any;
   defensiveSystemsInformation?: any;
+  exportDraftBoard: () => Promise<void>;
 }
 
 export const DraftBoard: FC<DraftBoardProps> = ({
@@ -67,6 +68,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
   openModal,
   offensiveSystemsInformation,
   defensiveSystemsInformation,
+  exportDraftBoard,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
@@ -391,6 +393,9 @@ export const DraftBoard: FC<DraftBoardProps> = ({
               Available Players
             </Text>
             <ScoutingTooltip />
+            <Button size="xs" onClick={exportDraftBoard} variant="primary">
+              Export
+            </Button>
           </div>
           <div className="flex items-center space-x-6">
             <div className="text-center">

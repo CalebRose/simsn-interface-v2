@@ -232,7 +232,9 @@ export const AdminPage = () => {
                 selected={selectedTab === Teams}
                 setSelected={setSelectedTab}
               />
-              {selectedLeague === SimPHL && (
+              {(selectedLeague === SimPHL ||
+                selectedLeague === SimNFL ||
+                selectedLeague === SimNBA) && (
                 <>
                   <Tab
                     label={Trades}
