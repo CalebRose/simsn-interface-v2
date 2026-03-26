@@ -98,8 +98,8 @@ export const getCHLAttributes = (
           {
             label: "Injury",
             value: player.InjuryType
-              ? player.WeeksOfRecovery && player.WeeksOfRecovery > 0
-                ? `${player.InjuryType}, ${player.WeeksOfRecovery} weeks`
+              ? player.DaysOfRecovery && player.DaysOfRecovery > 0
+                ? `${player.InjuryType}, ${player.DaysOfRecovery} days`
                 : `None`
               : "None",
           },
@@ -217,8 +217,8 @@ export const getPHLAttributes = (
           {
             label: "Injury",
             value: player.InjuryType
-              ? player.WeeksOfRecovery && player.WeeksOfRecovery > 0
-                ? `${player.InjuryType}, ${player.WeeksOfRecovery} weeks`
+              ? player.DaysOfRecovery && player.DaysOfRecovery > 0
+                ? `${player.InjuryType}, ${player.DaysOfRecovery} days`
                 : `None`
               : "None",
           },
