@@ -1359,6 +1359,7 @@ export const TeamInjuries = ({
   textColorClass,
   darkerBackgroundColor,
   isLoading: isLoading,
+  league,
 }: TeamInjuriesProps) => {
   return (
     <SectionCards
@@ -1396,10 +1397,19 @@ export const TeamInjuries = ({
                   <Text variant="xs" classes={`${textColorClass}`}>
                     {injury.InjuryType}
                   </Text>
-                  <Text variant="xs" classes={`${textColorClass}`}>
-                    {injury.WeeksOfRecovery}{" "}
-                    {injury.WeeksOfRecovery === 1 ? "game" : "games"}
-                  </Text>
+                  {league !== SimCHL && league !== SimPHL && (
+                    <Text variant="xs" classes={`${textColorClass}`}>
+                      {injury.WeeksOfRecovery}{" "}
+                      {injury.WeeksOfRecovery === 1 ? "game" : "games"}
+                    </Text>
+                  )}
+                  {league === SimCHL ||
+                    (league == SimPHL && (
+                      <Text variant="xs" classes={`${textColorClass}`}>
+                        {injury.DaysOfRecovery}{" "}
+                        {injury.DaysOfRecovery === 1 ? "game" : "games"}
+                      </Text>
+                    ))}
                 </div>
               ))}
             </div>
