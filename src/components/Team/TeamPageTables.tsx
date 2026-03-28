@@ -1725,17 +1725,15 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
     });
   }, [roster]);
 
-  console.log({ existingOfferMap });
-
   const rowRenderer = (
     item: NFLPlayer,
     index: number,
     backgroundColor: string,
   ) => {
-    const extensionOffer = useMemo(() => {
+    const extensionOffer = (() => {
       if (!existingOfferMap) return null;
       return existingOfferMap[item.ID] || null;
-    }, [existingOfferMap, item.ID]);
+    })();
 
     const playerContract = contracts?.find(
       (contract) => contract.PlayerID === item.ID,
