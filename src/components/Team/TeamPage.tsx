@@ -1565,6 +1565,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             headerColor={headerColor}
             borderColor={borderColor}
             openModal={openModal}
+            existingOfferMap={nflExtensionMap!!}
             openExtensionModal={openExtensionModal}
             openFranchiseTagModal={openFranchiseTagModal}
             disable={selectedTeam!.ID !== nflTeam!.ID}

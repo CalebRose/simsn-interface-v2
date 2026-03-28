@@ -172,7 +172,7 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
         </TableCell>
         <TableCell>
           <div className="flex flex-row items-start">
-            <Text variant="xs">{team.TeamName}</Text>
+            <Text variant="xs">{item.Team.TeamName}</Text>
           </div>
         </TableCell>
         {values.map((stat: any, idx) => {

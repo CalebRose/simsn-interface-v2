@@ -27,6 +27,7 @@ import {
   CollegePlayer as CFBPlayer,
   Croot as FBCroot,
   NFLContract,
+  NFLExtensionOffer,
   NFLPlayer,
 } from "../../models/footballModels";
 import {
@@ -749,6 +750,7 @@ export const getNFLAttributes = (
   category: string,
   showLetterGrade: boolean,
   contract?: any,
+  existingOffer?: NFLExtensionOffer | null,
 ) => {
   const nflPlayer = player as NFLPlayer;
   const nflContract = contract as NFLContract;
@@ -807,6 +809,10 @@ export const getNFLAttributes = (
             value: `${contract.Y1Bonus.toFixed(2)}M`,
           },
           { label: "Years Left", value: nflContract.ContractLength },
+          {
+            label: "Is Extended",
+            value: !existingOffer ? false : existingOffer.IsAccepted,
+          },
           { label: "Is Tagged", value: nflContract.IsTagged },
           { label: "IsOnTradeBlock", value: player.IsOnTradeBlock },
           { label: "PS", value: player.IsPracticeSquad },
