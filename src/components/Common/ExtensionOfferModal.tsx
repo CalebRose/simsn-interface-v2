@@ -320,7 +320,7 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
       const { totalComp, ContractLength } = getNFLSalaryData(
         offer as NFLExtensionOffer,
       );
-      if (totalComp === 0 && ContractLength === 0) {
+      if ((totalComp === 0 && ContractLength === 0) || offer.IsAccepted) {
         onClose();
         return;
       }
