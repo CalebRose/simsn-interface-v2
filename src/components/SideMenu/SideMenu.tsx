@@ -313,6 +313,11 @@ export const SideMenu = ({}) => {
               toggle={toggleMenu}
               click={() => navigate(routes.HOME)}
             />
+            <SideMenuItem
+              label="Forums"
+              toggle={toggleMenu}
+              click={() => navigate(routes.FORUMS)}
+            />
             {isCFBUser && (
               <SideMenuItem
                 label={SimCFB}

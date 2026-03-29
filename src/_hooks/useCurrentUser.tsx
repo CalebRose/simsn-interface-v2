@@ -47,7 +47,10 @@ export const useCurrentUser = (): UseCurrentUserReturn => {
             const userRef = doc(firestore, "users", user.uid);
             const unsubscribeSnapshot = onSnapshot(userRef, (docSnapshot) => {
               if (docSnapshot.exists()) {
-                setCurrentUser(docSnapshot.data() as CurrentUser);
+                setCurrentUser({
+                  id: docSnapshot.id,
+                  ...docSnapshot.data(),
+                } as CurrentUser);
               } else {
                 setCurrentUser(null);
               }

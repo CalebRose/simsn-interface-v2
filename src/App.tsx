@@ -6,6 +6,7 @@ import { SimBaseballProvider } from "./context/SimBaseballContext";
 import { SimBBAProvider } from "./context/SimBBAContext";
 import { SimFBAProvider } from "./context/SimFBAContext";
 import { SimHCKProvider } from "./context/SimHockeyContext";
+import { ForumProvider } from "./context/ForumContext";
 import AppRoutes from "./routes/AppRoutes";
 
 function App() {
@@ -17,7 +18,7 @@ function App() {
 }
 
 const InnerApp = () => {
-  const { viewMode, isLoading, isDarkMode } = useAuthStore();
+  const { viewMode, isLoading, isDarkMode, currentUser } = useAuthStore();
   const overallTheme = useMemo(() => {
     if (isDarkMode) {
       return "dark";
@@ -34,7 +35,9 @@ const InnerApp = () => {
             <SimBaseballProvider>
               <LeagueProvider>
                 <AdminPageProvider>
-                  <AppRoutes />
+                  <ForumProvider currentUser={currentUser}>
+                    <AppRoutes />
+                  </ForumProvider>
                 </AdminPageProvider>
               </LeagueProvider>
             </SimBaseballProvider>

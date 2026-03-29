@@ -18,6 +18,45 @@ import {
   retro_logos,
 } from "../_constants/logos";
 
+interface UserLogoProfile {
+  DefaultLeague?: string | null;
+  teamId?: number;
+  NFLTeamID?: number;
+  cbb_id?: number;
+  NBATeamID?: number;
+  CHLTeamID?: number;
+  PHLTeamID?: number;
+  IsRetro?: boolean;
+}
+
+export const getUserLogoUrl = (user: UserLogoProfile): string => {
+  const { DefaultLeague, IsRetro } = user;
+  const retro = IsRetro ?? false;
+
+  const leagueLogoMap: Record<string, string> = {};
+  if (user.teamId) leagueLogoMap[SimCFB] = getCFBLogo(user.teamId, retro);
+  if (user.NFLTeamID) leagueLogoMap[SimNFL] = getNFLLogo(user.NFLTeamID, retro);
+  if (user.cbb_id) leagueLogoMap[SimCBB] = getCBBLogo(user.cbb_id, retro);
+  if (user.NBATeamID) leagueLogoMap[SimNBA] = getNBALogo(user.NBATeamID, retro);
+  if (user.CHLTeamID) leagueLogoMap[SimCHL] = getCHLLogo(user.CHLTeamID, retro);
+  if (user.PHLTeamID) leagueLogoMap[SimPHL] = getPHLLogo(user.PHLTeamID, retro);
+
+  if (DefaultLeague && leagueLogoMap[DefaultLeague]) {
+    return leagueLogoMap[DefaultLeague];
+  }
+
+  // Fallback: return first available logo
+  return (
+    leagueLogoMap[SimCFB] ||
+    leagueLogoMap[SimNFL] ||
+    leagueLogoMap[SimCBB] ||
+    leagueLogoMap[SimNBA] ||
+    leagueLogoMap[SimCHL] ||
+    leagueLogoMap[SimPHL] ||
+    ""
+  );
+};
+
 export const getLogo = (
   league: League,
   id: number,
