@@ -7,7 +7,6 @@ import {
   playerInfoRow, playerAllAttrRow,
   playerPotRow, playerContractRow, playerBattingStatsRow, playerPitchingStatsRow,
   buildFullExportRow,
-  type StatsMapForExport,
 } from "../../../_utility/rosterCsvExport";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
@@ -53,6 +52,7 @@ import {
   type BaseballCategory,
   type SortConfig,
   type PlayerStatsMap,
+  emptyStatsMap,
   comparePlayers,
   AllPlayersTable,
   PositionTable,
@@ -71,6 +71,10 @@ import {
   ScoutingActionType,
   ScoutingBudget,
 } from "../../../models/baseball/baseballScoutingModels";
+import {
+  ContractDemand,
+  ContractOverviewWithDemand,
+} from "../../../models/baseball/baseballFreeAgencyModels";
 
 // ═══════════════════════════════════════════════
 // Constants
@@ -659,9 +663,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
 
   // --- Stats data for roster table ---
-  const [playerStatsMap, setPlayerStatsMap] = useState<PlayerStatsMap>(
-    new Map(),
-  );
+  const [playerStatsMap, setPlayerStatsMap] = useState<PlayerStatsMap>(emptyStatsMap);
   const [statsLoading, setStatsLoading] = useState(false);
   const [isExportingFull, setIsExportingFull] = useState(false);
 
@@ -764,6 +766,9 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     scoutingModal.handleCloseModal();
     refreshPlayerScouting(scoutingPlayerId);
   }, [scoutingModal, scoutingPlayerId, refreshPlayerScouting]);
+
+  // --- Contract Demands (for buyout/extend modals) ---
+  const [contractDemands, setContractDemands] = useState<Record<number, ContractDemand | null>>({});
 
   // --- Transaction Modal ---
   const txnModal = useModal();
@@ -894,13 +899,13 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     let cancelled = false;
     const fetchStats = async () => {
       setStatsLoading(true);
-      const map: PlayerStatsMap = new Map();
       try {
         // Single org-level call replaces per-team loop
         const [battingRes, pitchingRes] = await Promise.all([
           BaseballService.GetBattingLeaders({
             league_year_id: leagueYearId,
             org_id: orgId,
+            min_pa: 0,
             page_size: 500,
           }),
           BaseballService.GetPitchingLeaders({
@@ -909,14 +914,17 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
             page_size: 500,
           }),
         ]);
-        for (const row of battingRes.leaders) map.set(row.player_id, row);
-        for (const row of pitchingRes.leaders) map.set(row.player_id, row);
+        const batting = new Map<number, BattingLeaderRow>();
+        const pitching = new Map<number, PitchingLeaderRow>();
+        for (const row of battingRes.leaders) batting.set(row.player_id, row);
+        for (const row of pitchingRes.leaders) pitching.set(row.player_id, row);
+        const map: PlayerStatsMap = { batting, pitching };
         if (!cancelled) {
           statsCache.current = { orgId, lyId: leagueYearId, data: map };
           setPlayerStatsMap(map);
         }
       } catch {
-        if (!cancelled) setPlayerStatsMap(new Map());
+        if (!cancelled) setPlayerStatsMap(emptyStatsMap);
       }
       if (!cancelled) setStatsLoading(false);
     };
@@ -941,6 +949,20 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     ),
     [isOwnOrg, isCollege, handleTransactionAction, handleScoutingQuickAction],
   );
+
+  // --- Load contract demands for buyout/extend modals (MLB only) ---
+  useEffect(() => {
+    if (!isOwnOrg || isCollege || !viewedOrg || !seasonContext) return;
+    BaseballService.GetContractOverviewWithDemands(viewedOrg.id, seasonContext.current_league_year_id)
+      .then((data) => {
+        const map: Record<number, ContractDemand | null> = {};
+        for (const p of data) {
+          map[p.player_id] = p.demand ?? null;
+        }
+        setContractDemands(map);
+      })
+      .catch(() => {});
+  }, [isOwnOrg, isCollege, viewedOrg, seasonContext]);
 
   // --- Position override handler ---
   const handlePositionOverride = useCallback(
@@ -1120,14 +1142,14 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         const headers = [...INFO_HEADERS, ...PITCHING_STAT_HEADERS];
         const rows = filteredPlayers.map((p) => [
           ...playerInfoRow(p),
-          ...playerPitchingStatsRow(playerStatsMap.get(p.id) as any),
+          ...playerPitchingStatsRow(playerStatsMap.pitching.get(p.id)),
         ]);
         exportToCsv(`${teamSlug}-pitching-stats`, headers, rows);
       } else {
         const headers = [...INFO_HEADERS, ...BATTING_STAT_HEADERS];
         const rows = filteredPlayers.map((p) => [
           ...playerInfoRow(p),
-          ...playerBattingStatsRow(playerStatsMap.get(p.id) as any),
+          ...playerBattingStatsRow(playerStatsMap.batting.get(p.id)),
         ]);
         exportToCsv(`${teamSlug}-batting-stats`, headers, rows);
       }
@@ -1142,12 +1164,13 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       const teamSlug = isAllView ? "all-orgs" : (viewedOrg?.org_abbrev ?? "roster").toLowerCase();
 
       // Resolve stats map — fetch if not yet loaded (and we have org context)
-      let statsMap: StatsMapForExport = playerStatsMap as StatsMapForExport;
-      if (statsMap.size === 0 && !isAllView && leagueYearId && effectiveOrgId) {
+      let statsMap: PlayerStatsMap = playerStatsMap;
+      if (statsMap.batting.size === 0 && statsMap.pitching.size === 0 && !isAllView && leagueYearId && effectiveOrgId) {
         const [battingRes, pitchingRes] = await Promise.all([
           BaseballService.GetBattingLeaders({
             league_year_id: leagueYearId,
             org_id: effectiveOrgId,
+            min_pa: 0,
             page_size: 500,
           }),
           BaseballService.GetPitchingLeaders({
@@ -1156,10 +1179,11 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
             page_size: 500,
           }),
         ]);
-        const fetched: StatsMapForExport = new Map();
-        for (const row of battingRes.leaders) fetched.set(row.player_id, row);
-        for (const row of pitchingRes.leaders) fetched.set(row.player_id, row);
-        statsMap = fetched;
+        const batting = new Map<number, BattingLeaderRow>();
+        const pitching = new Map<number, PitchingLeaderRow>();
+        for (const row of battingRes.leaders) batting.set(row.player_id, row);
+        for (const row of pitchingRes.leaders) pitching.set(row.player_id, row);
+        statsMap = { batting, pitching };
       }
 
       const rows = allPlayers.map((p) => buildFullExportRow(p, statsMap));
@@ -1551,6 +1575,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
           }}
           player={txnPlayer}
           action={txnAction}
+          demand={contractDemands[txnPlayer.id] ?? undefined}
           orgId={viewedOrg.id}
           seasonContext={seasonContext}
           onSuccess={handleTransactionSuccess}

@@ -47,8 +47,8 @@ export interface BoardPlayer {
     your_points: number;
     on_board: boolean;
     interest_gauge: "Low" | "Medium" | "High" | "Very High";
-    competitor_count: number;
-    status: "uncommitted" | "committed";
+    competitor_team_ids: number[];
+    status: string;
     committed_to?: {
         org_id: number;
         org_abbrev: string;
@@ -58,7 +58,6 @@ export interface BoardPlayer {
 
 export interface BoardResponse {
     players: BoardPlayer[];
-    board_player_ids: number[];
 }
 
 export interface BoardModifyRequest {
@@ -81,9 +80,9 @@ export interface RecruitingPlayerDetail {
     star_rating: number;
     rank_overall: number;
     rank_by_ptype: number;
-    status: "uncommitted" | "committed";
+    status: string;
     interest_gauge: "Low" | "Medium" | "High" | "Very High";
-    competitor_count: number;
+    competitor_team_ids: number[];
     your_investment: number;
     commitment?: {
         org_id: number;
@@ -141,6 +140,7 @@ export interface Commitment {
     star_rating: number;
     week_committed: number;
     points_total: number;
+    competitor_team_ids: number[];
 }
 
 export interface CommitmentsResponse {

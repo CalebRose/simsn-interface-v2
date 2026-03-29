@@ -818,7 +818,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                 />
               )}
               {activeTab === "Team" && (
-                <BaseballTeamStatsTable batting={teamBatting} pitching={teamPitching} standings={standings} league={league} isRetro={currentUser?.isRetro} accentColor={headerColor} />
+                <BaseballTeamStatsTable batting={teamBatting} pitching={teamPitching} standings={standings} league={league} IsRetro={currentUser?.IsRetro} accentColor={headerColor} />
               )}
 
               {/* Pagination */}

@@ -5,6 +5,7 @@ import { BaseballService } from "../../../_services/baseballService";
 import { getLogo } from "../../../_utility/getLogo";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
+
 import {
   SUBWEEK_LABELS,
   LINEUP_POSITION_ORDER,
@@ -46,6 +47,12 @@ const TeamLineupColumn = ({
   const headerBg = `${primary}35`;
   const headerBorder = `${primary}88`;
   const abbrevTextColor = getTextColorBasedOnBg(primary);
+  // Light bg → pick the darker of the two; dark bg → pick the lighter of the two.
+  // Compare relative brightness so we always use a real team color, never a fallback.
+  const brightness = (c: string) => { const h = c.replace("#",""); const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16); return (r*299+g*587+b*114)/1000; };
+  const pb = brightness(primary), sb = brightness(secondary);
+  const lightModePos = pb <= sb ? primary : secondary;  // darker on light bg
+  const darkModePos  = pb >= sb ? primary : secondary;  // lighter on dark bg
 
   return (
     <div className="flex-1 px-2 min-w-0">
@@ -68,10 +75,10 @@ const TeamLineupColumn = ({
       </div>
       {/* Position rows */}
       {LINEUP_POSITION_ORDER.map((pos) => (
-        <div key={pos} className="flex items-baseline gap-1 py-[1px] text-xs leading-4">
+        <div key={pos} className="flex items-baseline gap-1 py-[2px] text-xs leading-4">
           <span
-            className="font-mono w-7 shrink-0 text-right text-[10px] font-semibold"
-            style={{ color: secondary }}
+            className="font-mono w-7 shrink-0 text-right text-[12px] [paint-order:stroke_fill] [-webkit-text-stroke:.4px_rgba(0,0,0,0)] dark:[-webkit-text-stroke:.3px_rgba(155,155,155,0)] [color:var(--pos-light)] dark:[color:var(--pos-dark)]"
+            style={{ "--pos-light": lightModePos, "--pos-dark": darkModePos } as React.CSSProperties}
           >
             {pos}
           </span>

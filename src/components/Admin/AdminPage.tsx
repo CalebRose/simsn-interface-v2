@@ -28,7 +28,16 @@ import { AdminRequestsTab } from "./AdminRequestsTab";
 import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
 import { AdminTradesTab } from "./AdminTradesTab";
+import { IFAAdminPanel } from "./IFAAdminPanel";
 import { useMemo } from "react";
+import { useSimBaseballStore } from "../../context/SimBaseballContext";
+
+const IFAAdminSection = () => {
+  const { seasonContext } = useSimBaseballStore();
+  const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+  if (!leagueYearId) return null;
+  return <IFAAdminPanel leagueYearId={leagueYearId} />;
+};
 
 interface UnAuthPageProps {
   navigate: NavigateFunction;
@@ -260,6 +269,7 @@ export const AdminPage = () => {
             <CommissionerHub league={selectedLeague} />
           </Border>
         )}
+        {selectedLeague === SimMLB && <IFAAdminSection />}
       </PageContainer>
     </>
   );

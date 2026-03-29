@@ -36,6 +36,28 @@ import { useSnackbar } from "notistack";
 import "./baseballMobile.css";
 
 // ═══════════════════════════════════════════════
+// Status badge colors
+// ═══════════════════════════════════════════════
+
+const getStatusBadgeClasses = (status: string): string => {
+  if (status.startsWith("Signed"))
+    return "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400";
+  switch (status) {
+    case "May Sign this Week":
+      return "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300";
+    case "May Sign Soon":
+      return "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300";
+    case "Narrowing to Top 3":
+    case "Locking Down Top 5":
+      return "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300";
+    case "Listening to Offers":
+      return "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300";
+    default:
+      return "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300";
+  }
+};
+
+// ═══════════════════════════════════════════════
 // Scouted potentials cache
 // ═══════════════════════════════════════════════
 
@@ -57,6 +79,8 @@ const RECRUIT_POS_GROUPS: ColumnGroup[] = [
       { label: "Stars", sortKey: "star_rating" },
       { label: "Area", sortKey: "area" },
       { label: "B/T", sortKey: "" },
+      { label: "Interest", sortKey: "" },
+      { label: "Competitors", sortKey: "" },
     ],
   },
   {
@@ -107,6 +131,8 @@ const RECRUIT_PITCH_GROUPS: ColumnGroup[] = [
       { label: "Stars", sortKey: "star_rating" },
       { label: "Area", sortKey: "area" },
       { label: "Throw", sortKey: "" },
+      { label: "Interest", sortKey: "" },
+      { label: "Competitors", sortKey: "" },
     ],
   },
   {
@@ -190,7 +216,7 @@ interface BaseballRecruitingPageProps {
 export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   const { enqueueSnackbar } = useSnackbar();
   const { currentUser } = useAuthStore();
-  const { collegeOrganization, seasonContext } = useSimBaseballStore();
+  const { collegeOrganization, seasonContext, allTeams } = useSimBaseballStore();
   const orgId = collegeOrganization?.id ?? 0;
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
 
@@ -305,7 +331,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
     BaseballService.GetRecruitingBoard(orgId, leagueYearId)
       .then((r) => {
         setBoardPlayers(r.players ?? []);
-        setBoardPlayerIds(new Set(r.board_player_ids ?? []));
+        setBoardPlayerIds(new Set((r.players ?? []).filter(bp => bp.on_board).map(bp => bp.player_id)));
       })
       .catch((err) => {
         console.error(
@@ -507,7 +533,6 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
     setInvestSaving(true);
     try {
       const investments = Object.entries(investAllocations)
-        .filter(([, pts]) => pts > 0)
         .map(([pid, pts]) => ({ player_id: Number(pid), points: pts }));
       const resp = await BaseballService.SubmitInvestment({
         org_id: orgId,
@@ -574,6 +599,13 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
 
   const orgAbbrev = collegeOrganization?.org_abbrev ?? "";
 
+  // Lookup map so pool rows can show board-level data (interest, competitors)
+  const boardPlayerMap = useMemo(() => {
+    const map = new Map<number, BoardPlayer>();
+    boardPlayers.forEach((bp) => map.set(bp.player_id, bp));
+    return map;
+  }, [boardPlayers]);
+
   const th = "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap";
   const td = "px-2 py-1";
 
@@ -584,6 +616,69 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
       </PageContainer>
     );
   }
+
+  // Build competitor list, prepending own team when the org has invested,
+  // sorted alphabetically by team name
+  const teamNameMap = useMemo(() => {
+    const m = new Map<number, string>();
+    allTeams.forEach((t) => m.set(t.team_id, t.team_full_name));
+    return m;
+  }, [allTeams]);
+
+  const myTeamId = primaryTeam?.team_id;
+  const getCompetitorIds = (ids: number[] | undefined | null, hasOwnPoints: boolean) => {
+    const base = [...(ids ?? [])];
+    if (hasOwnPoints && myTeamId && !base.includes(myTeamId)) {
+      base.push(myTeamId);
+    }
+    base.sort((a, b) => (teamNameMap.get(a) ?? "").localeCompare(teamNameMap.get(b) ?? ""));
+    return base;
+  };
+
+  // ── Pool board-data cells (interest + competitors) ──
+  const renderBoardCells = (playerId: number) => {
+    const bp = boardPlayerMap.get(playerId);
+    return (
+      <>
+        <td className={`${cell} text-center`}>
+          {bp ? (
+            <span className={`px-1.5 py-0.5 text-xs rounded-full ${
+              bp.interest_gauge === "Very High"
+                ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
+                : bp.interest_gauge === "High"
+                  ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                  : bp.interest_gauge === "Medium"
+                    ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300"
+                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+            }`}>
+              {bp.interest_gauge}
+            </span>
+          ) : (
+            <span className="text-gray-500">—</span>
+          )}
+        </td>
+        <td className={`${cell} text-center`}>
+          {(() => {
+            const cIds = bp ? getCompetitorIds(bp.competitor_team_ids, bp.your_points > 0) : [];
+            return cIds.length > 0 ? (
+              <div className="flex items-center justify-center gap-0.5 flex-wrap">
+                {cIds.map((tid) => (
+                  <img
+                    key={tid}
+                    src={getLogo(SimCollegeBaseball, tid, false)}
+                    alt=""
+                    className="w-4 h-4 object-contain"
+                  />
+                ))}
+              </div>
+            ) : (
+              <span className="text-gray-500">—</span>
+            );
+          })()}
+        </td>
+      </>
+    );
+  };
 
   // ── Pool row renderers ──
 
@@ -638,6 +733,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
         <td className={`${cell} text-center`}>
           {pp.bat_hand}/{pp.pitch_hand}
         </td>
+        {renderBoardCells(pp.id)}
         {(() => {
           const p = getPot(pp, "contact_pot");
           return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
@@ -736,6 +832,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
         </td>
         <td className={`${cell} text-center`}>{pp.area}</td>
         <td className={`${cell} text-center`}>{pp.pitch_hand}</td>
+        {renderBoardCells(pp.id)}
         {(() => {
           const p = getPot(pp, "pendurance_pot");
           return <PotentialCell pot={p.pot} isFuzzed={p.fuzzed} />;
@@ -1085,7 +1182,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                         {boardPlayers.map((bp) => {
                           const allocation =
                             investAllocations[bp.player_id] ?? 0;
-                          const isCommitted = bp.status === "committed";
+                          const isSigned = bp.status.startsWith("Signed");
                           return (
                             <tr
                               key={bp.player_id}
@@ -1136,7 +1233,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {investState?.status === "active" &&
-                                !isCommitted ? (
+                                !isSigned ? (
                                   <input
                                     type="number"
                                     min={0}
@@ -1175,17 +1272,29 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                                   {bp.interest_gauge}
                                 </span>
                               </td>
-                              <td className={td}>{bp.competitor_count}</td>
                               <td className={td}>
-                                {isCommitted && bp.committed_to ? (
-                                  <span className="text-xs text-gray-400">
-                                    Committed to {bp.committed_to.org_abbrev}
-                                  </span>
-                                ) : (
-                                  <span className="text-xs text-green-500">
-                                    Open
-                                  </span>
-                                )}
+                                {(() => {
+                                  const cIds = getCompetitorIds(bp.competitor_team_ids, bp.your_points > 0);
+                                  return cIds.length > 0 ? (
+                                    <div className="flex items-center gap-1 flex-wrap">
+                                      {cIds.map((tid) => (
+                                        <img
+                                          key={tid}
+                                          src={getLogo(SimCollegeBaseball, tid, false)}
+                                          alt=""
+                                          className="w-5 h-5 object-contain"
+                                        />
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <span className="text-gray-500">—</span>
+                                  );
+                                })()}
+                              </td>
+                              <td className={td}>
+                                <span className={`px-2 py-0.5 text-xs rounded-full whitespace-nowrap ${getStatusBadgeClasses(bp.status)}`}>
+                                  {bp.status}
+                                </span>
                               </td>
                             </tr>
                           );
@@ -1252,6 +1361,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                         <tr className="border-b border-gray-700 bg-gray-50 dark:bg-gray-700">
                           <th className={th}>Player</th>
                           <th className={th}>School</th>
+                          <th className={th}>Competitors</th>
                           <th className={th}>Stars</th>
                           <th className={th}>Type</th>
                           <th className={th}>Week</th>
@@ -1267,7 +1377,37 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                             <td className={`${td} font-medium`}>
                               {c.player_name}
                             </td>
-                            <td className={td}>{c.org_abbrev}</td>
+                            <td className={td}>
+                              <div className="flex items-center gap-1">
+                                <img
+                                  src={getLogo(SimCollegeBaseball, c.org_id, false)}
+                                  alt={c.org_abbrev}
+                                  className="w-5 h-5 object-contain"
+                                />
+                                {c.org_abbrev}
+                              </div>
+                            </td>
+                            <td className={td}>
+                              {(() => {
+                                const sorted = [...(c.competitor_team_ids ?? [])].sort(
+                                  (a, b) => (teamNameMap.get(a) ?? "").localeCompare(teamNameMap.get(b) ?? "")
+                                );
+                                return sorted.length > 0 ? (
+                                  <div className="flex items-center gap-1 flex-wrap">
+                                    {sorted.map((tid) => (
+                                      <img
+                                        key={tid}
+                                        src={getLogo(SimCollegeBaseball, tid, false)}
+                                        alt=""
+                                        className="w-5 h-5 object-contain"
+                                      />
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-500">—</span>
+                                );
+                              })()}
+                            </td>
                             <td className={td}>
                               <span className="text-yellow-500">
                                 {"★".repeat(c.star_rating)}

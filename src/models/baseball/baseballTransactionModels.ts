@@ -108,6 +108,10 @@ export interface ReleaseResponse {
     contract_id: number;
     player_id: number;
     years_remaining_on_books: number;
+    waiver?: {
+        waiver_claim_id: number;
+        expires_week: number;
+    };
     player?: TransactionPlayerPatch;
 }
 

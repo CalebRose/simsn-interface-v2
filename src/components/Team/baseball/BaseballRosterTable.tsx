@@ -222,7 +222,7 @@ const DURABILITY_SORT_ORDER: Record<string, number> = {
 
 export const resolveSortValue = (p: Player, key: string, statsMap?: PlayerStatsMap): string | number | null => {
   if (key.startsWith("stat_")) {
-    const s = statsMap?.get(p.id);
+    const s = statsMap?.batting.get(p.id) ?? statsMap?.pitching.get(p.id);
     if (!s) return null;
     const field = key.slice(5);
     const val = (s as any)[field];
@@ -759,10 +759,15 @@ export const ContractCells = ({ p, isCollege }: { p: Player; isCollege?: boolean
 };
 
 // Stats data type for roster table
-export type PlayerStatsMap = Map<number, BattingLeaderRow | PitchingLeaderRow>;
+export interface PlayerStatsMap {
+  batting: Map<number, BattingLeaderRow>;
+  pitching: Map<number, PitchingLeaderRow>;
+}
+
+export const emptyStatsMap: PlayerStatsMap = { batting: new Map(), pitching: new Map() };
 
 export const BattingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: PlayerStatsMap }) => {
-  const s = statsMap?.get(p.id) as BattingLeaderRow | undefined;
+  const s = statsMap?.batting.get(p.id);
   if (!s) return <td data-label="Stats" className={`${td} text-center text-gray-400`} colSpan={12}>—</td>;
   return (
     <>
@@ -783,7 +788,7 @@ export const BattingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: Playe
 };
 
 export const PitchingStatsCells = ({ p, statsMap }: { p: Player; statsMap?: PlayerStatsMap }) => {
-  const s = statsMap?.get(p.id) as PitchingLeaderRow | undefined;
+  const s = statsMap?.pitching.get(p.id);
   if (!s) return <td data-label="Stats" className={`${td} text-center text-gray-400`} colSpan={13}>—</td>;
   return (
     <>

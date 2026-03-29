@@ -8,6 +8,7 @@ import { Border } from "../../../_design/Borders";
 import { Player, BaseballSeasonContext } from "../../../models/baseball/baseballModels";
 import { RosterWarning, TransactionPlayerPatch } from "../../../models/baseball/baseballTransactionModels";
 import { ScoutingActionType, ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
+import { ContractDemand } from "../../../models/baseball/baseballFreeAgencyModels";
 import { BaseballService } from "../../../_services/baseballService";
 import { displayLevel, LEVEL_ORDER, LEVEL_TO_NUMERIC, SCOUTING_ACTION_LABELS, SCOUTING_ACTION_COSTS } from "../../../_utility/baseballHelpers";
 import { enqueueSnackbar } from "notistack";
@@ -81,6 +82,7 @@ interface BaseballTransactionModalProps {
   orgId: number;
   seasonContext: BaseballSeasonContext;
   onSuccess: (playerId: number, patch?: TransactionPlayerPatch) => void;
+  demand?: ContractDemand | null;
 }
 
 export const BaseballTransactionModal: FC<BaseballTransactionModalProps> = (props) => {
@@ -251,11 +253,14 @@ const ConfirmationModal: FC<
           league_year_id: seasonContext.current_league_year_id,
         });
         patch = res.player;
-        const suffix =
-          res.years_remaining_on_books > 0
-            ? ` ${res.years_remaining_on_books} year(s) remaining on books.`
-            : "";
-        enqueueSnackbar(`${name} released.${suffix}`, { variant: "success", autoHideDuration: 4000 });
+        const parts: string[] = [`${name} released.`];
+        if (res.waiver) {
+          parts.push(`Placed on waivers — clears after week ${res.waiver.expires_week}.`);
+        }
+        if (res.years_remaining_on_books > 0) {
+          parts.push(`${res.years_remaining_on_books} year(s) remaining on books.`);
+        }
+        enqueueSnackbar(parts.join(" "), { variant: "success", autoHideDuration: 5000 });
       }
       onSuccess(player.id, patch);
       onClose();
@@ -297,19 +302,24 @@ const BuyoutModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
   orgId,
   seasonContext,
   onSuccess,
+  demand,
 }) => {
   const [buyoutAmount, setBuyoutAmount] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const name = `${player.firstname} ${player.lastname}`;
   const numAmount = Number(buyoutAmount) || 0;
+  const minBuyout = demand?.buyout_price ? parseFloat(demand.buyout_price) : 0;
 
   const errors = useMemo(() => {
     const errs: string[] = [];
     if (!player.contract) errs.push("Player has no active contract");
     if (buyoutAmount !== "" && numAmount <= 0) errs.push("Buyout amount must be greater than 0");
     if (buyoutAmount === "") errs.push("Enter a buyout amount");
+    if (minBuyout > 0 && numAmount > 0 && numAmount < minBuyout) {
+      errs.push(`Buyout amount below player minimum ($${minBuyout.toLocaleString()})`);
+    }
     return errs;
-  }, [buyoutAmount, numAmount, player.contract]);
+  }, [buyoutAmount, numAmount, player.contract, minBuyout]);
 
   const handleConfirm = useCallback(async () => {
     if (!player.contract || errors.length > 0) return;
@@ -357,6 +367,19 @@ const BuyoutModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
         </ButtonGroup>
       }
     >
+      {/* Player Demands */}
+      {demand && (
+        <Border direction="col" classes="p-3 mb-4 text-start">
+          <Text variant="h6" classes="mb-2">Player Demands</Text>
+          <Text variant="small">
+            Minimum Buyout: <strong>${minBuyout.toLocaleString()}</strong>
+          </Text>
+          {demand.war > 0 && (
+            <Text variant="small">WAR: <strong>{demand.war}</strong></Text>
+          )}
+        </Border>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
         <Border direction="col" classes="p-3 text-start">
           <Text variant="h6" classes="mb-2">Contract Info</Text>
@@ -388,6 +411,9 @@ const BuyoutModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
           min={0}
         />
       </div>
+      {numAmount > 0 && minBuyout > 0 && numAmount >= minBuyout && (
+        <Text variant="small" classes="mt-2 text-green-400">Meets player minimum</Text>
+      )}
     </Modal>
   );
 };
@@ -403,16 +429,22 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
   orgId,
   seasonContext,
   onSuccess,
+  demand,
 }) => {
-  const [years, setYears] = useState(1);
+  const minYears = demand?.min_years ?? 1;
+  const [years, setYears] = useState(Math.max(1, minYears));
   const [salaries, setSalaries] = useState<number[]>([0, 0, 0, 0, 0]);
   const [bonus, setBonus] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const name = `${player.firstname} ${player.lastname}`;
+  const demandMinAav = demand?.min_aav ? parseFloat(demand.min_aav) : 0;
 
   const totalSalary = useMemo(() => {
     return salaries.slice(0, years).reduce((sum, s) => sum + s, 0);
   }, [salaries, years]);
+
+  const totalValue = totalSalary + bonus;
+  const aav = years > 0 ? totalValue / years : 0;
 
   const errors = useMemo(() => {
     const errs: string[] = [];
@@ -423,8 +455,14 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
       if (salaries[i] < 0) errs.push(`Year ${i + 1} salary cannot be negative`);
     }
     if (bonus < 0) errs.push("Bonus cannot be negative");
+    if (demandMinAav > 0 && aav > 0 && aav < demandMinAav) {
+      errs.push(`AAV ($${aav.toLocaleString()}) below player minimum ($${demandMinAav.toLocaleString()})`);
+    }
+    if (demand && years < minYears) {
+      errs.push(`Years (${years}) below player minimum (${minYears})`);
+    }
     return errs;
-  }, [player.contract, years, salaries, bonus, totalSalary]);
+  }, [player.contract, years, salaries, bonus, totalSalary, demandMinAav, aav, demand, minYears]);
 
   const handleSalaryChange = useCallback(
     (index: number, value: string) => {
@@ -484,11 +522,31 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
         </ButtonGroup>
       }
     >
+      {/* Player Demands */}
+      {demand && (
+        <Border direction="col" classes="p-3 mb-4 text-start">
+          <Text variant="h6" classes="mb-2">Player Demands</Text>
+          <div className="flex flex-wrap gap-x-6 gap-y-1">
+            <Text variant="small">
+              Min AAV: <strong>${demandMinAav.toLocaleString()}</strong>
+            </Text>
+            <Text variant="small">
+              Years: <strong>{minYears}-5</strong>
+            </Text>
+            {demand.war > 0 && (
+              <Text variant="small">
+                WAR: <strong>{demand.war}</strong>
+              </Text>
+            )}
+          </div>
+        </Border>
+      )}
+
       {/* Rules + Errors */}
       <div className="grid grid-cols-1 sm:grid-cols-[2fr_3fr] gap-2 mb-4">
         <Border direction="col" classes="text-start p-3">
           <Text variant="h6">Rules</Text>
-          <Text variant="xs">Contracts must be 1 through 5 years.</Text>
+          <Text variant="xs">Contracts must be {minYears} through 5 years.</Text>
           <Text variant="xs">Extension starts the year after the current contract ends.</Text>
           <Text variant="xs">Bonus is validated against signing budget and hits the ledger immediately.</Text>
         </Border>
@@ -501,16 +559,16 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
         </Border>
       </div>
 
-      {/* Length + Bonus */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
+      {/* Length + Bonus + Computed */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
         <Input
           type="number"
           label="Years"
           name="years"
           value={years}
-          min={1}
+          min={minYears}
           max={5}
-          onChange={(e) => setYears(Math.min(5, Math.max(1, Number(e.target.value) || 1)))}
+          onChange={(e) => setYears(Math.min(5, Math.max(minYears, Number(e.target.value) || minYears)))}
         />
         <Input
           type="number"
@@ -522,9 +580,16 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
         />
         <Input
           type="number"
-          label="Total"
+          label="Total Value"
           name="total"
-          value={totalSalary + bonus}
+          value={totalValue}
+          disabled
+        />
+        <Input
+          type="number"
+          label="AAV"
+          name="aav"
+          value={Math.round(aav)}
           disabled
         />
       </div>
@@ -545,6 +610,13 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
           </div>
         ))}
       </div>
+
+      {/* Meets minimum indicator */}
+      {demandMinAav > 0 && aav > 0 && (
+        <Text variant="small" classes={`mt-2 ${aav >= demandMinAav ? "text-green-400" : "text-red-400"}`}>
+          {aav >= demandMinAav ? "Meets player minimum" : "Below player minimum AAV"}
+        </Text>
+      )}
     </Modal>
   );
 };

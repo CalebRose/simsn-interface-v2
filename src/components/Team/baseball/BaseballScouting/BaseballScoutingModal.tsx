@@ -32,6 +32,11 @@ import { League } from "../../../../_constants/constants";
 import { getLogo } from "../../../../_utility/getLogo";
 import { Logo } from "../../../../_design/Logo";
 import { useAuthStore } from "../../../../context/AuthContext";
+import type {
+  FAPlayerDetailResponse,
+  AuctionPhase,
+} from "../../../../models/baseball/baseballFreeAgencyModels";
+import { PHASE_COLORS } from "../../../../models/baseball/baseballFreeAgencyModels";
 import "../baseballMobile.css";
 
 // ── Attribute display names ──
@@ -132,6 +137,10 @@ interface BaseballScoutingModalProps {
   scoutingBudget: ScoutingBudget | null;
   onBudgetChanged: () => void;
   league: string;
+  /** Pass FA detail to populate the Contract tab with demands, history & auction */
+  faDetail?: FAPlayerDetailResponse | null;
+  /** When provided, a "Make Offer" button appears in the modal footer */
+  onMakeOffer?: (detail: FAPlayerDetailResponse) => void;
 }
 
 export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
@@ -143,6 +152,8 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
   scoutingBudget,
   onBudgetChanged,
   league,
+  faDetail,
+  onMakeOffer,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const { allTeams } = useSimBaseballStore();
@@ -292,6 +303,17 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
           <Button size="sm" variant="danger" onClick={onClose}>
             <Text variant="small">Close</Text>
           </Button>
+          {onMakeOffer && faDetail?.auction && (
+            <Button
+              size="sm"
+              variant="success"
+              onClick={() => onMakeOffer(faDetail)}
+            >
+              <Text variant="small">
+                {faDetail.auction.my_offer ? "Update Offer" : "Make Offer"}
+              </Text>
+            </Button>
+          )}
         </ButtonGroup>
       }
     >
@@ -510,7 +532,7 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
           )}
 
           {selectedTab === "Contract" && (
-            <ContractTab contract={player.contract} isCollege={isCollege} />
+            <ContractTab contract={player.contract} isCollege={isCollege} faDetail={faDetail} />
           )}
 
           {selectedTab === "Injuries" && (
@@ -879,10 +901,121 @@ const PotentialsTab: FC<PotentialsTabProps> = ({
 // Contract Tab
 // ═══════════════════════════════════════════════════
 
-const ContractTab: FC<{ contract?: any; isCollege: boolean }> = ({
-  contract,
-  isCollege,
-}) => {
+const formatMoney = (val: string | number) => {
+  const num = typeof val === "string" ? parseFloat(val) : val;
+  if (isNaN(num)) return "—";
+  return "$" + num.toLocaleString(undefined, { maximumFractionDigits: 0 });
+};
+
+const faPhaseBadge = (phase: AuctionPhase) => {
+  const colorMap: Record<string, string> = {
+    green: "bg-green-600/20 text-green-400",
+    yellow: "bg-yellow-600/20 text-yellow-400",
+    red: "bg-red-600/20 text-red-400",
+    gray: "bg-gray-600/20 text-gray-400",
+  };
+  const color = PHASE_COLORS[phase] ?? "gray";
+  return (
+    <span className={`px-2 py-0.5 rounded text-xs font-semibold capitalize ${colorMap[color]}`}>
+      {phase}
+    </span>
+  );
+};
+
+const ContractTab: FC<{
+  contract?: any;
+  isCollege: boolean;
+  faDetail?: FAPlayerDetailResponse | null;
+}> = ({ contract, isCollege, faDetail }) => {
+  const hasFAData = faDetail && (faDetail.demand || faDetail.contract_history?.length || faDetail.auction);
+
+  // FA mode — show demands, contract history, and auction status
+  if (hasFAData) {
+    const { demand, contract_history, auction } = faDetail;
+    return (
+      <div className="space-y-3">
+        {/* Demands */}
+        {demand && (
+          <Border classes="p-3">
+            <Text variant="small" classes="font-semibold mb-2">
+              Demands
+            </Text>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div className="flex flex-col">
+                <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+                  Min AAV
+                </Text>
+                <Text variant="small">{formatMoney(demand.min_aav)}</Text>
+              </div>
+              <div className="flex flex-col">
+                <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+                  Years
+                </Text>
+                <Text variant="small">
+                  {demand.min_years}–{demand.max_years ?? 5}
+                </Text>
+              </div>
+              <div className="flex flex-col">
+                <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+                  WAR
+                </Text>
+                <Text variant="small">{demand.war}</Text>
+              </div>
+            </div>
+          </Border>
+        )}
+
+        {/* Contract History */}
+        {contract_history && contract_history.length > 0 && (
+          <Border classes="p-3">
+            <Text variant="small" classes="font-semibold mb-2">
+              Contract History
+            </Text>
+            <div className="space-y-1">
+              {contract_history.map((ch, i) => (
+                <Text key={i} variant="small">
+                  {ch.org} — {ch.years}yr, {formatMoney(ch.salary)}/yr
+                  {ch.bonus > 0 && ` + ${formatMoney(ch.bonus)} bonus`}
+                  {ch.is_extension ? " (ext)" : ""}
+                  {ch.is_buyout ? " (buyout)" : ""}
+                  {" — signed "}{ch.signed_year}
+                </Text>
+              ))}
+            </div>
+          </Border>
+        )}
+
+        {/* Auction Status */}
+        {auction && (
+          <Border classes="p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Text variant="small" classes="font-semibold">
+                Auction Status
+              </Text>
+              {faPhaseBadge(auction.phase)}
+            </div>
+            <Text variant="small">{auction.offer_count} offer(s)</Text>
+            {auction.competing_teams.length > 0 && (
+              <Text variant="small">
+                Competing: {auction.competing_teams.join(", ")}
+              </Text>
+            )}
+            {auction.my_offer ? (
+              <Text variant="small" classes="text-green-600 dark:text-green-400">
+                Your offer: {auction.my_offer.years}yr, {formatMoney(auction.my_offer.aav)} AAV
+              </Text>
+            ) : (
+              <Text variant="small" classes="text-gray-400">
+                No offer submitted
+              </Text>
+            )}
+          </Border>
+        )}
+      </div>
+    );
+  }
+
+  // Standard mode — existing contract display
   if (!contract) {
     return (
       <Border classes="p-3">
@@ -892,9 +1025,6 @@ const ContractTab: FC<{ contract?: any; isCollege: boolean }> = ({
       </Border>
     );
   }
-
-  const fmt = (n: number) =>
-    `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
   if (isCollege) {
     const classYear = getClassYear(contract);
@@ -941,8 +1071,8 @@ const ContractTab: FC<{ contract?: any; isCollege: boolean }> = ({
 
   // MLB contract
   const salary = contract.current_year_detail?.base_salary;
-  const salaryDisplay = salary != null ? fmt(salary) : "—";
-  const bonusDisplay = contract.bonus ? fmt(contract.bonus) : "—";
+  const salaryDisplay = salary != null ? formatMoney(salary) : "—";
+  const bonusDisplay = contract.bonus ? formatMoney(contract.bonus) : "—";
 
   return (
     <Border classes="p-3">
