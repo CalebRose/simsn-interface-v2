@@ -10,6 +10,7 @@ import { Button } from "../../../_design/Buttons";
 import { RichTextRenderer } from "./RichTextRenderer";
 import { ModerationControls } from "./ModerationControls";
 import { ForumPermissions } from "../../../models/forumModels";
+import { useAuthStore } from "../../../context/AuthContext";
 
 interface PostCardProps {
   post: Post;
@@ -45,6 +46,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { currentUser } = useAuthStore();
   const [showReactions, setShowReactions] = useState(false);
   const isOwnPost = post.author.uid === currentUserId;
   const canEdit =

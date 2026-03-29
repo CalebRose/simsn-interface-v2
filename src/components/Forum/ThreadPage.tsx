@@ -274,7 +274,7 @@ export const ThreadPage: React.FC = () => {
               Editing post
             </Text>
             <ForumEditor
-              initialText={editingPost.bodyText}
+              initialDoc={editingPost.body}
               onSubmit={handleEditSubmit}
               onCancel={() => setEditingPost(null)}
               submitLabel="Save changes"

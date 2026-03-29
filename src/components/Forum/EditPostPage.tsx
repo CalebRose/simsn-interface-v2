@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
 import { ForumBreadcrumbs } from "./components/ForumBreadcrumbs";
-import { ForumEditor, docToPlaintext } from "./components/ForumEditor";
+import { ForumEditor } from "./components/ForumEditor";
 import { useForumStore } from "../../context/ForumContext";
 import { useAuthStore } from "../../context/AuthContext";
 import { ForumService } from "../../_services/forumService";
@@ -55,7 +55,7 @@ export const EditPostPage: React.FC = () => {
     );
   }
 
-  const initialText = post ? docToPlaintext(post.body as RichTextDocument) : "";
+  const initialText = post ? (post.bodyText ?? "") : "";
 
   const handleSubmit = async (
     doc: RichTextDocument,
@@ -104,7 +104,7 @@ export const EditPostPage: React.FC = () => {
 
         {post && (
           <ForumEditor
-            initialText={initialText}
+            initialDoc={post.body as RichTextDocument}
             onSubmit={handleSubmit}
             onCancel={() => navigate(`${routes.FORUM_THREAD}/${post.threadId}`)}
             submitLabel="Save Changes"

@@ -79,7 +79,14 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
       return children.length === 0 ? (
         <br key={key} />
       ) : (
-        <p key={key} className="mb-2 leading-relaxed">
+        <p
+          key={key}
+          className="mb-2 leading-relaxed"
+          style={{
+            textAlign: ((node.attrs?.textAlign as string) ||
+              "left") as React.CSSProperties["textAlign"],
+          }}
+        >
           {children}
         </p>
       );
@@ -96,7 +103,14 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
         "text-xs font-semibold mt-2 mb-1",
       ];
       return (
-        <div key={key} className={hClasses[level] ?? hClasses[2]}>
+        <div
+          key={key}
+          className={hClasses[level] ?? hClasses[2]}
+          style={{
+            textAlign: ((node.attrs?.textAlign as string) ||
+              "left") as React.CSSProperties["textAlign"],
+          }}
+        >
           {children}
         </div>
       );
@@ -229,7 +243,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   }
 
   return (
-    <div className="rich-text-content prose prose-invert max-w-none break-words">
+    <div className="rich-text-content prose prose-invert max-w-none break-words text-left">
       {renderNode(document, "root")}
     </div>
   );

@@ -167,7 +167,8 @@ export type ReactionType =
   | "laugh"
   | "sad"
   | "angry"
-  | "confused";
+  | "confused"
+  | "whoa";
 
 export const REACTION_LABELS: Record<ReactionType, string> = {
   like: "👍",
@@ -176,6 +177,7 @@ export const REACTION_LABELS: Record<ReactionType, string> = {
   sad: "😢",
   angry: "😠",
   confused: "😕",
+  whoa: "😮",
 };
 
 // ─────────────────────────────────────────────
