@@ -90,7 +90,7 @@ export const EditPostPage: React.FC = () => {
 
   return (
     <PageContainer isLoading={loading} title="">
-      <div className="flex flex-col px-4 lg:w-[80vw]">
+      <div className="flex flex-col w-[95vw] lg:w-[80vw]">
         <ForumBreadcrumbs crumbs={crumbs} />
         <Text variant="h4" classes="mb-4">
           Edit Post

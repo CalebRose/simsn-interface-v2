@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { QueryDocumentSnapshot } from "firebase/firestore";
@@ -202,9 +203,18 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
 
   const PAGE_SIZE = 25;
 
+  const postsUnsubscribeRef = useRef<(() => void) | null>(null);
+
   useEffect(() => {
     setCurrentUserState(initialUser);
   }, [initialUser]);
+
+  // Tear down posts subscription on unmount
+  useEffect(() => {
+    return () => {
+      postsUnsubscribeRef.current?.();
+    };
+  }, []);
 
   const forumRole = useMemo(
     () => deriveForumRole(currentUserState),
@@ -295,20 +305,22 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   // ─── Posts ────────────────────────────────────
 
   const loadPostsForThread = useCallback(
-    async (threadId: string, reset = true) => {
-      setPostsLoading(true);
-      if (reset) setPosts([]);
-      try {
-        const { posts: fetchedPosts } = await ForumService.GetPostsByThread(
-          threadId,
-          50,
-        );
-        setPosts(fetchedPosts);
-      } catch (err) {
-        console.error("ForumContext.loadPostsForThread:", err);
-      } finally {
-        setPostsLoading(false);
+    async (threadId: string, reset = true): Promise<void> => {
+      // Tear down any existing subscription first
+      if (postsUnsubscribeRef.current) {
+        postsUnsubscribeRef.current();
+        postsUnsubscribeRef.current = null;
       }
+      if (reset) setPosts([]);
+      setPostsLoading(true);
+
+      postsUnsubscribeRef.current = ForumService.SubscribeToThreadPosts(
+        threadId,
+        (newPosts) => {
+          setPosts(newPosts);
+          setPostsLoading(false);
+        },
+      );
     },
     [],
   );
@@ -365,9 +377,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
           currentUserState.username,
           logoUrl || undefined,
         );
-        // Optimistically append to posts list
-        const newPost = await ForumService.GetPostById(postId);
-        if (newPost) setPosts((prev) => [...prev, newPost]);
+        // onSnapshot listener handles state update automatically
         return postId;
       } catch (err) {
         console.error("ForumContext.createPost:", err);
@@ -504,11 +514,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
       if (!currentUserState) return;
       try {
         await ForumService.AddReaction(postId, reaction, currentUserState.id);
-        // Refresh that post
-        const updated = await ForumService.GetPostById(postId);
-        if (updated) {
-          setPosts((prev) => prev.map((p) => (p.id === postId ? updated : p)));
-        }
+        // onSnapshot listener handles state update automatically
       } catch (err) {
         console.error("ForumContext.reactToPost:", err);
       }

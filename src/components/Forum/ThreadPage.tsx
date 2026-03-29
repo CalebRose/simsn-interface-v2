@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
-import { Border } from "../../_design/Borders";
+import { ForumBorder } from "../../_design/Borders";
 import { ForumBreadcrumbs } from "./components/ForumBreadcrumbs";
 import { PostList } from "./components/PostList";
 import { ForumEditor } from "./components/ForumEditor";
@@ -169,12 +169,12 @@ export const ThreadPage: React.FC = () => {
 
   return (
     <PageContainer isLoading={!activeThread && postsLoading} title="">
-      <div className="flex flex-col px-4 lg:w-[80vw]">
+      <div className="flex flex-col w-[90vw] lg:w-[80vw]">
         <ForumBreadcrumbs crumbs={crumbs} />
 
         {/* Thread header */}
         {activeThread && (
-          <Border classes="p-3 mb-3">
+          <ForumBorder classes="p-3 mb-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex flex-col flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -216,7 +216,7 @@ export const ThreadPage: React.FC = () => {
                 onUnpin={() => unpinThread(activeThread.id)}
               />
             </div>
-          </Border>
+          </ForumBorder>
         )}
 
         {/* Game reference card */}
@@ -246,7 +246,7 @@ export const ThreadPage: React.FC = () => {
         )}
 
         {/* Posts */}
-        <Border classes="p-0 overflow-hidden">
+        <ForumBorder classes="p-0 overflow-hidden">
           <PostList
             posts={posts}
             isLoading={postsLoading}
@@ -265,7 +265,7 @@ export const ThreadPage: React.FC = () => {
             onEdit={(post) => setEditingPost(post)}
             onDelete={(postId) => setShowDeleteConfirm(postId)}
           />
-        </Border>
+        </ForumBorder>
 
         {/* Edit post form */}
         {editingPost && (

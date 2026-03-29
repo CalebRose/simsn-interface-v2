@@ -61,7 +61,7 @@ export const ForumsHomePage: React.FC = () => {
 
   return (
     <PageContainer isLoading={forumsLoading} title="">
-      <div className="flex flex-col w-full px-4">
+      <div className="flex flex-col w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 space-x-2">
           <Text variant="h4">Community Forums</Text>
@@ -82,7 +82,7 @@ export const ForumsHomePage: React.FC = () => {
             <Text variant="secondary">No forums available.</Text>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 lg:w-[80vw]">
+          <div className="grid grid-cols-1 gap-4 w-[95vw] lg:w-[80vw]">
             {topLevel.map((forum) => (
               <ForumCard
                 key={forum.id}

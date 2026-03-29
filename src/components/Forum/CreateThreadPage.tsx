@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
-import { Border } from "../../_design/Borders";
+import { Border, ForumBorder } from "../../_design/Borders";
 import { ForumBreadcrumbs } from "./components/ForumBreadcrumbs";
 import { ForumEditor } from "./components/ForumEditor";
 import { useForumStore } from "../../context/ForumContext";
@@ -209,13 +209,13 @@ export const CreateThreadPage: React.FC = () => {
 
   return (
     <PageContainer title="">
-      <div className="flex flex-col px-4 lg:w-[80vw]">
+      <div className="flex flex-col w-[95vw] lg:w-[80vw]">
         <ForumBreadcrumbs crumbs={crumbs} />
         <Text variant="h4" classes="mb-4">
           Create New Thread
         </Text>
 
-        <Border classes="p-4 flex flex-col gap-4">
+        <ForumBorder classes="p-4 flex flex-col gap-4">
           {/* Forum selector */}
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">
@@ -353,7 +353,7 @@ export const CreateThreadPage: React.FC = () => {
               {error}
             </Text>
           )}
-        </Border>
+        </ForumBorder>
       </div>
     </PageContainer>
   );

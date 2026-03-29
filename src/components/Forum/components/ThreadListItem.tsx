@@ -35,7 +35,7 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread }) => {
 
   return (
     <div
-      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-3 px-3 border-b border-gray-700 last:border-b-0 hover:bg-white/5 cursor-pointer transition-colors rounded"
+      className="forum-thread-item flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-3 px-3 border-b last:border-b-0 cursor-pointer transition-colors rounded"
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -71,14 +71,17 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread }) => {
           )}
         </div>
 
-        <Text variant="body-small" classes="font-semibold truncate">
+        <Text variant="body-small" classes="font-semibold truncate text-start">
           {thread.title}
         </Text>
-        <Text variant="small" classes="text-gray-400 mt-0.5">
+        <Text variant="small" classes="text-gray-400 mt-0.5 text-start">
           by {thread.author.username}
         </Text>
         {thread.contentPreview && (
-          <Text variant="xs" classes="text-gray-500 mt-0.5 line-clamp-1">
+          <Text
+            variant="xs"
+            classes="text-gray-500 mt-0.5 line-clamp-1 text-start"
+          >
             {thread.contentPreview}
           </Text>
         )}

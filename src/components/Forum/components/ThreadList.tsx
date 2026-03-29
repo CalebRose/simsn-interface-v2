@@ -35,7 +35,7 @@ export const ThreadList: React.FC<ThreadListProps> = ({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col space-y-2">
       {pinnedThreads.length > 0 && (
         <>
           {pinnedThreads.map((t) => (

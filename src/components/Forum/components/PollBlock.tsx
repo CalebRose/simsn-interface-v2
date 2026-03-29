@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Poll, PollVote } from "../../../models/forumModels";
-import { Border } from "../../../_design/Borders";
+import { ForumBorder } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { Button } from "../../../_design/Buttons";
 
@@ -65,7 +65,7 @@ export const PollBlock: React.FC<PollBlockProps> = ({
   };
 
   return (
-    <Border classes="p-3">
+    <ForumBorder classes="p-3">
       <Text variant="h6" classes="mb-3">
         📊 {poll.question}
       </Text>
@@ -156,6 +156,6 @@ export const PollBlock: React.FC<PollBlockProps> = ({
           </div>
         )}
       </div>
-    </Border>
+    </ForumBorder>
   );
 };
