@@ -68,5 +68,14 @@ export default {
   MLB_ALLSTAR: "/mlb/allstar/",
   MLB_WBC: "/mlb/wbc/",
   MLB_DRAFT_ROOM: "/mlb/draft/",
+  MLB_IFA: "/mlb/ifa/",
   NEWS: "/news",
+  // ─── Forum routes ───────────────────────────
+  FORUMS: "/forums",
+  FORUM_CATEGORY: "/forums/:forumSlug",
+  FORUM_SUBFORUM: "/forums/:forumSlug/:subforumSlug",
+  FORUM_THREAD: "/forums/thread",
+  FORUM_THREAD_PARAM: "/forums/thread/:threadId",
+  FORUM_CREATE_THREAD: "/forums/new",
+  FORUM_EDIT_POST: "/forums/post/:postId/edit",
 };

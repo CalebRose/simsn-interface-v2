@@ -130,7 +130,7 @@ const parseNum = (v: string | number): number => {
   return isNaN(n) ? 0 : n;
 };
 
-export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, isRetro, accentColor }: Props) => {
+export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, IsRetro, accentColor }: Props) => {
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
   const { isDarkMode } = useAuthStore();
   const headerStyle = getStatsHeaderStyle(accentColor, isDarkMode);

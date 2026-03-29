@@ -10,6 +10,8 @@ import {
 import type { RecruitingPlayerDetail } from "../../../../models/baseball/baseballRecruitingModels";
 import { SCOUTING_ACTION_LABELS, SCOUTING_ACTION_COSTS, getHSClassYear } from "../../../../_utility/baseballHelpers";
 import { gradeColor } from "../baseballColorConfig";
+import { getLogo } from "../../../../_utility/getLogo";
+import { SimCollegeBaseball } from "../../../../_constants/constants";
 
 // ── Potential display groups by player type ──
 const POS_POTENTIAL_GROUPS = [
@@ -295,7 +297,23 @@ export const HSScoutingContent: FC<HSScoutingContentProps> = ({
                 {recruitDetail.interest_gauge}
               </span>
             </div>
-            <BioField label="Competitors" value={String(recruitDetail.competitor_count)} />
+            <div>
+              <span className="text-gray-400 text-xs">Competitors: </span>
+              {recruitDetail.competitor_team_ids?.length > 0 ? (
+                <div className="flex items-center gap-1 mt-1 flex-wrap">
+                  {recruitDetail.competitor_team_ids.map((tid) => (
+                    <img
+                      key={tid}
+                      src={getLogo(SimCollegeBaseball, tid, false)}
+                      alt=""
+                      className="w-5 h-5 object-contain"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <span className="text-gray-400 text-xs">None</span>
+              )}
+            </div>
           </div>
           {recruitDetail.commitment && (
             <div className="mt-2 px-3 py-1.5 rounded bg-gray-50 dark:bg-gray-700/50 text-sm">

@@ -95,7 +95,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
 
   const { backgroundColor } = useBackgroundColor();
@@ -128,16 +128,28 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     > = {};
 
     Object.entries(cbbRosterMap).forEach(([teamId, roster]) => {
-      map[Number(teamId)] = roster.reduce((acc, player) => {
-        acc[player.ID] = {
-          FirstName: player.FirstName,
-          LastName: player.LastName,
-          Position: player.Position,
-          TeamID: player.TeamID,
-          Team: player.TeamAbbr,
-        };
-        return acc;
-      }, {} as Record<number, { FirstName: string; LastName: string; Position: string; TeamID: number; Team: string }>);
+      map[Number(teamId)] = roster.reduce(
+        (acc, player) => {
+          acc[player.ID] = {
+            FirstName: player.FirstName,
+            LastName: player.LastName,
+            Position: player.Position,
+            TeamID: player.TeamID,
+            Team: player.TeamAbbr,
+          };
+          return acc;
+        },
+        {} as Record<
+          number,
+          {
+            FirstName: string;
+            LastName: string;
+            Position: string;
+            TeamID: number;
+            Team: string;
+          }
+        >,
+      );
     });
 
     return map;
@@ -159,7 +171,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
       league,
       allCBBStandings,
       allCBBGames,
-      cbbTeams
+      cbbTeams,
     );
   }, [
     selectedTeam,
@@ -179,7 +191,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
         selectedTeam,
         ts,
         league,
-        resultsOverride
+        resultsOverride,
       ).sort((a, b) => {
         if (a.Week !== b.Week) {
           return a.Week < b.Week;
@@ -189,7 +201,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
         }
         return true;
       }),
-    [teamSchedule, selectedTeam, ts, league, resultsOverride]
+    [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );
 
   const weeklyGames = useMemo(() => {
@@ -672,7 +684,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
 
   const { backgroundColor } = useBackgroundColor();
@@ -705,16 +717,28 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
     > = {};
 
     Object.entries(proRosterMap).forEach(([teamId, roster]) => {
-      map[Number(teamId)] = roster.reduce((acc, player) => {
-        acc[player.ID] = {
-          FirstName: player.FirstName,
-          LastName: player.LastName,
-          Position: player.Position,
-          TeamID: player.TeamID,
-          Team: player.TeamAbbr,
-        };
-        return acc;
-      }, {} as Record<number, { FirstName: string; LastName: string; Position: string; TeamID: number; Team: string }>);
+      map[Number(teamId)] = roster.reduce(
+        (acc, player) => {
+          acc[player.ID] = {
+            FirstName: player.FirstName,
+            LastName: player.LastName,
+            Position: player.Position,
+            TeamID: player.TeamID,
+            Team: player.Team,
+          };
+          return acc;
+        },
+        {} as Record<
+          number,
+          {
+            FirstName: string;
+            LastName: string;
+            Position: string;
+            TeamID: number;
+            Team: string;
+          }
+        >,
+      );
     });
 
     return map;
@@ -736,7 +760,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
       league,
       allNBAStandings,
       allNBAGames,
-      nbaTeams
+      nbaTeams,
     );
   }, [
     selectedTeam,
@@ -756,7 +780,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
         selectedTeam,
         ts,
         league,
-        resultsOverride
+        resultsOverride,
       ).sort((a, b) => {
         if (a.Week !== b.Week) {
           return a.Week < b.Week;
@@ -766,7 +790,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
         }
         return true;
       }),
-    [teamSchedule, selectedTeam, ts, league, resultsOverride]
+    [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );
 
   const weeklyGames = useMemo(() => {

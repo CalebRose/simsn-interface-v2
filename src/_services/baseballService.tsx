@@ -74,6 +74,33 @@ import {
     BaseballDraftSigningStatus,
     DraftTradeProposal,
 } from "../models/baseball/baseballDraftModels";
+import {
+    IFAState,
+    IFABonusPool,
+    IFAEligiblePlayer,
+    IFABoardResponse,
+    IFAAuctionDetail,
+    IFAStartAuctionRequest, IFAStartAuctionResponse,
+    IFAOfferRequest, IFAOfferResponse,
+    IFAWithdrawResponse,
+    IFAOrgOffer,
+    IFAAdvanceWeekRequest, IFAAdvanceWeekResponse,
+} from "../models/baseball/baseballIFAModels";
+import {
+    FAPoolParams, FAPoolResponse,
+    AuctionBoardEntry,
+    FAPlayerDetailResponse,
+    FAOfferRequest, FAOfferResponse,
+    FAWithdrawResponse,
+    FAScoutRequest, FAScoutResponse,
+    MarketSummary, MarketRateResponse,
+    FASigningBudgetResponse,
+    ContractOverviewWithDemand,
+    FAScoutingBudgetResponse,
+    FASignRequest, FASignResponse,
+    WaiverListResponse, WaiverDetailResponse,
+    WaiverClaimResponse, WaiverWithdrawResponse,
+} from "../models/baseball/baseballFreeAgencyModels";
 
 /** Normalize face data keys from any casing to PascalCase matching FaceDataResponse. */
 export const normalizeFaceData = (f: any): FaceDataResponse => {
@@ -622,5 +649,112 @@ export const BaseballService = {
     },
     RejectDraftTrade: async (proposalId: number): Promise<void> => {
         await PostCall(`${baseballUrl}draft/trade/reject`, { proposal_id: proposalId });
+    },
+    // --- Free Agency Auction ---
+    GetFreeAgentPool: async (params: FAPoolParams): Promise<FAPoolResponse> => {
+        const qs = buildQueryString(params as unknown as Record<string, string | number | boolean | null | undefined>);
+        return await GetCall<FAPoolResponse>(`${baseballUrl}fa-auction/free-agent-pool?${qs}`);
+    },
+    GetFAPlayerDetail: async (playerId: number, viewingOrgId: number, leagueYearId: number): Promise<FAPlayerDetailResponse> => {
+        return await GetCall<FAPlayerDetailResponse>(
+            `${baseballUrl}fa-auction/player-detail/${playerId}?viewing_org_id=${viewingOrgId}&league_year_id=${leagueYearId}`,
+        );
+    },
+    GetAuctionBoard: async (leagueYearId: number, orgId: number): Promise<AuctionBoardEntry[]> => {
+        return await GetCall<AuctionBoardEntry[]>(
+            `${baseballUrl}fa-auction/board?league_year_id=${leagueYearId}&org_id=${orgId}`,
+        );
+    },
+    SubmitFAOffer: async (auctionId: number, dto: FAOfferRequest): Promise<FAOfferResponse> => {
+        return await PostCall<FAOfferRequest, FAOfferResponse>(`${baseballUrl}fa-auction/${auctionId}/offer`, dto);
+    },
+    WithdrawFAOffer: async (auctionId: number, orgId: number): Promise<FAWithdrawResponse> => {
+        return await DELETECall<{}, FAWithdrawResponse>(`${baseballUrl}fa-auction/${auctionId}/offer/${orgId}`, {});
+    },
+    ScoutFAPlayer: async (dto: FAScoutRequest): Promise<FAScoutResponse> => {
+        return await PostCall<FAScoutRequest, FAScoutResponse>(`${baseballUrl}fa-auction/scout-player`, dto);
+    },
+    SignFreeAgent: async (dto: FASignRequest): Promise<FASignResponse> => {
+        return await PostCall<FASignRequest, FASignResponse>(`${baseballUrl}transactions/sign`, dto);
+    },
+    GetMarketSummary: async (leagueYearId: number): Promise<MarketSummary> => {
+        return await GetCall<MarketSummary>(`${baseballUrl}fa-auction/market-summary?league_year_id=${leagueYearId}`);
+    },
+    GetMarketRate: async (leagueYearId: number): Promise<MarketRateResponse> => {
+        return await GetCall<MarketRateResponse>(`${baseballUrl}fa-auction/market-rate?league_year_id=${leagueYearId}`);
+    },
+    GetFASigningBudget: async (orgId: number, leagueYearId: number): Promise<FASigningBudgetResponse> => {
+        return await GetCall<FASigningBudgetResponse>(
+            `${baseballUrl}transactions/signing-budget/${orgId}?league_year_id=${leagueYearId}`,
+        );
+    },
+    GetContractOverviewWithDemands: async (orgId: number, leagueYearId: number): Promise<ContractOverviewWithDemand[]> => {
+        return await GetCall<ContractOverviewWithDemand[]>(
+            `${baseballUrl}transactions/contract-overview/${orgId}?league_year_id=${leagueYearId}`,
+        );
+    },
+    GetFAScoutingBudget: async (orgId: number, leagueYearId: number): Promise<FAScoutingBudgetResponse> => {
+        return await GetCall<FAScoutingBudgetResponse>(
+            `${baseballUrl}scouting/budget/${orgId}?league_year_id=${leagueYearId}`,
+        );
+    },
+    // ── Waiver Wire ──
+    GetWaivers: async (leagueYearId: number, orgId?: number): Promise<WaiverListResponse> => {
+        const qs = `league_year_id=${leagueYearId}${orgId ? `&org_id=${orgId}` : ""}`;
+        return await GetCall<WaiverListResponse>(`${baseballUrl}transactions/waivers?${qs}`);
+    },
+    GetWaiverDetail: async (waiverClaimId: number, orgId?: number): Promise<WaiverDetailResponse> => {
+        const qs = orgId ? `?org_id=${orgId}` : "";
+        return await GetCall<WaiverDetailResponse>(`${baseballUrl}transactions/waivers/${waiverClaimId}${qs}`);
+    },
+    PlaceWaiverClaim: async (waiverClaimId: number, orgId: number): Promise<WaiverClaimResponse> => {
+        return await PostCall<{ org_id: number }, WaiverClaimResponse>(
+            `${baseballUrl}transactions/waivers/${waiverClaimId}/claim`,
+            { org_id: orgId },
+        );
+    },
+    WithdrawWaiverClaim: async (waiverClaimId: number, orgId: number): Promise<WaiverWithdrawResponse> => {
+        return await DELETECall<{ org_id: number }, WaiverWithdrawResponse>(
+            `${baseballUrl}transactions/waivers/${waiverClaimId}/claim`,
+            { org_id: orgId },
+        );
+    },
+    // ── International Free Agency (IFA) ──
+    GetIFAState: async (leagueYearId: number): Promise<IFAState> => {
+        return await GetCall<IFAState>(`${baseballUrl}ifa/state?league_year_id=${leagueYearId}`);
+    },
+    GetIFABoard: async (leagueYearId: number, orgId: number): Promise<IFABoardResponse> => {
+        return await GetCall<IFABoardResponse>(
+            `${baseballUrl}ifa/board?league_year_id=${leagueYearId}&org_id=${orgId}`,
+        );
+    },
+    GetIFAPool: async (orgId: number, leagueYearId: number): Promise<IFABonusPool> => {
+        return await GetCall<IFABonusPool>(
+            `${baseballUrl}ifa/pool/${orgId}?league_year_id=${leagueYearId}`,
+        );
+    },
+    GetIFAEligible: async (leagueYearId: number): Promise<IFAEligiblePlayer[]> => {
+        return await GetCall<IFAEligiblePlayer[]>(`${baseballUrl}ifa/eligible?league_year_id=${leagueYearId}`);
+    },
+    GetIFAAuctionDetail: async (auctionId: number, orgId?: number): Promise<IFAAuctionDetail> => {
+        const qs = orgId ? `?org_id=${orgId}` : "";
+        return await GetCall<IFAAuctionDetail>(`${baseballUrl}ifa/auction/${auctionId}${qs}`);
+    },
+    StartIFAAuction: async (dto: IFAStartAuctionRequest): Promise<IFAStartAuctionResponse> => {
+        return await PostCall<IFAStartAuctionRequest, IFAStartAuctionResponse>(`${baseballUrl}ifa/auction/start`, dto);
+    },
+    SubmitIFAOffer: async (auctionId: number, dto: IFAOfferRequest): Promise<IFAOfferResponse> => {
+        return await PostCall<IFAOfferRequest, IFAOfferResponse>(`${baseballUrl}ifa/auction/${auctionId}/offer`, dto);
+    },
+    WithdrawIFAOffer: async (auctionId: number, orgId: number): Promise<IFAWithdrawResponse> => {
+        return await DELETECall<{}, IFAWithdrawResponse>(`${baseballUrl}ifa/auction/${auctionId}/offer/${orgId}`, {});
+    },
+    GetIFAOrgOffers: async (orgId: number, leagueYearId: number): Promise<IFAOrgOffer[]> => {
+        return await GetCall<IFAOrgOffer[]>(
+            `${baseballUrl}ifa/offers/${orgId}?league_year_id=${leagueYearId}`,
+        );
+    },
+    AdvanceIFAWeek: async (dto: IFAAdvanceWeekRequest): Promise<IFAAdvanceWeekResponse> => {
+        return await PostCall<IFAAdvanceWeekRequest, IFAAdvanceWeekResponse>(`${baseballUrl}ifa/advance-week`, dto);
     },
 };

@@ -37,6 +37,7 @@ import { BigDraftBoard } from "../common/BigBoard";
 import { useModal } from "../../../_hooks/useModal";
 import ProposeDraftTradeModal from "../common/ProposeDraftTradeModal";
 import { getSecondsByRound } from "./utils/draftHelpers";
+import { useSimHCKStore } from "../../../context/SimHockeyContext";
 
 interface PHLDraftPageProps {
   league: League;
@@ -44,6 +45,7 @@ interface PHLDraftPageProps {
 
 export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
   const { currentUser } = useAuthStore();
+  const { exportPHLDraftees } = useSimHCKStore();
   const {
     proDraftablePlayers,
     selectedTeam,
@@ -325,6 +327,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 openModal={handlePlayerModal}
                 offensiveSystemsInformation={offensiveSystemsInformation}
                 defensiveSystemsInformation={defensiveSystemsInformation}
+                exportDraftBoard={exportPHLDraftees}
               />
             )}
             {activeTab === ScoutBoard && (

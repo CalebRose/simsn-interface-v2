@@ -93,7 +93,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
@@ -125,16 +125,28 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     > = {};
 
     Object.entries(chlRosterMap).forEach(([teamId, roster]) => {
-      map[Number(teamId)] = roster.reduce((acc, player) => {
-        acc[player.ID] = {
-          FirstName: player.FirstName,
-          LastName: player.LastName,
-          Position: player.Position,
-          TeamID: player.TeamID,
-          Team: player.Team,
-        };
-        return acc;
-      }, {} as Record<number, { FirstName: string; LastName: string; Position: string; TeamID: number; Team: string }>);
+      map[Number(teamId)] = roster.reduce(
+        (acc, player) => {
+          acc[player.ID] = {
+            FirstName: player.FirstName,
+            LastName: player.LastName,
+            Position: player.Position,
+            TeamID: player.TeamID,
+            Team: player.Team,
+          };
+          return acc;
+        },
+        {} as Record<
+          number,
+          {
+            FirstName: string;
+            LastName: string;
+            Position: string;
+            TeamID: number;
+            Team: string;
+          }
+        >,
+      );
     });
 
     return map;
@@ -164,7 +176,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       league,
       collegeStandingsBySelectedSeason,
       collegeGamesBySelectedSeason,
-      chlTeams
+      chlTeams,
     );
   }, [
     selectedTeam,
@@ -184,7 +196,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         selectedTeam,
         ts,
         league,
-        resultsOverride
+        resultsOverride,
       ).sort((a, b) => {
         if (a.Week !== b.Week) {
           return a.Week < b.Week;
@@ -192,9 +204,13 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         if (a.GameDay && b.GameDay) {
           return a.GameDay.localeCompare(b.GameDay);
         }
+        if (a.LeagueID !== b.LeagueID) {
+          return a.LeagueID - b.LeagueID;
+        }
+
         return true;
       }),
-    [teamSchedule, selectedTeam, ts, league, resultsOverride]
+    [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );
 
   const weeklyGames = useMemo(() => {
@@ -211,7 +227,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       SeasonID: selectedSeasonValue,
       WeekID: getHCKWeekID(
         selectedWeekValue,
-        Number(selectedSeason.label) - 2024
+        Number(selectedSeason.label) - 2024,
       ),
       Timeslot: opts.value,
     };
@@ -681,7 +697,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
@@ -713,16 +729,28 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     > = {};
 
     Object.entries(phlRosterMap).forEach(([teamId, roster]) => {
-      map[Number(teamId)] = roster.reduce((acc, player) => {
-        acc[player.ID] = {
-          FirstName: player.FirstName,
-          LastName: player.LastName,
-          Position: player.Position,
-          TeamID: player.TeamID,
-          Team: player.Team,
-        };
-        return acc;
-      }, {} as Record<number, { FirstName: string; LastName: string; Position: string; TeamID: number; Team: string }>);
+      map[Number(teamId)] = roster.reduce(
+        (acc, player) => {
+          acc[player.ID] = {
+            FirstName: player.FirstName,
+            LastName: player.LastName,
+            Position: player.Position,
+            TeamID: player.TeamID,
+            Team: player.Team,
+          };
+          return acc;
+        },
+        {} as Record<
+          number,
+          {
+            FirstName: string;
+            LastName: string;
+            Position: string;
+            TeamID: number;
+            Team: string;
+          }
+        >,
+      );
     });
 
     return map;
@@ -752,7 +780,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       league,
       proStandingsBySelectedSeason,
       proGamesBySelectedSeason,
-      phlTeams
+      phlTeams,
     );
   }, [
     selectedTeam,
@@ -768,7 +796,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const processedSchedule = useMemo(
     () =>
       processSchedule(teamSchedule, selectedTeam, ts, league, resultsOverride),
-    [teamSchedule, selectedTeam, ts, league, resultsOverride]
+    [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );
 
   const weeklyGames = useMemo(() => {
@@ -782,7 +810,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       SeasonID: selectedSeason,
       WeekID: getHCKWeekID(
         selectedWeekValue,
-        Number(selectedSeason.label) - 2024
+        Number(selectedSeason.label) - 2024,
       ),
       Timeslot: opts.value,
     };

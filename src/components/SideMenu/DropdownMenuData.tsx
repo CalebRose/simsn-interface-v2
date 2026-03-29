@@ -433,6 +433,14 @@ export const useSideMenu = () => {
         click: () => navigate(routes.MLB_FREE_AGENCY),
         toggle: () => toggleMenu(),
       },
+      {
+        label: "International FA",
+        isRoute: true,
+        route: routes.MLB_IFA,
+        league: SimMLB,
+        click: () => navigate(routes.MLB_IFA),
+        toggle: () => toggleMenu(),
+      },
       // {
       //   label: "Trades",
       //   isRoute: true,

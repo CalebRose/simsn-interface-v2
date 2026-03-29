@@ -6,6 +6,7 @@ import { Text } from "./Typography";
 interface PageContainerProps {
   children: ReactNode;
   isLoading?: boolean;
+  /** When provided, applies `flex flex-{direction}`. Omit to let `classes` control layout freely. */
   direction?: string;
   classes?: string;
   title?: string;
@@ -14,13 +15,13 @@ interface PageContainerProps {
 export const PageContainer: React.FC<PageContainerProps> = ({
   children,
   isLoading = false,
-  direction = "row",
+  direction,
   classes = "",
   title = "",
 }) => {
   return (
     <div
-      className={`flex flex-${direction} min-[320px]:max-w-fit md:w-full min-h-screen p-3 pt-20 ${classes}`}
+      className={`w-full max-w-full min-h-screen p-3 pt-20 overflow-x-hidden${direction ? ` flex flex-${direction}` : ""} ${classes}`}
     >
       {title.length > 0 && (
         <div className="flex flex-row mb-1">

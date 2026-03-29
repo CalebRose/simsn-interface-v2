@@ -40,3 +40,26 @@ export const BorderHidden: React.FC<BorderHiddenProps> = ({ children }) => {
     </div>
   );
 };
+
+export const ForumBorder: React.FC<BorderProps> = ({
+  children,
+  direction = "col",
+  classes = "py-2 px-2",
+  isFlex = true,
+  styles,
+}) => {
+  return (
+    <div
+      className={`${
+        isFlex ? `flex flex-${direction}` : ""
+      } rounded-xl mb-2 border ${classes}`}
+      style={{
+        backgroundColor: "var(--bg-secondary)",
+        borderColor: "var(--border-secondary)",
+        ...styles,
+      }}
+    >
+      {children}
+    </div>
+  );
+};

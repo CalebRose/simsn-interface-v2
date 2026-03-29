@@ -116,6 +116,7 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     return mapFBATradeProposals(
       sentTradeProposals as NFLTradeProposal[],
       team.ID,
+      false,
     );
   }, [sentTradeProposals, league]);
 
@@ -129,6 +130,7 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     return mapFBATradeProposals(
       receivedTradeProposals as NFLTradeProposal[],
       team.ID,
+      true,
     );
   }, [receivedTradeProposals, league]);
 
@@ -267,6 +269,8 @@ const TradeSection: FC<TradeSectionProps> = ({
   reject,
   isSentTrade,
 }) => {
+  const { nflTeam } = useSimFBAStore();
+  const { phlTeam } = useSimHCKStore();
   const otherLogo = getLogo(league, otherTeam.ID, false);
   const teamLabel = useMemo(() => {
     if (league === SimPHL) {
@@ -287,6 +291,42 @@ const TradeSection: FC<TradeSectionProps> = ({
     return [];
   }, [league, trade]);
 
+  const sendingLabel = useMemo(() => {
+    if (!isSentTrade) {
+      if (league === SimNFL) {
+        const nflTeam = otherTeam as NFLTeam;
+        return `${nflTeam.TeamAbbr} Sending`;
+      } else if (league === SimPHL) {
+        const phlTeam = otherTeam as ProfessionalTeam;
+        return `${phlTeam.Abbreviation} Sending`;
+      }
+    }
+    if (league === SimNFL) {
+      return `${nflTeam!.TeamAbbr} Sending`;
+    } else if (league === SimPHL) {
+      return `${phlTeam!.Abbreviation} Sending`;
+    }
+    return "Sending";
+  }, [league, nflTeam, isSentTrade, otherTeam]);
+
+  const receivingLabel = useMemo(() => {
+    if (!isSentTrade) {
+      if (league === SimNFL) {
+        const nflTeam = otherTeam as NFLTeam;
+        return `${nflTeam.TeamAbbr} Receiving`;
+      } else if (league === SimPHL) {
+        const phlTeam = otherTeam as ProfessionalTeam;
+        return `${phlTeam.Abbreviation} Receiving`;
+      }
+    }
+    if (league === SimNFL) {
+      return `${nflTeam!.TeamAbbr} Receiving`;
+    } else if (league === SimPHL) {
+      return `${phlTeam!.Abbreviation} Receiving`;
+    }
+    return "Receiving";
+  }, [league, nflTeam, isSentTrade, otherTeam]);
+
   return (
     <Border direction="row" classes="p-4">
       <div className="grid grid-cols-4 w-full">
@@ -294,7 +334,7 @@ const TradeSection: FC<TradeSectionProps> = ({
           <Logo url={otherLogo} label={teamLabel} textClass="text-center" />
         </div>
         <div className="flex flex-col">
-          <Text>Sending</Text>
+          <Text>{sendingLabel}</Text>
           {tradeOptions.map((item) => {
             let playerID = 0;
             let draftPickID = 0;
@@ -307,7 +347,7 @@ const TradeSection: FC<TradeSectionProps> = ({
               draftPickID = item.DraftPickID;
             } else if (league === SimNFL) {
               item = item as NFLTradeOption;
-              if (item.NFLTeamID !== trade.RecepientTeamID) {
+              if (item.NFLTeamID === trade.RecepientTeamID) {
                 return;
               }
               playerID = item.NFLPlayerID;
@@ -323,7 +363,7 @@ const TradeSection: FC<TradeSectionProps> = ({
           })}
         </div>
         <div className="flex flex-col">
-          <Text>Receiving</Text>
+          <Text>{receivingLabel}</Text>
           {trade.RecepientTeamTradeOptions.map((item) => {
             let playerID = 0;
             let draftPickID = 0;
@@ -336,7 +376,7 @@ const TradeSection: FC<TradeSectionProps> = ({
               draftPickID = item.DraftPickID;
             } else if (league === SimNFL) {
               item = item as NFLTradeOption;
-              if (item.NFLTeamID === trade.RecepientTeamID) {
+              if (item.NFLTeamID !== trade.RecepientTeamID) {
                 return;
               }
               playerID = item.NFLPlayerID;
@@ -379,6 +419,8 @@ interface ManageOptionProps {
 }
 
 export const ManageOption: FC<ManageOptionProps> = ({ item, player, pick }) => {
+  console.log({ item, player, pick });
+  if (!player && !pick) return <>Can't find player or Pick</>;
   const isPlayer = item.OptionType === "Player";
   let label = "";
   if (isPlayer) {

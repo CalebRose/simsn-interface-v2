@@ -1,5 +1,10 @@
 import { fbaUrl, bbaUrl, hckUrl } from "../_constants/urls";
-import { GetCall, PostCall, GetActionCall } from "../_helper/fetchHelper";
+import {
+  GetCall,
+  PostCall,
+  GetActionCall,
+  GetExportCall,
+} from "../_helper/fetchHelper";
 
 export const DraftService = {
   CreateNFLScoutingProfile: async (dto: any): Promise<any> => {
@@ -22,7 +27,15 @@ export const DraftService = {
     return await PostCall(`${fbaUrl}nfl/draft/export/picks`, dto);
   },
 
-  GetDraftPageData: async (TeamID: any):Promise<any> => {
+  ExportNFLDraftees: async (): Promise<any> => {
+    return await GetExportCall(
+      `${fbaUrl}nfl/draft/draftees/export`,
+      "blob",
+      "nfl_draftees_export",
+    );
+  },
+
+  GetDraftPageData: async (TeamID: any): Promise<any> => {
     return await GetCall(`${fbaUrl}nfl/draft/page/${TeamID}`);
   },
 
@@ -50,7 +63,17 @@ export const DraftService = {
     return await PostCall(`${hckUrl}phl/draft/export/picks`, dto);
   },
 
+  ExportPHLDraftees: async (): Promise<any> => {
+    return await GetExportCall(
+      `${hckUrl}export/draftable/players`,
+      "blob",
+      "phl_draftees_export",
+    );
+  },
+
   BringUpCollegePlayer: async (draftPickID: number): Promise<any> => {
-    return await GetCall(`${hckUrl}phl/roster/bringup/college/player/${draftPickID}`);
+    return await GetCall(
+      `${hckUrl}phl/roster/bringup/college/player/${draftPickID}`,
+    );
   },
 };

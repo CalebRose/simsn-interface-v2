@@ -91,6 +91,7 @@ export const CHLLineupPage = () => {
   const {
     chlTeamRosterMap,
     chlTeamRoster,
+    eligiblePlayers,
     lineupCategories,
     zoneCategories,
     errors,
@@ -98,10 +99,10 @@ export const CHLLineupPage = () => {
   const { isMobile } = useResponsive();
 
   const chlTeamRosterOptions = useMemo(() => {
-    if (chlTeamRoster) {
-      return getLineupDropdownOptions(chlTeamRoster);
+    if (eligiblePlayers) {
+      return getLineupDropdownOptions(eligiblePlayers);
     }
-  }, [chlTeamRoster]);
+  }, [eligiblePlayers]);
 
   const zoneInputList = useMemo(
     () => getZoneInputList(zoneCategory),
@@ -634,7 +635,7 @@ export const PHLLineupPage = () => {
 
   const {
     phlTeamRosterMap,
-    phlTeamRoster,
+    eligiblePlayers,
     lineupCategories,
     zoneCategories,
     errors,
@@ -642,10 +643,10 @@ export const PHLLineupPage = () => {
   const { isMobile } = useResponsive();
 
   const phlTeamRosterOptions = useMemo(() => {
-    if (phlTeamRoster) {
-      return getLineupDropdownOptions(phlTeamRoster);
+    if (eligiblePlayers) {
+      return getLineupDropdownOptions(eligiblePlayers);
     }
-  }, [phlTeamRoster]);
+  }, [eligiblePlayers]);
 
   const zoneInputList = useMemo(
     () => getZoneInputList(zoneCategory),

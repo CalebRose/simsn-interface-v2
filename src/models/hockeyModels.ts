@@ -2184,6 +2184,7 @@ export class CollegeTeam {
   CoachRating: number;
   SeasonMomentum: number;
   LastLogin: Time;
+  LeagueID: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -2227,6 +2228,7 @@ export class CollegeTeam {
     this.CoachRating = source["CoachRating"];
     this.SeasonMomentum = source["SeasonMomentum"];
     this.LastLogin = this.convertValues(source["LastLogin"], Time);
+    this.LeagueID = source["LeagueID"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -2638,6 +2640,7 @@ export class ProfessionalGame {
   SeriesID: number;
   IsInternational: boolean;
   IsPreseason: boolean;
+  LeagueID: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -2687,6 +2690,7 @@ export class ProfessionalGame {
     this.SeriesID = source["SeriesID"];
     this.IsInternational = source["IsInternational"];
     this.IsPreseason = source["IsPreseason"];
+    this.LeagueID = source["LeagueID"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -3037,6 +3041,7 @@ export class CollegeGame {
   HomeTeamShootoutScore: number;
   AwayTeamShootoutScore: number;
   IsPreseason: boolean;
+  LeagueID: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -3083,6 +3088,7 @@ export class CollegeGame {
     this.HomeTeamShootoutScore = source["HomeTeamShootoutScore"];
     this.AwayTeamShootoutScore = source["AwayTeamShootoutScore"];
     this.IsPreseason = source["IsPreseason"];
+    this.LeagueID = source["LeagueID"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

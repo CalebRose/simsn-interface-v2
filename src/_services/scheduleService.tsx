@@ -51,6 +51,7 @@ export default class FBAScheduleService {
     await GetExportCall(
       `${fbaUrl}games/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.WeekID}/${dto.Timeslot}/`,
       "blob",
+      `fba_${dto.WeekID}_games_export`,
     );
   }
 
@@ -58,6 +59,7 @@ export default class FBAScheduleService {
     await GetExportCall(
       `${bbaUrl}match/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.WeekID}/${dto.Timeslot}/`,
       "blob",
+      `bba_${dto.WeekID}_games_export`,
     );
   }
 
@@ -65,6 +67,7 @@ export default class FBAScheduleService {
     await GetExportCall(
       `${hckUrl}games/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.Timeslot}/`,
       "blob",
+      `hck_${dto.WeekID}_games_export`,
     );
   }
 

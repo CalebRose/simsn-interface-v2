@@ -290,7 +290,7 @@ export const BaseballIntamScoutingPage = (
     BaseballService.GetIntamBoard(orgId, leagueYearId)
       .then((r) => {
         setBoardPlayers(r.players ?? []);
-        setBoardPlayerIds(new Set(r.board_player_ids ?? []));
+        setBoardPlayerIds(new Set((r.players ?? []).filter(bp => bp.on_board).map(bp => bp.player_id)));
       })
       .catch((err) => {
         console.error("[IntamBoard] fetch failed:", err);

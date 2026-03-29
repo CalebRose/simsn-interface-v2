@@ -37,6 +37,7 @@ export const NFLFreeAgency = () => {
     CancelFreeAgencyOffer,
     SaveWaiverWireOffer,
     CancelWaiverWireOffer,
+    exportNFLFreeAgents,
   } = fbStore;
   const {
     teamCapsheet,
@@ -75,7 +76,7 @@ export const NFLFreeAgency = () => {
   const teamColors = useTeamColors(
     nflTeam?.ColorOne,
     nflTeam?.ColorTwo,
-    nflTeam?.ColorThree
+    nflTeam?.ColorThree,
   );
   const helpModal = useModal();
   const aiSettingsModal = useModal();
@@ -178,6 +179,20 @@ export const NFLFreeAgency = () => {
                     onClick={() => setPlayerType(PracticeSquad)}
                   >
                     {PracticeSquad}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={helpModal.handleOpenModal}
+                  >
+                    Help
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={exportNFLFreeAgents}
+                  >
+                    Export
                   </Button>
                 </ButtonGroup>
               )}

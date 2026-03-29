@@ -9,7 +9,8 @@
     "build": "vite build --outDir docs",
     "lint": "eslint . --ext js,jsx,ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "seed:forums": "node scripts/seedForums.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.5",
@@ -37,6 +38,7 @@
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
+    "firebase-admin": "^13.7.0",
     "gh-pages": "^6.3.0",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",

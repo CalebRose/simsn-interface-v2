@@ -43,6 +43,11 @@ import { TransferPortalPage } from "../components/TransferPortal/TransferPortal"
 import { NewsPage } from "../components/News/NewsPage";
 import { DraftPage } from "../components/Draft/DraftPage";
 import { AdminUsersPage } from "../components/AdminUsers/AdminUsersPage";
+import { ForumsHomePage } from "../components/Forum/ForumsHomePage";
+import { ForumCategoryPage } from "../components/Forum/ForumCategoryPage";
+import { ThreadPage } from "../components/Forum/ThreadPage";
+import { CreateThreadPage } from "../components/Forum/CreateThreadPage";
+import { EditPostPage } from "../components/Forum/EditPostPage";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
@@ -601,6 +606,61 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <DraftPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  // ─── Forum Routes ─────────────────────────────────────────────────────────
+  <Route
+    key="Forums Home"
+    path={routes.FORUMS}
+    element={
+      <AuthGuard>
+        <ForumsHomePage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="Forum Create Thread"
+    path={routes.FORUM_CREATE_THREAD}
+    element={
+      <AuthGuard>
+        <CreateThreadPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="Forum Thread"
+    path={routes.FORUM_THREAD_PARAM}
+    element={
+      <AuthGuard>
+        <ThreadPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="Forum Edit Post"
+    path={routes.FORUM_EDIT_POST}
+    element={
+      <AuthGuard>
+        <EditPostPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="Forum Subforum"
+    path={routes.FORUM_SUBFORUM}
+    element={
+      <AuthGuard>
+        <ForumCategoryPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="Forum Category"
+    path={routes.FORUM_CATEGORY}
+    element={
+      <AuthGuard>
+        <ForumCategoryPage />
       </AuthGuard>
     }
   />,

@@ -578,6 +578,27 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
    * Pass forceRefresh=true to bypass cache (e.g. after a trade or sim advance).
    */
   const loadBootstrapForOrg = useCallback(async (orgId: number, forceRefresh?: boolean) => {
+    // Detect cross-league cache staleness: if the cached data was backfilled from
+    // GetAllBootstrapData(), its allTeams/seasonContext belong to the active org's
+    // league and are wrong for the other league. Force a fresh fetch in that case.
+    if (!forceRefresh && bootstrapCache.current.has(orgId)) {
+      const org = organizations.find((o) => o.id === orgId);
+      const cached = bootstrapCache.current.get(orgId)!;
+      if (org) {
+        const isCollegeOrg = org.league === "college";
+        const cachedTeams = cached.allTeams ?? [];
+        // If the org is college but cached teams are all non-college (or vice versa),
+        // the cache was backfilled with the wrong league's shared data.
+        const hasCollegeTeams = cachedTeams.some((t) => t.team_level === 3);
+        const hasProTeams = cachedTeams.some((t) => t.team_level >= 4 && t.team_level <= 9);
+        const leagueMismatch = isCollegeOrg ? !hasCollegeTeams && hasProTeams : !hasProTeams && hasCollegeTeams;
+        if (leagueMismatch) {
+          // Evict stale cache entry and fall through to fresh fetch
+          bootstrapCache.current.delete(orgId);
+        }
+      }
+    }
+
     // Cache hit — swap instantly, no network call
     if (!forceRefresh && bootstrapCache.current.has(orgId)) {
       let cached = bootstrapCache.current.get(orgId)!;

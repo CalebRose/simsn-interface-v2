@@ -3,7 +3,10 @@ import { BattingLeaderRow, PitchingLeaderRow } from "../models/baseball/baseball
 import { resolveDisplayValue } from "./baseballHelpers";
 
 // ─── PlayerStatsMap type (mirrors the one in BaseballRosterTable) ─────────────
-export type StatsMapForExport = Map<number, BattingLeaderRow | PitchingLeaderRow>;
+export interface StatsMapForExport {
+  batting: Map<number, BattingLeaderRow>;
+  pitching: Map<number, PitchingLeaderRow>;
+}
 
 // ─── Headers ─────────────────────────────────────────────────────────────────
 
@@ -205,18 +208,8 @@ export function playerPitchingStatsRow(stats: PitchingLeaderRow | undefined): st
  * The other column group is left empty so every row has the same schema.
  */
 export function buildFullExportRow(p: Player, statsMap: StatsMapForExport): string[] {
-  const statsEntry = statsMap.get(p.id);
-  const isPitcher = p.ptype === "Pitcher";
-
-  // Determine which stat row to use based on ptype.
-  // The stats map stores pitching leaders last, so pitchers will have PitchingLeaderRow entries.
-  const battingStats = isPitcher
-    ? playerBattingStatsRow(undefined)
-    : playerBattingStatsRow(statsEntry as BattingLeaderRow | undefined);
-
-  const pitchingStats = isPitcher
-    ? playerPitchingStatsRow(statsEntry as PitchingLeaderRow | undefined)
-    : playerPitchingStatsRow(undefined);
+  const battingStats = playerBattingStatsRow(statsMap.batting.get(p.id));
+  const pitchingStats = playerPitchingStatsRow(statsMap.pitching.get(p.id));
 
   return [
     ...playerInfoRow(p),

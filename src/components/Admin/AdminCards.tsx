@@ -1,7 +1,9 @@
+import { League, SimNFL, SimPHL } from "../../_constants/constants";
 import { Border } from "../../_design/Borders";
 import { Button } from "../../_design/Buttons";
 import { Logo } from "../../_design/Logo";
 import { Text } from "../../_design/Typography";
+import { NFLTradeOption } from "../../models/footballModels";
 import { TradeOption } from "../../models/hockeyModels";
 import { ManageOption } from "../Team/Common/ManageTradesModal";
 
@@ -190,9 +192,9 @@ export const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 
 interface AdminTradeCardProps {
   sendingTeamLabel: string;
-  sendingTradeOptions: TradeOption[];
+  sendingTradeOptions: TradeOption[] | NFLTradeOption[];
   receivingTeamLabel: string;
-  receivingTradeOptions: TradeOption[];
+  receivingTradeOptions: TradeOption[] | NFLTradeOption[];
   sendingTeamLogo: string;
   receivingTeamLogo: string;
   accept: () => Promise<void>;
@@ -201,6 +203,7 @@ interface AdminTradeCardProps {
   borderColor?: string;
   proPlayerMap: any;
   draftPickMap: any;
+  league?: League;
 }
 
 export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
@@ -216,69 +219,106 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
   draftPickMap,
   accept,
   veto,
+  league,
 }) => {
   return (
-    <>
-      <Border classes={`w-full px-3`}>
-        <div className="grid grid-cols-5 items-center h-[12rem] w-full space-x-2">
-          <Border
-            classes="items-center justify-center mt-1"
-            styles={{ backgroundColor, borderColor }}
-          >
-            <div className="flex flex-col w-full items-center justify-center p-4">
-              <Logo
-                url={sendingTeamLogo}
-                label={sendingTeamLabel}
-                variant="normal"
-                classes=""
-                containerClass="p-4"
-              />
-            </div>
-          </Border>
-          <div className="flex flex-col justify-center p-2 flex-1">
-            {sendingTradeOptions &&
-              sendingTradeOptions.map((item) => (
+    <Border classes="w-full px-3">
+      {/* Mobile: 2-col grid (logos top, options below, buttons full-width).
+          Desktop (lg): 5-col horizontal layout.
+          CSS order reorders items between breakpoints without duplication. */}
+      <div className="grid grid-cols-2 gap-2 py-2 lg:grid-cols-5 lg:items-center">
+        {/* Sending team logo — mobile: row 1 col 1 | desktop: col 1 */}
+        <Border
+          classes="items-center justify-center order-1 lg:order-none"
+          styles={{ backgroundColor, borderColor }}
+        >
+          <div className="flex flex-col w-full items-center justify-center p-2 lg:p-4">
+            <Logo
+              url={sendingTeamLogo}
+              label={sendingTeamLabel}
+              variant="normal"
+              classes=""
+              containerClass="p-2 lg:p-4"
+            />
+          </div>
+        </Border>
+
+        {/* Sending trade options — mobile: row 2 col 1 | desktop: col 2 */}
+        <div className="flex flex-col justify-center p-2 order-3 lg:order-none">
+          {sendingTradeOptions &&
+            sendingTradeOptions.map((item) => {
+              let playerID = 0;
+              let draftPickID = 0;
+              if (league === SimNFL) {
+                const i = item as NFLTradeOption;
+                playerID = i.NFLPlayerID;
+                draftPickID = i.NFLDraftPickID;
+              } else if (league === SimPHL) {
+                const i = item as TradeOption;
+                playerID = i.PlayerID;
+                draftPickID = i.DraftPickID;
+              }
+              return (
                 <ManageOption
                   item={item}
-                  player={proPlayerMap[item.PlayerID]}
-                  pick={draftPickMap[item.DraftPickID]}
+                  player={proPlayerMap[playerID]}
+                  pick={draftPickMap[draftPickID]}
                 />
-              ))}
-          </div>
-          <div className="flex flex-col justify-center p-2 flex-1">
-            {receivingTradeOptions &&
-              receivingTradeOptions.map((item) => (
-                <ManageOption
-                  item={item}
-                  player={proPlayerMap[item.PlayerID]}
-                  pick={draftPickMap[item.DraftPickID]}
-                />
-              ))}
-          </div>
-          <Border
-            classes="items-center justify-center mt-1"
-            styles={{ backgroundColor, borderColor }}
-          >
-            <div className="flex flex-col w-full items-center justify-center p-4">
-              <Logo
-                url={receivingTeamLogo}
-                label={receivingTeamLabel}
-                variant="normal"
-                classes=""
-                containerClass="p-4"
-              />
-            </div>
-          </Border>
-          <div className="flex flex-col justify-center space-y-2">
-            <Button variant="success" size="sm" onClick={accept}>
-              Accept
-            </Button>
-            <Button variant="danger" size="sm" onClick={veto}>
-              Reject
-            </Button>
-          </div>
+              );
+            })}
         </div>
-      </Border>
-    </>
+
+        {/* Receiving trade options — mobile: row 2 col 2 | desktop: col 3 */}
+        <div className="flex flex-col justify-center p-2 order-4 lg:order-none">
+          {receivingTradeOptions &&
+            receivingTradeOptions.map((item) => {
+              let playerID = 0;
+              let draftPickID = 0;
+              if (league === SimNFL) {
+                const i = item as NFLTradeOption;
+                playerID = i.NFLPlayerID;
+                draftPickID = i.NFLDraftPickID;
+              } else if (league === SimPHL) {
+                const i = item as TradeOption;
+                playerID = i.PlayerID;
+                draftPickID = i.DraftPickID;
+              }
+              return (
+                <ManageOption
+                  item={item}
+                  player={proPlayerMap[playerID]}
+                  pick={draftPickMap[draftPickID]}
+                />
+              );
+            })}
+        </div>
+
+        {/* Receiving team logo — mobile: row 1 col 2 | desktop: col 4 */}
+        <Border
+          classes="items-center justify-center order-2 lg:order-none"
+          styles={{ backgroundColor, borderColor }}
+        >
+          <div className="flex flex-col w-full items-center justify-center p-2 lg:p-4">
+            <Logo
+              url={receivingTeamLogo}
+              label={receivingTeamLabel}
+              variant="normal"
+              classes=""
+              containerClass="p-2 lg:p-4"
+            />
+          </div>
+        </Border>
+
+        {/* Buttons — mobile: row 3 spanning both cols | desktop: col 5 */}
+        <div className="flex flex-row lg:flex-col justify-center gap-2 order-5 col-span-2 lg:col-span-1 lg:order-none">
+          <Button variant="success" size="sm" onClick={accept}>
+            Accept
+          </Button>
+          <Button variant="danger" size="sm" onClick={veto}>
+            Reject
+          </Button>
+        </div>
+      </div>
+    </Border>
   );
 };

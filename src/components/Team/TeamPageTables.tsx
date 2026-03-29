@@ -12,6 +12,7 @@ import {
   CollegePlayer as CFBPlayer,
   NFLPlayer,
   NFLContract,
+  NFLExtensionOffer,
 } from "../../models/footballModels";
 import { useResponsive } from "../../_hooks/useMobile";
 import {
@@ -1608,6 +1609,7 @@ interface NFLRosterTableProps {
   openExtensionModal: (player: NFLPlayer) => void;
   openFranchiseTagModal: (player: NFLPlayer) => void;
   disable: boolean;
+  existingOfferMap?: Record<number, NFLExtensionOffer>;
 }
 
 export const NFLRosterTable: FC<NFLRosterTableProps> = ({
@@ -1622,6 +1624,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
   openModal,
   openExtensionModal,
   openFranchiseTagModal,
+  existingOfferMap,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -1657,6 +1660,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
           header: !isDesktop ? "Yrs Left" : "Years Left",
           accessor: "ContractLength",
         },
+        { header: "Ext.", accessor: "isExtended" },
         { header: "Tagged", accessor: "isTagged" },
         { header: "Trade Block", accessor: "IsOnTradeBlock" },
         { header: "PS", accessor: "IsPracticeSquad" },
@@ -1726,6 +1730,11 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
     index: number,
     backgroundColor: string,
   ) => {
+    const extensionOffer = (() => {
+      if (!existingOfferMap) return null;
+      return existingOfferMap[item.ID] || null;
+    })();
+
     const playerContract = contracts?.find(
       (contract) => contract.PlayerID === item.ID,
     );
@@ -1736,6 +1745,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
       category!,
       item.ShowLetterGrade,
       playerContract,
+      extensionOffer,
     );
     return (
       <div
@@ -1768,6 +1778,33 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
                 ) : (
                   <CrossCircle textColorClass="w-full text-center text-red-500" />
                 )}
+              </>
+            ) : attr.label === "Is Extended" ? (
+              <>
+                {!extensionOffer && (
+                  <DashCircle
+                    textColorClass={`w-full text-center text-gray-500`}
+                  />
+                )}
+                {extensionOffer?.IsAccepted === true && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {extensionOffer?.IsActive === true &&
+                  !extensionOffer.IsAccepted &&
+                  !extensionOffer.IsRejected && (
+                    <DashCircle
+                      textColorClass={`w-full text-center ${extensionOffer.Rejections < 2 ? "text-yellow-500" : "text-orange-500"}`}
+                    />
+                  )}
+
+                {extensionOffer?.IsActive === true &&
+                  extensionOffer.IsRejected && (
+                    <CrossCircle
+                      textColorClass={`w-full text-center text-red-500`}
+                    />
+                  )}
               </>
             ) : attr.label === "Health" ? (
               <>
@@ -1847,7 +1884,10 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
                 openModal(TradeBlock, item);
               } else if (selectedOption?.value === "franchise") {
                 openFranchiseTagModal(item);
-              } else if (selectedOption?.value === "extension") {
+              } else if (
+                selectedOption?.value === "extension" &&
+                item.Rejections < 3
+              ) {
                 openExtensionModal(item);
               } else {
                 console.log(`Action selected: ${selectedOption?.value}`);
