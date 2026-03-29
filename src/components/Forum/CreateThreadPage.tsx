@@ -19,7 +19,7 @@ import {
 } from "../../models/forumModels";
 import routes from "../../_constants/routes";
 
-const MAX_TITLE = 200;
+const MAX_TITLE = 75;
 const MAX_POLL_OPTIONS = 10;
 
 export const CreateThreadPage: React.FC = () => {

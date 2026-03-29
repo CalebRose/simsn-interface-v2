@@ -25,6 +25,7 @@ export interface CurrentUser {
   DefaultLeague: string | null;
   IsBanned?: boolean;
   Reports?: number;
+  forumMutedUntil?: string | null;
 }
 type UseCurrentUserReturn = [
   CurrentUser | null,

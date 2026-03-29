@@ -6,6 +6,10 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import CharacterCount from "@tiptap/extension-character-count";
 import TextAlign from "@tiptap/extension-text-align";
+import { Table } from "@tiptap/extension-table";
+import TableRow from "@tiptap/extension-table-row";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
 import { RichTextDocument, PostMention } from "../../../models/forumModels";
 import { Button } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
@@ -108,6 +112,7 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
     initialDoc ?? (initialText ? plaintextToDoc(initialText) : undefined);
 
   const [isEmpty, setIsEmpty] = useState(!initialContent);
+  const [isInTable, setIsInTable] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -121,10 +126,23 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
       Placeholder.configure({ placeholder }),
       CharacterCount.configure({ limit: maxLength }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Table.configure({ resizable: false }),
+      TableRow,
+      TableCell,
+      TableHeader,
     ],
     content: initialContent,
-    onCreate: ({ editor }) => setIsEmpty(editor.isEmpty),
-    onUpdate: ({ editor }) => setIsEmpty(editor.isEmpty),
+    onCreate: ({ editor }) => {
+      setIsEmpty(editor.isEmpty);
+      setIsInTable(editor.isActive("table"));
+    },
+    onUpdate: ({ editor }) => {
+      setIsEmpty(editor.isEmpty);
+      setIsInTable(editor.isActive("table"));
+    },
+    onSelectionUpdate: ({ editor }) => {
+      setIsInTable(editor.isActive("table"));
+    },
     editorProps: {
       handleKeyDown(_view, event) {
         if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
@@ -309,6 +327,65 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
           {" "}
           ↪
         </TBtn>
+        <Divider />
+        <TBtn
+          title="Insert table (3×3)"
+          onClick={() =>
+            editor
+              ?.chain()
+              .focus()
+              .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+              .run()
+          }
+        >
+          ⊞
+        </TBtn>
+        {isInTable && (
+          <>
+            <TBtn
+              title="Add column before"
+              onClick={() => editor?.chain().focus().addColumnBefore().run()}
+            >
+              ◁+
+            </TBtn>
+            <TBtn
+              title="Add column after"
+              onClick={() => editor?.chain().focus().addColumnAfter().run()}
+            >
+              +▷
+            </TBtn>
+            <TBtn
+              title="Delete column"
+              onClick={() => editor?.chain().focus().deleteColumn().run()}
+            >
+              ✕col
+            </TBtn>
+            <TBtn
+              title="Add row before"
+              onClick={() => editor?.chain().focus().addRowBefore().run()}
+            >
+              △+
+            </TBtn>
+            <TBtn
+              title="Add row after"
+              onClick={() => editor?.chain().focus().addRowAfter().run()}
+            >
+              +▽
+            </TBtn>
+            <TBtn
+              title="Delete row"
+              onClick={() => editor?.chain().focus().deleteRow().run()}
+            >
+              ✕row
+            </TBtn>
+            <TBtn
+              title="Delete table"
+              onClick={() => editor?.chain().focus().deleteTable().run()}
+            >
+              ✕tbl
+            </TBtn>
+          </>
+        )}
       </div>
 
       {/* Editor area */}

@@ -21,6 +21,7 @@ import {
   CreateThreadDTO,
   CreatePostDTO,
   UpdatePostDTO,
+  CreateReportDTO,
   ForumRole,
   ForumPermissions,
   ReactionType,
@@ -93,6 +94,8 @@ interface ForumContextProps {
   unreadCount: number;
   forumRole: ForumRole;
   permissions: ForumPermissions;
+  isMuted: boolean;
+  muteExpiresAt: Date | null;
   threadsCursor: QueryDocumentSnapshot | null;
   hasMoreThreads: boolean;
 
@@ -116,7 +119,9 @@ interface ForumContextProps {
     pollId: string,
     selectedOptionIds: string[],
   ) => Promise<void>;
+  togglePoll: (pollId: string, close: boolean) => Promise<void>;
   reactToPost: (postId: string, reaction: ReactionType) => Promise<void>;
+  reportPost: (dto: CreateReportDTO) => Promise<void>;
   loadNotifications: (uid: string) => Promise<void>;
   markNotificationRead: (notificationId: string) => Promise<void>;
   markAllNotificationsRead: (uid: string) => Promise<void>;
@@ -142,6 +147,8 @@ const defaultForumContext: ForumContextProps = {
   unreadCount: 0,
   forumRole: "guest",
   permissions: derivePermissions("guest"),
+  isMuted: false,
+  muteExpiresAt: null,
   threadsCursor: null,
   hasMoreThreads: false,
   loadForums: async () => {},
@@ -160,7 +167,9 @@ const defaultForumContext: ForumContextProps = {
   unpinThread: async () => {},
   softDeleteThread: async () => {},
   submitPollVote: async () => {},
+  togglePoll: async () => {},
   reactToPost: async () => {},
+  reportPost: async () => {},
   loadNotifications: async () => {},
   markNotificationRead: async () => {},
   markAllNotificationsRead: async () => {},
@@ -221,7 +230,24 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     [currentUserState],
   );
 
-  const permissions = useMemo(() => derivePermissions(forumRole), [forumRole]);
+  const { isMuted, muteExpiresAt } = useMemo(() => {
+    const raw = currentUserState?.forumMutedUntil;
+    if (!raw) return { isMuted: false, muteExpiresAt: null };
+    const expires = new Date(raw);
+    const muted =
+      expires > new Date() &&
+      forumRole !== "admin" &&
+      forumRole !== "commissioner";
+    return { isMuted: muted, muteExpiresAt: muted ? expires : null };
+  }, [currentUserState?.forumMutedUntil, forumRole]);
+
+  const permissions = useMemo(() => {
+    const base = derivePermissions(forumRole);
+    if (isMuted) {
+      return { ...base, canReply: false, canCreateThread: false };
+    }
+    return base;
+  }, [forumRole, isMuted]);
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.isRead).length,
@@ -393,11 +419,21 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     async (postId: string, dto: UpdatePostDTO) => {
       if (!currentUserState) return;
       try {
-        await ForumService.UpdatePost(postId, dto, currentUserState.id);
+        await ForumService.UpdatePost(
+          postId,
+          { ...dto, editorUsername: currentUserState.username },
+          currentUserState.id,
+        );
         setPosts((prev) =>
           prev.map((p) =>
             p.id === postId
-              ? { ...p, body: dto.body, bodyText: dto.bodyText, isEdited: true }
+              ? {
+                  ...p,
+                  body: dto.body,
+                  bodyText: dto.bodyText,
+                  isEdited: true,
+                  editedByUsername: currentUserState.username,
+                }
               : p,
           ),
         );
@@ -493,6 +529,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         await ForumService.SubmitPollVote(
           pollId,
           currentUserState.id,
+          currentUserState.username,
           selectedOptionIds,
         );
         // Re-fetch updated poll
@@ -507,6 +544,17 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     [currentUserState, activeThread, loadPoll],
   );
 
+  // ─── Toggle Poll ─────────────────────────────
+
+  const togglePoll = useCallback(async (pollId: string, close: boolean) => {
+    try {
+      await ForumService.TogglePoll(pollId, close);
+      setActivePoll((prev) => (prev ? { ...prev, isClosed: close } : prev));
+    } catch (err) {
+      console.error("ForumContext.togglePoll:", err);
+    }
+  }, []);
+
   // ─── Reactions ───────────────────────────────
 
   const reactToPost = useCallback(
@@ -517,6 +565,25 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         // onSnapshot listener handles state update automatically
       } catch (err) {
         console.error("ForumContext.reactToPost:", err);
+      }
+    },
+    [currentUserState],
+  );
+
+  // ─── Report Post ─────────────────────────────
+
+  const reportPost = useCallback(
+    async (dto: CreateReportDTO) => {
+      if (!currentUserState) return;
+      try {
+        await ForumService.ReportPost(
+          dto,
+          currentUserState.id,
+          currentUserState.username,
+        );
+      } catch (err) {
+        console.error("ForumContext.reportPost:", err);
+        throw err;
       }
     },
     [currentUserState],
@@ -570,6 +637,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         unreadCount,
         forumRole,
         permissions,
+        isMuted,
+        muteExpiresAt,
         threadsCursor,
         hasMoreThreads,
         loadForums,
@@ -588,7 +657,9 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         unpinThread,
         softDeleteThread,
         submitPollVote,
+        togglePoll,
         reactToPost,
+        reportPost,
         loadNotifications,
         markNotificationRead,
         markAllNotificationsRead,

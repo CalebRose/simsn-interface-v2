@@ -4,11 +4,13 @@ import {
   ReactionType,
   REACTION_LABELS,
   RichTextDocument,
+  CreateReportDTO,
 } from "../../../models/forumModels";
 import { Text } from "../../../_design/Typography";
 import { Button } from "../../../_design/Buttons";
 import { RichTextRenderer } from "./RichTextRenderer";
 import { ModerationControls } from "./ModerationControls";
+import { ReportPostModal } from "./ReportPostModal";
 import { ForumPermissions } from "../../../models/forumModels";
 import { useAuthStore } from "../../../context/AuthContext";
 
@@ -17,11 +19,13 @@ interface PostCardProps {
   currentUserId: string | null;
   permissions: ForumPermissions;
   isThreadLocked: boolean;
+  canBypassLock?: boolean;
   onReact: (postId: string, reaction: ReactionType) => void;
   onReply: (post: Post) => void;
   onQuote: (post: Post) => void;
   onEdit: (post: Post) => void;
   onDelete: (postId: string) => void;
+  onReport: (dto: CreateReportDTO) => Promise<void>;
 }
 
 function formatTimestamp(ts: { seconds: number } | null | undefined): string {
@@ -40,14 +44,17 @@ export const PostCard: React.FC<PostCardProps> = ({
   currentUserId,
   permissions,
   isThreadLocked,
+  canBypassLock = false,
   onReact,
   onReply,
   onQuote,
   onEdit,
   onDelete,
+  onReport,
 }) => {
   const { currentUser } = useAuthStore();
   const [showReactions, setShowReactions] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const isOwnPost = post.author.uid === currentUserId;
   const canEdit =
     permissions.canEditAnyPost || (isOwnPost && permissions.canEditOwnPost);
@@ -103,7 +110,11 @@ export const PostCard: React.FC<PostCardProps> = ({
                 post.createdAt as unknown as { seconds: number },
               )}
               {post.isEdited && (
-                <span className="ml-2 text-gray-600 italic">(edited)</span>
+                <span className="ml-2 text-gray-600 italic">
+                  {post.editedByUsername
+                    ? `(edited by ${post.editedByUsername})`
+                    : "(edited)"}
+                </span>
               )}
             </Text>
           </div>
@@ -127,7 +138,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       </div>
 
       {/* Action bar */}
-      {!isThreadLocked && (
+      {(!isThreadLocked || canBypassLock) && (
         <div className="flex flex-wrap items-center gap-2 mt-1">
           {/* Reaction picker toggle */}
           <div className="relative">
@@ -207,7 +218,27 @@ export const PostCard: React.FC<PostCardProps> = ({
           >
             Quote
           </Button>
+          {!isOwnPost && currentUserId && (
+            <Button
+              variant="secondaryOutline"
+              size="xs"
+              onClick={() => setShowReportModal(true)}
+              title="Report this post"
+            >
+              🚩
+            </Button>
+          )}
         </div>
+      )}
+
+      {/* Report modal */}
+      {showReportModal && (
+        <ReportPostModal
+          isOpen={showReportModal}
+          post={post}
+          onClose={() => setShowReportModal(false)}
+          onSubmit={onReport}
+        />
       )}
     </div>
   );

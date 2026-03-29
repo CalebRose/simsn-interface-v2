@@ -44,6 +44,10 @@ export const ThreadPage: React.FC = () => {
     softDeleteThread,
     reactToPost,
     submitPollVote,
+    togglePoll,
+    reportPost,
+    isMuted,
+    muteExpiresAt,
   } = useForumStore();
 
   const { activeThread, posts, postsLoading, activePoll, userPollVote } =
@@ -165,7 +169,8 @@ export const ThreadPage: React.FC = () => {
   };
 
   const isLocked = activeThread?.isLocked ?? false;
-  const canReply = permissions.canReply && !isLocked;
+  const isAdmin = permissions.canLockThread;
+  const canReply = permissions.canReply && (!isLocked || isAdmin);
 
   return (
     <PageContainer isLoading={!activeThread && postsLoading} title="">
@@ -234,6 +239,8 @@ export const ThreadPage: React.FC = () => {
               userVote={userPollVote}
               canVote={permissions.canVoteInPoll}
               onVote={submitPollVote}
+              canManagePoll={permissions.canLockThread}
+              onTogglePoll={togglePoll}
             />
           </div>
         )}
@@ -245,6 +252,21 @@ export const ThreadPage: React.FC = () => {
           </div>
         )}
 
+        {/* Mute banner */}
+        {isMuted && muteExpiresAt && (
+          <div className="mb-3 p-2 bg-red-900/40 border border-red-700 rounded text-sm text-red-300">
+            🔇 You have been muted from posting until{" "}
+            <span className="font-semibold">
+              {muteExpiresAt.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+            . You may still read and react to posts.
+          </div>
+        )}
+
         {/* Posts */}
         <ForumBorder classes="p-0 overflow-hidden">
           <PostList
@@ -253,6 +275,7 @@ export const ThreadPage: React.FC = () => {
             currentUserId={currentUser?.id ?? null}
             permissions={permissions}
             isThreadLocked={isLocked}
+            canBypassLock={permissions.canLockThread}
             onReact={reactToPost}
             onReply={(post) => {
               setReplyingTo(post);
@@ -264,6 +287,7 @@ export const ThreadPage: React.FC = () => {
             }}
             onEdit={(post) => setEditingPost(post)}
             onDelete={(postId) => setShowDeleteConfirm(postId)}
+            onReport={reportPost}
           />
         </ForumBorder>
 

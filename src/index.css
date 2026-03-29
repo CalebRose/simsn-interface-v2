@@ -82,6 +82,33 @@
   color: var(--accent-primary);
   text-decoration: underline;
 }
+.ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.75rem 0;
+  font-size: 0.875rem;
+  overflow: hidden;
+}
+.ProseMirror table td,
+.ProseMirror table th {
+  border: 1px solid var(--border-secondary);
+  padding: 0.4rem 0.6rem;
+  vertical-align: top;
+  min-width: 3rem;
+  position: relative;
+}
+.ProseMirror table th {
+  background-color: var(--bg-primary);
+  font-weight: 600;
+  text-align: left;
+}
+.ProseMirror table .selectedCell:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(99, 179, 237, 0.15);
+  pointer-events: none;
+}
 
 html,
 body {
