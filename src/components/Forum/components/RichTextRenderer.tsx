@@ -47,13 +47,24 @@ function applyMarks(
           </code>
         );
         break;
-      case "link":
-        // Safe: only render link if href is http(s)
-        if (mark.attrs?.href && /^https?:\/\//.test(String(mark.attrs.href))) {
+      case "link": {
+        const href = String(mark.attrs?.href ?? "");
+        if (!/^https?:\/\//.test(href)) break;
+        if (/\.(jpe?g|png|gif|webp|svg)(\?.*)?$/i.test(href)) {
+          node = (
+            <img
+              key={key}
+              src={href}
+              alt=""
+              className="max-w-full max-h-[480px] object-contain rounded my-2 block"
+              loading="lazy"
+            />
+          );
+        } else {
           node = (
             <a
               key={key}
-              href={String(mark.attrs.href)}
+              href={href}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-400 underline hover:text-blue-300"
@@ -63,6 +74,7 @@ function applyMarks(
           );
         }
         break;
+      }
     }
   }
   return node;
@@ -79,7 +91,14 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
       return children.length === 0 ? (
         <br key={key} />
       ) : (
-        <p key={key} className="mb-2 leading-relaxed">
+        <p
+          key={key}
+          className="mb-2 leading-relaxed"
+          style={{
+            textAlign: ((node.attrs?.textAlign as string) ||
+              "left") as React.CSSProperties["textAlign"],
+          }}
+        >
           {children}
         </p>
       );
@@ -96,7 +115,14 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
         "text-xs font-semibold mt-2 mb-1",
       ];
       return (
-        <div key={key} className={hClasses[level] ?? hClasses[2]}>
+        <div
+          key={key}
+          className={hClasses[level] ?? hClasses[2]}
+          style={{
+            textAlign: ((node.attrs?.textAlign as string) ||
+              "left") as React.CSSProperties["textAlign"],
+          }}
+        >
           {children}
         </div>
       );
@@ -116,8 +142,21 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
         </ol>
       );
 
-    case "listItem":
-      return <li key={key}>{children}</li>;
+    case "listItem": {
+      // Unwrap paragraph nodes so text sits inline with the bullet marker
+      const listChildren =
+        node.content?.map((child, i) => {
+          if (child.type === "paragraph") {
+            return (
+              <React.Fragment key={i}>
+                {child.content?.map((gc, j) => renderNode(gc, `${i}-${j}`))}
+              </React.Fragment>
+            );
+          }
+          return renderNode(child, i);
+        }) ?? [];
+      return <li key={key}>{listChildren}</li>;
+    }
 
     case "blockquote":
       return (
@@ -145,8 +184,24 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
     case "horizontalRule":
       return <hr key={key} className="border-gray-600 my-3" />;
 
-    case "text":
-      return applyMarks(node.text ?? "", node.marks, key);
+    case "text": {
+      const txt = node.text ?? "";
+      if (
+        !node.marks?.length &&
+        /^https?:\/\/\S+\.(jpe?g|png|gif|webp|svg)(\?[^\s]*)?$/i.test(txt)
+      ) {
+        return (
+          <img
+            key={key}
+            src={txt}
+            alt=""
+            className="max-w-full max-h-[480px] object-contain rounded my-2 block"
+            loading="lazy"
+          />
+        );
+      }
+      return applyMarks(txt, node.marks, key);
+    }
 
     case "mention":
       return (
@@ -201,6 +256,16 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
     case "tableRow":
       return <tr key={key}>{children}</tr>;
 
+    case "tableHeader":
+      return (
+        <th
+          key={key}
+          className="border border-gray-600 px-2 py-1 bg-gray-800 font-semibold text-left"
+        >
+          {children}
+        </th>
+      );
+
     case "tableCell":
       return (
         <td key={key} className="border border-gray-600 px-2 py-1">
@@ -229,7 +294,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   }
 
   return (
-    <div className="rich-text-content prose prose-invert max-w-none break-words">
+    <div className="rich-text-content prose prose-invert max-w-none break-words text-left">
       {renderNode(document, "root")}
     </div>
   );

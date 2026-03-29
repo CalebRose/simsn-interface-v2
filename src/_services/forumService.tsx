@@ -29,6 +29,9 @@ import {
   ForumNotification,
   ModerationLog,
   GameReference,
+  PostReport,
+  CreateReportDTO,
+  ReportStatus,
   CreateThreadDTO,
   CreatePostDTO,
   UpdatePostDTO,
@@ -51,6 +54,7 @@ const gameReferencesCol = () => collection(firestore, "gameReferences");
 
 const pollVotesCol = (pollId: string) =>
   collection(firestore, "polls", pollId, "votes");
+const postReportsCol = () => collection(firestore, "postReports");
 
 // ─────────────────────────────────────────────
 // Forums
@@ -400,6 +404,7 @@ export const ForumService = {
       isEdited: true,
       editedAt: serverTimestamp(),
       editedBy: editorUid,
+      editedByUsername: dto.editorUsername ?? null,
       updatedAt: serverTimestamp(),
     });
   },
@@ -579,6 +584,7 @@ export const ForumService = {
   SubmitPollVote: async (
     pollId: string,
     uid: string,
+    username: string,
     selectedOptionIds: string[],
   ): Promise<void> => {
     const pollRef = doc(firestore, "polls", pollId);
@@ -599,6 +605,7 @@ export const ForumService = {
     // Write vote doc
     batch.set(existingVoteRef, {
       uid,
+      username,
       selectedOptionIds,
       createdAt: serverTimestamp(),
     });
@@ -617,6 +624,16 @@ export const ForumService = {
     });
 
     await batch.commit();
+  },
+
+  TogglePoll: async (pollId: string, close: boolean): Promise<void> => {
+    const ref = doc(firestore, "polls", pollId);
+    await updateDoc(ref, { isClosed: close, updatedAt: serverTimestamp() });
+  },
+
+  GetAllPollVotes: async (pollId: string): Promise<PollVote[]> => {
+    const snap = await getDocs(pollVotesCol(pollId));
+    return snap.docs.map((d) => d.data() as PollVote);
   },
 
   // ─────────────────────────────────────────────
@@ -673,5 +690,46 @@ export const ForumService = {
     const q = query(gameReferencesCol(), where("league", "==", league));
     const snap = await getDocs(q);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as GameReference);
+  },
+
+  // ─────────────────────────────────────────────
+  // Post Reports
+  // ─────────────────────────────────────────────
+
+  ReportPost: async (
+    dto: CreateReportDTO,
+    reporterUid: string,
+    reporterUsername: string,
+  ): Promise<void> => {
+    await addDoc(postReportsCol(), {
+      ...dto,
+      reporterUid,
+      reporterUsername,
+      status: "pending",
+      reviewedBy: null,
+      reviewedAt: null,
+      adminNote: null,
+      createdAt: serverTimestamp(),
+    });
+  },
+
+  GetPostReports: async (status?: ReportStatus): Promise<PostReport[]> => {
+    const q = status
+      ? query(
+          postReportsCol(),
+          where("status", "==", status),
+          orderBy("createdAt", "desc"),
+        )
+      : query(postReportsCol(), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as PostReport);
+  },
+
+  UpdatePostReport: async (
+    id: string,
+    data: Partial<Omit<PostReport, "id" | "createdAt">>,
+  ): Promise<void> => {
+    const ref = doc(firestore, "postReports", id);
+    await updateDoc(ref, { ...data });
   },
 };

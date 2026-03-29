@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Poll, PollVote } from "../../../models/forumModels";
+import { ForumService } from "../../../_services/forumService";
 import { ForumBorder } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { Button } from "../../../_design/Buttons";
@@ -9,6 +10,8 @@ interface PollBlockProps {
   userVote: PollVote | null;
   canVote: boolean;
   onVote: (pollId: string, selectedOptionIds: string[]) => Promise<void>;
+  canManagePoll?: boolean;
+  onTogglePoll?: (pollId: string, close: boolean) => Promise<void>;
 }
 
 function formatCloseDate(ts: { seconds: number } | null | undefined): string {
@@ -25,10 +28,15 @@ export const PollBlock: React.FC<PollBlockProps> = ({
   userVote,
   canVote,
   onVote,
+  canManagePoll = false,
+  onTogglePoll,
 }) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isVoting, setIsVoting] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [allVotes, setAllVotes] = useState<PollVote[] | null>(null);
+  const [showVoters, setShowVoters] = useState(false);
 
   const hasVoted = !!userVote;
   const showResults = hasVoted || poll.isClosed;
@@ -62,6 +70,26 @@ export const PollBlock: React.FC<PollBlockProps> = ({
   const getPercentage = (voteCount: number): number => {
     if (poll.totalVotes === 0) return 0;
     return Math.round((voteCount / poll.totalVotes) * 100);
+  };
+
+  const handleTogglePoll = async () => {
+    if (!onTogglePoll) return;
+    setIsToggling(true);
+    try {
+      await onTogglePoll(poll.id, !poll.isClosed);
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
+  const loadVoters = async () => {
+    if (showVoters) {
+      setShowVoters(false);
+      return;
+    }
+    const votes = await ForumService.GetAllPollVotes(poll.id);
+    setAllVotes(votes);
+    setShowVoters(true);
   };
 
   return (

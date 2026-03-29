@@ -19,6 +19,7 @@ export type RichTextNodeType =
   | "table"
   | "tableRow"
   | "tableCell"
+  | "tableHeader"
   | "link"
   | "mention"
   | "quoteReference"
@@ -149,6 +150,7 @@ export interface Post {
   isEdited: boolean;
   editedAt?: Timestamp | null;
   editedBy?: string | null;
+  editedByUsername?: string | null;
   isDeleted: boolean;
   deletedAt?: Timestamp | null;
   deletedBy?: string | null;
@@ -167,7 +169,8 @@ export type ReactionType =
   | "laugh"
   | "sad"
   | "angry"
-  | "confused";
+  | "confused"
+  | "whoa";
 
 export const REACTION_LABELS: Record<ReactionType, string> = {
   like: "👍",
@@ -176,6 +179,7 @@ export const REACTION_LABELS: Record<ReactionType, string> = {
   sad: "😢",
   angry: "😠",
   confused: "😕",
+  whoa: "😮",
 };
 
 // ─────────────────────────────────────────────
@@ -208,6 +212,7 @@ export interface Poll {
 
 export interface PollVote {
   uid: string;
+  username?: string;
   selectedOptionIds: string[];
   createdAt: Timestamp;
 }
@@ -325,6 +330,7 @@ export interface UpdatePostDTO {
   body: RichTextDocument;
   bodyText: string;
   mentions?: PostMention[];
+  editorUsername?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -360,4 +366,45 @@ export interface ForumPermissions {
   canEditAnyPost: boolean;
   canPinThread: boolean;
   canManageForums: boolean;
+}
+
+// ─────────────────────────────────────────────
+// Post Reports
+// ─────────────────────────────────────────────
+
+export type ReportCategory =
+  | "inflammatory"
+  | "abusive"
+  | "spam"
+  | "inappropriate"
+  | "other";
+
+export type ReportStatus = "pending" | "reviewed" | "dismissed";
+
+export interface PostReport {
+  id: string;
+  postId: string;
+  threadId: string;
+  forumId: string;
+  reportedUid: string;
+  reportedUsername: string;
+  reporterUid: string;
+  reporterUsername: string;
+  category: ReportCategory;
+  reason: string;
+  status: ReportStatus;
+  reviewedBy?: string | null;
+  reviewedAt?: Timestamp | null;
+  adminNote?: string | null;
+  createdAt: Timestamp;
+}
+
+export interface CreateReportDTO {
+  postId: string;
+  threadId: string;
+  forumId: string;
+  reportedUid: string;
+  reportedUsername: string;
+  category: ReportCategory;
+  reason: string;
 }

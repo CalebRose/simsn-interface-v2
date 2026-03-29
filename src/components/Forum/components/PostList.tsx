@@ -3,6 +3,7 @@ import {
   Post,
   ForumPermissions,
   ReactionType,
+  CreateReportDTO,
 } from "../../../models/forumModels";
 import { PostCard } from "./PostCard";
 import { LoadSpinner } from "../../../_design/LoadSpinner";
@@ -14,11 +15,13 @@ interface PostListProps {
   currentUserId: string | null;
   permissions: ForumPermissions;
   isThreadLocked: boolean;
+  canBypassLock?: boolean;
   onReact: (postId: string, reaction: ReactionType) => void;
   onReply: (post: Post) => void;
   onQuote: (post: Post) => void;
   onEdit: (post: Post) => void;
   onDelete: (postId: string) => void;
+  onReport: (dto: CreateReportDTO) => Promise<void>;
 }
 
 export const PostList: React.FC<PostListProps> = ({
@@ -27,11 +30,13 @@ export const PostList: React.FC<PostListProps> = ({
   currentUserId,
   permissions,
   isThreadLocked,
+  canBypassLock = false,
   onReact,
   onReply,
   onQuote,
   onEdit,
   onDelete,
+  onReport,
 }) => {
   if (isLoading) return <LoadSpinner />;
 
@@ -52,11 +57,13 @@ export const PostList: React.FC<PostListProps> = ({
           currentUserId={currentUserId}
           permissions={permissions}
           isThreadLocked={isThreadLocked}
+          canBypassLock={canBypassLock}
           onReact={onReact}
           onReply={onReply}
           onQuote={onQuote}
           onEdit={onEdit}
           onDelete={onDelete}
+          onReport={onReport}
         />
       ))}
     </div>

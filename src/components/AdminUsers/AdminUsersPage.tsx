@@ -2,12 +2,15 @@ import { FC } from "react";
 import { useAdminUsersPage } from "./useAdminUsersPage";
 import { AdminUsersTable } from "./AdminUsersTable";
 import { ManageUserModal } from "./ManageUserModal";
+import { ForumReportsSection } from "./ForumReportsSection";
 import { PageContainer } from "../../_design/Container";
 import { Border } from "../../_design/Borders";
 import { Text } from "../../_design/Typography";
 import { Input, ToggleSwitch } from "../../_design/Inputs";
+import { useAuthStore } from "../../context/AuthContext";
 
 export const AdminUsersPage: FC = () => {
+  const { currentUser } = useAuthStore();
   const {
     filteredUsers,
     searchQuery,
@@ -71,6 +74,13 @@ export const AdminUsersPage: FC = () => {
             />
           )}
         </div>
+        {currentUser && (
+          <ForumReportsSection
+            currentAdminUsername={currentUser.username}
+            onOpenUserModal={openManageModal}
+            users={filteredUsers ?? []}
+          />
+        )}
       </PageContainer>
       {manageUserModal.isModalOpen && viewingUser && (
         <ManageUserModal

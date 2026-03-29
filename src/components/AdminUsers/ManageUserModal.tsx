@@ -75,6 +75,115 @@ const TeamRow: FC<TeamRowProps> = ({
   );
 };
 
+// ─── Forum Mute Controls ──────────────────────────────────────────────────────
+interface ForumMuteControlsProps {
+  user: CurrentUser & { id: string };
+  updateUser: (id: string, data: Partial<CurrentUser>) => Promise<void>;
+  setViewingUser: (user: CurrentUser | null) => void;
+  isBusy: boolean;
+  notify: (msg: string, variant: "success" | "error" | "warning") => void;
+}
+
+const ForumMuteControls: React.FC<ForumMuteControlsProps> = ({
+  user,
+  updateUser,
+  setViewingUser,
+  isBusy,
+  notify,
+}) => {
+  const [muteDays, setMuteDays] = useState("");
+  const [muteBusy, setMuteBusy] = useState(false);
+
+  const muteExpiresAt = user.forumMutedUntil
+    ? new Date(user.forumMutedUntil)
+    : null;
+  const isMuted = muteExpiresAt !== null && muteExpiresAt > new Date();
+
+  const handleApplyMute = async () => {
+    const days = parseInt(muteDays, 10);
+    if (isNaN(days) || days < 1 || days > 365) {
+      notify("Enter a valid number of days (1–365)", "error");
+      return;
+    }
+    setMuteBusy(true);
+    try {
+      const expires = new Date();
+      expires.setDate(expires.getDate() + days);
+      const iso = expires.toISOString();
+      await updateUser(user.id, { forumMutedUntil: iso });
+      setViewingUser({ ...user, forumMutedUntil: iso });
+      setMuteDays("");
+      notify(
+        `${user.username} muted for ${days} day${days === 1 ? "" : "s"} (until ${expires.toLocaleDateString()})`,
+        "warning",
+      );
+    } finally {
+      setMuteBusy(false);
+    }
+  };
+
+  const handleClearMute = async () => {
+    setMuteBusy(true);
+    try {
+      await updateUser(user.id, { forumMutedUntil: null });
+      setViewingUser({ ...user, forumMutedUntil: null });
+      notify(`${user.username}'s forum mute has been lifted`, "success");
+    } finally {
+      setMuteBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-y-3">
+      {isMuted ? (
+        <div className="flex flex-col gap-y-1">
+          <Text variant="body-small" classes="text-yellow-400">
+            🔇 Muted until{" "}
+            <span className="font-semibold">
+              {muteExpiresAt!.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          </Text>
+          <Button
+            variant="success"
+            size="sm"
+            disabled={isBusy || muteBusy}
+            onClick={handleClearMute}
+          >
+            <Text variant="small">Lift Mute</Text>
+          </Button>
+        </div>
+      ) : (
+        <Text variant="body-small" classes="text-gray-400">
+          No active mute.
+        </Text>
+      )}
+      <div className="flex items-center gap-2">
+        <input
+          type="number"
+          min={1}
+          max={365}
+          placeholder="Days"
+          value={muteDays}
+          onChange={(e) => setMuteDays(e.target.value)}
+          className="w-20 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+        />
+        <Button
+          variant="warning"
+          size="sm"
+          disabled={isBusy || muteBusy || !muteDays}
+          onClick={handleApplyMute}
+        >
+          <Text variant="small">{isMuted ? "Extend Mute" : "Mute User"}</Text>
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export const ManageUserModal: FC<ManageUserModalProps> = ({
   isOpen,
   onClose,
@@ -363,6 +472,16 @@ export const ManageUserModal: FC<ManageUserModalProps> = ({
           />
         </div>
       </div>
+
+      {/* ── Forum Moderation ── */}
+      <SectionHeading label="Forum Moderation" />
+      <ForumMuteControls
+        user={u}
+        updateUser={updateUser}
+        setViewingUser={setViewingUser}
+        isBusy={isBusy}
+        notify={notify}
+      />
 
       {/* ── Actions ── */}
       <SectionHeading label="Actions" />
