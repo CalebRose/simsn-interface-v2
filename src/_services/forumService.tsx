@@ -10,6 +10,7 @@ import {
   orderBy,
   limit,
   startAfter,
+  onSnapshot,
   serverTimestamp,
   DocumentSnapshot,
   QueryDocumentSnapshot,
@@ -71,6 +72,23 @@ export const ForumService = {
     return { id: d.id, ...d.data() } as Forum;
   },
 
+  // Use this for subforums — slug alone isn't unique across leagues
+  GetForumBySlugAndParent: async (
+    slug: string,
+    parentForumId: string,
+  ): Promise<Forum | null> => {
+    const q = query(
+      forumsCol(),
+      where("slug", "==", slug),
+      where("parentForumId", "==", parentForumId),
+      limit(1),
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const d = snap.docs[0];
+    return { id: d.id, ...d.data() } as Forum;
+  },
+
   GetForumById: async (id: string): Promise<Forum | null> => {
     const ref = doc(firestore, "forums", id);
     const snap = await getDoc(ref);
@@ -79,13 +97,11 @@ export const ForumService = {
   },
 
   GetSubforums: async (parentForumId: string): Promise<Forum[]> => {
-    const q = query(
-      forumsCol(),
-      where("parentForumId", "==", parentForumId),
-      orderBy("sortOrder", "asc"),
-    );
+    const q = query(forumsCol(), where("parentForumId", "==", parentForumId));
     const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Forum);
+    return snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }) as Forum)
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
   },
 
   // ─────────────────────────────────────────────
@@ -258,6 +274,21 @@ export const ForumService = {
   // ─────────────────────────────────────────────
   // Posts
   // ─────────────────────────────────────────────
+
+  SubscribeToThreadPosts: (
+    threadId: string,
+    onUpdate: (posts: Post[]) => void,
+  ): (() => void) => {
+    const q = query(
+      postsCol(),
+      where("threadId", "==", threadId),
+      orderBy("createdAt", "asc"),
+    );
+    return onSnapshot(q, (snap) => {
+      const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Post);
+      onUpdate(posts);
+    });
+  },
 
   GetPostsByThread: async (
     threadId: string,

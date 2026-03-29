@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Forum } from "../../../models/forumModels";
-import { Border } from "../../../_design/Borders";
+import { ForumBorder } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import routes from "../../../_constants/routes";
 
@@ -27,7 +27,7 @@ export const ForumCard: React.FC<ForumCardProps> = ({
   };
 
   return (
-    <Border classes="p-4 cursor-pointer hover:opacity-90 transition-opacity flex flex-col h-full">
+    <ForumBorder classes="p-4 cursor-pointer hover:opacity-90 transition-opacity flex flex-col h-full">
       {/* Top: name + description (clickable) */}
       <div
         className="flex flex-col flex-1 min-w-0"
@@ -99,6 +99,6 @@ export const ForumCard: React.FC<ForumCardProps> = ({
           </Text>
         )}
       </div>
-    </Border>
+    </ForumBorder>
   );
 };

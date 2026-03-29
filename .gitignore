@@ -1,5 +1,8 @@
 .env
 scripts/serviceAccountKey.json
+firebase.json
+firestore.rules
+
 
 # Logs
 logs

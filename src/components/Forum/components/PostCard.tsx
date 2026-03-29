@@ -5,7 +5,6 @@ import {
   REACTION_LABELS,
   RichTextDocument,
 } from "../../../models/forumModels";
-import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { Button } from "../../../_design/Buttons";
 import { RichTextRenderer } from "./RichTextRenderer";
@@ -74,7 +73,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   return (
     <div
       id={`post-${post.id}`}
-      className="flex flex-col py-3 px-3 border-b border-gray-700 last:border-b-0 gap-2"
+      className="flex flex-col py-3 px-3 border-b border-gray-800 last:border-b-0 gap-2"
     >
       {/* Header: author + timestamp */}
       <div className="flex items-start justify-between gap-2">

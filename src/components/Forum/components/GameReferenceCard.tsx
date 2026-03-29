@@ -1,6 +1,6 @@
 import React from "react";
 import { GameReference } from "../../../models/forumModels";
-import { Border } from "../../../_design/Borders";
+import { ForumBorder } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { useNavigate } from "react-router-dom";
 
@@ -25,7 +25,7 @@ export const GameReferenceCard: React.FC<GameReferenceCardProps> = ({
   const navigate = useNavigate();
 
   return (
-    <Border classes="p-2">
+    <ForumBorder classes="p-2">
       <div className="flex items-center gap-3">
         <div className="flex flex-col flex-1">
           <div className="flex items-center gap-2 mb-0.5">
@@ -62,6 +62,6 @@ export const GameReferenceCard: React.FC<GameReferenceCardProps> = ({
           </button>
         )}
       </div>
-    </Border>
+    </ForumBorder>
   );
 };
