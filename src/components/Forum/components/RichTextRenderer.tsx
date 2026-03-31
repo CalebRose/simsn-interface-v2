@@ -5,6 +5,7 @@ import {
   RichTextMark,
 } from "../../../models/forumModels";
 import { Text } from "../../../_design/Typography";
+import { removeForumFeatureImage } from "../forumUtils";
 
 // ─────────────────────────────────────────────
 // Safe JSON-to-component renderer.
@@ -15,6 +16,7 @@ interface RichTextRendererProps {
   document: RichTextDocument | null | undefined;
   /** Plain-text fallback when document is null/undefined */
   fallback?: string;
+  hideLeadingFeatureImage?: boolean;
 }
 
 function applyMarks(
@@ -281,8 +283,13 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
 export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   document,
   fallback,
+  hideLeadingFeatureImage = false,
 }) => {
-  if (!document) {
+  const renderedDocument = hideLeadingFeatureImage
+    ? removeForumFeatureImage(document)
+    : document;
+
+  if (!renderedDocument) {
     if (fallback) {
       return (
         <p className="leading-relaxed whitespace-pre-wrap break-words">
@@ -295,7 +302,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
 
   return (
     <div className="rich-text-content prose prose-invert max-w-none break-words text-left">
-      {renderNode(document, "root")}
+      {renderNode(renderedDocument, "root")}
     </div>
   );
 };
