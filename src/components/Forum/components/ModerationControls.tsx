@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Text } from "../../../_design/Typography";
 import { Button } from "../../../_design/Buttons";
 
@@ -36,36 +37,74 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
   onMove,
 }) => {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const hasActions = canEdit || canDelete || canLock || canPin || canMove;
-  if (!hasActions) return null;
+
+  const computePosition = useCallback(() => {
+    if (!wrapperRef.current) return;
+    const rect = wrapperRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const spaceBelow = viewportHeight - rect.bottom;
+    // Estimate dropdown height based on number of actions
+    const numActions =
+      (canEdit ? 1 : 0) +
+      (canDelete ? 1 : 0) +
+      (canLock ? 1 : 0) +
+      (canPin ? 1 : 0) +
+      (canMove ? 1 : 0);
+    const estimatedHeight = numActions * 36 + 12;
+
+    if (spaceBelow < estimatedHeight && rect.top > estimatedHeight) {
+      // Flip upward
+      setDropdownStyle({
+        position: "fixed",
+        bottom: viewportHeight - rect.top + 4,
+        right: window.innerWidth - rect.right,
+        width: "9rem",
+      });
+    } else {
+      // Below button, right-aligned
+      setDropdownStyle({
+        position: "fixed",
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+        width: "9rem",
+      });
+    }
+  }, [canEdit, canDelete, canLock, canPin, canMove]);
 
   // Close on outside click
   useEffect(() => {
+    if (!open) return;
     const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (
+        wrapperRef.current?.contains(e.target as Node) ||
+        dropdownRef.current?.contains(e.target as Node)
+      )
+        return;
+      setOpen(false);
     };
-    if (open) document.addEventListener("mousedown", handleClick);
+    document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  return (
-    <div className="relative" ref={ref}>
-      <Button
-        variant="secondaryOutline"
-        size="xs"
-        onClick={() => setOpen((v) => !v)}
-        aria-haspopup="true"
-        aria-expanded={open}
-      >
-        ···
-      </Button>
+  if (!hasActions) return null;
 
-      {open && (
-        <div className="absolute p-1 right-0 top-full mt-1 w-36 bg-gray-700 border border-gray-600 rounded shadow-lg z-20 py-1">
+  const handleToggle = () => {
+    if (!open) computePosition();
+    setOpen((v) => !v);
+  };
+
+  const dropdown = open
+    ? createPortal(
+        <div
+          ref={dropdownRef}
+          style={dropdownStyle}
+          className="p-1 bg-gray-700 border border-gray-600 rounded shadow-xl z-[9999] py-1"
+        >
           {canEdit && onEdit && (
             <button
               onClick={() => {
@@ -151,8 +190,23 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
               ↗ Move thread
             </button>
           )}
-        </div>
-      )}
+        </div>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <div className="relative" ref={wrapperRef}>
+      <Button
+        variant="secondaryOutline"
+        size="xs"
+        onClick={handleToggle}
+        aria-haspopup="true"
+        aria-expanded={open}
+      >
+        ···
+      </Button>
+      {dropdown}
     </div>
   );
 };
