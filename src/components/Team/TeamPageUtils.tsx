@@ -813,7 +813,10 @@ export const getNFLAttributes = (
             label: "Is Extended",
             value: !existingOffer ? false : existingOffer.IsAccepted,
           },
-          { label: "Is Tagged", value: nflContract.IsTagged },
+          {
+            label: "Is Tagged",
+            value: existingOffer?.IsTag || contract.IsTagged,
+          },
           { label: "IsOnTradeBlock", value: player.IsOnTradeBlock },
           { label: "PS", value: player.IsPracticeSquad },
           { label: "Personality", value: player.Personality },

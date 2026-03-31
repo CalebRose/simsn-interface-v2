@@ -969,6 +969,7 @@ export class NFLExtensionOffer {
   IsAccepted: boolean;
   IsActive: boolean;
   IsRejected: boolean;
+  IsTag: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -1000,6 +1001,7 @@ export class NFLExtensionOffer {
     this.IsAccepted = source["IsAccepted"];
     this.IsActive = source["IsActive"];
     this.IsRejected = source["IsRejected"];
+    this.IsTag = source["IsTag"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

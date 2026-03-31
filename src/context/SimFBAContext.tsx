@@ -2606,6 +2606,14 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
             UsedTagThisSeason: true,
           });
         });
+
+        setProExtensionMap((prev) => ({
+          ...prev,
+          [dto.PlayerID]: new NFLExtensionOffer({
+            IsActive: true,
+            IsTag: true,
+          }),
+        }));
       }
     },
     [nflTeam],
