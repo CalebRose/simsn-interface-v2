@@ -1,8 +1,10 @@
-import { ChangeEvent, useMemo } from "react";
+import { useMemo } from "react";
 import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -86,7 +88,7 @@ export const ProfilePage = () => {
             <Text variant="h6">
               Default League: {currentUser?.DefaultLeague || SimCFB}
             </Text>
-            <ButtonGroup classes="justify-center">
+            <ButtonGroup classes="justify-center pb-2">
               <PillButton
                 isSelected={currentUser?.DefaultLeague === SimCFB}
                 onClick={() => setDefaultLeague(SimCFB)}
@@ -134,6 +136,22 @@ export const ProfilePage = () => {
                 classes="w-[8rem]"
               >
                 {SimPHL}
+              </PillButton>
+              <PillButton
+                isSelected={currentUser?.DefaultLeague === SimCollegeBaseball}
+                onClick={() => setDefaultLeague(SimCollegeBaseball)}
+                variant="secondary"
+                classes="w-[8rem]"
+              >
+                SimCBL
+              </PillButton>
+              <PillButton
+                isSelected={currentUser?.DefaultLeague === SimMLB}
+                onClick={() => setDefaultLeague(SimMLB)}
+                variant="secondary"
+                classes="w-[8rem]"
+              >
+                {SimMLB}
               </PillButton>
             </ButtonGroup>
           </Border>
