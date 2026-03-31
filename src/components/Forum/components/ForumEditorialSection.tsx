@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import routes from "../../../_constants/routes";
 import { ForumBorder } from "../../../_design/Borders";
@@ -29,6 +29,12 @@ function formatRelativeTime(
   });
 }
 
+function formatEditorialSnippet(snippet: string): string {
+  const trimmed = snippet.trim();
+  if (!trimmed) return "";
+  return trimmed.endsWith("...") ? trimmed : `${trimmed}...`;
+}
+
 function isFeaturedCard(index: number): boolean {
   return index === 0;
 }
@@ -57,7 +63,7 @@ const EditorialCard: React.FC<{
 
   return (
     <ForumBorder
-      classes={`group relative min-w-0 overflow-hidden p-0 mb-0 transition-opacity hover:opacity-90 ${
+      classes={`group relative min-w-0 overflow-hidden p-0 mb-0 ${
         featured ? "min-h-[26rem] lg:row-span-2" : "min-h-[12.75rem]"
       }`}
     >
@@ -72,11 +78,14 @@ const EditorialCard: React.FC<{
           <div className="absolute inset-0 bg-black/45" />
         </>
       )}
+      <div className="pointer-events-none absolute inset-0 bg-slate-950/0 transition-colors duration-200 group-hover:bg-slate-950/30" />
 
       <button
         type="button"
         onClick={() => navigate(`${routes.FORUM_THREAD}/${item.thread.id}`)}
-        className="relative flex h-full w-full appearance-none cursor-pointer flex-col justify-between overflow-hidden border-0 bg-transparent p-0 text-left focus:outline-none"
+        className={`relative flex w-full appearance-none cursor-pointer flex-col justify-between overflow-hidden border-0 bg-transparent p-0 text-left focus:outline-none hover:bg-transparent hover:border-transparent lg:h-full ${
+          featured ? "min-h-[26rem] lg:min-h-0" : "min-h-[12.75rem] lg:min-h-0"
+        }`}
       >
         <div className="relative flex items-start justify-between gap-3 p-5 pb-0 lg:p-6 lg:pb-0">
           <div className="inline-flex items-center gap-2 rounded-md border-white/10 border bg-black/20 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-widest">
@@ -91,20 +100,24 @@ const EditorialCard: React.FC<{
         <div className="relative flex h-full flex-col justify-end gap-3 p-5 lg:p-6">
           <div className="space-y-2">
             <h3
-              className={`max-w-3xl font-semibold tracking-wide text-balance ${
+              className={`max-w-3xl font-semibold tracking-wide text-balance text-center lg:text-left ${
                 featured ? "text-3xl sm:text-4xl lg:text-5xl" : "text-2xl sm:text-3xl"
               }`}
-              style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+              style={{
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                textShadow: "0 3px 16px rgba(0, 0, 0, 0.55)",
+              }}
             >
               {item.thread.title}
             </h3>
             {item.thread.contentPreview && (
               <p
-                className={`line-clamp-2 text-white/78 ${
+                className={`hidden line-clamp-3 text-white/78 sm:block ${
                   featured ? "max-w-2xl text-sm sm:text-base" : "max-w-xl text-sm"
                 }`}
+                style={{ textShadow: "0 3px 14px rgba(0, 0, 0, 0.5)" }}
               >
-                {item.thread.contentPreview}
+                {formatEditorialSnippet(item.thread.contentPreview)}
               </p>
             )}
           </div>
@@ -135,12 +148,71 @@ export const ForumEditorialSection: React.FC<ForumEditorialSectionProps> = ({
   isLoading = false,
 }) => {
   const visibleItems = items.slice(0, 3);
+  const [mobileIndex, setMobileIndex] = useState(0);
+
+  useEffect(() => {
+    setMobileIndex(0);
+  }, [visibleItems.length]);
 
   if (!isLoading && items.length === 0) return null;
 
   return (
     <section className="mb-8 w-full">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:grid-rows-2">
+      <div className="lg:hidden">
+        {isLoading && visibleItems.length === 0 ? (
+          <SkeletonCard index={0} />
+        ) : visibleItems.length > 0 ? (
+          <div className="space-y-3">
+            <EditorialCard
+              key={visibleItems[mobileIndex].thread.id}
+              item={visibleItems[mobileIndex]}
+              index={0}
+            />
+
+            {visibleItems.length > 1 && (
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMobileIndex((prev) =>
+                      prev === 0 ? visibleItems.length - 1 : prev - 1,
+                    )
+                  }
+                  className="rounded-md border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-3 py-1.5 text-sm text-white/80 transition-opacity hover:opacity-90"
+                >
+                  Prev
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {visibleItems.map((item, index) => (
+                    <button
+                      key={item.thread.id}
+                      type="button"
+                      onClick={() => setMobileIndex(index)}
+                      aria-label={`Go to editorial item ${index + 1}`}
+                      className={`h-2.5 w-2.5 rounded-full transition-opacity ${
+                        index === mobileIndex ? "bg-white" : "bg-white/30"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMobileIndex((prev) => (prev + 1) % visibleItems.length)
+                  }
+                  className="rounded-md border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-3 py-1.5 text-sm text-white/80 transition-opacity hover:opacity-90"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="hidden grid-cols-1 gap-4 lg:grid lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:grid-rows-2">
         {isLoading && visibleItems.length === 0
           ? Array.from({ length: 3 }, (_, index) => (
               <SkeletonCard key={index} index={index} />

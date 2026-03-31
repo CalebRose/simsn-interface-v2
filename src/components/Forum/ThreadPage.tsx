@@ -244,7 +244,7 @@ export const ThreadPage: React.FC = () => {
                   )}
                 </div>
                 <h1
-                  className="max-w-5xl text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-wide text-balance"
+                  className="max-w-5xl text-2xl sm:text-4xl lg:text-5xl font-semibold tracking-wide text-balance"
                   style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
                 >
                   {activeThread.title}
