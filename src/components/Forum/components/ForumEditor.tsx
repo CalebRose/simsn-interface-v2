@@ -133,12 +133,20 @@ const MentionExtension = Mention.extend({
         if (!wrapper || !clientRect) return;
         const rect = clientRect();
         if (!rect) return;
-        const top = rect.bottom + 4;
-        const left = rect.left;
-        // Keep within viewport horizontally
+        const DROPDOWN_EST_HEIGHT = 300;
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
         const maxLeft = window.innerWidth - 280;
-        wrapper.style.top = `${top}px`;
-        wrapper.style.left = `${Math.min(left, maxLeft)}px`;
+        const left = Math.min(rect.left, maxLeft);
+        wrapper.style.left = `${left}px`;
+        if (spaceBelow < DROPDOWN_EST_HEIGHT && spaceAbove > spaceBelow) {
+          // Flip above the caret when there isn't enough room below
+          wrapper.style.top = "auto";
+          wrapper.style.bottom = `${window.innerHeight - rect.top + 4}px`;
+        } else {
+          wrapper.style.top = `${rect.bottom + 4}px`;
+          wrapper.style.bottom = "auto";
+        }
       };
 
       return {

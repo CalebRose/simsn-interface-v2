@@ -304,7 +304,7 @@ export const SideMenu = ({}) => {
 
                 {/* Notification Dropdown */}
                 {isNotifOpen && (
-                  <div className="absolute right-0 z-50 mt-2 w-80 max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800">
+                  <div className="absolute right-0 z-50 mt-2 w-[420px] max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800">
                     <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-600">
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         Notifications

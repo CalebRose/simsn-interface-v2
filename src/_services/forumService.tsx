@@ -822,18 +822,33 @@ export const ForumService = {
   ): Promise<{ uid: string; username: string }[]> => {
     if (!prefix) return [];
     const lower = prefix.toLowerCase();
+    const capitalized = lower.charAt(0).toUpperCase() + lower.slice(1);
     const usersCol = collection(firestore, "users");
-    const q = query(
-      usersCol,
-      where("username", ">=", lower),
-      where("username", "<", lower + "\uf8ff"),
-      limit(maxResults),
-    );
-    const snap = await getDocs(q);
-    return snap.docs.map((d) => ({
-      uid: d.id,
-      username: d.data().username as string,
-    }));
+    const makeRangeQuery = (p: string) =>
+      query(
+        usersCol,
+        where("username", ">=", p),
+        where("username", "<", p + "\uf8ff"),
+        limit(maxResults),
+      );
+    // Run both lowercase and capitalized-first queries in parallel so usernames
+    // stored with any common casing (all-lower or Title-case) are all found.
+    const queryPairs = [getDocs(makeRangeQuery(lower))];
+    if (capitalized !== lower) {
+      queryPairs.push(getDocs(makeRangeQuery(capitalized)));
+    }
+    const snaps = await Promise.all(queryPairs);
+    const seen = new Set<string>();
+    const results: { uid: string; username: string }[] = [];
+    for (const snap of snaps) {
+      for (const d of snap.docs) {
+        if (!seen.has(d.id)) {
+          seen.add(d.id);
+          results.push({ uid: d.id, username: d.data().username as string });
+        }
+      }
+    }
+    return results.slice(0, maxResults);
   },
 
   // ─────────────────────────────────────────────
