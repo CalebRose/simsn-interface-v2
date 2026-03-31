@@ -96,7 +96,7 @@ export const ForumCategoryPage: React.FC = () => {
         <ForumBreadcrumbs crumbs={crumbs} />
 
         <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
-          <div className="text-start">
+          <div className="text-start justify-start">
             <Text variant="h4">{forum?.name ?? forumSlug}</Text>
             {forum?.description && (
               <Text variant="secondary" classes="mt-0.5">
@@ -138,7 +138,7 @@ export const ForumCategoryPage: React.FC = () => {
               >
                 <ForumBorder classes="p-3 hover:opacity-90 transition-opacity mb-0">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="flex flex-col">
+                    <div className="flex flex-col text-start">
                       <Text variant="body-small" classes="font-semibold">
                         {sf.name}
                       </Text>

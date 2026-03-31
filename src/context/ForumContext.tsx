@@ -71,6 +71,7 @@ export function derivePermissions(role: ForumRole): ForumPermissions {
     canEditAnyPost: isCommish,
     canPinThread: isAdmin,
     canManageForums: isAdmin,
+    canMoveAnyThread: isCommish,
   };
 }
 
@@ -115,6 +116,11 @@ interface ForumContextProps {
   pinThread: (threadId: string) => Promise<void>;
   unpinThread: (threadId: string) => Promise<void>;
   softDeleteThread: (threadId: string, reason?: string) => Promise<void>;
+  moveThread: (
+    threadId: string,
+    newForumId: string,
+    reason?: string,
+  ) => Promise<void>;
   submitPollVote: (
     pollId: string,
     selectedOptionIds: string[],
@@ -166,6 +172,7 @@ const defaultForumContext: ForumContextProps = {
   pinThread: async () => {},
   unpinThread: async () => {},
   softDeleteThread: async () => {},
+  moveThread: async () => {},
   submitPollVote: async () => {},
   togglePoll: async () => {},
   reactToPost: async () => {},
@@ -213,15 +220,38 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   const PAGE_SIZE = 25;
 
   const postsUnsubscribeRef = useRef<(() => void) | null>(null);
+  const notificationsUnsubscribeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     setCurrentUserState(initialUser);
   }, [initialUser]);
 
-  // Tear down posts subscription on unmount
+  // Subscribe to notifications in real-time whenever currentUser changes
+  useEffect(() => {
+    notificationsUnsubscribeRef.current?.();
+    notificationsUnsubscribeRef.current = null;
+
+    if (!initialUser?.id) {
+      setNotifications([]);
+      return;
+    }
+
+    notificationsUnsubscribeRef.current = ForumService.SubscribeToNotifications(
+      initialUser.id,
+      (incoming) => setNotifications(incoming),
+    );
+
+    return () => {
+      notificationsUnsubscribeRef.current?.();
+      notificationsUnsubscribeRef.current = null;
+    };
+  }, [initialUser?.id]);
+
+  // Tear down all subscriptions on unmount
   useEffect(() => {
     return () => {
       postsUnsubscribeRef.current?.();
+      notificationsUnsubscribeRef.current?.();
     };
   }, []);
 
@@ -373,13 +403,24 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
       if (!currentUserState) return null;
       try {
         const logoUrl = getUserLogoUrl(currentUserState);
-        const { threadId } = await ForumService.CreateThread(
+        const { threadId, postId } = await ForumService.CreateThread(
           dto,
           currentUserState.id,
           currentUserState.username,
           currentUserState.username,
           logoUrl || undefined,
         );
+        // Send mention notifications for the opening post (fire-and-forget)
+        if (dto.mentions && dto.mentions.length > 0) {
+          ForumService.SendMentionNotifications(
+            dto.mentions,
+            currentUserState.id,
+            currentUserState.username,
+            threadId,
+            postId,
+            dto.title,
+          ).catch(console.error);
+        }
         return threadId;
       } catch (err) {
         console.error("ForumContext.createThread:", err);
@@ -403,6 +444,17 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
           currentUserState.username,
           logoUrl || undefined,
         );
+        // Send mention notifications (fire-and-forget)
+        if (postId && dto.mentions && dto.mentions.length > 0 && activeThread) {
+          ForumService.SendMentionNotifications(
+            dto.mentions,
+            currentUserState.id,
+            currentUserState.username,
+            dto.threadId,
+            postId,
+            activeThread.title,
+          ).catch(console.error);
+        }
         // onSnapshot listener handles state update automatically
         return postId;
       } catch (err) {
@@ -410,7 +462,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         return null;
       }
     },
-    [currentUserState],
+    [currentUserState, activeThread],
   );
 
   // ─── Update Post ─────────────────────────────
@@ -518,6 +570,23 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
       setPinnedThreads((prev) => prev.filter((t) => t.id !== threadId));
     },
     [currentUserState],
+  );
+
+  const moveThread = useCallback(
+    async (threadId: string, newForumId: string, reason?: string) => {
+      if (!currentUserState) return;
+      await ForumService.MoveThread(
+        threadId,
+        newForumId,
+        forums,
+        buildPerformedBy(),
+        reason,
+      );
+      // Re-fetch updated thread so breadcrumbs / forumPath reflect the move
+      const updated = await ForumService.GetThreadById(threadId);
+      setActiveThread(updated);
+    },
+    [currentUserState, forums],
   );
 
   // ─── Poll Voting ─────────────────────────────
@@ -656,6 +725,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         pinThread,
         unpinThread,
         softDeleteThread,
+        moveThread,
         submitPollVote,
         togglePoll,
         reactToPost,

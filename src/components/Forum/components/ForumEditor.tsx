@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, ReactRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
@@ -10,9 +10,17 @@ import { Table } from "@tiptap/extension-table";
 import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
-import { RichTextDocument, PostMention } from "../../../models/forumModels";
+import Mention from "@tiptap/extension-mention";
+import { mergeAttributes } from "@tiptap/core";
+import {
+  RichTextDocument,
+  RichTextNode,
+  PostMention,
+} from "../../../models/forumModels";
 import { Button } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
+import { MentionList, MentionListHandle } from "./MentionList";
+import { ForumService } from "../../../_services/forumService";
 
 // ─────────────────────────────────────────────
 // ForumEditor – TipTap rich text editor.
@@ -58,6 +66,115 @@ export function docToPlaintext(doc: RichTextDocument): string {
   }
   return doc.content.map(extractText).join("\n");
 }
+
+/** Extracts unique PostMention objects from a RichTextDocument. */
+function extractMentionsFromDoc(doc: RichTextDocument): PostMention[] {
+  const mentions: PostMention[] = [];
+  const walk = (node: RichTextNode) => {
+    if (node.type === "mention" && node.attrs?.uid && node.attrs?.username) {
+      mentions.push({
+        uid: node.attrs.uid as string,
+        username: node.attrs.username as string,
+      });
+    }
+    node.content?.forEach(walk);
+  };
+  doc.content.forEach(walk);
+  return mentions.filter(
+    (m, i, arr) => arr.findIndex((x) => x.uid === m.uid) === i,
+  );
+}
+
+// Mention extension extended with uid/username attrs
+const MentionExtension = Mention.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      uid: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("data-uid"),
+        renderHTML: (attrs) => (attrs.uid ? { "data-uid": attrs.uid } : {}),
+      },
+      username: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("data-username"),
+        renderHTML: (attrs) =>
+          attrs.username ? { "data-username": attrs.username } : {},
+      },
+    };
+  },
+  renderHTML({ node, HTMLAttributes: baseAttrs }) {
+    return [
+      "span",
+      mergeAttributes(
+        { class: "mention-chip", "data-type": "mention" },
+        baseAttrs,
+      ),
+      `@${(node.attrs.username as string) ?? ""}`,
+    ];
+  },
+}).configure({
+  suggestion: {
+    items: async ({ query }: { query: string }) => {
+      if (!query || query.trim().length === 0) return [];
+      try {
+        return await ForumService.SearchUsersByPrefix(query.trim());
+      } catch {
+        return [];
+      }
+    },
+    render: () => {
+      let renderer: ReactRenderer<MentionListHandle>;
+      let wrapper: HTMLDivElement;
+
+      const positionWrapper = (
+        clientRect: (() => DOMRect | null) | null | undefined,
+      ) => {
+        if (!wrapper || !clientRect) return;
+        const rect = clientRect();
+        if (!rect) return;
+        const top = rect.bottom + 4;
+        const left = rect.left;
+        // Keep within viewport horizontally
+        const maxLeft = window.innerWidth - 280;
+        wrapper.style.top = `${top}px`;
+        wrapper.style.left = `${Math.min(left, maxLeft)}px`;
+      };
+
+      return {
+        onStart(props) {
+          wrapper = document.createElement("div");
+          wrapper.style.position = "fixed";
+          wrapper.style.zIndex = "9999";
+          document.body.appendChild(wrapper);
+
+          renderer = new ReactRenderer(MentionList, {
+            props,
+            editor: props.editor,
+          });
+          wrapper.appendChild(renderer.element);
+          positionWrapper(props.clientRect);
+        },
+        onUpdate(props) {
+          renderer.updateProps(props);
+          positionWrapper(props.clientRect);
+        },
+        onKeyDown(props) {
+          if (props.event.key === "Escape") {
+            wrapper?.remove();
+            renderer?.destroy();
+            return true;
+          }
+          return renderer.ref?.onKeyDown(props.event) ?? false;
+        },
+        onExit() {
+          wrapper?.remove();
+          renderer?.destroy();
+        },
+      };
+    },
+  },
+});
 
 const MAX_DEFAULT = 10000;
 
@@ -130,6 +247,7 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
       TableRow,
       TableCell,
       TableHeader,
+      MentionExtension,
     ],
     content: initialContent,
     onCreate: ({ editor }) => {
@@ -158,7 +276,8 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
     if (!editor || editor.isEmpty || isSubmitting) return;
     const json = editor.getJSON() as RichTextDocument;
     const text = editor.getText({ blockSeparator: "\n" });
-    onSubmit(json, text, []);
+    const mentions = extractMentionsFromDoc(json);
+    onSubmit(json, text, mentions);
     editor.commands.clearContent(true);
   }, [editor, isSubmitting, onSubmit]);
 

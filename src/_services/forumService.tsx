@@ -19,6 +19,7 @@ import {
   setDoc,
   Timestamp,
 } from "firebase/firestore";
+import type { PostMention } from "../models/forumModels";
 import { firestore } from "../firebase/firebase";
 import {
   Forum,
@@ -542,6 +543,84 @@ export const ForumService = {
     );
   },
 
+  MoveThread: async (
+    threadId: string,
+    newForumId: string,
+    forums: { id: string; slug: string; parentForumId?: string | null }[],
+    performedBy: { uid: string; username: string },
+    reason?: string,
+  ): Promise<void> => {
+    const threadRef = doc(firestore, "threads", threadId);
+    const threadSnap = await getDoc(threadRef);
+    if (!threadSnap.exists()) throw new Error("Thread not found");
+
+    const thread = { id: threadSnap.id, ...threadSnap.data() } as unknown as {
+      forumId: string;
+      forumPath: string[];
+      replyCount: number;
+    };
+
+    const oldForumId = thread.forumId;
+    if (oldForumId === newForumId) return; // no-op
+
+    // Build forumPath for the target forum
+    const targetForum = forums.find((f) => f.id === newForumId);
+    if (!targetForum) throw new Error("Target forum not found");
+    const newForumPath = targetForum.parentForumId
+      ? [
+          forums.find((f) => f.id === targetForum.parentForumId)?.slug ?? "",
+          targetForum.slug,
+        ]
+      : [targetForum.slug];
+
+    const postCount = (thread.replyCount ?? 0) + 1;
+    const now = serverTimestamp();
+
+    const batch = writeBatch(firestore);
+
+    // Update thread
+    batch.update(threadRef, {
+      forumId: newForumId,
+      forumPath: newForumPath,
+      updatedAt: now,
+    });
+
+    // Update all posts in the thread
+    const postsSnap = await getDocs(
+      query(postsCol(), where("threadId", "==", threadId)),
+    );
+    for (const postDoc of postsSnap.docs) {
+      batch.update(postDoc.ref, { forumId: newForumId, updatedAt: now });
+    }
+
+    // Decrement old forum counters
+    const oldForumRef = doc(firestore, "forums", oldForumId);
+    batch.update(oldForumRef, {
+      threadCount: increment(-1),
+      postCount: increment(-postCount),
+      updatedAt: now,
+    });
+
+    // Increment new forum counters
+    const newForumRef = doc(firestore, "forums", newForumId);
+    batch.update(newForumRef, {
+      threadCount: increment(1),
+      postCount: increment(postCount),
+      latestActivityAt: now,
+      updatedAt: now,
+    });
+
+    await batch.commit();
+
+    await ForumService._writeModerationLog(
+      "thread",
+      threadId,
+      "move",
+      performedBy,
+      reason ?? `Moved from ${oldForumId} to ${newForumId}`,
+    );
+  },
+
   _writeModerationLog: async (
     targetType: "thread" | "post" | "forum",
     targetId: string,
@@ -731,5 +810,93 @@ export const ForumService = {
   ): Promise<void> => {
     const ref = doc(firestore, "postReports", id);
     await updateDoc(ref, { ...data });
+  },
+
+  // ─────────────────────────────────────────────
+  // User Search (for @mention autocomplete)
+  // ─────────────────────────────────────────────
+
+  SearchUsersByPrefix: async (
+    prefix: string,
+    maxResults = 8,
+  ): Promise<{ uid: string; username: string }[]> => {
+    if (!prefix) return [];
+    const lower = prefix.toLowerCase();
+    const usersCol = collection(firestore, "users");
+    const q = query(
+      usersCol,
+      where("username", ">=", lower),
+      where("username", "<", lower + "\uf8ff"),
+      limit(maxResults),
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({
+      uid: d.id,
+      username: d.data().username as string,
+    }));
+  },
+
+  // ─────────────────────────────────────────────
+  // Mention Notifications
+  // ─────────────────────────────────────────────
+
+  SendMentionNotifications: async (
+    mentions: PostMention[],
+    actorUid: string,
+    actorUsername: string,
+    threadId: string,
+    postId: string,
+    threadTitle: string,
+  ): Promise<void> => {
+    if (!mentions || mentions.length === 0) return;
+    const now = serverTimestamp();
+    const unique = mentions.filter(
+      (m, i, arr) =>
+        m.uid !== actorUid && arr.findIndex((x) => x.uid === m.uid) === i,
+    );
+    await Promise.all(
+      unique.map((m) =>
+        addDoc(collection(firestore, "notifications"), {
+          uid: m.uid,
+          type: "mention",
+          threadId,
+          postId,
+          actorUid,
+          actorUsername,
+          message: `@${actorUsername} mentioned you in "${threadTitle}"`,
+          isRead: false,
+          createdAt: now,
+        }),
+      ),
+    );
+  },
+
+  // ─────────────────────────────────────────────
+  // Real-time Notification Subscription
+  // ─────────────────────────────────────────────
+
+  SubscribeToNotifications: (
+    uid: string,
+    onUpdate: (
+      notifications: import("../models/forumModels").ForumNotification[],
+    ) => void,
+    maxResults = 30,
+  ): (() => void) => {
+    const q = query(
+      collection(firestore, "notifications"),
+      where("uid", "==", uid),
+      orderBy("createdAt", "desc"),
+      limit(maxResults),
+    );
+    return onSnapshot(q, (snap) => {
+      const notifications = snap.docs.map(
+        (d) =>
+          ({
+            id: d.id,
+            ...d.data(),
+          }) as import("../models/forumModels").ForumNotification,
+      );
+      onUpdate(notifications);
+    });
   },
 };
