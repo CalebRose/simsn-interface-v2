@@ -22,6 +22,9 @@ import {
 import type { PostMention } from "../models/forumModels";
 import { firestore } from "../firebase/firebase";
 import {
+  parseForumBody,
+} from "../components/Forum/forumUtils";
+import {
   Forum,
   Thread,
   Post,
@@ -173,6 +176,7 @@ export const ForumService = {
     logoUrl?: string,
   ): Promise<{ threadId: string; postId: string }> => {
     const now = serverTimestamp();
+    const parsedBody = parseForumBody(dto.body);
     const slug = dto.title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -193,7 +197,7 @@ export const ForumService = {
       author: authorSnapshot,
       editorVersion: 1,
       body: dto.body,
-      bodyText: dto.bodyText,
+      bodyText: parsedBody.bodyTextWithoutFeatureImage,
       quotedPostId: null,
       replyToPostId: null,
       mentions: [],
@@ -216,7 +220,8 @@ export const ForumService = {
       title: dto.title,
       slug,
       author: authorSnapshot,
-      contentPreview: dto.bodyText.slice(0, 200),
+      contentPreview: parsedBody.previewWithoutFeatureImage,
+      featureImageUrl: parsedBody.featureImageUrl,
       firstPostId: postRef.id,
       isPinned: false,
       isLocked: false,
@@ -398,9 +403,32 @@ export const ForumService = {
     editorUid: string,
   ): Promise<void> => {
     const ref = doc(firestore, "posts", postId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+
+    const existingPost = { id: snap.id, ...snap.data() } as Post;
+    let nextBodyText = dto.bodyText;
+
+    if (existingPost.threadId) {
+      const threadRef = doc(firestore, "threads", existingPost.threadId);
+      const threadSnap = await getDoc(threadRef);
+      if (threadSnap.exists()) {
+        const thread = { id: threadSnap.id, ...threadSnap.data() } as Thread;
+        if (thread.firstPostId === postId) {
+          const parsedBody = parseForumBody(dto.body);
+          nextBodyText = parsedBody.bodyTextWithoutFeatureImage;
+          await updateDoc(threadRef, {
+            contentPreview: parsedBody.previewWithoutFeatureImage,
+            featureImageUrl: parsedBody.featureImageUrl,
+            updatedAt: serverTimestamp(),
+          });
+        }
+      }
+    }
+
     await updateDoc(ref, {
       body: dto.body,
-      bodyText: dto.bodyText,
+      bodyText: nextBodyText,
       mentions: dto.mentions ?? [],
       isEdited: true,
       editedAt: serverTimestamp(),

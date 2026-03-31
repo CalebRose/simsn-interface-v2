@@ -50,7 +50,7 @@ export const PostList: React.FC<PostListProps> = ({
 
   return (
     <div className="flex flex-col">
-      {posts.map((post) => (
+      {posts.map((post, index) => (
         <PostCard
           key={post.id}
           post={post}
@@ -58,6 +58,7 @@ export const PostList: React.FC<PostListProps> = ({
           permissions={permissions}
           isThreadLocked={isThreadLocked}
           canBypassLock={canBypassLock}
+          hideLeadingFeatureImage={index === 0}
           onReact={onReact}
           onReply={onReply}
           onQuote={onQuote}

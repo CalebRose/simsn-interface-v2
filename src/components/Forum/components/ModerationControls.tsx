@@ -65,7 +65,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
       </Button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-36 bg-gray-800 border border-gray-600 rounded shadow-lg z-20 py-1">
+        <div className="absolute p-1 right-0 top-full mt-1 w-36 bg-gray-700 border border-gray-600 rounded shadow-lg z-20 py-1">
           {canEdit && onEdit && (
             <button
               onClick={() => {
@@ -85,7 +85,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
               }}
               className="w-full text-left text-sm px-3 py-1.5 text-red-400 hover:bg-gray-700 transition-colors"
             >
-              Delete
+              ❌ Delete
             </button>
           )}
           {canLock && (

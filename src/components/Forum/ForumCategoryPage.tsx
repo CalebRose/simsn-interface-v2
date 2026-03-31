@@ -121,7 +121,7 @@ export const ForumCategoryPage: React.FC = () => {
 
         {/* Subforums — shown when viewing a top-level forum */}
         {subforums.length > 0 && (
-          <div className="flex flex-col gap-2 mb-4">
+          <div className="grid grid-cols-1 gap-2 mb-4 md:grid-cols-2">
             {subforums.map((sf) => (
               <div
                 key={sf.id}

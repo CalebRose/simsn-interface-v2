@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
@@ -22,6 +22,7 @@ import {
   CreatePostDTO,
 } from "../../models/forumModels";
 import { plaintextToDoc } from "./components/ForumEditor";
+import { parseForumBody } from "./forumUtils";
 import routes from "../../_constants/routes";
 import { MEDIA_TAG_MAP, MediaTag } from "../../_constants/mediaTags";
 
@@ -195,6 +196,12 @@ export const ThreadPage: React.FC = () => {
   const isLocked = activeThread?.isLocked ?? false;
   const isAdmin = permissions.canLockThread;
   const canReply = permissions.canReply && (!isLocked || isAdmin);
+  const threadHeroImageUrl = useMemo(() => {
+    if (!activeThread) return null;
+    if (activeThread.featureImageUrl) return activeThread.featureImageUrl;
+    const firstPost = posts.find((post) => post.id === activeThread.firstPostId);
+    return parseForumBody(firstPost?.body).featureImageUrl;
+  }, [activeThread, posts]);
 
   return (
     <PageContainer isLoading={!activeThread && postsLoading} title="">
@@ -203,10 +210,55 @@ export const ThreadPage: React.FC = () => {
 
         {/* Thread header */}
         {activeThread && (
-          <ForumBorder classes="p-3 mb-3">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex flex-col flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
+          <ForumBorder
+            classes={`relative overflow-hidden p-0 mb-3 ${
+              threadHeroImageUrl ? "min-h-[20rem] sm:min-h-[24rem]" : ""
+            }`}
+          >
+            {threadHeroImageUrl && (
+              <>
+                <img
+                  src={threadHeroImageUrl}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover object-top"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-black/45" />
+              </>
+            )}
+            <div
+              className={`relative ${
+                threadHeroImageUrl
+                  ? "flex min-h-[20rem] flex-col justify-end p-5 sm:min-h-[38rem] sm:p-6 lg:p-6"
+                  : "p-3 sm:p-4 lg:p-5"
+              }`}
+            >
+              <div className="absolute right-3 top-3 sm:right-4 sm:top-4 lg:right-5 lg:top-5">
+              <ModerationControls
+                canEdit={false}
+                canDelete={permissions.canDeleteAnyPost}
+                canLock={permissions.canLockThread}
+                canPin={permissions.canPinThread}
+                canMove={
+                  permissions.canMoveAnyThread ||
+                  (!!currentUser && currentUser.id === activeThread.author.uid)
+                }
+                isLocked={isLocked}
+                isPinned={activeThread.isPinned}
+                onDelete={() => setShowDeleteConfirm("__thread__")}
+                onLock={() => lockThread(activeThread.id)}
+                onUnlock={() => unlockThread(activeThread.id)}
+                onPin={() => pinThread(activeThread.id)}
+                onUnpin={() => unpinThread(activeThread.id)}
+                onMove={() => {
+                  setMoveTargetForumId(activeThread.forumId);
+                  setShowMoveModal(true);
+                }}
+              />
+              </div>
+
+              <div className="flex min-w-0 flex-col items-center text-center">
+                <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
                   {activeThread.isPinned && (
                     <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded">
                       Pinned
@@ -235,35 +287,22 @@ export const ThreadPage: React.FC = () => {
                     );
                   })}
                 </div>
-                <Text variant="h5">{activeThread.title}</Text>
-                <Text variant="small" classes="text-gray-400 mt-0.5">
+                <h1
+                  className="max-w-5xl text-2xl sm:text-4xl lg:text-5xl font-semibold tracking-wide text-balance"
+                  style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}
+                >
+                  {activeThread.title}
+                </h1>
+                <Text
+                  variant="small"
+                  classes={threadHeroImageUrl ? "mt-1 text-white/70" : "mt-1 text-gray-400"}
+                >
                   {activeThread.replyCount} repl
                   {activeThread.replyCount !== 1 ? "ies" : "y"} · started by{" "}
                   {activeThread.author.username}
                 </Text>
               </div>
 
-              <ModerationControls
-                canEdit={false}
-                canDelete={permissions.canDeleteAnyPost}
-                canLock={permissions.canLockThread}
-                canPin={permissions.canPinThread}
-                canMove={
-                  permissions.canMoveAnyThread ||
-                  (!!currentUser && currentUser.id === activeThread.author.uid)
-                }
-                isLocked={isLocked}
-                isPinned={activeThread.isPinned}
-                onDelete={() => setShowDeleteConfirm("__thread__")}
-                onLock={() => lockThread(activeThread.id)}
-                onUnlock={() => unlockThread(activeThread.id)}
-                onPin={() => pinThread(activeThread.id)}
-                onUnpin={() => unpinThread(activeThread.id)}
-                onMove={() => {
-                  setMoveTargetForumId(activeThread.forumId);
-                  setShowMoveModal(true);
-                }}
-              />
             </div>
           </ForumBorder>
         )}

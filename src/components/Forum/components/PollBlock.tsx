@@ -98,7 +98,7 @@ export const PollBlock: React.FC<PollBlockProps> = ({
         📊 {poll.question}
       </Text>
 
-      <div className="flex flex-col gap-2">
+      <div className="mx-auto flex w-full max-w-xl flex-col gap-2">
         {poll.options.map((option) => {
           const pct = getPercentage(option.voteCount);
           const isUserChoice = userVote?.selectedOptionIds.includes(option.id);

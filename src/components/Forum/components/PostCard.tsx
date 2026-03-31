@@ -20,6 +20,7 @@ interface PostCardProps {
   permissions: ForumPermissions;
   isThreadLocked: boolean;
   canBypassLock?: boolean;
+  hideLeadingFeatureImage?: boolean;
   onReact: (postId: string, reaction: ReactionType) => void;
   onReply: (post: Post) => void;
   onQuote: (post: Post) => void;
@@ -45,6 +46,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   permissions,
   isThreadLocked,
   canBypassLock = false,
+  hideLeadingFeatureImage = false,
   onReact,
   onReply,
   onQuote,
@@ -134,6 +136,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         <RichTextRenderer
           document={post.body as RichTextDocument}
           fallback={post.bodyText}
+          hideLeadingFeatureImage={hideLeadingFeatureImage}
         />
       </div>
 

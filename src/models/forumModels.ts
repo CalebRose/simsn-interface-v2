@@ -97,6 +97,7 @@ export interface Thread {
   slug: string;
   author: ThreadAuthor;
   contentPreview: string;
+  featureImageUrl?: string | null;
   firstPostId: string;
   isPinned: boolean;
   isLocked: boolean;
