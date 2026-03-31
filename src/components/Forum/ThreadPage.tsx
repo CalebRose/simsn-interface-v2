@@ -25,6 +25,7 @@ import { plaintextToDoc } from "./components/ForumEditor";
 import { parseForumBody } from "./forumUtils";
 import routes from "../../_constants/routes";
 import { MEDIA_TAG_MAP, MediaTag } from "../../_constants/mediaTags";
+import { ThreadSEOMeta } from "./components/ThreadSEOMeta";
 
 interface Params {
   threadId: string;
@@ -199,12 +200,17 @@ export const ThreadPage: React.FC = () => {
   const threadHeroImageUrl = useMemo(() => {
     if (!activeThread) return null;
     if (activeThread.featureImageUrl) return activeThread.featureImageUrl;
-    const firstPost = posts.find((post) => post.id === activeThread.firstPostId);
+    const firstPost = posts.find(
+      (post) => post.id === activeThread.firstPostId,
+    );
     return parseForumBody(firstPost?.body).featureImageUrl;
   }, [activeThread, posts]);
 
   return (
     <PageContainer isLoading={!activeThread && postsLoading} title="">
+      {activeThread && (
+        <ThreadSEOMeta thread={activeThread} threadId={threadId} />
+      )}
       <div className="flex flex-col w-[90vw] lg:w-[80vw]">
         <ForumBreadcrumbs crumbs={crumbs} />
 
@@ -234,27 +240,28 @@ export const ThreadPage: React.FC = () => {
               }`}
             >
               <div className="absolute right-3 top-3 sm:right-4 sm:top-4 lg:right-5 lg:top-5">
-              <ModerationControls
-                canEdit={false}
-                canDelete={permissions.canDeleteAnyPost}
-                canLock={permissions.canLockThread}
-                canPin={permissions.canPinThread}
-                canMove={
-                  permissions.canMoveAnyThread ||
-                  (!!currentUser && currentUser.id === activeThread.author.uid)
-                }
-                isLocked={isLocked}
-                isPinned={activeThread.isPinned}
-                onDelete={() => setShowDeleteConfirm("__thread__")}
-                onLock={() => lockThread(activeThread.id)}
-                onUnlock={() => unlockThread(activeThread.id)}
-                onPin={() => pinThread(activeThread.id)}
-                onUnpin={() => unpinThread(activeThread.id)}
-                onMove={() => {
-                  setMoveTargetForumId(activeThread.forumId);
-                  setShowMoveModal(true);
-                }}
-              />
+                <ModerationControls
+                  canEdit={false}
+                  canDelete={permissions.canDeleteAnyPost}
+                  canLock={permissions.canLockThread}
+                  canPin={permissions.canPinThread}
+                  canMove={
+                    permissions.canMoveAnyThread ||
+                    (!!currentUser &&
+                      currentUser.id === activeThread.author.uid)
+                  }
+                  isLocked={isLocked}
+                  isPinned={activeThread.isPinned}
+                  onDelete={() => setShowDeleteConfirm("__thread__")}
+                  onLock={() => lockThread(activeThread.id)}
+                  onUnlock={() => unlockThread(activeThread.id)}
+                  onPin={() => pinThread(activeThread.id)}
+                  onUnpin={() => unpinThread(activeThread.id)}
+                  onMove={() => {
+                    setMoveTargetForumId(activeThread.forumId);
+                    setShowMoveModal(true);
+                  }}
+                />
               </div>
 
               <div className="flex min-w-0 flex-col items-center text-center">
@@ -295,14 +302,17 @@ export const ThreadPage: React.FC = () => {
                 </h1>
                 <Text
                   variant="small"
-                  classes={threadHeroImageUrl ? "mt-1 text-white/70" : "mt-1 text-gray-400"}
+                  classes={
+                    threadHeroImageUrl
+                      ? "mt-1 text-white/70"
+                      : "mt-1 text-gray-400"
+                  }
                 >
                   {activeThread.replyCount} repl
                   {activeThread.replyCount !== 1 ? "ies" : "y"} · started by{" "}
                   {activeThread.author.username}
                 </Text>
               </div>
-
             </div>
           </ForumBorder>
         )}

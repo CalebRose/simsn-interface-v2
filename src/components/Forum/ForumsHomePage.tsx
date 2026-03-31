@@ -34,14 +34,23 @@ export const ForumsHomePage: React.FC = () => {
     return { topLevel, subforumMap };
   }, [forums]);
 
-  const canViewForums = !!(
-    currentUser && (
-      currentUser.roleID === "Admin" ||
-      currentUser.roleID === "admin" ||
-      currentUser.IsSubscribed ||
-      currentUser.roleID?.toLowerCase().includes("commissioner")
-    )
-  );
+  // All users that have at least one team can view the forums.
+  const canViewForums = useMemo(() => {
+    if (!currentUser) return false;
+    if (
+      currentUser.teamId === 0 &&
+      currentUser.NFLTeamID === 0 &&
+      currentUser.cbb_id === 0 &&
+      currentUser.NBATeamID === 0 &&
+      currentUser.CHLTeamID === 0 &&
+      currentUser.PHLTeamID === 0 &&
+      currentUser.CollegeBaseballOrgID === 0 &&
+      currentUser.MLBOrgID === 0
+    ) {
+      return false;
+    }
+    return true;
+  }, [currentUser]);
 
   const { editorialItems, editorialLoading } = useForumEditorialItems(
     forums,
