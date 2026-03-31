@@ -4,7 +4,8 @@ import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
 import { ForumCard } from "./components/ForumCard";
-import { useForums } from "../../_hooks/useForumHooks";
+import { ForumEditorialSection } from "./components/ForumEditorialSection";
+import { useForumEditorialItems, useForums } from "../../_hooks/useForumHooks";
 import { useForumStore } from "../../context/ForumContext";
 import { Forum } from "../../models/forumModels";
 import routes from "../../_constants/routes";
@@ -16,7 +17,6 @@ export const ForumsHomePage: React.FC = () => {
   const { permissions } = useForumStore();
   const navigate = useNavigate();
 
-  // Separate top-level forums from subforums and build a map
   const { topLevel, subforumMap } = useMemo(() => {
     const topLevel: Forum[] = [];
     const subforumMap: Map<string, Forum[]> = new Map();
@@ -30,22 +30,24 @@ export const ForumsHomePage: React.FC = () => {
         subforumMap.get(parent)!.push(f);
       }
     }
+
     return { topLevel, subforumMap };
   }, [forums]);
 
-  const canViewForums = useMemo(() => {
-    if (!currentUser) return false;
-    if (
+  const canViewForums = !!(
+    currentUser && (
       currentUser.roleID === "Admin" ||
       currentUser.roleID === "admin" ||
       currentUser.IsSubscribed ||
-      (currentUser.roleID &&
-        currentUser.roleID.toLowerCase().includes("commissioner"))
-    ) {
-      return true;
-    }
-    return false;
-  }, [currentUser]);
+      currentUser.roleID?.toLowerCase().includes("commissioner")
+    )
+  );
+
+  const { editorialItems, editorialLoading } = useForumEditorialItems(
+    forums,
+    forumsLoading,
+    canViewForums,
+  );
 
   if (!canViewForums)
     return (
@@ -61,7 +63,7 @@ export const ForumsHomePage: React.FC = () => {
 
   return (
     <PageContainer isLoading={forumsLoading} title="">
-      <div className="flex flex-col w-full">
+      <div className="mx-auto flex w-[95vw] flex-col lg:w-[80vw]">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 space-x-2">
           <Text variant="h4">Community Forums</Text>
@@ -76,21 +78,43 @@ export const ForumsHomePage: React.FC = () => {
           )}
         </div>
 
+        <ForumEditorialSection
+          items={editorialItems}
+          isLoading={editorialLoading}
+        />
+
         {/* Forum grid */}
         {topLevel.length === 0 && !forumsLoading ? (
           <div className="py-12 text-center">
             <Text variant="secondary">No forums available.</Text>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 w-[95vw] lg:w-[80vw]">
-            {topLevel.map((forum) => (
-              <ForumCard
-                key={forum.id}
-                forum={forum}
-                subforums={subforumMap.get(forum.id) ?? []}
-              />
-            ))}
-          </div>
+          <section className="flex w-full flex-col gap-3 text-left">
+            <div className="flex items-end justify-between gap-3 border-b border-white/10 pb-3">
+              <div>
+                <Text variant="h5">Forum Categories</Text>
+                <Text variant="secondary" classes="mt-1">
+                  Browse every conference room, subforum, and discussion hub.
+                </Text>
+              </div>
+              <Text
+                variant="body-small"
+                classes="hidden sm:block text-white/45 uppercase tracking-[0.2em]"
+              >
+                Directory
+              </Text>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {topLevel.map((forum) => (
+                <ForumCard
+                  key={forum.id}
+                  forum={forum}
+                  subforums={subforumMap.get(forum.id) ?? []}
+                />
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </PageContainer>
