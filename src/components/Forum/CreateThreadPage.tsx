@@ -18,6 +18,7 @@ import {
   CreatePollDTO,
 } from "../../models/forumModels";
 import routes from "../../_constants/routes";
+import { MEDIA_TAGS, MediaTag, isMediaForum } from "../../_constants/mediaTags";
 
 const MAX_TITLE = 75;
 const MAX_POLL_OPTIONS = 10;
@@ -38,6 +39,7 @@ export const CreateThreadPage: React.FC = () => {
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedMediaTags, setSelectedMediaTags] = useState<MediaTag[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -96,6 +98,12 @@ export const CreateThreadPage: React.FC = () => {
     if (pollOptions.length < MAX_POLL_OPTIONS) {
       setPollOptions((prev) => [...prev, ""]);
     }
+  };
+
+  const toggleMediaTag = (tag: MediaTag) => {
+    setSelectedMediaTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
   };
 
   const handleRemovePollOption = (idx: number) => {
@@ -168,6 +176,7 @@ export const CreateThreadPage: React.FC = () => {
         body: doc,
         bodyText: plainText,
         threadType,
+        tags: selectedMediaTags.length > 0 ? selectedMediaTags : [],
         poll,
       };
 
@@ -223,7 +232,10 @@ export const CreateThreadPage: React.FC = () => {
             </label>
             <select
               value={selectedForumId}
-              onChange={(e) => setSelectedForumId(e.target.value)}
+              onChange={(e) => {
+                setSelectedForumId(e.target.value);
+                setSelectedMediaTags([]); // reset tags when forum changes
+              }}
               className="bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500"
               disabled={isSubmitting}
             >
@@ -267,6 +279,36 @@ export const CreateThreadPage: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Media tags — shown only when posting in a media forum */}
+          {isMediaForum(selectedForumId) && (
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium">
+                Media type{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {MEDIA_TAGS.map((tag) => {
+                  const active = selectedMediaTags.includes(tag.value);
+                  return (
+                    <button
+                      key={tag.value}
+                      type="button"
+                      onClick={() => toggleMediaTag(tag.value)}
+                      disabled={isSubmitting}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                        active
+                          ? `${tag.color} text-white border-transparent`
+                          : "bg-transparent text-gray-400 border-gray-600 hover:border-gray-400"
+                      }`}
+                    >
+                      {tag.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Title */}
           <div className="flex flex-col gap-1">

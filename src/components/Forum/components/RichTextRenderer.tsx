@@ -209,10 +209,10 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
       return (
         <span
           key={key}
-          className="text-blue-400 font-medium"
-          data-uid={node.attrs?.uid as string}
+          className="inline-flex items-center rounded-full border border-yellow-500/40 bg-yellow-500/10 px-2 py-0 text-[0.85em] font-semibold text-yellow-400"
+          data-uid={(node.attrs?.uid ?? node.attrs?.id) as string}
         >
-          @{node.attrs?.username as string}
+          @{(node.attrs?.username ?? node.attrs?.label) as string}
         </span>
       );
 

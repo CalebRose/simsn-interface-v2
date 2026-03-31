@@ -5,6 +5,7 @@ import { NFLPlayer } from "../../models/footballModels";
 import { tagData } from "../../_constants/tagData";
 import { Modal } from "../../_design/Modal";
 import { Text } from "../../_design/Typography";
+import { getTagTypeEnum } from "../../_helper/utilHelper";
 
 // ─── NFL Franchise Tag Modal ─────────────────────────────────────────────
 interface FranchiseTagModalBodyProps {
@@ -73,9 +74,10 @@ export const FranchiseTagModal: FC<FranchiseTagModalBodyProps> = ({
 
   const confirmChange = useCallback(() => {
     if (!valid) return;
+    let tag = getTagTypeEnum(tagType);
     const dto = {
       PlayerID: player.ID,
-      TagType: tagType,
+      TagType: tag,
       Position: player.Position,
     };
     tagNFLPlayer(dto);

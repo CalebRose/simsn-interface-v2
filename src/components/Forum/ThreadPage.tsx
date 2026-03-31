@@ -24,6 +24,7 @@ import {
 import { plaintextToDoc } from "./components/ForumEditor";
 import { extractForumEditorialImage } from "./forumUtils";
 import routes from "../../_constants/routes";
+import { MEDIA_TAG_MAP, MediaTag } from "../../_constants/mediaTags";
 
 interface Params {
   threadId: string;
@@ -43,12 +44,14 @@ export const ThreadPage: React.FC = () => {
     pinThread,
     unpinThread,
     softDeleteThread,
+    moveThread,
     reactToPost,
     submitPollVote,
     togglePoll,
     reportPost,
     isMuted,
     muteExpiresAt,
+    forums,
   } = useForumStore();
 
   const { activeThread, posts, postsLoading, activePoll, userPollVote } =
@@ -63,6 +66,10 @@ export const ThreadPage: React.FC = () => {
     null,
   );
   const [modReason, setModReason] = useState("");
+  const [showMoveModal, setShowMoveModal] = useState(false);
+  const [moveTargetForumId, setMoveTargetForumId] = useState("");
+  const [moveReason, setMoveReason] = useState("");
+  const [isMoving, setIsMoving] = useState(false);
 
   // Load game reference if applicable
   useEffect(() => {
@@ -169,6 +176,23 @@ export const ThreadPage: React.FC = () => {
     );
   };
 
+  const handleMoveThread = async () => {
+    if (!activeThread || !moveTargetForumId) return;
+    setIsMoving(true);
+    try {
+      await moveThread(
+        activeThread.id,
+        moveTargetForumId,
+        moveReason || undefined,
+      );
+      setShowMoveModal(false);
+      setMoveTargetForumId("");
+      setMoveReason("");
+    } finally {
+      setIsMoving(false);
+    }
+  };
+
   const isLocked = activeThread?.isLocked ?? false;
   const isAdmin = permissions.canLockThread;
   const canReply = permissions.canReply && (!isLocked || isAdmin);
@@ -210,19 +234,27 @@ export const ThreadPage: React.FC = () => {
               }`}
             >
               <div className="absolute right-3 top-3 sm:right-4 sm:top-4 lg:right-5 lg:top-5">
-                <ModerationControls
-                  canEdit={false}
-                  canDelete={permissions.canDeleteAnyPost}
-                  canLock={permissions.canLockThread}
-                  canPin={permissions.canPinThread}
-                  isLocked={isLocked}
-                  isPinned={activeThread.isPinned}
-                  onDelete={() => setShowDeleteConfirm("__thread__")}
-                  onLock={() => lockThread(activeThread.id)}
-                  onUnlock={() => unlockThread(activeThread.id)}
-                  onPin={() => pinThread(activeThread.id)}
-                  onUnpin={() => unpinThread(activeThread.id)}
-                />
+              <ModerationControls
+                canEdit={false}
+                canDelete={permissions.canDeleteAnyPost}
+                canLock={permissions.canLockThread}
+                canPin={permissions.canPinThread}
+                canMove={
+                  permissions.canMoveAnyThread ||
+                  (!!currentUser && currentUser.id === activeThread.author.uid)
+                }
+                isLocked={isLocked}
+                isPinned={activeThread.isPinned}
+                onDelete={() => setShowDeleteConfirm("__thread__")}
+                onLock={() => lockThread(activeThread.id)}
+                onUnlock={() => unlockThread(activeThread.id)}
+                onPin={() => pinThread(activeThread.id)}
+                onUnpin={() => unpinThread(activeThread.id)}
+                onMove={() => {
+                  setMoveTargetForumId(activeThread.forumId);
+                  setShowMoveModal(true);
+                }}
+              />
               </div>
 
               <div className="flex min-w-0 flex-col items-center text-center">
@@ -242,6 +274,18 @@ export const ThreadPage: React.FC = () => {
                       🔒 Locked
                     </span>
                   )}
+                  {activeThread.tags?.map((tag) => {
+                    const def = MEDIA_TAG_MAP[tag as MediaTag];
+                    if (!def) return null;
+                    return (
+                      <span
+                        key={tag}
+                        className={`text-xs ${def.color} text-white px-1.5 py-0.5 rounded`}
+                      >
+                        {def.label}
+                      </span>
+                    );
+                  })}
                 </div>
                 <h1
                   className="max-w-5xl text-2xl sm:text-4xl lg:text-5xl font-semibold tracking-wide text-balance"
@@ -258,6 +302,7 @@ export const ThreadPage: React.FC = () => {
                   {activeThread.author.username}
                 </Text>
               </div>
+
             </div>
           </ForumBorder>
         )}
@@ -428,6 +473,101 @@ export const ThreadPage: React.FC = () => {
                   }}
                 >
                   Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Move thread modal */}
+        {showMoveModal && activeThread && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-gray-900 border border-gray-700 rounded-lg p-5 max-w-sm w-full">
+              <Text variant="h6" classes="mb-3">
+                Move thread
+              </Text>
+              <Text variant="secondary" classes="text-sm mb-3">
+                Select the forum or subforum to move this thread to.
+              </Text>
+              <div className="flex flex-col gap-3">
+                <select
+                  value={moveTargetForumId}
+                  onChange={(e) => setMoveTargetForumId(e.target.value)}
+                  className="bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  disabled={isMoving}
+                >
+                  <option value="">-- Select destination --</option>
+                  {(() => {
+                    const subsByParent = new Map<string, typeof forums>();
+                    for (const f of forums) {
+                      if (f.type === "subforum" && f.parentForumId) {
+                        if (!subsByParent.has(f.parentForumId))
+                          subsByParent.set(f.parentForumId, []);
+                        subsByParent.get(f.parentForumId)!.push(f);
+                      }
+                    }
+                    return forums
+                      .filter(
+                        (f) =>
+                          (f.type === "top_level" || !f.parentForumId) &&
+                          !f.isLocked,
+                      )
+                      .map((parent) => {
+                        const children = subsByParent.get(parent.id) ?? [];
+                        if (children.length > 0) {
+                          return (
+                            <optgroup key={parent.id} label={parent.name}>
+                              {children
+                                .filter((c) => !c.isLocked)
+                                .map((child) => (
+                                  <option key={child.id} value={child.id}>
+                                    {child.name}
+                                  </option>
+                                ))}
+                            </optgroup>
+                          );
+                        }
+                        return (
+                          <option key={parent.id} value={parent.id}>
+                            {parent.name}
+                          </option>
+                        );
+                      });
+                  })()}
+                </select>
+                <textarea
+                  value={moveReason}
+                  onChange={(e) => setMoveReason(e.target.value)}
+                  placeholder="Reason (optional)"
+                  rows={2}
+                  className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:border-blue-500"
+                  disabled={isMoving}
+                />
+              </div>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button
+                  variant="secondaryOutline"
+                  size="sm"
+                  onClick={() => {
+                    setShowMoveModal(false);
+                    setMoveTargetForumId("");
+                    setMoveReason("");
+                  }}
+                  disabled={isMoving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleMoveThread}
+                  disabled={
+                    !moveTargetForumId ||
+                    moveTargetForumId === activeThread.forumId ||
+                    isMoving
+                  }
+                >
+                  {isMoving ? "Moving…" : "Move"}
                 </Button>
               </div>
             </div>

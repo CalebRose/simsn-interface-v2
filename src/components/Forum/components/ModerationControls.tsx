@@ -7,6 +7,7 @@ interface ModerationControlsProps {
   canDelete: boolean;
   canLock?: boolean;
   canPin?: boolean;
+  canMove?: boolean;
   isLocked?: boolean;
   isPinned?: boolean;
   onEdit?: () => void;
@@ -15,6 +16,7 @@ interface ModerationControlsProps {
   onUnlock?: () => void;
   onPin?: () => void;
   onUnpin?: () => void;
+  onMove?: () => void;
 }
 
 export const ModerationControls: React.FC<ModerationControlsProps> = ({
@@ -22,6 +24,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
   canDelete,
   canLock = false,
   canPin = false,
+  canMove = false,
   isLocked = false,
   isPinned = false,
   onEdit,
@@ -30,11 +33,12 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
   onUnlock,
   onPin,
   onUnpin,
+  onMove,
 }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const hasActions = canEdit || canDelete || canLock || canPin;
+  const hasActions = canEdit || canDelete || canLock || canPin || canMove;
   if (!hasActions) return null;
 
   // Close on outside click
@@ -135,6 +139,17 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
                 </button>
               )}
             </>
+          )}
+          {canMove && onMove && (
+            <button
+              onClick={() => {
+                onMove();
+                setOpen(false);
+              }}
+              className="w-full text-left text-sm px-3 py-1.5 text-blue-400 hover:bg-gray-700 transition-colors"
+            >
+              ↗ Move thread
+            </button>
           )}
         </div>
       )}
