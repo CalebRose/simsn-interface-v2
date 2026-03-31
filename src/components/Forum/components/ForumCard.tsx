@@ -72,11 +72,17 @@ export const ForumCard: React.FC<ForumCardProps> = ({
       <div className="flex items-center justify-between pt-3 mt-auto border-t border-gray-700 text-sm">
         <div className="flex gap-4">
           <span className="text-gray-400">
-            <span className="text-white font-medium">{forum.threadCount}</span>{" "}
+            <span className="text-white font-medium">
+              {(forum.threadCount ?? 0) +
+                subforums.reduce((sum, sf) => sum + (sf.threadCount ?? 0), 0)}
+            </span>{" "}
             threads
           </span>
           <span className="text-gray-400">
-            <span className="text-white font-medium">{forum.postCount}</span>{" "}
+            <span className="text-white font-medium">
+              {(forum.postCount ?? 0) +
+                subforums.reduce((sum, sf) => sum + (sf.postCount ?? 0), 0)}
+            </span>{" "}
             posts
           </span>
         </div>
