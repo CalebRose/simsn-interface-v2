@@ -15,6 +15,13 @@ export interface ForumEditorialItem {
   heroImageUrl: string | null;
 }
 
+export interface ParsedForumBody {
+  featureImageUrl: string | null;
+  documentWithoutFeatureImage: RichTextDocument | null | undefined;
+  bodyTextWithoutFeatureImage: string;
+  previewWithoutFeatureImage: string;
+}
+
 export function isForumImageUrl(value: string | null | undefined): boolean {
   return !!value && IMAGE_URL_PATTERN.test(value.trim());
 }
@@ -25,7 +32,7 @@ function getNodeTextContent(node: RichTextNode | undefined): string {
   return (node.content ?? []).map((child) => getNodeTextContent(child)).join("");
 }
 
-function findImageUrlInNode(node: RichTextNode | undefined): string | null {
+function getImageUrlFromNode(node: RichTextNode | undefined): string | null {
   if (!node) return null;
 
   const markImage = node.marks?.find((mark) => {
@@ -54,21 +61,28 @@ function findImageUrlInNode(node: RichTextNode | undefined): string | null {
     }
   }
 
+  return null;
+}
+
+function getImageUrlFromTopLevelNode(node: RichTextNode | undefined): string | null {
+  if (!node) return null;
+
+  const nodeImageUrl = getImageUrlFromNode(node);
+  if (nodeImageUrl) return nodeImageUrl;
+
   for (const child of node.content ?? []) {
-    const childImage = findImageUrlInNode(child);
-    if (childImage) return childImage;
+    const childImageUrl = getImageUrlFromNode(child);
+    if (childImageUrl) return childImageUrl;
   }
 
   return null;
 }
 
 function isEmptyTopLevelNode(node: RichTextNode): boolean {
-  return !getNodeTextContent(node).trim() && !findImageUrlInNode(node);
+  return !getNodeTextContent(node).trim() && !getImageUrlFromTopLevelNode(node);
 }
 
-function getLeadingFeatureNodeIndex(
-  body: RichTextDocument | null | undefined,
-): number {
+function getLeadingFeatureNodeIndex(body: RichTextDocument | null | undefined): number {
   if (!body?.content?.length) return -1;
 
   const firstNonEmptyIndex = body.content.findIndex(
@@ -77,7 +91,7 @@ function getLeadingFeatureNodeIndex(
   if (firstNonEmptyIndex === -1) return -1;
 
   const firstNode = body.content[firstNonEmptyIndex];
-  const imageUrl = findImageUrlInNode(firstNode);
+  const imageUrl = getImageUrlFromTopLevelNode(firstNode);
   if (!imageUrl) return -1;
 
   const textContent = getNodeTextContent(firstNode).trim();
@@ -88,31 +102,10 @@ function getLeadingFeatureNodeIndex(
   return -1;
 }
 
-export function extractForumEditorialImage(
+function forumDocToPlaintext(
   body: RichTextDocument | null | undefined,
-): string | null {
-  const featureNodeIndex = getLeadingFeatureNodeIndex(body);
-  if (featureNodeIndex === -1 || !body) return null;
-
-  return findImageUrlInNode(body.content[featureNodeIndex]);
-}
-
-export function removeForumFeatureImage(
-  body: RichTextDocument | null | undefined,
-): RichTextDocument | null | undefined {
-  const featureNodeIndex = getLeadingFeatureNodeIndex(body);
-  if (featureNodeIndex === -1 || !body) return body;
-
-  return {
-    ...body,
-    content: body.content.filter((_, index) => index !== featureNodeIndex),
-  };
-}
-
-export function forumDocToPlaintext(
-  doc: RichTextDocument | null | undefined,
 ): string {
-  if (!doc?.content?.length) return "";
+  if (!body?.content?.length) return "";
 
   function extractText(node: RichTextNode): string {
     if (node.type === "text") return node.text ?? "";
@@ -120,24 +113,41 @@ export function forumDocToPlaintext(
     return node.content.map(extractText).join(node.type === "paragraph" ? "\n" : "");
   }
 
-  return doc.content.map(extractText).join("\n");
+  return body.content.map(extractText).join("\n");
 }
 
-export function buildForumContentPreview(
+export function parseForumBody(
   body: RichTextDocument | null | undefined,
-  maxLength = 200,
-): string {
-  const previewText = buildForumBodyText(body)
+  maxPreviewLength = 200,
+): ParsedForumBody {
+  const featureNodeIndex = getLeadingFeatureNodeIndex(body);
+  const featureImageUrl =
+    featureNodeIndex !== -1 && body
+      ? getImageUrlFromTopLevelNode(body.content[featureNodeIndex])
+      : null;
+
+  const documentWithoutFeatureImage =
+    featureNodeIndex !== -1 && body
+      ? {
+          ...body,
+          content: body.content.filter((_, index) => index !== featureNodeIndex),
+        }
+      : body;
+
+  const bodyTextWithoutFeatureImage = forumDocToPlaintext(
+    documentWithoutFeatureImage,
+  );
+  const previewWithoutFeatureImage = bodyTextWithoutFeatureImage
     .replace(/\n{3,}/g, "\n\n")
-    .trim();
+    .trim()
+    .slice(0, maxPreviewLength);
 
-  return previewText.slice(0, maxLength);
-}
-
-export function buildForumBodyText(
-  body: RichTextDocument | null | undefined,
-): string {
-  return forumDocToPlaintext(removeForumFeatureImage(body));
+  return {
+    featureImageUrl,
+    documentWithoutFeatureImage,
+    bodyTextWithoutFeatureImage,
+    previewWithoutFeatureImage,
+  };
 }
 
 export function buildForumEditorialItems(
@@ -150,6 +160,6 @@ export function buildForumEditorialItems(
     forum: forumsById.get(thread.forumId),
     heroImageUrl:
       thread.featureImageUrl ??
-      extractForumEditorialImage(postsById.get(thread.firstPostId)?.body),
+      parseForumBody(postsById.get(thread.firstPostId)?.body).featureImageUrl,
   }));
 }

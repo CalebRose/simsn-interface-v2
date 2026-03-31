@@ -22,7 +22,7 @@ import {
   CreatePostDTO,
 } from "../../models/forumModels";
 import { plaintextToDoc } from "./components/ForumEditor";
-import { extractForumEditorialImage } from "./forumUtils";
+import { parseForumBody } from "./forumUtils";
 import routes from "../../_constants/routes";
 import { MEDIA_TAG_MAP, MediaTag } from "../../_constants/mediaTags";
 
@@ -200,7 +200,7 @@ export const ThreadPage: React.FC = () => {
     if (!activeThread) return null;
     if (activeThread.featureImageUrl) return activeThread.featureImageUrl;
     const firstPost = posts.find((post) => post.id === activeThread.firstPostId);
-    return extractForumEditorialImage(firstPost?.body);
+    return parseForumBody(firstPost?.body).featureImageUrl;
   }, [activeThread, posts]);
 
   return (

@@ -28,11 +28,7 @@ import {
 } from "../models/forumModels";
 import { CurrentUser } from "../_hooks/useCurrentUser";
 import { getUserLogoUrl } from "../_utility/getLogo";
-import {
-  buildForumBodyText,
-  buildForumContentPreview,
-  extractForumEditorialImage,
-} from "../components/Forum/forumUtils";
+import { parseForumBody } from "../components/Forum/forumUtils";
 
 // ─────────────────────────────────────────────
 // Permission helpers
@@ -482,9 +478,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
           currentUserState.id,
         );
         const isFirstPost = activeThread?.firstPostId === postId;
-        const nextBodyText = isFirstPost
-          ? buildForumBodyText(dto.body)
-          : dto.bodyText;
+        const parsedBody = isFirstPost ? parseForumBody(dto.body) : null;
+        const nextBodyText = parsedBody?.bodyTextWithoutFeatureImage ?? dto.bodyText;
 
         setPosts((prev) =>
           prev.map((p) =>
@@ -504,8 +499,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
             prev
               ? {
                   ...prev,
-                  contentPreview: buildForumContentPreview(dto.body),
-                  featureImageUrl: extractForumEditorialImage(dto.body),
+                  contentPreview: parsedBody?.previewWithoutFeatureImage ?? prev.contentPreview,
+                  featureImageUrl: parsedBody?.featureImageUrl ?? prev.featureImageUrl,
                 }
               : prev,
           );

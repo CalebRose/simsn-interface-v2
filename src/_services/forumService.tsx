@@ -22,9 +22,7 @@ import {
 import type { PostMention } from "../models/forumModels";
 import { firestore } from "../firebase/firebase";
 import {
-  buildForumContentPreview,
-  buildForumBodyText,
-  extractForumEditorialImage,
+  parseForumBody,
 } from "../components/Forum/forumUtils";
 import {
   Forum,
@@ -178,8 +176,7 @@ export const ForumService = {
     logoUrl?: string,
   ): Promise<{ threadId: string; postId: string }> => {
     const now = serverTimestamp();
-    const featureImageUrl = extractForumEditorialImage(dto.body);
-    const sanitizedBodyText = buildForumBodyText(dto.body);
+    const parsedBody = parseForumBody(dto.body);
     const slug = dto.title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -200,7 +197,7 @@ export const ForumService = {
       author: authorSnapshot,
       editorVersion: 1,
       body: dto.body,
-      bodyText: sanitizedBodyText,
+      bodyText: parsedBody.bodyTextWithoutFeatureImage,
       quotedPostId: null,
       replyToPostId: null,
       mentions: [],
@@ -223,8 +220,8 @@ export const ForumService = {
       title: dto.title,
       slug,
       author: authorSnapshot,
-      contentPreview: buildForumContentPreview(dto.body),
-      featureImageUrl,
+      contentPreview: parsedBody.previewWithoutFeatureImage,
+      featureImageUrl: parsedBody.featureImageUrl,
       firstPostId: postRef.id,
       isPinned: false,
       isLocked: false,
@@ -418,10 +415,11 @@ export const ForumService = {
       if (threadSnap.exists()) {
         const thread = { id: threadSnap.id, ...threadSnap.data() } as Thread;
         if (thread.firstPostId === postId) {
-          nextBodyText = buildForumBodyText(dto.body);
+          const parsedBody = parseForumBody(dto.body);
+          nextBodyText = parsedBody.bodyTextWithoutFeatureImage;
           await updateDoc(threadRef, {
-            contentPreview: buildForumContentPreview(dto.body),
-            featureImageUrl: extractForumEditorialImage(dto.body),
+            contentPreview: parsedBody.previewWithoutFeatureImage,
+            featureImageUrl: parsedBody.featureImageUrl,
             updatedAt: serverTimestamp(),
           });
         }

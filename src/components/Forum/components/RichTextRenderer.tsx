@@ -5,7 +5,7 @@ import {
   RichTextMark,
 } from "../../../models/forumModels";
 import { Text } from "../../../_design/Typography";
-import { removeForumFeatureImage } from "../forumUtils";
+import { parseForumBody } from "../forumUtils";
 
 // ─────────────────────────────────────────────
 // Safe JSON-to-component renderer.
@@ -286,7 +286,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   hideLeadingFeatureImage = false,
 }) => {
   const renderedDocument = hideLeadingFeatureImage
-    ? removeForumFeatureImage(document)
+    ? parseForumBody(document).documentWithoutFeatureImage
     : document;
 
   if (!renderedDocument) {
