@@ -168,7 +168,7 @@ export const getFAFinancialPreference = (value: number): string => {
 export const GetNextGameDay = (
   gamesARan: boolean,
   gamesBRan: boolean,
-  gamesCRan: boolean
+  gamesCRan: boolean,
 ) => {
   let nextGameDay = "A";
   if (gamesARan) {
@@ -186,4 +186,19 @@ export const GetNextGameDay = (
 
 export const ConvertTimeOnIce = (toi: number) => {
   return Math.floor(toi / 60);
+};
+
+export const getTagTypeEnum = (tagType: string) => {
+  switch (tagType) {
+    case "Basic":
+      return 0;
+    case "Playtime":
+      return 3;
+    case "Transition":
+      return 2;
+    case "Franchise":
+      return 1;
+    default:
+      return 0;
+  }
 };
