@@ -252,7 +252,8 @@ export type ModerationAction =
   | "restore"
   | "edit"
   | "pin"
-  | "unpin";
+  | "unpin"
+  | "move";
 
 export interface ModerationLog {
   id: string;
@@ -306,6 +307,7 @@ export interface CreateThreadDTO {
   poll?: CreatePollDTO | null;
   referencedGameId?: string | null;
   referencedLeague?: string | null;
+  mentions?: PostMention[];
 }
 
 export interface CreatePostDTO {
@@ -366,6 +368,7 @@ export interface ForumPermissions {
   canEditAnyPost: boolean;
   canPinThread: boolean;
   canManageForums: boolean;
+  canMoveAnyThread: boolean;
 }
 
 // ─────────────────────────────────────────────

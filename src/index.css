@@ -110,6 +110,22 @@
   pointer-events: none;
 }
 
+/* ── @mention chip (inside the TipTap editor) ─────────────────────── */
+.ProseMirror .mention-chip {
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  border-radius: 9999px;
+  padding: 0 0.45rem;
+  font-size: 0.85em;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: default;
+  user-select: none;
+}
+
 html,
 body {
   overflow-x: hidden;

@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import { AuthService } from "../../_services/auth";
 import { getLogo } from "../../_utility/getLogo";
 import routes from "../../_constants/routes";
+import { useForumStore } from "../../context/ForumContext";
 import {
   League,
   SimCBB,
@@ -44,8 +45,28 @@ export const SideMenu = ({}) => {
   } = useSimBaseballStore();
   const { isOpen, isDropdownOpen, toggleMenu, toggleDropdown, dropdowns } =
     useSideMenu();
+  const {
+    notifications,
+    unreadCount,
+    markNotificationRead,
+    markAllNotificationsRead,
+  } = useForumStore();
   const { isDesktop } = useResponsive();
   const [processing, setProcessing] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  // Close notification dropdown on outside click
+  useEffect(() => {
+    if (!isNotifOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [isNotifOpen]);
   const { baseColor } = useBackgroundColor();
   const textColor = getTextColorBasedOnBg(baseColor);
   const navigate = useNavigate();
@@ -246,6 +267,99 @@ export const SideMenu = ({}) => {
             <div className="flex items-center gap-3">
               {/* Theme Toggle */}
               {isDesktop && <ThemeToggle />}
+
+              {/* Notification Bell */}
+              <div className="relative" ref={notifRef}>
+                <button
+                  type="button"
+                  aria-label="Notifications"
+                  onClick={() => {
+                    setIsNotifOpen((prev) => !prev);
+                    if (!isNotifOpen && unreadCount > 0 && currentUser?.id) {
+                      markAllNotificationsRead(currentUser.id);
+                    }
+                  }}
+                  className="relative p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
+                >
+                  {/* Bell SVG */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
+                  </svg>
+                  {/* Red dot for unread */}
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0.5 right-0.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800" />
+                  )}
+                </button>
+
+                {/* Notification Dropdown */}
+                {isNotifOpen && (
+                  <div className="absolute right-0 z-50 mt-2 w-[420px] max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800">
+                    <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-600">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        Notifications
+                      </span>
+                      {unreadCount > 0 && (
+                        <button
+                          type="button"
+                          className="text-xs text-blue-500 hover:underline"
+                          onClick={() =>
+                            currentUser?.id &&
+                            markAllNotificationsRead(currentUser.id)
+                          }
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-6 text-center text-sm text-gray-400">
+                        No notifications
+                      </div>
+                    ) : (
+                      <ul>
+                        {notifications.map((notif) => (
+                          <li key={notif.id}>
+                            <button
+                              type="button"
+                              className={`w-full text-left px-4 py-3 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                                notif.isRead ? "opacity-60" : "bg-yellow-500/5"
+                              }`}
+                              onClick={() => {
+                                if (!notif.isRead)
+                                  markNotificationRead(notif.id);
+                                setIsNotifOpen(false);
+                                if (notif.threadId) {
+                                  navigate(
+                                    `${routes.FORUM_THREAD}/${notif.threadId}`,
+                                  );
+                                }
+                              }}
+                            >
+                              <p className="text-gray-800 dark:text-gray-100 leading-snug">
+                                {notif.message}
+                              </p>
+                              {!notif.isRead && (
+                                <span className="inline-block mt-1 h-1.5 w-1.5 rounded-full bg-yellow-400" />
+                              )}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* User Avatar Dropdown */}
               <div className="relative">

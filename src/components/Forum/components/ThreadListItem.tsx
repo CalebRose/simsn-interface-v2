@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Thread } from "../../../models/forumModels";
 import { Text } from "../../../_design/Typography";
 import routes from "../../../_constants/routes";
+import { MEDIA_TAG_MAP, MediaTag } from "../../../_constants/mediaTags";
 
 interface ThreadListItemProps {
   thread: Thread;
@@ -69,6 +70,18 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread }) => {
               🎮 Game
             </span>
           )}
+          {thread.tags?.map((tag) => {
+            const def = MEDIA_TAG_MAP[tag as MediaTag];
+            if (!def) return null;
+            return (
+              <span
+                key={tag}
+                className={`text-xs ${def.color} text-white px-1.5 py-0.5 rounded font-medium`}
+              >
+                {def.label}
+              </span>
+            );
+          })}
         </div>
 
         <Text variant="body-small" classes="font-semibold truncate text-start">
