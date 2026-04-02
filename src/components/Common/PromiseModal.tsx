@@ -143,6 +143,9 @@ export const PromiseModal: FC<PromiseModalProps> = ({
     if (promiseType === "Wins" && league === SimCBB) {
       return 40;
     }
+    if (promiseType === "Wins" && league === SimCFB) {
+      return 17;
+    }
     if (promiseType === "Time on Ice") {
       return 20; // minutes per game
     }
@@ -337,7 +340,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
           </>
         }
       >
-        <div className="grid grid-cols-2 mb-2">
+        <div className="grid grid-cols-2 mb-2 px-4">
           <div className="">
             <div>
               <Text variant="h4">Player</Text>
@@ -460,9 +463,211 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                   </div>
                 </>
               )}
+              {league === SimCFB && seasonStats && (
+                <>
+                  <div>
+                    <Text>Games Played</Text>
+                    <Text>
+                      <strong>{seasonStats.GamesPlayed}</strong>
+                    </Text>
+                  </div>
+                  <div>
+                    <Text>Snaps</Text>
+                    <Text>
+                      <strong>{seasonStats.Snaps}</strong>
+                    </Text>
+                  </div>
+                  {seasonStats.PassingYards > 0 && (
+                    <div>
+                      <Text>Passing Yards</Text>
+                      <Text>
+                        <strong>{seasonStats.PassingYards}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.PassingTDs > 0 && (
+                    <div>
+                      <Text>Passing TDs</Text>
+                      <Text>
+                        <strong>{seasonStats.PassingTDs}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.Interceptions > 0 && (
+                    <div>
+                      <Text>Interceptions</Text>
+                      <Text>
+                        <strong>{seasonStats.Interceptions}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.Sacks > 0 && (
+                    <div>
+                      <Text>Sacks</Text>
+                      <Text>
+                        <strong>{seasonStats.Sacks}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.QBRating > 0 && (
+                    <div>
+                      <Text>QB Rating</Text>
+                      <Text>
+                        <strong>{seasonStats.QBRating}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.RushingYards > 0 && (
+                    <div>
+                      <Text>Rushing Yards</Text>
+                      <Text>
+                        <strong>
+                          {seasonStats.RushAttempts} Attempts for{" "}
+                          {seasonStats.RushingYards} Yards
+                        </strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.RushingTDs > 0 && (
+                    <div>
+                      <Text>Rushing TDs</Text>
+                      <Text>
+                        <strong>{seasonStats.RushingTDs}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.Targets > 0 && (
+                    <div>
+                      <Text>Receiving Yards</Text>
+                      <Text>
+                        <strong>{seasonStats.ReceivingYards}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.Catches > 0 && (
+                    <div>
+                      <Text>Catches</Text>
+                      <Text>
+                        <strong>
+                          {seasonStats.Catches}/{seasonStats.Targets}
+                        </strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.ReceivingTDs > 0 && (
+                    <div>
+                      <Text>Receiving TDs</Text>
+                      <Text>
+                        <strong>{seasonStats.ReceivingTDs}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.Fumbles > 0 && (
+                    <div>
+                      <Text>Fumbles</Text>
+                      <Text>
+                        <strong>{seasonStats.Fumbles}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.Tackles > 0 && (
+                    <div>
+                      <Text>Tackles</Text>
+                      <Text>
+                        <strong>{seasonStats.Tackles}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.SacksMade > 0 && (
+                    <div>
+                      <Text>Sacks Made</Text>
+                      <Text>
+                        <strong>{seasonStats.SacksMade}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.ForcedFumbles > 0 && (
+                    <div>
+                      <Text>Forced Fumbles</Text>
+                      <Text>
+                        <strong>{seasonStats.ForcedFumbles}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.RecoveredFumbles > 0 && (
+                    <div>
+                      <Text>Recovered Fumbles</Text>
+                      <Text>
+                        <strong>{seasonStats.RecoveredFumbles}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.PassDeflections > 0 && (
+                    <div>
+                      <Text>Pass Deflections</Text>
+                      <Text>
+                        <strong>{seasonStats.PassDeflections}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.InterceptionsCaught > 0 && (
+                    <div>
+                      <Text>Interceptions</Text>
+                      <Text>
+                        <strong>{seasonStats.InterceptionsCaught}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.Safeties > 0 && (
+                    <div>
+                      <Text>Safeties</Text>
+                      <Text>
+                        <strong>{seasonStats.Safeties}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.DefensiveTDs > 0 && (
+                    <div>
+                      <Text>Defensive TDs</Text>
+                      <Text>
+                        <strong>{seasonStats.DefensiveTDs}</strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.FGMade > 0 && (
+                    <div>
+                      <Text>Field Goals</Text>
+                      <Text>
+                        <strong>
+                          {seasonStats.FGMade} of {seasonStats.FGAttempts}
+                        </strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.ExtraPointsMade > 0 && (
+                    <div>
+                      <Text>Extra Points</Text>
+                      <Text>
+                        <strong>
+                          {seasonStats.ExtraPointsMade} of{" "}
+                          {seasonStats.ExtraPointsAttempts}
+                        </strong>
+                      </Text>
+                    </div>
+                  )}
+                  {seasonStats.Punts > 0 && (
+                    <div>
+                      <Text>Punts</Text>
+                      <Text>
+                        <strong>{seasonStats.Punts}</strong>
+                      </Text>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
-          <div className="">
+          <div className="mb-4">
             <div className="mb-2">
               <Text variant="h4">Promise Details</Text>
             </div>
@@ -552,7 +757,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
             </div>
           </div>
         </div>
-        <Text className="mb4 text-start">
+        <Text className="px-4 mb-4 text-start text-wrap">
           Are you sure you want to send a promise to this player?
         </Text>
       </Modal>
