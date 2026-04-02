@@ -1,5 +1,11 @@
 import React, { useCallback, useState } from "react";
-import { useEditor, EditorContent, ReactRenderer } from "@tiptap/react";
+import {
+  useEditor,
+  EditorContent,
+  ReactRenderer,
+  ReactNodeViewRenderer,
+  NodeViewWrapper,
+} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
@@ -11,7 +17,8 @@ import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import Mention from "@tiptap/extension-mention";
-import { mergeAttributes } from "@tiptap/core";
+import { mergeAttributes, Node } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import {
   RichTextDocument,
   RichTextNode,
@@ -21,6 +28,97 @@ import { Button } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
 import { MentionList, MentionListHandle } from "./MentionList";
 import { ForumService } from "../../../_services/forumService";
+
+// ─────────────────────────────────────────────
+// YouTube embed helpers
+// ─────────────────────────────────────────────
+
+function extractYouTubeId(url: string): string | null {
+  const patterns = [
+    /[?&]v=([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /\/embed\/([a-zA-Z0-9_-]{11})/,
+    /\/shorts\/([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// React node view that renders the iframe inside the editor
+const YoutubeEmbedNodeView = ({
+  node,
+}: {
+  node: { attrs: Record<string, unknown> };
+}) => (
+  <NodeViewWrapper>
+    <div
+      className="relative my-2 mx-auto overflow-hidden rounded"
+      style={{ maxWidth: 640, aspectRatio: "16/9" }}
+      contentEditable={false}
+    >
+      <iframe
+        src={`https://www.youtube-nocookie.com/embed/${node.attrs.videoId as string}`}
+        className="absolute inset-0 w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        title="YouTube embed"
+      />
+    </div>
+  </NodeViewWrapper>
+);
+
+const YoutubeEmbedExtension = Node.create({
+  name: "youtubeEmbed",
+  group: "block",
+  atom: true,
+  draggable: true,
+
+  addAttributes() {
+    return {
+      videoId: { default: null },
+    };
+  },
+
+  parseHTML() {
+    return [{ tag: "div[data-youtube-embed]" }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "div",
+      mergeAttributes(HTMLAttributes, { "data-youtube-embed": "" }),
+    ];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(YoutubeEmbedNodeView);
+  },
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey("youtubeEmbedPaste"),
+        props: {
+          handlePaste(view, event) {
+            const text =
+              event.clipboardData?.getData("text/plain")?.trim() ?? "";
+            if (!/^https?:\/\//i.test(text)) return false;
+            const videoId = extractYouTubeId(text);
+            if (!videoId) return false;
+            const { state, dispatch } = view;
+            const node = state.schema.nodes.youtubeEmbed?.create({ videoId });
+            if (!node) return false;
+            dispatch(state.tr.replaceSelectionWith(node).scrollIntoView());
+            return true;
+          },
+        },
+      }),
+    ];
+  },
+});
 
 // ─────────────────────────────────────────────
 // ForumEditor – TipTap rich text editor.
@@ -256,6 +354,7 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
       TableCell,
       TableHeader,
       MentionExtension,
+      YoutubeEmbedExtension,
     ],
     content: initialContent,
     onCreate: ({ editor }) => {
@@ -288,6 +387,21 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
     onSubmit(json, text, mentions);
     editor.commands.clearContent(true);
   }, [editor, isSubmitting, onSubmit]);
+
+  const insertYouTube = () => {
+    const url = window.prompt("Paste a YouTube URL:");
+    if (!url) return;
+    const videoId = extractYouTubeId(url.trim());
+    if (!videoId) {
+      window.alert("Could not find a YouTube video ID in that URL.");
+      return;
+    }
+    editor
+      ?.chain()
+      .focus()
+      .insertContent({ type: "youtubeEmbed", attrs: { videoId } })
+      .run();
+  };
 
   const setLink = () => {
     const prev = editor?.getAttributes("link").href as string | undefined;
@@ -453,6 +567,10 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
         >
           {" "}
           ↪
+        </TBtn>
+        <Divider />
+        <TBtn title="Embed YouTube video" onClick={insertYouTube}>
+          ▶
         </TBtn>
         <Divider />
         <TBtn
