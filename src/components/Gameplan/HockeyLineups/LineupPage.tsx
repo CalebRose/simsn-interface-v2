@@ -95,7 +95,12 @@ export const CHLLineupPage = () => {
     lineupCategories,
     zoneCategories,
     errors,
-  } = useCHLLineupUtils(chlTeam!, chlRosterMap, currentLineups);
+  } = useCHLLineupUtils(
+    chlTeam!,
+    chlRosterMap,
+    currentLineups,
+    chlShootoutLineup,
+  );
   const { isMobile } = useResponsive();
 
   const chlTeamRosterOptions = useMemo(() => {
@@ -639,7 +644,12 @@ export const PHLLineupPage = () => {
     lineupCategories,
     zoneCategories,
     errors,
-  } = usePHLLineupUtils(phlTeam!, proRosterMap, currentLineups);
+  } = usePHLLineupUtils(
+    phlTeam!,
+    proRosterMap,
+    currentLineups,
+    phlShootoutLineup,
+  );
   const { isMobile } = useResponsive();
 
   const phlTeamRosterOptions = useMemo(() => {
