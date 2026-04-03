@@ -479,7 +479,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         );
         const isFirstPost = activeThread?.firstPostId === postId;
         const parsedBody = isFirstPost ? parseForumBody(dto.body) : null;
-        const nextBodyText = parsedBody?.bodyTextWithoutFeatureImage ?? dto.bodyText;
+        const nextBodyText =
+          parsedBody?.bodyTextWithoutFeatureImage ?? dto.bodyText;
 
         setPosts((prev) =>
           prev.map((p) =>
@@ -499,8 +500,11 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
             prev
               ? {
                   ...prev,
-                  contentPreview: parsedBody?.previewWithoutFeatureImage ?? prev.contentPreview,
-                  featureImageUrl: parsedBody?.featureImageUrl ?? prev.featureImageUrl,
+                  contentPreview:
+                    parsedBody?.previewWithoutFeatureImage ??
+                    prev.contentPreview,
+                  featureImageUrl:
+                    parsedBody?.featureImageUrl ?? prev.featureImageUrl,
                 }
               : prev,
           );
@@ -646,13 +650,28 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     async (postId: string, reaction: ReactionType) => {
       if (!currentUserState) return;
       try {
+        const post = posts.find((p) => p.id === postId);
+        const existingReactors = post?.reactions?.[reaction] ?? [];
+        const isAdding = !existingReactors.includes(currentUserState.id);
+
         await ForumService.AddReaction(postId, reaction, currentUserState.id);
-        // onSnapshot listener handles state update automatically
+
+        if (isAdding && post && post.author.uid !== currentUserState.id) {
+          await ForumService.SendReactionNotification(
+            post.author.uid,
+            currentUserState.id,
+            currentUserState.username,
+            activeThread?.id ?? "",
+            postId,
+            activeThread?.title ?? "",
+            reaction,
+          );
+        }
       } catch (err) {
         console.error("ForumContext.reactToPost:", err);
       }
     },
-    [currentUserState],
+    [currentUserState, posts, activeThread],
   );
 
   // ─── Report Post ─────────────────────────────

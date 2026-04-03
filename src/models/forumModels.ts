@@ -165,6 +165,7 @@ export interface Post {
 // ─────────────────────────────────────────────
 
 export type ReactionType =
+  | "heart"
   | "like"
   | "dislike"
   | "laugh"
@@ -174,6 +175,7 @@ export type ReactionType =
   | "whoa";
 
 export const REACTION_LABELS: Record<ReactionType, string> = {
+  heart: "❤️",
   like: "👍",
   dislike: "👎",
   laugh: "😂",
@@ -226,6 +228,11 @@ export type NotificationForumType =
   | "mention"
   | "quote"
   | "reply"
+  | "reaction"
+  | "injury"
+  | "recruiting"
+  | "gameplan"
+  | "trade"
   | "mod_action"
   | "poll_closing";
 
