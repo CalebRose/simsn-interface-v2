@@ -148,7 +148,7 @@ export const useCHLLineupUtils = (
       }
       if (shootoutMap[playerID] === true && isShootout) {
         errList.push(
-          `${player.Position} ${player.FirstName} ${player.LastName} is already on an existing shootout line.`,
+          `${player.Position} ${player.FirstName} ${player.LastName} is already on the shootout lineup.`,
         );
       }
       if (!isShootout) {
@@ -324,7 +324,6 @@ export const useCHLLineupUtils = (
       );
     });
 
-    console.log("PONG!");
     // Validate Shooutout lineup
     [
       shootoutLineup?.Shooter1ID,
