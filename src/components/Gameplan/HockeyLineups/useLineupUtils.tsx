@@ -2,9 +2,11 @@ import { useMemo } from "react";
 import {
   CollegeLineup,
   CollegePlayer,
+  CollegeShootoutLineup,
   CollegeTeam,
   ProfessionalLineup,
   ProfessionalPlayer,
+  ProfessionalShootoutLineup,
   ProfessionalTeam,
 } from "../../../models/hockeyModels";
 import {
@@ -31,6 +33,7 @@ export const useCHLLineupUtils = (
   chlTeam?: CollegeTeam,
   chlRosterMap?: Record<number, CollegePlayer[]>,
   currentLineups?: CollegeLineup[],
+  shootoutLineup?: CollegeShootoutLineup,
 ) => {
   const chlTeamRoster = useMemo(() => {
     if (chlTeam && chlRosterMap) {
@@ -87,6 +90,7 @@ export const useCHLLineupUtils = (
     if (!currentLineups || !chlTeamRosterMap) return [];
     let errList: string[] = [];
     let playerMap: any = {};
+    let shootoutMap: any = {};
     const zoneLimits = {
       DGZ: { min: 0, max: 45 },
       DZ: { min: 0, max: 45 },
@@ -115,7 +119,11 @@ export const useCHLLineupUtils = (
     };
 
     // Function to validate a player's zone allocations
-    const validatePlayerInputs = (playerID: number, lineupLabel: string) => {
+    const validatePlayerInputs = (
+      playerID: number,
+      lineupLabel: string,
+      isShootout: boolean,
+    ) => {
       if (playerID === 0) return;
 
       const player = chlTeamRosterMap[playerID];
@@ -133,12 +141,21 @@ export const useCHLLineupUtils = (
       }
       const playerLabel = `${lineupLabel}: ${player.Position} ${player.FirstName} ${player.LastName}`;
 
-      if (playerMap[playerID] === true) {
+      if (playerMap[playerID] === true && !isShootout) {
         errList.push(
           `${player.Position} ${player.FirstName} ${player.LastName} is already on an existing line.`,
         );
       }
-      playerMap[playerID] = true;
+      if (shootoutMap[playerID] === true && isShootout) {
+        errList.push(
+          `${player.Position} ${player.FirstName} ${player.LastName} is already on the shootout lineup.`,
+        );
+      }
+      if (!isShootout) {
+        playerMap[playerID] = true;
+      } else {
+        shootoutMap[playerID] = true;
+      }
 
       Object.entries(zoneLimits).forEach(([zone, limits]) => {
         if (player[`${zone}Agility`]) {
@@ -302,10 +319,24 @@ export const useCHLLineupUtils = (
         lineup.Defender1ID,
         lineup.Defender2ID,
         lineup.GoalieID,
-      ].forEach((playerID) => validatePlayerInputs(playerID, lineupLabel));
+      ].forEach((playerID) =>
+        validatePlayerInputs(playerID, lineupLabel, false),
+      );
     });
+
+    // Validate Shooutout lineup
+    [
+      shootoutLineup?.Shooter1ID,
+      shootoutLineup?.Shooter2ID,
+      shootoutLineup?.Shooter3ID,
+      shootoutLineup?.Shooter4ID,
+      shootoutLineup?.Shooter5ID,
+      shootoutLineup?.Shooter6ID,
+    ].forEach((playerID) =>
+      validatePlayerInputs(playerID || 0, "Shootout Lineup", true),
+    );
     return errList;
-  }, [currentLineups, chlTeamRosterMap]);
+  }, [currentLineups, chlTeamRosterMap, shootoutLineup]);
 
   return {
     eligiblePlayers,
@@ -321,6 +352,7 @@ export const usePHLLineupUtils = (
   phlTeam?: ProfessionalTeam,
   phlRosterMap?: Record<number, ProfessionalPlayer[]>,
   currentLineups?: ProfessionalLineup[],
+  shootoutLineup?: ProfessionalShootoutLineup,
 ) => {
   const phlTeamRoster = useMemo(() => {
     if (phlTeam && phlRosterMap) {
@@ -377,6 +409,7 @@ export const usePHLLineupUtils = (
     if (!currentLineups || !phlTeamRosterMap) return [];
     let errList: string[] = [];
     let playerMap: any = {};
+    let shootoutMap: any = {};
     const zoneLimits = {
       DGZ: { min: 0, max: 45 },
       DZ: { min: 0, max: 45 },
@@ -405,7 +438,11 @@ export const usePHLLineupUtils = (
     };
 
     // Function to validate a player's zone allocations
-    const validatePlayerInputs = (playerID: number, lineupLabel: string) => {
+    const validatePlayerInputs = (
+      playerID: number,
+      lineupLabel: string,
+      isShootout: boolean,
+    ) => {
       if (playerID === 0) return;
 
       const player = phlTeamRosterMap[playerID];
@@ -424,12 +461,21 @@ export const usePHLLineupUtils = (
         );
       }
 
-      if (playerMap[playerID] === true) {
+      if (playerMap[playerID] === true && !isShootout) {
         errList.push(
           `${player.Position} ${player.FirstName} ${player.LastName} is already on an existing line.`,
         );
       }
-      playerMap[playerID] = true;
+      if (shootoutMap[playerID] === true && isShootout) {
+        errList.push(
+          `${player.Position} ${player.FirstName} ${player.LastName} is already on the shootout lineup.`,
+        );
+      }
+      if (isShootout) {
+        shootoutMap[playerID] = true;
+      } else {
+        playerMap[playerID] = true;
+      }
 
       Object.entries(zoneLimits).forEach(([zone, limits]) => {
         if (player[`${zone}Agility`]) {
@@ -593,8 +639,22 @@ export const usePHLLineupUtils = (
         lineup.Defender1ID,
         lineup.Defender2ID,
         lineup.GoalieID,
-      ].forEach((playerID) => validatePlayerInputs(playerID, lineupLabel));
+      ].forEach((playerID) =>
+        validatePlayerInputs(playerID, lineupLabel, false),
+      );
     });
+
+    // Validate Shooutout lineup
+    [
+      shootoutLineup?.Shooter1ID,
+      shootoutLineup?.Shooter2ID,
+      shootoutLineup?.Shooter3ID,
+      shootoutLineup?.Shooter4ID,
+      shootoutLineup?.Shooter5ID,
+      shootoutLineup?.Shooter6ID,
+    ].forEach((playerID) =>
+      validatePlayerInputs(playerID || 0, "Shootout Lineup", true),
+    );
     return errList;
   }, [currentLineups, phlTeamRosterMap]);
 
