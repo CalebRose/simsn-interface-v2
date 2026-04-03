@@ -39,6 +39,7 @@ import {
   UpdatePostDTO,
   ModerationAction,
   ReactionType,
+  REACTION_LABELS,
   RichTextDocument,
 } from "../models/forumModels";
 
@@ -910,6 +911,30 @@ export const ForumService = {
         }),
       ),
     );
+  },
+
+  SendReactionNotification: async (
+    postAuthorUid: string,
+    actorUid: string,
+    actorUsername: string,
+    threadId: string,
+    postId: string,
+    threadTitle: string,
+    reactionType: ReactionType,
+  ): Promise<void> => {
+    if (postAuthorUid === actorUid) return;
+    const label = REACTION_LABELS[reactionType];
+    await addDoc(collection(firestore, "notifications"), {
+      uid: postAuthorUid,
+      type: "reaction",
+      threadId,
+      postId,
+      actorUid,
+      actorUsername,
+      message: `@${actorUsername} reacted ${label} to your post in "${threadTitle}"`,
+      isRead: false,
+      createdAt: serverTimestamp(),
+    });
   },
 
   // ─────────────────────────────────────────────
