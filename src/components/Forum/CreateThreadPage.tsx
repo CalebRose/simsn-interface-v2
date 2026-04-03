@@ -178,6 +178,7 @@ export const CreateThreadPage: React.FC = () => {
         threadType,
         tags: selectedMediaTags.length > 0 ? selectedMediaTags : [],
         poll,
+        mentions,
       };
 
       const threadId = await createThread(dto);

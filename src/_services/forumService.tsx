@@ -21,9 +21,7 @@ import {
 } from "firebase/firestore";
 import type { PostMention } from "../models/forumModels";
 import { firestore } from "../firebase/firebase";
-import {
-  parseForumBody,
-} from "../components/Forum/forumUtils";
+import { parseForumBody } from "../components/Forum/forumUtils";
 import {
   Forum,
   Thread,
@@ -200,7 +198,7 @@ export const ForumService = {
       bodyText: parsedBody.bodyTextWithoutFeatureImage,
       quotedPostId: null,
       replyToPostId: null,
-      mentions: [],
+      mentions: dto.mentions ?? [],
       reactions: {},
       isEdited: false,
       editedAt: null,
