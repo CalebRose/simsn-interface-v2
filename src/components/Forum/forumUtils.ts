@@ -29,7 +29,9 @@ export function isForumImageUrl(value: string | null | undefined): boolean {
 function getNodeTextContent(node: RichTextNode | undefined): string {
   if (!node) return "";
   if (node.type === "text") return node.text ?? "";
-  return (node.content ?? []).map((child) => getNodeTextContent(child)).join("");
+  return (node.content ?? [])
+    .map((child) => getNodeTextContent(child))
+    .join("");
 }
 
 function getImageUrlFromNode(node: RichTextNode | undefined): string | null {
@@ -49,7 +51,7 @@ function getImageUrlFromNode(node: RichTextNode | undefined): string | null {
         ? node.attrs.src
         : typeof node.attrs?.href === "string"
           ? node.attrs.href
-        : typeof node.attrs?.url === "string"
+          : typeof node.attrs?.url === "string"
             ? node.attrs.url
             : "";
     if (isForumImageUrl(src)) return src;
@@ -64,7 +66,9 @@ function getImageUrlFromNode(node: RichTextNode | undefined): string | null {
   return null;
 }
 
-function getImageUrlFromTopLevelNode(node: RichTextNode | undefined): string | null {
+function getImageUrlFromTopLevelNode(
+  node: RichTextNode | undefined,
+): string | null {
   if (!node) return null;
 
   const nodeImageUrl = getImageUrlFromNode(node);
@@ -82,7 +86,9 @@ function isEmptyTopLevelNode(node: RichTextNode): boolean {
   return !getNodeTextContent(node).trim() && !getImageUrlFromTopLevelNode(node);
 }
 
-function getLeadingFeatureNodeIndex(body: RichTextDocument | null | undefined): number {
+function getLeadingFeatureNodeIndex(
+  body: RichTextDocument | null | undefined,
+): number {
   if (!body?.content?.length) return -1;
 
   const firstNonEmptyIndex = body.content.findIndex(
@@ -95,9 +101,26 @@ function getLeadingFeatureNodeIndex(body: RichTextDocument | null | undefined): 
   if (!imageUrl) return -1;
 
   const textContent = getNodeTextContent(firstNode).trim();
-  if (!textContent || isForumImageUrl(textContent) || textContent === imageUrl) {
+
+  // Accept when the node has no text, when the text IS the image URL (raw paste),
+  // or when the text exactly matches the discovered URL.
+  if (
+    !textContent ||
+    isForumImageUrl(textContent) ||
+    textContent === imageUrl
+  ) {
     return firstNonEmptyIndex;
   }
+
+  // Also accept when every child node that carries text is itself an image-linked
+  // node (i.e. the user applied the 🔗 toolbar to custom display text like
+  // "hq720.jpg (1280×720)" and pointed it at the real image URL). In that case
+  // there is no non-image text mixed in, so the whole node is purely a feature image.
+  const hasMixedTextContent = (firstNode.content ?? []).some((child) => {
+    if (!getNodeTextContent(child).trim()) return false;
+    return !getImageUrlFromNode(child);
+  });
+  if (!hasMixedTextContent) return firstNonEmptyIndex;
 
   return -1;
 }
@@ -110,7 +133,9 @@ function forumDocToPlaintext(
   function extractText(node: RichTextNode): string {
     if (node.type === "text") return node.text ?? "";
     if (!node.content) return "";
-    return node.content.map(extractText).join(node.type === "paragraph" ? "\n" : "");
+    return node.content
+      .map(extractText)
+      .join(node.type === "paragraph" ? "\n" : "");
   }
 
   return body.content.map(extractText).join("\n");
@@ -130,7 +155,9 @@ export function parseForumBody(
     featureNodeIndex !== -1 && body
       ? {
           ...body,
-          content: body.content.filter((_, index) => index !== featureNodeIndex),
+          content: body.content.filter(
+            (_, index) => index !== featureNodeIndex,
+          ),
         }
       : body;
 
