@@ -99,7 +99,7 @@ export const CHLLineupPage = () => {
     chlTeam!,
     chlRosterMap,
     currentLineups,
-    chlShootoutLineup,
+    currentShootoutLineups,
   );
   const { isMobile } = useResponsive();
 
@@ -648,7 +648,7 @@ export const PHLLineupPage = () => {
     phlTeam!,
     proRosterMap,
     currentLineups,
-    phlShootoutLineup,
+    currentShootoutLineups,
   );
   const { isMobile } = useResponsive();
 

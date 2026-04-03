@@ -324,6 +324,7 @@ export const useCHLLineupUtils = (
       );
     });
 
+    console.log("PONG!");
     // Validate Shooutout lineup
     [
       shootoutLineup?.Shooter1ID,
