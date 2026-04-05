@@ -51,6 +51,16 @@ export const AdminUsersTable: FC<AdminUsersTableProps> = ({
     const chlLogo = getLogo(SimCHL, item.CHLTeamID ?? 0, item.IsRetro);
     const phlLogo = getLogo(SimPHL, item.PHLTeamID ?? 0, item.IsRetro);
 
+    const healthStatus = (() => {
+      if (item.IsBanned) {
+        return "BANNED";
+      }
+      if (item.Reports && item.Reports > 0) {
+        return `Reported ${item.Reports}x`;
+      }
+      return "Good";
+    })();
+
     return (
       <div
         key={item.id}
@@ -72,7 +82,7 @@ export const AdminUsersTable: FC<AdminUsersTableProps> = ({
           <Text variant="small">{item.roleID ?? "—"}</Text>
         </TableCell>
         <TableCell classes="flex text-center justify-center">
-          <Text variant="small">{!item.IsBanned ? "Good" : "BANNED"}</Text>
+          <Text variant="small">{healthStatus}</Text>
         </TableCell>
 
         {/* Desktop/Tablet-only columns */}

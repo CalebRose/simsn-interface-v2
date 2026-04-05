@@ -310,11 +310,15 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
           >
             {attr.label === "Redshirt" ? (
               <>
-                {attr.value === true ? (
+                {item.IsRedshirt && (
                   <CheckCircle
                     textColorClass={`w-full text-center ${TextGreen}`}
                   />
-                ) : (
+                )}
+                {item.IsRedshirting && (
+                  <CheckCircle textColorClass="w-full text-center text-yellow-500" />
+                )}
+                {!item.IsRedshirt && !item.IsRedshirting && (
                   <CrossCircle textColorClass="w-full text-center text-red-500" />
                 )}
               </>

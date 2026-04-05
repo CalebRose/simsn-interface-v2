@@ -656,7 +656,7 @@ export const usePHLLineupUtils = (
       validatePlayerInputs(playerID || 0, "Shootout Lineup", true),
     );
     return errList;
-  }, [currentLineups, phlTeamRosterMap]);
+  }, [currentLineups, phlTeamRosterMap, shootoutLineup]);
 
   return {
     eligiblePlayers,
