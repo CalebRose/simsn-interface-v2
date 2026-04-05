@@ -4,6 +4,7 @@ import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
 import { SelectDropdown } from "../../_design/Select";
 import { CurrentUser } from "../../_hooks/useCurrentUser";
+import { PostReport } from "../../models/forumModels";
 import { useResponsive } from "../../_hooks/useMobile";
 import { getLogo } from "../../_utility/getLogo";
 import {
@@ -21,6 +22,7 @@ interface AdminUsersTableProps {
   users: (CurrentUser & { id: string })[];
   columns: { header: string; accessor: string }[];
   commissionerOptions: { label: string; value: string }[];
+  reports: PostReport[];
   onUpdateRole: (id: string, roleID: string) => Promise<void>;
   openManageModal: (user: CurrentUser) => void;
 }
@@ -29,6 +31,7 @@ export const AdminUsersTable: FC<AdminUsersTableProps> = ({
   users,
   commissionerOptions,
   columns,
+  reports,
   onUpdateRole,
   openManageModal,
 }) => {
@@ -54,6 +57,14 @@ export const AdminUsersTable: FC<AdminUsersTableProps> = ({
     const healthStatus = (() => {
       if (item.IsBanned) {
         return "BANNED";
+      }
+      const pendingCount = reports.filter(
+        (r) =>
+          r.reportedUsername?.toLowerCase() === item.username?.toLowerCase() &&
+          r.status === "pending",
+      ).length;
+      if (pendingCount > 0) {
+        return `Reported ${pendingCount}x`;
       }
       if (item.Reports && item.Reports > 0) {
         return `Reported ${item.Reports}x`;

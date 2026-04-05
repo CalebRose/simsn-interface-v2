@@ -1,10 +1,14 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CurrentUser } from "../../_hooks/useCurrentUser";
 import { useFirestoreCollection } from "../../firebase/firebase";
 import { useResponsive } from "../../_hooks/useMobile";
 import { useModal } from "../../_hooks/useModal";
+import { ForumService } from "../../_services/forumService";
+import { PostReport, ReportStatus } from "../../models/forumModels";
+import { useAuthStore } from "../../context/AuthContext";
 
 export const useAdminUsersPage = () => {
+  const { currentUser } = useAuthStore();
   const [users, { update, remove }, isLoading, error] =
     useFirestoreCollection<CurrentUser>("users");
 
@@ -110,6 +114,79 @@ export const useAdminUsersPage = () => {
     manageUserModal.handleCloseModal();
   };
 
+  // ─── Forum Reports ──────────────────────────────────────────────────────────
+  const [reports, setReports] = useState<PostReport[]>([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<ReportStatus | "all">("pending");
+  const [noteInputs, setNoteInputs] = useState<Record<string, string>>({});
+  const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
+
+  const fetchReports = useCallback(async () => {
+    setReportsLoading(true);
+    try {
+      const data = await ForumService.GetPostReports(
+        activeTab === "all" ? undefined : activeTab,
+      );
+      setReports(data);
+    } finally {
+      setReportsLoading(false);
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
+
+  const setReportBusy = (id: string, busy: boolean) =>
+    setBusyIds((prev) => {
+      const next = new Set(prev);
+      busy ? next.add(id) : next.delete(id);
+      return next;
+    });
+
+  const updateReport = async (
+    id: string,
+    status: ReportStatus,
+    note?: string,
+  ) => {
+    setReportBusy(id, true);
+    try {
+      await ForumService.UpdatePostReport(id, {
+        status,
+        reviewedBy: currentUser?.username ?? "",
+        adminNote: note ?? null,
+      });
+      setReports((prev) =>
+        prev.map((r) =>
+          r.id === id
+            ? {
+                ...r,
+                status,
+                reviewedBy: currentUser?.username ?? "",
+                adminNote: note ?? null,
+              }
+            : r,
+        ),
+      );
+    } finally {
+      setReportBusy(id, false);
+    }
+  };
+
+  const handleOpenReportedUser = (reportedUsername: string) => {
+    const user = users?.find(
+      (u) => u.username?.toLowerCase() === reportedUsername.toLowerCase(),
+    );
+    if (user) openManageModal(user);
+  };
+
+  const visibleReports =
+    activeTab === "all"
+      ? reports
+      : reports.filter((r) => r.status === activeTab);
+
+  const pendingCount = reports.filter((r) => r.status === "pending").length;
+
   return {
     users,
     filteredUsers,
@@ -128,5 +205,18 @@ export const useAdminUsersPage = () => {
     setViewingUser,
     viewActiveUsers,
     setViewActiveUsers,
+    currentUser,
+    reports,
+    reportsLoading,
+    activeTab,
+    setActiveTab,
+    noteInputs,
+    setNoteInputs,
+    busyIds,
+    fetchReports,
+    updateReport,
+    handleOpenReportedUser,
+    visibleReports,
+    pendingCount,
   };
 };
