@@ -4,6 +4,7 @@ import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
 import { SelectDropdown } from "../../_design/Select";
 import { CurrentUser } from "../../_hooks/useCurrentUser";
+import { PostReport } from "../../models/forumModels";
 import { useResponsive } from "../../_hooks/useMobile";
 import { getLogo } from "../../_utility/getLogo";
 import {
@@ -21,6 +22,7 @@ interface AdminUsersTableProps {
   users: (CurrentUser & { id: string })[];
   columns: { header: string; accessor: string }[];
   commissionerOptions: { label: string; value: string }[];
+  reports: PostReport[];
   onUpdateRole: (id: string, roleID: string) => Promise<void>;
   openManageModal: (user: CurrentUser) => void;
 }
@@ -29,6 +31,7 @@ export const AdminUsersTable: FC<AdminUsersTableProps> = ({
   users,
   commissionerOptions,
   columns,
+  reports,
   onUpdateRole,
   openManageModal,
 }) => {
@@ -51,6 +54,24 @@ export const AdminUsersTable: FC<AdminUsersTableProps> = ({
     const chlLogo = getLogo(SimCHL, item.CHLTeamID ?? 0, item.IsRetro);
     const phlLogo = getLogo(SimPHL, item.PHLTeamID ?? 0, item.IsRetro);
 
+    const healthStatus = (() => {
+      if (item.IsBanned) {
+        return "BANNED";
+      }
+      const pendingCount = reports.filter(
+        (r) =>
+          r.reportedUsername?.toLowerCase() === item.username?.toLowerCase() &&
+          r.status === "pending",
+      ).length;
+      if (pendingCount > 0) {
+        return `Reported ${pendingCount}x`;
+      }
+      if (item.Reports && item.Reports > 0) {
+        return `Reported ${item.Reports}x`;
+      }
+      return "Good";
+    })();
+
     return (
       <div
         key={item.id}
@@ -72,7 +93,7 @@ export const AdminUsersTable: FC<AdminUsersTableProps> = ({
           <Text variant="small">{item.roleID ?? "—"}</Text>
         </TableCell>
         <TableCell classes="flex text-center justify-center">
-          <Text variant="small">{!item.IsBanned ? "Good" : "BANNED"}</Text>
+          <Text variant="small">{healthStatus}</Text>
         </TableCell>
 
         {/* Desktop/Tablet-only columns */}

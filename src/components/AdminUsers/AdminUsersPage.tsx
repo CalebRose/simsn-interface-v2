@@ -7,11 +7,10 @@ import { PageContainer } from "../../_design/Container";
 import { Border } from "../../_design/Borders";
 import { Text } from "../../_design/Typography";
 import { Input, ToggleSwitch } from "../../_design/Inputs";
-import { useAuthStore } from "../../context/AuthContext";
 
 export const AdminUsersPage: FC = () => {
-  const { currentUser } = useAuthStore();
   const {
+    currentUser,
     filteredUsers,
     searchQuery,
     setSearchQuery,
@@ -28,6 +27,18 @@ export const AdminUsersPage: FC = () => {
     handleCloseManageModal,
     viewActiveUsers,
     setViewActiveUsers,
+    reports,
+    reportsLoading,
+    activeTab,
+    setActiveTab,
+    noteInputs,
+    setNoteInputs,
+    busyIds,
+    fetchReports,
+    updateReport,
+    handleOpenReportedUser,
+    visibleReports,
+    pendingCount,
   } = useAdminUsersPage();
 
   if (error) return <div>Error loading users: {error.message}</div>;
@@ -71,14 +82,24 @@ export const AdminUsersPage: FC = () => {
               onUpdateRole={(id, roleID) => updateUser(id, { roleID })}
               openManageModal={openManageModal}
               columns={userTableColumns}
+              reports={reports}
             />
           )}
         </div>
         {currentUser && (
           <ForumReportsSection
-            currentAdminUsername={currentUser.username}
-            onOpenUserModal={openManageModal}
-            users={filteredUsers ?? []}
+            reports={reports}
+            reportsLoading={reportsLoading}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            noteInputs={noteInputs}
+            setNoteInputs={setNoteInputs}
+            busyIds={busyIds}
+            fetchReports={fetchReports}
+            updateReport={updateReport}
+            handleOpenReportedUser={handleOpenReportedUser}
+            visibleReports={visibleReports}
+            pendingCount={pendingCount}
           />
         )}
       </PageContainer>

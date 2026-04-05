@@ -1,7 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { ForumService } from "../../_services/forumService";
+import React from "react";
 import { PostReport, ReportStatus } from "../../models/forumModels";
-import { CurrentUser } from "../../_hooks/useCurrentUser";
 import { Border } from "../../_design/Borders";
 import { Text } from "../../_design/Typography";
 import { Button, ButtonGroup } from "../../_design/Buttons";
@@ -26,88 +24,37 @@ function formatDate(ts: { seconds: number } | null | undefined): string {
 }
 
 interface ForumReportsSectionProps {
-  currentAdminUsername: string;
-  onOpenUserModal: (user: CurrentUser) => void;
-  users: CurrentUser[];
-}
-
-export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
-  currentAdminUsername,
-  onOpenUserModal,
-  users,
-}) => {
-  const [reports, setReports] = useState<PostReport[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<ReportStatus | "all">("pending");
-  const [noteInputs, setNoteInputs] = useState<Record<string, string>>({});
-  const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
-
-  const fetchReports = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await ForumService.GetPostReports(
-        activeTab === "all" ? undefined : activeTab,
-      );
-      setReports(data);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activeTab]);
-
-  useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
-
-  const setReportBusy = (id: string, busy: boolean) =>
-    setBusyIds((prev) => {
-      const next = new Set(prev);
-      busy ? next.add(id) : next.delete(id);
-      return next;
-    });
-
-  const updateReport = async (
+  reports: PostReport[];
+  reportsLoading: boolean;
+  activeTab: ReportStatus | "all";
+  setActiveTab: (tab: ReportStatus | "all") => void;
+  noteInputs: Record<string, string>;
+  setNoteInputs: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  busyIds: Set<string>;
+  fetchReports: () => Promise<void>;
+  updateReport: (
     id: string,
     status: ReportStatus,
     note?: string,
-  ) => {
-    setReportBusy(id, true);
-    try {
-      await ForumService.UpdatePostReport(id, {
-        status,
-        reviewedBy: currentAdminUsername,
-        adminNote: note ?? null,
-      });
-      setReports((prev) =>
-        prev.map((r) =>
-          r.id === id
-            ? {
-                ...r,
-                status,
-                reviewedBy: currentAdminUsername,
-                adminNote: note ?? null,
-              }
-            : r,
-        ),
-      );
-    } finally {
-      setReportBusy(id, false);
-    }
-  };
+  ) => Promise<void>;
+  handleOpenReportedUser: (username: string) => void;
+  visibleReports: PostReport[];
+  pendingCount: number;
+}
 
-  const handleOpenUser = (reportedUsername: string) => {
-    const user = users.find(
-      (u) => u.username?.toLowerCase() === reportedUsername.toLowerCase(),
-    );
-    if (user) onOpenUserModal(user);
-  };
-
-  const visibleReports =
-    activeTab === "all"
-      ? reports
-      : reports.filter((r) => r.status === activeTab);
-
-  const pendingCount = reports.filter((r) => r.status === "pending").length;
-
+export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
+  reportsLoading,
+  activeTab,
+  setActiveTab,
+  noteInputs,
+  setNoteInputs,
+  busyIds,
+  fetchReports,
+  updateReport,
+  handleOpenReportedUser,
+  visibleReports,
+  pendingCount,
+}) => {
   return (
     <Border classes="w-[95vw] px-4 py-4 mt-4">
       <SectionHeading
@@ -132,14 +79,14 @@ export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
         <button
           onClick={fetchReports}
           className="ml-auto px-3 py-1 rounded text-sm bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
-          disabled={isLoading}
+          disabled={reportsLoading}
         >
-          {isLoading ? "Loading…" : "↻ Refresh"}
+          {reportsLoading ? "Loading…" : "↻ Refresh"}
         </button>
       </div>
 
       {/* Report list */}
-      {isLoading ? (
+      {reportsLoading ? (
         <Text variant="secondary">Loading reports…</Text>
       ) : visibleReports.length === 0 ? (
         <Text variant="secondary" classes="py-4 text-center">
@@ -187,7 +134,9 @@ export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
                   <span className="text-gray-400">
                     Reported:{" "}
                     <button
-                      onClick={() => handleOpenUser(report.reportedUsername)}
+                      onClick={() =>
+                        handleOpenReportedUser(report.reportedUsername)
+                      }
                       className="text-blue-400 hover:underline"
                     >
                       {report.reportedUsername}
@@ -249,7 +198,9 @@ export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
                       variant="primary"
                       size="xs"
                       disabled={busyIds.has(report.id)}
-                      onClick={() => handleOpenUser(report.reportedUsername)}
+                      onClick={() =>
+                        handleOpenReportedUser(report.reportedUsername)
+                      }
                     >
                       Open User
                     </Button>
