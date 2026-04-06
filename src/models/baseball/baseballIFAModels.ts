@@ -37,6 +37,13 @@ export interface IFABonusPool {
 
 // ── Eligible Players ────────────────────────────────────────
 
+export interface IFAPlayerScouting {
+    unlocked: string[];
+    attrs_precise: boolean;
+    pots_precise: boolean;
+    available_actions: string[];
+}
+
 export interface IFAEligiblePlayer {
     player_id: number;
     firstName: string;
@@ -46,6 +53,22 @@ export interface IFAEligiblePlayer {
     area: string;
     star_rating: number;
     slot_value: number;
+    listed_position: string | null;
+    display_format: "letter_grade" | "20-80";
+    scouting: IFAPlayerScouting;
+    // Pitch arsenal (pitchers)
+    pitch1_name: string | null;
+    pitch2_name: string | null;
+    pitch3_name: string | null;
+    pitch4_name: string | null;
+    pitch5_name: string | null;
+    pitch1_ovr: number | null;
+    pitch2_ovr: number | null;
+    pitch3_ovr: number | null;
+    pitch4_ovr: number | null;
+    pitch5_ovr: number | null;
+    // Attribute/potential fields — pre-fuzzed letter grades or 20-80 numeric
+    [key: string]: any;
 }
 
 // ── Board (Main View) ──────────────────────────────────────
@@ -69,6 +92,22 @@ export interface IFAAuctionEntry {
     active_offers: number;
     competitors: string[];
     my_offer: IFAMyOffer | null;
+    listed_position: string | null;
+    display_format: "letter_grade" | "20-80";
+    scouting: IFAPlayerScouting;
+    // Pitch arsenal (pitchers)
+    pitch1_name: string | null;
+    pitch2_name: string | null;
+    pitch3_name: string | null;
+    pitch4_name: string | null;
+    pitch5_name: string | null;
+    pitch1_ovr: number | null;
+    pitch2_ovr: number | null;
+    pitch3_ovr: number | null;
+    pitch4_ovr: number | null;
+    pitch5_ovr: number | null;
+    // Attribute/potential fields — pre-fuzzed letter grades or 20-80 numeric
+    [key: string]: any;
 }
 
 export interface IFABoardResponse {

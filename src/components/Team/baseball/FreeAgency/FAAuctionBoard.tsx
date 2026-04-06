@@ -78,6 +78,7 @@ export const FAAuctionBoard: FC<FAAuctionBoardProps> = ({
           <thead>
             <tr className="border-b border-gray-700">
               <th className={th}>Player</th>
+              <th className={th}>Pos</th>
               <th className={th}>Age</th>
               <th className={th}>Type</th>
               <th className={th}>WAR</th>
@@ -96,6 +97,7 @@ export const FAAuctionBoard: FC<FAAuctionBoardProps> = ({
                 onClick={() => onPlayerClick(e)}
               >
                 <td className="px-2 py-1 font-medium">{e.player_name}</td>
+                <td className="px-2 py-1 text-xs font-semibold">{e.listed_position ?? "—"}</td>
                 <td className="px-2 py-1">{e.age}</td>
                 <td className="px-2 py-1">{e.player_type === "Pitcher" ? "P" : "Pos"}</td>
                 <td className="px-2 py-1">{e.war}</td>

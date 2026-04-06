@@ -137,11 +137,14 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
   const [sortField, setSortField] = useState<TeamSortField>("ops");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
+  const safeBatting = batting ?? [];
+  const safePitching = pitching ?? [];
+
   const pitchingMap = useMemo(() => {
     const m = new Map<number, TeamPitchingRow>();
-    for (const p of pitching) m.set(p.team_id, p);
+    for (const p of safePitching) m.set(p.team_id, p);
     return m;
-  }, [pitching]);
+  }, [safePitching]);
 
   // Build a map of team_id → games played from standings (wins + losses), the authoritative source
   const standingsGPMap = useMemo(() => {
@@ -160,7 +163,7 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
   };
 
   const sortedBatting = useMemo(() => {
-    const rows = [...batting];
+    const rows = [...safeBatting];
     rows.sort((a, b) => {
       let va: number, vb: number;
       if (sortField.startsWith("p_")) {
@@ -179,20 +182,13 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
       return sortOrder === "asc" ? va - vb : vb - va;
     });
     return rows;
-  }, [batting, pitchingMap, standingsGPMap, sortField, sortOrder]);
+  }, [safeBatting, pitchingMap, standingsGPMap, sortField, sortOrder]);
 
-  const SortHeader = ({
-    label,
-    field,
-    bold,
-  }: {
-    label: string;
-    field: TeamSortField;
-    bold?: boolean;
-  }) => {
+  const renderSortHeader = (label: string, field: TeamSortField, bold?: boolean) => {
     const isActive = sortField === field;
     return (
       <th
+        key={field}
         className={`px-2 py-1 text-center cursor-pointer select-none hover:opacity-80 ${isActive ? "underline decoration-2 underline-offset-2" : ""} ${bold ? "font-bold" : ""}`}
         onClick={() => handleSort(field)}
       >
@@ -232,22 +228,8 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
             }
           >
             <th className="px-2 py-1"></th>
-            {BATTING_COLS.map((col) => (
-              <SortHeader
-                key={col.sortKey}
-                label={col.label}
-                field={col.sortKey}
-                bold={col.bold}
-              />
-            ))}
-            {PITCHING_COLS.map((col) => (
-              <SortHeader
-                key={col.sortKey}
-                label={col.label}
-                field={col.sortKey}
-                bold={col.bold}
-              />
-            ))}
+            {BATTING_COLS.map((col) => renderSortHeader(col.label, col.sortKey, col.bold))}
+            {PITCHING_COLS.map((col) => renderSortHeader(col.label, col.sortKey, col.bold))}
           </tr>
         </thead>
         <tbody>
@@ -300,7 +282,7 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
               </tr>
             );
           })}
-          {batting.length === 0 && (
+          {safeBatting.length === 0 && (
             <tr>
               <td
                 colSpan={1 + BATTING_COLS.length + PITCHING_COLS.length}
