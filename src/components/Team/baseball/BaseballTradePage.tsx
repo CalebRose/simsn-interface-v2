@@ -547,9 +547,14 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
     }, [organizations]);
 
     // ── Player lookup map (all rosters flat, bootstrap data preferred) ──
+    // Accumulative cache: once we've seen a player, we keep their info
+    // even if they move orgs (e.g. after a trade executes). This prevents
+    // executed trade proposals from showing "Player #12345".
+    const playerCacheRef = useRef<Record<number, Player>>({});
+
     const playerMap = useMemo(() => {
-        const map: Record<number, Player> = {};
-        // First add all roster data (may lack contract info)
+        const map: Record<number, Player> = { ...playerCacheRef.current };
+        // Layer roster data on top (may lack contract info)
         for (const players of Object.values(allRosters)) {
             for (const p of players) map[p.id] = p;
         }
@@ -561,6 +566,8 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
         for (const players of Object.values(rosterMap)) {
             for (const p of players) map[p.id] = p;
         }
+        // Persist all entries for future lookups
+        playerCacheRef.current = map;
         return map;
     }, [allRosters, bootstrapCache, rosterMap]);
 

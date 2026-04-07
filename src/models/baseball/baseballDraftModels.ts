@@ -25,6 +25,7 @@ export interface BaseballDraftPick {
 
 export interface BaseballDraftee {
   player_id: number;
+  // Legacy flat fields (kept for backward compat during migration)
   first_name: string;
   last_name: string;
   position: string;
@@ -38,6 +39,33 @@ export interface BaseballDraftee {
   overall_grade: string | null;    // letter grade from scouting
   draft_rank: number | null;       // consensus rank
   is_draft_eligible: boolean;
+  // New unified player shape
+  bio?: {
+    firstname: string;
+    lastname: string;
+    age: number;
+    ptype: "Pitcher" | "Position";
+    height: number;
+    weight: number;
+    bat_hand: string;
+    pitch_hand: string;
+    arm_angle: string | null;
+    durability: number | string;
+    injury_risk: number | string;
+    pitch1_name: string | null;
+    pitch2_name: string | null;
+    pitch3_name: string | null;
+    pitch4_name: string | null;
+    pitch5_name: string | null;
+  };
+  ratings?: Record<string, any>;
+  potentials?: Record<string, any>;
+  scouting?: {
+    unlocked: string[];
+    attrs_precise: boolean;
+    pots_precise: boolean;
+    available_actions: string[];
+  };
 }
 
 // ═══════════════════════════════════════════════

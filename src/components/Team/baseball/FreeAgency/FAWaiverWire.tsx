@@ -116,7 +116,7 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
     <div className="baseball-table-wrapper overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-gray-700">
+          <tr className="border-b dark:border-gray-600">
             <th className={th}>Name</th>
             <th className={th}>Age</th>
             <th className={th}>Type</th>
@@ -136,7 +136,7 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
             return (
               <tr
                 key={w.waiver_claim_id}
-                className="border-b border-gray-800 hover:bg-gray-700/30"
+                className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <td className="px-2 py-1 font-medium">{w.player_name}</td>
                 <td className="px-2 py-1">{w.age}</td>

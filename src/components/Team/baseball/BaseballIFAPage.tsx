@@ -13,15 +13,22 @@ import {
   type IFABonusPool,
   type IFAAuctionEntry,
   type IFAEligiblePlayer,
-  type IFABoardResponse,
   type IFAAuctionDetail,
   type IFAOrgOffer,
   type IFAAuctionPhase,
   type IFAOfferStatus,
 } from "../../../models/baseball/baseballIFAModels";
+import type { Player } from "../../../models/baseball/baseballModels";
 import { IFAOfferModal } from "./IFA/IFAOfferModal";
 import { IFAPlayerDetail } from "./IFA/IFAPlayerDetail";
-import { IFAAuctionTable, IFAEligibleTable, type IFACategory } from "./IFA/IFAProspectTable";
+import { adaptIFAEligiblePlayer, adaptIFAAuctionEntry, type IFAPlayer } from "./IFA/ifaPlayerAdapter";
+import {
+  AllPlayersTable,
+  PositionTable,
+  PitcherTable,
+  type BaseballCategory,
+  type SortConfig,
+} from "./BaseballRosterTable";
 import { useSnackbar } from "notistack";
 import { BaseballService as ScoutService } from "../../../_services/baseballService";
 import "./baseballMobile.css";
@@ -85,6 +92,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
   const { mlbOrganization, seasonContext } = useSimBaseballStore();
   const { enqueueSnackbar } = useSnackbar();
   const orgId = mlbOrganization?.id ?? 0;
+  const orgAbbrev = mlbOrganization?.org_abbrev ?? "";
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
 
   // ── Tab state ──
@@ -100,7 +108,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
   const [loadError, setLoadError] = useState(false);
 
   // ── Category ──
-  const [boardCategory, setBoardCategory] = useState<IFACategory>("Attributes");
+  const [boardCategory, setBoardCategory] = useState<BaseballCategory>("Attributes");
 
   // ── Scouting budget ──
   const [scoutingBudget, setScoutingBudget] = useState<number | null>(null);
@@ -118,6 +126,15 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
   const [filterStars, setFilterStars] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchInput, setSearchInput] = useState("");
+
+  // ── Sort ──
+  const [sortKey, setSortKey] = useState("lastname");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const sortConfig: SortConfig = { key: sortKey, dir: sortDir };
+  const handleSort = (key: string) => {
+    if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortDir("asc"); }
+  };
 
   // ── Search debounce ──
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -137,7 +154,6 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
       setIfaState(boardData.state);
       setPool(boardData.pool);
       setAuctions(boardData.auctions);
-      // Eligible loaded separately so board still works if this fails
       try {
         const eligibleData = await BaseballService.GetIFAEligible(leagueYearId, orgId);
         setEligible(eligibleData);
@@ -187,30 +203,30 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
     [auctions],
   );
 
-  const availableProspects = useMemo(() => {
+  const availableProspects: IFAPlayer[] = useMemo(() => {
     let list = eligible.filter((p) => !auctionPlayerIds.has(p.player_id));
-    if (filterType !== "all") list = list.filter((p) => p.ptype === filterType);
+    if (filterType !== "all") list = list.filter((p) => p.bio.ptype === filterType);
     if (filterStars !== "all") list = list.filter((p) => p.star_rating === Number(filterStars));
     if (searchTerm.length >= 2) {
       const term = searchTerm.toLowerCase();
       list = list.filter((p) =>
-        `${p.firstName} ${p.lastName}`.toLowerCase().includes(term),
+        `${p.bio.firstname} ${p.bio.lastname}`.toLowerCase().includes(term),
       );
     }
-    return list;
+    return list.map(adaptIFAEligiblePlayer);
   }, [eligible, auctionPlayerIds, filterType, filterStars, searchTerm]);
 
-  const filteredAuctions = useMemo(() => {
+  const adaptedAuctions: IFAPlayer[] = useMemo(() => {
     let list = [...auctions];
-    if (filterType !== "all") list = list.filter((a) => a.ptype === filterType);
+    if (filterType !== "all") list = list.filter((a) => a.bio.ptype === filterType);
     if (filterStars !== "all") list = list.filter((a) => a.star_rating === Number(filterStars));
     if (searchTerm.length >= 2) {
       const term = searchTerm.toLowerCase();
       list = list.filter((a) =>
-        `${a.firstName} ${a.lastName}`.toLowerCase().includes(term),
+        `${a.bio.firstname} ${a.bio.lastname}`.toLowerCase().includes(term),
       );
     }
-    return list;
+    return list.map(adaptIFAAuctionEntry);
   }, [auctions, filterType, filterStars, searchTerm]);
 
   // ── Start auction ──
@@ -238,14 +254,15 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
     existingOffer: { bonus: number } | null;
   } | null>(null);
 
-  const openOfferFromAuction = (auction: IFAAuctionEntry) => {
+  const openOfferFromAuction = (p: IFAPlayer) => {
+    if (!p.auction_id) return;
     setOfferContext({
-      playerName: `${auction.firstName} ${auction.lastName}`,
-      auctionId: auction.auction_id,
-      phase: auction.phase,
-      starRating: auction.star_rating,
-      slotValue: auction.slot_value,
-      existingOffer: auction.my_offer,
+      playerName: `${p.firstname} ${p.lastname}`,
+      auctionId: p.auction_id,
+      phase: p.ifa_phase!,
+      starRating: p.star_rating,
+      slotValue: p.slot_value,
+      existingOffer: p.my_offer ?? null,
     });
     offerModal.handleOpenModal();
   };
@@ -253,7 +270,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
   const openOfferFromDetail = (detail: IFAAuctionDetail) => {
     const myOffer = detail.offers.find((o) => o.is_mine);
     setOfferContext({
-      playerName: `${detail.firstName} ${detail.lastName}`,
+      playerName: detail.player_name,
       auctionId: detail.auction_id,
       phase: detail.phase,
       starRating: detail.star_rating,
@@ -266,7 +283,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
 
   const openOfferFromOrgOffer = (offer: IFAOrgOffer) => {
     setOfferContext({
-      playerName: `${offer.firstName} ${offer.lastName}`,
+      playerName: offer.player_name,
       auctionId: offer.auction_id,
       phase: offer.auction_phase,
       starRating: offer.star_rating,
@@ -302,13 +319,84 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
     detailModal.handleOpenModal();
   };
 
-  // ── Status check ──
+  // ── Action button styling ──
   const th = "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap select-none";
   const ifaActionBtn =
     "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
   const isActive = ifaState?.status === "active";
   const isPending = ifaState?.status === "pending";
   const isComplete = ifaState?.status === "complete";
+
+  // ── Render actions for auction entries ──
+  const renderAuctionActions = useCallback((p: Player) => {
+    const ifa = p as IFAPlayer;
+    const attrsScouted = ifa.scouting?.attrs_precise;
+    const potsScouted = ifa.scouting?.pots_precise;
+    return (
+      <div className="flex flex-wrap gap-1.5 sm:gap-0.5 items-center">
+        <button
+          className={`${ifaActionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+          disabled={attrsScouted}
+          onClick={attrsScouted ? undefined : () => handleIFAScouting(ifa.id, "draft_attrs_precise")}
+        >
+          Attrs{attrsScouted ? " \u2713" : ""}
+        </button>
+        <button
+          className={`${ifaActionBtn} ${potsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+          disabled={potsScouted}
+          onClick={potsScouted ? undefined : () => handleIFAScouting(ifa.id, "draft_potential_precise")}
+        >
+          Pots{potsScouted ? " \u2713" : ""}
+        </button>
+        {isActive && ifa.ifa_phase !== "completed" && (
+          <button
+            className={`${ifaActionBtn} ${ifa.my_offer ? "bg-orange-600/20 text-orange-400 hover:bg-orange-600/40" : "bg-green-600/20 text-green-400 hover:bg-green-600/40"}`}
+            onClick={() => openOfferFromAuction(ifa)}
+          >
+            {ifa.my_offer ? "Update" : "Offer"}
+          </button>
+        )}
+      </div>
+    );
+  }, [ifaActionBtn, isActive, handleIFAScouting, openOfferFromAuction]);
+
+  // ── Render actions for eligible prospects ──
+  const renderEligibleActions = useCallback((p: Player) => {
+    const ifa = p as IFAPlayer;
+    const attrsScouted = ifa.scouting?.attrs_precise;
+    const potsScouted = ifa.scouting?.pots_precise;
+    return (
+      <div className="flex flex-wrap gap-1.5 sm:gap-0.5 items-center">
+        <button
+          className={`${ifaActionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+          disabled={attrsScouted}
+          onClick={attrsScouted ? undefined : () => handleIFAScouting(ifa.id, "draft_attrs_precise")}
+        >
+          Attrs{attrsScouted ? " \u2713" : ""}
+        </button>
+        <button
+          className={`${ifaActionBtn} ${potsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+          disabled={potsScouted}
+          onClick={potsScouted ? undefined : () => handleIFAScouting(ifa.id, "draft_potential_precise")}
+        >
+          Pots{potsScouted ? " \u2713" : ""}
+        </button>
+        <button
+          className={`${ifaActionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
+          onClick={() => handleStartAuction(ifa.id)}
+        >
+          Start Auction
+        </button>
+      </div>
+    );
+  }, [ifaActionBtn, handleIFAScouting, handleStartAuction]);
+
+  // ── Select table component based on filter ──
+  const TableComponent = filterType === "Pitcher"
+    ? PitcherTable
+    : filterType === "Position"
+      ? PositionTable
+      : AllPlayersTable;
 
   return (
     <PageContainer>
@@ -387,7 +475,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
             {/* Category pills */}
             <div className="mb-3">
               <ButtonGroup>
-                {(["Attributes", "Potentials", "IFA Info"] as IFACategory[]).map((cat) => (
+                {(["Attributes", "Potentials"] as BaseballCategory[]).map((cat) => (
                   <PillButton key={cat} variant="primaryOutline" isSelected={boardCategory === cat} onClick={() => setBoardCategory(cat)}>
                     <Text variant="small">{cat}</Text>
                   </PillButton>
@@ -471,48 +559,19 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
               <>
                 {/* Active Auctions */}
                 <Border classes="p-4 mb-2">
-                  <Text variant="h6" classes="mb-2">Active Auctions ({filteredAuctions.length})</Text>
-                  <IFAAuctionTable
-                    auctions={filteredAuctions}
-                    category={boardCategory}
-                    filterType={filterType}
-                    onRowClick={openDetailModal}
-                    renderActions={(a) => {
-                      const attrsScouted = a.scouting?.attrs_precise;
-                      const potsScouted = a.scouting?.pots_precise;
-                      return (
-                        <div className="flex flex-wrap gap-1.5 sm:gap-0.5 items-center">
-                          <button
-                            className={`${ifaActionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
-                            disabled={attrsScouted}
-                            onClick={attrsScouted ? undefined : () => handleIFAScouting(a.player_id, "draft_attrs_precise")}
-                            title={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
-                            aria-label={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
-                          >
-                            Attrs{attrsScouted ? " ✓" : ""}
-                          </button>
-                          <button
-                            className={`${ifaActionBtn} ${potsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
-                            disabled={potsScouted}
-                            onClick={potsScouted ? undefined : () => handleIFAScouting(a.player_id, "draft_potential_precise")}
-                            title={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
-                            aria-label={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
-                          >
-                            Pots{potsScouted ? " ✓" : ""}
-                          </button>
-                          {isActive && a.phase !== "completed" && (
-                            <button
-                              className={`${ifaActionBtn} ${a.my_offer ? "bg-orange-600/20 text-orange-400 hover:bg-orange-600/40" : "bg-green-600/20 text-green-400 hover:bg-green-600/40"}`}
-                              onClick={() => openOfferFromAuction(a)}
-                              title={a.my_offer ? "Update Offer" : "Make Offer"}
-                              aria-label={a.my_offer ? "Update Offer" : "Make Offer"}
-                            >
-                              {a.my_offer ? "Update" : "Offer"}
-                            </button>
-                          )}
-                        </div>
-                      );
+                  <Text variant="h6" classes="mb-2">Active Auctions ({adaptedAuctions.length})</Text>
+                  <TableComponent
+                    players={adaptedAuctions}
+                    orgAbbrev={orgAbbrev}
+                    onPlayerClick={(p) => {
+                      const ifa = p as IFAPlayer;
+                      if (ifa.auction_id) openDetailModal(ifa.auction_id);
                     }}
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
+                    category={boardCategory}
+                    isFuzzed
+                    renderActions={renderAuctionActions}
                   />
                 </Border>
 
@@ -520,44 +579,15 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                 {isActive && (
                   <Border classes="p-4">
                     <Text variant="h6" classes="mb-2">Available Prospects ({availableProspects.length})</Text>
-                    <IFAEligibleTable
-                      prospects={availableProspects}
+                    <TableComponent
+                      players={availableProspects}
+                      orgAbbrev={orgAbbrev}
+                      onPlayerClick={() => {}}
+                      sortConfig={sortConfig}
+                      onSort={handleSort}
                       category={boardCategory}
-                      filterType={filterType}
-                      renderActions={(p) => {
-                        const attrsScouted = p.scouting?.attrs_precise;
-                        const potsScouted = p.scouting?.pots_precise;
-                        return (
-                          <div className="flex flex-wrap gap-1.5 sm:gap-0.5 items-center">
-                            <button
-                              className={`${ifaActionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
-                              disabled={attrsScouted}
-                              onClick={attrsScouted ? undefined : () => handleIFAScouting(p.player_id, "draft_attrs_precise")}
-                              title={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
-                              aria-label={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
-                            >
-                              Attrs{attrsScouted ? " ✓" : ""}
-                            </button>
-                            <button
-                              className={`${ifaActionBtn} ${potsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
-                              disabled={potsScouted}
-                              onClick={potsScouted ? undefined : () => handleIFAScouting(p.player_id, "draft_potential_precise")}
-                              title={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
-                              aria-label={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
-                            >
-                              Pots{potsScouted ? " ✓" : ""}
-                            </button>
-                            <button
-                              className={`${ifaActionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
-                              onClick={() => handleStartAuction(p.player_id)}
-                              title="Start Auction"
-                              aria-label="Start Auction"
-                            >
-                              Start Auction
-                            </button>
-                          </div>
-                        );
-                      }}
+                      isFuzzed
+                      renderActions={renderEligibleActions}
                     />
                   </Border>
                 )}
@@ -576,7 +606,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
               <div className="baseball-table-wrapper overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-700">
+                    <tr className="border-b dark:border-gray-600">
                       <th className={th}>Stars</th>
                       <th className={th}>Player</th>
                       <th className={th}>Age</th>
@@ -589,9 +619,9 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                   </thead>
                   <tbody>
                     {orgOffers.map((o) => (
-                      <tr key={o.offer_id} className="border-b border-gray-800 hover:bg-gray-700/30">
+                      <tr key={o.offer_id} className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="px-2 py-1">{starDisplay(o.star_rating)}</td>
-                        <td className="px-2 py-1 font-medium">{o.firstName} {o.lastName}</td>
+                        <td className="px-2 py-1 font-medium">{o.player_name}</td>
                         <td className="px-2 py-1">{o.age}</td>
                         <td className="px-2 py-1">{o.ptype === "Pitcher" ? "P" : "Pos"}</td>
                         <td className="px-2 py-1 text-green-400 font-semibold">{formatCurrency(o.bonus)}</td>
@@ -608,7 +638,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                           ) : o.status === "won" ? (
                             <span className="text-blue-400 text-xs font-semibold">Signed!</span>
                           ) : (
-                            "—"
+                            "\u2014"
                           )}
                         </td>
                       </tr>

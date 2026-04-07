@@ -76,7 +76,7 @@ export const FAAuctionBoard: FC<FAAuctionBoardProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-700">
+            <tr className="border-b dark:border-gray-600">
               <th className={th}>Player</th>
               <th className={th}>Pos</th>
               <th className={th}>Age</th>
@@ -93,7 +93,7 @@ export const FAAuctionBoard: FC<FAAuctionBoardProps> = ({
             {entries.map((e) => (
               <tr
                 key={e.auction_id}
-                className="border-b border-gray-800 hover:bg-gray-700/30 cursor-pointer"
+                className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                 onClick={() => onPlayerClick(e)}
               >
                 <td className="px-2 py-1 font-medium">{e.player_name}</td>

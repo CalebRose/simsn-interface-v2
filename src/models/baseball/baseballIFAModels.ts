@@ -46,29 +46,31 @@ export interface IFAPlayerScouting {
 
 export interface IFAEligiblePlayer {
     player_id: number;
-    firstName: string;
-    lastName: string;
-    age: number;
-    ptype: "Pitcher" | "Position";
-    area: string;
+    listed_position: string | null;
     star_rating: number;
     slot_value: number;
-    listed_position: string | null;
-    display_format: "letter_grade" | "20-80";
+    bio: {
+        firstname: string;
+        lastname: string;
+        age: number;
+        ptype: "Pitcher" | "Position";
+        area: string;
+        height: number;
+        weight: number;
+        bat_hand: string;
+        pitch_hand: string;
+        arm_angle: string | null;
+        durability: number | string;
+        injury_risk: number | string;
+        pitch1_name: string | null;
+        pitch2_name: string | null;
+        pitch3_name: string | null;
+        pitch4_name: string | null;
+        pitch5_name: string | null;
+    };
+    ratings: Record<string, any>;
+    potentials: Record<string, any>;
     scouting: IFAPlayerScouting;
-    // Pitch arsenal (pitchers)
-    pitch1_name: string | null;
-    pitch2_name: string | null;
-    pitch3_name: string | null;
-    pitch4_name: string | null;
-    pitch5_name: string | null;
-    pitch1_ovr: number | null;
-    pitch2_ovr: number | null;
-    pitch3_ovr: number | null;
-    pitch4_ovr: number | null;
-    pitch5_ovr: number | null;
-    // Attribute/potential fields — pre-fuzzed letter grades or 20-80 numeric
-    [key: string]: any;
 }
 
 // ── Board (Main View) ──────────────────────────────────────
@@ -80,11 +82,7 @@ export interface IFAMyOffer {
 export interface IFAAuctionEntry {
     auction_id: number;
     player_id: number;
-    firstName: string;
-    lastName: string;
-    age: number;
-    ptype: "Pitcher" | "Position";
-    area: string;
+    listed_position: string | null;
     phase: IFAAuctionPhase;
     star_rating: number;
     slot_value: number;
@@ -92,22 +90,28 @@ export interface IFAAuctionEntry {
     active_offers: number;
     competitors: string[];
     my_offer: IFAMyOffer | null;
-    listed_position: string | null;
-    display_format: "letter_grade" | "20-80";
+    bio: {
+        firstname: string;
+        lastname: string;
+        age: number;
+        ptype: "Pitcher" | "Position";
+        area: string;
+        height: number;
+        weight: number;
+        bat_hand: string;
+        pitch_hand: string;
+        arm_angle: string | null;
+        durability: number | string;
+        injury_risk: number | string;
+        pitch1_name: string | null;
+        pitch2_name: string | null;
+        pitch3_name: string | null;
+        pitch4_name: string | null;
+        pitch5_name: string | null;
+    };
+    ratings: Record<string, any>;
+    potentials: Record<string, any>;
     scouting: IFAPlayerScouting;
-    // Pitch arsenal (pitchers)
-    pitch1_name: string | null;
-    pitch2_name: string | null;
-    pitch3_name: string | null;
-    pitch4_name: string | null;
-    pitch5_name: string | null;
-    pitch1_ovr: number | null;
-    pitch2_ovr: number | null;
-    pitch3_ovr: number | null;
-    pitch4_ovr: number | null;
-    pitch5_ovr: number | null;
-    // Attribute/potential fields — pre-fuzzed letter grades or 20-80 numeric
-    [key: string]: any;
 }
 
 export interface IFABoardResponse {
@@ -132,8 +136,7 @@ export interface IFAAuctionOffer {
 export interface IFAAuctionDetail {
     auction_id: number;
     player_id: number;
-    firstName: string;
-    lastName: string;
+    player_name: string;
     age: number;
     ptype: "Pitcher" | "Position";
     area: string;
@@ -190,8 +193,7 @@ export interface IFAOrgOffer {
     offer_id: number;
     auction_id: number;
     player_id: number;
-    firstName: string;
-    lastName: string;
+    player_name: string;
     age: number;
     ptype: "Pitcher" | "Position";
     bonus: number;
