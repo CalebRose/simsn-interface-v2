@@ -5,10 +5,8 @@ import { Border } from "../../../../_design/Borders";
 import { Button, ButtonGroup } from "../../../../_design/Buttons";
 import { BaseballService } from "../../../../_services/baseballService";
 import { useSnackbar } from "notistack";
-import {
-  FAPoolPlayer,
-  FA_TYPE_LABELS,
-} from "../../../../models/baseball/baseballFreeAgencyModels";
+import { FA_TYPE_LABELS } from "../../../../models/baseball/baseballFreeAgencyModels";
+import type { FAPlayer } from "./faPlayerAdapter";
 
 const LEVEL_OPTIONS = [
   { value: 4, label: "Unassigned" },
@@ -22,7 +20,7 @@ const LEVEL_OPTIONS = [
 interface FASignModalProps {
   isOpen: boolean;
   onClose: () => void;
-  player: FAPoolPlayer;
+  player: FAPlayer;
   orgId: number;
   leagueYearId: number;
   gameWeekId: number;

@@ -78,7 +78,7 @@ export const IFAPlayerDetail: FC<IFAPlayerDetailProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={detail ? `${detail.firstName} ${detail.lastName}` : "Auction Detail"}
+      title={detail ? detail.player_name : "Auction Detail"}
       maxWidth="min-[1025px]:max-w-[50vw]"
       actions={
         detail && (

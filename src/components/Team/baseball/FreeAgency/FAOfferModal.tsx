@@ -25,6 +25,7 @@ interface FAOfferModalProps {
   isOpen: boolean;
   onClose: () => void;
   playerName: string;
+  age?: number;
   auctionId: number;
   phase: AuctionPhase;
   demand: FAPlayerDemand | null;
@@ -40,6 +41,7 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
   isOpen,
   onClose,
   playerName,
+  age,
   auctionId,
   phase,
   demand,
@@ -176,7 +178,19 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
             <Text variant="small">Min AAV: <strong>${demandMinAav.toLocaleString()}</strong></Text>
             <Text variant="small">Years: <strong>{demandMinYears}-{demandMaxYears}</strong></Text>
             {demand.war > 0 && <Text variant="small">WAR: <strong>{demand.war}</strong></Text>}
+            {age != null && <Text variant="small">Age: <strong>{age}</strong></Text>}
           </div>
+          {age != null && (
+            <Text variant="xs" classes="mt-2 text-gray-400 italic">
+              {age <= 28
+                ? "This player values total guaranteed money \u2014 consider more years."
+                : age <= 31
+                  ? "This player weighs annual salary and total value equally."
+                  : age <= 33
+                    ? "This player prioritizes annual salary over total years."
+                    : "This player is focused on maximizing per-year pay."}
+            </Text>
+          )}
         </Border>
       )}
 

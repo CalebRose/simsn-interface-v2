@@ -71,41 +71,42 @@ export const FA_TYPE_LABELS: Record<FAType, string> = {
     milb_fa: "MiLB FA",
 };
 
+/**
+ * New unified API shape for FA pool players.
+ * Bio fields are nested under `bio`, attributes under `ratings`, potentials under `potentials`.
+ * `id` and `displayovr` remain at top level.
+ */
 export interface FAPoolPlayer {
     id: number;
-    firstname: string;
-    lastname: string;
-    age: number;
-    ptype: "Pitcher" | "Position";
-    area: string;
     displayovr: number | null;
-    height: number;
-    weight: number;
-    bat_hand: string;
-    pitch_hand: string;
-    durability: number;
-    injury_risk: number;
+    listed_position: string | null;
+    bio: {
+        firstname: string;
+        lastname: string;
+        age: number;
+        ptype: "Pitcher" | "Position";
+        area: string;
+        height: number;
+        weight: number;
+        bat_hand: string;
+        pitch_hand: string;
+        arm_angle: string | null;
+        durability: number | string;
+        injury_risk: number | string;
+        pitch1_name: string | null;
+        pitch2_name: string | null;
+        pitch3_name: string | null;
+        pitch4_name: string | null;
+        pitch5_name: string | null;
+    };
+    ratings: Record<string, any>;
+    potentials: Record<string, any>;
+    fa_type: FAType;
     last_level: number;
     last_org_abbrev: string | null;
-    listed_position: string | null;
-    arm_angle: string | null;
-    fa_type: FAType;
     auction: FAPlayerAuction | null;
     demand: FAPlayerDemand | null;
     scouting: FAPlayerScouting;
-    // Pitch arsenal (pitchers)
-    pitch1_name: string | null;
-    pitch2_name: string | null;
-    pitch3_name: string | null;
-    pitch4_name: string | null;
-    pitch5_name: string | null;
-    pitch1_ovr: number | null;
-    pitch2_ovr: number | null;
-    pitch3_ovr: number | null;
-    pitch4_ovr: number | null;
-    pitch5_ovr: number | null;
-    // Attribute/potential fields — pre-fuzzed letter grades or 20-80 numeric
-    [key: string]: any;
 }
 
 export interface FAPoolResponse {
@@ -136,9 +137,8 @@ export interface AuctionBoardEntry {
     entered_week: number;
     listed_position: string | null;
     arm_angle: string | null;
-    ratings: Record<string, string | number>;
-    potentials: Record<string, string | number>;
-    display_format: "letter_grade" | "20-80";
+    ratings: Record<string, any>;
+    potentials: Record<string, any>;
     scouting: FAPlayerScouting;
 }
 
@@ -194,9 +194,8 @@ export interface FAStatsSummary {
 
 export interface FAPlayerDetailResponse {
     bio: FAPlayerBio;
-    attributes: Record<string, string | number>;
-    potentials: Record<string, string | number>;
-    display_format: "letter_grade" | "20-80";
+    ratings: Record<string, any>;
+    potentials: Record<string, any>;
     contract_history: FAContractHistoryEntry[];
     demand: FAPlayerDemand | null;
     auction: {

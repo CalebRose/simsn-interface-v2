@@ -113,7 +113,7 @@ export const FAPlayerDetailModal: FC<FAPlayerDetailModalProps> = ({
     );
   }
 
-  const { bio, attributes, potentials, display_format, contract_history, demand, auction, scouting, stats_summary } = detail;
+  const { bio, ratings, potentials, contract_history, demand, auction, scouting, stats_summary } = detail;
   const canScoutAttrs = scouting.available_actions.includes("pro_attrs_precise");
   const canScoutPots = scouting.available_actions.includes("pro_potential_precise");
 
@@ -173,9 +173,9 @@ export const FAPlayerDetailModal: FC<FAPlayerDetailModalProps> = ({
             )}
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-sm">
-            {Object.entries(attributes).map(([key, val]) => (
+            {Object.entries(ratings).map(([key, val]) => (
               <div key={key} className="flex justify-between">
-                <span className="text-gray-400 capitalize">{key.replace(/_base$/, "").replace(/_/g, " ")}</span>
+                <span className="text-gray-400 capitalize">{key.replace(/_display$/, "").replace(/_/g, " ")}</span>
                 <span className="font-semibold">{val}</span>
               </div>
             ))}
