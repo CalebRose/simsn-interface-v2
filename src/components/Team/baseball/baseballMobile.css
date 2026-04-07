@@ -159,6 +159,12 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   Trade picker tables — compact padding for dense player lists.
+   ═══════════════════════════════════════════════════════════════════ */
+.trade-picker-table td { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+.trade-picker-table th { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+
+/* ═══════════════════════════════════════════════════════════════════
    Box score tables — always horizontal-scroll, never card layout.
    ═══════════════════════════════════════════════════════════════════ */
 .compact-table {

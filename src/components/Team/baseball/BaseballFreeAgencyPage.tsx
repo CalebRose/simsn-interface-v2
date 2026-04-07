@@ -12,9 +12,6 @@ import {
   FAPlayerDetailResponse,
   AuctionPhase,
   AuctionBoardEntry,
-  PHASE_COLORS,
-  FA_TYPE_LABELS,
-  type FAType,
 } from "../../../models/baseball/baseballFreeAgencyModels";
 import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
 import { SimMLB } from "../../../_constants/constants";
@@ -24,23 +21,8 @@ import { FASignModal } from "./FreeAgency/FASignModal";
 import { FAAuctionBoard } from "./FreeAgency/FAAuctionBoard";
 import { FAMarketDashboard } from "./FreeAgency/FAMarketDashboard";
 import { FAWaiverWire } from "./FreeAgency/FAWaiverWire";
+import { FAPoolTable, type FACategory } from "./FreeAgency/FAPoolTable";
 import "./baseballMobile.css";
-
-// ── Phase badge helper ──
-const phaseBadge = (phase: AuctionPhase) => {
-  const colorMap: Record<string, string> = {
-    green: "bg-green-600/20 text-green-400",
-    yellow: "bg-yellow-600/20 text-yellow-400",
-    red: "bg-red-600/20 text-red-400",
-    gray: "bg-gray-600/20 text-gray-400",
-  };
-  const color = PHASE_COLORS[phase] ?? "gray";
-  return (
-    <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold capitalize ${colorMap[color]}`}>
-      {phase}
-    </span>
-  );
-};
 
 // ── Tab type ──
 type FATab = "pool" | "auctions" | "waivers" | "market";
@@ -74,6 +56,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
   const [page, setPage] = useState(1);
   const [sortKey, setSortKey] = useState("lastname");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [poolCategory, setPoolCategory] = useState<FACategory>("Attributes");
   const perPage = 50;
 
   // ── Budget ──
@@ -138,11 +121,6 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
       setSortDir("asc");
     }
     setPage(1);
-  };
-
-  const sortArrow = (key: string) => {
-    if (sortKey !== key) return "";
-    return sortDir === "asc" ? " ▲" : " ▼";
   };
 
   // ── Scouting budget as ScoutingBudget object for the standard modal ──
@@ -257,59 +235,66 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     signModal.handleOpenModal();
   };
 
-  // ── Action button for pool row ──
-  const actionButton = (player: FAPoolPlayer) => {
-    // MLB FA — auction flow
+  // ── Scouting quick action from pool row ──
+  const handlePoolScouting = useCallback(async (player: FAPoolPlayer, actionType: "pro_attrs_precise" | "pro_potential_precise") => {
+    if (!orgId || !leagueYearId) return;
+    try {
+      await BaseballService.ScoutFAPlayer({ org_id: orgId, league_year_id: leagueYearId, player_id: player.id, action_type: actionType });
+      setBudgetRefreshKey((k) => k + 1);
+      loadPool();
+    } catch (e) {
+      console.error("Scouting failed", e);
+    }
+  }, [orgId, leagueYearId, loadPool]);
+
+  // ── Action buttons for pool row (scouting + transaction) ──
+  // Uses the same actionBtn styling as the roster QuickActionButtons
+  const actionBtn =
+    "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
+
+  const renderPoolActions = useCallback((player: FAPoolPlayer) => {
+    const attrsScouted = player.scouting.attrs_precise;
+    const potsScouted = player.scouting.pots_precise;
+
+    let transactionBtn: React.ReactNode = null;
     if (player.fa_type === "mlb_fa") {
       if (!player.auction) {
-        return (
-          <button
-            className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-600/20 text-gray-400 hover:bg-gray-600/40"
-            onClick={(e) => { e.stopPropagation(); openDetail(player.id); }}
-          >
-            View
-          </button>
-        );
+        transactionBtn = <button className={`${actionBtn} bg-gray-600/20 text-gray-400 hover:bg-gray-600/40`} onClick={() => openDetail(player.id)} title="View Player" aria-label="View Player">View</button>;
+      } else if (player.auction.my_offer) {
+        transactionBtn = <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromPool(player)} title="Update Offer" aria-label="Update Offer">Update</button>;
+      } else {
+        transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openOfferFromPool(player)} title="Make Offer" aria-label="Make Offer">Offer</button>;
       }
-      if (player.auction.my_offer) {
-        return (
-          <button
-            className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"
-            onClick={(e) => { e.stopPropagation(); openOfferFromPool(player); }}
-          >
-            Update
-          </button>
-        );
-      }
-      return (
-        <button
-          className="px-2 py-0.5 rounded text-xs font-semibold bg-green-600/20 text-green-400 hover:bg-green-600/40"
-          onClick={(e) => { e.stopPropagation(); openOfferFromPool(player); }}
-        >
-          Offer
-        </button>
-      );
+    } else if (!player.demand) {
+      transactionBtn = <button className={`${actionBtn} bg-gray-600/20 text-gray-400 hover:bg-gray-600/40`} onClick={() => openDetail(player.id)} title="View Player" aria-label="View Player">View</button>;
+    } else {
+      transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openSignModal(player)} title="Sign Player" aria-label="Sign Player">Sign</button>;
     }
-    // Non-auction tiers — direct sign (need demand data to show sign form)
-    if (!player.demand) {
-      return (
-        <button
-          className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-600/20 text-gray-400 hover:bg-gray-600/40"
-          onClick={(e) => { e.stopPropagation(); openDetail(player.id); }}
-        >
-          View
-        </button>
-      );
-    }
+
     return (
-      <button
-        className="px-2 py-0.5 rounded text-xs font-semibold bg-green-600/20 text-green-400 hover:bg-green-600/40"
-        onClick={(e) => { e.stopPropagation(); openSignModal(player); }}
-      >
-        Sign
-      </button>
+      <div className="flex flex-wrap gap-1.5 sm:gap-0.5 items-center">
+        <button
+          className={`${actionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+          disabled={attrsScouted}
+          onClick={attrsScouted ? undefined : () => handlePoolScouting(player, "pro_attrs_precise")}
+          title={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
+          aria-label={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
+        >
+          Attrs{attrsScouted ? " ✓" : ""}
+        </button>
+        <button
+          className={`${actionBtn} ${potsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+          disabled={potsScouted}
+          onClick={potsScouted ? undefined : () => handlePoolScouting(player, "pro_potential_precise")}
+          title={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
+          aria-label={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
+        >
+          Pots{potsScouted ? " ✓" : ""}
+        </button>
+        {transactionBtn}
+      </div>
     );
-  };
+  }, [actionBtn, handlePoolScouting, openDetail, openOfferFromPool, openSignModal]);
 
   const allPlayers = poolData?.players ?? [];
   const players = filterFAType === "all"
@@ -317,8 +302,6 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     : allPlayers.filter((p) => p.fa_type === filterFAType);
   const totalPages = poolData?.pages ?? 1;
   const totalPlayers = poolData?.total ?? 0;
-
-  const th = "px-2 py-1 text-xs font-semibold text-left cursor-pointer whitespace-nowrap select-none hover:text-blue-400";
 
   return (
     <PageContainer>
@@ -362,6 +345,17 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
           {/* Filters (pool tab only) */}
           {activeTab === "pool" && (
             <>
+              {/* Category pills */}
+              <div className="mb-3">
+                <ButtonGroup>
+                  {(["Attributes", "Potentials", "Auction"] as FACategory[]).map((cat) => (
+                    <PillButton key={cat} variant="primaryOutline" isSelected={poolCategory === cat} onClick={() => setPoolCategory(cat)}>
+                      <Text variant="small">{cat === "Auction" ? "FA Info" : cat}</Text>
+                    </PillButton>
+                  ))}
+                </ButtonGroup>
+              </div>
+
               <div className="flex flex-wrap gap-3 items-center mb-3">
                 <div>
                   <Text variant="xs" classes="text-gray-400 mb-0.5">Type</Text>
@@ -433,75 +427,16 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
               <Text variant="body-small" classes="text-gray-400">No free agents found.</Text>
             ) : (
               <>
-                <div className="baseball-table-wrapper overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-gray-700">
-                        <th className={th} onClick={() => handleSort("lastname")}>Name{sortArrow("lastname")}</th>
-                        <th className={th} onClick={() => handleSort("age")}>Age{sortArrow("age")}</th>
-                        <th className={th} onClick={() => handleSort("ptype")}>Type{sortArrow("ptype")}</th>
-                        <th className={th} onClick={() => handleSort("displayovr")}>OVR{sortArrow("displayovr")}</th>
-                        <th className={th}>Tier</th>
-                        <th className={th}>Demand</th>
-                        <th className={th}>Phase</th>
-                        <th className={th}>Offers</th>
-                        <th className={th}>My Offer</th>
-                        <th className={th}>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {players.map((p) => (
-                        <tr
-                          key={p.id}
-                          className="border-b border-gray-800 hover:bg-gray-700/30 cursor-pointer"
-                          onClick={() => openDetail(p.id)}
-                        >
-                          <td className="px-2 py-1 font-medium">
-                            {p.firstname} {p.lastname}
-                            {p.scouting.attrs_precise && <span className="ml-1 text-blue-400 text-[10px]" title="Attrs scouted">*</span>}
-                          </td>
-                          <td className="px-2 py-1">{p.age}</td>
-                          <td className="px-2 py-1">{p.ptype === "Pitcher" ? "P" : "Pos"}</td>
-                          <td className="px-2 py-1">{p.displayovr ?? "—"}</td>
-                          <td className="px-2 py-1">
-                            <span className={`px-1.5 py-0.5 text-[10px] rounded font-semibold ${
-                              p.fa_type === "mlb_fa"
-                                ? "bg-purple-600/20 text-purple-400"
-                                : p.fa_type === "arb"
-                                  ? "bg-yellow-600/20 text-yellow-400"
-                                  : p.fa_type === "pre_arb"
-                                    ? "bg-blue-600/20 text-blue-400"
-                                    : "bg-gray-600/20 text-gray-400"
-                            }`}>
-                              {FA_TYPE_LABELS[p.fa_type] ?? p.fa_type}
-                            </span>
-                          </td>
-                          <td className="px-2 py-1">
-                            {p.demand
-                              ? `$${(parseFloat(p.demand.min_aav) / 1_000_000).toFixed(1)}M`
-                              : "—"
-                            }
-                          </td>
-                          <td className="px-2 py-1">
-                            {p.auction ? phaseBadge(p.auction.phase) : <span className="text-gray-600">—</span>}
-                          </td>
-                          <td className="px-2 py-1">
-                            {p.auction ? p.auction.offer_count : "—"}
-                          </td>
-                          <td className="px-2 py-1">
-                            {p.auction?.my_offer
-                              ? <span className="text-green-400">${(p.auction.my_offer.aav / 1_000_000).toFixed(1)}M</span>
-                              : "—"
-                            }
-                          </td>
-                          <td className="px-2 py-1">
-                            {actionButton(p)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <FAPoolTable
+                  players={players}
+                  category={poolCategory}
+                  filterType={filterType}
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                  onPlayerClick={openDetail}
+                  renderActions={renderPoolActions}
+                />
 
                 {/* Pagination */}
                 {totalPages > 1 && (

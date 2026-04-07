@@ -385,7 +385,7 @@ const staminaBarBg = (v: number): string => {
   return "bg-red-500";
 };
 
-const StaminaBarCell = ({ value: rawValue, isInjured }: { value: number | undefined; isInjured?: boolean }) => {
+export const StaminaBarCell = ({ value: rawValue, isInjured }: { value: number | undefined; isInjured?: boolean }) => {
   const value = rawValue ?? 100;
   if (isInjured && value === 0) {
     return (

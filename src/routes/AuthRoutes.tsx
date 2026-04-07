@@ -26,6 +26,7 @@ import { BaseballFreeAgencyPage } from "../components/Team/baseball/BaseballFree
 import { BaseballRecruitingPage } from "../components/Team/baseball/BaseballRecruitingPage";
 import { BaseballProScoutingPage } from "../components/Team/baseball/BaseballProScoutingPage";
 import { BaseballIntamScoutingPage } from "../components/Team/baseball/BaseballIntamScoutingPage";
+import { BaseballIFAPage } from "../components/Team/baseball/BaseballIFAPage";
 import { MLBSchedulePage } from "../components/Schedule/BaseballSchedule/MLBSchedulePage";
 import { CollegeBaseballSchedulePage } from "../components/Schedule/BaseballSchedule/CollegeBaseballSchedulePage";
 import { BaseballStatsPage } from "../components/StatsPage/BaseballStats/BaseballStatsPage";
@@ -606,6 +607,15 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <DraftPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB IFA"
+    path={routes.MLB_IFA}
+    element={
+      <AuthGuard>
+        <BaseballIFAPage league={SimMLB} />
       </AuthGuard>
     }
   />,

@@ -87,11 +87,24 @@ export interface FAPoolPlayer {
     injury_risk: number;
     last_level: number;
     last_org_abbrev: string | null;
+    listed_position: string | null;
+    arm_angle: string | null;
     fa_type: FAType;
     auction: FAPlayerAuction | null;
     demand: FAPlayerDemand | null;
     scouting: FAPlayerScouting;
-    // Fuzzed attribute fields (letter grades or numeric 20-80)
+    // Pitch arsenal (pitchers)
+    pitch1_name: string | null;
+    pitch2_name: string | null;
+    pitch3_name: string | null;
+    pitch4_name: string | null;
+    pitch5_name: string | null;
+    pitch1_ovr: number | null;
+    pitch2_ovr: number | null;
+    pitch3_ovr: number | null;
+    pitch4_ovr: number | null;
+    pitch5_ovr: number | null;
+    // Attribute/potential fields — pre-fuzzed letter grades or 20-80 numeric
     [key: string]: any;
 }
 
@@ -121,7 +134,10 @@ export interface AuctionBoardEntry {
     competing_teams: string[];
     my_offer: FAPlayerOffer | null;
     entered_week: number;
+    listed_position: string | null;
+    arm_angle: string | null;
     ratings: Record<string, string | number>;
+    potentials: Record<string, string | number>;
     display_format: "letter_grade" | "20-80";
     scouting: FAPlayerScouting;
 }

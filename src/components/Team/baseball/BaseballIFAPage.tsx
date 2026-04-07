@@ -21,7 +21,9 @@ import {
 } from "../../../models/baseball/baseballIFAModels";
 import { IFAOfferModal } from "./IFA/IFAOfferModal";
 import { IFAPlayerDetail } from "./IFA/IFAPlayerDetail";
+import { IFAAuctionTable, IFAEligibleTable, type IFACategory } from "./IFA/IFAProspectTable";
 import { useSnackbar } from "notistack";
+import { BaseballService as ScoutService } from "../../../_services/baseballService";
 import "./baseballMobile.css";
 
 // ── Helpers ──
@@ -97,6 +99,20 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
+  // ── Category ──
+  const [boardCategory, setBoardCategory] = useState<IFACategory>("Attributes");
+
+  // ── Scouting budget ──
+  const [scoutingBudget, setScoutingBudget] = useState<number | null>(null);
+  const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
+
+  useEffect(() => {
+    if (!orgId || !leagueYearId) return;
+    ScoutService.GetFAScoutingBudget(orgId, leagueYearId)
+      .then((res) => setScoutingBudget(res.remaining_points))
+      .catch(() => {});
+  }, [orgId, leagueYearId, budgetRefreshKey]);
+
   // ── Filters ──
   const [filterType, setFilterType] = useState<string>("all");
   const [filterStars, setFilterStars] = useState<string>("all");
@@ -117,14 +133,18 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
     setIsLoading(true);
     setLoadError(false);
     try {
-      const [boardData, eligibleData] = await Promise.all([
-        BaseballService.GetIFABoard(leagueYearId, orgId),
-        BaseballService.GetIFAEligible(leagueYearId),
-      ]);
+      const boardData = await BaseballService.GetIFABoard(leagueYearId, orgId);
       setIfaState(boardData.state);
       setPool(boardData.pool);
       setAuctions(boardData.auctions);
-      setEligible(eligibleData);
+      // Eligible loaded separately so board still works if this fails
+      try {
+        const eligibleData = await BaseballService.GetIFAEligible(leagueYearId, orgId);
+        setEligible(eligibleData);
+      } catch (e) {
+        console.error("Failed to load IFA eligible players", e);
+        setEligible([]);
+      }
     } catch (e) {
       console.error("Failed to load IFA board", e);
       setLoadError(true);
@@ -133,6 +153,18 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
   }, [orgId, leagueYearId]);
 
   useEffect(() => { loadBoard(); }, [loadBoard]);
+
+  // ── Scouting action for IFA prospects ──
+  const handleIFAScouting = useCallback(async (playerId: number, actionType: "draft_attrs_fuzzed" | "draft_attrs_precise" | "draft_potential_precise") => {
+    if (!orgId || !leagueYearId) return;
+    try {
+      await ScoutService.PerformScoutingAction({ org_id: orgId, league_year_id: leagueYearId, player_id: playerId, action_type: actionType });
+      setBudgetRefreshKey((k) => k + 1);
+      loadBoard();
+    } catch (e) {
+      console.error("Scouting failed", e);
+    }
+  }, [orgId, leagueYearId, loadBoard]);
 
   // ── Load org offers (for My Offers tab) ──
   const loadOrgOffers = useCallback(async () => {
@@ -271,11 +303,12 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
   };
 
   // ── Status check ──
+  const th = "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap select-none";
+  const ifaActionBtn =
+    "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
   const isActive = ifaState?.status === "active";
   const isPending = ifaState?.status === "pending";
   const isComplete = ifaState?.status === "complete";
-
-  const th = "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap select-none";
 
   return (
     <PageContainer>
@@ -291,17 +324,24 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                 </span>
               )}
             </div>
-            {pool && (
-              <div className="flex gap-4 text-sm">
+            <div className="flex gap-4 text-sm">
+              {pool && (
+                <>
+                  <span className="text-gray-300">
+                    Pool: <strong className="text-white">{formatCurrency(pool.remaining)}</strong>
+                    <span className="text-gray-500 ml-1">/ {formatCurrency(pool.total_pool)}</span>
+                  </span>
+                  <span className="text-gray-300">
+                    Rank: <strong className="text-white">#{pool.standing_rank}</strong>
+                  </span>
+                </>
+              )}
+              {scoutingBudget != null && (
                 <span className="text-gray-300">
-                  Pool: <strong className="text-white">{formatCurrency(pool.remaining)}</strong>
-                  <span className="text-gray-500 ml-1">/ {formatCurrency(pool.total_pool)}</span>
+                  Scout Pts: <strong className="text-white">{scoutingBudget}</strong>
                 </span>
-                <span className="text-gray-300">
-                  Rank: <strong className="text-white">#{pool.standing_rank}</strong>
-                </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Pool breakdown bar */}
@@ -343,6 +383,17 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
 
           {/* Filters (board tab only) */}
           {activeTab === "board" && (
+            <>
+            {/* Category pills */}
+            <div className="mb-3">
+              <ButtonGroup>
+                {(["Attributes", "Potentials", "IFA Info"] as IFACategory[]).map((cat) => (
+                  <PillButton key={cat} variant="primaryOutline" isSelected={boardCategory === cat} onClick={() => setBoardCategory(cat)}>
+                    <Text variant="small">{cat}</Text>
+                  </PillButton>
+                ))}
+              </ButtonGroup>
+            </div>
             <div className="flex flex-wrap gap-3 items-center">
               <div>
                 <Text variant="xs" classes="text-gray-400 mb-0.5">Type</Text>
@@ -384,6 +435,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                 />
               </div>
             </div>
+            </>
           )}
         </Border>
 
@@ -420,115 +472,93 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                 {/* Active Auctions */}
                 <Border classes="p-4 mb-2">
                   <Text variant="h6" classes="mb-2">Active Auctions ({filteredAuctions.length})</Text>
-                  {filteredAuctions.length === 0 ? (
-                    <Text variant="small" classes="text-gray-400">No active auctions.</Text>
-                  ) : (
-                    <div className="baseball-table-wrapper overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-gray-700">
-                            <th className={th}>Stars</th>
-                            <th className={th}>Name</th>
-                            <th className={th}>Age</th>
-                            <th className={th}>Type</th>
-                            <th className={th}>Country</th>
-                            <th className={th}>Slot</th>
-                            <th className={th}>Phase</th>
-                            <th className={th}>Offers</th>
-                            <th className={th}>Competing</th>
-                            <th className={th}>My Offer</th>
-                            <th className={th}>Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredAuctions.map((a) => (
-                            <tr
-                              key={a.auction_id}
-                              className="border-b border-gray-800 hover:bg-gray-700/30 cursor-pointer"
-                              onClick={() => openDetailModal(a.auction_id)}
+                  <IFAAuctionTable
+                    auctions={filteredAuctions}
+                    category={boardCategory}
+                    filterType={filterType}
+                    onRowClick={openDetailModal}
+                    renderActions={(a) => {
+                      const attrsScouted = a.scouting?.attrs_precise;
+                      const potsScouted = a.scouting?.pots_precise;
+                      return (
+                        <div className="flex flex-wrap gap-1.5 sm:gap-0.5 items-center">
+                          <button
+                            className={`${ifaActionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+                            disabled={attrsScouted}
+                            onClick={attrsScouted ? undefined : () => handleIFAScouting(a.player_id, "draft_attrs_precise")}
+                            title={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
+                            aria-label={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
+                          >
+                            Attrs{attrsScouted ? " ✓" : ""}
+                          </button>
+                          <button
+                            className={`${ifaActionBtn} ${potsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+                            disabled={potsScouted}
+                            onClick={potsScouted ? undefined : () => handleIFAScouting(a.player_id, "draft_potential_precise")}
+                            title={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
+                            aria-label={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
+                          >
+                            Pots{potsScouted ? " ✓" : ""}
+                          </button>
+                          {isActive && a.phase !== "completed" && (
+                            <button
+                              className={`${ifaActionBtn} ${a.my_offer ? "bg-orange-600/20 text-orange-400 hover:bg-orange-600/40" : "bg-green-600/20 text-green-400 hover:bg-green-600/40"}`}
+                              onClick={() => openOfferFromAuction(a)}
+                              title={a.my_offer ? "Update Offer" : "Make Offer"}
+                              aria-label={a.my_offer ? "Update Offer" : "Make Offer"}
                             >
-                              <td className="px-2 py-1">{starDisplay(a.star_rating)}</td>
-                              <td className="px-2 py-1 font-medium">{a.firstName} {a.lastName}</td>
-                              <td className="px-2 py-1">{a.age}</td>
-                              <td className="px-2 py-1">{a.ptype === "Pitcher" ? "P" : "Pos"}</td>
-                              <td className="px-2 py-1">{a.area}</td>
-                              <td className="px-2 py-1">{formatCurrency(a.slot_value)}</td>
-                              <td className="px-2 py-1">{phaseBadge(a.phase)}</td>
-                              <td className="px-2 py-1">{a.active_offers}</td>
-                              <td className="px-2 py-1 text-xs text-gray-400">
-                                {a.competitors.length > 0 ? a.competitors.join(", ") : "—"}
-                              </td>
-                              <td className="px-2 py-1">
-                                {a.my_offer
-                                  ? <span className="text-green-400 font-semibold">{formatCurrency(a.my_offer.bonus)}</span>
-                                  : "—"
-                                }
-                              </td>
-                              <td className="px-2 py-1">
-                                {isActive && a.phase !== "completed" && (
-                                  <button
-                                    className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                                      a.my_offer
-                                        ? "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"
-                                        : "bg-green-600/20 text-green-400 hover:bg-green-600/40"
-                                    }`}
-                                    onClick={(e) => { e.stopPropagation(); openOfferFromAuction(a); }}
-                                  >
-                                    {a.my_offer ? "Update" : "Offer"}
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+                              {a.my_offer ? "Update" : "Offer"}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    }}
+                  />
                 </Border>
 
                 {/* Available Prospects (no auction yet) */}
                 {isActive && (
                   <Border classes="p-4">
                     <Text variant="h6" classes="mb-2">Available Prospects ({availableProspects.length})</Text>
-                    {availableProspects.length === 0 ? (
-                      <Text variant="small" classes="text-gray-400">No prospects available matching filters.</Text>
-                    ) : (
-                      <div className="baseball-table-wrapper overflow-x-auto">
-                        <table className="w-full text-sm">
-                          <thead>
-                            <tr className="border-b border-gray-700">
-                              <th className={th}>Stars</th>
-                              <th className={th}>Name</th>
-                              <th className={th}>Age</th>
-                              <th className={th}>Type</th>
-                              <th className={th}>Country</th>
-                              <th className={th}>Slot Value</th>
-                              <th className={th}>Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {availableProspects.map((p) => (
-                              <tr key={p.player_id} className="border-b border-gray-800 hover:bg-gray-700/30">
-                                <td className="px-2 py-1">{starDisplay(p.star_rating)}</td>
-                                <td className="px-2 py-1 font-medium">{p.firstName} {p.lastName}</td>
-                                <td className="px-2 py-1">{p.age}</td>
-                                <td className="px-2 py-1">{p.ptype === "Pitcher" ? "P" : "Pos"}</td>
-                                <td className="px-2 py-1">{p.area}</td>
-                                <td className="px-2 py-1">{formatCurrency(p.slot_value)}</td>
-                                <td className="px-2 py-1">
-                                  <button
-                                    className="px-2 py-0.5 rounded text-xs font-semibold bg-green-600/20 text-green-400 hover:bg-green-600/40"
-                                    onClick={() => handleStartAuction(p.player_id)}
-                                  >
-                                    Start Auction
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                    <IFAEligibleTable
+                      prospects={availableProspects}
+                      category={boardCategory}
+                      filterType={filterType}
+                      renderActions={(p) => {
+                        const attrsScouted = p.scouting?.attrs_precise;
+                        const potsScouted = p.scouting?.pots_precise;
+                        return (
+                          <div className="flex flex-wrap gap-1.5 sm:gap-0.5 items-center">
+                            <button
+                              className={`${ifaActionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+                              disabled={attrsScouted}
+                              onClick={attrsScouted ? undefined : () => handleIFAScouting(p.player_id, "draft_attrs_precise")}
+                              title={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
+                              aria-label={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
+                            >
+                              Attrs{attrsScouted ? " ✓" : ""}
+                            </button>
+                            <button
+                              className={`${ifaActionBtn} ${potsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
+                              disabled={potsScouted}
+                              onClick={potsScouted ? undefined : () => handleIFAScouting(p.player_id, "draft_potential_precise")}
+                              title={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
+                              aria-label={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
+                            >
+                              Pots{potsScouted ? " ✓" : ""}
+                            </button>
+                            <button
+                              className={`${ifaActionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
+                              onClick={() => handleStartAuction(p.player_id)}
+                              title="Start Auction"
+                              aria-label="Start Auction"
+                            >
+                              Start Auction
+                            </button>
+                          </div>
+                        );
+                      }}
+                    />
                   </Border>
                 )}
               </>

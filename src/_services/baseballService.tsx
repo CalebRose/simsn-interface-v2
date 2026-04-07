@@ -733,8 +733,9 @@ export const BaseballService = {
             `${baseballUrl}ifa/pool/${orgId}?league_year_id=${leagueYearId}`,
         );
     },
-    GetIFAEligible: async (leagueYearId: number): Promise<IFAEligiblePlayer[]> => {
-        return await GetCall<IFAEligiblePlayer[]>(`${baseballUrl}ifa/eligible?league_year_id=${leagueYearId}`);
+    GetIFAEligible: async (leagueYearId: number, viewingOrgId?: number): Promise<IFAEligiblePlayer[]> => {
+        const qs = viewingOrgId ? `&viewing_org_id=${viewingOrgId}` : "";
+        return await GetCall<IFAEligiblePlayer[]>(`${baseballUrl}ifa/eligible?league_year_id=${leagueYearId}${qs}`);
     },
     GetIFAAuctionDetail: async (auctionId: number, orgId?: number): Promise<IFAAuctionDetail> => {
         const qs = orgId ? `?org_id=${orgId}` : "";

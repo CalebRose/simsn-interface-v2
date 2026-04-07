@@ -391,7 +391,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     Map<number, ScoutingOverlayEntry>
   >(new Map());
   const [scoutingLoading, setScoutingLoading] = useState(false);
-  const scoutingLoadedForOrg = useRef<number | null>(null);
+  const scoutingLoadedForOrg = useRef<string | null>(null);
   const statsCache = useRef<{
     orgId: number;
     lyId: number;
@@ -402,7 +402,8 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   );
 
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
-  const effectiveOrgId = viewedOrg?.id ?? userOrg?.id ?? 0;
+  const userOrgId = userOrg?.id ?? 0;
+  const effectiveOrgId = viewedOrg?.id ?? userOrgId;
 
   /** Determine if potentials are precise from scouting response. */
   const isPotentialsPrecise = (data: any): boolean => {
@@ -453,28 +454,32 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     [],
   );
 
-  // Fetch scouting budget for all leagues when org loads
+  // Fetch scouting budget — always for the user's own org, not the viewed org
   useEffect(() => {
-    if (isAllView || !effectiveOrgId || !leagueYearId) return;
-    BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
+    if (!userOrgId || !leagueYearId) return;
+    BaseballService.GetScoutingBudget(userOrgId, leagueYearId)
       .then(setScoutingBudget)
       .catch(() => {});
-  }, [isAllView, effectiveOrgId, leagueYearId]);
+  }, [userOrgId, leagueYearId]);
 
   // Fetch scouting overlay when roster loads (both college + MLB).
   // College: replaces 20-80 _display with letter grades.
   // MLB: replaces bootstrap _display with scouting-aware fuzzed/precise values.
   // Requests are batched (5 at a time) to avoid API rate limits.
   useEffect(() => {
-    if (isAllView || !effectiveOrgId || !leagueYearId) return;
+    if (isAllView || !userOrgId || !leagueYearId) return;
     const allPlayers = Object.values(pageRosterMap).flat();
     if (allPlayers.length === 0) return;
-    if (scoutingLoadedForOrg.current === effectiveOrgId) return;
-    scoutingLoadedForOrg.current = effectiveOrgId;
-    fetchScoutingOverlay(allPlayers, effectiveOrgId, leagueYearId);
+    // Re-fetch when the viewed roster changes (effectiveOrgId) but always
+    // request with the user's own org so visibility reflects their scouting.
+    const cacheKey = `${userOrgId}-${effectiveOrgId}`;
+    if (scoutingLoadedForOrg.current === cacheKey) return;
+    scoutingLoadedForOrg.current = cacheKey;
+    fetchScoutingOverlay(allPlayers, userOrgId, leagueYearId);
   }, [
     isCollege,
     isAllView,
+    userOrgId,
     effectiveOrgId,
     leagueYearId,
     pageRosterMap,
@@ -704,7 +709,6 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       setCategory(Attributes);
       scoutingLoadedForOrg.current = null;
       setScoutingOverlay(new Map());
-      setScoutingBudget(null);
       statsCache.current = null;
       if (optValue === ALL_ORGS) {
         setViewedOrgId(ALL_ORGS);
@@ -727,8 +731,9 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   // --- Shared scouting refresh helper ---
   const refreshPlayerScouting = useCallback(
     (playerId: number, refreshBudget = true) => {
-      if (!playerId || !effectiveOrgId || !leagueYearId) return;
-      BaseballService.GetScoutedPlayer(playerId, effectiveOrgId, leagueYearId)
+      if (!playerId || !userOrgId || !leagueYearId) return;
+      // Overlay: use user's org to get their scouting visibility on this player
+      BaseballService.GetScoutedPlayer(playerId, userOrgId, leagueYearId)
         .then((data) => {
           setScoutingOverlay((prev) => {
             const next = new Map(prev);
@@ -745,12 +750,12 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         })
         .catch(() => {});
       if (refreshBudget) {
-        BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
+        BaseballService.GetScoutingBudget(userOrgId, leagueYearId)
           .then(setScoutingBudget)
           .catch(() => {});
       }
     },
-    [effectiveOrgId, leagueYearId],
+    [userOrgId, leagueYearId],
   );
 
   // --- Scouting Modal (college + MLB) ---
@@ -1593,7 +1598,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
           player={scoutConfirmPlayer}
           actionType={scoutConfirmAction}
           budget={scoutingBudget}
-          orgId={effectiveOrgId}
+          orgId={userOrgId}
           leagueYearId={leagueYearId}
           onSuccess={handleScoutingConfirmSuccess}
         />
@@ -1604,11 +1609,11 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
           isOpen={scoutingModal.isModalOpen}
           onClose={handleScoutingModalClose}
           playerId={scoutingPlayerId}
-          orgId={effectiveOrgId}
+          orgId={userOrgId}
           leagueYearId={leagueYearId}
           scoutingBudget={scoutingBudget}
           onBudgetChanged={() => {
-            BaseballService.GetScoutingBudget(effectiveOrgId, leagueYearId)
+            BaseballService.GetScoutingBudget(userOrgId, leagueYearId)
               .then(setScoutingBudget)
               .catch(() => {});
           }}

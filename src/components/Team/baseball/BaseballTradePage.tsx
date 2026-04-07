@@ -1,5 +1,5 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import { League, SimMLB } from "../../../_constants/constants";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Attributes, Contracts, League, Potentials, SimMLB } from "../../../_constants/constants";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { BaseballService } from "../../../_services/baseballService";
 import { BaseballOrganization, BaseballRosters, Player } from "../../../models/baseball/baseballModels";
@@ -10,6 +10,31 @@ import {
 } from "../../../models/baseball/baseballTradeModels";
 import { normalizePlayer, displayLevel, LEVEL_ORDER } from "../../../_utility/baseballHelpers";
 import { ratingColor } from "./baseballColorConfig";
+import {
+    type BaseballCategory,
+    type SortConfig,
+    type PlayerStatsMap,
+    emptyStatsMap,
+    comparePlayers,
+    GroupedTableHeader,
+    InfoCells,
+    AllAttrCells, AllPotCells,
+    PosAttrCells, PosPotCells,
+    PitchAttrCells, PitchPotCells,
+    ContractCells,
+    BattingStatsCells, PitchingStatsCells,
+    StaminaBarCell,
+    td,
+    ALL_ATTR_GROUPS_NO_ACTIONS,
+    ALL_POT_GROUPS_NO_ACTIONS,
+    POS_ATTR_GROUPS_NO_ACTIONS,
+    POS_POT_GROUPS_NO_ACTIONS,
+    PITCH_ATTR_GROUPS_NO_ACTIONS,
+    PITCH_POT_GROUPS_NO_ACTIONS,
+    CONTRACT_GROUPS_NO_ACTIONS,
+    BATTING_STATS_GROUPS_NO_ACTIONS,
+    PITCHING_STATS_GROUPS_NO_ACTIONS,
+} from "./BaseballRosterTable";
 import { Text } from "../../../_design/Typography";
 import { Button, PillButton, ButtonGroup } from "../../../_design/Buttons";
 import { Border } from "../../../_design/Borders";
@@ -86,14 +111,25 @@ const RETENTION_PRESETS = [0, 25, 50, 75, 100];
 const RETENTION_STEP = 5;
 
 // ═════════════════════════════════════════════════════════════════════
-// PlayerPickerTable — filterable mini-table for browsing a roster
+// PlayerPickerTable — filterable table matching roster view columns
 // ═════════════════════════════════════════════════════════════════════
+
+const Stats = "Stats";
+const CATEGORY_LABELS: { key: BaseballCategory; label: string }[] = [
+    { key: Attributes, label: "Attrs" },
+    { key: Potentials, label: "Pots" },
+    { key: Contracts, label: "Contracts" },
+    { key: Stats, label: "Stats" },
+];
 
 interface PlayerPickerTableProps {
     players: Player[];
     selectedIds: Set<number>;
     onSelect: (player: Player) => void;
     label: string;
+    orgAbbrev: string;
+    statsMap?: PlayerStatsMap;
+    onStatsNeeded?: () => void;
 }
 
 const PlayerPickerTable: FC<PlayerPickerTableProps> = ({
@@ -101,16 +137,49 @@ const PlayerPickerTable: FC<PlayerPickerTableProps> = ({
     selectedIds,
     onSelect,
     label,
+    orgAbbrev,
+    statsMap,
+    onStatsNeeded,
 }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState<"all" | "Pitcher" | "Position">("all");
-    const [filterLevel, setFilterLevel] = useState("all");
+    const [filterLevel, setFilterLevel] = useState("MLB");
+    const [category, setCategory] = useState<BaseballCategory>(Attributes);
+    const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+
+    const handleSort = (key: string) => {
+        if (!key) return;
+        setSortConfig((prev) =>
+            prev?.key === key
+                ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
+                : { key, dir: "desc" },
+        );
+    };
 
     // Derive available levels from roster
     const availableLevels = useMemo(() => {
         const levels = new Set(players.map((p) => p.league_level));
         return LEVEL_ORDER.filter((l) => levels.has(l));
     }, [players]);
+
+    // Column groups based on category + filterType
+    const columnGroups = useMemo(() => {
+        if (category === Contracts) return CONTRACT_GROUPS_NO_ACTIONS;
+        if (category === Stats) {
+            return filterType === "Pitcher"
+                ? PITCHING_STATS_GROUPS_NO_ACTIONS
+                : BATTING_STATS_GROUPS_NO_ACTIONS;
+        }
+        if (category === Potentials) {
+            if (filterType === "Pitcher") return PITCH_POT_GROUPS_NO_ACTIONS;
+            if (filterType === "Position") return POS_POT_GROUPS_NO_ACTIONS;
+            return ALL_POT_GROUPS_NO_ACTIONS;
+        }
+        // Attributes
+        if (filterType === "Pitcher") return PITCH_ATTR_GROUPS_NO_ACTIONS;
+        if (filterType === "Position") return POS_ATTR_GROUPS_NO_ACTIONS;
+        return ALL_ATTR_GROUPS_NO_ACTIONS;
+    }, [category, filterType]);
 
     // Filter + sort
     const filtered = useMemo(() => {
@@ -130,12 +199,59 @@ const PlayerPickerTable: FC<PlayerPickerTableProps> = ({
             return i === -1 ? LEVEL_ORDER.length : i;
         };
         return result.sort((a, b) => {
+            if (sortConfig) {
+                const cmp = comparePlayers(a, b, sortConfig, statsMap);
+                if (cmp !== 0) return cmp;
+            }
             const ld = li(a.league_level) - li(b.league_level);
             if (ld !== 0) return ld;
             if (a.ptype !== b.ptype) return a.ptype === "Pitcher" ? -1 : 1;
             return a.lastname.localeCompare(b.lastname);
         });
-    }, [players, filterLevel, filterType, searchTerm]);
+    }, [players, filterLevel, filterType, searchTerm, sortConfig, statsMap]);
+
+    // Render category-specific cells for a player row
+    const renderCategoryCells = (p: Player) => {
+        if (category === Attributes) {
+            if (filterType === "Pitcher") return <PitchAttrCells p={p} />;
+            if (filterType === "Position") return <PosAttrCells p={p} />;
+            return <AllAttrCells p={p} />;
+        }
+        if (category === Potentials) {
+            if (filterType === "Pitcher") return <PitchPotCells p={p} />;
+            if (filterType === "Position") return <PosPotCells p={p} />;
+            return <AllPotCells p={p} />;
+        }
+        if (category === Contracts) {
+            return (
+                <>
+                    <ContractCells p={p} />
+                    <td data-label="Stamina" className={`${td} text-center text-xs`}>
+                        <StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
+                    </td>
+                </>
+            );
+        }
+        // Stats
+        if (p.ptype === "Pitcher") {
+            return (
+                <>
+                    <PitchingStatsCells p={p} statsMap={statsMap} />
+                    <td data-label="Stamina" className={`${td} text-center text-xs`}>
+                        <StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
+                    </td>
+                </>
+            );
+        }
+        return (
+            <>
+                <BattingStatsCells p={p} statsMap={statsMap} />
+                <td data-label="Stamina" className={`${td} text-center text-xs`}>
+                    <StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
+                </td>
+            </>
+        );
+    };
 
     return (
         <div className="flex flex-col">
@@ -152,7 +268,7 @@ const PlayerPickerTable: FC<PlayerPickerTableProps> = ({
                 className="text-sm border rounded px-2 py-1 w-full mb-2 bg-gray-700 border-gray-600 text-white"
             />
 
-            {/* Filter pills */}
+            {/* Type filter pills */}
             <div className="flex flex-wrap gap-1 mb-1">
                 <ButtonGroup>
                     <PillButton
@@ -178,8 +294,10 @@ const PlayerPickerTable: FC<PlayerPickerTableProps> = ({
                     </PillButton>
                 </ButtonGroup>
             </div>
+
+            {/* Level filter pills */}
             {availableLevels.length > 1 && (
-                <div className="flex flex-wrap gap-1 mb-2">
+                <div className="flex flex-wrap gap-1 mb-1">
                     <ButtonGroup>
                         <PillButton
                             variant="primaryOutline"
@@ -202,26 +320,36 @@ const PlayerPickerTable: FC<PlayerPickerTableProps> = ({
                 </div>
             )}
 
+            {/* Category tabs */}
+            <div className="flex flex-wrap gap-1 mb-2">
+                <ButtonGroup>
+                    {CATEGORY_LABELS.map(({ key, label: lbl }) => (
+                        <PillButton
+                            key={key}
+                            variant="primaryOutline"
+                            isSelected={category === key}
+                            onClick={() => {
+                                setCategory(key);
+                                if (key === Stats) onStatsNeeded?.();
+                            }}
+                        >
+                            <Text variant="xs">{lbl}</Text>
+                        </PillButton>
+                    ))}
+                </ButtonGroup>
+            </div>
+
             <Text variant="xs" classes="text-gray-400 mb-1">
                 {filtered.length} players
             </Text>
 
             {/* Table */}
-            <div className="baseball-table-wrapper overflow-y-auto max-h-[35vh] border border-gray-600 rounded">
+            <div className="baseball-table-wrapper trade-picker-table overflow-x-auto overflow-y-auto max-h-[35vh] border border-gray-600 rounded">
                 <table className="w-full text-xs text-left">
-                    <thead className="sticky top-0 z-10 bg-gray-800">
-                        <tr className="border-b border-gray-600">
-                            <th className="px-2 py-1.5 font-medium text-gray-300">Name</th>
-                            <th className="px-2 py-1.5 font-medium text-gray-300 w-10">Type</th>
-                            <th className="px-2 py-1.5 font-medium text-gray-300 w-10 text-center">OVR</th>
-                            <th className="px-2 py-1.5 font-medium text-gray-300 w-14">Level</th>
-                            <th className="px-2 py-1.5 font-medium text-gray-300 w-16 text-right">Salary</th>
-                        </tr>
-                    </thead>
+                    <GroupedTableHeader groups={columnGroups} sortConfig={sortConfig} onSort={handleSort} />
                     <tbody>
                         {filtered.map((p) => {
                             const isSelected = selectedIds.has(p.id);
-                            const salary = p.contract?.current_year_detail?.base_salary;
                             return (
                                 <tr
                                     key={p.id}
@@ -232,33 +360,14 @@ const PlayerPickerTable: FC<PlayerPickerTableProps> = ({
                                             : "hover:bg-gray-700 cursor-pointer"
                                     }`}
                                 >
-                                    <td className="px-2 py-1 text-white whitespace-nowrap">
-                                        {p.firstname} {p.lastname}
-                                    </td>
-                                    <td className="px-2 py-1 text-gray-400">
-                                        {p.ptype === "Pitcher" ? "P" : "Pos"}
-                                    </td>
-                                    <td className={`px-2 py-1 text-center font-semibold ${p.displayovr != null ? ratingColor(Number(p.displayovr)) : "text-gray-400"}`}>
-                                        {p.displayovr ?? "—"}
-                                    </td>
-                                    <td className="px-2 py-1 text-gray-400">
-                                        {displayLevel(p.league_level)}
-                                    </td>
-                                    <td className="px-2 py-1 text-right text-gray-400">
-                                        {salary != null
-                                            ? salary >= 1_000_000
-                                                ? `$${(salary / 1_000_000).toFixed(2)}M`
-                                                : salary > 0
-                                                  ? `$${(salary / 1_000).toFixed(0)}K`
-                                                  : "$0"
-                                            : "—"}
-                                    </td>
+                                    <InfoCells p={p} orgAbbrev={orgAbbrev} />
+                                    {renderCategoryCells(p)}
                                 </tr>
                             );
                         })}
                         {filtered.length === 0 && (
                             <tr>
-                                <td colSpan={5} className="px-2 py-4 text-center text-gray-500">
+                                <td colSpan={999} className="px-2 py-4 text-center text-gray-500">
                                     No players match filters
                                 </td>
                             </tr>
@@ -410,6 +519,11 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
     const [retentionMap, setRetentionMap] = useState<Record<number, number>>({});
     const [cashAmount, setCashAmount] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // ── Stats for trade picker tables ───────────────────────────────
+    const [userStatsMap, setUserStatsMap] = useState<PlayerStatsMap>(emptyStatsMap);
+    const [targetStatsMap, setTargetStatsMap] = useState<PlayerStatsMap>(emptyStatsMap);
+    const statsCacheRef = useRef<Map<number, PlayerStatsMap>>(new Map());
 
     // ── Proposals state ───────────────────────────────────────────────
     const [proposals, setProposals] = useState<TradeProposal[]>([]);
@@ -601,6 +715,38 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
         setCashAmount(0);
     };
 
+    const fetchOrgStats = useCallback(async (orgId: number, setter: (m: PlayerStatsMap) => void) => {
+        if (statsCacheRef.current.has(orgId)) {
+            setter(statsCacheRef.current.get(orgId)!);
+            return;
+        }
+        if (!seasonContext) return;
+        try {
+            const [battingRes, pitchingRes] = await Promise.all([
+                BaseballService.GetBattingLeaders({
+                    league_year_id: seasonContext.current_league_year_id,
+                    org_id: orgId,
+                    min_pa: 0,
+                    page_size: 500,
+                }),
+                BaseballService.GetPitchingLeaders({
+                    league_year_id: seasonContext.current_league_year_id,
+                    org_id: orgId,
+                    page_size: 500,
+                }),
+            ]);
+            const batting = new Map<number, any>();
+            const pitching = new Map<number, any>();
+            for (const row of battingRes.leaders) batting.set(row.player_id, row);
+            for (const row of pitchingRes.leaders) pitching.set(row.player_id, row);
+            const map: PlayerStatsMap = { batting, pitching };
+            statsCacheRef.current.set(orgId, map);
+            setter(map);
+        } catch (err) {
+            console.error("Failed to load stats for org", orgId, err);
+        }
+    }, [seasonContext]);
+
     const handlePropose = async () => {
         if (!userOrg || !targetOrgId || !seasonContext) return;
         if (selectedUserPlayers.length === 0 && selectedTargetPlayers.length === 0)
@@ -745,6 +891,9 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
                                         selectedIds={selectedUserIds}
                                         onSelect={addUserPlayer}
                                         label={`${userOrg.org_abbrev} Roster`}
+                                        orgAbbrev={userOrg.org_abbrev}
+                                        statsMap={userStatsMap}
+                                        onStatsNeeded={() => fetchOrgStats(userOrg.id, setUserStatsMap)}
                                     />
                                     {selectedUserPlayers.length > 0 && (
                                         <div className="mt-3">
@@ -773,6 +922,9 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
                                         selectedIds={selectedTargetIds}
                                         onSelect={addTargetPlayer}
                                         label={`${orgMap[targetOrgId]?.org_abbrev ?? "Target"} Roster`}
+                                        orgAbbrev={orgMap[targetOrgId]?.org_abbrev ?? ""}
+                                        statsMap={targetStatsMap}
+                                        onStatsNeeded={() => fetchOrgStats(targetOrgId, setTargetStatsMap)}
                                     />
                                     {selectedTargetPlayers.length > 0 && (
                                         <div className="mt-3">
