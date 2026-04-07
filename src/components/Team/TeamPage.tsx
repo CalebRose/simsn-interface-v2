@@ -1029,7 +1029,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
       )}
       {modalPlayer && (
         <PromiseModal
-          league={SimCHL}
+          league={SimCFB}
           isOpen={promiseModal.isModalOpen}
           onClose={promiseModal.handleCloseModal}
           player={modalPlayer}
