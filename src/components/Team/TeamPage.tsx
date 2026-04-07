@@ -1091,6 +1091,15 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
+            {isDesktop && (
+              <Button
+                size="sm"
+                isSelected={category === Promises}
+                onClick={() => setCategory(Promises)}
+              >
+                <Text variant="small">Promises</Text>
+              </Button>
+            )}
             <Button variant="primary" size="sm" onClick={exportRoster}>
               <Text variant="small">Export</Text>
             </Button>

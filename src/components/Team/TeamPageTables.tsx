@@ -582,7 +582,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
               }
               if (
                 selectedOption?.value === "redshirt" &&
-                hck_Timestamp!.Week < 2
+                hck_Timestamp!.Week < 4
               ) {
                 openModal(Redshirt, item);
               }
@@ -1424,6 +1424,16 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
         { header: "INJ", accessor: "Injury" },
       ]);
     }
+    if (isDesktop && category === Promises) {
+      columns = columns.concat([
+        { header: "Promise Type", accessor: "PromiseType" },
+        { header: "Promise Weight", accessor: "PromiseWeight" },
+        { header: "Benchmark", accessor: "Benchmark" },
+        { header: "Benchmark 2", accessor: "BenchmarkStr" },
+        { header: "Committed", accessor: "PromiseMade" },
+        { header: "Active", accessor: "IsActive" },
+      ]);
+    }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
   }, [isDesktop, category]);
@@ -1437,7 +1447,11 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
     index: number,
     backgroundColor: string,
   ) => {
+    const { collegePromiseMap } = useSimFBAStore();
     const attributes = getCFBAttributes(item, !isDesktop, category!);
+
+    const collegePromise = collegePromiseMap[item.ID];
+    const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
     return (
       <div
         key={item.ID}
@@ -1460,11 +1474,15 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
           >
             {attr.label === "Redshirt" ? (
               <>
-                {attr.value === true ? (
+                {item.IsRedshirt && (
                   <CheckCircle
                     textColorClass={`w-full text-center ${TextGreen}`}
                   />
-                ) : (
+                )}
+                {item.IsRedshirting && (
+                  <CheckCircle textColorClass="w-full text-center text-yellow-500" />
+                )}
+                {!item.IsRedshirt && !item.IsRedshirting && (
                   <CrossCircle textColorClass="w-full text-center text-red-500" />
                 )}
               </>
@@ -1506,6 +1524,40 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
             )}
           </div>
         ))}
+        {category == Promises && isDesktop && (
+          <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.PromiseType : "No Promise"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.PromiseWeight : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.Benchmark : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise ? collegePromise.BenchmarkStr : "N/A"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise && collegePromise.PromiseMade ? "Yes" : "No"}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasPromise && collegePromise.IsActive ? "Yes" : "No"}
+              </Text>
+            </TableCell>
+          </>
+        )}
         <div className="table-cell align-middle w-[4em] min-[430px]:w-[5em] flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
