@@ -901,6 +901,8 @@ export const ForumService = {
         addDoc(collection(firestore, "notifications"), {
           uid: m.uid,
           type: "mention",
+          domain: "forum",
+          linkTo: `/forums/thread/${threadId}`,
           threadId,
           postId,
           actorUid,
@@ -927,6 +929,8 @@ export const ForumService = {
     await addDoc(collection(firestore, "notifications"), {
       uid: postAuthorUid,
       type: "reaction",
+      domain: "forum",
+      linkTo: `/forums/thread/${threadId}`,
       threadId,
       postId,
       actorUid,

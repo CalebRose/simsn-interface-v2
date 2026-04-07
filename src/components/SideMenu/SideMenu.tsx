@@ -339,11 +339,12 @@ export const SideMenu = ({}) => {
                                 if (!notif.isRead)
                                   markNotificationRead(notif.id);
                                 setIsNotifOpen(false);
-                                if (notif.threadId) {
-                                  navigate(
-                                    `${routes.FORUM_THREAD}/${notif.threadId}`,
-                                  );
-                                }
+                                const destination =
+                                  notif.linkTo ??
+                                  (notif.threadId
+                                    ? `${routes.FORUM_THREAD}/${notif.threadId}`
+                                    : null);
+                                if (destination) navigate(destination);
                               }}
                             >
                               <p className="text-gray-800 dark:text-gray-100 leading-snug">

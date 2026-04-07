@@ -224,6 +224,18 @@ export interface PollVote {
 // Notification
 // ─────────────────────────────────────────────
 
+export type NotificationDomain =
+  | "forum"
+  | "cfb"
+  | "nfl"
+  | "cbb"
+  | "nba"
+  | "chl"
+  | "phl"
+  | "mlb"
+  | "cbl"
+  | "system";
+
 export type NotificationForumType =
   | "mention"
   | "quote"
@@ -234,12 +246,20 @@ export type NotificationForumType =
   | "gameplan"
   | "trade"
   | "mod_action"
-  | "poll_closing";
+  | "poll_closing"
+  | "draft"
+  | "free_agency"
+  | "transfer"
+  | "schedule"
+  | "system";
 
 export interface ForumNotification {
   id: string;
   uid: string;
   type: NotificationForumType;
+  domain?: NotificationDomain;
+  /** Pre-built client-side route path, e.g. "/forums/thread/abc" or "/cfb/roster/5" */
+  linkTo?: string | null;
   threadId?: string;
   postId?: string;
   actorUid?: string;
