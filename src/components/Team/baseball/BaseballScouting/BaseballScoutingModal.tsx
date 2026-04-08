@@ -260,13 +260,17 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
     [orgId, leagueYearId, playerId, onBudgetChanged, enqueueSnackbar],
   );
 
-  // Resolve team for PlayerPicture — use the player's org, not the viewer's
+  // Resolve team for PlayerPicture — use the player's org, not the viewer's.
+  // For free agents (faDetail provided), show "Free Agent" instead of former team.
+  const isFreeAgent = !!faDetail;
+
   const team = useMemo(() => {
+    if (isFreeAgent) return null;
     if (!player?.bio || !allTeams || allTeams.length === 0) return null;
     const playerOrgId = player.bio.org_id;
     if (!playerOrgId) return null;
     return allTeams.find((t) => t.org_id === playerOrgId) ?? null;
-  }, [allTeams, player?.bio]);
+  }, [allTeams, player?.bio, isFreeAgent]);
 
   const teamLogo = useMemo(() => {
     if (!team) return "";
@@ -345,7 +349,9 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
                   team={team}
                 />
               </div>
-              {team && (
+              {isFreeAgent ? (
+                <span className="mt-1 text-xs font-semibold text-gray-400">Free Agent</span>
+              ) : team ? (
                 <Logo
                   url={teamLogo}
                   label={team.team_abbrev ?? ""}
@@ -353,7 +359,7 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
                   containerClass="p-1"
                   textClass="text-small"
                 />
-              )}
+              ) : null}
             </div>
 
             {/* Bio Grid */}
