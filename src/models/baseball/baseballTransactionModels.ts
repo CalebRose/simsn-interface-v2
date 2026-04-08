@@ -142,6 +142,8 @@ export interface RosterLevelStatus {
     level_id: number;
     level_name: string;
     count: number;
+    min_roster: number;
     max_roster: number;
     over_limit: boolean;
+    under_limit: boolean;
 }

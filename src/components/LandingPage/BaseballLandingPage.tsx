@@ -383,8 +383,17 @@ export const BaseballLandingPage = ({
 
   const teamInjuries = useMemo(() => {
     if (!injuryReport || injuryReport.length === 0) return [];
-    return injuryReport;
-  }, [injuryReport]);
+    const numericLevel = activeTeam?.team_level ?? LEVEL_TO_NUMERIC[activeLevel] ?? null;
+    if (numericLevel == null) return injuryReport;
+    const levelKey = activeLevel.toLowerCase();
+    return injuryReport.filter((inj: any) => {
+      // New API shape: current_level is a numeric level ID
+      if (inj.current_level != null) return inj.current_level === numericLevel;
+      // Old cached shape: level is a string key like "mlb"
+      if (inj.level) return inj.level.toLowerCase() === levelKey;
+      return false;
+    });
+  }, [injuryReport, activeLevel, activeTeam]);
 
   const abbrev = (teamId: number) => teamIdToAbbrev[teamId] ?? "???";
 

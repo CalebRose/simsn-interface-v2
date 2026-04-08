@@ -603,9 +603,15 @@ export interface BaseballInjury {
     firstname: string;
     lastname: string;
     team: string;
+    team_id: number | null;
+    team_abbrev: string | null;
+    org_id: number | null;
     position: string;
     injury_type: string;
     weeks_remaining: number;
+    weeks_assigned: number;
+    current_level: number | null;
+    on_ir: boolean;
     level: string;
 }
 

@@ -51,6 +51,14 @@ export const displayLevel = (level: string | undefined | null): string => {
   return LEVEL_LABELS[level] ?? level.toUpperCase();
 };
 
+/** Convert a numeric level ID (e.g. 9) to its display label (e.g. "MLB"). */
+export const displayLevelFromId = (levelId: number | null | undefined): string => {
+  if (levelId == null) return "";
+  const key = NUMERIC_LEVEL_MAP[levelId];
+  if (!key) return String(levelId);
+  return LEVEL_LABELS[key] ?? key.toUpperCase();
+};
+
 /**
  * Return the display name for a team entry.
  * Scraps teams show as "{orgAbbrev} Unassigned" instead of the raw DB name.

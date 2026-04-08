@@ -8,7 +8,7 @@ import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
-import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
+import { getPrimaryBaseballTeam, displayLevelFromId } from "../../../_utility/baseballHelpers";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
@@ -18,6 +18,7 @@ import {
   InjuryReportItem,
   InjuryHistoryItem,
 } from "../../../models/baseball/baseballStatsModels";
+import { enqueueSnackbar } from "notistack";
 import { useModal } from "../../../_hooks/useModal";
 import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
@@ -90,6 +91,20 @@ export const BaseballInjuryPage = ({ league }: Props) => {
 
   const orgId = organization?.id ?? 0;
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+
+  // Build a lookup from player_id → contract_id for own org (needed for IR actions)
+  const playerContractMap = useMemo(() => {
+    const map = new Map<number, number>();
+    if (!organization) return map;
+    const orgRoster = allRosters.find((r) => r.org_id === organization.id);
+    if (!orgRoster) return map;
+    for (const p of orgRoster.players) {
+      if (p.contract) map.set(p.id, p.contract.id);
+    }
+    return map;
+  }, [allRosters, organization]);
+
+  const [irSubmitting, setIrSubmitting] = useState<number | null>(null);
 
   const refreshBudget = useCallback(() => {
     if (orgId && leagueYearId) {
@@ -337,6 +352,34 @@ export const BaseballInjuryPage = ({ league }: Props) => {
     fetchData();
   }, [fetchData]);
 
+  const handleIrAction = useCallback(
+    async (playerId: number, action: "place" | "activate") => {
+      const contractId = playerContractMap.get(playerId);
+      if (!contractId || !leagueYearId) return;
+      setIrSubmitting(playerId);
+      try {
+        if (action === "place") {
+          await BaseballService.PlaceOnIR({ contract_id: contractId, league_year_id: leagueYearId });
+          enqueueSnackbar("Player placed on IR", { variant: "success", autoHideDuration: 3000 });
+        } else {
+          const res = await BaseballService.ActivateFromIR({ contract_id: contractId, league_year_id: leagueYearId });
+          enqueueSnackbar("Player activated from IR", { variant: "success", autoHideDuration: 3000 });
+          if (res.roster_warning?.over_limit) {
+            enqueueSnackbar(
+              `Roster warning: ${res.roster_warning.count}/${res.roster_warning.max_roster} — over limit`,
+              { variant: "warning", autoHideDuration: 5000 },
+            );
+          }
+        }
+        fetchData();
+      } catch (err: any) {
+        enqueueSnackbar(err?.message || "IR action failed", { variant: "error", autoHideDuration: 4000 });
+      }
+      setIrSubmitting(null);
+    },
+    [playerContractMap, leagueYearId, fetchData],
+  );
+
   const pageTitle = isCollege ? "College Baseball" : "MLB";
 
   if (!seasonContext) {
@@ -491,10 +534,12 @@ export const BaseballInjuryPage = ({ league }: Props) => {
                   <tr className="text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 border-b-2 border-gray-200 dark:border-gray-600">
                     <th className="px-3 py-2 min-w-[10rem]">Player</th>
                     <th className="px-3 py-2">Team</th>
+                    <th className="px-3 py-2">Level</th>
                     <th className="px-3 py-2">Injury</th>
                     <th className="px-3 py-2 text-center">Assigned</th>
                     <th className="px-3 py-2 text-center">Remaining</th>
                     <th className="px-3 py-2 text-center">Status</th>
+                    {organization && <th className="px-3 py-2 text-center">IR</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -504,18 +549,27 @@ export const BaseballInjuryPage = ({ league }: Props) => {
                       inj.team_id,
                       currentUser?.IsRetro,
                     );
+                    const isOwnOrg = inj.org_id === orgId;
+                    const hasContract = isOwnOrg && playerContractMap.has(inj.player_id);
                     return (
                       <tr
                         key={`${inj.player_id}-${inj.injury_code}`}
                         className={`border-b border-gray-100 dark:border-gray-700 ${idx % 2 === 0 ? "bg-gray-50/50 dark:bg-gray-800/30" : ""}`}
                       >
                         <td className="px-3 py-2 font-medium">
-                          <span
-                            className="cursor-pointer hover:underline hover:text-blue-500"
-                            onClick={() => openPlayerModal(inj.player_id)}
-                          >
-                            {inj.name}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className="cursor-pointer hover:underline hover:text-blue-500"
+                              onClick={() => openPlayerModal(inj.player_id)}
+                            >
+                              {inj.name}
+                            </span>
+                            {inj.on_ir && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 font-semibold leading-none">
+                                IR
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-3 py-2">
                           <div className="flex items-center gap-1.5">
@@ -532,6 +586,9 @@ export const BaseballInjuryPage = ({ league }: Props) => {
                             )}
                             <span className="text-xs">{inj.team_abbrev}</span>
                           </div>
+                        </td>
+                        <td className="px-3 py-2 text-xs">
+                          {displayLevelFromId(inj.current_level)}
                         </td>
                         <td className="px-3 py-2">{inj.injury_name}</td>
                         <td className="px-3 py-2 text-center">
@@ -557,13 +614,35 @@ export const BaseballInjuryPage = ({ league }: Props) => {
                             {inj.status}
                           </span>
                         </td>
+                        {organization && (
+                          <td className="px-3 py-2 text-center">
+                            {hasContract && !inj.on_ir && (
+                              <button
+                                className="px-2 py-1 rounded text-[11px] font-semibold bg-purple-600/20 text-purple-400 hover:bg-purple-600/40 disabled:opacity-30"
+                                onClick={() => handleIrAction(inj.player_id, "place")}
+                                disabled={irSubmitting === inj.player_id}
+                              >
+                                {irSubmitting === inj.player_id ? "..." : "Place IR"}
+                              </button>
+                            )}
+                            {hasContract && inj.on_ir && (
+                              <button
+                                className="px-2 py-1 rounded text-[11px] font-semibold bg-green-600/20 text-green-400 hover:bg-green-600/40 disabled:opacity-30"
+                                onClick={() => handleIrAction(inj.player_id, "activate")}
+                                disabled={irSubmitting === inj.player_id}
+                              >
+                                {irSubmitting === inj.player_id ? "..." : "Activate"}
+                              </button>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
                   {currentInjuries.length === 0 && (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={organization ? 8 : 7}
                         className="px-4 py-8 text-center text-gray-400"
                       >
                         No injuries found.
@@ -580,6 +659,7 @@ export const BaseballInjuryPage = ({ league }: Props) => {
                   <tr className="text-left text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 border-b-2 border-gray-200 dark:border-gray-600">
                     <th className="px-3 py-2 min-w-[10rem]">Player</th>
                     <th className="px-3 py-2">Team</th>
+                    <th className="px-3 py-2">Level</th>
                     <th className="px-3 py-2">Injury</th>
                     <th className="px-3 py-2 text-center">Recovery</th>
                     <th className="px-3 py-2 text-center">Remaining</th>
@@ -593,14 +673,24 @@ export const BaseballInjuryPage = ({ league }: Props) => {
                       className={`border-b border-gray-100 dark:border-gray-700 ${idx % 2 === 0 ? "bg-gray-50/50 dark:bg-gray-800/30" : ""}`}
                     >
                       <td className="px-3 py-2 font-medium">
-                        <span
-                          className="cursor-pointer hover:underline hover:text-blue-500"
-                          onClick={() => openPlayerModal(evt.player_id)}
-                        >
-                          {evt.name}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className="cursor-pointer hover:underline hover:text-blue-500"
+                            onClick={() => openPlayerModal(evt.player_id)}
+                          >
+                            {evt.name}
+                          </span>
+                          {evt.on_ir && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 font-semibold leading-none">
+                              IR
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-3 py-2 text-xs">{evt.team_abbrev}</td>
+                      <td className="px-3 py-2 text-xs">
+                        {displayLevelFromId(evt.current_level)}
+                      </td>
                       <td className="px-3 py-2">{evt.injury_name}</td>
                       <td className="px-3 py-2 text-center">
                         {evt.weeks_assigned}w
@@ -616,7 +706,7 @@ export const BaseballInjuryPage = ({ league }: Props) => {
                   {historyEvents.length === 0 && (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         className="px-4 py-8 text-center text-gray-400"
                       >
                         No injury history found.

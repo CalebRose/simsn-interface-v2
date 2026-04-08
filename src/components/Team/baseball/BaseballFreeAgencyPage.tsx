@@ -270,24 +270,44 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     let transactionBtn: React.ReactNode = null;
     if (fa.fa_type === "mlb_fa") {
       if (!fa.auction) {
+        // MLB FA without auction yet — pending creation
         transactionBtn = (
           <button
             className={`${actionBtn} bg-yellow-600/20 text-yellow-400 cursor-default`}
             title="Auction pending \u2014 will open after week processes"
-            aria-label="Auction pending"
           >
             Pending
           </button>
         );
-      } else if (fa.auction.my_offer) {
-        transactionBtn = <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromFAPlayer(fa)} title="Update Offer" aria-label="Update Offer">Update</button>;
       } else {
-        transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openOfferFromFAPlayer(fa)} title="Make Offer" aria-label="Make Offer">Offer</button>;
+        const phase = fa.auction.phase;
+        const myOffer = fa.auction.my_offer;
+
+        if (phase === "completed" || phase === "withdrawn") {
+          transactionBtn = <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Closed</span>;
+        } else if (!myOffer) {
+          // No existing offer
+          if (phase === "open") {
+            transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openOfferFromFAPlayer(fa)}>Offer</button>;
+          } else {
+            // Listening or Finalize — too late to join
+            transactionBtn = <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Bidding Closed</span>;
+          }
+        } else if ((myOffer as any).status === "outbid") {
+          transactionBtn = <span className={`${actionBtn} bg-red-600/20 text-red-400 cursor-default`}>Eliminated</span>;
+        } else if ((myOffer as any).status === "withdrawn") {
+          transactionBtn = <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Withdrawn</span>;
+        } else if (phase === "open") {
+          transactionBtn = <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromFAPlayer(fa)}>Update</button>;
+        } else {
+          // Listening or Finalize — can only raise
+          transactionBtn = <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromFAPlayer(fa)}>Increase</button>;
+        }
       }
     } else if (!fa.demand) {
-      transactionBtn = <button className={`${actionBtn} bg-gray-600/20 text-gray-400 hover:bg-gray-600/40`} onClick={() => openDetail(fa.id)} title="View Player" aria-label="View Player">View</button>;
+      transactionBtn = <button className={`${actionBtn} bg-gray-600/20 text-gray-400 hover:bg-gray-600/40`} onClick={() => openDetail(fa.id)}>View</button>;
     } else {
-      transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openSignModal(fa)} title="Sign Player" aria-label="Sign Player">Sign</button>;
+      transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openSignModal(fa)}>Sign</button>;
     }
 
     return (

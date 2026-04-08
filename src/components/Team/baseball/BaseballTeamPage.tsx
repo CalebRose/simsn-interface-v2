@@ -22,7 +22,7 @@ import {
   VisibilityContext,
   ListedPositionResponse,
 } from "../../../models/baseball/baseballModels";
-import { TransactionPlayerPatch } from "../../../models/baseball/baseballTransactionModels";
+import { TransactionPlayerPatch, RosterLevelStatus } from "../../../models/baseball/baseballTransactionModels";
 import {
   SimCollegeBaseball,
   SimMLB,
@@ -842,6 +842,12 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         });
         // Invalidate stats cache since roster changed
         statsCache.current = null;
+        // Refresh roster status counts
+        if (effectiveOrgId) {
+          BaseballService.GetRosterStatus(effectiveOrgId)
+            .then(setRosterStatus)
+            .catch(() => {});
+        }
       } else {
         // No patch data (e.g. extension) — force refresh
         const orgId = viewedOrg?.id ?? userOrg?.id;
@@ -850,7 +856,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         }
       }
     },
-    [viewedOrg, userOrg, loadBootstrapForOrg, processBootstrapResult],
+    [viewedOrg, userOrg, loadBootstrapForOrg, processBootstrapResult, effectiveOrgId],
   );
 
   // --- Scouting Confirmation Modal ---
@@ -938,6 +944,19 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       cancelled = true;
     };
   }, [category, leagueYearId, viewedOrg, isAllView]);
+
+  // --- Roster status (min/max limits per level) ---
+  const [rosterStatus, setRosterStatus] = useState<RosterLevelStatus[]>([]);
+
+  useEffect(() => {
+    if (!effectiveOrgId || isAllView) {
+      setRosterStatus([]);
+      return;
+    }
+    BaseballService.GetRosterStatus(effectiveOrgId)
+      .then(setRosterStatus)
+      .catch(() => setRosterStatus([]));
+  }, [effectiveOrgId, isAllView]);
 
   // --- Actions renderer for roster tables ---
   const isOwnOrg = !isAllView && viewedOrg?.id === userOrg?.id;
@@ -1326,6 +1345,51 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
                     accentColor={headerColor}
                   />
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Roster Status Bar */}
+          {!isAllView && rosterStatus.length > 0 && (
+            <div className="mb-4">
+              <Text variant="small" classes="font-semibold mb-2">
+                Roster Limits
+              </Text>
+              <div className="flex flex-wrap gap-2">
+                {rosterStatus.map((rs) => {
+                  const statusColor = rs.over_limit
+                    ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                    : rs.under_limit
+                      ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20"
+                      : "border-green-500 bg-green-50 dark:bg-green-900/20";
+                  const textColor = rs.over_limit
+                    ? "text-red-600 dark:text-red-400"
+                    : rs.under_limit
+                      ? "text-yellow-600 dark:text-yellow-400"
+                      : "text-green-600 dark:text-green-400";
+                  return (
+                    <div
+                      key={rs.level_id}
+                      className={`flex flex-col items-center px-3 py-1.5 rounded border ${statusColor} min-w-[5rem]`}
+                    >
+                      <span className="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
+                        {displayLevel(rs.level_name)}
+                      </span>
+                      <span className={`text-sm font-bold ${textColor}`}>
+                        {rs.count}/{rs.max_roster}
+                      </span>
+                      <span className="text-[10px] text-gray-400">
+                        min {rs.min_roster}
+                      </span>
+                      {rs.over_limit && (
+                        <span className="text-[10px] font-semibold text-red-500">OVER</span>
+                      )}
+                      {rs.under_limit && (
+                        <span className="text-[10px] font-semibold text-yellow-500">UNDER</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
