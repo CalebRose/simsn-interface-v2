@@ -839,6 +839,23 @@ export const ForumService = {
     await batch.commit();
   },
 
+  ClearAllNotifications: async (uid: string): Promise<void> => {
+    const q = query(notificationsCol(), where("uid", "==", uid));
+    const snap = await getDocs(q);
+    // Firestore batches are capped at 500 writes; chunk if needed
+    const chunks: (typeof snap.docs)[] = [];
+    for (let i = 0; i < snap.docs.length; i += 500) {
+      chunks.push(snap.docs.slice(i, i + 500));
+    }
+    await Promise.all(
+      chunks.map((chunk) => {
+        const batch = writeBatch(firestore);
+        chunk.forEach((d) => batch.delete(d.ref));
+        return batch.commit();
+      }),
+    );
+  },
+
   // ─────────────────────────────────────────────
   // Game References
   // ─────────────────────────────────────────────

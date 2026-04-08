@@ -137,6 +137,7 @@ interface ForumContextProps {
   loadNotifications: (uid: string) => Promise<void>;
   markNotificationRead: (notificationId: string) => Promise<void>;
   markAllNotificationsRead: (uid: string) => Promise<void>;
+  clearNotifications: (uid: string) => Promise<void>;
   setCurrentUser: (user: CurrentUser | null) => void;
 }
 
@@ -188,6 +189,7 @@ const defaultForumContext: ForumContextProps = {
   loadNotifications: async () => {},
   markNotificationRead: async () => {},
   markAllNotificationsRead: async () => {},
+  clearNotifications: async () => {},
   setCurrentUser: () => {},
 };
 
@@ -771,6 +773,15 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     }
   }, []);
 
+  const clearNotifications = useCallback(async (uid: string) => {
+    try {
+      await ForumService.ClearAllNotifications(uid);
+      setNotifications([]);
+    } catch (err) {
+      console.error("ForumContext.clearNotifications:", err);
+    }
+  }, []);
+
   return (
     <ForumContext.Provider
       value={{
@@ -817,6 +828,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         loadNotifications,
         markNotificationRead,
         markAllNotificationsRead,
+        clearNotifications,
         setCurrentUser: setCurrentUserState,
       }}
     >

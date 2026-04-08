@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import {
   NFLDraftee,
   NFLDraftPick,
   NFLTeam,
+  NFLTradeProposal,
   NFLWarRoom,
   ScoutingProfile,
 } from "../../../models/footballModels";
-import { DraftService } from "../../../_services/draftService";
 import { useDraftState } from "../hooks/useDraftState";
 import { useModal } from "../../../_hooks/useModal";
 import {
@@ -15,12 +15,15 @@ import {
   DraftBoardType,
   DrafteeInfoType,
   ModalAction,
+  SimNFL,
 } from "../../../_constants/constants";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { getSecondsByRound } from "../PHLDraft/utils/draftHelpers";
 import { Draftee } from "../common";
 import { FormationMap } from "../../../_utility/getFormationMap";
+import { useDraftTradeState } from "../hooks/useDraftTradeState";
+import { TradeService } from "../../../_services/tradeService";
 
 export const NFL_PICKS_PER_ROUND = 24;
 
@@ -65,6 +68,32 @@ export const useNFLDraft = () => {
     CollectionName: "nfldraftstate",
     DocName: "Mwwhz87HR14DNHy99cmh",
   });
+
+  const {
+    userTeam,
+    tradePartnerTeam,
+    selectTradePartner,
+    teamOptions,
+    userTradablePlayers,
+    userTradablePicks,
+    partnerTradablePlayers,
+    userTradeProposals,
+    userWarRoomData,
+    approvedRequests,
+    proposeTrade,
+    acceptTrade,
+    rejectTrade,
+    vetoTrade,
+    updateApprovedTrades,
+    updateUserWarRoom,
+  } = useDraftTradeState({
+    ApprovedTradesCollectionName: "nfldraftstate",
+    ApprovedTradesDocName: "UCNjOhC0hbqZhl1BWBy6",
+    WarRoomCollectionName: "nflwarrooms",
+    UserWarRoomDocName: `${nflTeam?.TeamName} ${nflTeam?.Mascot}`,
+    league: SimNFL,
+  });
+
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(DrafteeInfoType);
 
@@ -263,7 +292,6 @@ export const useNFLDraft = () => {
       nflScoutingProfileMap[selectedTeam.ID] === null
     )
       return [];
-
     const nflScoutingProfileMapForTeam = nflScoutingProfileMap[selectedTeam.ID];
     if (
       !nflScoutingProfileMapForTeam ||
@@ -724,6 +752,91 @@ export const useNFLDraft = () => {
     return needs;
   }, [teamRoster, nflGameplan, selectedTeam, offensiveSystem, defensiveSystem]);
 
+  const partnerTradablePicks = useMemo(() => {
+    if (!tradePartnerTeam) return [];
+    return draftPicksFromState.filter((x) => x.TeamID === tradePartnerTeam.ID);
+  }, [draftPicksFromState, tradePartnerTeam]);
+
+  const handleProcessTrade = useCallback(
+    (id: number) => {
+      const adminTradeQueue = [...approvedRequests];
+      const itemIdx = adminTradeQueue.findIndex((x) => x.ID === id);
+      if (itemIdx < 0) {
+        return;
+      }
+      const item = adminTradeQueue[itemIdx];
+      let dto = {};
+      const it = item as NFLTradeProposal;
+      dto = {
+        TeamID: it.NFLTeamID,
+        RecepientTeamID: it.RecepientTeamID,
+        IsTradeAccepted: true,
+        IsTradeRejected: false,
+        IsSynced: false,
+        TeamTradeOptions: it.NFLTeamTradeOptions,
+        RecepientTeamTradeOptions: it.RecepientTeamTradeOptions,
+      };
+
+      const res = TradeService.FBAProcessDraftTrade(dto);
+      // 2. Swap the draft picks, don't worry about players
+      const teamTradeDPs = it.NFLTeamTradeOptions.filter(
+        (x) => x.NFLDraftPickID > 0,
+      );
+
+      const recTradeDPs = it.RecepientTeamTradeOptions.filter(
+        (x) => x.NFLDraftPickID > 0,
+      );
+
+      // Sent Team Options
+      const swapMapSent: Record<number, boolean> = {};
+      // Receiving Team Options
+      const swapMapRec: Record<number, boolean> = {};
+
+      for (let i = 0; i < teamTradeDPs.length; i++) {
+        const dpObj = teamTradeDPs[i];
+        if (dpObj.NFLDraftPickID > 0) {
+          swapMapSent[dpObj.NFLDraftPickID] = true;
+        }
+      }
+
+      for (let i = 0; i < recTradeDPs.length; i++) {
+        const dpObj = recTradeDPs[i];
+        if (dpObj.NFLDraftPickID > 0) {
+          swapMapRec[dpObj.NFLDraftPickID] = true;
+        }
+      }
+
+      const allDPs = { ...allDraftPicks };
+      // 3. Place updated draft picks into map
+      // 4. Iterate over draft pick list
+
+      for (let i = 1; i < 8; i++) {
+        for (let j = 0; j < allDPs[i].length; j++) {
+          const pick = allDPs[i][j];
+          if (swapMapSent[pick.ID]) {
+            pick.PreviousTeamID = pick.TeamID;
+            pick.PreviousTeam = pick.Team;
+            pick.TeamID = it.RecepientTeamID;
+          } else if (swapMapRec[pick.ID]) {
+            pick.PreviousTeamID = pick.TeamID;
+            pick.PreviousTeam = pick.Team;
+            pick.TeamID = it.NFLTeamID;
+          }
+        }
+      }
+
+      handleManualDraftStateUpdate({
+        allDraftPicks: allDPs,
+      });
+      // 7. Filter out item from Admin Trades
+      // 8. Save Admin State
+      const filteredQueue = adminTradeQueue.filter((x) => x.ID !== id);
+      const apt = { approvedRequests: filteredQueue };
+      updateApprovedTrades(apt);
+    },
+    [approvedRequests, updateApprovedTrades, proRosterMap, allDraftPicks],
+  );
+
   return {
     selectedTeam,
     nflDraftees,
@@ -777,5 +890,24 @@ export const useNFLDraft = () => {
     resetTimer,
     teamDraftPicks,
     draftablePlayerMap,
+    // Draft Trade State
+    userTeam,
+    tradePartnerTeam,
+    selectTradePartner,
+    teamOptions,
+    userTradablePlayers,
+    userTradablePicks,
+    partnerTradablePlayers,
+    partnerTradablePicks,
+    userTradeProposals,
+    userWarRoomData,
+    approvedRequests,
+    proposeTrade,
+    acceptTrade,
+    rejectTrade,
+    vetoTrade,
+    updateUserWarRoom,
+    updateApprovedTrades,
+    handleProcessTrade,
   };
 };

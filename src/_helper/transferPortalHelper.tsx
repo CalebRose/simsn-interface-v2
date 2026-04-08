@@ -434,7 +434,7 @@ export const getCFBPromiseWeight = (
     }
     return "Medium";
   }
-  if (promiseType === "Snaps") {
+  if (promiseType === "Snaps" || promiseType === "Snap Count") {
     if (benchmark < 1 || benchmark > 60) {
       return "Invalid";
     }

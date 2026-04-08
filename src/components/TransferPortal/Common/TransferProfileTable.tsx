@@ -52,9 +52,11 @@ import { useSimBBAStore } from "../../../context/SimBBAContext";
 import {
   CollegePlayer as CFBPlayer,
   TransferPortalProfile as FootballPortalProfile,
+  RecruitingTeamProfile as FootballTeamProfile,
 } from "../../../models/footballModels";
 import { getPlayerOverall } from "../../Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
+import { isBadFit, isGoodFit } from "../../../_helper/recruitingHelper";
 
 const getTransferProfileTableColumns = (
   league: League,
@@ -800,6 +802,7 @@ interface CFBProfileRowProps {
   openPromiseModal: (player: CFBPlayer) => void;
   setAttribute: (attr: string) => void;
   backgroundColor: string;
+  teamProfile: FootballTeamProfile;
 }
 
 export const CFBProfileRow: FC<CFBProfileRowProps> = ({
@@ -812,6 +815,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
   setAttribute,
   openPromiseModal,
   backgroundColor,
+  teamProfile,
 }) => {
   if (!player) return <></>;
   const bbStore = useSimFBAStore();
@@ -896,6 +900,33 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
     });
   }, [leadingTeamsList, player]);
 
+  const isPlayerGoodFit = useMemo(() => {
+    return isGoodFit(
+      teamProfile.OffensiveScheme,
+      teamProfile.DefensiveScheme,
+      player.Position,
+      player.Archetype,
+    );
+  }, [teamProfile]);
+
+  const isPlayerBadFit = useMemo(() => {
+    return isBadFit(
+      teamProfile.OffensiveScheme,
+      teamProfile.DefensiveScheme,
+      player.Position,
+      player.Archetype,
+    );
+  }, [teamProfile]);
+
+  const nameColor = useMemo(() => {
+    if (isPlayerGoodFit) {
+      return "text-green-400";
+    } else if (isPlayerBadFit) {
+      return "text-red-400";
+    }
+    return "";
+  }, [player, isPlayerGoodFit, isPlayerBadFit]);
+
   // 6) Buttons
   const scoutAttribute = (attr: string) => {
     setAttribute(attr);
@@ -914,7 +945,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
       </TableCell>{" "}
       <TableCell>
         <span
-          className={`text-xs cursor-pointer font-semibold`}
+          className={`text-xs cursor-pointer font-semibold ${nameColor}`}
           onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
             (e.target as HTMLElement).style.color = "#fcd53f";
           }}
@@ -1124,6 +1155,7 @@ export const TransferPortalProfileTable: FC<
             openModal={openModal}
             openPromiseModal={openPromiseModal}
             setAttribute={setAttribute}
+            teamProfile={teamProfile}
           />
         );
       };

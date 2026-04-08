@@ -1128,11 +1128,15 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       return;
     }
     const res = await BootstrapService.GetFBADraftBootstrapData(nflID);
-    setNFLDraftees(res.NFLDraftees);
-    setNFLWarRoomMap(res.NFLWarRoomMap);
-    setNFLScoutingProfileMap(res.NFLScoutingProfileMap);
-    setNFLGameplanMap(res.NFLGameplanMap);
-    setNFLDraftPicks(res.NFLDraftPicks);
+    if (res) {
+      setNFLDraftees(res.NFLDraftees);
+      setNFLWarRoomMap(res.NFLWarRoomMap);
+      if (res.DraftScoutingProfileMap) {
+        setNFLScoutingProfileMap(res.DraftScoutingProfileMap);
+      }
+      setNFLGameplanMap(res.NFLGameplanMap);
+      setNFLDraftPicks(res.NFLDraftPicks);
+    }
   };
 
   // use this once the portal page is finished
@@ -2415,12 +2419,14 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         Overall: playerData?.Overall || 0,
         ShowCount: 0,
       });
-
       // Optimistic update - append to the team's profiles array
-      setNFLScoutingProfileMap((prev) => ({
-        ...prev,
-        [dto.TeamID]: [...(prev[dto.TeamID] ?? []), optimisticProfile],
-      }));
+      setNFLScoutingProfileMap((prev) => {
+        const safe = prev ?? {};
+        return {
+          ...safe,
+          [dto.TeamID]: [...(safe[dto.TeamID] ?? []), optimisticProfile],
+        };
+      });
       enqueueSnackbar("Player added to scouting board!", {
         variant: "success",
         autoHideDuration: 3000,
@@ -2430,19 +2436,27 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         const res = await DraftService.CreateNFLScoutingProfile(dto);
         if (res) {
           const newProfile = new ScoutingProfile(res);
-          setNFLScoutingProfileMap((prev) => ({
-            ...prev,
-            [dto.TeamID]: (prev[dto.TeamID] ?? []).map((p) =>
-              p.ID === tempId ? newProfile : p,
-            ),
-          }));
+          setNFLScoutingProfileMap((prev) => {
+            const safe = prev ?? {};
+            return {
+              ...safe,
+              [dto.TeamID]: (safe[dto.TeamID] ?? []).map((p) =>
+                p.ID === tempId ? newProfile : p,
+              ),
+            };
+          });
         }
       } catch (error) {
         console.error("Failed to add player to scouting board:", error);
-        setNFLScoutingProfileMap((prev) => ({
-          ...prev,
-          [dto.TeamID]: (prev[dto.TeamID] ?? []).filter((p) => p.ID !== tempId),
-        }));
+        setNFLScoutingProfileMap((prev) => {
+          const safe = prev ?? {};
+          return {
+            ...safe,
+            [dto.TeamID]: (safe[dto.TeamID] ?? []).filter(
+              (p) => p.ID !== tempId,
+            ),
+          };
+        });
         enqueueSnackbar("Failed to add player to scouting board", {
           variant: "error",
           autoHideDuration: 3000,

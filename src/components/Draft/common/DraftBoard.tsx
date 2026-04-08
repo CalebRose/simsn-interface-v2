@@ -33,7 +33,10 @@ import {
   InfoType,
   TextGreen,
   ModalAction,
+  SimPHL,
+  SimNFL,
 } from "../../../_constants/constants";
+import { isBadFit, isGoodFit } from "../../../_helper/recruitingHelper";
 
 interface DraftBoardProps {
   draftees: Draftee[];
@@ -143,21 +146,40 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     goToNextPage,
   } = usePagination(filteredPlayers.length, 25);
 
-  const columns = [
-    { header: "Rank", accessor: "rank" },
-    { header: "Player", accessor: "LastName" },
-    { header: "Position", accessor: "Position" },
-    { header: "Archetype", accessor: "Archetype" },
-    { header: "Type", accessor: "DraftablePlayerType" },
-    { header: "College", accessor: "College" },
-    { header: "Age", accessor: "Age" },
-    { header: "Height", accessor: "Height" },
-    { header: "Weight", accessor: "Weight" },
-    { header: "Overall", accessor: "OverallGrade" },
-    { header: "Offensive Fit", accessor: "OffensiveFit" },
-    { header: "Defensive Fit", accessor: "DefensiveFit" },
-    { header: "Actions", accessor: "actions" },
-  ];
+  const columns = useMemo(() => {
+    if (league === SimPHL) {
+      return [
+        { header: "Rank", accessor: "rank" },
+        { header: "Player", accessor: "LastName" },
+        { header: "Position", accessor: "Position" },
+        { header: "Archetype", accessor: "Archetype" },
+        { header: "Type", accessor: "DraftablePlayerType" },
+        { header: "College", accessor: "College" },
+        { header: "Age", accessor: "Age" },
+        { header: "Height", accessor: "Height" },
+        { header: "Weight", accessor: "Weight" },
+        { header: "Overall", accessor: "OverallGrade" },
+        { header: "Offensive Fit", accessor: "OffensiveFit" },
+        { header: "Defensive Fit", accessor: "DefensiveFit" },
+        { header: "Actions", accessor: "actions" },
+      ];
+    }
+    return [
+      { header: "Rank", accessor: "rank" },
+      { header: "Player", accessor: "LastName" },
+      { header: "Position", accessor: "Position" },
+      { header: "Archetype", accessor: "Archetype" },
+      { header: "College", accessor: "College" },
+      { header: "Age", accessor: "Age" },
+      { header: "Height", accessor: "Height" },
+      { header: "Weight", accessor: "Weight" },
+      { header: "Overall", accessor: "OverallGrade" },
+      { header: "Scheme Fit", accessor: "SchemeFit" },
+      { header: "Actions", accessor: "actions" },
+    ];
+  }, [league]);
+
+  console.log({ offensiveSystemsInformation, defensiveSystemsInformation });
 
   const rowRenderer = (
     player: Draftee,
@@ -167,51 +189,124 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     const isScouted = scoutedPlayerIds.has(player.ID);
     const overallGrade = getOverallGrade(player);
     const playerCollege = getPlayerCollege(player, league);
-    const isGoodOffensiveFit = (() => {
+    const isGoodOffensiveHCKFit = (() => {
       if (!player || !offensiveSystemsInformation) return false;
-      const goodFits = offensiveSystemsInformation.GoodFits;
-      const idx = goodFits.findIndex(
-        (x: any) => x.archetype === player.Archetype,
-      );
-      if (idx > -1) {
-        return true;
+      if (league === SimPHL) {
+        const goodFits = offensiveSystemsInformation.GoodFits;
+        const idx = goodFits.findIndex(
+          (x: any) => x.archetype === player.Archetype,
+        );
+        if (idx > -1) {
+          return true;
+        }
+      } else if (league === SimNFL) {
+        return isGoodFit(
+          offensiveSystemsInformation,
+          defensiveSystemsInformation,
+          player.Position,
+          player.Archetype,
+        );
       }
+
       return false;
     })();
 
-    const isBadOffensiveFit = (() => {
+    const isBadOffensiveHCKFit = (() => {
       if (!player || !offensiveSystemsInformation) return false;
-      const badFits = offensiveSystemsInformation.BadFits;
-      const idx = badFits.findIndex(
-        (x: any) => x.archetype === player.Archetype,
-      );
-      if (idx > -1) {
-        return true;
+
+      if (league === SimPHL) {
+        const badFits = offensiveSystemsInformation.BadFits;
+        const idx = badFits.findIndex(
+          (x: any) => x.archetype === player.Archetype,
+        );
+        if (idx > -1) {
+          return true;
+        }
+      } else if (league === SimNFL) {
+        return isBadFit(
+          offensiveSystemsInformation,
+          defensiveSystemsInformation,
+          player.Position,
+          player.Archetype,
+        );
       }
+
       return false;
     })();
 
-    const isGoodDefensiveFit = (() => {
+    const isGoodDefensiveHCKFit = (() => {
       if (!player || !defensiveSystemsInformation) return false;
-      const goodFits = defensiveSystemsInformation.GoodFits;
-      const idx = goodFits.findIndex(
-        (x: any) => x.archetype === player.Archetype,
-      );
-      if (idx > -1) {
-        return true;
+      if (league === SimPHL) {
+        const goodFits = defensiveSystemsInformation.GoodFits;
+        const idx = goodFits.findIndex(
+          (x: any) => x.archetype === player.Archetype,
+        );
+        if (idx > -1) {
+          return true;
+        }
+      } else if (league === SimNFL) {
+        return isGoodFit(
+          offensiveSystemsInformation,
+          defensiveSystemsInformation,
+          player.Position,
+          player.Archetype,
+        );
       }
+
       return false;
     })();
 
-    const isBadDefensiveFit = (() => {
+    const isBadDefensiveHCKFit = (() => {
       if (!player || !defensiveSystemsInformation) return false;
-      const badFits = defensiveSystemsInformation.BadFits;
-      const idx = badFits.findIndex(
-        (x: any) => x.archetype === player.Archetype,
-      );
-      if (idx > -1) {
-        return true;
+      if (league === SimPHL) {
+        const badFits = defensiveSystemsInformation.BadFits;
+        const idx = badFits.findIndex(
+          (x: any) => x.archetype === player.Archetype,
+        );
+        if (idx > -1) {
+          return true;
+        }
+      } else if (league === SimNFL) {
+        return isBadFit(
+          offensiveSystemsInformation,
+          defensiveSystemsInformation,
+          player.Position,
+          player.Archetype,
+        );
       }
+
+      return false;
+    })();
+
+    const isGoodFBFit = (() => {
+      if (!player || !offensiveSystemsInformation) return false;
+      if (league === SimPHL) {
+        return false;
+      } else if (league === SimNFL) {
+        return isGoodFit(
+          offensiveSystemsInformation,
+          defensiveSystemsInformation,
+          player.Position,
+          player.Archetype,
+        );
+      }
+
+      return false;
+    })();
+
+    const isBadFBFit = (() => {
+      if (!player || !offensiveSystemsInformation) return false;
+      if (league === SimPHL) {
+        return false;
+      } else if (league === SimNFL) {
+        return isBadFit(
+          offensiveSystemsInformation,
+          defensiveSystemsInformation,
+          player.Position,
+          player.Archetype,
+        );
+      }
+
       return false;
     })();
 
@@ -232,10 +327,10 @@ export const DraftBoard: FC<DraftBoardProps> = ({
       return "Unknown";
     })();
 
-    player.IsGoodOffensiveFit = isGoodOffensiveFit;
-    player.IsGoodDefensiveFit = isGoodDefensiveFit;
-    player.IsBadOffensiveFit = isBadOffensiveFit;
-    player.IsBadDefensiveFit = isBadDefensiveFit;
+    player.IsGoodOffensiveFit = isGoodOffensiveHCKFit;
+    player.IsGoodDefensiveFit = isGoodDefensiveHCKFit;
+    player.IsBadOffensiveFit = isBadOffensiveHCKFit;
+    player.IsBadDefensiveFit = isBadDefensiveHCKFit;
 
     const isDrafted = (() => {
       return draftedPlayerIds.has(player.ID);
@@ -279,11 +374,13 @@ export const DraftBoard: FC<DraftBoardProps> = ({
             {player.Archetype}
           </Text>
         </TableCell>
-        <TableCell classes="py-2 px-1 sm:px-3">
-          <Text variant="small" classes="text-gray-300">
-            {draftPlayerType}
-          </Text>
-        </TableCell>
+        {league === SimPHL && (
+          <TableCell classes="py-2 px-1 sm:px-3">
+            <Text variant="small" classes="text-gray-300">
+              {draftPlayerType}
+            </Text>
+          </TableCell>
+        )}
         <TableCell classes="py-2 px-1 sm:px-3">
           <Text variant="small" classes="text-gray-300">
             {playerCollege}
@@ -312,32 +409,59 @@ export const DraftBoard: FC<DraftBoardProps> = ({
             {overallGrade}
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-1 sm:px-3">
+        {league === SimPHL && (
+          <TableCell classes="text-center py-2 px-1 sm:px-3">
+            <>
+              {isGoodOffensiveHCKFit && (
+                <CheckCircle
+                  textColorClass={`w-full text-center ${TextGreen}`}
+                />
+              )}
+              {isBadOffensiveHCKFit && (
+                <CrossCircle textColorClass="w-full text-center text-red-500" />
+              )}
+              {!isGoodOffensiveHCKFit && !isBadOffensiveHCKFit && (
+                <DashCircle textColorClass="w-full text-center text-gray-500" />
+              )}
+            </>
+          </TableCell>
+        )}
+        {league === SimPHL && (
+          <TableCell classes="text-center py-2 px-1 sm:px-3">
+            <>
+              {isGoodDefensiveHCKFit && (
+                <CheckCircle
+                  textColorClass={`w-full text-center ${TextGreen}`}
+                />
+              )}
+              {isBadDefensiveHCKFit && (
+                <CrossCircle textColorClass="w-full text-center text-red-500" />
+              )}
+              {!isGoodDefensiveHCKFit && !isBadDefensiveHCKFit && (
+                <DashCircle textColorClass="w-full text-center text-gray-500" />
+              )}
+            </>
+          </TableCell>
+        )}
+        {league === SimNFL && (
           <>
-            {isGoodOffensiveFit && (
-              <CheckCircle textColorClass={`w-full text-center ${TextGreen}`} />
-            )}
-            {isBadOffensiveFit && (
-              <CrossCircle textColorClass="w-full text-center text-red-500" />
-            )}
-            {!isGoodOffensiveFit && !isBadOffensiveFit && (
-              <DashCircle textColorClass="w-full text-center text-gray-500" />
-            )}
+            <TableCell classes="text-center py-2 px-1 sm:px-3">
+              <>
+                {isGoodFBFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadFBFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodFBFit && !isBadFBFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </>
+            </TableCell>
           </>
-        </TableCell>
-        <TableCell classes="text-center py-2 px-1 sm:px-3">
-          <>
-            {isGoodDefensiveFit && (
-              <CheckCircle textColorClass={`w-full text-center ${TextGreen}`} />
-            )}
-            {isBadDefensiveFit && (
-              <CrossCircle textColorClass="w-full text-center text-red-500" />
-            )}
-            {!isGoodDefensiveFit && !isBadDefensiveFit && (
-              <DashCircle textColorClass="w-full text-center text-gray-500" />
-            )}
-          </>
-        </TableCell>
+        )}
 
         <TableCell classes="text-center py-2 px-1 sm:px-3">
           <div className="flex items-center justify-center space-x-2">

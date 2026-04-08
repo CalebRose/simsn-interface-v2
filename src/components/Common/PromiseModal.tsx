@@ -28,6 +28,7 @@ import Slider from "./Slider";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
+import { FootballPlayerStatsModalView } from "./PlayerStatsModalView";
 
 const CFB_OPTION_TYPES: { label: string; value: string }[] = [
   { label: "No Redshirt", value: "No Redshirt" },
@@ -179,7 +180,11 @@ export const PromiseModal: FC<PromiseModalProps> = ({
       }
     }
 
-    if (promiseType === "Home State Game" && player.Country !== USA) {
+    if (
+      promiseType === "Home State Game" &&
+      league !== SimCFB &&
+      player.Country !== USA
+    ) {
       list.push(
         "Home State Game promise can only be made to players from the USA.",
       );
@@ -467,7 +472,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                   </div>
                 </>
               )}
-              {league === SimCFB && seasonStats && (
+              {/* {league === SimCFB && seasonStats && (
                 <>
                   <div>
                     <Text>Games Played</Text>
@@ -668,8 +673,13 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                     </div>
                   )}
                 </>
-              )}
+              )} */}
             </div>
+            {league === SimCFB && (
+              <>
+                <FootballPlayerStatsModalView player={player} league={SimCFB} />
+              </>
+            )}
           </div>
           <div className="mb-4">
             <div className="mb-2">
@@ -733,29 +743,31 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                   />
                 )}
                 {promiseType === "Home State Game" && (
-                  <SelectDropdown
-                    options={stateOptions}
-                    onChange={ChangeBenchmarkStr}
-                    styles={{
-                      control: (base: CSSObjectWithLabel, state: any) => ({
-                        ...base,
-                        minHeight: "32px", // shorter control
-                        fontSize: "0.75rem", // smaller text
-                        backgroundColor: state.isFocused
-                          ? "#2d3748"
-                          : "#1a202c",
-                        borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
-                        color: "#ffffff",
-                        padding: "0.3rem",
-                        boxShadow: state.isFocused
-                          ? "0 0 0 1px #4A90E2"
-                          : "none",
-                        borderRadius: "8px",
-                        transition: "all 0.2s ease",
-                        width: "15rem",
-                      }),
-                    }}
-                  />
+                  <div className="flex w-full justify-center">
+                    <SelectDropdown
+                      options={stateOptions}
+                      onChange={ChangeBenchmarkStr}
+                      styles={{
+                        control: (base: CSSObjectWithLabel, state: any) => ({
+                          ...base,
+                          minHeight: "32px", // shorter control
+                          fontSize: "0.75rem", // smaller text
+                          backgroundColor: state.isFocused
+                            ? "#2d3748"
+                            : "#1a202c",
+                          borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                          color: "#ffffff",
+                          padding: "0.3rem",
+                          boxShadow: state.isFocused
+                            ? "0 0 0 1px #4A90E2"
+                            : "none",
+                          borderRadius: "8px",
+                          transition: "all 0.2s ease",
+                          width: "15rem",
+                        }),
+                      }}
+                    />
+                  </div>
                 )}
               </div>
             </div>
