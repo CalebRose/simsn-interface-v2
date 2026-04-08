@@ -5,10 +5,9 @@ import { Border } from "../../../../_design/Borders";
 import { Button, ButtonGroup } from "../../../../_design/Buttons";
 import { BaseballService } from "../../../../_services/baseballService";
 import { useSnackbar } from "notistack";
-import {
-  FAPoolPlayer,
-  FA_TYPE_LABELS,
-} from "../../../../models/baseball/baseballFreeAgencyModels";
+import { FA_TYPE_LABELS } from "../../../../models/baseball/baseballFreeAgencyModels";
+import type { FAPlayer } from "./faPlayerAdapter";
+import { CurrencyInput } from "./CurrencyInput";
 
 const LEVEL_OPTIONS = [
   { value: 4, label: "Unassigned" },
@@ -22,7 +21,7 @@ const LEVEL_OPTIONS = [
 interface FASignModalProps {
   isOpen: boolean;
   onClose: () => void;
-  player: FAPoolPlayer;
+  player: FAPlayer;
   orgId: number;
   leagueYearId: number;
   gameWeekId: number;
@@ -85,6 +84,15 @@ export const FASignModal: FC<FASignModalProps> = ({
     }
     for (let i = 0; i < years; i++) {
       if (salaries[i] < 0) errs.push(`Year ${i + 1} salary cannot be negative`);
+      if (i > 0 && salaries[i] < salaries[i - 1]) {
+        errs.push(`Year ${i + 1} salary cannot be less than Year ${i}`);
+      }
+      if (i > 0 && salaries[i] > salaries[i - 1]) {
+        const maxRaise = Math.max(salaries[i - 1], 2_000_000);
+        if (salaries[i] - salaries[i - 1] > maxRaise) {
+          errs.push(`Year ${i + 1} raise exceeds max ($${maxRaise.toLocaleString()})`);
+        }
+      }
     }
     if (bonus < 0) errs.push("Bonus cannot be negative");
     if (availableBudget != null && bonus > availableBudget) {
@@ -265,18 +273,11 @@ export const FASignModal: FC<FASignModalProps> = ({
               ))}
             </select>
           </div>
-          <div>
-            <Text variant="xs" classes="text-gray-400 mb-1">
-              Signing Bonus
-            </Text>
-            <input
-              type="number"
-              min={0}
-              value={bonus}
-              onChange={(e) => setBonus(Number(e.target.value) || 0)}
-              className="w-full text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            />
-          </div>
+          <CurrencyInput
+            label="Signing Bonus"
+            value={bonus}
+            onChange={setBonus}
+          />
           <div>
             <Text variant="xs" classes="text-gray-400 mb-1">
               Assign to Level
@@ -299,16 +300,13 @@ export const FASignModal: FC<FASignModalProps> = ({
         <div className="space-y-2 mb-3">
           {Array.from({ length: years }, (_, i) => (
             <div key={i} className="flex items-center gap-2">
-              <Text variant="xs" classes="text-gray-400 w-20">
-                Year {i + 1}
-              </Text>
-              <input
-                type="number"
-                min={0}
-                value={salaries[i]}
-                onChange={(e) => handleSalaryChange(i, e.target.value)}
-                className="flex-1 text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              />
+              <div className="flex-1">
+                <CurrencyInput
+                  label={`Year ${i + 1}`}
+                  value={salaries[i]}
+                  onChange={(val) => handleSalaryChange(i, String(val))}
+                />
+              </div>
             </div>
           ))}
         </div>

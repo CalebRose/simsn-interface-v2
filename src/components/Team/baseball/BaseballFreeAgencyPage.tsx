@@ -7,12 +7,12 @@ import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useModal } from "../../../_hooks/useModal";
 import { BaseballService } from "../../../_services/baseballService";
 import {
-  FAPoolPlayer,
   FAPoolResponse,
   FAPlayerDetailResponse,
   AuctionPhase,
   AuctionBoardEntry,
 } from "../../../models/baseball/baseballFreeAgencyModels";
+import type { Player } from "../../../models/baseball/baseballModels";
 import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
 import { SimMLB } from "../../../_constants/constants";
 import type { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
@@ -21,7 +21,14 @@ import { FASignModal } from "./FreeAgency/FASignModal";
 import { FAAuctionBoard } from "./FreeAgency/FAAuctionBoard";
 import { FAMarketDashboard } from "./FreeAgency/FAMarketDashboard";
 import { FAWaiverWire } from "./FreeAgency/FAWaiverWire";
-import { FAPoolTable, type FACategory } from "./FreeAgency/FAPoolTable";
+import { adaptFAPoolPlayer, type FAPlayer } from "./FreeAgency/faPlayerAdapter";
+import {
+  AllPlayersTable,
+  PositionTable,
+  PitcherTable,
+  type BaseballCategory,
+  type SortConfig,
+} from "./BaseballRosterTable";
 import "./baseballMobile.css";
 
 // ── Tab type ──
@@ -36,6 +43,7 @@ interface BaseballFreeAgencyPageProps { league: string }
 export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) => {
   const { mlbOrganization, seasonContext } = useSimBaseballStore();
   const orgId = mlbOrganization?.id ?? 0;
+  const orgAbbrev = mlbOrganization?.org_abbrev ?? "";
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
   const gameWeekId = seasonContext?.current_week_index ?? 0;
 
@@ -56,7 +64,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
   const [page, setPage] = useState(1);
   const [sortKey, setSortKey] = useState("lastname");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const [poolCategory, setPoolCategory] = useState<FACategory>("Attributes");
+  const [poolCategory, setPoolCategory] = useState<BaseballCategory>("Attributes");
   const perPage = 50;
 
   // ── Budget ──
@@ -123,6 +131,8 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     setPage(1);
   };
 
+  const sortConfig: SortConfig = { key: sortKey, dir: sortDir };
+
   // ── Scouting budget as ScoutingBudget object for the standard modal ──
   const [scoutingBudgetObj, setScoutingBudgetObj] = useState<ScoutingBudget | null>(null);
   const [budgetRefreshKey, setBudgetRefreshKey] = useState(0);
@@ -152,7 +162,6 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     setSelectedPlayerId(playerId);
     setFaDetail(null);
     detailModal.handleOpenModal();
-    // Fetch FA detail for the contract tab
     BaseballService.GetFAPlayerDetail(playerId, orgId, leagueYearId)
       .then(setFaDetail)
       .catch(() => {});
@@ -162,20 +171,22 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
   const offerModal = useModal();
   const [offerContext, setOfferContext] = useState<{
     playerName: string;
+    age: number;
     auctionId: number;
     phase: AuctionPhase;
-    demand: FAPoolPlayer["demand"] | null;
-    existingOffer: FAPoolPlayer["auction"] extends null ? null : any;
+    demand: { min_aav: string; min_years: number; max_years?: number; war: number } | null;
+    existingOffer: any;
   } | null>(null);
 
-  const openOfferFromPool = (player: FAPoolPlayer) => {
-    if (!player.auction) return;
+  const openOfferFromFAPlayer = (p: FAPlayer) => {
+    if (!p.auction) return;
     setOfferContext({
-      playerName: `${player.firstname} ${player.lastname}`,
-      auctionId: player.auction.auction_id,
-      phase: player.auction.phase,
-      demand: player.demand,
-      existingOffer: player.auction.my_offer,
+      playerName: `${p.firstname} ${p.lastname}`,
+      age: p.age,
+      auctionId: p.auction.auction_id,
+      phase: p.auction.phase,
+      demand: p.demand,
+      existingOffer: p.auction.my_offer,
     });
     offerModal.handleOpenModal();
   };
@@ -184,6 +195,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     if (!detail.auction) return;
     setOfferContext({
       playerName: `${detail.bio.firstname} ${detail.bio.lastname}`,
+      age: detail.bio.age,
       auctionId: detail.auction.auction_id,
       phase: detail.auction.phase,
       demand: detail.demand,
@@ -197,6 +209,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     setSelectedPlayerId(entry.player_id);
     setOfferContext({
       playerName: entry.player_name,
+      age: entry.age,
       auctionId: entry.auction_id,
       phase: entry.phase,
       demand: {
@@ -213,7 +226,6 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
   const handleOfferSuccess = () => {
     loadPool();
     setRefreshKey((k) => k + 1);
-    // Refresh budget
     if (orgId && leagueYearId) {
       BaseballService.GetFASigningBudget(orgId, leagueYearId)
         .then((res) => setSigningBudget(res.available_budget))
@@ -222,24 +234,23 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
   };
 
   const handleScouted = () => {
-    // Refresh scouting budget via the shared effect
     setBudgetRefreshKey((k) => k + 1);
   };
 
   // ── Sign modal for non-auction FAs ──
   const signModal = useModal();
-  const [signTarget, setSignTarget] = useState<FAPoolPlayer | null>(null);
+  const [signTarget, setSignTarget] = useState<FAPlayer | null>(null);
 
-  const openSignModal = (player: FAPoolPlayer) => {
-    setSignTarget(player);
+  const openSignModal = (p: FAPlayer) => {
+    setSignTarget(p);
     signModal.handleOpenModal();
   };
 
   // ── Scouting quick action from pool row ──
-  const handlePoolScouting = useCallback(async (player: FAPoolPlayer, actionType: "pro_attrs_precise" | "pro_potential_precise") => {
+  const handlePoolScouting = useCallback(async (playerId: number, actionType: "pro_attrs_precise" | "pro_potential_precise") => {
     if (!orgId || !leagueYearId) return;
     try {
-      await BaseballService.ScoutFAPlayer({ org_id: orgId, league_year_id: leagueYearId, player_id: player.id, action_type: actionType });
+      await BaseballService.ScoutFAPlayer({ org_id: orgId, league_year_id: leagueYearId, player_id: playerId, action_type: actionType });
       setBudgetRefreshKey((k) => k + 1);
       loadPool();
     } catch (e) {
@@ -248,27 +259,55 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
   }, [orgId, leagueYearId, loadPool]);
 
   // ── Action buttons for pool row (scouting + transaction) ──
-  // Uses the same actionBtn styling as the roster QuickActionButtons
   const actionBtn =
     "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
 
-  const renderPoolActions = useCallback((player: FAPoolPlayer) => {
-    const attrsScouted = player.scouting.attrs_precise;
-    const potsScouted = player.scouting.pots_precise;
+  const renderPoolActions = useCallback((p: Player) => {
+    const fa = p as FAPlayer;
+    const attrsScouted = fa.scouting?.attrs_precise;
+    const potsScouted = fa.scouting?.pots_precise;
 
     let transactionBtn: React.ReactNode = null;
-    if (player.fa_type === "mlb_fa") {
-      if (!player.auction) {
-        transactionBtn = <button className={`${actionBtn} bg-gray-600/20 text-gray-400 hover:bg-gray-600/40`} onClick={() => openDetail(player.id)} title="View Player" aria-label="View Player">View</button>;
-      } else if (player.auction.my_offer) {
-        transactionBtn = <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromPool(player)} title="Update Offer" aria-label="Update Offer">Update</button>;
+    if (fa.fa_type === "mlb_fa") {
+      if (!fa.auction) {
+        // MLB FA without auction yet — pending creation
+        transactionBtn = (
+          <button
+            className={`${actionBtn} bg-yellow-600/20 text-yellow-400 cursor-default`}
+            title="Auction pending \u2014 will open after week processes"
+          >
+            Pending
+          </button>
+        );
       } else {
-        transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openOfferFromPool(player)} title="Make Offer" aria-label="Make Offer">Offer</button>;
+        const phase = fa.auction.phase;
+        const myOffer = fa.auction.my_offer;
+
+        if (phase === "completed" || phase === "withdrawn") {
+          transactionBtn = <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Closed</span>;
+        } else if (!myOffer) {
+          // No existing offer
+          if (phase === "open") {
+            transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openOfferFromFAPlayer(fa)}>Offer</button>;
+          } else {
+            // Listening or Finalize — too late to join
+            transactionBtn = <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Bidding Closed</span>;
+          }
+        } else if ((myOffer as any).status === "outbid") {
+          transactionBtn = <span className={`${actionBtn} bg-red-600/20 text-red-400 cursor-default`}>Eliminated</span>;
+        } else if ((myOffer as any).status === "withdrawn") {
+          transactionBtn = <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Withdrawn</span>;
+        } else if (phase === "open") {
+          transactionBtn = <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromFAPlayer(fa)}>Update</button>;
+        } else {
+          // Listening or Finalize — can only raise
+          transactionBtn = <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromFAPlayer(fa)}>Increase</button>;
+        }
       }
-    } else if (!player.demand) {
-      transactionBtn = <button className={`${actionBtn} bg-gray-600/20 text-gray-400 hover:bg-gray-600/40`} onClick={() => openDetail(player.id)} title="View Player" aria-label="View Player">View</button>;
+    } else if (!fa.demand) {
+      transactionBtn = <button className={`${actionBtn} bg-gray-600/20 text-gray-400 hover:bg-gray-600/40`} onClick={() => openDetail(fa.id)}>View</button>;
     } else {
-      transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openSignModal(player)} title="Sign Player" aria-label="Sign Player">Sign</button>;
+      transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openSignModal(fa)}>Sign</button>;
     }
 
     return (
@@ -276,32 +315,44 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
         <button
           className={`${actionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
           disabled={attrsScouted}
-          onClick={attrsScouted ? undefined : () => handlePoolScouting(player, "pro_attrs_precise")}
+          onClick={attrsScouted ? undefined : () => handlePoolScouting(fa.id, "pro_attrs_precise")}
           title={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
           aria-label={attrsScouted ? "Already scouted" : "Scout Precise Attributes"}
         >
-          Attrs{attrsScouted ? " ✓" : ""}
+          Attrs{attrsScouted ? " \u2713" : ""}
         </button>
         <button
           className={`${actionBtn} ${potsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"}`}
           disabled={potsScouted}
-          onClick={potsScouted ? undefined : () => handlePoolScouting(player, "pro_potential_precise")}
+          onClick={potsScouted ? undefined : () => handlePoolScouting(fa.id, "pro_potential_precise")}
           title={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
           aria-label={potsScouted ? "Already scouted" : "Scout Precise Potentials"}
         >
-          Pots{potsScouted ? " ✓" : ""}
+          Pots{potsScouted ? " \u2713" : ""}
         </button>
         {transactionBtn}
       </div>
     );
-  }, [actionBtn, handlePoolScouting, openDetail, openOfferFromPool, openSignModal]);
+  }, [actionBtn, handlePoolScouting, openDetail, openOfferFromFAPlayer, openSignModal]);
 
-  const allPlayers = poolData?.players ?? [];
-  const players = filterFAType === "all"
-    ? allPlayers
-    : allPlayers.filter((p) => p.fa_type === filterFAType);
+  // ── Adapt pool data to Player shape for roster table reuse ──
+  const allRawPlayers = poolData?.players ?? [];
+  const filteredRaw = filterFAType === "all"
+    ? allRawPlayers
+    : allRawPlayers.filter((p) => p.fa_type === filterFAType);
+  const players: FAPlayer[] = useMemo(
+    () => filteredRaw.map(adaptFAPoolPlayer),
+    [filteredRaw],
+  );
   const totalPages = poolData?.pages ?? 1;
   const totalPlayers = poolData?.total ?? 0;
+
+  // ── Select the right table component based on filter ──
+  const TableComponent = filterType === "Pitcher"
+    ? PitcherTable
+    : filterType === "Position"
+      ? PositionTable
+      : AllPlayersTable;
 
   return (
     <PageContainer>
@@ -348,9 +399,9 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
               {/* Category pills */}
               <div className="mb-3">
                 <ButtonGroup>
-                  {(["Attributes", "Potentials", "Auction"] as FACategory[]).map((cat) => (
+                  {(["Attributes", "Potentials"] as BaseballCategory[]).map((cat) => (
                     <PillButton key={cat} variant="primaryOutline" isSelected={poolCategory === cat} onClick={() => setPoolCategory(cat)}>
-                      <Text variant="small">{cat === "Auction" ? "FA Info" : cat}</Text>
+                      <Text variant="small">{cat}</Text>
                     </PillButton>
                   ))}
                 </ButtonGroup>
@@ -427,14 +478,14 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
               <Text variant="body-small" classes="text-gray-400">No free agents found.</Text>
             ) : (
               <>
-                <FAPoolTable
+                <TableComponent
                   players={players}
-                  category={poolCategory}
-                  filterType={filterType}
-                  sortKey={sortKey}
-                  sortDir={sortDir}
+                  orgAbbrev={orgAbbrev}
+                  onPlayerClick={(p) => openDetail(p.id)}
+                  sortConfig={sortConfig}
                   onSort={handleSort}
-                  onPlayerClick={openDetail}
+                  category={poolCategory}
+                  isFuzzed
                   renderActions={renderPoolActions}
                 />
 
@@ -510,6 +561,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
           isOpen={offerModal.isModalOpen}
           onClose={offerModal.handleCloseModal}
           playerName={offerContext.playerName}
+          age={offerContext.age}
           auctionId={offerContext.auctionId}
           phase={offerContext.phase}
           demand={offerContext.demand}

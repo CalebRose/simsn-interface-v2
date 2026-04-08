@@ -3,8 +3,8 @@ import { Modal } from "../../../../_design/Modal";
 import { Text } from "../../../../_design/Typography";
 import { Border } from "../../../../_design/Borders";
 import { Button, ButtonGroup } from "../../../../_design/Buttons";
-import { Input } from "../../../../_design/Inputs";
 import { BaseballService } from "../../../../_services/baseballService";
+import { CurrencyInput } from "./CurrencyInput";
 import { useSnackbar } from "notistack";
 import {
   FAPlayerDemand,
@@ -25,6 +25,7 @@ interface FAOfferModalProps {
   isOpen: boolean;
   onClose: () => void;
   playerName: string;
+  age?: number;
   auctionId: number;
   phase: AuctionPhase;
   demand: FAPlayerDemand | null;
@@ -40,6 +41,7 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
   isOpen,
   onClose,
   playerName,
+  age,
   auctionId,
   phase,
   demand,
@@ -54,7 +56,7 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
   const isUpdate = existingOffer != null;
   const demandMinAav = demand ? parseFloat(demand.min_aav) : 0;
   const demandMinYears = demand?.min_years ?? 1;
-  const demandMaxYears = demand?.max_years ?? 5;
+  const demandMaxYears = 5; // hard cap per rules; demand sets the floor, not the ceiling
 
   const [years, setYears] = useState(demandMinYears);
   const [salaries, setSalaries] = useState<number[]>(Array(5).fill(0));
@@ -92,6 +94,15 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
     }
     for (let i = 0; i < years; i++) {
       if (salaries[i] < 0) errs.push(`Year ${i + 1} salary cannot be negative`);
+      if (i > 0 && salaries[i] < salaries[i - 1]) {
+        errs.push(`Year ${i + 1} salary cannot be less than Year ${i}`);
+      }
+      if (i > 0 && salaries[i] > salaries[i - 1]) {
+        const maxRaise = Math.max(salaries[i - 1], 2_000_000);
+        if (salaries[i] - salaries[i - 1] > maxRaise) {
+          errs.push(`Year ${i + 1} raise exceeds max ($${maxRaise.toLocaleString()})`);
+        }
+      }
     }
     if (bonus < 0) errs.push("Bonus cannot be negative");
     if (availableBudget != null && bonus > availableBudget) {
@@ -103,7 +114,7 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
         errs.push(`Total value ($${totalValue.toLocaleString()}) below minimum ($${minTotal.toLocaleString()})`);
       }
     }
-    if (isUpdate && existingOffer && aav < existingOffer.aav) {
+    if (isUpdate && existingOffer && phase !== "open" && aav < existingOffer.aav) {
       errs.push(`AAV cannot decrease below previous ($${existingOffer.aav.toLocaleString()})`);
     }
     return errs;
@@ -146,11 +157,18 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
 
   if (!isOpen) return null;
 
+  const canLowerAav = phase === "open";
+  const modalTitle = !isUpdate
+    ? `Make Offer: ${playerName}`
+    : canLowerAav
+      ? `Update Offer: ${playerName}`
+      : `Increase Offer: ${playerName}`;
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`${isUpdate ? "Update" : "Make"} Offer: ${playerName}`}
+      title={modalTitle}
       maxWidth="min-[1025px]:max-w-[60vw]"
       actions={
         <ButtonGroup>
@@ -163,7 +181,7 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
             onClick={handleConfirm}
             disabled={errors.length > 0 || isSubmitting}
           >
-            <Text variant="small">{isSubmitting ? "Processing..." : isUpdate ? "Update Offer" : "Submit Offer"}</Text>
+            <Text variant="small">{isSubmitting ? "Processing..." : !isUpdate ? "Submit Offer" : canLowerAav ? "Update Offer" : "Increase Offer"}</Text>
           </Button>
         </ButtonGroup>
       }
@@ -176,7 +194,19 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
             <Text variant="small">Min AAV: <strong>${demandMinAav.toLocaleString()}</strong></Text>
             <Text variant="small">Years: <strong>{demandMinYears}-{demandMaxYears}</strong></Text>
             {demand.war > 0 && <Text variant="small">WAR: <strong>{demand.war}</strong></Text>}
+            {age != null && <Text variant="small">Age: <strong>{age}</strong></Text>}
           </div>
+          {age != null && (
+            <Text variant="xs" classes="mt-2 text-gray-400 italic">
+              {age <= 28
+                ? "This player values total guaranteed money \u2014 consider more years."
+                : age <= 31
+                  ? "This player weighs annual salary and total value equally."
+                  : age <= 33
+                    ? "This player prioritizes annual salary over total years."
+                    : "This player is focused on maximizing per-year pay."}
+            </Text>
+          )}
         </Border>
       )}
 
@@ -203,6 +233,11 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
           <Text variant="small" classes="text-gray-400">
             Phase: <span className="font-semibold capitalize">{phase}</span>
           </Text>
+          {!canLowerAav && isUpdate && existingOffer && (
+            <Text variant="xs" classes="text-yellow-400 mt-1">
+              AAV floor: ${existingOffer.aav.toLocaleString()} (cannot decrease in {phase} phase)
+            </Text>
+          )}
         </Border>
         <Border direction="col" classes="p-3 text-start overflow-y-auto">
           <Text variant="h6">Errors</Text>
@@ -215,22 +250,22 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
 
       {/* Length + Bonus + Level */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        <Input
-          type="number"
-          label="Years"
-          name="years"
-          value={years}
-          min={demandMinYears}
-          max={demandMaxYears}
-          onChange={(e) => setYears(Math.min(demandMaxYears, Math.max(demandMinYears, Number(e.target.value) || demandMinYears)))}
-        />
-        <Input
-          type="number"
-          label="Signing Bonus ($)"
-          name="bonus"
+        <div>
+          <label className="block text-xs text-gray-400 mb-1">Years</label>
+          <select
+            className="w-full text-sm border rounded px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            value={years}
+            onChange={(e) => setYears(Number(e.target.value))}
+          >
+            {Array.from({ length: demandMaxYears - demandMinYears + 1 }, (_, i) => demandMinYears + i).map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+        </div>
+        <CurrencyInput
+          label="Signing Bonus"
           value={bonus}
-          min={0}
-          onChange={(e) => setBonus(Number(e.target.value) || 0)}
+          onChange={setBonus}
         />
         <div>
           <label className="block text-xs text-gray-400 mb-1">Level</label>
@@ -255,14 +290,11 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-2">
         {Array.from({ length: 5 }, (_, i) => (
           <div key={i} className={i >= years ? "opacity-30 pointer-events-none" : ""}>
-            <Input
-              type="number"
+            <CurrencyInput
               label={`Y${i + 1} Salary`}
-              name={`salary_${i}`}
               value={salaries[i]}
-              min={0}
               disabled={i >= years}
-              onChange={(e) => handleSalaryChange(i, e.target.value)}
+              onChange={(val) => handleSalaryChange(i, String(val))}
             />
           </div>
         ))}

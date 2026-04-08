@@ -597,6 +597,8 @@ export interface InjuryReportItem {
   team_id: number;
   team_abbrev: string;
   org_id: number;
+  current_level: number | null;
+  on_ir: boolean;
   injury_name: string;
   injury_code: string;
   weeks_remaining: number;
@@ -622,6 +624,8 @@ export interface InjuryHistoryItem {
   player_id: number;
   name: string;
   team_abbrev: string;
+  current_level: number | null;
+  on_ir: boolean;
   injury_name: string;
   injury_code: string;
   league_year_id: number;

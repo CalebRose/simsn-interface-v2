@@ -1,9 +1,18 @@
-import React, { FC, useState, useEffect, useRef } from "react";
+import React, { FC, useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   BaseballDraftee,
   BASEBALL_DRAFT_POSITIONS,
 } from "../../../models/baseball/baseballDraftModels";
+import type { Player } from "../../../models/baseball/baseballModels";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
+import { adaptDraftee, type DraftPlayer } from "./draftPlayerAdapter";
+import {
+  AllPlayersTable,
+  PositionTable,
+  PitcherTable,
+  type BaseballCategory,
+  type SortConfig,
+} from "../../Team/baseball/BaseballRosterTable";
 import "../../Team/baseball/baseballMobile.css";
 
 interface BaseballDraftBoardProps {
@@ -23,12 +32,6 @@ interface BaseballDraftBoardProps {
   scoutingBudget: ScoutingBudget | null;
 }
 
-const formatHeight = (inches: number): string => {
-  const feet = Math.floor(inches / 12);
-  const rem = inches % 12;
-  return `${feet}'${rem}"`;
-};
-
 const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
   draftees,
   drafteesTotal,
@@ -44,7 +47,17 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
   const [searchText, setSearchText] = useState("");
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
   const [showDrafted, setShowDrafted] = useState(false);
+  const [category, setCategory] = useState<BaseballCategory>("Attributes");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sort state (client-side within the current page)
+  const [sortKey, setSortKey] = useState("lastname");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const sortConfig: SortConfig = { key: sortKey, dir: sortDir };
+  const handleSort = (key: string) => {
+    if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
+    else { setSortKey(key); setSortDir("asc"); }
+  };
 
   // Debounced search
   useEffect(() => {
@@ -73,9 +86,61 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
     });
   };
 
-  const visibleDraftees = showDrafted
-    ? draftees
-    : draftees.filter((d) => !draftedPlayerIds.has(d.player_id));
+  // Keep a map from player_id to raw draftee for the draft callback
+  const drafteeMap = useMemo(() => {
+    const map = new Map<number, BaseballDraftee>();
+    draftees.forEach((d) => map.set(d.player_id, d));
+    return map;
+  }, [draftees]);
+
+  // Adapt and filter
+  const players: DraftPlayer[] = useMemo(() => {
+    const visible = showDrafted
+      ? draftees
+      : draftees.filter((d) => !draftedPlayerIds.has(d.player_id));
+    return visible.map(adaptDraftee);
+  }, [draftees, draftedPlayerIds, showDrafted]);
+
+  // Action button styling
+  const actionBtn =
+    "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
+
+  const renderActions = useCallback((p: Player) => {
+    const dp = p as DraftPlayer;
+    const isDrafted = draftedPlayerIds.has(dp.player_id);
+    const attrsScouted = dp.scouting_state?.attrs_precise;
+    const potsScouted = dp.scouting_state?.pots_precise;
+
+    return (
+      <div className="flex gap-1.5 sm:gap-0.5 items-center">
+        <button
+          className={`${actionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-gray-600/20 text-gray-300 hover:bg-gray-600/40"}`}
+          disabled={attrsScouted}
+          onClick={attrsScouted ? undefined : () => onScoutPlayer(dp.player_id)}
+        >
+          Scout{attrsScouted ? " \u2713" : ""}
+        </button>
+        {isUserTurn && !isDrafted && (
+          <button
+            className={`${actionBtn} bg-blue-600/20 text-blue-400 hover:bg-blue-600/40`}
+            onClick={() => {
+              const raw = drafteeMap.get(dp.player_id);
+              if (raw) onDraftPlayer(raw);
+            }}
+          >
+            Draft
+          </button>
+        )}
+      </div>
+    );
+  }, [actionBtn, draftedPlayerIds, isUserTurn, onScoutPlayer, onDraftPlayer, drafteeMap]);
+
+  // Determine which table variant based on position filter
+  const TableComponent = selectedPosition && (selectedPosition === "SP" || selectedPosition === "RP")
+    ? PitcherTable
+    : selectedPosition && selectedPosition !== "DH"
+      ? PositionTable
+      : AllPlayersTable;
 
   return (
     <div className="bg-gray-950 rounded-lg p-4 space-y-4">
@@ -116,87 +181,46 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
         ))}
       </div>
 
-      {/* Show/Hide drafted toggle */}
-      <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={showDrafted}
-          onChange={(e) => setShowDrafted(e.target.checked)}
-          className="accent-blue-500"
-        />
-        Show drafted players
-      </label>
+      {/* Category + Show drafted */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex gap-1">
+          {(["Attributes", "Potentials"] as BaseballCategory[]).map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                category === cat
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={showDrafted}
+            onChange={(e) => setShowDrafted(e.target.checked)}
+            className="accent-blue-500"
+          />
+          Show drafted players
+        </label>
+      </div>
 
       {/* Table */}
-      <div className="baseball-table-wrapper overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead>
-            <tr className="text-gray-400 border-b border-gray-800">
-              <th className="px-2 py-2">#</th>
-              <th className="px-2 py-2">Name</th>
-              <th className="px-2 py-2">Pos</th>
-              <th className="px-2 py-2">Age</th>
-              <th className="px-2 py-2">College</th>
-              <th className="px-2 py-2">Ht</th>
-              <th className="px-2 py-2">Wt</th>
-              <th className="px-2 py-2">B/T</th>
-              <th className="px-2 py-2">OVR</th>
-              <th className="px-2 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visibleDraftees.map((player) => {
-              const isDrafted = draftedPlayerIds.has(player.player_id);
-              return (
-                <tr
-                  key={player.player_id}
-                  className={`border-b border-gray-800 ${
-                    isDrafted
-                      ? "opacity-50"
-                      : "hover:bg-gray-900 text-white"
-                  }`}
-                >
-                  <td className="px-2 py-2 text-gray-400">
-                    {player.draft_rank ?? "—"}
-                  </td>
-                  <td className="px-2 py-2 font-medium">
-                    {player.first_name} {player.last_name}
-                  </td>
-                  <td className="px-2 py-2">{player.position}</td>
-                  <td className="px-2 py-2">{player.age}</td>
-                  <td className="px-2 py-2">{player.college_team}</td>
-                  <td className="px-2 py-2">{formatHeight(player.height)}</td>
-                  <td className="px-2 py-2">{player.weight}</td>
-                  <td className="px-2 py-2">
-                    {player.bat_hand}/{player.throw_hand}
-                  </td>
-                  <td className="px-2 py-2">
-                    {player.overall_grade ?? "—"}
-                  </td>
-                  <td className="px-2 py-2">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => onScoutPlayer(player.player_id)}
-                        className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 rounded transition-colors"
-                      >
-                        Scout
-                      </button>
-                      {isUserTurn && !isDrafted && (
-                        <button
-                          onClick={() => onDraftPlayer(player)}
-                          className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors"
-                        >
-                          Draft
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <TableComponent
+        players={players}
+        orgAbbrev=""
+        onPlayerClick={() => {}}
+        sortConfig={sortConfig}
+        onSort={handleSort}
+        category={category}
+        isCollege
+        isFuzzed
+        renderActions={renderActions}
+      />
 
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-gray-400 pt-2">
