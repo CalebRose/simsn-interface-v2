@@ -28,6 +28,7 @@ import {
 import { Tag } from "../../../_design/Tags";
 import { SimNFL, SimPHL } from "../../../_constants/constants";
 import { ToggleSwitch } from "../../../_design/Inputs";
+import { isBadFit, isGoodFit } from "../../../_helper/recruitingHelper";
 
 interface ScoutingBoardRowProps {
   profile: ScoutingProfile;
@@ -151,37 +152,124 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
     ? (player as any).CollegeID
     : (player as any).TeamID;
 
-  const isGoodOffensiveFit = (() => {
+  const isGoodOffensiveHCKFit = (() => {
     if (!player || !offensiveSystemsInformation) return false;
-    const goodFits = offensiveSystemsInformation.GoodFits;
-    const idx = goodFits.findIndex(
-      (x: any) => x.archetype === player.Archetype,
-    );
-    if (idx > -1) {
-      return true;
+    if (league === SimPHL) {
+      const goodFits = offensiveSystemsInformation.GoodFits;
+      const idx = goodFits.findIndex(
+        (x: any) => x.archetype === player.Archetype,
+      );
+      if (idx > -1) {
+        return true;
+      }
+    } else if (league === SimNFL) {
+      return isGoodFit(
+        offensiveSystemsInformation,
+        defensiveSystemsInformation,
+        player.Position,
+        player.Archetype,
+      );
     }
+
     return false;
   })();
 
-  const isBadOffensiveFit = (() => {
+  const isBadOffensiveHCKFit = (() => {
     if (!player || !offensiveSystemsInformation) return false;
-    const badFits = offensiveSystemsInformation.BadFits;
-    const idx = badFits.findIndex((x: any) => x.archetype === player.Archetype);
-    if (idx > -1) {
-      return true;
+
+    if (league === SimPHL) {
+      const badFits = offensiveSystemsInformation.BadFits;
+      const idx = badFits.findIndex(
+        (x: any) => x.archetype === player.Archetype,
+      );
+      if (idx > -1) {
+        return true;
+      }
+    } else if (league === SimNFL) {
+      return isBadFit(
+        offensiveSystemsInformation,
+        defensiveSystemsInformation,
+        player.Position,
+        player.Archetype,
+      );
     }
+
     return false;
   })();
 
-  const isGoodDefensiveFit = (() => {
+  const isGoodDefensiveHCKFit = (() => {
     if (!player || !defensiveSystemsInformation) return false;
-    const goodFits = defensiveSystemsInformation.GoodFits;
-    const idx = goodFits.findIndex(
-      (x: any) => x.archetype === player.Archetype,
-    );
-    if (idx > -1) {
-      return true;
+    if (league === SimPHL) {
+      const goodFits = defensiveSystemsInformation.GoodFits;
+      const idx = goodFits.findIndex(
+        (x: any) => x.archetype === player.Archetype,
+      );
+      if (idx > -1) {
+        return true;
+      }
+    } else if (league === SimNFL) {
+      return isGoodFit(
+        offensiveSystemsInformation,
+        defensiveSystemsInformation,
+        player.Position,
+        player.Archetype,
+      );
     }
+
+    return false;
+  })();
+
+  const isBadDefensiveHCKFit = (() => {
+    if (!player || !defensiveSystemsInformation) return false;
+    if (league === SimPHL) {
+      const badFits = defensiveSystemsInformation.BadFits;
+      const idx = badFits.findIndex(
+        (x: any) => x.archetype === player.Archetype,
+      );
+      if (idx > -1) {
+        return true;
+      }
+    } else if (league === SimNFL) {
+      return isBadFit(
+        offensiveSystemsInformation,
+        defensiveSystemsInformation,
+        player.Position,
+        player.Archetype,
+      );
+    }
+
+    return false;
+  })();
+
+  const isGoodFBFit = (() => {
+    if (!player || !offensiveSystemsInformation) return false;
+    if (league === SimPHL) {
+      return false;
+    } else if (league === SimNFL) {
+      return isGoodFit(
+        offensiveSystemsInformation,
+        defensiveSystemsInformation,
+        player.Position,
+        player.Archetype,
+      );
+    }
+
+    return false;
+  })();
+
+  const isBadFBFit = (() => {
+    if (!player || !offensiveSystemsInformation) return false;
+    if (league === SimPHL) {
+      return false;
+    } else if (league === SimNFL) {
+      return isBadFit(
+        offensiveSystemsInformation,
+        defensiveSystemsInformation,
+        player.Position,
+        player.Archetype,
+      );
+    }
+
     return false;
   })();
 
@@ -228,6 +316,8 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
     }
     return "gray";
   })();
+
+  console.log({ scoutableAttributes, player, profile });
 
   return (
     <Border
@@ -276,22 +366,32 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
               <Tag variant={draftPlayerTypeVariant} size="xs">
                 {draftPlayerType}
               </Tag>
-              {isGoodOffensiveFit && (
+              {isGoodFBFit && (
+                <Tag variant="green" size="xs">
+                  Good Fit
+                </Tag>
+              )}
+              {isBadFBFit && (
+                <Tag variant="red" size="xs">
+                  Bad Fit
+                </Tag>
+              )}
+              {isGoodOffensiveHCKFit && (
                 <Tag variant="green" size="xs">
                   Off. Fit
                 </Tag>
               )}
-              {isGoodDefensiveFit && (
+              {isGoodDefensiveHCKFit && (
                 <Tag variant="green" size="xs">
                   Def. Fit
                 </Tag>
               )}
-              {isBadOffensiveFit && (
+              {isBadOffensiveHCKFit && (
                 <Tag variant="red" size="xs">
                   Off. Misfit
                 </Tag>
               )}
-              {isBadDefensiveFit && (
+              {isBadDefensiveHCKFit && (
                 <Tag variant="red" size="xs">
                   Def. Misfit
                 </Tag>

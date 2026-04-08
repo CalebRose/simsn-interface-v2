@@ -5412,7 +5412,7 @@ export class BootstrapData {
   OfficialPolls: CollegePollOfficial[];
   CollegePollSubmission: CollegePollSubmission;
   NFLWarRoomMap: { [key: number]: NFLWarRoom };
-  NFLScoutingProfileMap: { [key: number]: ScoutingProfile[] };
+  DraftScoutingProfileMap: { [key: number]: ScoutingProfile[] };
   TradeProposals: { [key: number]: NFLTradeProposal[] };
   TradePreferences: { [key: number]: NFLTradePreferences };
   TransferPortalProfiles: TransferPortalProfile[];
@@ -5563,7 +5563,7 @@ export class BootstrapData {
       NFLWarRoom,
       true,
     );
-    this.NFLScoutingProfileMap = this.convertValues(
+    this.DraftScoutingProfileMap = this.convertValues(
       source["NFLScoutingProfileMap"],
       ScoutingProfile,
       true,

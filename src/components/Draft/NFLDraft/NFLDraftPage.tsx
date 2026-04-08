@@ -2,6 +2,7 @@ import { FC, useMemo } from "react";
 import {
   NFLDraftee,
   NFLDraftPick,
+  NFLPlayer,
   NFLTeam,
   ScoutingProfile,
 } from "../../../models/footballModels";
@@ -31,6 +32,8 @@ import { DraftWarRoom } from "../common/WarRoom";
 import { BigDraftBoard } from "../common/BigBoard";
 import { DraftAdminBoard } from "../common/AdminBoard";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
+import { useModal } from "../../../_hooks/useModal";
+import { ProposeDraftTradeModal } from "../common/ProposeDraftTradeModal";
 
 interface NFLDraftPageProps {
   league: League;
@@ -80,8 +83,26 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
     teamDraftPicks,
     draftablePlayerMap,
     draftPicksFromState,
+    userTeam,
+    tradePartnerTeam,
+    selectTradePartner,
+    teamOptions,
+    userTradablePlayers,
+    userTradablePicks,
+    partnerTradablePlayers,
+    partnerTradablePicks,
+    userTradeProposals,
+    userWarRoomData,
+    approvedRequests,
+    proposeTrade,
+    acceptTrade,
+    rejectTrade,
+    vetoTrade,
+    handleProcessTrade,
   } = useNFLDraft();
-
+  const proposeTradeModal = useModal();
+  const receiveTradeModal = useModal();
+  const adminProposalsModal = useModal();
   const isAdmin = useMemo(() => {
     if (!currentUser) return false;
     if (!currentUser.roleID) return false;
@@ -187,6 +208,22 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
 
   return (
     <>
+      <ProposeDraftTradeModal
+        isOpen={proposeTradeModal.isModalOpen}
+        onClose={proposeTradeModal.handleCloseModal}
+        userTeam={userTeam as NFLTeam}
+        tradePartnerTeam={tradePartnerTeam as NFLTeam}
+        league={SimNFL}
+        teamOptions={nflTeamOptions}
+        selectTradePartner={selectTradePartner}
+        userTradablePlayers={userTradablePlayers as NFLPlayer[]}
+        userTradablePicks={teamDraftPicks}
+        partnerTradablePlayers={partnerTradablePlayers as NFLPlayer[]}
+        partnerTradablePicks={partnerTradablePicks as NFLDraftPick[]}
+        proposeTrade={proposeTrade}
+        backgroundColor={backgroundColor}
+        borderColor={teamColors?.secondary}
+      />
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
@@ -277,6 +314,8 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                 openModal={handlePlayerModal}
                 league={SimNFL}
                 exportDraftBoard={exportNFLDraftees}
+                offensiveSystemsInformation={offensiveSystem}
+                defensiveSystemsInformation={defensiveSystem}
               />
             )}
             {activeTab === ScoutBoard && (
@@ -316,6 +355,12 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                   teamDraftPicks={teamDraftPicks as NFLDraftPick[]}
                   selectedTeam={selectedTeam as NFLTeam | null}
                   draftablePlayerMap={draftablePlayerMap}
+                  handleOpenProposeTradeModal={
+                    proposeTradeModal.handleOpenModal
+                  }
+                  handleOpenReceiveTradeModal={
+                    receiveTradeModal.handleOpenModal
+                  }
                 />
               </>
             )}
@@ -346,6 +391,9 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                   startDraft={startDraft}
                   pauseDraft={togglePause}
                   handleExportDraft={handleExportDraftPicks}
+                  handleOpenAdminProposalsModal={
+                    adminProposalsModal.handleOpenModal
+                  }
                 />
               </>
             )}

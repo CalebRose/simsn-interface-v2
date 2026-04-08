@@ -50,6 +50,7 @@ export const SideMenu = ({}) => {
     unreadCount,
     markNotificationRead,
     markAllNotificationsRead,
+    clearNotifications,
   } = useForumStore();
   const { isDesktop } = useResponsive();
   const [processing, setProcessing] = useState(false);
@@ -304,23 +305,37 @@ export const SideMenu = ({}) => {
 
                 {/* Notification Dropdown */}
                 {isNotifOpen && (
-                  <div className="absolute right-0 z-50 mt-2 w-[420px] max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800">
+                  <div className="absolute right-0 z-50 mt-2 w-[calc(100vw-1rem)] sm:w-[420px] max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800">
                     <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-600">
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         Notifications
                       </span>
-                      {unreadCount > 0 && (
-                        <button
-                          type="button"
-                          className="text-xs text-blue-500 hover:underline"
-                          onClick={() =>
-                            currentUser?.id &&
-                            markAllNotificationsRead(currentUser.id)
-                          }
-                        >
-                          Mark all read
-                        </button>
-                      )}
+                      <div className="flex items-center gap-3">
+                        {unreadCount > 0 && (
+                          <button
+                            type="button"
+                            className="text-xs text-blue-500 hover:underline"
+                            onClick={() =>
+                              currentUser?.id &&
+                              markAllNotificationsRead(currentUser.id)
+                            }
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                        {notifications.length > 0 && (
+                          <button
+                            type="button"
+                            className="text-xs text-gray-400 underline hover:text-red-400 transition-colors"
+                            onClick={() =>
+                              currentUser?.id &&
+                              clearNotifications(currentUser.id)
+                            }
+                          >
+                            Clear
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {notifications.length === 0 ? (
                       <div className="px-4 py-6 text-center text-sm text-gray-400">

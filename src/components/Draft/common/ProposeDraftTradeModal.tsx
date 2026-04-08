@@ -22,13 +22,32 @@ import {
   mapSelectedOptionsToTradeOptions,
 } from "../../Team/Helpers/tradeModalHelper";
 import { DraftPick } from "./types";
+import { NFLPlayer, NFLTeam } from "../../../models/footballModels";
 
 // ---------------------------------------------------------------------------
 // Helpers — build TradeBlockRow arrays from raw model arrays
 // ---------------------------------------------------------------------------
 
-const buildPlayerTradeRows = (players: ProfessionalPlayer[]): TradeBlockRow[] =>
-  players.map((p) => ({
+const buildPlayerTradeRows = (
+  players: ProfessionalPlayer[] | NFLPlayer[],
+  league: League,
+): TradeBlockRow[] => {
+  if (league === SimPHL) {
+    return players.map((p) => ({
+      id: p.ID,
+      isPlayer: true,
+      name: `${p.FirstName} ${p.LastName}`,
+      position: p.Position,
+      arch: p.Archetype,
+      year: p.Age?.toString() ?? "",
+      overall: p.Overall?.toString() ?? "",
+      draftRound: "",
+      draftPick: "",
+      value: p.Overall?.toString() ?? "",
+      player: p,
+    }));
+  }
+  return players.map((p) => ({
     id: p.ID,
     isPlayer: true,
     name: `${p.FirstName} ${p.LastName}`,
@@ -41,6 +60,7 @@ const buildPlayerTradeRows = (players: ProfessionalPlayer[]): TradeBlockRow[] =>
     value: p.Overall?.toString() ?? "",
     player: p,
   }));
+};
 
 const buildPickTradeRows = (picks: DraftPick[]): TradeBlockRow[] =>
   picks
@@ -165,14 +185,14 @@ const DraftTradeOption: FC<DraftTradeOptionProps> = ({
 interface ProposeDraftTradeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userTeam: ProfessionalTeam | null;
-  tradePartnerTeam: ProfessionalTeam | null;
+  userTeam: ProfessionalTeam | NFLTeam | null;
+  tradePartnerTeam: ProfessionalTeam | NFLTeam | null;
   league: League;
   teamOptions: { label: string; value: string }[];
   selectTradePartner: (teamID: number) => void;
-  userTradablePlayers: ProfessionalPlayer[];
+  userTradablePlayers: ProfessionalPlayer[] | NFLPlayer[];
   userTradablePicks: DraftPick[];
-  partnerTradablePlayers: ProfessionalPlayer[];
+  partnerTradablePlayers: ProfessionalPlayer[] | NFLPlayer[];
   partnerTradablePicks: DraftPick[];
   proposeTrade: (dto: any) => Promise<void>;
   backgroundColor?: string;
@@ -209,7 +229,7 @@ export const ProposeDraftTradeModal: FC<ProposeDraftTradeModalProps> = ({
   // Build trade block rows
   const userTradeBlock = useMemo(
     () => [
-      ...buildPlayerTradeRows(userTradablePlayers),
+      ...buildPlayerTradeRows(userTradablePlayers, league),
       ...buildPickTradeRows(userTradablePicks),
     ],
     [userTradablePlayers, userTradablePicks],
@@ -217,7 +237,7 @@ export const ProposeDraftTradeModal: FC<ProposeDraftTradeModalProps> = ({
 
   const partnerTradeBlock = useMemo(
     () => [
-      ...buildPlayerTradeRows(partnerTradablePlayers),
+      ...buildPlayerTradeRows(partnerTradablePlayers, league),
       ...buildPickTradeRows(partnerTradablePicks),
     ],
     [partnerTradablePlayers, partnerTradablePicks],

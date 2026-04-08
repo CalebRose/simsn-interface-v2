@@ -74,7 +74,7 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
 
   const getPlayerFromProfile = (profile: ScoutingProfile): Draftee | null => {
     if (isNFLScoutingProfile(profile)) {
-      return profile.Draftee;
+      return draftablePlayerMap[profile.PlayerID] || null;
     }
     return draftablePlayerMap[profile.PlayerID] || null;
   };

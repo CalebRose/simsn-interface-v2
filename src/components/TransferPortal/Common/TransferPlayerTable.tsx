@@ -35,6 +35,7 @@ import { useSimBBAStore } from "../../../context/SimBBAContext";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import { getPlayerOverall } from "../../Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
 import { getYear } from "../../../_utility/getYear";
+import { isBadFit, isGoodFit } from "../../../_helper/recruitingHelper";
 
 const getTableColumns = (
   league: League,
@@ -419,6 +420,33 @@ const CFBRow: React.FC<CFBRowProps> = ({
     return <Logo url={previousURL} variant="small" />;
   }, [item]);
 
+  const isPlayerGoodFit = useMemo(() => {
+    return isGoodFit(
+      teamProfile.OffensiveScheme,
+      teamProfile.DefensiveScheme,
+      item.Position,
+      item.Archetype,
+    );
+  }, [teamProfile]);
+
+  const isPlayerBadFit = useMemo(() => {
+    return isBadFit(
+      teamProfile.OffensiveScheme,
+      teamProfile.DefensiveScheme,
+      item.Position,
+      item.Archetype,
+    );
+  }, [teamProfile]);
+
+  const nameColor = useMemo(() => {
+    if (isPlayerGoodFit) {
+      return "text-green-400";
+    } else if (isPlayerBadFit) {
+      return "text-red-400";
+    }
+    return "";
+  }, [item, isPlayerGoodFit, isPlayerBadFit]);
+
   return (
     <div
       key={item.ID}
@@ -429,7 +457,7 @@ const CFBRow: React.FC<CFBRowProps> = ({
       <TableCell classes="text-xs">{previousTeamLogo}</TableCell>
       <TableCell classes="text-xs">
         <span
-          className={`text-xs cursor-pointer font-semibold`}
+          className={`text-xs cursor-pointer font-semibold ${nameColor}`}
           onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
             (e.target as HTMLElement).style.color = "#fcd53f";
           }}
