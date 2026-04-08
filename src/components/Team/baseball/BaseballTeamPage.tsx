@@ -393,7 +393,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   const [scoutingLoading, setScoutingLoading] = useState(false);
   const scoutingLoadedForOrg = useRef<string | null>(null);
   const statsCache = useRef<{
-    orgId: number;
+    orgId: number | "all";
     lyId: number;
     data: PlayerStatsMap;
   } | null>(null);
@@ -894,14 +894,14 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
   // --- Stats fetching (cached per org to avoid re-fetching on category toggle) ---
   useEffect(() => {
-    if (category !== Stats || !leagueYearId || isAllView) {
+    if (category !== Stats || !leagueYearId) {
       return;
     }
-    const orgId = viewedOrg?.id ?? 0;
+    const cacheKey: number | "all" = isAllView ? "all" : (viewedOrg?.id ?? 0);
     // Return cached stats if we already fetched for this org + season
     if (
       statsCache.current &&
-      statsCache.current.orgId === orgId &&
+      statsCache.current.orgId === cacheKey &&
       statsCache.current.lyId === leagueYearId
     ) {
       setPlayerStatsMap(statsCache.current.data);
@@ -911,27 +911,54 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     const fetchStats = async () => {
       setStatsLoading(true);
       try {
-        // Single org-level call replaces per-team loop
-        const [battingRes, pitchingRes] = await Promise.all([
-          BaseballService.GetBattingLeaders({
-            league_year_id: leagueYearId,
-            org_id: orgId,
-            min_pa: 0,
-            page_size: 500,
-          }),
-          BaseballService.GetPitchingLeaders({
-            league_year_id: leagueYearId,
-            org_id: orgId,
-            page_size: 500,
-          }),
-        ]);
         const batting = new Map<number, BattingLeaderRow>();
         const pitching = new Map<number, PitchingLeaderRow>();
-        for (const row of battingRes.leaders) batting.set(row.player_id, row);
-        for (const row of pitchingRes.leaders) pitching.set(row.player_id, row);
+
+        if (isAllView) {
+          // Fetch per-org in parallel to avoid a single huge league-wide query
+          const orgIds = leagueOrgs.map((o) => o.id);
+          const results = await Promise.all(
+            orgIds.map((orgId) =>
+              Promise.all([
+                BaseballService.GetBattingLeaders({
+                  league_year_id: leagueYearId,
+                  org_id: orgId,
+                  min_pa: 0,
+                  page_size: 500,
+                }),
+                BaseballService.GetPitchingLeaders({
+                  league_year_id: leagueYearId,
+                  org_id: orgId,
+                  page_size: 500,
+                }),
+              ])
+            )
+          );
+          for (const [battingRes, pitchingRes] of results) {
+            for (const row of battingRes.leaders) batting.set(row.player_id, row);
+            for (const row of pitchingRes.leaders) pitching.set(row.player_id, row);
+          }
+        } else {
+          const [battingRes, pitchingRes] = await Promise.all([
+            BaseballService.GetBattingLeaders({
+              league_year_id: leagueYearId,
+              org_id: viewedOrg?.id ?? 0,
+              min_pa: 0,
+              page_size: 500,
+            }),
+            BaseballService.GetPitchingLeaders({
+              league_year_id: leagueYearId,
+              org_id: viewedOrg?.id ?? 0,
+              page_size: 500,
+            }),
+          ]);
+          for (const row of battingRes.leaders) batting.set(row.player_id, row);
+          for (const row of pitchingRes.leaders) pitching.set(row.player_id, row);
+        }
+
         const map: PlayerStatsMap = { batting, pitching };
         if (!cancelled) {
-          statsCache.current = { orgId, lyId: leagueYearId, data: map };
+          statsCache.current = { orgId: cacheKey, lyId: leagueYearId, data: map };
           setPlayerStatsMap(map);
         }
       } catch {
@@ -943,7 +970,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     return () => {
       cancelled = true;
     };
-  }, [category, leagueYearId, viewedOrg, isAllView]);
+  }, [category, leagueYearId, viewedOrg, isAllView, leagueOrgs]);
 
   // --- Roster status (min/max limits per level) ---
   const [rosterStatus, setRosterStatus] = useState<RosterLevelStatus[]>([]);
@@ -954,9 +981,15 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       return;
     }
     BaseballService.GetRosterStatus(effectiveOrgId)
-      .then(setRosterStatus)
+      .then((data) => {
+        // Pro orgs: levels 4-9, College orgs: level 3 only
+        const filtered = isCollege
+          ? data.filter((rs) => rs.level_id === 3)
+          : data.filter((rs) => rs.level_id >= 4 && rs.level_id <= 9);
+        setRosterStatus(filtered);
+      })
       .catch(() => setRosterStatus([]));
-  }, [effectiveOrgId, isAllView]);
+  }, [effectiveOrgId, isAllView, isCollege]);
 
   // --- Actions renderer for roster tables ---
   const isOwnOrg = !isAllView && viewedOrg?.id === userOrg?.id;

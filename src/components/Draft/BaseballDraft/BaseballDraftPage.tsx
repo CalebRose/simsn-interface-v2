@@ -1,15 +1,18 @@
-import { FC, useMemo } from "react";
-import { League, SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
+import { FC } from "react";
+import { League } from "../../../_constants/constants";
 import { BaseballDraftee } from "../../../models/baseball/baseballDraftModels";
 import { useBaseballDraft } from "./useBaseballDraft";
 import BaseballDraftSidebar from "./BaseballDraftSidebar";
 import BaseballDraftClock from "./BaseballDraftClock";
 import BaseballDraftTicker from "./BaseballDraftTicker";
 import BaseballUpcomingPicks from "./BaseballUpcomingPicks";
+import BaseballRoundStrip from "./BaseballRoundStrip";
 import BaseballBigBoard from "./BaseballBigBoard";
-import BaseballDraftBoard from "./BaseballDraftBoard";
+import BaseballEligiblePlayers from "./BaseballEligiblePlayers";
 import BaseballScoutingView from "./BaseballScoutingView";
 import BaseballWarRoom from "./BaseballWarRoom";
+import BaseballPreferences from "./BaseballPreferences";
+import BaseballMyPicks from "./BaseballMyPicks";
 import BaseballPickSigning from "./BaseballPickSigning";
 import BaseballAdminBoard from "./BaseballAdminBoard";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
@@ -24,7 +27,7 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
 
   const {
     // State
-    allPicks,
+    boardPicks,
     currentPick,
     phase,
     isPaused,
@@ -32,16 +35,24 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
     currentRound,
     currentPickNumber,
     currentOverall,
+    currentRoundMode,
+    autoRoundsLocked,
+    totalRounds,
+    picksPerRound,
     draftedPlayerIds,
+    isAutoRoundsRunning,
     isLoading,
     error,
 
-    // Draft board
-    draftees,
-    drafteesTotal,
-    drafteesPage,
-    drafteesPages,
-    fetchDraftBoard,
+    // Round modes
+    roundModes,
+
+    // Eligible players
+    eligiblePlayers,
+    eligibleTotal,
+    eligibleLimit,
+    eligibleOffset,
+    fetchEligiblePlayers,
 
     // User context
     userOrgId,
@@ -49,6 +60,7 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
     isAdmin,
     isUserTurn,
     leagueYearId,
+    orgMap,
 
     // Scouting
     scoutingBudget,
@@ -61,10 +73,18 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
     // Actions
     makePick,
 
+    // Preferences
+    autoPrefs,
+    refreshAutoPrefs,
+    saveAutoPrefs,
+
+    // Org picks
+    orgPicks,
+    refreshOrgPicks,
+
     // Signing
-    signingStatuses,
     signPick,
-    refreshSigningStatus,
+    passPick,
 
     // Trades
     tradeProposals,
@@ -74,14 +94,16 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
     rejectTrade,
 
     // Admin
+    initializeDraft,
+    setRoundModes,
     startDraft,
     pauseDraft,
     resumeDraft,
     resetTimer,
-    setDraftPick,
-    removePlayerFromPick,
+    runAutoRounds,
     advanceToSigning,
     exportDraft,
+    completeDraft,
 
     // Tabs
     activeTab,
@@ -117,7 +139,9 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           isAdmin={isAdmin}
-          showSigning={phase === "signing" || phase === "complete"}
+          showSigning={phase === "SIGNING" || phase === "COMPLETE"}
+          hasOrg={userOrgId != null}
+          autoRoundsLocked={autoRoundsLocked}
         />
       </div>
 
@@ -126,6 +150,15 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
         {/* Header Bar — hidden on Big Board view */}
         {activeTab !== "bigboard" && (
           <div className="flex flex-col gap-2">
+            {/* Round Strip */}
+            <div className="rounded-lg bg-gray-800 px-3 py-2">
+              <BaseballRoundStrip
+                roundModes={roundModes}
+                currentRound={currentRound}
+                totalRounds={totalRounds}
+              />
+            </div>
+
             <div className="flex gap-3 items-stretch">
               <div className="flex-shrink-0">
                 <BaseballDraftClock
@@ -133,8 +166,10 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
                   currentRound={currentRound}
                   currentPickNumber={currentPickNumber}
                   secondsRemaining={secondsRemaining}
-                  isPaused={isPaused}
+                  phase={phase}
+                  currentRoundMode={currentRoundMode}
                   isUserTurn={isUserTurn}
+                  orgMap={orgMap}
                 />
               </div>
               <div className="flex-1 min-w-0">
@@ -142,11 +177,12 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
                   upcomingPicks={upcomingPicks}
                   currentPick={currentPick}
                   userOrgId={userOrgId}
+                  orgMap={orgMap}
                 />
               </div>
             </div>
             {recentPicks.length > 0 && (
-              <BaseballDraftTicker recentPicks={recentPicks} />
+              <BaseballDraftTicker recentPicks={recentPicks} orgMap={orgMap} />
             )}
           </div>
         )}
@@ -154,30 +190,46 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
         {/* Tab Views */}
         {activeTab === "bigboard" && (
           <BaseballBigBoard
-            allPicks={allPicks}
+            boardPicks={boardPicks}
             currentOverall={currentOverall}
+            currentRound={currentRound}
+            totalRounds={totalRounds}
             userOrgId={userOrgId}
+            orgMap={orgMap}
+            roundModes={roundModes}
+            showSignStatus={phase === "SIGNING" || phase === "COMPLETE"}
           />
         )}
 
-        {activeTab === "draftboard" && (
-          <BaseballDraftBoard
-            draftees={draftees}
-            drafteesTotal={drafteesTotal}
-            drafteesPage={drafteesPage}
-            drafteesPages={drafteesPages}
+        {activeTab === "eligible" && (
+          <BaseballEligiblePlayers
+            eligiblePlayers={eligiblePlayers}
+            eligibleTotal={eligibleTotal}
+            eligibleLimit={eligibleLimit}
+            eligibleOffset={eligibleOffset}
             draftedPlayerIds={draftedPlayerIds}
             isUserTurn={isUserTurn}
-            onFetchPage={fetchDraftBoard}
+            onFetchPlayers={fetchEligiblePlayers}
             onDraftPlayer={(player: BaseballDraftee) => makePick(player.player_id)}
             onScoutPlayer={openScoutModal}
+            onAddToQueue={(playerId: number) => {
+              if (autoPrefs) {
+                const currentQueue = autoPrefs.queue.map((e) => e.player_id);
+                if (!currentQueue.includes(playerId)) {
+                  saveAutoPrefs({ queue: [...currentQueue, playerId] });
+                }
+              } else {
+                saveAutoPrefs({ queue: [playerId] });
+              }
+            }}
             scoutingBudget={scoutingBudget}
+            autoRoundsLocked={autoRoundsLocked}
           />
         )}
 
         {activeTab === "scouting" && leagueYearId && (
           <BaseballScoutingView
-            draftees={draftees}
+            draftees={eligiblePlayers}
             draftedPlayerIds={draftedPlayerIds}
             scoutingBudget={scoutingBudget}
             scoutModalPlayerId={scoutModalPlayerId}
@@ -187,20 +239,21 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
             onBudgetChanged={refreshScoutingBudget}
             orgId={userOrgId ?? 0}
             leagueYearId={leagueYearId}
-            onFetchPage={fetchDraftBoard}
-            drafteesTotal={drafteesTotal}
-            drafteesPage={drafteesPage}
-            drafteesPages={drafteesPages}
+            onFetchPlayers={fetchEligiblePlayers}
+            eligibleTotal={eligibleTotal}
+            eligibleLimit={eligibleLimit}
+            eligibleOffset={eligibleOffset}
           />
         )}
 
         {activeTab === "warroom" && (
           <BaseballWarRoom
             teamPicks={teamPicks}
-            allPicks={allPicks}
+            allPicks={boardPicks}
             currentOverall={currentOverall}
             userOrgId={userOrgId}
             userOrgAbbrev={userOrgAbbrev}
+            orgMap={orgMap}
             tradeProposals={tradeProposals}
             onProposeTrade={proposeTrade}
             onAcceptTrade={acceptTrade}
@@ -210,11 +263,36 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
           />
         )}
 
+        {activeTab === "preferences" && (
+          <BaseballPreferences
+            autoPrefs={autoPrefs}
+            autoRoundsLocked={autoRoundsLocked}
+            eligiblePlayers={eligiblePlayers}
+            draftedPlayerIds={draftedPlayerIds}
+            onSave={saveAutoPrefs}
+            onFetchPlayers={fetchEligiblePlayers}
+          />
+        )}
+
+        {activeTab === "mypicks" && (
+          <BaseballMyPicks
+            orgPicks={orgPicks}
+            phase={phase}
+            orgMap={orgMap}
+            userOrgAbbrev={userOrgAbbrev}
+            onSignPick={signPick}
+            onPassPick={passPick}
+            onRefresh={refreshOrgPicks}
+          />
+        )}
+
         {activeTab === "signing" && (
           <BaseballPickSigning
-            signingStatuses={signingStatuses}
+            orgPicks={orgPicks}
+            orgMap={orgMap}
             onSignPick={signPick}
-            onRefresh={refreshSigningStatus}
+            onPassPick={passPick}
+            onRefresh={refreshOrgPicks}
             userOrgAbbrev={userOrgAbbrev}
           />
         )}
@@ -226,16 +304,24 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
             currentRound={currentRound}
             currentPickNumber={currentPickNumber}
             currentOverall={currentOverall}
+            currentRoundMode={currentRoundMode}
             secondsRemaining={secondsRemaining}
+            totalRounds={totalRounds}
+            autoRoundsLocked={autoRoundsLocked}
+            isAutoRoundsRunning={isAutoRoundsRunning}
+            roundModes={roundModes}
+            leagueYearId={leagueYearId}
+            onInitializeDraft={initializeDraft}
+            onSetRoundModes={setRoundModes}
             onStartDraft={startDraft}
             onPauseDraft={pauseDraft}
             onResumeDraft={resumeDraft}
             onResetTimer={resetTimer}
-            onSetPick={setDraftPick}
-            onRemovePlayer={removePlayerFromPick}
+            onRunAutoRounds={runAutoRounds}
             onAdvanceToSigning={advanceToSigning}
             onExportDraft={exportDraft}
-            allPicks={allPicks}
+            onCompleteDraft={completeDraft}
+            boardPicks={boardPicks}
           />
         )}
       </div>

@@ -368,10 +368,11 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   const fetchAndMergeRosterLiveData = useCallback(async (
     orgAbbrev: string,
     rosterMap: Record<string, Player[]>,
+    viewingOrgId?: number,
   ): Promise<Record<string, Player[]>> => {
     try {
       console.log("[fetchAndMergeRosterLiveData] fetching roster for org:", orgAbbrev);
-      const rawResponse: any = await BaseballService.GetOrgRoster(orgAbbrev);
+      const rawResponse: any = await BaseballService.GetOrgRoster(orgAbbrev, viewingOrgId);
       console.log("[fetchAndMergeRosterLiveData] raw response type:", typeof rawResponse, "isArray:", Array.isArray(rawResponse), "keys:", rawResponse ? Object.keys(rawResponse).slice(0, 10) : null);
       // Extract player array — handle both array and object-with-players shapes
       const rosterPlayers: any[] = Array.isArray(rawResponse) ? rawResponse : (rawResponse?.players ?? rawResponse?.roster ?? rawResponse?.Players ?? rawResponse?.Roster ?? []);
@@ -445,7 +446,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
 
     // Fetch fresh data for the active org (either as primary or revalidation)
     try {
-      const data = await BaseballService.GetBootstrapLandingData(activeOrgId);
+      const data = await BaseballService.GetBootstrapLandingData(activeOrgId, activeOrgId);
       const bootstrapData = processAndCacheOrgData(activeOrgId, data);
 
       if (!usedSessionCache) {
@@ -471,7 +472,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
     if (org?.org_abbrev) {
       const cached = bootstrapCache.current.get(activeOrgId);
       if (cached) {
-        const patchedMap = await fetchAndMergeRosterLiveData(org.org_abbrev, cached.rosterMap);
+        const patchedMap = await fetchAndMergeRosterLiveData(org.org_abbrev, cached.rosterMap, activeOrgId);
         const patchedBootstrap = { ...cached, rosterMap: patchedMap };
         bootstrapCache.current.set(activeOrgId, patchedBootstrap);
         applyBootstrap(activeOrgId, patchedBootstrap);
@@ -481,7 +482,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
     // ── Phase 2: Background work (after dashboard is rendered) ──
 
     // Backfill the all-orgs cache for instant org switching
-    BaseballService.GetAllBootstrapData()
+    BaseballService.GetAllBootstrapData(activeOrgId)
       .then((allData) => {
         const sharedStandings = allData.Standings ?? [];
         const sharedAllGames = allData.AllGames ?? [];
@@ -610,7 +611,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
       if (needsStamina) {
         const org = organizations.find((o) => o.id === orgId);
         if (org?.org_abbrev) {
-          const patchedMap = await fetchAndMergeRosterLiveData(org.org_abbrev, cached.rosterMap);
+          const patchedMap = await fetchAndMergeRosterLiveData(org.org_abbrev, cached.rosterMap, orgId);
           cached = { ...cached, rosterMap: patchedMap };
           bootstrapCache.current.set(orgId, cached);
         }
@@ -638,13 +639,13 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
     // Cache miss — fetch single org, cache, then apply
     try {
       setIsBootstrapLoading(true);
-      const data = await BaseballService.GetBootstrapLandingData(orgId);
+      const data = await BaseballService.GetBootstrapLandingData(orgId, orgId);
       const bootstrapData = processAndCacheOrgData(orgId, data);
 
       // Patch stamina from roster endpoint (bootstrap doesn't include it)
       const org = organizations.find((o) => o.id === orgId);
       if (org?.org_abbrev) {
-        const patchedMap = await fetchAndMergeRosterLiveData(org.org_abbrev, bootstrapData.rosterMap);
+        const patchedMap = await fetchAndMergeRosterLiveData(org.org_abbrev, bootstrapData.rosterMap, orgId);
         const patchedBootstrap = { ...bootstrapData, rosterMap: patchedMap };
         bootstrapCache.current.set(orgId, patchedBootstrap);
         applyBootstrap(orgId, patchedBootstrap);

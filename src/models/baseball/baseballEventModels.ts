@@ -34,11 +34,49 @@ export interface CWSBracketEntry {
   bracket_side: "winners" | "losers" | "eliminated";
 }
 
+export interface ConferenceTournamentData {
+  rounds: Record<string, PlayoffSeries[]>;
+}
+
 export interface PlayoffBracketResponse {
   league_year_id: number;
   league_level: number;
   rounds: Record<string, PlayoffSeries[]>;
   cws_bracket?: CWSBracketEntry[];
+  conf_tournaments?: Record<string, ConferenceTournamentData>;
+}
+
+// --- Conference Tournament Admin responses ---
+
+export interface CTGenerateConference {
+  conference: string;
+  field_size: number;
+  total_rounds: number;
+  num_byes: number;
+  r1_series: number;
+  matchups: { matchup: string }[];
+}
+
+export interface CTGenerateResponse {
+  conferences: CTGenerateConference[];
+  total_series: number;
+}
+
+export interface CTAdvanceResponse {
+  advanced: { conference: string; round: string; series_created: number }[];
+  completed: { conference: string; champion: number }[];
+  no_action: string[];
+}
+
+export interface CTWipeResponse {
+  game_ids: number;
+  game_results: number;
+  game_batting_lines: number;
+  game_pitching_lines: number;
+  game_substitutions: number;
+  gamelist: number;
+  playoff_series: number;
+  conf_tournament_field: number;
 }
 
 // Round display order by league level

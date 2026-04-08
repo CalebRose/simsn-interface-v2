@@ -18,14 +18,14 @@ interface BaseballScoutingViewProps {
   onBudgetChanged: () => void;
   orgId: number;
   leagueYearId: number;
-  onFetchPage: (params: {
-    position?: string;
+  onFetchPlayers: (params: {
     search?: string;
-    page?: number;
+    source?: "college" | "hs";
+    offset?: number;
   }) => void;
-  drafteesTotal: number;
-  drafteesPage: number;
-  drafteesPages: number;
+  eligibleTotal: number;
+  eligibleLimit: number;
+  eligibleOffset: number;
 }
 
 const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
@@ -39,22 +39,24 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
   onBudgetChanged,
   orgId,
   leagueYearId,
-  onFetchPage,
-  drafteesTotal,
-  drafteesPage,
-  drafteesPages,
+  onFetchPlayers,
+  eligibleTotal,
+  eligibleLimit,
+  eligibleOffset,
 }) => {
   const [searchText, setSearchText] = useState("");
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const currentPage = Math.floor(eligibleOffset / eligibleLimit) + 1;
+  const totalPages = Math.ceil(eligibleTotal / eligibleLimit);
+
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      onFetchPage({
+      onFetchPlayers({
         search: searchText || undefined,
-        position: selectedPosition || undefined,
-        page: 1,
+        offset: 0,
       });
     }, 300);
     return () => {
@@ -67,10 +69,10 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
   };
 
   const handlePageChange = (page: number) => {
-    onFetchPage({
+    const newOffset = (page - 1) * eligibleLimit;
+    onFetchPlayers({
       search: searchText || undefined,
-      position: selectedPosition || undefined,
-      page,
+      offset: newOffset,
     });
   };
 
@@ -174,19 +176,24 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-gray-400 pt-2">
         <span>
-          Page {drafteesPage} of {drafteesPages}
+          {eligibleTotal > 0
+            ? `${eligibleOffset + 1}-${Math.min(eligibleOffset + eligibleLimit, eligibleTotal)} of ${eligibleTotal}`
+            : "No players found"}
         </span>
         <div className="flex gap-2">
           <button
-            disabled={drafteesPage <= 1}
-            onClick={() => handlePageChange(drafteesPage - 1)}
+            disabled={currentPage <= 1}
+            onClick={() => handlePageChange(currentPage - 1)}
             className="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Prev
           </button>
+          <span className="px-2 py-1 text-gray-500">
+            {currentPage} / {totalPages}
+          </span>
           <button
-            disabled={drafteesPage >= drafteesPages}
-            onClick={() => handlePageChange(drafteesPage + 1)}
+            disabled={currentPage >= totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
             className="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Next

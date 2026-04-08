@@ -54,8 +54,8 @@ export function adaptDraftee(d: BaseballDraftee): DraftPlayer {
     potentials: (d.potentials ?? {}) as PlayerPotentials,
     // Draft-specific
     draft_rank: d.draft_rank,
-    college_team: d.college_team,
-    college_abbrev: d.college_abbrev,
+    college_team: d.college_team ?? "",
+    college_abbrev: d.college_abbrev ?? "",
     overall_grade: d.overall_grade,
     is_draft_eligible: d.is_draft_eligible,
     scouting_state: d.scouting,

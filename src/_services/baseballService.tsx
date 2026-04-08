@@ -66,13 +66,25 @@ import {
     AllStarRostersResponse, AllStarResultsResponse,
     WBCTeamsResponse, WBCRostersResponse,
     SpecialEventsResponse,
+    CTGenerateResponse, CTAdvanceResponse, CTWipeResponse,
 } from "../models/baseball/baseballEventModels";
 import {
     BaseballDraftState,
     DraftBoardResponse,
     BaseballDraftPick,
-    BaseballDraftSigningStatus,
     DraftTradeProposal,
+    EligiblePlayersParams,
+    EligiblePlayersResponse,
+    DraftInitializeParams,
+    DraftInitializeResponse,
+    RoundModeConfig,
+    AutoDraftPreferences,
+    SetAutoPrefsRequest,
+    AutoRoundsResponse,
+    MakePickRequest,
+    MakePickResponse,
+    SignPickResponse,
+    PassPickResponse,
 } from "../models/baseball/baseballDraftModels";
 import {
     IFAState,
@@ -157,17 +169,20 @@ export const BaseballService = {
         const qs = viewingOrgId ? `?viewing_org_id=${viewingOrgId}` : "";
         return await GetCall<BaseballRosters[]>(`${baseballUrl}rosters${qs}`);
     },
-    GetOrgRoster: async (orgAbbrev: string): Promise<any[]> => {
-        return await GetCall<any[]>(`${baseballUrl}orgs/${orgAbbrev}/roster`);
+    GetOrgRoster: async (orgAbbrev: string, viewingOrgId?: number): Promise<any[]> => {
+        const qs = viewingOrgId ? `?viewing_org_id=${viewingOrgId}` : "";
+        return await GetCall<any[]>(`${baseballUrl}orgs/${orgAbbrev}/roster${qs}`);
     },
     // Bootstrap landing page data
-    GetBootstrapLandingData: async (orgId: number): Promise<BaseballBootstrapLanding> => {
-        const url = `${baseballUrl}bootstrap/landing/${orgId}`;
+    GetBootstrapLandingData: async (orgId: number, viewingOrgId?: number): Promise<BaseballBootstrapLanding> => {
+        const qs = viewingOrgId ? `?viewing_org_id=${viewingOrgId}` : "";
+        const url = `${baseballUrl}bootstrap/landing/${orgId}${qs}`;
         return await GetCall<BaseballBootstrapLanding>(url);
     },
     // All-orgs bootstrap (single request, pre-populates cache for every org)
-    GetAllBootstrapData: async (): Promise<BaseballBootstrapAll> => {
-        const url = `${baseballUrl}bootstrap/landing/all`;
+    GetAllBootstrapData: async (viewingOrgId?: number): Promise<BaseballBootstrapAll> => {
+        const qs = viewingOrgId ? `?viewing_org_id=${viewingOrgId}` : "";
+        const url = `${baseballUrl}bootstrap/landing/all${qs}`;
         return await GetCall<BaseballBootstrapAll>(url);
     },
     // Notification management
@@ -510,6 +525,18 @@ export const BaseballService = {
     GetPendingPlayoffGames: async (leagueYearId: number, leagueLevel: number): Promise<PendingGamesResponse> => {
         return await GetCall<PendingGamesResponse>(`${baseballUrl}playoffs/pending-games/${leagueYearId}/${leagueLevel}`);
     },
+    // --- Conference Tournament Admin ---
+    GenerateConfTournaments: async (leagueYearId: number, startWeek?: number): Promise<CTGenerateResponse> => {
+        const body: Record<string, number> = { league_year_id: leagueYearId };
+        if (startWeek != null) body.start_week = startWeek;
+        return await PostCall<Record<string, number>, CTGenerateResponse>(`${baseballUrl}playoffs/conf-tournaments/generate`, body);
+    },
+    AdvanceConfTournaments: async (leagueYearId: number): Promise<CTAdvanceResponse> => {
+        return await PostCall<{ league_year_id: number }, CTAdvanceResponse>(`${baseballUrl}playoffs/conf-tournaments/advance`, { league_year_id: leagueYearId });
+    },
+    WipeConfTournaments: async (leagueYearId: number): Promise<CTWipeResponse> => {
+        return await PostCall<{ league_year_id: number }, CTWipeResponse>(`${baseballUrl}playoffs/conf-tournaments/wipe`, { league_year_id: leagueYearId });
+    },
     GetAllStarRosters: async (eventId: number): Promise<AllStarRostersResponse> => {
         return await GetCall<AllStarRostersResponse>(`${baseballUrl}allstar/${eventId}/rosters`);
     },
@@ -584,55 +611,73 @@ export const BaseballService = {
     GetDraftState: async (leagueYearId: number): Promise<BaseballDraftState> => {
         return await GetCall<BaseballDraftState>(`${baseballUrl}draft/state?league_year_id=${leagueYearId}`);
     },
-    GetDraftBoard: async (leagueYearId: number, params?: {
-        position?: string; search?: string; bat_hand?: string; throw_hand?: string;
-        page?: number; page_size?: number; exclude_drafted?: boolean;
-    }): Promise<DraftBoardResponse> => {
-        const qs = new URLSearchParams();
-        qs.set("league_year_id", String(leagueYearId));
-        if (params?.position) qs.set("position", params.position);
-        if (params?.search) qs.set("search", params.search);
-        if (params?.bat_hand) qs.set("bat_hand", params.bat_hand);
-        if (params?.throw_hand) qs.set("throw_hand", params.throw_hand);
-        if (params?.page) qs.set("page", String(params.page));
-        if (params?.page_size) qs.set("page_size", String(params.page_size));
-        if (params?.exclude_drafted != null) qs.set("exclude_drafted", String(params.exclude_drafted));
-        return await GetCall<DraftBoardResponse>(`${baseballUrl}draft/board?${qs.toString()}`);
+    GetDraftBoard: async (leagueYearId: number): Promise<DraftBoardResponse> => {
+        return await GetCall<DraftBoardResponse>(`${baseballUrl}draft/board?league_year_id=${leagueYearId}`);
     },
-    MakeDraftPick: async (dto: { pick_id: number; player_id: number }): Promise<{ success: boolean; pick: BaseballDraftPick }> => {
-        return await PostCall<typeof dto, { success: boolean; pick: BaseballDraftPick }>(`${baseballUrl}draft/pick`, dto);
+    GetEligiblePlayers: async (params: EligiblePlayersParams): Promise<EligiblePlayersResponse> => {
+        const qs = new URLSearchParams();
+        qs.set("league_year_id", String(params.league_year_id));
+        if (params.available_only != null) qs.set("available_only", String(params.available_only));
+        if (params.source) qs.set("source", params.source);
+        if (params.search) qs.set("search", params.search);
+        if (params.viewing_org_id != null) qs.set("viewing_org_id", String(params.viewing_org_id));
+        if (params.limit != null) qs.set("limit", String(params.limit));
+        if (params.offset != null) qs.set("offset", String(params.offset));
+        return await GetCall<EligiblePlayersResponse>(`${baseballUrl}draft/eligible?${qs.toString()}`);
+    },
+    GetRoundModes: async (leagueYearId: number): Promise<{ rounds: RoundModeConfig[] }> => {
+        return await GetCall<{ rounds: RoundModeConfig[] }>(`${baseballUrl}draft/round-modes?league_year_id=${leagueYearId}`);
+    },
+    GetOrgPicks: async (orgId: number, leagueYearId: number): Promise<BaseballDraftPick[]> => {
+        return await GetCall<BaseballDraftPick[]>(`${baseballUrl}draft/picks/${orgId}?league_year_id=${leagueYearId}`);
+    },
+    MakeDraftPick: async (dto: MakePickRequest): Promise<MakePickResponse> => {
+        return await PostCall<MakePickRequest, MakePickResponse>(`${baseballUrl}draft/pick`, dto);
     },
     // Draft Admin
-    StartDraft: async (leagueYearId: number): Promise<void> => {
-        await PostCall(`${baseballUrl}draft/start`, { league_year_id: leagueYearId });
+    InitializeDraft: async (dto: DraftInitializeParams): Promise<DraftInitializeResponse> => {
+        return await PostCall<DraftInitializeParams, DraftInitializeResponse>(`${baseballUrl}draft/admin/initialize`, dto);
     },
-    PauseDraft: async (leagueYearId: number): Promise<void> => {
-        await PostCall(`${baseballUrl}draft/pause`, { league_year_id: leagueYearId });
+    SetRoundModes: async (dto: { league_year_id: number; round_modes: Record<string, string> }): Promise<void> => {
+        await PostCall(`${baseballUrl}draft/admin/round-modes`, dto);
     },
-    ResumeDraft: async (leagueYearId: number): Promise<void> => {
-        await PostCall(`${baseballUrl}draft/resume`, { league_year_id: leagueYearId });
+    StartDraft: async (leagueYearId: number): Promise<BaseballDraftState> => {
+        return await PostCall<{ league_year_id: number }, BaseballDraftState>(`${baseballUrl}draft/admin/start`, { league_year_id: leagueYearId });
     },
-    ResetDraftTimer: async (leagueYearId: number): Promise<void> => {
-        await PostCall(`${baseballUrl}draft/reset-timer`, { league_year_id: leagueYearId });
+    PauseDraft: async (leagueYearId: number): Promise<BaseballDraftState> => {
+        return await PostCall<{ league_year_id: number }, BaseballDraftState>(`${baseballUrl}draft/admin/pause`, { league_year_id: leagueYearId });
     },
-    SetDraftPick: async (dto: { league_year_id: number; round: number; pick_number: number }): Promise<void> => {
-        await PostCall(`${baseballUrl}draft/set-pick`, dto);
+    ResumeDraft: async (leagueYearId: number): Promise<BaseballDraftState> => {
+        return await PostCall<{ league_year_id: number }, BaseballDraftState>(`${baseballUrl}draft/admin/resume`, { league_year_id: leagueYearId });
     },
-    RemovePlayerFromPick: async (pickId: number): Promise<void> => {
-        await PostCall(`${baseballUrl}draft/remove-pick`, { pick_id: pickId });
+    ResetDraftTimer: async (leagueYearId: number): Promise<BaseballDraftState> => {
+        return await PostCall<{ league_year_id: number }, BaseballDraftState>(`${baseballUrl}draft/admin/reset-timer`, { league_year_id: leagueYearId });
+    },
+    RunAutoRounds: async (leagueYearId: number): Promise<AutoRoundsResponse> => {
+        return await PostCall<{ league_year_id: number }, AutoRoundsResponse>(`${baseballUrl}draft/admin/run-auto-rounds`, { league_year_id: leagueYearId });
     },
     AdvanceToSigning: async (leagueYearId: number): Promise<void> => {
-        await PostCall(`${baseballUrl}draft/advance-to-signing`, { league_year_id: leagueYearId });
+        await PostCall(`${baseballUrl}draft/admin/advance-signing`, { league_year_id: leagueYearId });
     },
     ExportDraft: async (leagueYearId: number): Promise<void> => {
-        await PostCall(`${baseballUrl}draft/export`, { league_year_id: leagueYearId });
+        await PostCall(`${baseballUrl}draft/admin/export`, { league_year_id: leagueYearId });
+    },
+    CompleteDraft: async (leagueYearId: number): Promise<void> => {
+        await PostCall(`${baseballUrl}draft/admin/complete`, { league_year_id: leagueYearId });
+    },
+    // Draft Preferences
+    GetAutoPrefs: async (orgId: number, leagueYearId: number): Promise<AutoDraftPreferences> => {
+        return await GetCall<AutoDraftPreferences>(`${baseballUrl}draft/prefs/${orgId}?league_year_id=${leagueYearId}`);
+    },
+    SetAutoPrefs: async (dto: SetAutoPrefsRequest): Promise<void> => {
+        await PostCall(`${baseballUrl}draft/prefs`, dto);
     },
     // Draft Signing
-    GetSigningStatus: async (leagueYearId: number, orgId: number): Promise<BaseballDraftSigningStatus[]> => {
-        return await GetCall<BaseballDraftSigningStatus[]>(`${baseballUrl}draft/signing?league_year_id=${leagueYearId}&org_id=${orgId}`);
+    SignDraftPick: async (pickId: number, leagueYearId: number): Promise<SignPickResponse> => {
+        return await PostCall<{ league_year_id: number }, SignPickResponse>(`${baseballUrl}draft/sign/${pickId}`, { league_year_id: leagueYearId });
     },
-    SignDraftPick: async (dto: { pick_id: number; offered_amount: number }): Promise<{ success: boolean; status: string; signed_amount: number | null }> => {
-        return await PostCall<typeof dto, { success: boolean; status: string; signed_amount: number | null }>(`${baseballUrl}draft/sign`, dto);
+    PassDraftPick: async (pickId: number, leagueYearId: number): Promise<PassPickResponse> => {
+        return await PostCall<{ league_year_id: number }, PassPickResponse>(`${baseballUrl}draft/pass/${pickId}`, { league_year_id: leagueYearId });
     },
     // Draft Trades
     ProposeDraftTrade: async (dto: {
