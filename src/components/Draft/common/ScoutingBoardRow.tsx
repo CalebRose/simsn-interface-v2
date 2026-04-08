@@ -317,8 +317,6 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
     return "gray";
   })();
 
-  console.log({ scoutableAttributes, player, profile });
-
   return (
     <Border
       key={profile.ID}

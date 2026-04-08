@@ -419,7 +419,6 @@ interface ManageOptionProps {
 }
 
 export const ManageOption: FC<ManageOptionProps> = ({ item, player, pick }) => {
-  console.log({ item, player, pick });
   if (!player && !pick) return <>Can't find player or Pick</>;
   const isPlayer = item.OptionType === "Player";
   let label = "";
