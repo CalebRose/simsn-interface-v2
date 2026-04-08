@@ -179,8 +179,6 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     ];
   }, [league]);
 
-  console.log({ offensiveSystemsInformation, defensiveSystemsInformation });
-
   const rowRenderer = (
     player: Draftee,
     index: number,

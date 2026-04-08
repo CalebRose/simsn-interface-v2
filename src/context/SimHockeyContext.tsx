@@ -1974,7 +1974,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       try {
         const res = await TransferPortalService.HCKCreatePromise(dto);
         if (res) {
-          setCollegePromises((promises) => [...promises, dto]);
+          setCollegePromises((promises) => [...promises, res]);
           enqueueSnackbar("Promise Created!", {
             variant: "success",
             autoHideDuration: 3000,

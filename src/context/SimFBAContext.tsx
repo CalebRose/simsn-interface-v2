@@ -1011,6 +1011,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setProContractMap(res.ContractMap);
     setProExtensionMap(res.ExtensionMap);
     setNFLDraftPicks(res.NFLDraftPicks);
+    setCollegePromises(res.CollegePromises);
   };
 
   const getBootstrapRecruitingData = async () => {
