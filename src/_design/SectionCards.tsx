@@ -14,6 +14,7 @@ interface SectionCardsProps {
   darkerBackgroundColor: string;
   borderColor: string;
   textColorClass: string;
+  onHeaderClick?: () => void;
 }
 
 export const SectionCards: React.FC<SectionCardsProps> = ({
@@ -26,6 +27,7 @@ export const SectionCards: React.FC<SectionCardsProps> = ({
   darkerBackgroundColor,
   textColorClass,
   borderColor,
+  onHeaderClick,
 }) => {
   const headerTextColorClass = getTextColorBasedOnBg(headerColor);
 
@@ -35,8 +37,20 @@ export const SectionCards: React.FC<SectionCardsProps> = ({
       style={{ borderColor: headerColor, backgroundColor }}
     >
       <div
-        className="mb-4 rounded-md"
+        className={`mb-4 rounded-md${
+          onHeaderClick
+            ? " cursor-pointer hover:opacity-80 transition-opacity"
+            : ""
+        }`}
         style={{ backgroundColor: headerColor, borderColor: headerColor }}
+        onClick={onHeaderClick}
+        role={onHeaderClick ? "button" : undefined}
+        tabIndex={onHeaderClick ? 0 : undefined}
+        onKeyDown={
+          onHeaderClick
+            ? (e) => e.key === "Enter" && onHeaderClick()
+            : undefined
+        }
       >
         <Text
           variant="h4"
