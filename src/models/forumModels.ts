@@ -205,6 +205,10 @@ export interface Poll {
   totalVotes: number;
   closesAt?: Timestamp | null;
   isClosed: boolean;
+  /** OP setting: users may view results before casting a vote */
+  allowResultsPreview: boolean;
+  /** OP setting: users may change their vote after submitting */
+  allowVoteChange: boolean;
   createdBy: {
     uid: string;
     username: string;
@@ -354,6 +358,8 @@ export interface CreatePollDTO {
   allowsMultipleVotes: boolean;
   maxSelectableOptions: number;
   closesAt?: Date | null;
+  allowResultsPreview: boolean;
+  allowVoteChange: boolean;
 }
 
 export interface UpdatePostDTO {

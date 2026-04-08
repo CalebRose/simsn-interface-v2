@@ -38,6 +38,8 @@ export const CreateThreadPage: React.FC = () => {
   const [threadType, setThreadType] = useState<ThreadType>("standard");
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
+  const [pollAllowResultsPreview, setPollAllowResultsPreview] = useState(false);
+  const [pollAllowVoteChange, setPollAllowVoteChange] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMediaTags, setSelectedMediaTags] = useState<MediaTag[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -156,6 +158,8 @@ export const CreateThreadPage: React.FC = () => {
         allowsMultipleVotes: false,
         maxSelectableOptions: 1,
         closesAt: null,
+        allowResultsPreview: pollAllowResultsPreview,
+        allowVoteChange: pollAllowVoteChange,
       };
     }
 
@@ -375,6 +379,29 @@ export const CreateThreadPage: React.FC = () => {
                     + Add option
                   </Button>
                 )}
+                {/* Poll behaviour settings */}
+                <div className="flex flex-col gap-1.5 mt-1 pt-2 border-t border-gray-700">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm">
+                    <input
+                      type="checkbox"
+                      checked={pollAllowResultsPreview}
+                      onChange={(e) =>
+                        setPollAllowResultsPreview(e.target.checked)
+                      }
+                      className="accent-blue-500"
+                    />
+                    Allow users to view results before voting
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer text-sm">
+                    <input
+                      type="checkbox"
+                      checked={pollAllowVoteChange}
+                      onChange={(e) => setPollAllowVoteChange(e.target.checked)}
+                      className="accent-blue-500"
+                    />
+                    Allow users to change their vote
+                  </label>
+                </div>
               </div>
             </Border>
           )}
