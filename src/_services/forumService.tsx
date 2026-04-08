@@ -259,6 +259,8 @@ export const ForumService = {
         totalVotes: 0,
         closesAt: dto.poll.closesAt ?? null,
         isClosed: false,
+        allowResultsPreview: dto.poll.allowResultsPreview ?? false,
+        allowVoteChange: dto.poll.allowVoteChange ?? false,
         createdBy: { uid, username },
         createdAt: now,
         updatedAt: now,
@@ -737,6 +739,64 @@ export const ForumService = {
     await updateDoc(ref, { isClosed: close, updatedAt: serverTimestamp() });
   },
 
+  UpdatePollSettings: async (
+    pollId: string,
+    updates: { allowResultsPreview?: boolean; allowVoteChange?: boolean },
+  ): Promise<void> => {
+    const ref = doc(firestore, "polls", pollId);
+    await updateDoc(ref, { ...updates, updatedAt: serverTimestamp() });
+  },
+
+  ChangeVote: async (
+    pollId: string,
+    uid: string,
+    username: string,
+    newSelectedOptionIds: string[],
+  ): Promise<void> => {
+    const pollRef = doc(firestore, "polls", pollId);
+    const pollSnap = await getDoc(pollRef);
+    if (!pollSnap.exists()) throw new Error("Poll not found");
+    const poll = { id: pollSnap.id, ...pollSnap.data() } as Poll;
+    if (!poll.allowVoteChange)
+      throw new Error("Vote changes are not allowed on this poll");
+    if (poll.isClosed) throw new Error("Poll is closed");
+
+    const voteRef = doc(pollVotesCol(pollId), uid);
+    const existingSnap = await getDoc(voteRef);
+    if (!existingSnap.exists()) throw new Error("No existing vote to change");
+    const existingVote =
+      existingSnap.data() as import("../models/forumModels").PollVote;
+
+    const batch = writeBatch(firestore);
+
+    batch.set(voteRef, {
+      uid,
+      username,
+      selectedOptionIds: newSelectedOptionIds,
+      createdAt: existingVote.createdAt,
+      updatedAt: serverTimestamp(),
+    });
+
+    const updatedOptions = poll.options.map((opt) => {
+      const wasSelected = existingVote.selectedOptionIds.includes(opt.id);
+      const isNowSelected = newSelectedOptionIds.includes(opt.id);
+      const delta =
+        !wasSelected && isNowSelected
+          ? 1
+          : wasSelected && !isNowSelected
+            ? -1
+            : 0;
+      return { ...opt, voteCount: opt.voteCount + delta };
+    });
+
+    batch.update(pollRef, {
+      options: updatedOptions,
+      updatedAt: serverTimestamp(),
+    });
+
+    await batch.commit();
+  },
+
   GetAllPollVotes: async (pollId: string): Promise<PollVote[]> => {
     const snap = await getDocs(pollVotesCol(pollId));
     return snap.docs.map((d) => d.data() as PollVote);
@@ -901,6 +961,8 @@ export const ForumService = {
         addDoc(collection(firestore, "notifications"), {
           uid: m.uid,
           type: "mention",
+          domain: "forum",
+          linkTo: `/forums/thread/${threadId}`,
           threadId,
           postId,
           actorUid,
@@ -927,6 +989,8 @@ export const ForumService = {
     await addDoc(collection(firestore, "notifications"), {
       uid: postAuthorUid,
       type: "reaction",
+      domain: "forum",
+      linkTo: `/forums/thread/${threadId}`,
       threadId,
       postId,
       actorUid,

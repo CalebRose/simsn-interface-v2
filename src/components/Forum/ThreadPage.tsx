@@ -48,6 +48,8 @@ export const ThreadPage: React.FC = () => {
     moveThread,
     reactToPost,
     submitPollVote,
+    changeVote,
+    updatePollSettings,
     togglePoll,
     reportPost,
     isMuted,
@@ -325,15 +327,21 @@ export const ThreadPage: React.FC = () => {
         )}
 
         {/* Poll block */}
-        {activePoll && (
+        {activePoll && activeThread && (
           <div className="mb-3">
             <PollBlock
               poll={activePoll}
               userVote={userPollVote}
               canVote={permissions.canVoteInPoll}
               onVote={submitPollVote}
-              canManagePoll={permissions.canLockThread}
+              onChangeVote={changeVote}
+              canManagePoll={
+                permissions.canLockThread ||
+                (!!currentUser && currentUser.id === activeThread.author.uid)
+              }
               onTogglePoll={togglePoll}
+              isOP={!!currentUser && currentUser.id === activeThread.author.uid}
+              onUpdatePollSettings={updatePollSettings}
             />
           </div>
         )}

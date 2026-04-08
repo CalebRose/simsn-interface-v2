@@ -127,7 +127,11 @@ export const PromiseModal: FC<PromiseModalProps> = ({
       return getBBAPromiseWeight(promiseType, benchmark);
     }
     if (league === SimCFB) {
-      return getCFBPromiseWeight(promiseType, benchmark);
+      return getCFBPromiseWeight(
+        promiseType,
+        benchmark,
+        cfbTeam?.IsFBS || false,
+      );
     }
     return "";
   }, [league, promiseType, benchmark, promise, hasUserMadeChanges]);

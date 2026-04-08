@@ -1029,7 +1029,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
       )}
       {modalPlayer && (
         <PromiseModal
-          league={SimCHL}
+          league={SimCFB}
           isOpen={promiseModal.isModalOpen}
           onClose={promiseModal.handleCloseModal}
           player={modalPlayer}
@@ -1089,6 +1089,15 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
                 onClick={() => setCategory(Attributes)}
               >
                 <Text variant="small">Attributes</Text>
+              </Button>
+            )}
+            {isDesktop && (
+              <Button
+                size="sm"
+                isSelected={category === Promises}
+                onClick={() => setCategory(Promises)}
+              >
+                <Text variant="small">Promises</Text>
               </Button>
             )}
             <Button variant="primary" size="sm" onClick={exportRoster}>

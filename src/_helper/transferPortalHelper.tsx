@@ -408,7 +408,11 @@ export const getCFBModifierValue = (
   return 1;
 };
 
-export const getCFBPromiseWeight = (promiseType: string, benchmark: number) => {
+export const getCFBPromiseWeight = (
+  promiseType: string,
+  benchmark: number,
+  isFBS: boolean,
+) => {
   if (promiseType === "") {
     return "None";
   }
@@ -425,6 +429,9 @@ export const getCFBPromiseWeight = (promiseType: string, benchmark: number) => {
     return "Low";
   }
   if (promiseType === "Bowl Game") {
+    if (!isFBS) {
+      return "None";
+    }
     return "Medium";
   }
   if (promiseType === "Snaps") {
@@ -451,6 +458,9 @@ export const getCFBPromiseWeight = (promiseType: string, benchmark: number) => {
     return "High";
   }
   if (promiseType === "Playoffs") {
+    if (!isFBS) {
+      return "Medium";
+    }
     return "Very High";
   }
   if (promiseType === "National Championship") {

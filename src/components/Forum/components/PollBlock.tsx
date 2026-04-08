@@ -10,8 +10,14 @@ interface PollBlockProps {
   userVote: PollVote | null;
   canVote: boolean;
   onVote: (pollId: string, selectedOptionIds: string[]) => Promise<void>;
+  onChangeVote?: (pollId: string, selectedOptionIds: string[]) => Promise<void>;
   canManagePoll?: boolean;
   onTogglePoll?: (pollId: string, close: boolean) => Promise<void>;
+  isOP?: boolean;
+  onUpdatePollSettings?: (
+    pollId: string,
+    updates: { allowResultsPreview?: boolean; allowVoteChange?: boolean },
+  ) => Promise<void>;
 }
 
 function formatCloseDate(ts: { seconds: number } | null | undefined): string {
@@ -28,8 +34,11 @@ export const PollBlock: React.FC<PollBlockProps> = ({
   userVote,
   canVote,
   onVote,
+  onChangeVote,
   canManagePoll = false,
   onTogglePoll,
+  isOP = false,
+  onUpdatePollSettings,
 }) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isVoting, setIsVoting] = useState(false);
@@ -37,9 +46,37 @@ export const PollBlock: React.FC<PollBlockProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [allVotes, setAllVotes] = useState<PollVote[] | null>(null);
   const [showVoters, setShowVoters] = useState(false);
+  /** User clicked "View results" before voting */
+  const [previewingResults, setPreviewingResults] = useState(false);
+  /** User clicked "Change vote" after already voting */
+  const [changingVote, setChangingVote] = useState(false);
+  const [isUpdatingSettings, setIsUpdatingSettings] = useState(false);
 
   const hasVoted = !!userVote;
-  const showResults = hasVoted || poll.isClosed;
+
+  // Pre-populate selection with existing vote when entering change-vote mode
+  const enterChangeVote = () => {
+    if (userVote) {
+      setSelected(new Set(userVote.selectedOptionIds));
+    }
+    setChangingVote(true);
+    setError(null);
+  };
+
+  const cancelChangeVote = () => {
+    setChangingVote(false);
+    setSelected(new Set());
+    setError(null);
+  };
+
+  /**
+   * showResults is true when:
+   * - user has already voted (and is not in change-vote mode), OR
+   * - poll is closed, OR
+   * - user chose to preview results (and the poll allows it)
+   */
+  const showResults =
+    (hasVoted && !changingVote) || poll.isClosed || previewingResults;
 
   const handleToggle = (optionId: string) => {
     setSelected((prev) => {
@@ -59,7 +96,14 @@ export const PollBlock: React.FC<PollBlockProps> = ({
     setIsVoting(true);
     setError(null);
     try {
-      await onVote(poll.id, Array.from(selected));
+      if (changingVote && onChangeVote) {
+        await onChangeVote(poll.id, Array.from(selected));
+        setChangingVote(false);
+        setSelected(new Set());
+      } else {
+        await onVote(poll.id, Array.from(selected));
+        setPreviewingResults(false);
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to submit vote.");
     } finally {
@@ -79,6 +123,18 @@ export const PollBlock: React.FC<PollBlockProps> = ({
       await onTogglePoll(poll.id, !poll.isClosed);
     } finally {
       setIsToggling(false);
+    }
+  };
+
+  const handleToggleSetting = async (
+    key: "allowResultsPreview" | "allowVoteChange",
+  ) => {
+    if (!onUpdatePollSettings) return;
+    setIsUpdatingSettings(true);
+    try {
+      await onUpdatePollSettings(poll.id, { [key]: !poll[key] });
+    } finally {
+      setIsUpdatingSettings(false);
     }
   };
 
@@ -130,6 +186,7 @@ export const PollBlock: React.FC<PollBlockProps> = ({
             );
           }
 
+          // Voting / change-vote UI
           return (
             <label
               key={option.id}
@@ -166,24 +223,123 @@ export const PollBlock: React.FC<PollBlockProps> = ({
           {poll.isClosed && <> · Poll closed</>}
         </Text>
 
-        {!showResults && canVote && (
-          <div className="flex items-center gap-2">
-            {error && (
-              <Text variant="danger" classes="text-xs">
-                {error}
-              </Text>
-            )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {error && (
+            <Text variant="danger" classes="text-xs">
+              {error}
+            </Text>
+          )}
+
+          {/* Preview results toggle — only when user hasn't voted yet */}
+          {!hasVoted && !poll.isClosed && poll.allowResultsPreview && (
             <Button
-              variant="primary"
+              variant="secondaryOutline"
               size="sm"
-              onClick={handleSubmit}
-              disabled={selected.size === 0 || isVoting}
+              onClick={() => setPreviewingResults((v) => !v)}
             >
-              {isVoting ? "Voting…" : "Vote"}
+              {previewingResults ? "Hide results" : "View results"}
             </Button>
-          </div>
-        )}
+          )}
+
+          {/* Vote / update-vote button */}
+          {!showResults && canVote && (
+            <>
+              {changingVote && (
+                <Button
+                  variant="secondaryOutline"
+                  size="sm"
+                  onClick={cancelChangeVote}
+                  disabled={isVoting}
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSubmit}
+                disabled={selected.size === 0 || isVoting}
+              >
+                {isVoting
+                  ? changingVote
+                    ? "Updating…"
+                    : "Voting…"
+                  : changingVote
+                    ? "Update vote"
+                    : "Vote"}
+              </Button>
+            </>
+          )}
+
+          {/* Change vote button — shown after voting if poll allows it */}
+          {hasVoted &&
+            !changingVote &&
+            !poll.isClosed &&
+            poll.allowVoteChange &&
+            canVote &&
+            onChangeVote && (
+              <Button
+                variant="secondaryOutline"
+                size="sm"
+                onClick={enterChangeVote}
+              >
+                Change vote
+              </Button>
+            )}
+        </div>
       </div>
+
+      {/* OP / moderator settings panel */}
+      {(isOP || canManagePoll) && (
+        <div className="mt-3 pt-3 border-t border-gray-700 flex flex-col gap-2">
+          <Text
+            variant="xs"
+            classes="text-gray-400 font-semibold uppercase tracking-wide"
+          >
+            Poll settings
+          </Text>
+          <div className="flex flex-wrap gap-4">
+            {isOP && onUpdatePollSettings && (
+              <>
+                <label className="flex items-center gap-2 text-xs cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={poll.allowResultsPreview}
+                    onChange={() => handleToggleSetting("allowResultsPreview")}
+                    disabled={isUpdatingSettings}
+                    className="accent-blue-500"
+                  />
+                  Allow results preview
+                </label>
+                <label className="flex items-center gap-2 text-xs cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={poll.allowVoteChange}
+                    onChange={() => handleToggleSetting("allowVoteChange")}
+                    disabled={isUpdatingSettings}
+                    className="accent-blue-500"
+                  />
+                  Allow vote changes
+                </label>
+              </>
+            )}
+            {canManagePoll && onTogglePoll && (
+              <Button
+                variant={poll.isClosed ? "primary" : "secondaryOutline"}
+                size="xs"
+                onClick={handleTogglePoll}
+                disabled={isToggling}
+              >
+                {isToggling
+                  ? "…"
+                  : poll.isClosed
+                    ? "Reopen poll"
+                    : "Close poll"}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
     </ForumBorder>
   );
 };

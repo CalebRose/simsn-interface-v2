@@ -126,6 +126,11 @@ interface ForumContextProps {
     pollId: string,
     selectedOptionIds: string[],
   ) => Promise<void>;
+  changeVote: (pollId: string, selectedOptionIds: string[]) => Promise<void>;
+  updatePollSettings: (
+    pollId: string,
+    updates: { allowResultsPreview?: boolean; allowVoteChange?: boolean },
+  ) => Promise<void>;
   togglePoll: (pollId: string, close: boolean) => Promise<void>;
   reactToPost: (postId: string, reaction: ReactionType) => Promise<void>;
   reportPost: (dto: CreateReportDTO) => Promise<void>;
@@ -175,6 +180,8 @@ const defaultForumContext: ForumContextProps = {
   softDeleteThread: async () => {},
   moveThread: async () => {},
   submitPollVote: async () => {},
+  changeVote: async () => {},
+  updatePollSettings: async () => {},
   togglePoll: async () => {},
   reactToPost: async () => {},
   reportPost: async () => {},
@@ -644,6 +651,46 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     }
   }, []);
 
+  // ─── Change Vote ─────────────────────────────
+
+  const changeVote = useCallback(
+    async (pollId: string, selectedOptionIds: string[]) => {
+      if (!currentUserState) return;
+      try {
+        await ForumService.ChangeVote(
+          pollId,
+          currentUserState.id,
+          currentUserState.username,
+          selectedOptionIds,
+        );
+        if (activeThread) {
+          await loadPoll(activeThread.id, currentUserState.id);
+        }
+      } catch (err) {
+        console.error("ForumContext.changeVote:", err);
+        throw err;
+      }
+    },
+    [currentUserState, activeThread, loadPoll],
+  );
+
+  // ─── Update Poll Settings ────────────────────
+
+  const updatePollSettings = useCallback(
+    async (
+      pollId: string,
+      updates: { allowResultsPreview?: boolean; allowVoteChange?: boolean },
+    ) => {
+      try {
+        await ForumService.UpdatePollSettings(pollId, updates);
+        setActivePoll((prev) => (prev ? { ...prev, ...updates } : prev));
+      } catch (err) {
+        console.error("ForumContext.updatePollSettings:", err);
+      }
+    },
+    [],
+  );
+
   // ─── Reactions ───────────────────────────────
 
   const reactToPost = useCallback(
@@ -762,6 +809,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         softDeleteThread,
         moveThread,
         submitPollVote,
+        changeVote,
+        updatePollSettings,
         togglePoll,
         reactToPost,
         reportPost,

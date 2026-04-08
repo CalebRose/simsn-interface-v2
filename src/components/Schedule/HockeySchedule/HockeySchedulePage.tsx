@@ -75,7 +75,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [selectedWeek, setSelectedWeek] = useState<{
     label: string;
     value: string;
-  }>({ label: "1", value: "1" });
+  }>({ label: ts.Week.toString() || "1", value: ts.Week.toString() || "1" });
   const [selectedSeason, setSelectedSeason] = useState<{
     label: string;
     value: string;
