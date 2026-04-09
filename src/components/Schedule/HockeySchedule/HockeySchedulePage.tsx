@@ -27,6 +27,7 @@ import {
   getSchedulePHLData,
   processSchedule,
   processWeeklyGames,
+  buildHockeyPlayerMap,
 } from "../Common/SchedulePageHelper";
 import {
   TeamSchedule,
@@ -107,50 +108,10 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const darkerBackgroundColor = darkenColor(backgroundColor, -5);
 
-  const playerMap = useMemo(() => {
-    if (!chlRosterMap) return {};
-
-    const map: Record<
-      number,
-      Record<
-        number,
-        {
-          FirstName: string;
-          LastName: string;
-          Position: string;
-          TeamID: number;
-          Team: string;
-        }
-      >
-    > = {};
-
-    Object.entries(chlRosterMap).forEach(([teamId, roster]) => {
-      map[Number(teamId)] = roster.reduce(
-        (acc, player) => {
-          acc[player.ID] = {
-            FirstName: player.FirstName,
-            LastName: player.LastName,
-            Position: player.Position,
-            TeamID: player.TeamID,
-            Team: player.Team,
-          };
-          return acc;
-        },
-        {} as Record<
-          number,
-          {
-            FirstName: string;
-            LastName: string;
-            Position: string;
-            TeamID: number;
-            Team: string;
-          }
-        >,
-      );
-    });
-
-    return map;
-  }, [chlRosterMap]);
+  const playerMap = useMemo(
+    () => buildHockeyPlayerMap(chlRosterMap),
+    [chlRosterMap],
+  );
 
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
@@ -711,50 +672,10 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const darkerBackgroundColor = darkenColor(backgroundColor, -5);
 
-  const playerMap = useMemo(() => {
-    if (!phlRosterMap) return {};
-
-    const map: Record<
-      number,
-      Record<
-        number,
-        {
-          FirstName: string;
-          LastName: string;
-          Position: string;
-          TeamID: number;
-          Team: string;
-        }
-      >
-    > = {};
-
-    Object.entries(phlRosterMap).forEach(([teamId, roster]) => {
-      map[Number(teamId)] = roster.reduce(
-        (acc, player) => {
-          acc[player.ID] = {
-            FirstName: player.FirstName,
-            LastName: player.LastName,
-            Position: player.Position,
-            TeamID: player.TeamID,
-            Team: player.Team,
-          };
-          return acc;
-        },
-        {} as Record<
-          number,
-          {
-            FirstName: string;
-            LastName: string;
-            Position: string;
-            TeamID: number;
-            Team: string;
-          }
-        >,
-      );
-    });
-
-    return map;
-  }, [phlRosterMap]);
+  const playerMap = useMemo(
+    () => buildHockeyPlayerMap(phlRosterMap),
+    [phlRosterMap],
+  );
 
   const proGamesBySelectedSeason = useMemo(() => {
     return proGamesMapBySeason[selectedSeasonValue] || [];

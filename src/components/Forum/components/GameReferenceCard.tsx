@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 interface GameReferenceCardProps {
   gameRef: GameReference;
+  onOpen?: () => void;
 }
 
 const LEAGUE_LABELS: Record<string, string> = {
@@ -21,6 +22,7 @@ const LEAGUE_LABELS: Record<string, string> = {
 
 export const GameReferenceCard: React.FC<GameReferenceCardProps> = ({
   gameRef,
+  onOpen,
 }) => {
   const navigate = useNavigate();
 
@@ -55,7 +57,7 @@ export const GameReferenceCard: React.FC<GameReferenceCardProps> = ({
 
         {gameRef.sourcePath && (
           <button
-            onClick={() => navigate(gameRef.sourcePath!)}
+            onClick={() => (onOpen ? onOpen() : navigate(gameRef.sourcePath!))}
             className="text-xs text-blue-400 hover:text-blue-300 underline shrink-0"
           >
             View game →

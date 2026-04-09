@@ -14,6 +14,8 @@ import {
   ProfessionalGame as PHLGame,
   CollegeTeam as CHLTeam,
   ProfessionalTeam as PHLTeam,
+  CollegePlayer as CHLPlayer,
+  ProfessionalPlayer as PHLPlayer,
 } from "../../../models/hockeyModels";
 import { League, SimCBB, SimNBA } from "../../../_constants/constants";
 import {
@@ -53,6 +55,42 @@ import {
   NBAMatch,
   NBATeam,
 } from "../../../models/basketballModels";
+
+export type HockeyPlayerEntry = {
+  FirstName: string;
+  LastName: string;
+  Position: string;
+  TeamID: number;
+  Team: string;
+};
+
+export type HockeyPlayerMap = Record<number, Record<number, HockeyPlayerEntry>>;
+
+/**
+ * Converts a keyed roster map (teamId → player[]) into a nested lookup
+ * structured as { [teamId]: { [playerId]: HockeyPlayerEntry } }.
+ * Safe to call with null/undefined — returns {} in that case.
+ */
+export const buildHockeyPlayerMap = (
+  rosterMap: Record<number, (CHLPlayer | PHLPlayer)[]> | null | undefined,
+): HockeyPlayerMap => {
+  if (!rosterMap) return {};
+  const map: HockeyPlayerMap = {};
+  for (const [teamIdStr, roster] of Object.entries(rosterMap)) {
+    const teamId = Number(teamIdStr);
+    map[teamId] = {};
+    for (const player of roster) {
+      map[teamId][player.ID] = {
+        FirstName: player.FirstName,
+        LastName: player.LastName,
+        Position: player.Position,
+        TeamID: player.TeamID,
+        Team: player.Team,
+      };
+    }
+  }
+  return map;
+};
 
 export const getScheduleCFBData = (
   team: any,

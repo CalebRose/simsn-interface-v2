@@ -26,6 +26,25 @@ import { parseForumBody } from "./forumUtils";
 import routes from "../../_constants/routes";
 import { MEDIA_TAG_MAP, MediaTag } from "../../_constants/mediaTags";
 import { ThreadSEOMeta } from "./components/ThreadSEOMeta";
+import { useSimHCKStore } from "../../context/SimHockeyContext";
+import { useSimFBAStore } from "../../context/SimFBAContext";
+import { useSimBBAStore } from "../../context/SimBBAContext";
+import {
+  SimCFB,
+  SimNFL,
+  SimPHL,
+  SimCHL,
+  SimCBB,
+  SimNBA,
+} from "../../_constants/constants";
+import { useModal } from "../../_hooks/useModal";
+import { SchedulePageGameModal } from "../Schedule/Common/GameModal";
+import { buildHockeyPlayerMap } from "../Schedule/Common/SchedulePageHelper";
+import { getLogo } from "../../_utility/getLogo";
+import { NBATeam } from "../../models/basketballModels";
+import { NFLTeam } from "../../models/footballModels";
+import { ProfessionalTeam } from "../../models/hockeyModels";
+import { Timestamp } from "firebase/firestore";
 
 interface Params {
   threadId: string;
@@ -57,10 +76,36 @@ export const ThreadPage: React.FC = () => {
     forums,
   } = useForumStore();
 
+  const {
+    allCollegeGames: allCHLGames,
+    allProGames: allPHLGames,
+    chlTeamMap,
+    phlTeamMap,
+    chlRosterMap,
+    proRosterMap,
+  } = useSimHCKStore();
+  const {
+    allCollegeGames: allCFBGames,
+    allProGames: allNFLGames,
+    cfbTeamMap,
+    proTeamMap: nflTeamMap,
+    cfbRosterMap,
+    proRosterMap: nflRosterMap,
+  } = useSimFBAStore();
+  const {
+    allCollegeGames: allCBBGames,
+    allProGames: allNBAGames,
+    cbbTeamMap,
+    nbaTeamMap,
+    cbbRosterMap,
+    proRosterMap: nbaRosterMap,
+  } = useSimBBAStore();
+
   const { activeThread, posts, postsLoading, activePoll, userPollVote } =
     useThread(threadId);
+  const [league, setLeague] = useState<any>("");
+  const gameModal = useModal();
 
-  const [gameRef, setGameRef] = useState<GameReference | null>(null);
   const [replyingTo, setReplyingTo] = useState<Post | null>(null);
   const [quotingPost, setQuotingPost] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
@@ -76,10 +121,35 @@ export const ThreadPage: React.FC = () => {
 
   // Load game reference if applicable
   useEffect(() => {
-    if (!activeThread?.referencedGameId) return;
-    ForumService.GetGameReferenceById(activeThread.referencedGameId)
-      .then(setGameRef)
-      .catch(console.error);
+    if (!activeThread?.referencedLeague) return;
+    let gameRefLeague = "";
+    switch (activeThread?.referencedLeague.toLowerCase()) {
+      case "chl":
+        gameRefLeague = SimCHL;
+        break;
+      case "phl":
+        gameRefLeague = SimPHL;
+        break;
+      case "cfb":
+        gameRefLeague = SimCFB;
+        break;
+      case "nfl":
+        gameRefLeague = SimNFL;
+        break;
+      case "cbb":
+        gameRefLeague = SimCBB;
+        break;
+      case "nba":
+        gameRefLeague = SimNBA;
+        break;
+      default:
+        console.warn(
+          "Unknown league in game reference:",
+          activeThread?.referencedLeague,
+        );
+        return;
+    }
+    setLeague(gameRefLeague);
   }, [activeThread?.referencedGameId]);
 
   const crumbs = [
@@ -190,6 +260,180 @@ export const ThreadPage: React.FC = () => {
       setIsMoving(false);
     }
   };
+
+  const gameTeamMap = useMemo(() => {
+    switch (league) {
+      case SimCHL:
+        return chlTeamMap;
+      case SimPHL:
+        return phlTeamMap;
+      case SimCFB:
+        return cfbTeamMap ?? {};
+      case SimNFL:
+        return nflTeamMap ?? {};
+      case SimCBB:
+        return cbbTeamMap ?? {};
+      case SimNBA:
+        return nbaTeamMap ?? {};
+      default:
+        return {};
+    }
+  }, [
+    league,
+    chlTeamMap,
+    phlTeamMap,
+    cfbTeamMap,
+    nflTeamMap,
+    cbbTeamMap,
+    nbaTeamMap,
+  ]);
+
+  const chlPlayerMap = useMemo(
+    () => buildHockeyPlayerMap(chlRosterMap),
+    [chlRosterMap],
+  );
+  const phlPlayerMap = useMemo(
+    () => buildHockeyPlayerMap(proRosterMap),
+    [proRosterMap],
+  );
+
+  const gamePlayerMap = useMemo(() => {
+    switch (league) {
+      case SimCHL:
+        return chlPlayerMap;
+      case SimPHL:
+        return phlPlayerMap;
+      case SimCFB:
+        return cfbRosterMap ?? {};
+      case SimNFL:
+        return nflRosterMap ?? {};
+      case SimCBB:
+        return cbbRosterMap ?? {};
+      case SimNBA:
+        return nbaRosterMap ?? {};
+      default:
+        return {};
+    }
+  }, [
+    league,
+    chlPlayerMap,
+    phlPlayerMap,
+    cfbRosterMap,
+    nflRosterMap,
+    cbbRosterMap,
+    nbaRosterMap,
+  ]);
+
+  const game = useMemo(() => {
+    let gameRefGame = null;
+    switch (league) {
+      case SimCHL:
+        gameRefGame = allCHLGames.find(
+          (g) => g.ID.toString() === activeThread?.referencedGameId,
+        );
+        break;
+      case SimPHL:
+        gameRefGame = allPHLGames.find(
+          (g) => g.ID.toString() === activeThread?.referencedGameId,
+        );
+        break;
+      case SimCFB:
+        gameRefGame = allCFBGames.find(
+          (g) => g.ID.toString() === activeThread?.referencedGameId,
+        );
+        break;
+      case SimNFL:
+        gameRefGame = allNFLGames.find(
+          (g) => g.ID.toString() === activeThread?.referencedGameId,
+        );
+        break;
+      case SimCBB:
+        gameRefGame = allCBBGames.find(
+          (g) => g.ID.toString() === activeThread?.referencedGameId,
+        );
+        break;
+      case SimNBA:
+        gameRefGame = allNBAGames.find(
+          (g) => g.ID.toString() === activeThread?.referencedGameId,
+        );
+        break;
+      default:
+        console.warn(
+          "Unknown league in game reference:",
+          activeThread?.referencedLeague,
+        );
+        return;
+    }
+    if (gameRefGame) {
+      let homeTeamAbbr = "";
+      let awayTeamAbbr = "";
+      let homeTeamMascot = "";
+      let awayTeamMascot = "";
+      if (league === SimCHL || league === SimPHL) {
+        const homeTeam = gameTeamMap[
+          gameRefGame.HomeTeamID
+        ] as ProfessionalTeam;
+        const awayTeam = gameTeamMap[
+          gameRefGame.AwayTeamID
+        ] as ProfessionalTeam;
+        homeTeamAbbr = homeTeam?.Abbreviation ?? "";
+        awayTeamAbbr = awayTeam?.Abbreviation ?? "";
+        homeTeamMascot = homeTeam?.Mascot ?? "";
+        awayTeamMascot = awayTeam?.Mascot ?? "";
+      }
+      if (league === SimCFB || league === SimNFL) {
+        const homeTeam = gameTeamMap[gameRefGame.HomeTeamID] as NFLTeam;
+        const awayTeam = gameTeamMap[gameRefGame.AwayTeamID] as NFLTeam;
+        homeTeamAbbr = homeTeam?.TeamAbbr ?? "";
+        awayTeamAbbr = awayTeam?.TeamAbbr ?? "";
+        homeTeamMascot = homeTeam?.Mascot ?? "";
+        awayTeamMascot = awayTeam?.Mascot ?? "";
+      }
+      if (league === SimCBB || league === SimNBA) {
+        const homeTeam = gameTeamMap[gameRefGame.HomeTeamID] as NBATeam;
+        const awayTeam = gameTeamMap[gameRefGame.AwayTeamID] as NBATeam;
+        homeTeamAbbr = homeTeam?.Abbr ?? "";
+        awayTeamAbbr = awayTeam?.Abbr ?? "";
+        homeTeamMascot = homeTeam?.Nickname ?? "";
+        awayTeamMascot = awayTeam?.Nickname ?? "";
+      }
+      const gameObj = {
+        ...gameRefGame,
+        HomeTeamID: gameRefGame.HomeTeamID,
+        AwayTeamID: gameRefGame.AwayTeamID,
+        HomeTeamAbbr: homeTeamAbbr,
+        AwayTeamAbbr: awayTeamAbbr,
+        HomeTeamName: gameRefGame.HomeTeam,
+        HomeTeamMascot: homeTeamMascot,
+        AwayTeamName: gameRefGame.AwayTeam,
+        AwayTeamMascot: awayTeamMascot,
+        HomeTeamLogo: getLogo(league, gameRefGame.HomeTeamID, false),
+        AwayTeamLogo: getLogo(league, gameRefGame.AwayTeamID, false),
+      };
+
+      return gameObj;
+    }
+    return null;
+  }, [league, activeThread?.referencedGameId, gameTeamMap]);
+
+  const gameRef = useMemo(() => {
+    if (!game) return null;
+    const referenceObject: GameReference = {
+      id: game.ID.toString(),
+      league: activeThread?.referencedLeague ?? "",
+      externalGameId: activeThread?.referencedGameId ?? "",
+      gameLabel: `Week ${game?.Week} ${game?.HomeTeamAbbr ?? "Home"} vs ${game?.AwayTeamAbbr ?? "Away"}`,
+      homeTeamId: game?.HomeTeamID,
+      awayTeamId: game?.AwayTeamID,
+      seasonId: game?.SeasonID,
+      weekId: game?.WeekID,
+      gameStatus: game.GameComplete ? "Complete" : "Scheduled",
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+      sourcePath: "test",
+    };
+    return referenceObject;
+  }, [activeThread, league, game]);
 
   const isLocked = activeThread?.isLocked ?? false;
   const isAdmin = permissions.canLockThread;
@@ -317,8 +561,23 @@ export const ThreadPage: React.FC = () => {
         {/* Game reference card */}
         {gameRef && (
           <div className="mb-3">
-            <GameReferenceCard gameRef={gameRef} />
+            <GameReferenceCard
+              gameRef={gameRef}
+              onOpen={game ? gameModal.handleOpenModal : undefined}
+            />
           </div>
+        )}
+        {/* Game modal */}
+        {game && (
+          <SchedulePageGameModal
+            isOpen={gameModal.isModalOpen}
+            onClose={gameModal.handleCloseModal}
+            league={league}
+            game={game}
+            title={`${game.HomeTeamAbbr ?? ""} vs ${game.AwayTeamAbbr ?? ""}`}
+            teamMap={gameTeamMap}
+            playerMap={gamePlayerMap}
+          />
         )}
 
         {/* Poll block */}

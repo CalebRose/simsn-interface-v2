@@ -202,6 +202,7 @@ export const RevealHCKResults = (
   if (game.Week < currentWeek || game.SeasonID < timestamp.SeasonID)
     return true;
   const { GameDay, GameComplete, IsRevealed } = game;
+  if (IsRevealed) return true;
   const showResults = GameComplete || IsRevealed;
   if (CHLGame) {
     if (GameDay === "A" && timestamp.GamesARan) return showResults;
