@@ -64,7 +64,12 @@ export const AdminPage = () => {
   const { currentUser } = authStore;
   const { RefreshRequests } = useAdminPage();
   const navigate = useNavigate();
-  if (currentUser && currentUser.roleID && currentUser.roleID !== AdminRole) {
+  if (
+    currentUser &&
+    currentUser.roleID &&
+    currentUser.roleID !== AdminRole &&
+    !currentUser.roleID.includes("Commissioner")
+  ) {
     return <UnAuthAdminPage navigate={navigate} />;
   }
 
