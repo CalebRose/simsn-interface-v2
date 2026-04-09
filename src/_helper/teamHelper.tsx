@@ -7,7 +7,7 @@ import {
   SimNFL,
   SimPHL,
   SimMLB,
-  SimCollegeBaseball
+  SimCollegeBaseball,
 } from "../_constants/constants";
 import {
   Timestamp as BKTimestamp,
@@ -22,12 +22,7 @@ import {
   CollegeGame,
 } from "../models/hockeyModels";
 
-import {
-  Timestamp as BaseballTimestamp,
-} from "../models/baseball/baseballModels";
-
-
-
+import { Timestamp as BaseballTimestamp } from "../models/baseball/baseballModels";
 
 export const GetTeamLabel = (league: League, team: any): String => {
   if (league === SimCFB || league === SimNFL) {
@@ -52,8 +47,8 @@ export const GetCurrentWeek = (league: League, ts: any) => {
     return GetHCKCurrentWeek(ts as HCKTimestamp);
   }
   if (league === SimCollegeBaseball || league === SimMLB) {
-    return GetBaseballCurrentWeek(ts as BaseballTimestamp );
-  }  
+    return GetBaseballCurrentWeek(ts as BaseballTimestamp);
+  }
 };
 
 export const GetFBCurrentWeek = (league: League, ts: FBTimestamp) => {
@@ -100,14 +95,14 @@ export const GetLeagueTS = (
   }
   if ([SimMLB, SimCollegeBaseball].includes(league)) {
     return base;
-  }  
+  }
   return null;
 };
 
 export const RevealBBAResults = (
   game: Match | NBAMatch,
   timestamp: BKTimestamp,
-  resultsOverride: boolean
+  resultsOverride: boolean,
 ): boolean => {
   if (resultsOverride) return true;
   const currentWeek = timestamp.CollegeWeek;
@@ -157,7 +152,7 @@ export const RevealResults = (
   game: Game,
   ts: FBTimestamp | BKTimestamp | HCKTimestamp,
   league: League,
-  resultsOverride: boolean
+  resultsOverride: boolean,
 ): boolean => {
   if (resultsOverride) return true;
   const { TimeSlot, Week, SeasonID } = game;
@@ -200,21 +195,22 @@ export const RevealResults = (
 export const RevealHCKResults = (
   game: CHLGame | PHLGame,
   timestamp: HCKTimestamp,
-  resultsOverride: boolean
+  resultsOverride: boolean,
 ): boolean => {
   if (resultsOverride) return true;
   const currentWeek = timestamp.Week;
   if (game.Week < currentWeek || game.SeasonID < timestamp.SeasonID)
     return true;
-  const { GameDay, GameComplete } = game;
+  const { GameDay, GameComplete, IsRevealed } = game;
+  const showResults = GameComplete || IsRevealed;
   if (CHLGame) {
-    if (GameDay === "A" && timestamp.GamesARan) return GameComplete;
-    if (GameDay === "B" && timestamp.GamesBRan) return GameComplete;
+    if (GameDay === "A" && timestamp.GamesARan) return showResults;
+    if (GameDay === "B" && timestamp.GamesBRan) return showResults;
   }
   if (PHLGame) {
-    if (GameDay === "A" && timestamp.GamesARan) return GameComplete;
-    if (GameDay === "B" && timestamp.GamesBRan) return GameComplete;
-    if (GameDay === "C" && timestamp.GamesCRan) return GameComplete;
+    if (GameDay === "A" && timestamp.GamesARan) return showResults;
+    if (GameDay === "B" && timestamp.GamesBRan) return showResults;
+    if (GameDay === "C" && timestamp.GamesCRan) return showResults;
   }
   return false;
 };

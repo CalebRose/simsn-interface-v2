@@ -2641,6 +2641,7 @@ export class ProfessionalGame {
   IsInternational: boolean;
   IsPreseason: boolean;
   LeagueID: number;
+  IsRevealed: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -2691,6 +2692,7 @@ export class ProfessionalGame {
     this.IsInternational = source["IsInternational"];
     this.IsPreseason = source["IsPreseason"];
     this.LeagueID = source["LeagueID"];
+    this.IsRevealed = source["IsRevealed"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -3042,6 +3044,7 @@ export class CollegeGame {
   AwayTeamShootoutScore: number;
   IsPreseason: boolean;
   LeagueID: number;
+  IsRevealed: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -3089,6 +3092,7 @@ export class CollegeGame {
     this.AwayTeamShootoutScore = source["AwayTeamShootoutScore"];
     this.IsPreseason = source["IsPreseason"];
     this.LeagueID = source["LeagueID"];
+    this.IsRevealed = source["IsRevealed"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
