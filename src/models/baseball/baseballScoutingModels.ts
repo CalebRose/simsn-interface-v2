@@ -272,6 +272,7 @@ export interface ScoutingPlayerResponse {
     potentials?: Record<string, string | null>;
     counting_stats?: CountingStats;
     display_format?: "20-80" | "20-80-fuzzed";
+    displayovr?: string | null;
     visibility: ScoutingVisibility;
     visibility_context?: VisibilityContext;
     contract?: PlayerContract;

@@ -107,6 +107,15 @@ const loadFromSessionCache = (orgId: number): any | null => {
   }
 };
 
+/** Invalidate the session cache for an org so next load fetches fresh data. */
+export const invalidateBootstrapCache = (orgId: number) => {
+  try {
+    sessionStorage.removeItem(`${CACHE_KEY_PREFIX}${orgId}`);
+  } catch {
+    // sessionStorage unavailable — no-op
+  }
+};
+
 // ═══════════════════════════════════════════════
 // Context interface
 // ═══════════════════════════════════════════════
@@ -379,13 +388,15 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
       console.log("[fetchAndMergeRosterLiveData] players:", { count: rosterPlayers.length, sample: rosterPlayers[0] ? { id: rosterPlayers[0].id, stamina: rosterPlayers[0].stamina, has_fatigue_data: rosterPlayers[0].has_fatigue_data, is_injured: rosterPlayers[0].is_injured, listed_position: rosterPlayers[0].listed_position ?? rosterPlayers[0].bio?.listed_position } : null });
       if (rosterPlayers.length === 0) return rosterMap;
 
-      // Build a lookup: player_id → live fields (stamina, fatigue, injury, position)
+      // Build a lookup: player_id → live fields (stamina, fatigue, injury, position, visibility, ovr)
       const liveDataMap = new Map<number, {
         stamina?: number;
         has_fatigue_data?: boolean;
         is_injured?: boolean;
         injury_details?: any[];
         listed_position?: string | null;
+        visibility_context?: any;
+        displayovr?: string | null;
       }>();
       for (const p of rosterPlayers) {
         const pid = p.id ?? p.player_id;
@@ -396,6 +407,8 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
             is_injured: p.is_injured ?? false,
             injury_details: p.injury_details ?? [],
             listed_position: p.listed_position ?? p.bio?.listed_position ?? null,
+            visibility_context: p.visibility_context,
+            displayovr: p.displayovr,
           });
         }
       }
@@ -412,6 +425,8 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
             is_injured: data.is_injured,
             injury_details: data.injury_details,
             ...(data.listed_position != null && { listed_position: data.listed_position }),
+            ...(data.visibility_context != null && { visibility_context: data.visibility_context }),
+            ...(data.displayovr !== undefined && { displayovr: data.displayovr }),
           };
         });
       }

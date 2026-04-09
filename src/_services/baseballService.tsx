@@ -359,12 +359,14 @@ export const BaseballService = {
         playerIds: number[],
         orgId: number,
         leagueYearId: number,
+        mode: "overlay" | "full" = "overlay",
     ): Promise<Record<number, ScoutingPlayerResponse>> => {
         if (playerIds.length === 0) return {};
         const qs = new URLSearchParams();
         qs.set("org_id", String(orgId));
         qs.set("league_year_id", String(leagueYearId));
         qs.set("player_ids", playerIds.join(","));
+        qs.set("mode", mode);
         const response = await GetCall<{ players: Record<string, ScoutingPlayerResponse>; not_found: number[] }>(
             `${baseballUrl}scouting/players/batch?${qs.toString()}`,
         );
