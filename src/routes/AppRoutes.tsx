@@ -8,11 +8,11 @@ function AppRoutes() {
   return (
     <Router basename="/simsn-interface-v2">
       <DeepLinkProvider>
-      <SideMenu />
-      <Routes>
-        {AuthRoutes}
-        {UnAuthRoutes}
-      </Routes>
+        <SideMenu />
+        <Routes>
+          {AuthRoutes}
+          {UnAuthRoutes}
+        </Routes>
       </DeepLinkProvider>
     </Router>
   );
