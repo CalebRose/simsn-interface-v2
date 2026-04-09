@@ -31,7 +31,7 @@ import {
   Contracts,
 } from "../../../_constants/constants";
 import { getLogo } from "../../../_utility/getLogo";
-import { useSimBaseballStore } from "../../../context/SimBaseballContext";
+import { useSimBaseballStore, invalidateBootstrapCache } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
 import {
   displayLevel,
@@ -358,7 +358,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   useEffect(() => {
     if (userOrg?.id && viewedOrgId == null) {
       setIsLoadingOrg(true);
-      loadBootstrapForOrg(userOrg.id).then(processBootstrapResult);
+      loadBootstrapForOrg(userOrg.id).then((data) => handleBootstrapWithScouting(data, userOrg.id));
     }
   }, [userOrg?.id]);
 
@@ -386,6 +386,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     potentialsPrecise: boolean;
     attributesPrecise: boolean;
     displayFormat?: string; // "20-80" | "20-80-fuzzed" | "letter_grade"
+    displayovr?: string | null;
   }
   const [scoutingOverlay, setScoutingOverlay] = useState<
     Map<number, ScoutingOverlayEntry>
@@ -393,7 +394,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   const [scoutingLoading, setScoutingLoading] = useState(false);
   const scoutingLoadedForOrg = useRef<string | null>(null);
   const statsCache = useRef<{
-    orgId: number;
+    orgId: number | "all";
     lyId: number;
     data: PlayerStatsMap;
   } | null>(null);
@@ -429,29 +430,51 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       setScoutingLoading(true);
       try {
         const playerIds = players.map((p) => p.id);
-        const results = await BaseballService.GetScoutedPlayersBatch(
-          playerIds,
-          orgId,
-          lyId,
-        );
+        // Batch endpoint has a 200-player limit — chunk requests
+        const BATCH_SIZE = 200;
         const overlay = new Map<number, ScoutingOverlayEntry>();
-        for (const [idStr, data] of Object.entries(results)) {
-          overlay.set(Number(idStr), {
-            letterGrades: data.letter_grades ?? {},
-            attributes: data.attributes ?? {},
-            potentials: data.potentials ?? {},
-            potentialsPrecise: isPotentialsPrecise(data),
-            attributesPrecise: isAttributesPrecise(data),
-            displayFormat: data.display_format,
-          });
+        for (let i = 0; i < playerIds.length; i += BATCH_SIZE) {
+          const chunk = playerIds.slice(i, i + BATCH_SIZE);
+          const results = await BaseballService.GetScoutedPlayersBatch(
+            chunk,
+            orgId,
+            lyId,
+          );
+          for (const [idStr, data] of Object.entries(results)) {
+            overlay.set(Number(idStr), {
+              letterGrades: data.letter_grades ?? {},
+              attributes: data.attributes ?? {},
+              potentials: data.potentials ?? {},
+              potentialsPrecise: isPotentialsPrecise(data),
+              attributesPrecise: isAttributesPrecise(data),
+              displayFormat: data.display_format,
+              displayovr: data.displayovr,
+            });
+          }
         }
         setScoutingOverlay(overlay);
-      } catch {
-        /* scouting overlay unavailable — bootstrap data is already fuzzed */
+      } catch (err) {
+        console.error("[fetchScoutingOverlay] batch scouting fetch failed:", err);
       }
       setScoutingLoading(false);
     },
     [],
+  );
+
+  // Chain bootstrap load + scouting overlay fetch to avoid race condition.
+  // Uses players from the bootstrap response directly (not stale pageRosterMap state).
+  const handleBootstrapWithScouting = useCallback(
+    (data: any, orgId: number) => {
+      processBootstrapResult(data);
+      if (data?.RosterMap && userOrgId && leagueYearId) {
+        const allPlayers = Object.entries(data.RosterMap as Record<string, any[]>)
+          .flatMap(([, players]) => players.map(normalizePlayer));
+        const cacheKey = `${userOrgId}-${orgId}`;
+        scoutingLoadedForOrg.current = cacheKey;
+        fetchScoutingOverlay(allPlayers, userOrgId, leagueYearId);
+      }
+    },
+    [processBootstrapResult, userOrgId, leagueYearId, fetchScoutingOverlay],
   );
 
   // Fetch scouting budget — always for the user's own org, not the viewed org
@@ -548,6 +571,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
           ...p,
           ratings: isCollege ? convertRatingsToGrades(newRatings) : newRatings,
           potentials: newPotentials,
+          ...(entry.displayovr !== undefined && { displayovr: entry.displayovr }),
           visibility_context: {
             context: isCollege ? "college_roster" : "pro_roster",
             display_format: isCollege ? "letter_grade" : "20-80",
@@ -707,17 +731,21 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       setFilterLevel(defaultLevel);
       setSortConfig(null);
       setCategory(Attributes);
-      scoutingLoadedForOrg.current = null;
       setScoutingOverlay(new Map());
       statsCache.current = null;
       if (optValue === ALL_ORGS) {
+        scoutingLoadedForOrg.current = null;
         setViewedOrgId(ALL_ORGS);
         loadAllOrgPlayers();
       } else {
         const orgId = Number(optValue);
+        // Set guard to the NEW cache key immediately — prevents the scouting
+        // useEffect from racing with handleBootstrapWithScouting by fetching
+        // with stale pageRosterMap (old org's player IDs).
+        scoutingLoadedForOrg.current = `${userOrgId}-${orgId}`;
         setViewedOrgId(orgId === userOrg?.id ? null : optValue);
         setIsLoadingOrg(true);
-        loadBootstrapForOrg(orgId).then(processBootstrapResult);
+        loadBootstrapForOrg(orgId).then((data) => handleBootstrapWithScouting(data, orgId));
       }
     },
     [
@@ -744,6 +772,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
               potentialsPrecise: isPotentialsPrecise(data),
               attributesPrecise: isAttributesPrecise(data),
               displayFormat: data.display_format,
+              displayovr: data.displayovr,
             });
             return next;
           });
@@ -852,7 +881,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         // No patch data (e.g. extension) — force refresh
         const orgId = viewedOrg?.id ?? userOrg?.id;
         if (orgId) {
-          loadBootstrapForOrg(orgId, true).then(processBootstrapResult);
+          loadBootstrapForOrg(orgId, true).then((data) => handleBootstrapWithScouting(data, orgId));
         }
       }
     },
@@ -878,6 +907,9 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
   const handleScoutingConfirmSuccess = useCallback(
     (pointsRemaining?: number) => {
+      // Invalidate stale bootstrap cache so page refresh fetches fresh scouting state
+      invalidateBootstrapCache(userOrgId);
+      if (effectiveOrgId !== userOrgId) invalidateBootstrapCache(effectiveOrgId);
       if (scoutConfirmPlayer) {
         // Refresh player scouting data but skip budget re-fetch — we have it from the response
         refreshPlayerScouting(scoutConfirmPlayer.id, false);
@@ -889,19 +921,19 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         );
       }
     },
-    [scoutConfirmPlayer, refreshPlayerScouting],
+    [scoutConfirmPlayer, refreshPlayerScouting, userOrgId, effectiveOrgId],
   );
 
   // --- Stats fetching (cached per org to avoid re-fetching on category toggle) ---
   useEffect(() => {
-    if (category !== Stats || !leagueYearId || isAllView) {
+    if (category !== Stats || !leagueYearId) {
       return;
     }
-    const orgId = viewedOrg?.id ?? 0;
+    const cacheKey: number | "all" = isAllView ? "all" : (viewedOrg?.id ?? 0);
     // Return cached stats if we already fetched for this org + season
     if (
       statsCache.current &&
-      statsCache.current.orgId === orgId &&
+      statsCache.current.orgId === cacheKey &&
       statsCache.current.lyId === leagueYearId
     ) {
       setPlayerStatsMap(statsCache.current.data);
@@ -911,27 +943,54 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     const fetchStats = async () => {
       setStatsLoading(true);
       try {
-        // Single org-level call replaces per-team loop
-        const [battingRes, pitchingRes] = await Promise.all([
-          BaseballService.GetBattingLeaders({
-            league_year_id: leagueYearId,
-            org_id: orgId,
-            min_pa: 0,
-            page_size: 500,
-          }),
-          BaseballService.GetPitchingLeaders({
-            league_year_id: leagueYearId,
-            org_id: orgId,
-            page_size: 500,
-          }),
-        ]);
         const batting = new Map<number, BattingLeaderRow>();
         const pitching = new Map<number, PitchingLeaderRow>();
-        for (const row of battingRes.leaders) batting.set(row.player_id, row);
-        for (const row of pitchingRes.leaders) pitching.set(row.player_id, row);
+
+        if (isAllView) {
+          // Fetch per-org in parallel to avoid a single huge league-wide query
+          const orgIds = leagueOrgs.map((o) => o.id);
+          const results = await Promise.all(
+            orgIds.map((orgId) =>
+              Promise.all([
+                BaseballService.GetBattingLeaders({
+                  league_year_id: leagueYearId,
+                  org_id: orgId,
+                  min_pa: 0,
+                  page_size: 500,
+                }),
+                BaseballService.GetPitchingLeaders({
+                  league_year_id: leagueYearId,
+                  org_id: orgId,
+                  page_size: 500,
+                }),
+              ])
+            )
+          );
+          for (const [battingRes, pitchingRes] of results) {
+            for (const row of battingRes.leaders) batting.set(row.player_id, row);
+            for (const row of pitchingRes.leaders) pitching.set(row.player_id, row);
+          }
+        } else {
+          const [battingRes, pitchingRes] = await Promise.all([
+            BaseballService.GetBattingLeaders({
+              league_year_id: leagueYearId,
+              org_id: viewedOrg?.id ?? 0,
+              min_pa: 0,
+              page_size: 500,
+            }),
+            BaseballService.GetPitchingLeaders({
+              league_year_id: leagueYearId,
+              org_id: viewedOrg?.id ?? 0,
+              page_size: 500,
+            }),
+          ]);
+          for (const row of battingRes.leaders) batting.set(row.player_id, row);
+          for (const row of pitchingRes.leaders) pitching.set(row.player_id, row);
+        }
+
         const map: PlayerStatsMap = { batting, pitching };
         if (!cancelled) {
-          statsCache.current = { orgId, lyId: leagueYearId, data: map };
+          statsCache.current = { orgId: cacheKey, lyId: leagueYearId, data: map };
           setPlayerStatsMap(map);
         }
       } catch {
@@ -943,7 +1002,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     return () => {
       cancelled = true;
     };
-  }, [category, leagueYearId, viewedOrg, isAllView]);
+  }, [category, leagueYearId, viewedOrg, isAllView, leagueOrgs]);
 
   // --- Roster status (min/max limits per level) ---
   const [rosterStatus, setRosterStatus] = useState<RosterLevelStatus[]>([]);
@@ -954,9 +1013,15 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       return;
     }
     BaseballService.GetRosterStatus(effectiveOrgId)
-      .then(setRosterStatus)
+      .then((data) => {
+        // Pro orgs: levels 4-9, College orgs: level 3 only
+        const filtered = isCollege
+          ? data.filter((rs) => rs.level_id === 3)
+          : data.filter((rs) => rs.level_id >= 4 && rs.level_id <= 9);
+        setRosterStatus(filtered);
+      })
       .catch(() => setRosterStatus([]));
-  }, [effectiveOrgId, isAllView]);
+  }, [effectiveOrgId, isAllView, isCollege]);
 
   // --- Actions renderer for roster tables ---
   const isOwnOrg = !isAllView && viewedOrg?.id === userOrg?.id;
@@ -1032,17 +1097,15 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   );
 
   // --- Derived data ---
-  const allPlayers = useMemo(() => {
-    let players: Player[];
-    if (isAllView) players = allOrgPlayers;
-    else if (Object.keys(pageRosterMap).length > 0)
-      players = Object.values(pageRosterMap).flat();
-    else players = [];
-    // Bootstrap data is now visibility-aware (fuzzed by the backend),
-    // so players are safe to show immediately. The scouting overlay only
-    // upgrades fuzzed → precise after a scouting action.
-    return applyScoutingOverlay(players);
-  }, [isAllView, allOrgPlayers, pageRosterMap, applyScoutingOverlay]);
+  // Compute directly during render — overlay application for ~150 players is trivial.
+  // Previous useMemo/useEffect approaches had stale closure issues where the overlay
+  // was populated but never applied to the rendered player list.
+  let allPlayersRaw: Player[];
+  if (isAllView) allPlayersRaw = allOrgPlayers;
+  else if (Object.keys(pageRosterMap).length > 0)
+    allPlayersRaw = Object.values(pageRosterMap).flat();
+  else allPlayersRaw = [];
+  const allPlayers = applyScoutingOverlay(allPlayersRaw);
 
   const levelTeams = useMemo(() => {
     if (isAllView || !viewedOrg?.teams) return [];
@@ -1677,6 +1740,9 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
           leagueYearId={leagueYearId}
           scoutingBudget={scoutingBudget}
           onBudgetChanged={() => {
+            // Invalidate stale bootstrap cache so page refresh fetches fresh scouting state
+            invalidateBootstrapCache(userOrgId);
+            if (effectiveOrgId !== userOrgId) invalidateBootstrapCache(effectiveOrgId);
             BaseballService.GetScoutingBudget(userOrgId, leagueYearId)
               .then(setScoutingBudget)
               .catch(() => {});

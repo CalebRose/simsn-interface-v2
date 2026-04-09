@@ -32,6 +32,7 @@ import { CollegeBaseballSchedulePage } from "../components/Schedule/BaseballSche
 import { BaseballStatsPage } from "../components/StatsPage/BaseballStats/BaseballStatsPage";
 import { BaseballInjuryPage } from "../components/Team/baseball/BaseballInjuryPage";
 import { PlayoffBracketPage } from "../components/SpecialEvents/BaseballEvents/PlayoffBracketPage";
+import { ConferenceTournamentPage } from "../components/SpecialEvents/BaseballEvents/ConferenceTournamentPage";
 import { AllStarGamePage } from "../components/SpecialEvents/BaseballEvents/AllStarGamePage";
 import { WBCPage } from "../components/SpecialEvents/BaseballEvents/WBCPage";
 import { GameplanPage } from "../components/Gameplan/GameplanPage";
@@ -580,6 +581,15 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <PlayoffBracketPage league={SimCollegeBaseball} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Conference Tournament"
+    path={routes.COLLEGE_BASEBALL_CONF_TOURNAMENT}
+    element={
+      <AuthGuard>
+        <ConferenceTournamentPage />
       </AuthGuard>
     }
   />,

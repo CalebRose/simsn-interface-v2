@@ -385,6 +385,14 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
       {
+        label: "Conf. Tournament",
+        isRoute: true,
+        route: routes.COLLEGE_BASEBALL_CONF_TOURNAMENT,
+        league: SimCollegeBaseball,
+        click: () => navigate(routes.COLLEGE_BASEBALL_CONF_TOURNAMENT),
+        toggle: () => toggleMenu(),
+      },
+      {
         label: "Postseason",
         isRoute: true,
         route: routes.COLLEGE_BASEBALL_PLAYOFFS,
@@ -497,14 +505,14 @@ export const useSideMenu = () => {
         click: () => navigate(routes.MLB_WBC),
         toggle: () => toggleMenu(),
       },
-      // {
-      //   label: "Draft Room",
-      //   isRoute: true,
-      //   route: routes.MLB_DRAFT_ROOM,
-      //   league: SimMLB,
-      //   click: () => navigate(routes.MLB_DRAFT_ROOM),
-      //   toggle: () => toggleMenu(),
-      // },
+      {
+        label: "Draft Room",
+        isRoute: true,
+        route: routes.MLB_DRAFT_ROOM,
+        league: SimMLB,
+        click: () => navigate(routes.MLB_DRAFT_ROOM),
+        toggle: () => toggleMenu(),
+      },
     ],
   };
 

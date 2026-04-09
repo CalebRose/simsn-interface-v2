@@ -6,26 +6,28 @@ import { useAuthStore } from "../../../context/AuthContext";
 import {
   BaseballDraftee,
   BaseballDraftPick,
-  BaseballDraftSigningStatus,
   BaseballDraftTab,
-  DraftBoardResponse,
   DraftPhase,
   DraftTradeProposal,
+  RoundModeConfig,
+  RoundMode,
+  AutoDraftPreferences,
+  EligiblePlayersResponse,
+  DraftInitializeParams,
+  DraftInitializeResponse,
+  AutoRoundsResponse,
 } from "../../../models/baseball/baseballDraftModels";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 
 // ═══════════════════════════════════════════════
-// Draft Board fetch params
+// Eligible players fetch params
 // ═══════════════════════════════════════════════
 
-interface DraftBoardFetchParams {
-  position?: string;
+interface EligibleFetchParams {
+  source?: "college" | "hs";
   search?: string;
-  bat_hand?: string;
-  throw_hand?: string;
-  page?: number;
-  page_size?: number;
-  exclude_drafted?: boolean;
+  limit?: number;
+  offset?: number;
 }
 
 // ═══════════════════════════════════════════════
@@ -34,7 +36,7 @@ interface DraftBoardFetchParams {
 
 export interface UseBaseballDraftReturn {
   // Draft state (from useBaseballDraftState)
-  allPicks: BaseballDraftPick[];
+  boardPicks: BaseballDraftPick[];
   currentPick: BaseballDraftPick | null;
   phase: DraftPhase;
   isPaused: boolean;
@@ -42,18 +44,26 @@ export interface UseBaseballDraftReturn {
   currentRound: number;
   currentPickNumber: number;
   currentOverall: number;
+  currentRoundMode: RoundMode;
+  autoRoundsLocked: boolean;
+  totalRounds: number;
+  picksPerRound: number;
   draftedPlayerIds: Set<number>;
+  isAutoRoundsRunning: boolean;
   isConnected: boolean;
   isLoading: boolean;
   error: string | null;
 
-  // Draft board
-  draftees: BaseballDraftee[];
-  drafteesTotal: number;
-  drafteesPage: number;
-  drafteesPages: number;
-  draftablePlayerMap: Record<number, BaseballDraftee>;
-  fetchDraftBoard: (params: DraftBoardFetchParams) => void;
+  // Round modes
+  roundModes: RoundModeConfig[];
+  refreshRoundModes: () => void;
+
+  // Eligible players
+  eligiblePlayers: BaseballDraftee[];
+  eligibleTotal: number;
+  eligibleLimit: number;
+  eligibleOffset: number;
+  fetchEligiblePlayers: (params: EligibleFetchParams) => void;
 
   // User context
   userOrgId: number | null;
@@ -61,6 +71,7 @@ export interface UseBaseballDraftReturn {
   isAdmin: boolean;
   isUserTurn: boolean;
   leagueYearId: number | null;
+  orgMap: Record<number, string>;
 
   // Scouting
   scoutingBudget: ScoutingBudget | null;
@@ -75,10 +86,18 @@ export interface UseBaseballDraftReturn {
   // Draft actions
   makePick: (playerId: number) => Promise<void>;
 
+  // Auto-draft preferences
+  autoPrefs: AutoDraftPreferences | null;
+  refreshAutoPrefs: () => void;
+  saveAutoPrefs: (prefs: { pitcher_quota?: number; hitter_quota?: number; queue?: number[] }) => Promise<void>;
+
+  // My Picks (org picks)
+  orgPicks: BaseballDraftPick[];
+  refreshOrgPicks: () => void;
+
   // Signing
-  signingStatuses: BaseballDraftSigningStatus[];
-  signPick: (pickId: number, amount: number) => Promise<void>;
-  refreshSigningStatus: () => void;
+  signPick: (pickId: number) => Promise<void>;
+  passPick: (pickId: number) => Promise<void>;
 
   // Trade
   tradeProposals: DraftTradeProposal[];
@@ -92,14 +111,16 @@ export interface UseBaseballDraftReturn {
   rejectTrade: (proposalId: number) => Promise<void>;
 
   // Admin actions
+  initializeDraft: (params: DraftInitializeParams) => Promise<DraftInitializeResponse>;
+  setRoundModes: (modes: Record<string, string>) => Promise<void>;
   startDraft: () => Promise<void>;
   pauseDraft: () => Promise<void>;
   resumeDraft: () => Promise<void>;
   resetTimer: () => Promise<void>;
-  setDraftPick: (round: number, pick: number) => Promise<void>;
-  removePlayerFromPick: (pickId: number) => Promise<void>;
+  runAutoRounds: () => Promise<AutoRoundsResponse>;
   advanceToSigning: () => Promise<void>;
   exportDraft: () => Promise<void>;
+  completeDraft: () => Promise<void>;
 
   // Tab state
   activeTab: BaseballDraftTab;
@@ -117,7 +138,7 @@ export interface UseBaseballDraftReturn {
 
 export function useBaseballDraft(): UseBaseballDraftReturn {
   const { currentUser } = useAuthStore();
-  const { mlbOrganization, seasonContext, allTeams } = useSimBaseballStore();
+  const { mlbOrganization, seasonContext, organizations } = useSimBaseballStore();
 
   // ── User context ──
   const userOrgId = mlbOrganization?.id ?? currentUser?.MLBOrgID ?? null;
@@ -125,10 +146,21 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
   const isAdmin = currentUser?.roleID === "Admin";
   const leagueYearId = seasonContext?.current_league_year_id ?? null;
 
+  // ── Org map for abbreviation lookups ──
+  const orgMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    if (organizations) {
+      for (const org of organizations) {
+        map[org.id] = org.org_abbrev;
+      }
+    }
+    return map;
+  }, [organizations]);
+
   // ── Draft state (WebSocket-driven) ──
   const {
     draftState,
-    allPicks,
+    boardPicks,
     currentPick,
     phase,
     isPaused,
@@ -136,18 +168,27 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     currentRound,
     currentPickNumber,
     currentOverall,
+    currentRoundMode,
+    autoRoundsLocked,
+    totalRounds,
+    picksPerRound,
     draftedPlayerIds,
+    isAutoRoundsRunning,
     isConnected,
     isLoading,
     error,
     refetchState,
+    refetchBoard,
   } = useBaseballDraftState(leagueYearId);
 
-  // ── Draft board state ──
-  const [draftees, setDraftees] = useState<BaseballDraftee[]>([]);
-  const [drafteesTotal, setDrafteesTotal] = useState(0);
-  const [drafteesPage, setDrafteesPage] = useState(1);
-  const [drafteesPages, setDrafteesPages] = useState(1);
+  // ── Round modes ──
+  const [roundModes, setRoundModes] = useState<RoundModeConfig[]>([]);
+
+  // ── Eligible players state ──
+  const [eligiblePlayers, setEligiblePlayers] = useState<BaseballDraftee[]>([]);
+  const [eligibleTotal, setEligibleTotal] = useState(0);
+  const [eligibleLimit, setEligibleLimit] = useState(50);
+  const [eligibleOffset, setEligibleOffset] = useState(0);
 
   // ── Scouting ──
   const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
@@ -156,8 +197,11 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
   const [scoutModalPlayerId, setScoutModalPlayerId] = useState<number | null>(null);
   const isScoutModalOpen = scoutModalPlayerId !== null;
 
-  // ── Signing ──
-  const [signingStatuses, setSigningStatuses] = useState<BaseballDraftSigningStatus[]>([]);
+  // ── Auto-draft preferences ──
+  const [autoPrefs, setAutoPrefs] = useState<AutoDraftPreferences | null>(null);
+
+  // ── Org picks ──
+  const [orgPicks, setOrgPicks] = useState<BaseballDraftPick[]>([]);
 
   // ── Trades ──
   const [tradeProposals, setTradeProposals] = useState<DraftTradeProposal[]>([]);
@@ -166,39 +210,42 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
   const [activeTab, setActiveTab] = useState<BaseballDraftTab>("bigboard");
 
   // ═══════════════════════════════════════════════
-  // Draft board
+  // Round modes
   // ═══════════════════════════════════════════════
 
-  const fetchDraftBoard = useCallback(
-    (params: DraftBoardFetchParams) => {
-      if (!leagueYearId) return;
-      BaseballService.GetDraftBoard(leagueYearId, {
-        position: params.position,
-        search: params.search,
-        bat_hand: params.bat_hand,
-        throw_hand: params.throw_hand,
-        page: params.page,
-        page_size: params.page_size,
-        exclude_drafted: params.exclude_drafted,
-      })
-        .then((res: DraftBoardResponse) => {
-          setDraftees(res.players);
-          setDrafteesTotal(res.total);
-          setDrafteesPage(res.page);
-          setDrafteesPages(res.pages);
-        })
-        .catch((err) => console.error("Failed to fetch draft board:", err));
-    },
-    [leagueYearId],
-  );
+  const refreshRoundModes = useCallback(() => {
+    if (!leagueYearId) return;
+    BaseballService.GetRoundModes(leagueYearId)
+      .then((res) => setRoundModes(res.rounds))
+      .catch((err) => console.error("Failed to fetch round modes:", err));
+  }, [leagueYearId]);
 
-  const draftablePlayerMap = useMemo(() => {
-    const map: Record<number, BaseballDraftee> = {};
-    for (const d of draftees) {
-      map[d.player_id] = d;
-    }
-    return map;
-  }, [draftees]);
+  // ═══════════════════════════════════════════════
+  // Eligible players
+  // ═══════════════════════════════════════════════
+
+  const fetchEligiblePlayers = useCallback(
+    (params: EligibleFetchParams) => {
+      if (!leagueYearId) return;
+      BaseballService.GetEligiblePlayers({
+        league_year_id: leagueYearId,
+        available_only: true,
+        source: params.source,
+        search: params.search,
+        viewing_org_id: userOrgId ?? undefined,
+        limit: params.limit ?? 50,
+        offset: params.offset ?? 0,
+      })
+        .then((res: EligiblePlayersResponse) => {
+          setEligiblePlayers(res.players);
+          setEligibleTotal(res.total);
+          setEligibleLimit(res.limit);
+          setEligibleOffset(res.offset);
+        })
+        .catch((err) => console.error("Failed to fetch eligible players:", err));
+    },
+    [leagueYearId, userOrgId],
+  );
 
   // ═══════════════════════════════════════════════
   // Scouting budget
@@ -229,36 +276,72 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
 
   const makePick = useCallback(
     async (playerId: number) => {
-      if (!currentPick) return;
+      if (!leagueYearId || !userOrgId) return;
       await BaseballService.MakeDraftPick({
-        pick_id: currentPick.id,
+        league_year_id: leagueYearId,
+        org_id: userOrgId,
         player_id: playerId,
       });
-      // State updates will come through WebSocket
+      // State updates come through WebSocket
     },
-    [currentPick],
+    [leagueYearId, userOrgId],
   );
+
+  // ═══════════════════════════════════════════════
+  // Auto-draft preferences
+  // ═══════════════════════════════════════════════
+
+  const refreshAutoPrefs = useCallback(() => {
+    if (!userOrgId || !leagueYearId) return;
+    BaseballService.GetAutoPrefs(userOrgId, leagueYearId)
+      .then((prefs) => setAutoPrefs(prefs))
+      .catch((err) => console.error("Failed to fetch auto prefs:", err));
+  }, [userOrgId, leagueYearId]);
+
+  const saveAutoPrefs = useCallback(
+    async (prefs: { pitcher_quota?: number; hitter_quota?: number; queue?: number[] }) => {
+      if (!userOrgId || !leagueYearId) return;
+      await BaseballService.SetAutoPrefs({
+        league_year_id: leagueYearId,
+        org_id: userOrgId,
+        ...prefs,
+      });
+      refreshAutoPrefs();
+    },
+    [userOrgId, leagueYearId, refreshAutoPrefs],
+  );
+
+  // ═══════════════════════════════════════════════
+  // Org picks (My Picks)
+  // ═══════════════════════════════════════════════
+
+  const refreshOrgPicks = useCallback(() => {
+    if (!userOrgId || !leagueYearId) return;
+    BaseballService.GetOrgPicks(userOrgId, leagueYearId)
+      .then((picks) => setOrgPicks(picks))
+      .catch((err) => console.error("Failed to fetch org picks:", err));
+  }, [userOrgId, leagueYearId]);
 
   // ═══════════════════════════════════════════════
   // Signing
   // ═══════════════════════════════════════════════
 
-  const refreshSigningStatus = useCallback(() => {
-    if (!leagueYearId || !userOrgId) return;
-    BaseballService.GetSigningStatus(leagueYearId, userOrgId)
-      .then((statuses) => setSigningStatuses(statuses))
-      .catch((err) => console.error("Failed to fetch signing statuses:", err));
-  }, [leagueYearId, userOrgId]);
-
   const signPick = useCallback(
-    async (pickId: number, amount: number) => {
-      await BaseballService.SignDraftPick({
-        pick_id: pickId,
-        offered_amount: amount,
-      });
-      refreshSigningStatus();
+    async (pickId: number) => {
+      if (!leagueYearId) return;
+      await BaseballService.SignDraftPick(pickId, leagueYearId);
+      refreshOrgPicks();
     },
-    [refreshSigningStatus],
+    [leagueYearId, refreshOrgPicks],
+  );
+
+  const passPick = useCallback(
+    async (pickId: number) => {
+      if (!leagueYearId) return;
+      await BaseballService.PassDraftPick(pickId, leagueYearId);
+      refreshOrgPicks();
+    },
+    [leagueYearId, refreshOrgPicks],
   );
 
   // ═══════════════════════════════════════════════
@@ -295,9 +378,9 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     async (proposalId: number) => {
       await BaseballService.AcceptDraftTrade(proposalId);
       refreshTradeProposals();
-      refetchState();
+      refetchBoard();
     },
-    [refreshTradeProposals, refetchState],
+    [refreshTradeProposals, refetchBoard],
   );
 
   const rejectTrade = useCallback(
@@ -311,6 +394,25 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
   // ═══════════════════════════════════════════════
   // Admin actions
   // ═══════════════════════════════════════════════
+
+  const initializeDraft = useCallback(
+    async (params: DraftInitializeParams) => {
+      return await BaseballService.InitializeDraft(params);
+    },
+    [],
+  );
+
+  const setRoundModesAdmin = useCallback(
+    async (modes: Record<string, string>) => {
+      if (!leagueYearId) return;
+      await BaseballService.SetRoundModes({
+        league_year_id: leagueYearId,
+        round_modes: modes,
+      });
+      refreshRoundModes();
+    },
+    [leagueYearId, refreshRoundModes],
+  );
 
   const startDraft = useCallback(async () => {
     if (!leagueYearId) return;
@@ -332,22 +434,10 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     await BaseballService.ResetDraftTimer(leagueYearId);
   }, [leagueYearId]);
 
-  const setDraftPickAdmin = useCallback(
-    async (round: number, pick: number) => {
-      if (!leagueYearId) return;
-      await BaseballService.SetDraftPick({
-        league_year_id: leagueYearId,
-        round,
-        pick_number: pick,
-      });
-    },
-    [leagueYearId],
-  );
-
-  const removePlayerFromPick = useCallback(async (pickId: number) => {
-    await BaseballService.RemovePlayerFromPick(pickId);
-    refetchState();
-  }, [refetchState]);
+  const runAutoRounds = useCallback(async () => {
+    if (!leagueYearId) return { picks_made: 0, picks: [] } as AutoRoundsResponse;
+    return await BaseballService.RunAutoRounds(leagueYearId);
+  }, [leagueYearId]);
 
   const advanceToSigning = useCallback(async () => {
     if (!leagueYearId) return;
@@ -359,44 +449,53 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     await BaseballService.ExportDraft(leagueYearId);
   }, [leagueYearId]);
 
+  const completeDraft = useCallback(async () => {
+    if (!leagueYearId) return;
+    await BaseballService.CompleteDraft(leagueYearId);
+  }, [leagueYearId]);
+
   // ═══════════════════════════════════════════════
   // Computed picks
   // ═══════════════════════════════════════════════
 
   const isUserTurn =
-    currentPick?.org_id === userOrgId &&
-    phase === "drafting" &&
-    !isPaused;
+    currentPick?.current_org_id === userOrgId &&
+    phase === "IN_PROGRESS" &&
+    currentRoundMode === "live";
 
   const upcomingPicks = useMemo(() => {
-    return allPicks
-      .filter((p) => p.overall_pick > currentOverall)
+    return boardPicks
+      .filter((p) => p.overall_pick > currentOverall && p.player_id == null)
       .slice(0, 5);
-  }, [allPicks, currentOverall]);
+  }, [boardPicks, currentOverall]);
 
   const recentPicks = useMemo(() => {
-    return allPicks
-      .filter(
-        (p) =>
-          p.overall_pick < currentOverall && p.selected_player_id != null,
-      )
+    return boardPicks
+      .filter((p) => p.overall_pick < currentOverall && p.player_id != null)
       .slice(-10);
-  }, [allPicks, currentOverall]);
+  }, [boardPicks, currentOverall]);
 
   const teamPicks = useMemo(() => {
-    return allPicks.filter((p) => p.org_id === userOrgId);
-  }, [allPicks, userOrgId]);
+    return boardPicks.filter((p) => p.current_org_id === userOrgId);
+  }, [boardPicks, userOrgId]);
 
   // ═══════════════════════════════════════════════
   // Effects
   // ═══════════════════════════════════════════════
 
-  // On mount: fetch draft board page 1
+  // On mount: fetch eligible players page 1
   useEffect(() => {
     if (leagueYearId) {
-      fetchDraftBoard({ page: 1 });
+      fetchEligiblePlayers({ offset: 0 });
     }
-  }, [leagueYearId, fetchDraftBoard]);
+  }, [leagueYearId, fetchEligiblePlayers]);
+
+  // On mount: fetch round modes
+  useEffect(() => {
+    if (leagueYearId) {
+      refreshRoundModes();
+    }
+  }, [leagueYearId, refreshRoundModes]);
 
   // On mount: fetch scouting budget if user has org
   useEffect(() => {
@@ -405,12 +504,26 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     }
   }, [userOrgId, leagueYearId, refreshScoutingBudget]);
 
-  // When phase changes to signing: fetch signing statuses
+  // On mount: fetch auto prefs if user has org
   useEffect(() => {
-    if (phase === "signing") {
-      refreshSigningStatus();
+    if (userOrgId && leagueYearId) {
+      refreshAutoPrefs();
     }
-  }, [phase, refreshSigningStatus]);
+  }, [userOrgId, leagueYearId, refreshAutoPrefs]);
+
+  // When phase changes to SIGNING: fetch org picks
+  useEffect(() => {
+    if (phase === "SIGNING" || phase === "COMPLETE") {
+      refreshOrgPicks();
+    }
+  }, [phase, refreshOrgPicks]);
+
+  // When tab changes to mypicks: fetch org picks
+  useEffect(() => {
+    if (activeTab === "mypicks") {
+      refreshOrgPicks();
+    }
+  }, [activeTab, refreshOrgPicks]);
 
   // ═══════════════════════════════════════════════
   // Return
@@ -418,7 +531,7 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
 
   return {
     // Draft state
-    allPicks,
+    boardPicks,
     currentPick,
     phase,
     isPaused,
@@ -426,18 +539,26 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     currentRound,
     currentPickNumber,
     currentOverall,
+    currentRoundMode,
+    autoRoundsLocked,
+    totalRounds,
+    picksPerRound,
     draftedPlayerIds,
+    isAutoRoundsRunning,
     isConnected,
     isLoading,
     error,
 
-    // Draft board
-    draftees,
-    drafteesTotal,
-    drafteesPage,
-    drafteesPages,
-    draftablePlayerMap,
-    fetchDraftBoard,
+    // Round modes
+    roundModes,
+    refreshRoundModes,
+
+    // Eligible players
+    eligiblePlayers,
+    eligibleTotal,
+    eligibleLimit,
+    eligibleOffset,
+    fetchEligiblePlayers,
 
     // User context
     userOrgId,
@@ -445,6 +566,7 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     isAdmin,
     isUserTurn,
     leagueYearId,
+    orgMap,
 
     // Scouting
     scoutingBudget,
@@ -459,10 +581,18 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     // Draft actions
     makePick,
 
+    // Auto-draft preferences
+    autoPrefs,
+    refreshAutoPrefs,
+    saveAutoPrefs,
+
+    // Org picks
+    orgPicks,
+    refreshOrgPicks,
+
     // Signing
-    signingStatuses,
     signPick,
-    refreshSigningStatus,
+    passPick,
 
     // Trade
     tradeProposals,
@@ -472,14 +602,16 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     rejectTrade,
 
     // Admin actions
+    initializeDraft,
+    setRoundModes: setRoundModesAdmin,
     startDraft,
     pauseDraft,
     resumeDraft,
     resetTimer,
-    setDraftPick: setDraftPickAdmin,
-    removePlayerFromPick,
+    runAutoRounds,
     advanceToSigning,
     exportDraft,
+    completeDraft,
 
     // Tab state
     activeTab,
