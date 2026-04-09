@@ -178,6 +178,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     }
     if ((isDesktop || isTablet) && category === Promises) {
       columns = columns.concat([
+        { header: "Transfer Likeliness", accessor: "TransferLikeliness" },
         { header: "Promise Type", accessor: "PromiseType" },
         { header: "Promise Weight", accessor: "PromiseWeight" },
         { header: "Benchmark", accessor: "Benchmark" },
@@ -474,6 +475,11 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         )}
         {category == Promises && isDesktop && (
           <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.TransferLikeliness ? item.TransferLikeliness : "N/A"}
+              </Text>
+            </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {hasPromise ? collegePromise.PromiseType : "No Promise"}
@@ -1426,6 +1432,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
     }
     if (isDesktop && category === Promises) {
       columns = columns.concat([
+        { header: "Transfer Likeliness", accessor: "TransferLikeliness" },
         { header: "Promise Type", accessor: "PromiseType" },
         { header: "Promise Weight", accessor: "PromiseWeight" },
         { header: "Benchmark", accessor: "Benchmark" },
@@ -1526,6 +1533,11 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
         ))}
         {category == Promises && isDesktop && (
           <>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {item.TransferLikeliness ? item.TransferLikeliness : "N/A"}
+              </Text>
+            </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {hasPromise ? collegePromise.PromiseType : "No Promise"}

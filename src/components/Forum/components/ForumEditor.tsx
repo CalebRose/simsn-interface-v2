@@ -457,6 +457,13 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
           <u>U</u>
         </TBtn>
         <TBtn
+          title="Strikethrough"
+          onClick={() => editor?.chain().focus().toggleStrike().run()}
+          active={editor?.isActive("strike")}
+        >
+          <s>S</s>
+        </TBtn>
+        <TBtn
           title="Inline code"
           onClick={() => editor?.chain().focus().toggleCode().run()}
           active={editor?.isActive("code")}

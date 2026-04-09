@@ -82,17 +82,12 @@ export const ThreadPage: React.FC = () => {
       .catch(console.error);
   }, [activeThread?.referencedGameId]);
 
-  const forumSlug = activeThread?.forumPath?.[0] ?? "";
   const crumbs = [
     { label: "Forums", href: routes.FORUMS },
-    ...(forumSlug
-      ? [
-          {
-            label: forumSlug.toUpperCase(),
-            href: `${routes.FORUMS}/${forumSlug}`,
-          },
-        ]
-      : []),
+    ...(activeThread?.forumPath ?? []).map((slug, i, arr) => ({
+      label: slug.toUpperCase(),
+      href: `${routes.FORUMS}/${arr.slice(0, i + 1).join("/")}`,
+    })),
     { label: activeThread?.title ?? "Thread" },
   ];
 

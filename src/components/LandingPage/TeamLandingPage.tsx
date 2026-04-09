@@ -23,6 +23,7 @@ import {
   TeamNews,
   TeamQuickLinks,
   TeamInjuries,
+  ForumPortal,
 } from "./TeamLandingPageComponents";
 import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
@@ -554,28 +555,24 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
               )}
               <div className="flex flex-row gap-[1vw] md:gap-2 h-[14em] w-full max-h-[14em] md:max-h-max lg:gap-0 lg:flex-col">
                 <Border
-                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[30vh] 3xl:max-h-[30vh]"
+                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
                   styles={{
                     backgroundColor: borderColor,
                     borderColor: backgroundColor,
                   }}
                 >
-                  <TeamMailbox
+                  <ForumPortal
                     team={team}
-                    notifications={teamNotifications}
+                    league={league}
                     backgroundColor={backgroundColor}
                     headerColor={headerColor}
                     borderColor={borderColor}
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
-                    isLoading={isLoading}
-                    toggleNotificationAsRead={toggleNotificationAsRead}
-                    deleteNotification={deleteNotification}
-                    league={league}
                   />
                 </Border>
                 <Border
-                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:h-[25vh] lg:h-[22em] md:max-h-[25vh] lg:max-h-[22em] 3xl:h-[30em] 3xl:max-h-[30em]"
+                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
                   styles={{
                     backgroundColor: borderColor,
                     borderColor: backgroundColor,
@@ -584,12 +581,12 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   <TeamNews
                     team={team}
                     teamNews={teamNews}
+                    isLoading={isLoading}
                     backgroundColor={backgroundColor}
                     headerColor={headerColor}
                     borderColor={borderColor}
                     textColorClass={textColorClass}
                     darkerBackgroundColor={darkerBackgroundColor}
-                    isLoading={isLoading}
                   />
                 </Border>
               </div>

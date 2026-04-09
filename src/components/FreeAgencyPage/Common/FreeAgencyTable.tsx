@@ -308,16 +308,8 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
     }
     const actionVariant = !teamOfferMap[item.ID] ? "success" : "secondary";
 
-    const disableAddButton = useMemo(() => {
-      if (!!teamOfferMap[item.ID]) {
-        return true;
-      }
-      if (item.IsAffiliatePlayer && item.Year <= 3) {
-        return true;
-      }
-
-      return false;
-    }, [teamOfferMap, item]);
+    const disableAddButton =
+      !!teamOfferMap[item.ID] || (item.IsAffiliatePlayer && item.Year <= 3);
 
     return (
       <div
