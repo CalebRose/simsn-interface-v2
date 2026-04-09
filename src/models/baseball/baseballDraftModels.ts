@@ -1,45 +1,91 @@
 // ═══════════════════════════════════════════════
-// Baseball Draft Pick
+// Draft Phase
 // ═══════════════════════════════════════════════
 
-export interface BaseballDraftPick {
-  id: number;
+export type DraftPhase = "SETUP" | "IN_PROGRESS" | "PAUSED" | "SIGNING" | "COMPLETE";
+
+// ═══════════════════════════════════════════════
+// Round Modes
+// ═══════════════════════════════════════════════
+
+export type RoundMode = "live" | "auto";
+
+export interface RoundModeConfig {
   round: number;
-  pick_number: number;         // 1-30 within round
-  overall_pick: number;        // 1-150 overall
-  org_id: number;
-  org_abbrev: string;
-  original_org_id: number;     // for traded picks
-  original_org_abbrev: string;
-  selected_player_id: number | null;
-  selected_player_name: string | null;
-  selected_player_position: string | null;
-  selected_player_college: string | null;
-  selected_player_college_abbrev: string | null;
-  slot_value: number;          // $ slot value for this pick
+  mode: RoundMode;
 }
 
 // ═══════════════════════════════════════════════
-// Baseball Draftee (available player)
+// Draft State (from GET /draft/state)
+// ═══════════════════════════════════════════════
+
+export interface BaseballDraftState {
+  league_year_id: number;
+  phase: DraftPhase;
+  current_round: number;
+  current_pick: number;            // 1-30 within round
+  total_rounds: number;
+  picks_per_round: number;
+  seconds_per_pick: number;
+  is_snake: boolean;
+  pick_deadline_at: string | null; // ISO timestamp, null when paused/auto
+  seconds_remaining: number | null;
+  current_round_mode: RoundMode;
+  auto_rounds_locked: boolean;
+}
+
+// ═══════════════════════════════════════════════
+// Draft Pick (from GET /draft/board)
+// ═══════════════════════════════════════════════
+
+export type SignStatus = "pending" | "signed" | "passed" | "refused";
+
+export interface BaseballDraftPick {
+  pick_id: number;
+  round: number;
+  pick_in_round: number;
+  overall_pick: number;
+  original_org_id: number;
+  current_org_id: number;
+  player_id: number | null;
+  player_name: string | null;
+  picked_at: string | null;
+  is_auto_pick: boolean;
+  slot_value: number;
+  sign_status: SignStatus | null;
+}
+
+// ═══════════════════════════════════════════════
+// Draft Board Response (GET /draft/board)
+// ═══════════════════════════════════════════════
+
+export interface DraftBoardResponse {
+  picks: BaseballDraftPick[];
+}
+
+// ═══════════════════════════════════════════════
+// Eligible Players (from GET /draft/eligible)
 // ═══════════════════════════════════════════════
 
 export interface BaseballDraftee {
   player_id: number;
-  // Legacy flat fields (kept for backward compat during migration)
   first_name: string;
   last_name: string;
-  position: string;
   age: number;
-  college_team: string;
-  college_abbrev: string;
-  height: number;              // inches
-  weight: number;              // pounds
-  bat_hand: string;            // L | R | S
-  throw_hand: string;          // L | R
-  overall_grade: string | null;    // letter grade from scouting
-  draft_rank: number | null;       // consensus rank
+  source: "college" | "hs";
+  draft_rank: number | null;
+  composite_score: number | null;
+  star_rating: number | null;
+  pitcher_role: string | null;
+  position: string;
+  height: number;
+  weight: number;
+  bat_hand: string;
+  throw_hand: string;
+  overall_grade: string | null;
   is_draft_eligible: boolean;
-  // New unified player shape
+  college_team?: string;
+  college_abbrev?: string;
   bio?: {
     firstname: string;
     lastname: string;
@@ -58,8 +104,10 @@ export interface BaseballDraftee {
     pitch4_name: string | null;
     pitch5_name: string | null;
   };
-  ratings?: Record<string, any>;
+  attributes?: Record<string, any>;
   potentials?: Record<string, any>;
+  letter_grades?: Record<string, any>;
+  ratings?: Record<string, any>;
   scouting?: {
     unlocked: string[];
     attrs_precise: boolean;
@@ -68,66 +116,132 @@ export interface BaseballDraftee {
   };
 }
 
-// ═══════════════════════════════════════════════
-// Draft State
-// ═══════════════════════════════════════════════
-
-export type DraftPhase = "pre_draft" | "drafting" | "signing" | "complete";
-
-export interface BaseballDraftState {
+export interface EligiblePlayersParams {
   league_year_id: number;
-  current_round: number;
-  current_pick: number;           // 1-30 within round
-  current_overall: number;        // 1-150
-  is_paused: boolean;
-  seconds_remaining: number;
-  end_time: string;               // ISO timestamp
-  phase: DraftPhase;
-  all_picks: BaseballDraftPick[];  // flat array of 150 picks
-}
-
-// ═══════════════════════════════════════════════
-// Draft Signing
-// ═══════════════════════════════════════════════
-
-export type SigningStatus = "unsigned" | "offered" | "signed" | "refused";
-
-export interface BaseballDraftSigningStatus {
-  pick_id: number;
-  overall_pick: number;
-  player_id: number;
-  player_name: string;
-  slot_value: number;
-  offered_amount: number | null;
-  status: SigningStatus;
-  signed_amount: number | null;
-}
-
-// ═══════════════════════════════════════════════
-// Draft Board Response
-// ═══════════════════════════════════════════════
-
-export interface DraftBoardParams {
-  league_year_id: number;
-  position?: string;
+  available_only?: boolean;
+  source?: "college" | "hs";
   search?: string;
-  bat_hand?: string;
-  throw_hand?: string;
-  page?: number;
-  page_size?: number;
-  exclude_drafted?: boolean;
+  viewing_org_id?: number;
+  limit?: number;
+  offset?: number;
 }
 
-export interface DraftBoardResponse {
+export interface EligiblePlayersResponse {
   players: BaseballDraftee[];
   total: number;
-  page: number;
-  pages: number;
+  limit: number;
+  offset: number;
+}
+
+// ═══════════════════════════════════════════════
+// Draft Initialize (POST /draft/admin/initialize)
+// ═══════════════════════════════════════════════
+
+export interface DraftInitializeParams {
+  league_year_id: number;
+  total_rounds?: number;
+  seconds_per_pick?: number;
+  is_snake?: boolean;
+  live_rounds?: number[];
+}
+
+export interface DraftInitializeResponse {
+  league_year_id: number;
+  total_rounds: number;
+  picks_per_round: number;
+  total_picks: number;
+  eligible_players: number;
+  draft_order: number[];
+  live_rounds: number[];
+}
+
+// ═══════════════════════════════════════════════
+// Making a Pick (POST /draft/pick)
+// ═══════════════════════════════════════════════
+
+export interface MakePickRequest {
+  league_year_id: number;
+  org_id: number;
+  player_id: number;
+}
+
+export interface MakePickResponse {
+  pick_id: number;
+  round: number;
+  pick_in_round: number;
+  overall_pick: number;
+  org_id: number;
+  player_id: number;
+  player_name: string;
+  is_auto_pick: boolean;
+  draft_complete: boolean;
+  auto_round_next: boolean;
+}
+
+// ═══════════════════════════════════════════════
+// Auto-Draft Preferences
+// ═══════════════════════════════════════════════
+
+export interface AutoDraftQueueEntry {
+  player_id: number;
+  priority: number;
+}
+
+export interface AutoDraftPreferences {
+  org_id: number;
+  pitcher_quota: number;
+  hitter_quota: number;
+  locked: boolean;
+  queue: AutoDraftQueueEntry[];
+}
+
+export interface SetAutoPrefsRequest {
+  league_year_id: number;
+  org_id: number;
+  pitcher_quota?: number;
+  hitter_quota?: number;
+  queue?: number[];
+}
+
+// ═══════════════════════════════════════════════
+// Auto Rounds (POST /draft/admin/run-auto-rounds)
+// ═══════════════════════════════════════════════
+
+export interface AutoRoundsResponse {
+  picks_made: number;
+  picks: MakePickResponse[];
+}
+
+// ═══════════════════════════════════════════════
+// Signing (POST /draft/sign/{pick_id})
+// ═══════════════════════════════════════════════
+
+export interface SignPickResponse {
+  transaction_id: number;
+  contract_id: number;
+  player_id: number;
+  player_name: string;
+  org_id: number;
+  slot_value: number;
+  years: number;
+}
+
+export interface PassPickResponse {
+  draft_pick_id: number;
+  status: "passed";
 }
 
 // ═══════════════════════════════════════════════
 // Draft Trade
 // ═══════════════════════════════════════════════
+
+export interface DraftTradeRequest {
+  league_year_id: number;
+  pick_id: number;
+  from_org_id: number;
+  to_org_id: number;
+  trade_proposal_id?: number | null;
+}
 
 export interface DraftTradeProposal {
   id: number;
@@ -136,38 +250,28 @@ export interface DraftTradeProposal {
   proposing_org_abbrev: string;
   receiving_org_id: number;
   receiving_org_abbrev: string;
-  picks_offered: number[];       // pick IDs
-  picks_requested: number[];     // pick IDs
+  picks_offered: number[];
+  picks_requested: number[];
   status: "pending" | "accepted" | "rejected";
   created_at: string;
 }
 
 // ═══════════════════════════════════════════════
-// Websocket Message Types
+// WebSocket Message Types
 // ═══════════════════════════════════════════════
 
 export type BaseballDraftWSMessage =
-  | { type: "draft_state"; data: BaseballDraftState }
-  | { type: "draft_pick_made"; data: DraftPickMadeData }
-  | { type: "draft_timer_update"; data: { seconds_remaining: number; end_time: string } }
-  | { type: "draft_paused"; data: { is_paused: boolean } }
-  | { type: "draft_phase_change"; data: { phase: DraftPhase } }
-  | { type: "draft_signing_update"; data: BaseballDraftSigningStatus };
-
-export interface DraftPickMadeData {
-  pick: BaseballDraftPick;
-  current_round: number;
-  current_pick: number;
-  current_overall: number;
-  seconds_remaining: number;
-  end_time: string;
-}
+  | { type: "draft_state_change"; phase: DraftPhase; current_round: number; current_pick: number }
+  | { type: "draft_pick_made"; pick_id: number; round: number; pick_in_round: number; overall_pick: number; org_id: number; player_id: number; player_name: string; is_auto_pick: boolean; draft_complete: boolean; auto_round_next: boolean }
+  | { type: "draft_trade_completed"; round: number; pick_in_round: number; from_org_id: number; to_org_id: number }
+  | { type: "auto_rounds_started"; league_year_id: number; starting_round: number }
+  | { type: "auto_rounds_completed"; league_year_id: number; picks_made: number };
 
 // ═══════════════════════════════════════════════
 // Constants & Helpers
 // ═══════════════════════════════════════════════
 
-export const ROUNDS = 5;
+export const ROUNDS = 20;
 export const PICKS_PER_ROUND = 30;
 export const TOTAL_PICKS = ROUNDS * PICKS_PER_ROUND;
 
@@ -184,12 +288,6 @@ export const BASEBALL_DRAFT_POSITIONS = [
   { value: "SP", label: "Starting Pitcher" },
   { value: "RP", label: "Relief Pitcher" },
 ];
-
-export const getBaseballDraftTimerSeconds = (round: number): number => {
-  if (round === 1) return 300;
-  if (round <= 3) return 180;
-  return 120;
-};
 
 export const formatDraftTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
@@ -211,8 +309,10 @@ export const formatSlotValue = (value: number): string => {
 
 export type BaseballDraftTab =
   | "bigboard"
-  | "draftboard"
+  | "eligible"
   | "scouting"
   | "warroom"
+  | "preferences"
+  | "mypicks"
   | "signing"
   | "admin";

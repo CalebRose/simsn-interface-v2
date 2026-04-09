@@ -71,6 +71,7 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
     potentialsPrecise: boolean;
     attributesPrecise: boolean;
     displayFormat?: string;
+    displayovr?: string | null;
   }
   const [scoutingOverlay, setScoutingOverlay] = useState<
     Map<number, ScoutingOverlayEntry>
@@ -118,6 +119,7 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
               potentialsPrecise: isPotentialsPrecise(data),
               attributesPrecise: isAttributesPrecise(data),
               displayFormat: data.display_format,
+              displayovr: data.displayovr,
             },
           ]);
         }
@@ -128,8 +130,8 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
             return next;
           });
         }
-      } catch {
-        /* scouting overlay unavailable — bootstrap data is already fuzzed */
+      } catch (err) {
+        console.error("[fetchScoutingOverlay] batch scouting fetch failed:", err);
       }
     },
     [],
@@ -205,6 +207,7 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
           ...p,
           ratings: newRatings,
           potentials: newPotentials,
+          ...(entry.displayovr !== undefined && { displayovr: entry.displayovr }),
           visibility_context: {
             context: isCollege
               ? ("college_roster" as const)

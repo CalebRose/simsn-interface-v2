@@ -576,7 +576,7 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
         let cancelled = false;
         const load = async () => {
             try {
-                const raw = await BaseballService.GetAllRosters();
+                const raw = await BaseballService.GetAllRosters(userOrg?.id);
                 if (cancelled) return;
                 const rostersArray: BaseballRosters[] = Array.isArray(raw)
                     ? raw

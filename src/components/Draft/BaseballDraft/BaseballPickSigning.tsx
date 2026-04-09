@@ -1,68 +1,56 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
-  BaseballDraftSigningStatus,
+  BaseballDraftPick,
   formatSlotValue,
+  SignStatus,
 } from "../../../models/baseball/baseballDraftModels";
 import "../../Team/baseball/baseballMobile.css";
 
 interface BaseballPickSigningProps {
-  signingStatuses: BaseballDraftSigningStatus[];
-  onSignPick: (pickId: number, amount: number) => Promise<void>;
+  orgPicks: BaseballDraftPick[];
+  orgMap: Record<number, string>;
+  onSignPick: (pickId: number) => Promise<void>;
+  onPassPick: (pickId: number) => Promise<void>;
   onRefresh: () => void;
   userOrgAbbrev: string;
 }
 
 const statusColors: Record<string, string> = {
   signed: "bg-green-600 text-green-100",
-  offered: "bg-yellow-600 text-yellow-100",
+  passed: "bg-yellow-600 text-yellow-100",
   refused: "bg-red-600 text-red-100",
-  unsigned: "bg-gray-600 text-gray-200",
+  pending: "bg-gray-600 text-gray-200",
 };
 
 const BaseballPickSigning: React.FC<BaseballPickSigningProps> = ({
-  signingStatuses,
+  orgPicks,
+  orgMap,
   onSignPick,
+  onPassPick,
   onRefresh,
   userOrgAbbrev,
 }) => {
-  const [signingPickId, setSigningPickId] = useState<number | null>(null);
-  const [signAmount, setSignAmount] = useState<number>(0);
-  const [submitting, setSubmitting] = useState(false);
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const budget = useMemo(() => {
-    const totalPool = signingStatuses.reduce((sum, s) => sum + s.slot_value, 0);
-    const spent = signingStatuses
-      .filter((s) => s.status === "signed")
-      .reduce((sum, s) => sum + (s.signed_amount ?? 0), 0);
-    return { totalPool, spent, remaining: totalPool - spent };
-  }, [signingStatuses]);
+  // Only show picks with selected players
+  const picksWithPlayers = orgPicks.filter((p) => p.player_id != null);
 
-  const signingPick = signingStatuses.find((s) => s.pick_id === signingPickId) ?? null;
+  // Budget summary
+  const totalPool = picksWithPlayers.reduce((sum, p) => sum + p.slot_value, 0);
+  const signedPicks = picksWithPlayers.filter((p) => p.sign_status === "signed");
+  const spent = signedPicks.reduce((sum, p) => sum + p.slot_value, 0);
+  const remaining = totalPool - spent;
 
-  const openSignModal = (status: BaseballDraftSigningStatus) => {
-    setSigningPickId(status.pick_id);
-    setSignAmount(status.slot_value);
-    setError(null);
-  };
-
-  const closeSignModal = () => {
-    setSigningPickId(null);
-    setSignAmount(0);
-    setError(null);
-  };
-
-  const handleSign = async () => {
-    if (!signingPickId) return;
-    setSubmitting(true);
+  const runAction = async (pickId: number, action: () => Promise<void>) => {
+    setActionLoading(pickId);
     setError(null);
     try {
-      await onSignPick(signingPickId, signAmount);
-      closeSignModal();
+      await action();
     } catch (err: any) {
-      setError(err?.message || "Failed to sign player.");
+      setError(err?.message || "Action failed");
     } finally {
-      setSubmitting(false);
+      setActionLoading(null);
     }
   };
 
@@ -79,24 +67,28 @@ const BaseballPickSigning: React.FC<BaseballPickSigningProps> = ({
         </button>
       </div>
 
+      {error && (
+        <div className="rounded bg-red-900/50 px-4 py-2 text-sm text-red-300">{error}</div>
+      )}
+
       {/* Budget Summary */}
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded border border-gray-700 bg-gray-800 p-4 text-center">
           <p className="text-xs text-gray-400">Total Pool</p>
           <p className="text-lg font-bold text-white">
-            {formatSlotValue(budget.totalPool)}
+            {formatSlotValue(totalPool)}
           </p>
         </div>
         <div className="rounded border border-gray-700 bg-gray-800 p-4 text-center">
-          <p className="text-xs text-gray-400">Spent</p>
+          <p className="text-xs text-gray-400">Signed</p>
           <p className="text-lg font-bold text-green-400">
-            {formatSlotValue(budget.spent)}
+            {formatSlotValue(spent)}
           </p>
         </div>
         <div className="rounded border border-gray-700 bg-gray-800 p-4 text-center">
           <p className="text-xs text-gray-400">Remaining</p>
           <p className="text-lg font-bold text-blue-400">
-            {formatSlotValue(budget.remaining)}
+            {formatSlotValue(remaining)}
           </p>
         </div>
       </div>
@@ -109,121 +101,64 @@ const BaseballPickSigning: React.FC<BaseballPickSigningProps> = ({
               <th className="px-3 py-2">Round</th>
               <th className="px-3 py-2">Pick</th>
               <th className="px-3 py-2">Player</th>
-              <th className="px-3 py-2">Position</th>
               <th className="px-3 py-2">Slot Value</th>
-              <th className="px-3 py-2">Offered</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {signingStatuses.map((s) => {
-              const round = Math.ceil(s.overall_pick / 30);
-              const pick = s.overall_pick % 30 || 30;
-              return (
-                <tr
-                  key={s.pick_id}
-                  className="border-b border-gray-800 hover:bg-gray-800/60"
-                >
-                  <td className="px-3 py-2">{round}</td>
-                  <td className="px-3 py-2">{pick}</td>
-                  <td className="px-3 py-2 font-medium">{s.player_name}</td>
-                  <td className="px-3 py-2">
-                    <span className="rounded bg-gray-700 px-1.5 py-0.5 text-xs font-mono">
-                      —
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">{formatSlotValue(s.slot_value)}</td>
-                  <td className="px-3 py-2">
-                    {s.offered_amount !== null
-                      ? formatSlotValue(s.offered_amount)
-                      : "—"}
-                  </td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`rounded px-2 py-0.5 text-xs font-medium ${
-                        statusColors[s.status] || statusColors.unsigned
-                      }`}
-                    >
-                      {s.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">
-                    {s.status === "unsigned" && (
+            {picksWithPlayers.map((p) => (
+              <tr
+                key={p.pick_id}
+                className="border-b border-gray-800 hover:bg-gray-800/60"
+              >
+                <td className="px-3 py-2">{p.round}</td>
+                <td className="px-3 py-2">{p.pick_in_round}</td>
+                <td className="px-3 py-2 font-medium">{p.player_name}</td>
+                <td className="px-3 py-2">{formatSlotValue(p.slot_value)}</td>
+                <td className="px-3 py-2">
+                  <span
+                    className={`rounded px-2 py-0.5 text-xs font-medium ${
+                      statusColors[p.sign_status ?? "pending"] || statusColors.pending
+                    }`}
+                  >
+                    {p.sign_status ?? "pending"}
+                  </span>
+                </td>
+                <td className="px-3 py-2">
+                  {(p.sign_status === "pending" || p.sign_status == null) && (
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => openSignModal(s)}
-                        className="rounded bg-blue-600 px-3 py-1 text-xs font-medium hover:bg-blue-500"
+                        onClick={() => runAction(p.pick_id, () => onSignPick(p.pick_id))}
+                        disabled={actionLoading === p.pick_id}
+                        className="rounded bg-green-600 px-3 py-1 text-xs font-medium hover:bg-green-500 disabled:opacity-50"
                       >
-                        Sign
+                        {actionLoading === p.pick_id ? "..." : "Sign"}
                       </button>
-                    )}
-                    {s.status === "offered" && (
-                      <span className="text-xs text-yellow-400">Pending...</span>
-                    )}
-                    {s.status === "signed" && (
-                      <span className="text-green-400">&#10003;</span>
-                    )}
-                    {s.status === "refused" && (
-                      <span className="text-gray-500">—</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
+                      <button
+                        onClick={() => runAction(p.pick_id, () => onPassPick(p.pick_id))}
+                        disabled={actionLoading === p.pick_id}
+                        className="rounded bg-gray-600 px-3 py-1 text-xs font-medium hover:bg-gray-500 disabled:opacity-50"
+                      >
+                        Pass
+                      </button>
+                    </div>
+                  )}
+                  {p.sign_status === "signed" && (
+                    <span className="text-green-400">&#10003;</span>
+                  )}
+                  {p.sign_status === "passed" && (
+                    <span className="text-gray-500">Passed</span>
+                  )}
+                  {p.sign_status === "refused" && (
+                    <span className="text-red-400">Refused</span>
+                  )}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
-
-      {/* Signing Modal */}
-      {signingPick && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="w-full max-w-sm rounded-lg border border-gray-700 bg-gray-900 p-6 text-white shadow-xl">
-            <h3 className="mb-4 text-lg font-bold">Sign Player</h3>
-
-            <div className="mb-3">
-              <p className="text-sm text-gray-400">Player</p>
-              <p className="font-medium">{signingPick.player_name}</p>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-sm text-gray-400">Slot Value</p>
-              <p className="font-medium">{formatSlotValue(signingPick.slot_value)}</p>
-            </div>
-
-            <div className="mb-4">
-              <label className="mb-1 block text-sm text-gray-400">Amount ($)</label>
-              <input
-                type="number"
-                value={signAmount}
-                onChange={(e) => setSignAmount(Number(e.target.value))}
-                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-white"
-              />
-            </div>
-
-            {error && (
-              <div className="mb-3 rounded bg-red-900/50 px-3 py-2 text-sm text-red-300">
-                {error}
-              </div>
-            )}
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={closeSignModal}
-                className="rounded bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSign}
-                disabled={submitting}
-                className="rounded bg-green-600 px-4 py-2 text-sm font-medium hover:bg-green-500 disabled:opacity-50"
-              >
-                {submitting ? "Signing..." : "Sign Player"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

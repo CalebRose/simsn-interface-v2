@@ -606,6 +606,14 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
     return map;
   }, [boardPlayers]);
 
+  // Build competitor list, prepending own team when the org has invested,
+  // sorted alphabetically by team name
+  const teamNameMap = useMemo(() => {
+    const m = new Map<number, string>();
+    allTeams.forEach((t) => m.set(t.team_id, t.team_full_name));
+    return m;
+  }, [allTeams]);
+
   const th = "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap";
   const td = "px-2 py-1";
 
@@ -616,14 +624,6 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
       </PageContainer>
     );
   }
-
-  // Build competitor list, prepending own team when the org has invested,
-  // sorted alphabetically by team name
-  const teamNameMap = useMemo(() => {
-    const m = new Map<number, string>();
-    allTeams.forEach((t) => m.set(t.team_id, t.team_full_name));
-    return m;
-  }, [allTeams]);
 
   const myTeamId = primaryTeam?.team_id;
   const getCompetitorIds = (ids: number[] | undefined | null, hasOwnPoints: boolean) => {

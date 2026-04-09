@@ -5,14 +5,13 @@ import {
   BaseballDraftState,
   BaseballDraftPick,
   BaseballDraftWSMessage,
-  BaseballDraftSigningStatus,
   DraftPhase,
-  DraftPickMadeData,
+  RoundMode,
 } from "../../../models/baseball/baseballDraftModels";
 
-interface UseBaseballDraftStateReturn {
+export interface UseBaseballDraftStateReturn {
   draftState: BaseballDraftState | null;
-  allPicks: BaseballDraftPick[];
+  boardPicks: BaseballDraftPick[];
   currentPick: BaseballDraftPick | null;
   phase: DraftPhase;
   isPaused: boolean;
@@ -20,53 +19,70 @@ interface UseBaseballDraftStateReturn {
   currentRound: number;
   currentPickNumber: number;
   currentOverall: number;
+  currentRoundMode: RoundMode;
+  autoRoundsLocked: boolean;
+  totalRounds: number;
+  picksPerRound: number;
   draftedPlayerIds: Set<number>;
+  isAutoRoundsRunning: boolean;
   isConnected: boolean;
   isLoading: boolean;
   error: string | null;
   refetchState: () => Promise<void>;
+  refetchBoard: () => Promise<void>;
 }
 
 export const useBaseballDraftState = (
   leagueYearId: number | null,
 ): UseBaseballDraftStateReturn => {
   const [draftState, setDraftState] = useState<BaseballDraftState | null>(null);
+  const [boardPicks, setBoardPicks] = useState<BaseballDraftPick[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
+  const [isAutoRoundsRunning, setIsAutoRoundsRunning] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const endTimeRef = useRef<Date | null>(null);
 
   // Compute derived state
-  const allPicks = draftState?.all_picks ?? [];
-  const phase: DraftPhase = draftState?.phase ?? "pre_draft";
-  const isPaused = draftState?.is_paused ?? true;
+  const phase: DraftPhase = draftState?.phase ?? "SETUP";
+  const isPaused = phase === "PAUSED";
   const currentRound = draftState?.current_round ?? 1;
   const currentPickNumber = draftState?.current_pick ?? 1;
-  const currentOverall = draftState?.current_overall ?? 1;
+  const currentOverall = ((currentRound - 1) * (draftState?.picks_per_round ?? 30)) + currentPickNumber;
+  const currentRoundMode: RoundMode = draftState?.current_round_mode ?? "live";
+  const autoRoundsLocked = draftState?.auto_rounds_locked ?? false;
+  const totalRounds = draftState?.total_rounds ?? 20;
+  const picksPerRound = draftState?.picks_per_round ?? 30;
 
   const currentPick =
-    allPicks.find((p) => p.overall_pick === currentOverall) ?? null;
+    boardPicks.find(
+      (p) => p.round === currentRound && p.pick_in_round === currentPickNumber,
+    ) ?? null;
 
   const draftedPlayerIds = new Set(
-    allPicks
-      .filter((p) => p.selected_player_id != null)
-      .map((p) => p.selected_player_id!),
+    boardPicks
+      .filter((p) => p.player_id != null)
+      .map((p) => p.player_id!),
   );
 
-  // Client-side countdown timer
-  const startCountdown = useCallback((endTimeStr: string) => {
+  // Client-side countdown timer using pick_deadline_at
+  const startCountdown = useCallback((deadlineIso: string) => {
     if (timerRef.current) clearInterval(timerRef.current);
-    const endTime = new Date(endTimeStr);
-    endTimeRef.current = endTime;
+    const deadline = new Date(deadlineIso);
 
     const tick = () => {
       const now = new Date();
-      const diff = Math.max(0, Math.floor((endTime.getTime() - now.getTime()) / 1000));
+      const diff = Math.max(0, Math.floor((deadline.getTime() - now.getTime()) / 1000));
       setSecondsRemaining(diff);
+      if (diff <= 0) {
+        clearInterval(timerRef.current!);
+        timerRef.current = null;
+        // Server handles auto-pick on timer expiry; refetch state after short delay
+        setTimeout(() => refetchState(), 2000);
+      }
     };
 
     tick();
@@ -80,141 +96,163 @@ export const useBaseballDraftState = (
     }
   }, []);
 
-  // Fetch initial state
+  // Manage timer based on state
+  const syncTimer = useCallback(
+    (state: BaseballDraftState) => {
+      if (
+        state.phase === "IN_PROGRESS" &&
+        state.current_round_mode === "live" &&
+        state.pick_deadline_at
+      ) {
+        startCountdown(state.pick_deadline_at);
+      } else {
+        stopCountdown();
+        setSecondsRemaining(state.seconds_remaining ?? 0);
+      }
+    },
+    [startCountdown, stopCountdown],
+  );
+
+  // Fetch state from API
   const refetchState = useCallback(async () => {
     if (!leagueYearId) return;
     try {
-      setIsLoading(true);
       const state = await BaseballService.GetDraftState(leagueYearId);
       setDraftState(state);
-      if (state.end_time && !state.is_paused && state.phase === "drafting") {
-        startCountdown(state.end_time);
-      } else {
-        setSecondsRemaining(state.seconds_remaining ?? 0);
-      }
+      syncTimer(state);
       setError(null);
     } catch (err) {
       setError("Failed to load draft state");
       console.error("Draft state fetch error:", err);
-    } finally {
-      setIsLoading(false);
     }
-  }, [leagueYearId, startCountdown]);
+  }, [leagueYearId, syncTimer]);
 
-  // Handle websocket messages
+  // Fetch board (picks) from API
+  const refetchBoard = useCallback(async () => {
+    if (!leagueYearId) return;
+    try {
+      const res = await BaseballService.GetDraftBoard(leagueYearId);
+      setBoardPicks(res.picks);
+    } catch (err) {
+      console.error("Draft board fetch error:", err);
+    }
+  }, [leagueYearId]);
+
+  // Handle WebSocket messages
   const handleWSMessage = useCallback(
     (msg: BaseballDraftWSMessage) => {
       switch (msg.type) {
-        case "draft_state":
-          setDraftState(msg.data);
-          if (msg.data.end_time && !msg.data.is_paused && msg.data.phase === "drafting") {
-            startCountdown(msg.data.end_time);
-          } else {
-            setSecondsRemaining(msg.data.seconds_remaining ?? 0);
-            stopCountdown();
-          }
+        case "draft_state_change": {
+          // Refetch full state since phase/round changed
+          refetchState();
           break;
+        }
 
         case "draft_pick_made": {
-          const d = msg.data as DraftPickMadeData;
-          setDraftState((prev) => {
-            if (!prev) return prev;
-            const updatedPicks = prev.all_picks.map((p) =>
-              p.id === d.pick.id ? d.pick : p,
-            );
-            return {
-              ...prev,
-              all_picks: updatedPicks,
-              current_round: d.current_round,
-              current_pick: d.current_pick,
-              current_overall: d.current_overall,
-              seconds_remaining: d.seconds_remaining,
-              end_time: d.end_time,
+          // Update the specific pick in the board
+          setBoardPicks((prev) => {
+            const idx = prev.findIndex((p) => p.pick_id === msg.pick_id);
+            if (idx === -1) return prev;
+            const updated = [...prev];
+            updated[idx] = {
+              ...updated[idx],
+              player_id: msg.player_id,
+              player_name: msg.player_name,
+              is_auto_pick: msg.is_auto_pick,
+              picked_at: new Date().toISOString(),
             };
+            return updated;
           });
-          if (d.end_time) {
-            startCountdown(d.end_time);
+
+          // If draft is complete or auto round is next, refetch state
+          if (msg.draft_complete || msg.auto_round_next) {
+            refetchState();
+          } else {
+            // Advance state to next pick — refetch for accurate timer
+            refetchState();
           }
           break;
         }
 
-        case "draft_timer_update":
-          setDraftState((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  seconds_remaining: msg.data.seconds_remaining,
-                  end_time: msg.data.end_time,
-                }
-              : prev,
-          );
-          if (msg.data.end_time) {
-            startCountdown(msg.data.end_time);
-          }
+        case "draft_trade_completed": {
+          // Pick ownership changed — refetch full board
+          refetchBoard();
           break;
+        }
 
-        case "draft_paused":
-          setDraftState((prev) =>
-            prev ? { ...prev, is_paused: msg.data.is_paused } : prev,
-          );
-          if (msg.data.is_paused) {
-            stopCountdown();
-          } else if (draftState?.end_time) {
-            startCountdown(draftState.end_time);
-          }
+        case "auto_rounds_started": {
+          setIsAutoRoundsRunning(true);
+          stopCountdown();
           break;
+        }
 
-        case "draft_phase_change":
-          setDraftState((prev) =>
-            prev ? { ...prev, phase: msg.data.phase } : prev,
-          );
-          if (msg.data.phase !== "drafting") {
-            stopCountdown();
-          }
+        case "auto_rounds_completed": {
+          setIsAutoRoundsRunning(false);
+          refetchBoard();
+          refetchState();
           break;
-
-        case "draft_signing_update":
-          // Signing updates are handled at the useBaseballDraft level
-          break;
+        }
       }
     },
-    [startCountdown, stopCountdown, draftState?.end_time],
+    [refetchState, refetchBoard, stopCountdown],
   );
 
-  // Connect websocket
+  // Initial load + WebSocket connection
   useEffect(() => {
     if (!leagueYearId) return;
 
-    refetchState();
+    const init = async () => {
+      setIsLoading(true);
+      try {
+        const [state, board] = await Promise.all([
+          BaseballService.GetDraftState(leagueYearId),
+          BaseballService.GetDraftBoard(leagueYearId),
+        ]);
+        setDraftState(state);
+        setBoardPicks(board.picks);
+        syncTimer(state);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load draft state");
+        console.error("Draft init error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
+    init();
+
+    // Connect WebSocket
     const ws = new WebSocket(baseball_ws);
     wsRef.current = ws;
 
     ws.onopen = () => {
       setIsConnected(true);
-      console.log("Baseball Draft WebSocket connected");
     };
 
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // Only handle draft-related messages
-        if (data.type && data.type.startsWith("draft_")) {
+        if (data.type && data.type.startsWith("draft_") || data.type === "auto_rounds_started" || data.type === "auto_rounds_completed") {
           handleWSMessage(data as BaseballDraftWSMessage);
         }
       } catch {
-        // Ignore non-JSON or non-draft messages (e.g., timestamp messages)
+        // Ignore non-JSON or non-draft messages
       }
     };
 
-    ws.onerror = (err) => {
-      console.error("Baseball Draft WebSocket error:", err);
+    ws.onerror = () => {
       setIsConnected(false);
     };
 
     ws.onclose = () => {
       setIsConnected(false);
-      console.log("Baseball Draft WebSocket closed");
+      // Reconnect after delay
+      setTimeout(() => {
+        if (wsRef.current === ws) {
+          // Will reconnect on next effect cycle or manual reconnect
+        }
+      }, 3000);
     };
 
     return () => {
@@ -226,7 +264,7 @@ export const useBaseballDraftState = (
 
   return {
     draftState,
-    allPicks,
+    boardPicks,
     currentPick,
     phase,
     isPaused,
@@ -234,10 +272,16 @@ export const useBaseballDraftState = (
     currentRound,
     currentPickNumber,
     currentOverall,
+    currentRoundMode,
+    autoRoundsLocked,
+    totalRounds,
+    picksPerRound,
     draftedPlayerIds,
+    isAutoRoundsRunning,
     isConnected,
     isLoading,
     error,
     refetchState,
+    refetchBoard,
   };
 };

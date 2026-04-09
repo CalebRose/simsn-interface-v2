@@ -12,6 +12,7 @@ interface BaseballWarRoomProps {
   currentOverall: number;
   userOrgId: number | null;
   userOrgAbbrev: string;
+  orgMap: Record<number, string>;
   tradeProposals: DraftTradeProposal[];
   onProposeTrade: (
     receivingOrgId: number,
@@ -30,6 +31,7 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
   currentOverall,
   userOrgId,
   userOrgAbbrev,
+  orgMap,
   tradeProposals,
   onProposeTrade,
   onAcceptTrade,
@@ -55,7 +57,7 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
 
   const partnerPicks = useMemo(() => {
     if (!partnerOrgId) return [];
-    return allPicks.filter((p) => p.org_id === partnerOrgId);
+    return allPicks.filter((p) => p.current_org_id === partnerOrgId);
   }, [allPicks, partnerOrgId]);
 
   const togglePickOffered = (pickId: number) => {
@@ -112,9 +114,9 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
   };
 
   const getPickLabel = (pickId: number): string => {
-    const pick = allPicks.find((p) => p.id === pickId);
+    const pick = allPicks.find((p) => p.pick_id === pickId);
     if (!pick) return `Pick #${pickId}`;
-    return `Rd ${pick.round} Pick ${pick.pick_number} (#${pick.overall_pick})`;
+    return `Rd ${pick.round} Pick ${pick.pick_in_round} (#${pick.overall_pick})`;
   };
 
   return (
@@ -134,8 +136,9 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
         <div className="grid grid-cols-4 gap-3">
           {teamPicks.map((pick) => (
             <BaseballDraftPickCard
-              key={pick.id}
+              key={pick.pick_id}
               pick={pick}
+              orgMap={orgMap}
               isCurrent={pick.overall_pick === currentOverall}
               isUserPick
               size="sm"
@@ -276,15 +279,15 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
               <div className="flex flex-wrap gap-2">
                 {teamPicks.map((pick) => (
                   <button
-                    key={pick.id}
-                    onClick={() => togglePickOffered(pick.id)}
+                    key={pick.pick_id}
+                    onClick={() => togglePickOffered(pick.pick_id)}
                     className={`rounded border px-2 py-1 text-xs ${
-                      picksOffered.includes(pick.id)
+                      picksOffered.includes(pick.pick_id)
                         ? "border-blue-500 bg-blue-600 text-white"
                         : "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700"
                     }`}
                   >
-                    Rd {pick.round} #{pick.pick_number}
+                    Rd {pick.round} #{pick.pick_in_round}
                   </button>
                 ))}
               </div>
@@ -297,15 +300,15 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
                 <div className="flex flex-wrap gap-2">
                   {partnerPicks.map((pick) => (
                     <button
-                      key={pick.id}
-                      onClick={() => togglePickRequested(pick.id)}
+                      key={pick.pick_id}
+                      onClick={() => togglePickRequested(pick.pick_id)}
                       className={`rounded border px-2 py-1 text-xs ${
-                        picksRequested.includes(pick.id)
+                        picksRequested.includes(pick.pick_id)
                           ? "border-blue-500 bg-blue-600 text-white"
                           : "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700"
                       }`}
                     >
-                      Rd {pick.round} #{pick.pick_number}
+                      Rd {pick.round} #{pick.pick_in_round}
                     </button>
                   ))}
                 </div>
