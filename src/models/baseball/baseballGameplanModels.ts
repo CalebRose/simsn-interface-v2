@@ -36,6 +36,19 @@ export interface OrgPlayerStrategiesResponse {
   strategies: PlayerStrategy[];
 }
 
+// Per-row error returned by the bulk player-strategies PUT.
+// Backend returns 400 with { error: "validation_failed", details: [...] }
+// for both validation failures and ownership rejections.
+export interface PlayerStrategyValidationDetail {
+  player_id: number;
+  field: string;
+  message: string;
+}
+
+export interface PlayerStrategyBatchSaveRequest {
+  strategies: Array<Partial<PlayerStrategy> & { player_id: number }>;
+}
+
 export interface TeamStrategy {
   team_id: number;
   outfield_spacing: OutfieldSpacing;

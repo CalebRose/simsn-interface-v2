@@ -72,9 +72,12 @@ import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { displayLevel } from "../../_utility/baseballHelpers";
 import { BaseballService } from "../../_services/baseballService";
 import {
-  InjuryHistoryItem,
+  PlayerInjuryHistoryEvent,
   PositionUsageRow,
   PlayerStatsResponse,
+  PlayerGamelogResponse,
+  PlayerCareerResponse,
+  PlayerSplitsResponse,
 } from "../../models/baseball/baseballStatsModels";
 import { tagData } from "../../_constants/tagData";
 import { Button, ButtonGrid } from "../../_design/Buttons";
@@ -3500,7 +3503,7 @@ export const BaseballPlayerInfoModalBody: FC<
     useSimBaseballStore();
 
   // Injury history
-  const [injuryHistory, setInjuryHistory] = useState<InjuryHistoryItem[]>([]);
+  const [injuryHistory, setInjuryHistory] = useState<PlayerInjuryHistoryEvent[]>([]);
   const [injuryLoading, setInjuryLoading] = useState(false);
 
   // Position usage
@@ -3513,13 +3516,30 @@ export const BaseballPlayerInfoModalBody: FC<
   );
   const [statsLoading, setStatsLoading] = useState(false);
 
+  // Sub-tab within Statistics
+  const [statsSubTab, setStatsSubTab] = useState<
+    "Season" | "Game Log" | "Career" | "Splits"
+  >("Season");
+
+  // Game log
+  const [gamelog, setGamelog] = useState<PlayerGamelogResponse | null>(null);
+  const [gamelogLoading, setGamelogLoading] = useState(false);
+
+  // Career
+  const [career, setCareer] = useState<PlayerCareerResponse | null>(null);
+  const [careerLoading, setCareerLoading] = useState(false);
+
+  // Splits
+  const [splits, setSplits] = useState<PlayerSplitsResponse | null>(null);
+  const [splitsLoading, setSplitsLoading] = useState(false);
+
   useEffect(() => {
     if (selectedTab !== "Injuries") return;
     let cancelled = false;
     const load = async () => {
       setInjuryLoading(true);
       try {
-        const data = await BaseballService.GetInjuryHistory({
+        const data = await BaseballService.GetPlayerInjuryHistory({
           player_id: player.id,
         });
         if (!cancelled) setInjuryHistory(data.events);
@@ -3577,6 +3597,68 @@ export const BaseballPlayerInfoModalBody: FC<
       cancelled = true;
     };
   }, [selectedTab, player.id, seasonContext?.current_league_year_id]);
+
+  // Game log fetch
+  useEffect(() => {
+    if (selectedTab !== "Statistics" || statsSubTab !== "Game Log") return;
+    if (!seasonContext?.current_league_year_id) return;
+    let cancelled = false;
+    const load = async () => {
+      setGamelogLoading(true);
+      try {
+        const data = await BaseballService.GetPlayerGamelog(
+          player.id,
+          seasonContext.current_league_year_id,
+        );
+        if (!cancelled) setGamelog(data);
+      } catch {
+        if (!cancelled) setGamelog(null);
+      }
+      if (!cancelled) setGamelogLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [selectedTab, statsSubTab, player.id, seasonContext?.current_league_year_id]);
+
+  // Career fetch
+  useEffect(() => {
+    if (selectedTab !== "Statistics" || statsSubTab !== "Career") return;
+    let cancelled = false;
+    const load = async () => {
+      setCareerLoading(true);
+      try {
+        const data = await BaseballService.GetPlayerCareer(player.id);
+        if (!cancelled) setCareer(data);
+      } catch {
+        if (!cancelled) setCareer(null);
+      }
+      if (!cancelled) setCareerLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [selectedTab, statsSubTab, player.id]);
+
+  // Splits fetch
+  useEffect(() => {
+    if (selectedTab !== "Statistics" || statsSubTab !== "Splits") return;
+    if (!seasonContext?.current_league_year_id) return;
+    let cancelled = false;
+    const load = async () => {
+      setSplitsLoading(true);
+      try {
+        const data = await BaseballService.GetPlayerSplits(
+          player.id,
+          seasonContext.current_league_year_id,
+        );
+        if (!cancelled) setSplits(data);
+      } catch {
+        if (!cancelled) setSplits(null);
+      }
+      if (!cancelled) setSplitsLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [selectedTab, statsSubTab, player.id, seasonContext?.current_league_year_id]);
 
   const heightObj = HeightToFeetAndInches(player.height);
   // Look up the player's team from allTeams (works for ANY org, not just the user's)
@@ -4013,8 +4095,10 @@ export const BaseballPlayerInfoModalBody: FC<
                 <thead>
                   <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
                     <th className="px-2 py-1 text-left">Injury</th>
-                    <th className="px-2 py-1 text-center">Assigned</th>
-                    <th className="px-2 py-1 text-center">Remaining</th>
+                    <th className="px-2 py-1 text-center">Source</th>
+                    <th className="px-2 py-1 text-center">Wk</th>
+                    <th className="px-2 py-1 text-center">Duration</th>
+                    <th className="px-2 py-1 text-center">Status</th>
                     <th className="px-2 py-1 text-left">Date</th>
                   </tr>
                 </thead>
@@ -4026,23 +4110,37 @@ export const BaseballPlayerInfoModalBody: FC<
                     >
                       <td className="px-2 py-1.5">{evt.injury_name}</td>
                       <td className="px-2 py-1.5 text-center">
-                        {evt.weeks_assigned}w
+                        <span
+                          className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                            evt.source === "pregame"
+                              ? "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                              : "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                          }`}
+                        >
+                          {evt.source === "pregame" ? "Pre" : "In"}
+                        </span>
+                      </td>
+                      <td className="px-2 py-1.5 text-center text-gray-500">
+                        {evt.season_week}{evt.season_subweek ?? ""}
+                      </td>
+                      <td className="px-2 py-1.5 text-center">
+                        {evt.weeks_remaining > 0
+                          ? `${evt.weeks_remaining}/${evt.weeks_assigned}w`
+                          : `${evt.weeks_assigned}w`}
                       </td>
                       <td className="px-2 py-1.5 text-center">
                         <span
                           className={
-                            evt.weeks_remaining > 0
+                            evt.status === "active"
                               ? "text-red-600 dark:text-red-400 font-semibold"
                               : "text-green-600 dark:text-green-400"
                           }
                         >
-                          {evt.weeks_remaining > 0
-                            ? `${evt.weeks_remaining}w`
-                            : "Healed"}
+                          {evt.status === "active" ? "Active" : "Healed"}
                         </span>
                       </td>
-                      <td className="px-2 py-1.5 text-gray-500">
-                        {evt.created_at}
+                      <td className="px-2 py-1.5 text-gray-500 whitespace-nowrap">
+                        {evt.created_at?.split("T")[0] ?? evt.created_at}
                       </td>
                     </tr>
                   ))}
@@ -4053,234 +4151,590 @@ export const BaseballPlayerInfoModalBody: FC<
         )}
 
         {selectedTab === "Statistics" && (
-          <div className="w-full space-y-4">
-            {statsLoading ? (
-              <Text variant="small" classes="text-gray-400 py-4 text-center">
-                Loading statistics...
-              </Text>
-            ) : !playerStats ? (
-              <Text variant="small" classes="text-gray-400 py-4 text-center">
-                No statistics available.
-              </Text>
-            ) : (
-              <>
-                {/* Batting Stats */}
-                {playerStats.batting && playerStats.batting.length > 0 && (
-                  <div>
-                    <Text variant="small" classes="font-semibold mb-2">
-                      Batting
-                    </Text>
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse text-xs">
-                        <thead>
-                          <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-                            <th className="px-1.5 py-1 text-left">Team</th>
-                            <th className="px-1.5 py-1 text-center">G</th>
-                            <th className="px-1.5 py-1 text-center">AB</th>
-                            <th className="px-1.5 py-1 text-center">R</th>
-                            <th className="px-1.5 py-1 text-center">H</th>
-                            <th className="px-1.5 py-1 text-center">2B</th>
-                            <th className="px-1.5 py-1 text-center">3B</th>
-                            <th className="px-1.5 py-1 text-center">HR</th>
-                            <th className="px-1.5 py-1 text-center">RBI</th>
-                            <th className="px-1.5 py-1 text-center">BB</th>
-                            <th className="px-1.5 py-1 text-center">SO</th>
-                            <th className="px-1.5 py-1 text-center">SB</th>
-                            <th className="px-1.5 py-1 text-center">AVG</th>
-                            <th className="px-1.5 py-1 text-center">OBP</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {playerStats.batting.map((s, i) => (
-                            <tr
-                              key={i}
-                              className="border-b border-gray-100 dark:border-gray-700"
-                            >
-                              <td className="px-1.5 py-1 font-medium">
-                                {s.team_abbrev}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">{s.g}</td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.ab}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">{s.r}</td>
-                              <td className="px-1.5 py-1 text-center">{s.h}</td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s["2b"]}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s["3b"]}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.hr}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.rbi}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.bb}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.so}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.sb}
-                              </td>
-                              <td className="px-1.5 py-1 text-center font-semibold">
-                                {s.avg}
-                              </td>
-                              <td className="px-1.5 py-1 text-center font-semibold">
-                                {s.obp}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+          <div className="w-full space-y-3">
+            {/* Statistics sub-tabs */}
+            <div className="flex gap-1 border-b border-gray-200 dark:border-gray-600 pb-1">
+              {(["Season", "Game Log", "Career", "Splits"] as const).map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setStatsSubTab(st)}
+                  className={`px-3 py-1 text-xs rounded-t font-medium transition-colors ${
+                    statsSubTab === st
+                      ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
 
-                {/* Pitching Stats */}
-                {playerStats.pitching && playerStats.pitching.length > 0 && (
-                  <div>
-                    <Text variant="small" classes="font-semibold mb-2">
-                      Pitching
-                    </Text>
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse text-xs">
-                        <thead>
-                          <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-                            <th className="px-1.5 py-1 text-left">Team</th>
-                            <th className="px-1.5 py-1 text-center">G</th>
-                            <th className="px-1.5 py-1 text-center">GS</th>
-                            <th className="px-1.5 py-1 text-center">W</th>
-                            <th className="px-1.5 py-1 text-center">L</th>
-                            <th className="px-1.5 py-1 text-center">SV</th>
-                            <th className="px-1.5 py-1 text-center">HLD</th>
-                            <th className="px-1.5 py-1 text-center">BS</th>
-                            <th className="px-1.5 py-1 text-center">QS</th>
-                            <th className="px-1.5 py-1 text-center">IP</th>
-                            <th className="px-1.5 py-1 text-center">H</th>
-                            <th className="px-1.5 py-1 text-center">ER</th>
-                            <th className="px-1.5 py-1 text-center">BB</th>
-                            <th className="px-1.5 py-1 text-center">SO</th>
-                            <th className="px-1.5 py-1 text-center">ERA</th>
-                            <th className="px-1.5 py-1 text-center">WHIP</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {playerStats.pitching.map((s, i) => (
-                            <tr
-                              key={i}
-                              className="border-b border-gray-100 dark:border-gray-700"
-                            >
-                              <td className="px-1.5 py-1 font-medium">
-                                {s.team_abbrev}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">{s.g}</td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.gs}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">{s.w}</td>
-                              <td className="px-1.5 py-1 text-center">{s.l}</td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.sv}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.hld}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.bs}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.qs}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.ip}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">{s.h}</td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.er}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.bb}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.so}
-                              </td>
-                              <td className="px-1.5 py-1 text-center font-semibold">
-                                {s.era}
-                              </td>
-                              <td className="px-1.5 py-1 text-center font-semibold">
-                                {s.whip}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+            {/* ── Season sub-tab ── */}
+            {statsSubTab === "Season" && (
+              <div className="space-y-4">
+                {statsLoading ? (
+                  <Text variant="small" classes="text-gray-400 py-4 text-center">Loading statistics...</Text>
+                ) : !playerStats ? (
+                  <Text variant="small" classes="text-gray-400 py-4 text-center">No statistics available.</Text>
+                ) : (
+                  <>
+                    {playerStats.batting && playerStats.batting.length > 0 && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Batting</Text>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead>
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Team</th>
+                                <th className="px-1.5 py-1 text-center">G</th>
+                                <th className="px-1.5 py-1 text-center">PA</th>
+                                <th className="px-1.5 py-1 text-center">AB</th>
+                                <th className="px-1.5 py-1 text-center">R</th>
+                                <th className="px-1.5 py-1 text-center">H</th>
+                                <th className="px-1.5 py-1 text-center">2B</th>
+                                <th className="px-1.5 py-1 text-center">3B</th>
+                                <th className="px-1.5 py-1 text-center">HR</th>
+                                <th className="px-1.5 py-1 text-center">RBI</th>
+                                <th className="px-1.5 py-1 text-center">BB</th>
+                                <th className="px-1.5 py-1 text-center">HBP</th>
+                                <th className="px-1.5 py-1 text-center">SO</th>
+                                <th className="px-1.5 py-1 text-center">SB</th>
+                                <th className="px-1.5 py-1 text-center">AVG</th>
+                                <th className="px-1.5 py-1 text-center">OBP</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {playerStats.batting.map((s, i) => (
+                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.g}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.pa}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.ab}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.r}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.h}</td>
+                                  <td className="px-1.5 py-1 text-center">{s["2b"]}</td>
+                                  <td className="px-1.5 py-1 text-center">{s["3b"]}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.hr}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.rbi}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.bb}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.hbp}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.so}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.sb}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{s.avg}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{s.obp}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
 
-                {/* Fielding Stats */}
-                {playerStats.fielding && playerStats.fielding.length > 0 && (
-                  <div>
-                    <Text variant="small" classes="font-semibold mb-2">
-                      Fielding
-                    </Text>
-                    <div className="overflow-x-auto">
-                      <table className="w-full border-collapse text-xs">
-                        <thead>
-                          <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-                            <th className="px-1.5 py-1 text-left">Team</th>
-                            <th className="px-1.5 py-1 text-center">Pos</th>
-                            <th className="px-1.5 py-1 text-center">G</th>
-                            <th className="px-1.5 py-1 text-center">INN</th>
-                            <th className="px-1.5 py-1 text-center">PO</th>
-                            <th className="px-1.5 py-1 text-center">A</th>
-                            <th className="px-1.5 py-1 text-center">E</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {playerStats.fielding.map((s, i) => (
-                            <tr
-                              key={i}
-                              className="border-b border-gray-100 dark:border-gray-700"
-                            >
-                              <td className="px-1.5 py-1 font-medium">
-                                {s.team_abbrev}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.pos}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">{s.g}</td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.inn}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">
-                                {s.po}
-                              </td>
-                              <td className="px-1.5 py-1 text-center">{s.a}</td>
-                              <td className="px-1.5 py-1 text-center">{s.e}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+                    {playerStats.pitching && playerStats.pitching.length > 0 && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Pitching</Text>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead>
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Team</th>
+                                <th className="px-1.5 py-1 text-center">G</th>
+                                <th className="px-1.5 py-1 text-center">GS</th>
+                                <th className="px-1.5 py-1 text-center">W</th>
+                                <th className="px-1.5 py-1 text-center">L</th>
+                                <th className="px-1.5 py-1 text-center">SV</th>
+                                <th className="px-1.5 py-1 text-center">HLD</th>
+                                <th className="px-1.5 py-1 text-center">IP</th>
+                                <th className="px-1.5 py-1 text-center">H</th>
+                                <th className="px-1.5 py-1 text-center">ER</th>
+                                <th className="px-1.5 py-1 text-center">BB</th>
+                                <th className="px-1.5 py-1 text-center">SO</th>
+                                <th className="px-1.5 py-1 text-center">HBP</th>
+                                <th className="px-1.5 py-1 text-center">ERA</th>
+                                <th className="px-1.5 py-1 text-center">WHIP</th>
+                                <th className="px-1.5 py-1 text-center" title="Wild Pitches">WP</th>
+                                <th className="px-1.5 py-1 text-center" title="Total Pitches">Pit</th>
+                                <th className="px-1.5 py-1 text-center" title="Strike Percentage">Str%</th>
+                                <th className="px-1.5 py-1 text-center" title="Pitches per Inning">P/IP</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {playerStats.pitching.map((s, i) => (
+                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.g}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.gs}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.w}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.l}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.sv}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.hld}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.ip}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.h}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.er}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.bb}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.so}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.hbp}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{s.era}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{s.whip}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.wp}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.pitches}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.str_pct}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.p_ip}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
 
-                {playerStats.batting?.length === 0 &&
-                  playerStats.pitching?.length === 0 &&
-                  playerStats.fielding?.length === 0 && (
-                    <Text
-                      variant="small"
-                      classes="text-gray-400 py-4 text-center"
-                    >
-                      No statistics recorded this season.
-                    </Text>
-                  )}
-              </>
+                    {playerStats.fielding && playerStats.fielding.length > 0 && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Fielding</Text>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead>
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Team</th>
+                                <th className="px-1.5 py-1 text-center">Pos</th>
+                                <th className="px-1.5 py-1 text-center">G</th>
+                                <th className="px-1.5 py-1 text-center">INN</th>
+                                <th className="px-1.5 py-1 text-center">PO</th>
+                                <th className="px-1.5 py-1 text-center">A</th>
+                                <th className="px-1.5 py-1 text-center">E</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {playerStats.fielding.map((s, i) => (
+                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.pos}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.g}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.inn}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.po}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.a}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.e}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {playerStats.batting?.length === 0 &&
+                      playerStats.pitching?.length === 0 &&
+                      playerStats.fielding?.length === 0 && (
+                        <Text variant="small" classes="text-gray-400 py-4 text-center">
+                          No statistics recorded this season.
+                        </Text>
+                      )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* ── Game Log sub-tab ── */}
+            {statsSubTab === "Game Log" && (
+              <div className="space-y-4">
+                {gamelogLoading ? (
+                  <Text variant="small" classes="text-gray-400 py-4 text-center">Loading game log...</Text>
+                ) : !gamelog ? (
+                  <Text variant="small" classes="text-gray-400 py-4 text-center">No game log available.</Text>
+                ) : (
+                  <>
+                    {gamelog.batting && gamelog.batting.length > 0 && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Batting Game Log</Text>
+                        <div className="overflow-x-auto max-h-[20rem] overflow-y-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead className="sticky top-0 bg-white dark:bg-gray-900">
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Wk</th>
+                                <th className="px-1.5 py-1 text-left">Opp</th>
+                                <th className="px-1.5 py-1 text-center">Result</th>
+                                <th className="px-1.5 py-1 text-center">Pos</th>
+                                <th className="px-1.5 py-1 text-center">AB</th>
+                                <th className="px-1.5 py-1 text-center">R</th>
+                                <th className="px-1.5 py-1 text-center">H</th>
+                                <th className="px-1.5 py-1 text-center">2B</th>
+                                <th className="px-1.5 py-1 text-center">3B</th>
+                                <th className="px-1.5 py-1 text-center">HR</th>
+                                <th className="px-1.5 py-1 text-center">RBI</th>
+                                <th className="px-1.5 py-1 text-center">BB</th>
+                                <th className="px-1.5 py-1 text-center">SO</th>
+                                <th className="px-1.5 py-1 text-center">HBP</th>
+                                <th className="px-1.5 py-1 text-center font-semibold">AVG</th>
+                                <th className="px-1.5 py-1 text-center font-semibold">OBP</th>
+                                <th className="px-1.5 py-1 text-center font-semibold">OPS</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {gamelog.batting.map((g, i) => (
+                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="px-1.5 py-1 whitespace-nowrap">{g.week}{g.subweek}</td>
+                                  <td className="px-1.5 py-1 whitespace-nowrap">{g.opponent}</td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    <span className={`inline-block px-1 rounded text-[10px] font-medium ${
+                                      g.result.startsWith("W") ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                                    }`}>{g.result}</span>
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center uppercase">{g.pos}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.ab}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.r}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.h}</td>
+                                  <td className="px-1.5 py-1 text-center">{g["2b"]}</td>
+                                  <td className="px-1.5 py-1 text-center">{g["3b"]}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.hr}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.rbi}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.bb}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.so}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.hbp}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{g.avg}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{g.obp}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{g.ops}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {gamelog.pitching && gamelog.pitching.length > 0 && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Pitching Game Log</Text>
+                        <div className="overflow-x-auto max-h-[20rem] overflow-y-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead className="sticky top-0 bg-white dark:bg-gray-900">
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Wk</th>
+                                <th className="px-1.5 py-1 text-left">Opp</th>
+                                <th className="px-1.5 py-1 text-center">Dec</th>
+                                <th className="px-1.5 py-1 text-center">IP</th>
+                                <th className="px-1.5 py-1 text-center">H</th>
+                                <th className="px-1.5 py-1 text-center">R</th>
+                                <th className="px-1.5 py-1 text-center">ER</th>
+                                <th className="px-1.5 py-1 text-center">BB</th>
+                                <th className="px-1.5 py-1 text-center">SO</th>
+                                <th className="px-1.5 py-1 text-center">HR</th>
+                                <th className="px-1.5 py-1 text-center">HBP</th>
+                                <th className="px-1.5 py-1 text-center">Pit</th>
+                                <th className="px-1.5 py-1 text-center font-semibold">ERA</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {gamelog.pitching.map((g, i) => (
+                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="px-1.5 py-1 whitespace-nowrap">{g.week}{g.subweek}</td>
+                                  <td className="px-1.5 py-1 whitespace-nowrap">{g.opponent}</td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.dec ? (
+                                      <span className={`inline-block px-1 rounded text-[10px] font-bold ${
+                                        g.dec === "W" ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                                          : g.dec === "L" ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                                          : g.dec === "S" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
+                                          : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                      }`}>{g.dec}</span>
+                                    ) : "—"}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">{g.ip}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.h}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.r}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.er}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.bb}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.so}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.hr}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.hbp}</td>
+                                  <td className="px-1.5 py-1 text-center">{g.pitches}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{g.era}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {(!gamelog.batting || gamelog.batting.length === 0) &&
+                      (!gamelog.pitching || gamelog.pitching.length === 0) && (
+                        <Text variant="small" classes="text-gray-400 py-4 text-center">
+                          No game log entries this season.
+                        </Text>
+                      )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* ── Career sub-tab ── */}
+            {statsSubTab === "Career" && (
+              <div className="space-y-4">
+                {careerLoading ? (
+                  <Text variant="small" classes="text-gray-400 py-4 text-center">Loading career stats...</Text>
+                ) : !career ? (
+                  <Text variant="small" classes="text-gray-400 py-4 text-center">No career data available.</Text>
+                ) : (
+                  <>
+                    {career.batting && career.batting.length > 0 && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Batting Career</Text>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead>
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Yr</th>
+                                <th className="px-1.5 py-1 text-left">Team</th>
+                                <th className="px-1.5 py-1 text-center">G</th>
+                                <th className="px-1.5 py-1 text-center">PA</th>
+                                <th className="px-1.5 py-1 text-center">AB</th>
+                                <th className="px-1.5 py-1 text-center">H</th>
+                                <th className="px-1.5 py-1 text-center">HR</th>
+                                <th className="px-1.5 py-1 text-center">RBI</th>
+                                <th className="px-1.5 py-1 text-center">BB</th>
+                                <th className="px-1.5 py-1 text-center">SO</th>
+                                <th className="px-1.5 py-1 text-center">SB</th>
+                                <th className="px-1.5 py-1 text-center">AVG</th>
+                                <th className="px-1.5 py-1 text-center">OBP</th>
+                                <th className="px-1.5 py-1 text-center">SLG</th>
+                                <th className="px-1.5 py-1 text-center">OPS</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {career.batting.map((s, i) => {
+                                const isCareer = s.season === "Career";
+                                return (
+                                  <tr key={i} className={`border-b border-gray-100 dark:border-gray-700 ${isCareer ? "font-bold bg-gray-100 dark:bg-gray-800" : ""}`}>
+                                    <td className="px-1.5 py-1">{s.season}</td>
+                                    <td className="px-1.5 py-1">{s.team ?? "—"}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.g}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.pa}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.ab}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.h}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.hr}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.rbi}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.bb}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.so}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.sb}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.avg}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.obp}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.slg}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.ops}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {career.pitching && career.pitching.length > 0 && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Pitching Career</Text>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead>
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Yr</th>
+                                <th className="px-1.5 py-1 text-left">Team</th>
+                                <th className="px-1.5 py-1 text-center">G</th>
+                                <th className="px-1.5 py-1 text-center">GS</th>
+                                <th className="px-1.5 py-1 text-center">W</th>
+                                <th className="px-1.5 py-1 text-center">L</th>
+                                <th className="px-1.5 py-1 text-center">SV</th>
+                                <th className="px-1.5 py-1 text-center">IP</th>
+                                <th className="px-1.5 py-1 text-center">H</th>
+                                <th className="px-1.5 py-1 text-center">ER</th>
+                                <th className="px-1.5 py-1 text-center">BB</th>
+                                <th className="px-1.5 py-1 text-center">SO</th>
+                                <th className="px-1.5 py-1 text-center">ERA</th>
+                                <th className="px-1.5 py-1 text-center">WHIP</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {career.pitching.map((s, i) => {
+                                const isCareer = s.season === "Career";
+                                return (
+                                  <tr key={i} className={`border-b border-gray-100 dark:border-gray-700 ${isCareer ? "font-bold bg-gray-100 dark:bg-gray-800" : ""}`}>
+                                    <td className="px-1.5 py-1">{s.season}</td>
+                                    <td className="px-1.5 py-1">{s.team ?? "—"}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.g}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.gs}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.w}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.l}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.sv}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.ip}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.h}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.er}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.bb}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.so}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.era}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.whip}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {(!career.batting || career.batting.length === 0) &&
+                      (!career.pitching || career.pitching.length === 0) && (
+                        <Text variant="small" classes="text-gray-400 py-4 text-center">
+                          No career data available.
+                        </Text>
+                      )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* ── Splits sub-tab ── */}
+            {statsSubTab === "Splits" && (
+              <div className="space-y-4">
+                {splitsLoading ? (
+                  <Text variant="small" classes="text-gray-400 py-4 text-center">Loading splits...</Text>
+                ) : !splits ? (
+                  <Text variant="small" classes="text-gray-400 py-4 text-center">No splits data available.</Text>
+                ) : (
+                  <>
+                    {/* Batting Home/Away */}
+                    {splits.batting_home_away && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Batting — Home / Away</Text>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead>
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Split</th>
+                                <th className="px-1.5 py-1 text-center">G</th>
+                                <th className="px-1.5 py-1 text-center">AB</th>
+                                <th className="px-1.5 py-1 text-center">H</th>
+                                <th className="px-1.5 py-1 text-center">HR</th>
+                                <th className="px-1.5 py-1 text-center">RBI</th>
+                                <th className="px-1.5 py-1 text-center">BB</th>
+                                <th className="px-1.5 py-1 text-center">SO</th>
+                                <th className="px-1.5 py-1 text-center">AVG</th>
+                                <th className="px-1.5 py-1 text-center">OBP</th>
+                                <th className="px-1.5 py-1 text-center">SLG</th>
+                                <th className="px-1.5 py-1 text-center">OPS</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(["home", "away"] as const).map((loc) => {
+                                const s = splits.batting_home_away[loc];
+                                if (!s) return null;
+                                return (
+                                  <tr key={loc} className="border-b border-gray-100 dark:border-gray-700">
+                                    <td className="px-1.5 py-1 font-medium capitalize">{loc}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.g}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.ab}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.h}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.hr}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.rbi}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.bb}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.so}</td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">{s.avg}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.obp}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.slg}</td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">{s.ops}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Batting vs Opponent */}
+                    {splits.batting_vs_opponent && splits.batting_vs_opponent.length > 0 && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Batting — vs Opponent</Text>
+                        <div className="overflow-x-auto max-h-[15rem] overflow-y-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead className="sticky top-0 bg-white dark:bg-gray-900">
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Opp</th>
+                                <th className="px-1.5 py-1 text-center">G</th>
+                                <th className="px-1.5 py-1 text-center">AB</th>
+                                <th className="px-1.5 py-1 text-center">H</th>
+                                <th className="px-1.5 py-1 text-center">HR</th>
+                                <th className="px-1.5 py-1 text-center">AVG</th>
+                                <th className="px-1.5 py-1 text-center">OBP</th>
+                                <th className="px-1.5 py-1 text-center">SLG</th>
+                                <th className="px-1.5 py-1 text-center">OPS</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {splits.batting_vs_opponent.map((s) => (
+                                <tr key={s.opponent} className="border-b border-gray-100 dark:border-gray-700">
+                                  <td className="px-1.5 py-1 font-medium">{s.opponent}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.g}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.ab}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.h}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.hr}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{s.avg}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.obp}</td>
+                                  <td className="px-1.5 py-1 text-center">{s.slg}</td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">{s.ops}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Pitching Home/Away */}
+                    {splits.pitching_home_away && (
+                      <div>
+                        <Text variant="small" classes="font-semibold mb-2">Pitching — Home / Away</Text>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse text-xs">
+                            <thead>
+                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                <th className="px-1.5 py-1 text-left">Split</th>
+                                <th className="px-1.5 py-1 text-center">G</th>
+                                <th className="px-1.5 py-1 text-center">GS</th>
+                                <th className="px-1.5 py-1 text-center">IP</th>
+                                <th className="px-1.5 py-1 text-center">H</th>
+                                <th className="px-1.5 py-1 text-center">ER</th>
+                                <th className="px-1.5 py-1 text-center">BB</th>
+                                <th className="px-1.5 py-1 text-center">SO</th>
+                                <th className="px-1.5 py-1 text-center">ERA</th>
+                                <th className="px-1.5 py-1 text-center">WHIP</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {(["home", "away"] as const).map((loc) => {
+                                const s = splits.pitching_home_away[loc];
+                                if (!s) return null;
+                                return (
+                                  <tr key={loc} className="border-b border-gray-100 dark:border-gray-700">
+                                    <td className="px-1.5 py-1 font-medium capitalize">{loc}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.g}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.gs}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.ip}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.h}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.er}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.bb}</td>
+                                    <td className="px-1.5 py-1 text-center">{s.so}</td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">{s.era}</td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">{s.whip}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             )}
           </div>
         )}

@@ -1,6 +1,7 @@
 import { BaseballOrganization, BaseballTeam, DisplayValue, Player, PlayerContract, PlayerRatings, PlayerPotentials, VisibilityContext } from "../models/baseball/baseballModels";
 import type { PoolPlayer } from "../models/baseball/baseballScoutingModels";
 import type { ScoutingActionType } from "../models/baseball/baseballScoutingModels";
+import { ratingColor, gradeColor } from "../components/Team/baseball/baseballColorConfig";
 
 // Canonical display order for MLB organization levels
 export const LEVEL_ORDER = ["mlb", "aaa", "aa", "higha", "a", "scraps"];
@@ -445,31 +446,10 @@ export const letterGradeToNumeric = (grade: string): number => {
 
 // ── Fog-of-war display helpers ──────────────────────────────
 
-const numericRatingColor = (v: number): string => {
-  if (v == 80) return "text-blue-600 dark:text-blue-400 font-semibold";
-  if (v >= 70) return "text-green-600 dark:text-green-400";
-  if (v >= 60) return "text-green-600 dark:text-green-400";
-  if (v >= 50) return "text-yellow-600 dark:text-yellow-400";
-  if (v >= 40) return "text-orange-600 dark:text-orange-400";
-  if (v >= 30) return "text-orange-600 dark:text-orange-400";
-  if (v >= 20) return "text-red-600 dark:text-red-400";
-  return "text-red-600 dark:text-red-400";
-};
-
-const gradeColorClass = (grade: string): string => {
-  if (grade.startsWith("A")) return "text-blue-600 dark:text-blue-400";
-  if (grade.startsWith("B")) return "text-green-600 dark:text-green-400";
-  if (grade.startsWith("C")) return "text-yellow-600 dark:text-yellow-400";
-  if (grade.startsWith("D")) return "text-orange-600 dark:text-orange-400";
-  if (grade.startsWith("F")) return "text-red-600 dark:text-red-400";
-  if (grade.startsWith("?")) return "";
-  if (grade.startsWith("—")) return "";
-  return "text-red-600 dark:text-red-400";
-};
-
 /**
  * Central resolver for fog-of-war display values.
  * Handles numeric (20-80), letter grade (string), or hidden (null).
+ * Colors route through the canonical helpers in baseballColorConfig.ts.
  */
 export const resolveDisplayValue = (value: DisplayValue): {
   text: string;
@@ -482,14 +462,14 @@ export const resolveDisplayValue = (value: DisplayValue): {
     return {
       text: value,
       sortValue: letterGradeToNumeric(value),
-      colorClass: gradeColorClass(value),
+      colorClass: gradeColor(value),
       isGrade: true,
     };
   }
   return {
     text: String(Math.round(value)),
     sortValue: value,
-    colorClass: numericRatingColor(value),
+    colorClass: ratingColor(value),
     isGrade: false,
   };
 };

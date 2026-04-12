@@ -8,7 +8,7 @@ import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
-import { getPrimaryBaseballTeam, displayLevelFromId } from "../../../_utility/baseballHelpers";
+import { getPrimaryBaseballTeam, displayLevelFromId, NUMERIC_LEVEL_MAP } from "../../../_utility/baseballHelpers";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
@@ -129,12 +129,14 @@ export const BaseballInjuryPage = ({ league }: Props) => {
   // --- State ---
   const [activeTab, setActiveTab] = useState<InjuryTab>("Current");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
   const [selectedConference, setSelectedConference] = useState<string | null>(
     null,
   );
 
   // History tab filters (independent from Current tab)
+  const [historyLevel, setHistoryLevel] = useState<number | null>(null);
   const [historyTeamId, setHistoryTeamId] = useState<number | null>(null);
   const [historyConference, setHistoryConference] = useState<string | null>(
     null,
@@ -180,6 +182,16 @@ export const BaseballInjuryPage = ({ league }: Props) => {
     return map;
   }, [leagueTeams]);
 
+  // Level options (pro only — college has a single level)
+  const levelOptions = useMemo<SelectOption[]>(() => {
+    if (isCollege) return [];
+    const opts: SelectOption[] = [{ value: "__all__", label: "All Levels" }];
+    for (const [num] of Object.entries(NUMERIC_LEVEL_MAP).sort(([a], [b]) => Number(b) - Number(a))) {
+      opts.push({ value: num, label: displayLevelFromId(Number(num)) });
+    }
+    return opts;
+  }, [isCollege]);
+
   // Conference options
   const conferenceOptions = useMemo(() => {
     const conferences = new Set<string>();
@@ -196,11 +208,15 @@ export const BaseballInjuryPage = ({ league }: Props) => {
     return opts;
   }, [leagueTeams]);
 
-  // Team options — filtered by selected conference
+  // Team options — filtered by selected level & conference
   const teamOptions = useMemo(() => {
-    // For team dropdown, show the primary level only (college=3, MLB=9)
-    const defaultLevel = isCollege ? 3 : 9;
-    let teams = leagueTeams.filter((t) => t.team_level === defaultLevel);
+    let teams = leagueTeams;
+    if (selectedLevel != null) {
+      teams = teams.filter((t) => t.team_level === selectedLevel);
+    } else if (!isCollege) {
+      // Default: show MLB-level teams when no level selected
+      teams = teams.filter((t) => t.team_level === 9);
+    }
     if (selectedConference) {
       teams = teams.filter((t) => t.conference === selectedConference);
     }
@@ -211,12 +227,16 @@ export const BaseballInjuryPage = ({ league }: Props) => {
       opts.push({ value: String(t.team_id), label: t.team_full_name });
     }
     return opts;
-  }, [leagueTeams, isCollege, selectedConference]);
+  }, [leagueTeams, isCollege, selectedLevel, selectedConference]);
 
-  // History team options — filtered by history conference
+  // History team options — filtered by history level & conference
   const historyTeamOptions = useMemo(() => {
-    const defaultLevel = isCollege ? 3 : 9;
-    let teams = leagueTeams.filter((t) => t.team_level === defaultLevel);
+    let teams = leagueTeams;
+    if (historyLevel != null) {
+      teams = teams.filter((t) => t.team_level === historyLevel);
+    } else if (!isCollege) {
+      teams = teams.filter((t) => t.team_level === 9);
+    }
     if (historyConference) {
       teams = teams.filter((t) => t.conference === historyConference);
     }
@@ -227,7 +247,19 @@ export const BaseballInjuryPage = ({ league }: Props) => {
       opts.push({ value: String(t.team_id), label: t.team_full_name });
     }
     return opts;
-  }, [leagueTeams, isCollege, historyConference]);
+  }, [leagueTeams, isCollege, historyLevel, historyConference]);
+
+  const selectedLevelOption = useMemo(() => {
+    if (selectedLevel == null)
+      return levelOptions.find((o) => o.value === "__all__") ?? null;
+    return levelOptions.find((o) => o.value === String(selectedLevel)) ?? null;
+  }, [levelOptions, selectedLevel]);
+
+  const historyLevelOption = useMemo(() => {
+    if (historyLevel == null)
+      return levelOptions.find((o) => o.value === "__all__") ?? null;
+    return levelOptions.find((o) => o.value === String(historyLevel)) ?? null;
+  }, [levelOptions, historyLevel]);
 
   const selectedTeamOption = useMemo(() => {
     if (!selectedTeamId)
@@ -256,6 +288,16 @@ export const BaseballInjuryPage = ({ league }: Props) => {
       return conferenceOptions.find((o) => o.value === "__all__") ?? null;
     return conferenceOptions.find((o) => o.value === historyConference) ?? null;
   }, [conferenceOptions, historyConference]);
+
+  // Clear team selection when level changes (Current tab)
+  useEffect(() => {
+    setSelectedTeamId(null);
+  }, [selectedLevel]);
+
+  // Clear team selection when level changes (History tab)
+  useEffect(() => {
+    setHistoryTeamId(null);
+  }, [historyLevel]);
 
   // Clear team selection when conference changes (Current tab)
   useEffect(() => {
@@ -291,6 +333,12 @@ export const BaseballInjuryPage = ({ league }: Props) => {
         let filtered = data.injuries.filter((inj) =>
           leagueTeamIds.has(inj.team_id),
         );
+        // Apply level filter
+        if (selectedLevel != null) {
+          filtered = filtered.filter(
+            (inj) => inj.current_level === selectedLevel,
+          );
+        }
         // Apply conference filter
         if (selectedConference) {
           filtered = filtered.filter(
@@ -307,6 +355,12 @@ export const BaseballInjuryPage = ({ league }: Props) => {
           const teamId = abbrevToTeamId.get(evt.team_abbrev);
           return teamId !== undefined && leagueTeamIds.has(teamId);
         });
+        // Apply history level filter
+        if (historyLevel != null) {
+          filtered = filtered.filter(
+            (evt) => evt.current_level === historyLevel,
+          );
+        }
         // Apply history conference filter
         if (historyConference) {
           filtered = filtered.filter((evt) => {
@@ -337,8 +391,10 @@ export const BaseballInjuryPage = ({ league }: Props) => {
   }, [
     seasonContext,
     activeTab,
+    selectedLevel,
     selectedTeamId,
     selectedConference,
+    historyLevel,
     historyTeamId,
     historyConference,
     leagueTeamIds,
@@ -437,6 +493,23 @@ export const BaseballInjuryPage = ({ league }: Props) => {
             styles={{ borderTop: `3px solid ${headerColor}` }}
           >
             <div className="flex flex-wrap items-center gap-4">
+              {!isCollege && levelOptions.length > 0 && (
+                <div className="min-w-[10rem]">
+                  <Text variant="small" classes="font-semibold mb-1">
+                    Level
+                  </Text>
+                  <SelectDropdown
+                    options={levelOptions}
+                    value={selectedLevelOption}
+                    onChange={(opt) => {
+                      if (!opt) return;
+                      const v = (opt as SelectOption).value;
+                      setSelectedLevel(v === "__all__" ? null : Number(v));
+                    }}
+                    placeholder="Filter by level..."
+                  />
+                </div>
+              )}
               <div className="min-w-[14rem]">
                 <Text variant="small" classes="font-semibold mb-1">
                   Conference
@@ -480,6 +553,23 @@ export const BaseballInjuryPage = ({ league }: Props) => {
             styles={{ borderTop: `3px solid ${headerColor}` }}
           >
             <div className="flex flex-wrap items-center gap-4">
+              {!isCollege && levelOptions.length > 0 && (
+                <div className="min-w-[10rem]">
+                  <Text variant="small" classes="font-semibold mb-1">
+                    Level
+                  </Text>
+                  <SelectDropdown
+                    options={levelOptions}
+                    value={historyLevelOption}
+                    onChange={(opt) => {
+                      if (!opt) return;
+                      const v = (opt as SelectOption).value;
+                      setHistoryLevel(v === "__all__" ? null : Number(v));
+                    }}
+                    placeholder="Filter by level..."
+                  />
+                </div>
+              )}
               <div className="min-w-[14rem]">
                 <Text variant="small" classes="font-semibold mb-1">
                   Conference
@@ -661,8 +751,9 @@ export const BaseballInjuryPage = ({ league }: Props) => {
                     <th className="px-3 py-2">Team</th>
                     <th className="px-3 py-2">Level</th>
                     <th className="px-3 py-2">Injury</th>
+                    <th className="px-3 py-2 text-center">Source</th>
                     <th className="px-3 py-2 text-center">Recovery</th>
-                    <th className="px-3 py-2 text-center">Remaining</th>
+                    <th className="px-3 py-2 text-center">Status</th>
                     <th className="px-3 py-2">Date</th>
                   </tr>
                 </thead>
@@ -693,20 +784,43 @@ export const BaseballInjuryPage = ({ league }: Props) => {
                       </td>
                       <td className="px-3 py-2">{evt.injury_name}</td>
                       <td className="px-3 py-2 text-center">
-                        {evt.weeks_assigned}w
+                        {evt.source ? (
+                          <span
+                            className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                              evt.source === "pregame"
+                                ? "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                : "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                            }`}
+                          >
+                            {evt.source === "pregame" ? "Pre" : "In"}
+                          </span>
+                        ) : "—"}
                       </td>
                       <td className="px-3 py-2 text-center">
-                        {evt.weeks_remaining}w
+                        {evt.weeks_remaining > 0
+                          ? `${evt.weeks_remaining}/${evt.weeks_assigned}w`
+                          : `${evt.weeks_assigned}w`}
                       </td>
-                      <td className="px-3 py-2 text-xs text-gray-500">
-                        {evt.created_at}
+                      <td className="px-3 py-2 text-center">
+                        <span
+                          className={
+                            (evt.status ?? (evt.weeks_remaining > 0 ? "active" : "healed")) === "active"
+                              ? "text-red-600 dark:text-red-400 font-semibold"
+                              : "text-green-600 dark:text-green-400"
+                          }
+                        >
+                          {(evt.status ?? (evt.weeks_remaining > 0 ? "active" : "healed")) === "active" ? "Active" : "Healed"}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-gray-500 whitespace-nowrap">
+                        {evt.created_at?.split("T")[0] ?? evt.created_at}
                       </td>
                     </tr>
                   ))}
                   {historyEvents.length === 0 && (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={9}
                         className="px-4 py-8 text-center text-gray-400"
                       >
                         No injury history found.

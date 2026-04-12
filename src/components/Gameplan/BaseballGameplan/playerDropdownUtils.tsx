@@ -1,10 +1,11 @@
 import { FC, useState, useMemo, useCallback, useRef, ReactNode } from "react";
 import { components, GroupBase, OptionProps, GroupHeadingProps } from "react-select";
-import { Player, PlayerRatings, Ptype } from "../../../models/baseball/baseballModels";
+import { Player, PlayerRatings, Ptype, DisplayValue } from "../../../models/baseball/baseballModels";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { PositionShortMap, PositionRatingKey } from "./BaseballGameplanConstants";
 import { Text } from "../../../_design/Typography";
 import { ToggleSwitch } from "../../../_design/Inputs";
+import { resolveDisplayValue } from "../../../_utility/baseballHelpers";
 
 // ── Rating color as inline CSS (react-select can't use Tailwind classes) ──
 
@@ -29,7 +30,10 @@ export const staminaHexColor = (v: number): string => {
 
 export interface PlayerSelectOption extends SelectOption {
   ptype: Ptype;
-  rating: number | null;
+  // Position/role rating as it arrives from the player model — may be a
+  // numeric 20-80 value (precise) or a letter grade string (fuzzed scouting),
+  // or null if hidden. Always resolve via resolveDisplayValue() before using.
+  rating: DisplayValue;
   listedPos: string | null;
   stamina: number | null;
   hasFatigueData: boolean;
@@ -57,25 +61,29 @@ export function buildGroupedPlayerOptions(
     else posPlayers.push(p);
   }
 
-  const sortByRating = (a: Player, b: Player) => {
-    const aVal = (a.ratings[ratingKey] as number) ?? 0;
-    const bVal = (b.ratings[ratingKey] as number) ?? 0;
-    return bVal - aVal;
+  // Sort by the numeric equivalent of the rating so letter grades sort
+  // alongside numeric values instead of becoming NaN.
+  const ratingSortValue = (p: Player): number => {
+    const raw = p.ratings[ratingKey] as DisplayValue;
+    return resolveDisplayValue(raw).sortValue ?? -Infinity;
   };
+  const sortByRating = (a: Player, b: Player) => ratingSortValue(b) - ratingSortValue(a);
   posPlayers.sort(sortByRating);
   pitchers.sort(sortByRating);
 
   const toOption = (p: Player): PlayerSelectOption => {
-    const rating = (p.ratings[ratingKey] as number) ?? null;
+    const rating = (p.ratings[ratingKey] as DisplayValue) ?? null;
+    const resolved = resolveDisplayValue(rating);
     const posLabel = p.listed_position
       ? PositionShortMap[p.listed_position] ?? p.listed_position.toUpperCase()
       : null;
     const typeTag = p.ptype === Ptype.Pitcher ? "P" : "Pos";
     const posTag = posLabel ? `${typeTag} · ${posLabel}` : typeTag;
-    const ratingStr = rating != null ? String(rating) : "—";
     return {
       value: String(p.id),
-      label: `[${posTag}] ${p.firstname} ${p.lastname} (${ratingStr})`,
+      // resolved.text handles all three cases: number → rounded string,
+      // letter grade → the grade as-is, null → "—".
+      label: `[${posTag}] ${p.firstname} ${p.lastname} (${resolved.text})`,
       ptype: p.ptype,
       rating,
       listedPos: posLabel,
@@ -103,7 +111,11 @@ export function flattenGroups(groups: GroupBase<PlayerSelectOption>[]): PlayerSe
 
 export const ColoredOptionSimple: FC<OptionProps<PlayerSelectOption, false, GroupBase<PlayerSelectOption>>> = (props) => {
   const { data } = props;
-  const ratingColor = data.rating != null ? ratingHexColor(data.rating) : "#9ca3af";
+  // Resolve to a sortValue (numeric equivalent of letter grades) so the
+  // hex color works for both precise and fuzzed ratings. ratingHexColor
+  // only understands the numeric 20-80 scale.
+  const ratingNumeric = resolveDisplayValue(data.rating).sortValue;
+  const ratingColor = ratingNumeric != null ? ratingHexColor(ratingNumeric) : "#9ca3af";
   const nameMatch = data.label.match(/^(\[.+?\]) (.+?) \((.+?)\)$/);
   if (!nameMatch) return <components.Option {...props} />;
   const [, badge, name, ratingStr] = nameMatch;

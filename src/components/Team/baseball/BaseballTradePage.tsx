@@ -617,7 +617,7 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
         let cancelled = false;
         const load = async () => {
             try {
-                const data = await BaseballService.GetBootstrapLandingData(targetOrgId);
+                const data = await BaseballService.GetBootstrapLandingData(targetOrgId, userOrg?.id);
                 if (cancelled || !data.RosterMap) return;
                 const players: Player[] = [];
                 for (const arr of Object.values(data.RosterMap)) {
@@ -630,7 +630,7 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
         };
         load();
         return () => { cancelled = true; };
-    }, [targetOrgId, bootstrapCache]);
+    }, [targetOrgId, bootstrapCache, userOrg?.id]);
 
     // ── Derived: user's players (prefer rosterMap from bootstrap — has contract data) ──
     const userPlayers = useMemo(() => {
