@@ -25,12 +25,23 @@ import {
   FieldingLeaderRow,
   TeamBattingRow,
   TeamPitchingRow,
+  TeamFieldingRow,
   BattingSortField,
   PitchingSortField,
   FieldingSortField,
 } from "../../../models/baseball/baseballStatsModels";
-import { BaseballBattingTable } from "./BaseballBattingTable";
-import { BaseballPitchingTable } from "./BaseballPitchingTable";
+import {
+  BaseballBattingTable,
+  BattingColumnGroup,
+  BATTING_COLUMN_GROUP_LABELS,
+  DEFAULT_BATTING_GROUPS,
+} from "./BaseballBattingTable";
+import {
+  BaseballPitchingTable,
+  PitchingColumnGroup,
+  PITCHING_COLUMN_GROUP_LABELS,
+  DEFAULT_PITCHING_GROUPS,
+} from "./BaseballPitchingTable";
 import { BaseballFieldingTable } from "./BaseballFieldingTable";
 import { BaseballTeamStatsTable } from "./BaseballTeamStatsTable";
 
@@ -65,6 +76,28 @@ const POSITION_LABELS: Record<string, string> = {
   p: "P",
   dh: "DH",
 };
+
+// ═══════════════════════════════════════════════
+// Column group persistence helpers
+// ═══════════════════════════════════════════════
+
+const LS_BATTING_GROUPS = "baseball_batting_col_groups";
+const LS_PITCHING_GROUPS = "baseball_pitching_col_groups";
+
+function loadGroups<T extends string>(key: string, defaults: Set<T>): Set<T> {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      const arr = JSON.parse(raw) as T[];
+      if (Array.isArray(arr) && arr.length > 0) return new Set(arr);
+    }
+  } catch { /* ignore */ }
+  return new Set(defaults);
+}
+
+function saveGroups<T extends string>(key: string, groups: Set<T>) {
+  localStorage.setItem(key, JSON.stringify([...groups]));
+}
 
 // ═══════════════════════════════════════════════
 // Component
@@ -172,6 +205,34 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   const [minIP, setMinIP] = useState<number | null>(null);
   const [minInn, setMinInn] = useState<number | null>(null);
 
+  // Column group visibility (persisted to localStorage)
+  const [battingGroups, setBattingGroups] = useState<Set<BattingColumnGroup>>(
+    () => loadGroups(LS_BATTING_GROUPS, DEFAULT_BATTING_GROUPS),
+  );
+  const [pitchingGroups, setPitchingGroups] = useState<Set<PitchingColumnGroup>>(
+    () => loadGroups(LS_PITCHING_GROUPS, DEFAULT_PITCHING_GROUPS),
+  );
+
+  const toggleBattingGroup = useCallback((group: BattingColumnGroup) => {
+    setBattingGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group);
+      else next.add(group);
+      saveGroups(LS_BATTING_GROUPS, next);
+      return next;
+    });
+  }, []);
+
+  const togglePitchingGroup = useCallback((group: PitchingColumnGroup) => {
+    setPitchingGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group);
+      else next.add(group);
+      saveGroups(LS_PITCHING_GROUPS, next);
+      return next;
+    });
+  }, []);
+
   // Data
   const [battingLeaders, setBattingLeaders] = useState<BattingLeaderRow[]>([]);
   const [pitchingLeaders, setPitchingLeaders] = useState<PitchingLeaderRow[]>(
@@ -181,6 +242,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
     [],
   );
   const [teamBatting, setTeamBatting] = useState<TeamBattingRow[]>([]);
+  const [teamFielding, setTeamFielding] = useState<TeamFieldingRow[]>([]);
   const [teamPitching, setTeamPitching] = useState<TeamPitchingRow[]>([]);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -262,12 +324,19 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
   // Smart default order for sort fields
   const getDefaultOrder = (tab: StatsTab, sort: string): "asc" | "desc" => {
     if (tab === "Pitching") {
-      return ["era", "whip", "bb9", "hr9", "h9", "bb_pct"].includes(sort)
-        ? "asc"
-        : "desc";
+      // Lower-is-better pitching stats
+      return [
+        "era", "whip", "bb9", "hr9", "h9", "bb_pct", "fip", "xfip",
+        "barrel_pct", "hard_hit_pct", "p_ip", "era_minus", "fip_minus",
+        "lob_pct", "ir_pct", "wp9", "ld_pct",
+      ].includes(sort) ? "asc" : "desc";
     }
     if (tab === "Batting") {
-      return ["k_pct", "ab_hr"].includes(sort) ? "asc" : "desc";
+      // Lower-is-better batting stats
+      return ["k_pct", "ab_hr", "gidp", "soft_pct"].includes(sort) ? "asc" : "desc";
+    }
+    if (tab === "Fielding") {
+      return ["e", "e_inn", "err_runs"].includes(sort) ? "asc" : "desc";
     }
     return "desc";
   };
@@ -327,12 +396,20 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
         const headers = [
           "Player", "Team", "Pos",
           "G", "PA", "AB", "H", "2B", "3B", "HR", "ITPHR", "RBI", "R", "BB", "SO", "SB", "CS", "TB",
-          "AVG", "OBP", "SLG", "OPS", "ISO", "BABIP", "BB%", "K%", "BB/K", "XBH%", "SB%",
+          "AVG", "OBP", "SLG", "OPS",
+          "wOBA", "wRC+", "OPS+", "ISO", "BABIP", "BB%", "K%", "BB/K", "XBH%", "SB%",
+          "HBP", "SF", "GIDP", "RC", "SecA", "PSS",
+          "GB%", "FB%", "HR/FB", "Barrel%", "HardHit%", "Soft%", "Med%", "LD%", "Contact%",
+          "bWAR",
         ];
         const rows = data.leaders.map((r) => [
           r.name, r.team_abbrev, r.position ?? "",
           r.g, r.pa, r.ab, r.h, r["2b"], r["3b"], r.hr, r.itphr, r.rbi, r.r, r.bb, r.so, r.sb, r.cs, r.tb,
-          r.avg, r.obp, r.slg, r.ops, r.iso, r.babip, r.bb_pct, r.k_pct, r.bb_k, r.xbh_pct, r.sb_pct,
+          r.avg, r.obp, r.slg, r.ops,
+          r.woba, r.wrc_plus, r.ops_plus, r.iso, r.babip, r.bb_pct, r.k_pct, r.bb_k, r.xbh_pct, r.sb_pct,
+          r.hbp, r.sf, r.gidp, r.rc, r.sec_a, r.pss,
+          r.gb_pct, r.fb_pct, r.hr_fb, r.barrel_pct, r.hard_hit_pct, r.soft_pct, r.med_pct, r.ld_pct, r.contact_pct,
+          r.bwar != null ? r.bwar.toFixed(1) : "",
         ]);
         exportToCsv(`${levelLabel}-${tabLower}-stats`, headers, rows);
 
@@ -351,13 +428,25 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
           "Player", "Team",
           "G", "GS", "W", "L", "SV", "HLD", "BS", "QS",
           "IP", "H", "R", "ER", "BB", "SO", "HR", "ITPHR",
-          "ERA", "WHIP", "K/9", "BB/9", "HR/9", "H/9", "K/BB", "W%", "K%", "BB%", "BABIP", "IP/GS",
+          "ERA", "WHIP", "FIP", "xFIP",
+          "K/9", "BB/9", "HR/9", "H/9", "K%", "BB%", "K-BB%", "K/BB", "W%", "BABIP", "IP/GS",
+          "ERA-", "FIP-",
+          "Pitches", "Str%", "P/IP", "HBP", "WP", "WP/9", "BF",
+          "GB%", "FB%", "HR/FB", "Barrel%", "HardHit%", "Soft%", "LD%", "LOB%",
+          "IR", "IRS", "IR%", "GIDP Induced",
+          "pWAR",
         ];
         const rows = data.leaders.map((r) => [
           r.name, r.team_abbrev,
           r.g, r.gs, r.w, r.l, r.sv, r.hld, r.bs, r.qs,
           r.ip, r.h, r.r, r.er, r.bb, r.so, r.hr, r.itphr,
-          r.era, r.whip, r.k9, r.bb9, r.hr9, r.h9, r.k_bb, r.w_pct, r.k_pct, r.bb_pct, r.babip, r.ip_gs,
+          r.era, r.whip, r.fip, r.xfip,
+          r.k9, r.bb9, r.hr9, r.h9, r.k_pct, r.bb_pct, r.k_bb_pct, r.k_bb, r.w_pct, r.babip, r.ip_gs,
+          r.era_minus, r.fip_minus,
+          r.pitches, r.str_pct, r.p_ip, r.hbp, r.wp, r.wp9, r.bf,
+          r.gb_pct, r.fb_pct, r.hr_fb, r.barrel_pct, r.hard_hit_pct, r.soft_pct, r.ld_pct, r.lob_pct,
+          r.ir, r.irs, r.ir_pct, r.gidp_induced,
+          r.pwar != null ? r.pwar.toFixed(1) : "",
         ]);
         exportToCsv(`${levelLabel}-${tabLower}-stats`, headers, rows);
 
@@ -376,11 +465,15 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
           "Player", "Team", "Pos",
           "G", "Inn", "PO", "A", "E", "FPCT",
           "TC", "TC/G", "RF/G", "PO/Inn", "A/Inn", "E/Inn",
+          "DP", "RF", "DP/G",
+          "fWAR", "ErrR", "RngR", "DPR",
         ];
         const rows = data.leaders.map((r) => [
           r.name, r.team_abbrev, r.pos,
           r.g, r.inn, r.po, r.a, r.e, r.fpct,
           r.tc, r.tc_g, r.rf_g, r.po_inn, r.a_inn, r.e_inn,
+          r.dp, r.rf, r.dp_g,
+          r.fwar != null ? r.fwar.toFixed(1) : "", r.err_runs != null ? r.err_runs.toFixed(1) : "", r.range_runs != null ? r.range_runs.toFixed(1) : "", r.dp_runs != null ? r.dp_runs.toFixed(1) : "",
         ]);
         exportToCsv(`${levelLabel}-${tabLower}-stats`, headers, rows);
 
@@ -390,26 +483,31 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
         const gpMap = new Map(
           (standings ?? []).map((s) => [s.team_id, s.wins + s.losses]),
         );
+        const fieldingMap = new Map(teamFielding.map((f) => [f.team_id, f]));
         const headers = [
           "Team",
           // Batting
-          "G", "PA", "R", "H", "HR", "ITPHR", "RBI", "SB", "BB", "SO",
+          "G", "PA", "R", "H", "HR", "ITPHR", "RBI", "SB", "BB", "HBP", "SO",
           "AVG", "OBP", "SLG", "OPS", "BABIP",
           // Pitching
           "W", "L", "SV", "HLD", "BS", "QS",
           "IP", "P_R", "ER", "P_HR", "P_ITPHR", "P_BB", "P_SO",
           "ERA", "WHIP", "K/9", "BB/9", "HR/9",
+          // Fielding
+          "FPCT", "E", "E/G", "DP", "DP/G", "RF", "DefEff",
         ];
         const rows = teamBatting.map((b) => {
           const p = pitchingMap.get(b.team_id);
+          const f = fieldingMap.get(b.team_id);
           return [
             b.team_abbrev,
             gpMap.get(b.team_id) ?? b.g,
-            b.pa, b.r, b.h, b.hr, b.itphr, b.rbi, b.sb, b.bb, b.so,
+            b.pa, b.r, b.h, b.hr, b.itphr, b.rbi, b.sb, b.bb, b.hbp, b.so,
             b.avg, b.obp, b.slg, b.ops, b.babip,
             p?.w ?? "", p?.l ?? "", p?.sv ?? "", p?.hld ?? "", p?.bs ?? "", p?.qs ?? "",
             p?.ip ?? "", p?.r ?? "", p?.er ?? "", p?.hr ?? "", p?.itphr ?? "", p?.bb ?? "", p?.so ?? "",
             p?.era ?? "", p?.whip ?? "", p?.k9 ?? "", p?.bb9 ?? "", p?.hr9 ?? "",
+            f?.fpct ?? "", f?.e ?? "", f?.e_g ?? "", f?.dp ?? "", f?.dp_g ?? "", f?.rf ?? "", f?.def_eff ?? "",
           ];
         });
         exportToCsv(`${levelLabel}-team-stats`, headers, rows);
@@ -423,7 +521,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
     battingSort, battingOrder, battingPosition, minPA,
     pitchingSort, pitchingOrder, pitchingRole, minIP,
     fieldingSort, fieldingOrder, fieldingPosition, minInn,
-    teamBatting, teamPitching, standings,
+    teamBatting, teamPitching, teamFielding, standings,
   ]);
 
   // --- Fetch data ---
@@ -482,6 +580,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
         });
         setTeamBatting(data.batting);
         setTeamPitching(data.pitching);
+        setTeamFielding(data.fielding ?? []);
         setTotalPages(1);
       }
     } catch (e) {
@@ -597,6 +696,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
         </TabGroup>
 
         {/* Filters */}
+        {(
         <Border
           classes="p-4 mb-2"
           styles={{ borderTop: `3px solid ${headerColor}` }}
@@ -766,7 +866,40 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
               </PillButton>
             </div>
           </div>
+
+          {/* Column group toggles (Batting & Pitching tabs) */}
+          {activeTab === "Batting" && (
+            <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <Text variant="small" classes="font-semibold mr-1">Columns:</Text>
+              {(Object.keys(BATTING_COLUMN_GROUP_LABELS) as BattingColumnGroup[]).map((grp) => (
+                <PillButton
+                  key={grp}
+                  variant="primaryOutline"
+                  isSelected={battingGroups.has(grp)}
+                  onClick={() => toggleBattingGroup(grp)}
+                >
+                  <Text variant="small">{BATTING_COLUMN_GROUP_LABELS[grp]}</Text>
+                </PillButton>
+              ))}
+            </div>
+          )}
+          {activeTab === "Pitching" && (
+            <div className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <Text variant="small" classes="font-semibold mr-1">Columns:</Text>
+              {(Object.keys(PITCHING_COLUMN_GROUP_LABELS) as PitchingColumnGroup[]).map((grp) => (
+                <PillButton
+                  key={grp}
+                  variant="primaryOutline"
+                  isSelected={pitchingGroups.has(grp)}
+                  onClick={() => togglePitchingGroup(grp)}
+                >
+                  <Text variant="small">{PITCHING_COLUMN_GROUP_LABELS[grp]}</Text>
+                </PillButton>
+              ))}
+            </div>
+          )}
         </Border>
+        )}
 
         {/* Content */}
         <Border
@@ -791,6 +924,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                   sortField={currentSort}
                   sortOrder={currentOrder}
                   onSort={handleSort}
+                  visibleGroups={battingGroups}
                 />
               )}
               {activeTab === "Pitching" && (
@@ -803,6 +937,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                   sortField={currentSort}
                   sortOrder={currentOrder}
                   onSort={handleSort}
+                  visibleGroups={pitchingGroups}
                 />
               )}
               {activeTab === "Fielding" && (
@@ -818,9 +953,8 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                 />
               )}
               {activeTab === "Team" && (
-                <BaseballTeamStatsTable batting={teamBatting} pitching={teamPitching} standings={standings} league={league} IsRetro={currentUser?.IsRetro} accentColor={headerColor} />
+                <BaseballTeamStatsTable batting={teamBatting} pitching={teamPitching} fielding={teamFielding} standings={standings} league={league} IsRetro={currentUser?.IsRetro} accentColor={headerColor} />
               )}
-
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">

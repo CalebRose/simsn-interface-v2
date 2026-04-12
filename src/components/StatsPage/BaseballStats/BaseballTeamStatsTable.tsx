@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { TeamBattingRow, TeamPitchingRow } from "../../../models/baseball/baseballStatsModels";
+import { TeamBattingRow, TeamPitchingRow, TeamFieldingRow } from "../../../models/baseball/baseballStatsModels";
 import { BaseballStanding } from "../../../models/baseball/baseballModels";
 import { getLogo } from "../../../_utility/getLogo";
 import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
@@ -10,6 +10,7 @@ import "../../Team/baseball/baseballMobile.css";
 interface Props {
   batting: TeamBattingRow[];
   pitching: TeamPitchingRow[];
+  fielding?: TeamFieldingRow[];
   standings?: BaseballStanding[];
   league: string;
   IsRetro?: boolean;
@@ -38,6 +39,7 @@ type TeamSortField =
   | "slg"
   | "ops"
   | "babip"
+  | "hbp"
   // Pitching
   | "p_w"
   | "p_l"
@@ -57,7 +59,15 @@ type TeamSortField =
   | "p_whip"
   | "p_k9"
   | "p_bb9"
-  | "p_hr9";
+  | "p_hr9"
+  // Fielding
+  | "f_fpct"
+  | "f_e"
+  | "f_e_g"
+  | "f_dp"
+  | "f_dp_g"
+  | "f_rf"
+  | "f_def_eff";
 
 const BATTING_COLS: {
   label: string;
@@ -74,6 +84,7 @@ const BATTING_COLS: {
   { label: "RBI", key: "rbi", sortKey: "rbi" },
   { label: "SB", key: "sb", sortKey: "sb" },
   { label: "BB", key: "bb", sortKey: "bb" },
+  { label: "HBP", key: "hbp", sortKey: "hbp" },
   { label: "SO", key: "so", sortKey: "so" },
   { label: "AVG", key: "avg", sortKey: "avg", bold: true },
   { label: "OBP", key: "obp", sortKey: "obp" },
@@ -108,6 +119,22 @@ const PITCHING_COLS: {
   { label: "HR/9", key: "hr9", sortKey: "p_hr9" },
 ];
 
+const FIELDING_COLS: {
+  label: string;
+  key: string;
+  sortKey: TeamSortField;
+  bold?: boolean;
+  tooltip?: string;
+}[] = [
+  { label: "Fld%", key: "fpct", sortKey: "f_fpct", bold: true, tooltip: "Fielding Percentage" },
+  { label: "E", key: "e", sortKey: "f_e", tooltip: "Errors" },
+  { label: "E/G", key: "e_g", sortKey: "f_e_g", tooltip: "Errors per Game" },
+  { label: "DP", key: "dp", sortKey: "f_dp", tooltip: "Double Plays" },
+  { label: "DP/G", key: "dp_g", sortKey: "f_dp_g", tooltip: "Double Plays per Game" },
+  { label: "RF", key: "rf", sortKey: "f_rf", tooltip: "Range Factor — (PO + A) * 9 / Inn" },
+  { label: "DefEff", key: "def_eff", sortKey: "f_def_eff", bold: true, tooltip: "Defensive Efficiency — fraction of BIP converted to outs" },
+];
+
 // ASC-by-default fields (lower is better)
 const ASC_DEFAULTS = new Set<TeamSortField>([
   "so",
@@ -122,6 +149,8 @@ const ASC_DEFAULTS = new Set<TeamSortField>([
   "p_hr9",
   "p_l",
   "p_bs",
+  "f_e",
+  "f_e_g",
 ]);
 
 const parseNum = (v: string | number): number => {
@@ -130,7 +159,8 @@ const parseNum = (v: string | number): number => {
   return isNaN(n) ? 0 : n;
 };
 
-export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, IsRetro, accentColor }: Props) => {
+
+export const BaseballTeamStatsTable = ({ batting, pitching, fielding, standings, league, IsRetro, accentColor }: Props) => {
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
   const { isDarkMode } = useAuthStore();
   const headerStyle = getStatsHeaderStyle(accentColor, isDarkMode);
@@ -139,6 +169,7 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
 
   const safeBatting = batting ?? [];
   const safePitching = pitching ?? [];
+  const safeFielding = fielding ?? [];
 
   const pitchingMap = useMemo(() => {
     const m = new Map<number, TeamPitchingRow>();
@@ -146,12 +177,19 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
     return m;
   }, [safePitching]);
 
-  // Build a map of team_id → games played from standings (wins + losses), the authoritative source
+  const fieldingMap = useMemo(() => {
+    const m = new Map<number, TeamFieldingRow>();
+    for (const f of safeFielding) m.set(f.team_id, f);
+    return m;
+  }, [safeFielding]);
+
   const standingsGPMap = useMemo(() => {
     const m = new Map<number, number>();
     for (const s of standings ?? []) m.set(s.team_id, s.wins + s.losses);
     return m;
   }, [standings]);
+
+  const hasFielding = safeFielding.length > 0;
 
   const handleSort = (field: TeamSortField) => {
     if (sortField === field) {
@@ -172,6 +210,12 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
         const pb = pitchingMap.get(b.team_id);
         va = pa ? parseNum((pa as any)[pKey] ?? 0) : 0;
         vb = pb ? parseNum((pb as any)[pKey] ?? 0) : 0;
+      } else if (sortField.startsWith("f_")) {
+        const fKey = sortField.slice(2);
+        const fa = fieldingMap.get(a.team_id);
+        const fb = fieldingMap.get(b.team_id);
+        va = fa ? parseNum((fa as any)[fKey] ?? 0) : 0;
+        vb = fb ? parseNum((fb as any)[fKey] ?? 0) : 0;
       } else if (sortField === "g") {
         va = standingsGPMap.get(a.team_id) ?? 0;
         vb = standingsGPMap.get(b.team_id) ?? 0;
@@ -182,15 +226,16 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
       return sortOrder === "asc" ? va - vb : vb - va;
     });
     return rows;
-  }, [safeBatting, pitchingMap, standingsGPMap, sortField, sortOrder]);
+  }, [safeBatting, pitchingMap, fieldingMap, standingsGPMap, sortField, sortOrder]);
 
-  const renderSortHeader = (label: string, field: TeamSortField, bold?: boolean) => {
+  const renderSortHeader = (label: string, field: TeamSortField, bold?: boolean, tooltip?: string) => {
     const isActive = sortField === field;
     return (
       <th
         key={field}
         className={`px-2 py-1 text-center cursor-pointer select-none hover:opacity-80 ${isActive ? "underline decoration-2 underline-offset-2" : ""} ${bold ? "font-bold" : ""}`}
         onClick={() => handleSort(field)}
+        title={tooltip}
       >
         {label}
         {isActive && (
@@ -202,9 +247,11 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
     );
   };
 
+  const totalColSpan = 1 + BATTING_COLS.length + PITCHING_COLS.length + (hasFielding ? FIELDING_COLS.length : 0);
+
   return (
     <div className="overflow-x-auto compact-table">
-      <table className="w-full border-collapse text-sm">
+      <table className="border-collapse text-sm">
         <thead>
           <tr
             className="text-left text-xs font-semibold uppercase"
@@ -214,12 +261,14 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
             <th className="px-2 py-2 text-center" colSpan={BATTING_COLS.length}>
               <span className="border-b-2 border-current pb-0.5">Batting</span>
             </th>
-            <th
-              className="px-2 py-2 text-center"
-              colSpan={PITCHING_COLS.length}
-            >
+            <th className="px-2 py-2 text-center" colSpan={PITCHING_COLS.length}>
               <span className="border-b-2 border-current pb-0.5">Pitching</span>
             </th>
+            {hasFielding && (
+              <th className="px-2 py-2 text-center" colSpan={FIELDING_COLS.length}>
+                <span className="border-b-2 border-current pb-0.5">Fielding</span>
+              </th>
+            )}
           </tr>
           <tr
             className="text-xs border-b border-gray-200 dark:border-gray-600"
@@ -230,16 +279,18 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
             <th className="px-2 py-1"></th>
             {BATTING_COLS.map((col) => renderSortHeader(col.label, col.sortKey, col.bold))}
             {PITCHING_COLS.map((col) => renderSortHeader(col.label, col.sortKey, col.bold))}
+            {hasFielding && FIELDING_COLS.map((col) => renderSortHeader(col.label, col.sortKey, col.bold, col.tooltip))}
           </tr>
         </thead>
         <tbody>
           {sortedBatting.map((b, idx) => {
             const p = pitchingMap.get(b.team_id);
+            const f = fieldingMap.get(b.team_id);
             const logo = getLogo(leagueType, b.team_id, IsRetro);
             return (
               <tr
                 key={b.team_id}
-                className={`border-b border-gray-100 dark:border-gray-700 ${idx % 2 === 0 ? "bg-gray-50/50 dark:bg-gray-800/30" : ""}`}
+                className={`border-b border-gray-100 dark:border-gray-700 ${idx % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : "bg-white dark:bg-gray-900"}`}
               >
                 <td className="px-2 py-1.5">
                   <div className="flex items-center gap-2">
@@ -258,7 +309,6 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
                 </td>
                 {BATTING_COLS.map((col) => {
                   const isActive = sortField === col.sortKey;
-                  // G column: use standings GP (wins+losses) as the authoritative source
                   const val = col.key === "g"
                     ? (standingsGPMap.get(b.team_id) ?? "—")
                     : (b as any)[col.key] ?? "—";
@@ -279,13 +329,25 @@ export const BaseballTeamStatsTable = ({ batting, pitching, standings, league, I
                     </td>
                   );
                 })}
+                {hasFielding && FIELDING_COLS.map((col) => {
+                  const isActive = sortField === col.sortKey;
+                  const val = f ? ((f as any)[col.key] ?? "—") : "—";
+                  return (
+                    <td
+                      key={col.sortKey}
+                      className={`px-2 py-1.5 text-center ${col.bold ? "font-semibold" : ""} ${isActive ? "bg-yellow-50/60 dark:bg-yellow-900/15" : ""}`}
+                    >
+                      {val}
+                    </td>
+                  );
+                })}
               </tr>
             );
           })}
           {safeBatting.length === 0 && (
             <tr>
               <td
-                colSpan={1 + BATTING_COLS.length + PITCHING_COLS.length}
+                colSpan={totalColSpan}
                 className="px-4 py-8 text-center text-gray-400"
               >
                 No team stats available.

@@ -5,7 +5,7 @@ import { Button, PillButton, ButtonGroup } from "../../../../_design/Buttons";
 import { SelectDropdown } from "../../../../_design/Select";
 import { SelectOption } from "../../../../_hooks/useSelectStyles";
 import { ToggleSwitch } from "../../../../_design/Inputs";
-import { Player, PlayerRatings } from "../../../../models/baseball/baseballModels";
+import { Player, PlayerRatings, DisplayValue } from "../../../../models/baseball/baseballModels";
 import {
   DefenseConfig,
   DefenseAssignment,
@@ -24,7 +24,7 @@ import {
   PositionRatingKey,
   LineupRoleOptions,
 } from "../BaseballGameplanConstants";
-import { PlayerAttributeRow, ratingColor, StaminaBar } from "../ratingUtils";
+import { PlayerAttributeRow, displayValueColor, StaminaBar } from "../ratingUtils";
 import {
   PlayerSelectOption,
   buildGroupedPlayerOptions,
@@ -517,9 +517,12 @@ const PositionCard = ({
                       )}
                       {(() => {
                         const rKey = PositionRatingKey[positionCode] as keyof PlayerRatings;
-                        const val = rKey ? (assignedPlayer.ratings[rKey] as number) ?? null : null;
+                        // Position ratings are DisplayValue (number | string | null)
+                        // — they may arrive as letter grades from fuzzed scouting,
+                        // so use displayValueColor (handles both) instead of ratingColor.
+                        const val: DisplayValue = rKey ? (assignedPlayer.ratings[rKey] as DisplayValue) : null;
                         return val != null ? (
-                          <span className={`text-xs px-1.5 py-0.5 rounded font-semibold ${ratingColor(val)} bg-gray-700/50`}>
+                          <span className={`text-xs px-1.5 py-0.5 rounded font-semibold ${displayValueColor(val)} bg-gray-700/50`}>
                             {PositionShortMap[positionCode]}: {val}
                           </span>
                         ) : null;

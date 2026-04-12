@@ -38,7 +38,6 @@ import {
   displayTeamName,
   LEVEL_ORDER,
   normalizePlayer,
-  numericToLetterGrade,
 } from "../../../_utility/baseballHelpers";
 import { useModal } from "../../../_hooks/useModal";
 import { BaseballService } from "../../../_services/baseballService";
@@ -358,7 +357,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   useEffect(() => {
     if (userOrg?.id && viewedOrgId == null) {
       setIsLoadingOrg(true);
-      loadBootstrapForOrg(userOrg.id).then((data) => handleBootstrapWithScouting(data, userOrg.id));
+      loadBootstrapForOrg(userOrg.id).then(processBootstrapResult);
     }
   }, [userOrg?.id]);
 
@@ -378,21 +377,6 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     setPageRosterMap(normalized);
   }, [contextRosterMap, bootstrappedOrgId]);
 
-  // ── Scouting overlay (college + MLB) ──
-  interface ScoutingOverlayEntry {
-    letterGrades: Record<string, string>; // college: letter grade attrs
-    attributes: Record<string, number>; // MLB: numeric 20-80 attrs
-    potentials: Record<string, string | null>;
-    potentialsPrecise: boolean;
-    attributesPrecise: boolean;
-    displayFormat?: string; // "20-80" | "20-80-fuzzed" | "letter_grade"
-    displayovr?: string | null;
-  }
-  const [scoutingOverlay, setScoutingOverlay] = useState<
-    Map<number, ScoutingOverlayEntry>
-  >(new Map());
-  const [scoutingLoading, setScoutingLoading] = useState(false);
-  const scoutingLoadedForOrg = useRef<string | null>(null);
   const statsCache = useRef<{
     orgId: number | "all";
     lyId: number;
@@ -406,77 +390,6 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   const userOrgId = userOrg?.id ?? 0;
   const effectiveOrgId = viewedOrg?.id ?? userOrgId;
 
-  /** Determine if potentials are precise from scouting response. */
-  const isPotentialsPrecise = (data: any): boolean => {
-    if (data.visibility_context?.potentials_precise) return true;
-    const unlocked: string[] = data.visibility?.unlocked ?? [];
-    return (
-      unlocked.includes("college_potential_precise") ||
-      unlocked.includes("pro_potential_precise")
-    );
-  };
-
-  /** Determine if attributes are precise from scouting response. */
-  const isAttributesPrecise = (data: any): boolean => {
-    if (data.visibility_context?.attributes_precise) return true;
-    if (data.display_format === "20-80") return true;
-    const unlocked: string[] = data.visibility?.unlocked ?? [];
-    return unlocked.includes("pro_attrs_precise");
-  };
-
-  const fetchScoutingOverlay = useCallback(
-    async (players: Player[], orgId: number, lyId: number) => {
-      if (!orgId || !lyId || players.length === 0) return;
-      setScoutingLoading(true);
-      try {
-        const playerIds = players.map((p) => p.id);
-        // Batch endpoint has a 200-player limit — chunk requests
-        const BATCH_SIZE = 200;
-        const overlay = new Map<number, ScoutingOverlayEntry>();
-        for (let i = 0; i < playerIds.length; i += BATCH_SIZE) {
-          const chunk = playerIds.slice(i, i + BATCH_SIZE);
-          const results = await BaseballService.GetScoutedPlayersBatch(
-            chunk,
-            orgId,
-            lyId,
-          );
-          for (const [idStr, data] of Object.entries(results)) {
-            overlay.set(Number(idStr), {
-              letterGrades: data.letter_grades ?? {},
-              attributes: data.attributes ?? {},
-              potentials: data.potentials ?? {},
-              potentialsPrecise: isPotentialsPrecise(data),
-              attributesPrecise: isAttributesPrecise(data),
-              displayFormat: data.display_format,
-              displayovr: data.displayovr,
-            });
-          }
-        }
-        setScoutingOverlay(overlay);
-      } catch (err) {
-        console.error("[fetchScoutingOverlay] batch scouting fetch failed:", err);
-      }
-      setScoutingLoading(false);
-    },
-    [],
-  );
-
-  // Chain bootstrap load + scouting overlay fetch to avoid race condition.
-  // Uses players from the bootstrap response directly (not stale pageRosterMap state).
-  const handleBootstrapWithScouting = useCallback(
-    (data: any, orgId: number) => {
-      processBootstrapResult(data);
-      if (data?.RosterMap && userOrgId && leagueYearId) {
-        const allPlayers = Object.entries(data.RosterMap as Record<string, any[]>)
-          .flatMap(([, players]) => players.map(normalizePlayer));
-        const cacheKey = `${userOrgId}-${orgId}`;
-        scoutingLoadedForOrg.current = cacheKey;
-        fetchScoutingOverlay(allPlayers, userOrgId, leagueYearId);
-      }
-    },
-    [processBootstrapResult, userOrgId, leagueYearId, fetchScoutingOverlay],
-  );
-
   // Fetch scouting budget — always for the user's own org, not the viewed org
   useEffect(() => {
     if (!userOrgId || !leagueYearId) return;
@@ -484,105 +397,6 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       .then(setScoutingBudget)
       .catch(() => {});
   }, [userOrgId, leagueYearId]);
-
-  // Fetch scouting overlay when roster loads (both college + MLB).
-  // College: replaces 20-80 _display with letter grades.
-  // MLB: replaces bootstrap _display with scouting-aware fuzzed/precise values.
-  // Requests are batched (5 at a time) to avoid API rate limits.
-  useEffect(() => {
-    if (isAllView || !userOrgId || !leagueYearId) return;
-    const allPlayers = Object.values(pageRosterMap).flat();
-    if (allPlayers.length === 0) return;
-    // Re-fetch when the viewed roster changes (effectiveOrgId) but always
-    // request with the user's own org so visibility reflects their scouting.
-    const cacheKey = `${userOrgId}-${effectiveOrgId}`;
-    if (scoutingLoadedForOrg.current === cacheKey) return;
-    scoutingLoadedForOrg.current = cacheKey;
-    fetchScoutingOverlay(allPlayers, userOrgId, leagueYearId);
-  }, [
-    isCollege,
-    isAllView,
-    userOrgId,
-    effectiveOrgId,
-    leagueYearId,
-    pageRosterMap,
-    fetchScoutingOverlay,
-  ]);
-
-  // Convert any numeric _display values to letter grades for college players
-  const convertRatingsToGrades = (ratings: PlayerRatings): PlayerRatings => {
-    const converted = { ...ratings };
-    for (const key of Object.keys(converted) as (keyof PlayerRatings)[]) {
-      const val = converted[key];
-      if (typeof val === "number" && key.endsWith("_display")) {
-        (converted as any)[key] = numericToLetterGrade(val);
-      }
-    }
-    return converted;
-  };
-
-  // Apply scouting overlay to players: replace _display values, overlay potentials
-  // For college: also ensures all numeric _display values are converted to letter grades
-  const applyScoutingOverlay = useCallback(
-    (players: Player[]): Player[] => {
-      return players.map((p) => {
-        const entry = scoutingOverlay.get(p.id);
-
-        if (!entry) {
-          return {
-            ...p,
-            ratings: isCollege ? convertRatingsToGrades(p.ratings) : p.ratings,
-            visibility_context: p.visibility_context ?? {
-              context: isCollege ? "college_roster" : "pro_roster",
-              display_format: isCollege ? "letter_grade" : "20-80",
-              attributes_precise: false,
-              potentials_precise: false,
-            },
-          };
-        }
-        const newRatings = { ...p.ratings };
-
-        if (isCollege) {
-          // College: map letter_grades keys (e.g. "contact") → ratings display fields (e.g. "contact_display")
-          for (const [key, grade] of Object.entries(entry.letterGrades)) {
-            const displayKey = `${key}_display` as keyof PlayerRatings;
-            if (displayKey in newRatings) {
-              (newRatings as any)[displayKey] = grade;
-            }
-          }
-        } else {
-          // MLB: overlay attributes from scouting endpoint (fuzzed or precise 20-80 values)
-          // Keys from scouting endpoint already include _display suffix (e.g. "contact_display")
-          for (const [key, val] of Object.entries(entry.attributes)) {
-            if (key in newRatings) {
-              (newRatings as any)[key] = val;
-            }
-          }
-        }
-
-        const newPotentials = { ...p.potentials };
-        for (const [key, val] of Object.entries(entry.potentials)) {
-          if (key in newPotentials) {
-            (newPotentials as any)[key] = val;
-          }
-        }
-
-        return {
-          ...p,
-          ratings: isCollege ? convertRatingsToGrades(newRatings) : newRatings,
-          potentials: newPotentials,
-          ...(entry.displayovr !== undefined && { displayovr: entry.displayovr }),
-          visibility_context: {
-            context: isCollege ? "college_roster" : "pro_roster",
-            display_format: isCollege ? "letter_grade" : "20-80",
-            attributes_precise: entry.attributesPrecise,
-            potentials_precise: entry.potentialsPrecise,
-          },
-        };
-      });
-    },
-    [isCollege, scoutingOverlay],
-  );
 
   const orgOptions = useMemo(() => {
     const allEntry: SelectOption = {
@@ -662,7 +476,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         if (cached.allTeams.length > 0) setPageAllTeams(cached.allTeams);
       } else {
         // Cache incomplete — fetch all orgs from the API
-        const allData = await BaseballService.GetAllBootstrapData();
+        const allData = await BaseballService.GetAllBootstrapData(userOrgId);
         const players: Player[] = [];
         if (allData.Orgs) {
           for (const orgEntry of Object.values(allData.Orgs)) {
@@ -680,7 +494,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       console.error("Failed to load all org players", e);
     }
     setIsLoadingAll(false);
-  }, [league, getAllCachedOrgPlayers, leagueOrgs]);
+  }, [league, getAllCachedOrgPlayers, leagueOrgs, userOrgId]);
 
   // --- Filters & category ---
   const defaultLevel = league === SimMLB ? "mlb" : "college";
@@ -731,21 +545,15 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       setFilterLevel(defaultLevel);
       setSortConfig(null);
       setCategory(Attributes);
-      setScoutingOverlay(new Map());
       statsCache.current = null;
       if (optValue === ALL_ORGS) {
-        scoutingLoadedForOrg.current = null;
         setViewedOrgId(ALL_ORGS);
         loadAllOrgPlayers();
       } else {
         const orgId = Number(optValue);
-        // Set guard to the NEW cache key immediately — prevents the scouting
-        // useEffect from racing with handleBootstrapWithScouting by fetching
-        // with stale pageRosterMap (old org's player IDs).
-        scoutingLoadedForOrg.current = `${userOrgId}-${orgId}`;
         setViewedOrgId(orgId === userOrg?.id ? null : optValue);
         setIsLoadingOrg(true);
-        loadBootstrapForOrg(orgId).then((data) => handleBootstrapWithScouting(data, orgId));
+        loadBootstrapForOrg(orgId).then(processBootstrapResult);
       }
     },
     [
@@ -753,29 +561,97 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       loadBootstrapForOrg,
       loadAllOrgPlayers,
       processBootstrapResult,
+      defaultLevel,
     ],
   );
 
   // --- Shared scouting refresh helper ---
+  // After a scouting action, re-fetch this player's visibility-aware data and
+  // patch it into pageRosterMap. Bootstrap is now the source of truth for
+  // ratings/potentials/displayovr/visibility_context, so we update those fields
+  // in place rather than maintaining a separate overlay layer.
+  //
+  // Note on precise-detection: ScoutingPlayerResponse.visibility_context is
+  // optional and may be absent or stale immediately after a scouting-action
+  // spend. The endpoint reliably updates data.visibility.unlocked[] and
+  // data.display_format even when the context object isn't populated, so we
+  // synthesize a complete visibility_context from three signals (matching the
+  // detection logic that lived in isAttributesPrecise/isPotentialsPrecise
+  // before phase 2). Without this, inline roster-page "Attrs"/"Pots" buttons
+  // don't grey out after a quick-confirm spend.
   const refreshPlayerScouting = useCallback(
     (playerId: number, refreshBudget = true) => {
       if (!playerId || !userOrgId || !leagueYearId) return;
-      // Overlay: use user's org to get their scouting visibility on this player
       BaseballService.GetScoutedPlayer(playerId, userOrgId, leagueYearId)
-        .then((data) => {
-          setScoutingOverlay((prev) => {
-            const next = new Map(prev);
-            next.set(playerId, {
-              letterGrades: data.letter_grades ?? {},
-              attributes: data.attributes ?? {},
-              potentials: data.potentials ?? {},
-              potentialsPrecise: isPotentialsPrecise(data),
-              attributesPrecise: isAttributesPrecise(data),
-              displayFormat: data.display_format,
-              displayovr: data.displayovr,
-            });
+        .then((data: any) => {
+          const unlocked: string[] = data.visibility?.unlocked ?? [];
+          const attrsPrecise =
+            data.visibility_context?.attributes_precise === true ||
+            data.display_format === "20-80" ||
+            unlocked.includes("pro_attrs_precise");
+          const potsPrecise =
+            data.visibility_context?.potentials_precise === true ||
+            unlocked.includes("pro_potential_precise") ||
+            unlocked.includes("college_potential_precise");
+
+          const patchPlayer = (p: Player): Player => {
+            if (p.id !== playerId) return p;
+            const newRatings = { ...p.ratings };
+            // College: letter_grades keys (e.g. "contact") → "contact_display"
+            for (const [key, grade] of Object.entries(data.letter_grades ?? {})) {
+              const displayKey = `${key}_display` as keyof PlayerRatings;
+              if (displayKey in newRatings) {
+                (newRatings as any)[displayKey] = grade;
+              }
+            }
+            // MLB: attributes keys already include _display suffix
+            for (const [key, val] of Object.entries(data.attributes ?? {})) {
+              if (key in newRatings) {
+                (newRatings as any)[key] = val;
+              }
+            }
+            const newPotentials = { ...p.potentials };
+            for (const [key, val] of Object.entries(data.potentials ?? {})) {
+              if (key in newPotentials) {
+                (newPotentials as any)[key] = val;
+              }
+            }
+            // Synthesize a complete visibility_context from the three
+            // possible signals rather than trusting data.visibility_context
+            // alone (which is optional on ScoutingPlayerResponse).
+            const prevCtx = p.visibility_context;
+            const synthCtx = {
+              context:
+                data.visibility_context?.context ??
+                prevCtx?.context ??
+                (isCollege ? "college_roster" as const : "pro_roster" as const),
+              display_format:
+                data.visibility_context?.display_format ??
+                prevCtx?.display_format ??
+                (isCollege ? "letter_grade" as const : "20-80" as const),
+              attributes_precise: attrsPrecise,
+              potentials_precise: potsPrecise,
+            };
+            return {
+              ...p,
+              ratings: newRatings,
+              potentials: newPotentials,
+              ...(data.displayovr !== undefined && { displayovr: data.displayovr }),
+              visibility_context: synthCtx,
+            };
+          };
+
+          setPageRosterMap((prev) => {
+            const next: Record<string, Player[]> = {};
+            for (const [level, players] of Object.entries(prev)) {
+              next[level] = players.map(patchPlayer);
+            }
             return next;
           });
+          // All-Organizations view renders from allOrgPlayers, not
+          // pageRosterMap, so patch it here too — otherwise scouting actions
+          // wouldn't reflect live in that view.
+          setAllOrgPlayers((prev) => prev.map(patchPlayer));
         })
         .catch(() => {});
       if (refreshBudget) {
@@ -784,7 +660,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
           .catch(() => {});
       }
     },
-    [userOrgId, leagueYearId],
+    [userOrgId, leagueYearId, isCollege],
   );
 
   // --- Scouting Modal (college + MLB) ---
@@ -881,7 +757,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         // No patch data (e.g. extension) — force refresh
         const orgId = viewedOrg?.id ?? userOrg?.id;
         if (orgId) {
-          loadBootstrapForOrg(orgId, true).then((data) => handleBootstrapWithScouting(data, orgId));
+          loadBootstrapForOrg(orgId, true).then(processBootstrapResult);
         }
       }
     },
@@ -1097,15 +973,13 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   );
 
   // --- Derived data ---
-  // Compute directly during render — overlay application for ~150 players is trivial.
-  // Previous useMemo/useEffect approaches had stale closure issues where the overlay
-  // was populated but never applied to the rendered player list.
-  let allPlayersRaw: Player[];
-  if (isAllView) allPlayersRaw = allOrgPlayers;
+  // Bootstrap is the source of truth for visibility-aware ratings/displayovr/
+  // visibility_context (backend phase 1). No frontend overlay required.
+  let allPlayers: Player[];
+  if (isAllView) allPlayers = allOrgPlayers;
   else if (Object.keys(pageRosterMap).length > 0)
-    allPlayersRaw = Object.values(pageRosterMap).flat();
-  else allPlayersRaw = [];
-  const allPlayers = applyScoutingOverlay(allPlayersRaw);
+    allPlayers = Object.values(pageRosterMap).flat();
+  else allPlayers = [];
 
   const levelTeams = useMemo(() => {
     if (isAllView || !viewedOrg?.teams) return [];
@@ -1587,11 +1461,6 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
             <Text variant="small" classes="text-gray-500 dark:text-gray-400">
               {filteredPlayers.length} players
             </Text>
-            {scoutingLoading && (
-              <Text variant="small" classes="text-blue-500">
-                Loading scouting data...
-              </Text>
-            )}
 
             {/* Export buttons */}
             <div className="flex items-center gap-2 ml-auto">

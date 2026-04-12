@@ -9,10 +9,11 @@ import {
 } from "../_constants/constants";
 
 // 🔥 Custom Error for API Calls
-class ApiError extends Error {
+export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    public body?: any,
   ) {
     super(message);
     this.name = "ApiError";
@@ -95,8 +96,8 @@ export const PUTCall = async <TRequest, TResponse>(
     if (!response.ok) {
       let errorBody: any;
       try { errorBody = await response.json(); } catch {}
-      const msg = errorBody?.message || `HTTP Error: ${response.statusText}`;
-      throw new ApiError(response.status, msg);
+      const msg = errorBody?.message || errorBody?.error || `HTTP Error: ${response.statusText}`;
+      throw new ApiError(response.status, msg, errorBody);
     }
 
     const data = (await response.json()) as TResponse;

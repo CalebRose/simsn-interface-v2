@@ -14,7 +14,7 @@ import {
 } from "../../../../models/baseball/baseballScoutingModels";
 import { VisibilityContext } from "../../../../models/baseball/baseballModels";
 import {
-  InjuryHistoryItem,
+  PlayerInjuryHistoryEvent,
   PlayerStatsResponse,
 } from "../../../../models/baseball/baseballStatsModels";
 import { ratingColor, gradeColor } from "../baseballColorConfig";
@@ -164,7 +164,7 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
   const [selectedTab, setSelectedTab] = useState<string>("Attributes");
 
   // Injury history (lazy-loaded)
-  const [injuryHistory, setInjuryHistory] = useState<InjuryHistoryItem[]>([]);
+  const [injuryHistory, setInjuryHistory] = useState<PlayerInjuryHistoryEvent[]>([]);
   const [injuryLoading, setInjuryLoading] = useState(false);
 
   // Fetch player detail on open
@@ -199,12 +199,12 @@ export const BaseballScoutingModal: FC<BaseballScoutingModalProps> = ({
     }
   }, [isOpen]);
 
-  // Lazy-load injury history
+  // Lazy-load injury history via unified per-player endpoint
   useEffect(() => {
     if (selectedTab !== "Injuries" || !playerId) return;
     let cancelled = false;
     setInjuryLoading(true);
-    BaseballService.GetInjuryHistory({ player_id: playerId })
+    BaseballService.GetPlayerInjuryHistory({ player_id: playerId })
       .then((data) => {
         if (!cancelled) setInjuryHistory(data.events);
       })
@@ -1130,8 +1130,25 @@ const ContractTab: FC<{
 // Injuries Tab
 // ═══════════════════════════════════════════════════
 
+/** Format an effects dict as a short summary, e.g. "Contact −30%, Stamina −50%" */
+function formatEffectsSummary(effects: Record<string, number> | undefined): string {
+  if (!effects) return "";
+  const ATTR_LABELS: Record<string, string> = {
+    contact: "CON", power: "POW", speed: "SPD", eye: "EYE",
+    discipline: "DISC", fieldreact: "FLD", fieldcatch: "CATCH",
+    throwpower: "THRP", throwacc: "THRA", basereaction: "BRCTN",
+    baserunning: "BRUN", pendurance: "END", pgencontrol: "CTRL",
+    psequencing: "SEQ", pthrowpower: "VELO", pickoff: "PKO",
+    stamina_pct: "STA",
+  };
+  return Object.entries(effects)
+    .filter(([, v]) => v < 1.0)
+    .map(([k, v]) => `${ATTR_LABELS[k] ?? k} −${Math.round((1 - v) * 100)}%`)
+    .join(", ");
+}
+
 const InjuriesTab: FC<{
-  injuryHistory: InjuryHistoryItem[];
+  injuryHistory: PlayerInjuryHistoryEvent[];
   injuryLoading: boolean;
 }> = ({ injuryHistory, injuryLoading }) => {
   if (injuryLoading) {
@@ -1161,8 +1178,11 @@ const InjuriesTab: FC<{
           <thead>
             <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
               <th className="px-2 py-1 text-left">Injury</th>
-              <th className="px-2 py-1 text-center">Assigned</th>
-              <th className="px-2 py-1 text-center">Remaining</th>
+              <th className="px-2 py-1 text-center">Source</th>
+              <th className="px-2 py-1 text-center">Wk</th>
+              <th className="px-2 py-1 text-center">Duration</th>
+              <th className="px-2 py-1 text-center">Status</th>
+              <th className="px-2 py-1 text-left">Effects</th>
               <th className="px-2 py-1 text-left">Date</th>
             </tr>
           </thead>
@@ -1174,22 +1194,41 @@ const InjuriesTab: FC<{
               >
                 <td className="px-2 py-1.5">{evt.injury_name}</td>
                 <td className="px-2 py-1.5 text-center">
-                  {evt.weeks_assigned}w
+                  <span
+                    className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      evt.source === "pregame"
+                        ? "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                        : "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                    }`}
+                  >
+                    {evt.source === "pregame" ? "Pre" : "In"}
+                  </span>
+                </td>
+                <td className="px-2 py-1.5 text-center text-gray-500">
+                  {evt.season_week}{evt.season_subweek ?? ""}
+                </td>
+                <td className="px-2 py-1.5 text-center">
+                  {evt.weeks_remaining > 0
+                    ? `${evt.weeks_remaining}/${evt.weeks_assigned}w`
+                    : `${evt.weeks_assigned}w`}
                 </td>
                 <td className="px-2 py-1.5 text-center">
                   <span
                     className={
-                      evt.weeks_remaining > 0
+                      evt.status === "active"
                         ? "text-red-600 dark:text-red-400 font-semibold"
                         : "text-green-600 dark:text-green-400"
                     }
                   >
-                    {evt.weeks_remaining > 0
-                      ? `${evt.weeks_remaining}w`
-                      : "Healed"}
+                    {evt.status === "active" ? "Active" : "Healed"}
                   </span>
                 </td>
-                <td className="px-2 py-1.5 text-gray-500">{evt.created_at}</td>
+                <td className="px-2 py-1.5 text-gray-500 max-w-[140px] truncate" title={formatEffectsSummary(evt.effects)}>
+                  {formatEffectsSummary(evt.effects) || "—"}
+                </td>
+                <td className="px-2 py-1.5 text-gray-500 whitespace-nowrap">
+                  {evt.created_at?.split("T")[0] ?? evt.created_at}
+                </td>
               </tr>
             ))}
           </tbody>

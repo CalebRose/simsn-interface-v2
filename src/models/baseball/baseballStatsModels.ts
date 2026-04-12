@@ -219,16 +219,24 @@ export interface GameResultsResponse {
 export type BattingSortField =
   | "avg" | "hr" | "rbi" | "h" | "sb" | "ops"
   | "obp" | "slg" | "iso" | "babip" | "bb_pct" | "k_pct" | "bb_k" | "ab_hr" | "xbh_pct" | "sb_pct"
-  | "pa" | "tb" | "r" | "bb" | "so" | "cs" | "2b" | "3b" | "g" | "ab";
+  | "pa" | "tb" | "r" | "bb" | "so" | "cs" | "2b" | "3b" | "g" | "ab"
+  | "hbp" | "woba" | "rc" | "sec_a" | "sf" | "gidp" | "gb_pct"
+  | "itphr" | "fb_pct" | "hr_fb" | "barrel_pct" | "hard_hit_pct" | "soft_pct" | "med_pct" | "ld_pct" | "contact_pct" | "pss"
+  | "bwar" | "wrc_plus" | "ops_plus";
 export type PitchingSortField =
   | "era" | "wins" | "so" | "saves" | "whip"
   | "k9" | "bb9" | "hr9" | "h9" | "k_bb" | "w_pct" | "k_pct" | "bb_pct" | "babip" | "ip_gs"
   | "g" | "gs" | "w" | "l" | "sv" | "ip" | "h" | "r" | "er" | "bb" | "hr"
-  | "holds" | "blown_saves" | "quality_starts";
+  | "holds" | "blown_saves" | "quality_starts"
+  | "hbp" | "wp" | "pitches" | "str_pct" | "p_ip" | "fip" | "gb_pct"
+  | "itphr" | "bf" | "ir" | "irs" | "ir_pct" | "gidp_induced" | "fb_pct" | "hr_fb" | "barrel_pct" | "hard_hit_pct" | "soft_pct" | "ld_pct" | "k_bb_pct" | "wp9" | "lob_pct"
+  | "pwar" | "xfip" | "era_minus" | "fip_minus";
 export type FieldingSortField =
   | "fpct" | "putouts" | "assists"
   | "tc" | "tc_g" | "rf_g" | "po_inn" | "a_inn" | "e_inn"
-  | "g" | "inn" | "po" | "a" | "e";
+  | "g" | "inn" | "po" | "a" | "e"
+  | "dp" | "rf" | "dp_g"
+  | "fwar" | "err_runs" | "range_runs" | "dp_runs";
 
 export interface BattingLeaderboardParams {
   league_year_id: number;
@@ -303,6 +311,29 @@ export interface BattingLeaderRow {
   ab_hr: string;
   xbh_pct: string;
   sb_pct: string;
+  // Phase 1
+  hbp: number;
+  // Phase 2 — derived rate stats
+  woba: string;
+  wrc_plus: number;
+  rc: string;
+  sec_a: string;
+  pss: string;
+  ops_plus: number;
+  // Phase 3 — batted ball & contact quality
+  sf: number;
+  gidp: number;
+  gb_pct: string;
+  fb_pct: string;
+  hr_fb: string;
+  barrel_pct: string;
+  hard_hit_pct: string;
+  soft_pct: string;
+  med_pct: string;
+  ld_pct: string;
+  contact_pct: string;
+  // WAR (computed in Python, not server-sortable)
+  bwar: number;
 }
 
 export interface BattingLeadersResponse {
@@ -346,6 +377,37 @@ export interface PitchingLeaderRow {
   bb_pct: string;
   babip: string;
   ip_gs: string;
+  // Phase 1
+  hbp: number;
+  wp: number;
+  pitches: number;
+  balls: number;
+  strikes: number;
+  str_pct: string;
+  p_ip: string;
+  wp9: string;
+  // Phase 2 — derived rate stats
+  fip: string;
+  xfip: string;
+  k_bb_pct: string;
+  era_minus: number;
+  fip_minus: number;
+  // Phase 3 — batted ball, contact quality, reliever, situational
+  gb_pct: string;
+  fb_pct: string;
+  hr_fb: string;
+  barrel_pct: string;
+  hard_hit_pct: string;
+  soft_pct: string;
+  ld_pct: string;
+  lob_pct: string;
+  ir: number;
+  irs: number;
+  ir_pct: string;
+  gidp_induced: number;
+  bf: number;
+  // WAR (computed in Python, not server-sortable)
+  pwar: number;
 }
 
 export interface PitchingLeadersResponse {
@@ -374,6 +436,15 @@ export interface FieldingLeaderRow {
   po_inn: string;
   a_inn: string;
   e_inn: string;
+  // Phase 3
+  dp: number;
+  rf: string;
+  dp_g: string;
+  // WAR components (computed in Python, not server-sortable)
+  fwar: number;
+  err_runs: number;
+  range_runs: number;
+  dp_runs: number;
 }
 
 export interface FieldingLeadersResponse {
@@ -411,6 +482,7 @@ export interface TeamBattingRow {
   sb: number;
   cs: number;
   tb: number;
+  hbp: number;
   avg: string;
   obp: string;
   slg: string;
@@ -443,9 +515,28 @@ export interface TeamPitchingRow {
   hr9: string;
 }
 
+export interface TeamFieldingRow {
+  team_id: number;
+  team_abbrev: string;
+  team_level?: number;
+  g: number;
+  inn: number;
+  po: number;
+  a: number;
+  e: number;
+  dp: number;
+  tc: number;
+  fpct: string;
+  rf: string;
+  dp_g: string;
+  e_g: string;
+  def_eff: string;
+}
+
 export interface TeamStatsResponse {
   batting: TeamBattingRow[];
   pitching: TeamPitchingRow[];
+  fielding?: TeamFieldingRow[];
 }
 
 // ═══════════════════════════════════════════════
@@ -495,6 +586,7 @@ export interface PlayerStatsSeason {
   team_id: number;
   team_abbrev: string;
   g: number;
+  pa: number;
   ab: number;
   r: number;
   h: number;
@@ -504,6 +596,7 @@ export interface PlayerStatsSeason {
   itphr: number;
   rbi: number;
   bb: number;
+  hbp: number;
   so: number;
   sb: number;
   cs: number;
@@ -528,11 +621,16 @@ export interface PlayerPitchingSeason {
   r: number;
   er: number;
   bb: number;
+  hbp: number;
   so: number;
   hr: number;
   itphr: number;
+  wp: number;
+  pitches: number;
   era: string;
   whip: string;
+  str_pct: string;
+  p_ip: string;
 }
 
 export interface PlayerFieldingSeason {
@@ -578,6 +676,177 @@ export interface SplitRow {
 export interface SplitsResponse {
   splits: SplitRow[];
   total: number;
+}
+
+// ═══════════════════════════════════════════════
+// Player Game Log Models (new endpoint)
+// ═══════════════════════════════════════════════
+
+export interface GamelogBattingRow {
+  game_id: number;
+  week: number;
+  subweek: string;
+  opponent: string; // prefixed with "@" for away games
+  result: string;   // e.g. "W 5-3"
+  pos: string;
+  bo: number;       // batting order
+  ab: number;
+  r: number;
+  h: number;
+  "2b": number;
+  "3b": number;
+  hr: number;
+  rbi: number;
+  bb: number;
+  so: number;
+  sb: number;
+  cs: number;
+  hbp: number;
+  pa: number;
+  // Running season totals (cumulative through this game)
+  avg: string;
+  obp: string;
+  ops: string;
+}
+
+export interface GamelogPitchingRow {
+  game_id: number;
+  week: number;
+  subweek: string;
+  opponent: string;
+  dec: string;      // "W" | "L" | "S" | "H" | ""
+  gs: number;
+  ip: string;
+  h: number;
+  r: number;
+  er: number;
+  bb: number;
+  so: number;
+  hr: number;
+  hbp: number;
+  pitches: number;
+  // Running season total
+  era: string;
+}
+
+export interface PlayerGamelogResponse {
+  batting: GamelogBattingRow[];
+  pitching: GamelogPitchingRow[];
+}
+
+// ═══════════════════════════════════════════════
+// Career Stats Models (new endpoint)
+// ═══════════════════════════════════════════════
+
+export interface CareerBattingSeason {
+  season: number | "Career";
+  team: string | null;
+  level: number | null;
+  g: number;
+  ab: number;
+  pa: number;
+  r: number;
+  h: number;
+  "2b": number;
+  "3b": number;
+  hr: number;
+  rbi: number;
+  bb: number;
+  hbp: number;
+  so: number;
+  sb: number;
+  cs: number;
+  sf: number;
+  avg: string;
+  obp: string;
+  slg: string;
+  ops: string;
+}
+
+export interface CareerPitchingSeason {
+  season: number | "Career";
+  team: string | null;
+  level: number | null;
+  g: number;
+  gs: number;
+  w: number;
+  l: number;
+  sv: number;
+  hld: number;
+  ip: string;
+  h: number;
+  r: number;
+  er: number;
+  bb: number;
+  hbp: number;
+  so: number;
+  hr: number;
+  era: string;
+  whip: string;
+}
+
+export interface PlayerCareerResponse {
+  player_id: number;
+  name: string;
+  batting: CareerBattingSeason[];
+  pitching: CareerPitchingSeason[];
+}
+
+// ═══════════════════════════════════════════════
+// Player Situational Splits Models (new endpoint)
+// Coexists with existing vs-hand SplitRow / GetSplits
+// ═══════════════════════════════════════════════
+
+export interface BattingSplitRow {
+  g: number;
+  ab: number;
+  pa: number;
+  r: number;
+  h: number;
+  "2b": number;
+  "3b": number;
+  hr: number;
+  rbi: number;
+  bb: number;
+  so: number;
+  sb: number;
+  cs: number;
+  hbp: number;
+  avg: string;
+  obp: string;
+  slg: string;
+  ops: string;
+}
+
+export interface BattingVsOpponentRow extends BattingSplitRow {
+  opponent: string;
+}
+
+export interface PitchingSplitRow {
+  g: number;
+  gs: number;
+  ip: string;
+  h: number;
+  r: number;
+  er: number;
+  bb: number;
+  so: number;
+  hr: number;
+  hbp: number;
+  era: string;
+  whip: string;
+}
+
+export interface PlayerSplitsResponse {
+  batting_home_away: {
+    home: BattingSplitRow;
+    away: BattingSplitRow;
+  };
+  batting_vs_opponent: BattingVsOpponentRow[];
+  pitching_home_away: {
+    home: PitchingSplitRow;
+    away: PitchingSplitRow;
+  };
 }
 
 // ═══════════════════════════════════════════════
@@ -632,11 +901,93 @@ export interface InjuryHistoryItem {
   weeks_assigned: number;
   weeks_remaining: number;
   created_at: string;
+  // Unified injury fields (present on newer endpoints)
+  injury_type_id?: number;
+  source?: "pregame" | "ingame";
+  status?: "active" | "healed";
+  effects?: Record<string, number>;
+  gamelist_id?: number;
+  season_week?: number;
+  season_subweek?: string;
+  game_home_team?: number;
+  game_away_team?: number;
 }
 
 export interface InjuryHistoryResponse {
   events: InjuryHistoryItem[];
   total: number;
+}
+
+// ═══════════════════════════════════════════════
+// Player Injury History (per-player endpoint)
+// ═══════════════════════════════════════════════
+
+export interface PlayerInjuryHistoryParams {
+  player_id: number;
+  league_year_id?: number;
+  limit?: number;
+}
+
+export interface PlayerInjuryHistoryEvent {
+  event_id: number;
+  injury_type_id: number;
+  injury_name: string;
+  injury_code: string;
+  source: "pregame" | "ingame";
+  status: "active" | "healed";
+  weeks_assigned: number;
+  weeks_remaining: number;
+  effects: Record<string, number>;
+  gamelist_id: number;
+  season_week: number;
+  season_subweek: string;
+  game_home_team: number;
+  game_away_team: number;
+  created_at: string;
+}
+
+export interface PlayerInjuryHistoryResponse {
+  player_id: number;
+  league_year_id: number;
+  count: number;
+  events: PlayerInjuryHistoryEvent[];
+}
+
+// ═══════════════════════════════════════════════
+// Admin Injury Log
+// ═══════════════════════════════════════════════
+
+export interface AdminInjuryLogParams {
+  league_year_id: number;
+  league_level?: number;
+  team_id?: number;
+  source?: "pregame" | "ingame";
+  season_week?: number;
+  limit?: number;
+}
+
+export interface AdminInjuryLogEvent extends PlayerInjuryHistoryEvent {
+  player_id: number;
+  player_name: string;
+  player_team_abbrev: string;
+  player_league_level: number;
+}
+
+export interface AdminInjuryLogSummary {
+  total: number;
+  pregame: number;
+  ingame: number;
+  active: number;
+  healed: number;
+  by_week: { week: number; count: number }[];
+  by_injury_code: { code: string; count: number }[];
+}
+
+export interface AdminInjuryLogResponse {
+  ok: boolean;
+  filters: Record<string, unknown>;
+  summary: AdminInjuryLogSummary;
+  events: AdminInjuryLogEvent[];
 }
 
 // ═══════════════════════════════════════════════

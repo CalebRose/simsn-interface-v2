@@ -5,6 +5,7 @@ import { FaceDataResponse } from "../models/footballModels";
 import {
     OrgPlayerStrategiesResponse,
     PlayerStrategy,
+    PlayerStrategyBatchSaveRequest,
     TeamStrategy,
     LineupConfig,
     DefenseConfig,
@@ -56,8 +57,13 @@ import {
     TeamStatsParams, TeamStatsResponse,
     PlayerStatsParams, PlayerStatsResponse,
     SplitsParams, SplitsResponse,
+    PlayerGamelogResponse,
+    PlayerCareerResponse,
+    PlayerSplitsResponse,
     InjuryReportParams, InjuryReportResponse,
     InjuryHistoryParams, InjuryHistoryResponse,
+    PlayerInjuryHistoryParams, PlayerInjuryHistoryResponse,
+    AdminInjuryLogParams, AdminInjuryLogResponse,
     PositionUsageParams, PositionUsageResponse,
 } from "../models/baseball/baseballStatsModels";
 import {
@@ -169,10 +175,6 @@ export const BaseballService = {
         const qs = viewingOrgId ? `?viewing_org_id=${viewingOrgId}` : "";
         return await GetCall<BaseballRosters[]>(`${baseballUrl}rosters${qs}`);
     },
-    GetOrgRoster: async (orgAbbrev: string, viewingOrgId?: number): Promise<any[]> => {
-        const qs = viewingOrgId ? `?viewing_org_id=${viewingOrgId}` : "";
-        return await GetCall<any[]>(`${baseballUrl}orgs/${orgAbbrev}/roster${qs}`);
-    },
     // Bootstrap landing page data
     GetBootstrapLandingData: async (orgId: number, viewingOrgId?: number): Promise<BaseballBootstrapLanding> => {
         const qs = viewingOrgId ? `?viewing_org_id=${viewingOrgId}` : "";
@@ -207,8 +209,20 @@ export const BaseballService = {
     GetPlayerStrategy: async (orgId: number, playerId: number): Promise<PlayerStrategy> => {
         return await GetCall<PlayerStrategy>(`${baseballUrl}gameplanning/org/${orgId}/player/${playerId}/strategy`);
     },
-    SavePlayerStrategy: async (orgId: number, playerId: number, dto: Partial<PlayerStrategy>): Promise<PlayerStrategy> => {
-        return await PUTCall<Partial<PlayerStrategy>, PlayerStrategy>(`${baseballUrl}gameplanning/org/${orgId}/player/${playerId}/strategy`, dto);
+    /**
+     * Bulk upsert player strategies for an org. All-or-nothing on the backend.
+     * Max 500 strategies per request. On 400 validation_failed, the thrown
+     * ApiError carries `body.details: PlayerStrategyValidationDetail[]` for
+     * per-row error display.
+     */
+    SaveOrgPlayerStrategiesBatch: async (
+        orgId: number,
+        strategies: PlayerStrategyBatchSaveRequest["strategies"],
+    ): Promise<OrgPlayerStrategiesResponse> => {
+        return await PUTCall<PlayerStrategyBatchSaveRequest, OrgPlayerStrategiesResponse>(
+            `${baseballUrl}gameplanning/org/${orgId}/player-strategies`,
+            { strategies },
+        );
     },
     // --- Gameplanning: Team Strategy ---
     GetTeamStrategy: async (teamId: number): Promise<TeamStrategy> => {
@@ -487,6 +501,19 @@ export const BaseballService = {
         if (params.player_id != null) qs.set("player_id", String(params.player_id));
         if (params.team_id != null) qs.set("team_id", String(params.team_id));
         return await GetCall<SplitsResponse>(`${baseballUrl}stats/splits?${qs.toString()}`);
+    },
+    GetPlayerGamelog: async (playerId: number, leagueYearId: number): Promise<PlayerGamelogResponse> => {
+        const qs = new URLSearchParams();
+        qs.set("league_year_id", String(leagueYearId));
+        return await GetCall<PlayerGamelogResponse>(`${baseballUrl}stats/player/${playerId}/gamelog?${qs.toString()}`);
+    },
+    GetPlayerCareer: async (playerId: number): Promise<PlayerCareerResponse> => {
+        return await GetCall<PlayerCareerResponse>(`${baseballUrl}stats/player/${playerId}/career`);
+    },
+    GetPlayerSplits: async (playerId: number, leagueYearId: number): Promise<PlayerSplitsResponse> => {
+        const qs = new URLSearchParams();
+        qs.set("league_year_id", String(leagueYearId));
+        return await GetCall<PlayerSplitsResponse>(`${baseballUrl}stats/player/${playerId}/splits?${qs.toString()}`);
     },
     // --- Injuries ---
     GetInjuries: async (params: InjuryReportParams): Promise<InjuryReportResponse> => {
@@ -804,5 +831,23 @@ export const BaseballService = {
     },
     AdvanceIFAWeek: async (dto: IFAAdvanceWeekRequest): Promise<IFAAdvanceWeekResponse> => {
         return await PostCall<IFAAdvanceWeekRequest, IFAAdvanceWeekResponse>(`${baseballUrl}ifa/advance-week`, dto);
+    },
+    // --- Player Injury History (unified pregame + ingame) ---
+    GetPlayerInjuryHistory: async (params: PlayerInjuryHistoryParams): Promise<PlayerInjuryHistoryResponse> => {
+        const qs = new URLSearchParams();
+        if (params.league_year_id != null) qs.set("league_year_id", String(params.league_year_id));
+        if (params.limit != null) qs.set("limit", String(params.limit));
+        return await GetCall<PlayerInjuryHistoryResponse>(`${baseballUrl}players/${params.player_id}/injury-history?${qs.toString()}`);
+    },
+    // --- Admin Injury Log ---
+    GetAdminInjuryLog: async (params: AdminInjuryLogParams): Promise<AdminInjuryLogResponse> => {
+        const qs = new URLSearchParams();
+        qs.set("league_year_id", String(params.league_year_id));
+        if (params.league_level != null) qs.set("league_level", String(params.league_level));
+        if (params.team_id != null) qs.set("team_id", String(params.team_id));
+        if (params.source) qs.set("source", params.source);
+        if (params.season_week != null) qs.set("season_week", String(params.season_week));
+        if (params.limit != null) qs.set("limit", String(params.limit));
+        return await GetCall<AdminInjuryLogResponse>(`${baseballUrl}admin/analytics/injury-log?${qs.toString()}`);
     },
 };

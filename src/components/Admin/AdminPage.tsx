@@ -29,6 +29,7 @@ import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
 import { AdminTradesTab } from "./AdminTradesTab";
 import { IFAAdminPanel } from "./IFAAdminPanel";
+import { AdminInjuryLog } from "./AdminInjuryLog";
 import { useMemo } from "react";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 
@@ -37,6 +38,13 @@ const IFAAdminSection = () => {
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
   if (!leagueYearId) return null;
   return <IFAAdminPanel leagueYearId={leagueYearId} />;
+};
+
+const InjuryLogSection = () => {
+  const { seasonContext } = useSimBaseballStore();
+  const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+  if (!leagueYearId) return null;
+  return <AdminInjuryLog leagueYearId={leagueYearId} />;
 };
 
 interface UnAuthPageProps {
@@ -275,6 +283,7 @@ export const AdminPage = () => {
           </Border>
         )}
         {selectedLeague === SimMLB && <IFAAdminSection />}
+        {selectedLeague === SimMLB && <InjuryLogSection />}
       </PageContainer>
     </>
   );
