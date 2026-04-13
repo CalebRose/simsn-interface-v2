@@ -25,7 +25,13 @@ import {
 import {
     ProposeTradeRequest, ProposeTradeResponse,
     TradeProposal, TradeProposalActionRequest,
+    AdminApproveTradeRequest, AdminApproveTradeResponse,
+    AdminRejectTradeRequest,
+    DirectTradeRequest, DirectTradeResponse,
+    TradeRosterPlayer, RollbackRequest, RollbackResponse,
+    TransactionLogEntry,
 } from "../models/baseball/baseballTradeModels";
+import type { RosterLevelStatus as TradeRosterLevelStatus } from "../models/baseball/baseballTradeModels";
 import {
     CollegePoolParams, CollegePoolResponse,
     ProPoolParams, ProPoolResponse,
@@ -344,6 +350,41 @@ export const BaseballService = {
     },
     CancelProposal: async (proposalId: number, dto: TradeProposalActionRequest = {}): Promise<void> => {
         await PUTCall<TradeProposalActionRequest, void>(`${baseballUrl}transactions/trade/proposals/${proposalId}/cancel`, dto);
+    },
+    // --- Admin Trade Endpoints ---
+    GetAllTradeProposals: async (status?: string): Promise<TradeProposal[]> => {
+        let url = `${baseballUrl}transactions/trade/proposals`;
+        if (status) url += `?status=${status}`;
+        return await GetCall<TradeProposal[]>(url);
+    },
+    GetTradeProposal: async (proposalId: number): Promise<TradeProposal> => {
+        return await GetCall<TradeProposal>(`${baseballUrl}transactions/trade/proposals/${proposalId}`);
+    },
+    AdminApproveTrade: async (proposalId: number, dto: AdminApproveTradeRequest): Promise<AdminApproveTradeResponse> => {
+        return await PUTCall<AdminApproveTradeRequest, AdminApproveTradeResponse>(`${baseballUrl}transactions/trade/proposals/${proposalId}/admin-approve`, dto);
+    },
+    AdminRejectTrade: async (proposalId: number, dto: AdminRejectTradeRequest): Promise<TradeProposal> => {
+        return await PUTCall<AdminRejectTradeRequest, TradeProposal>(`${baseballUrl}transactions/trade/proposals/${proposalId}/admin-reject`, dto);
+    },
+    ExecuteDirectTrade: async (dto: DirectTradeRequest): Promise<DirectTradeResponse> => {
+        return await PostCall<DirectTradeRequest, DirectTradeResponse>(`${baseballUrl}transactions/trade/execute`, dto);
+    },
+    GetTradeRoster: async (orgId: number): Promise<TradeRosterPlayer[]> => {
+        return await GetCall<TradeRosterPlayer[]>(`${baseballUrl}transactions/roster/${orgId}`);
+    },
+    GetTradeRosterStatus: async (orgId: number): Promise<TradeRosterLevelStatus[]> => {
+        return await GetCall<TradeRosterLevelStatus[]>(`${baseballUrl}transactions/roster-status/${orgId}`);
+    },
+    GetTransactionLog: async (orgId?: number, type?: string): Promise<TransactionLogEntry[]> => {
+        let url = `${baseballUrl}transactions/log`;
+        const params: string[] = [];
+        if (orgId) params.push(`org_id=${orgId}`);
+        if (type) params.push(`type=${type}`);
+        if (params.length) url += `?${params.join('&')}`;
+        return await GetCall<TransactionLogEntry[]>(url);
+    },
+    RollbackTransaction: async (dto: RollbackRequest): Promise<RollbackResponse> => {
+        return await PostCall<RollbackRequest, RollbackResponse>(`${baseballUrl}transactions/rollback`, dto);
     },
     // --- Scouting: Pool Endpoints ---
     GetCollegePool: async (params: CollegePoolParams): Promise<CollegePoolResponse> => {

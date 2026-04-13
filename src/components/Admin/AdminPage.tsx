@@ -264,7 +264,9 @@ export const AdminPage = () => {
               />
               {(selectedLeague === SimPHL ||
                 selectedLeague === SimNFL ||
-                selectedLeague === SimNBA) && (
+                selectedLeague === SimNBA ||
+                selectedLeague === SimMLB ||
+                selectedLeague === SimCollegeBaseball) && (
                 <>
                   <Tab
                     label={Trades}
