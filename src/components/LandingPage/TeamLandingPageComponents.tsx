@@ -1654,7 +1654,10 @@ export const ForumPortal = ({
 
   useEffect(() => {
     let cancelled = false;
-    const forumId = `media-${league.toLowerCase()}`;
+    const leagueForumKey: Record<string, string> = {
+      SimCollegeBaseball: "simcbl",
+    };
+    const forumId = `media-${leagueForumKey[league] ?? league.toLowerCase()}`;
 
     const load = async () => {
       setLocalLoading(true);

@@ -35,6 +35,9 @@ import {
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
+import { getThemeColors } from "../../_utility/themeHelpers";
+import { getThemeAwareDarkenColor } from "../../_utility/getDarkerColor";
+import { ForumPortal } from "./TeamLandingPageComponents";
 import { BaseballBoxScoreModal } from "../Schedule/BaseballSchedule/BaseballBoxScoreModal";
 import {
   BattingLeaderRow,
@@ -53,7 +56,7 @@ export const BaseballLandingPage = ({
   league,
   ts,
 }: BaseballLandingPageProps) => {
-  const { currentUser } = useAuthStore();
+  const { currentUser, isDarkMode } = useAuthStore();
   const navigate = useNavigate();
   const {
     organizations,
@@ -158,6 +161,12 @@ export const BaseballLandingPage = ({
     [headerColor, borderColor] = [borderColor, headerColor];
   }
   const headerTextClass = getTextColorBasedOnBg(headerColor);
+
+  // Theme-aware background colors (for ForumPortal)
+  const themeColors = getThemeColors(isDarkMode);
+  const backgroundColor = themeColors.background;
+  const darkerBackgroundColor = getThemeAwareDarkenColor(backgroundColor, -5);
+  const textColorClass = getTextColorBasedOnBg(backgroundColor);
 
   // Build teamId → abbreviation map
   const teamIdToAbbrev = useMemo(() => {
@@ -936,6 +945,22 @@ export const BaseballLandingPage = ({
                 </div>
               </Border>
             )}
+
+            {/* Forum Preview */}
+            <Border
+              classes="py-0 px-0 w-full mb-2"
+              styles={{ borderTop: `3px solid ${headerColor}` }}
+            >
+              <ForumPortal
+                team={activeTeam}
+                league={league as League}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                textColorClass={textColorClass}
+                darkerBackgroundColor={darkerBackgroundColor}
+              />
+            </Border>
 
             {/* Team News */}
             <Border
