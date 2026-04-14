@@ -27,6 +27,7 @@ import {
   CollegePlayer as CFBPlayer,
   Croot as FBCroot,
   NFLContract,
+  NFLDraftee,
   NFLExtensionOffer,
   NFLPlayer,
 } from "../../models/footballModels";
@@ -1187,7 +1188,7 @@ interface PriorityAttribute {
 }
 
 export const setPriorityCFBAttributes = (
-  player: CFBPlayer,
+  player: CFBPlayer | NFLDraftee,
 ): PriorityAttribute[] => {
   let priorityAttributes: PriorityAttribute[] = [];
 
@@ -2292,7 +2293,9 @@ export const setPriorityNFLAttributes = (
   return priorityAttributes;
 };
 
-export const getShotgunRating = (player: CFBPlayer | NFLPlayer) => {
+export const getShotgunRating = (
+  player: CFBPlayer | NFLPlayer | NFLDraftee,
+) => {
   if (player.Shotgun === 1) {
     return "Shotgun";
   } else if (player.Shotgun === -1) {

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import {
   CollegePlayer as CFBPlayer,
+  NFLDraftee,
   NFLPlayer,
 } from "../models/footballModels";
 import {
@@ -19,7 +20,9 @@ import {
   ProfessionalPlayer,
 } from "../models/hockeyModels";
 
-export const useFBStatsConfiguration = (player: CFBPlayer | NFLPlayer) => {
+export const useFBStatsConfiguration = (
+  player: CFBPlayer | NFLPlayer | NFLDraftee,
+) => {
   const statsConfig = useMemo(() => {
     const positionKey = player.Position;
     if (positionKey === ATH_VALUE) {

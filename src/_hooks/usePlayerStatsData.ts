@@ -5,6 +5,7 @@ import {
   NFLPlayer,
   CollegePlayerSeasonStats as CFBPlayerSeasonStats,
   NFLPlayerSeasonStats,
+  NFLDraftee,
 } from "../models/footballModels";
 import {
   League,
@@ -25,7 +26,7 @@ import {
 import { useSimHCKStore } from "../context/SimHockeyContext";
 
 export const useFootballPlayerStatsData = (
-  player: CFBPlayer | NFLPlayer,
+  player: CFBPlayer | NFLPlayer | NFLDraftee,
   league: League,
 ) => {
   const {
