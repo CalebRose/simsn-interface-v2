@@ -1188,7 +1188,7 @@ interface PriorityAttribute {
 }
 
 export const setPriorityCFBAttributes = (
-  player: CFBPlayer | NFLDraftee,
+  player: CFBPlayer,
 ): PriorityAttribute[] => {
   let priorityAttributes: PriorityAttribute[] = [];
 
@@ -2139,6 +2139,422 @@ export const setPriorityCFBAttributes = (
         player.Year,
       ),
     },
+  );
+
+  return priorityAttributes;
+};
+
+export const setPriorityDrafteeAttributes = (
+  player: NFLDraftee,
+): PriorityAttribute[] => {
+  let priorityAttributes: PriorityAttribute[] = [];
+
+  switch (player.Position) {
+    case "QB":
+      priorityAttributes = [
+        {
+          Name: Agility,
+          Value: player.Agility,
+          Letter: player.AgilityGrade,
+        },
+        {
+          Name: Speed,
+          Value: player.Speed,
+          Letter: player.SpeedGrade,
+        },
+        {
+          Name: Carrying,
+          Value: player.Carrying,
+          Letter: player.CarryingGrade,
+        },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+        {
+          Name: ThrowPower,
+          Value: player.ThrowPower,
+          Letter: player.ThrowPowerGrade,
+        },
+        {
+          Name: ThrowAccuracy,
+          Value: player.ThrowAccuracy,
+          Letter: player.ThrowAccuracyGrade,
+        },
+        {
+          Name: ShotgunRating,
+          Value: getShotgunRating(player),
+          Letter: getShotgunRating(player),
+        },
+      ];
+      break;
+
+    case "RB":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        {
+          Name: Carrying,
+          Value: player.Carrying,
+          Letter: player.CarryingGrade,
+        },
+        {
+          Name: Catching,
+          Value: player.Catching,
+          Letter: player.CatchingGrade,
+        },
+        {
+          Name: PassBlock,
+          Value: player.PassBlock,
+          Letter: player.PassBlockGrade,
+        },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+      ];
+      break;
+
+    case "FB":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        {
+          Name: Carrying,
+          Value: player.Carrying,
+          Letter: player.CarryingGrade,
+        },
+        {
+          Name: Catching,
+          Value: player.Catching,
+          Letter: player.CatchingGrade,
+        },
+        {
+          Name: PassBlock,
+          Value: player.PassBlock,
+          Letter: player.PassBlockGrade,
+        },
+        {
+          Name: RunBlock,
+          Value: player.RunBlock,
+          Letter: player.RunBlockGrade,
+        },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+      ];
+      break;
+
+    case "WR":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        {
+          Name: Carrying,
+          Value: player.Carrying,
+          Letter: player.CarryingGrade,
+        },
+        {
+          Name: Catching,
+          Value: player.Catching,
+          Letter: player.CatchingGrade,
+        },
+        {
+          Name: RouteRunning,
+          Value: player.RouteRunning,
+          Letter: player.RouteRunningGrade,
+        },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+      ];
+      break;
+
+    case "TE":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        {
+          Name: Carrying,
+          Value: player.Carrying,
+          Letter: player.CarryingGrade,
+        },
+        {
+          Name: Catching,
+          Value: player.Catching,
+          Letter: player.CatchingGrade,
+        },
+        {
+          Name: RouteRunning,
+          Value: player.RouteRunning,
+          Letter: player.RouteRunningGrade,
+        },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+        {
+          Name: PassBlock,
+          Value: player.PassBlock,
+          Letter: player.PassBlockGrade,
+        },
+        {
+          Name: RunBlock,
+          Value: player.RunBlock,
+          Letter: player.RunBlockGrade,
+        },
+      ];
+      break;
+
+    case "OT":
+    case "OG":
+    case "C":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+        {
+          Name: PassBlock,
+          Value: player.PassBlock,
+          Letter: player.PassBlockGrade,
+        },
+        {
+          Name: RunBlock,
+          Value: player.RunBlock,
+          Letter: player.RunBlockGrade,
+        },
+      ];
+      break;
+
+    case "DE":
+    case "DT":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Tackle, Value: player.Tackle, Letter: player.TackleGrade },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+        {
+          Name: PassRush,
+          Value: player.PassRush,
+          Letter: player.PassRushGrade,
+        },
+        {
+          Name: RunDefense,
+          Value: player.RunDefense,
+          Letter: player.RunDefenseGrade,
+        },
+      ];
+      break;
+
+    case "ILB":
+    case "OLB":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        { Name: Tackle, Value: player.Tackle, Letter: player.TackleGrade },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+        {
+          Name: PassRush,
+          Value: player.PassRush,
+          Letter: player.PassRushGrade,
+        },
+        {
+          Name: RunDefense,
+          Value: player.RunDefense,
+          Letter: player.RunDefenseGrade,
+        },
+        {
+          Name: ZoneCoverage,
+          Value: player.ZoneCoverage,
+          Letter: player.ZoneCoverageGrade,
+        },
+        {
+          Name: ManCoverage,
+          Value: player.ManCoverage,
+          Letter: player.ManCoverageGrade,
+        },
+      ];
+      break;
+
+    case "CB":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        { Name: Tackle, Value: player.Tackle, Letter: player.TackleGrade },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+        {
+          Name: ZoneCoverage,
+          Value: player.ZoneCoverage,
+          Letter: player.ZoneCoverageGrade,
+        },
+        {
+          Name: ManCoverage,
+          Value: player.ManCoverage,
+          Letter: player.ManCoverageGrade,
+        },
+        {
+          Name: Catching,
+          Value: player.Catching,
+          Letter: player.CatchingGrade,
+        },
+      ];
+      break;
+
+    case "FS":
+    case "SS":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        { Name: Tackle, Value: player.Tackle, Letter: player.TackleGrade },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+        {
+          Name: RunDefense,
+          Value: player.RunDefense,
+          Letter: player.RunDefenseGrade,
+        },
+        {
+          Name: ZoneCoverage,
+          Value: player.ZoneCoverage,
+          Letter: player.ZoneCoverageGrade,
+        },
+        {
+          Name: ManCoverage,
+          Value: player.ManCoverage,
+          Letter: player.ManCoverageGrade,
+        },
+        {
+          Name: Catching,
+          Value: player.Catching,
+          Letter: player.CatchingGrade,
+        },
+      ];
+      break;
+
+    case "K":
+      priorityAttributes = [
+        {
+          Name: KickAccuracy,
+          Value: player.KickAccuracy,
+          Letter: player.KickAccuracyGrade,
+        },
+        {
+          Name: KickPower,
+          Value: player.KickPower,
+          Letter: player.KickPowerGrade,
+        },
+      ];
+      break;
+
+    case "P":
+      priorityAttributes = [
+        {
+          Name: PuntAccuracy,
+          Value: player.PuntAccuracy,
+          Letter: player.PuntAccuracyGrade,
+        },
+        {
+          Name: PuntPower,
+          Value: player.PuntPower,
+          Letter: player.PuntPowerGrade,
+        },
+      ];
+      break;
+
+    case "STU":
+      priorityAttributes = [
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Tackle, Value: player.Tackle, Letter: player.TackleGrade },
+      ];
+      break;
+
+    case "FG":
+      priorityAttributes = [
+        {
+          Name: KickAccuracy,
+          Value: player.KickAccuracy,
+          Letter: player.KickAccuracyGrade,
+        },
+        {
+          Name: KickPower,
+          Value: player.KickPower,
+          Letter: player.KickPowerGrade,
+        },
+      ];
+      break;
+
+    case "PR":
+    case "KR":
+      priorityAttributes = [
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        {
+          Name: Carrying,
+          Value: player.Carrying,
+          Letter: player.CarryingGrade,
+        },
+        {
+          Name: Catching,
+          Value: player.Catching,
+          Letter: player.CatchingGrade,
+        },
+      ];
+      break;
+
+    case "ATH":
+      priorityAttributes = [
+        { Name: Agility, Value: player.Agility, Letter: player.AgilityGrade },
+        { Name: Speed, Value: player.Speed, Letter: player.SpeedGrade },
+        {
+          Name: Strength,
+          Value: player.Strength,
+          Letter: player.StrengthGrade,
+        },
+      ];
+      break;
+
+    default:
+      break;
+  }
+
+  priorityAttributes.push(
+    {
+      Name: FootballIQ,
+      Value: player.FootballIQ,
+      Letter: player.FootballIQGrade,
+    },
+    { Name: Stamina, Value: player.Stamina, Letter: player.StaminaGrade },
+    { Name: Injury, Value: player.Injury, Letter: player.InjuryGrade },
   );
 
   return priorityAttributes;

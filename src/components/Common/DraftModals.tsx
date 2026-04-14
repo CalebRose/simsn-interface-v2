@@ -22,7 +22,10 @@ import {
 } from "./PlayerStatsModalView";
 import { getOverallGrade } from "../Draft/common";
 import { useSimFBAStore } from "../../context/SimFBAContext";
-import { setPriorityCFBAttributes } from "../Team/TeamPageUtils";
+import {
+  setPriorityCFBAttributes,
+  setPriorityDrafteeAttributes,
+} from "../Team/TeamPageUtils";
 import { NFLDraftee } from "../../models/footballModels";
 
 interface DrafteeInfoModalBodyProps {
@@ -349,7 +352,7 @@ export const NFLDrafteeInfoModalBody: FC<NFLDrafteeInfoModalBodyProps> = ({
   }
   const teamLogo = getLogo(SimCFB, player.CollegeID, currentUser?.IsRetro);
   const heightObj = HeightToFeetAndInches(player.Height);
-  const priorityAttributes = setPriorityCFBAttributes(player as NFLDraftee);
+  const priorityAttributes = setPriorityDrafteeAttributes(player as NFLDraftee);
   const abbr = cfbTeam ? cfbTeam.TeamAbbr : "";
 
   return (
