@@ -1,4 +1,4 @@
-import { NFLDraftPick, NFLDraftee } from '../../../../models/footballModels';
+import { NFLDraftPick, NFLDraftee } from "../../../../models/footballModels";
 
 export interface DraftState {
   currentPick: number;
@@ -12,18 +12,18 @@ export interface DraftState {
 export const getCurrentPickFromState = (
   allDraftPicks: { [round: number]: NFLDraftPick[] },
   currentPick: number,
-  currentRound: number
+  currentRound: number,
 ): NFLDraftPick | null => {
   const roundPicks = allDraftPicks[currentRound];
   if (!roundPicks) return null;
-  
-  return roundPicks.find(pick => pick.DraftNumber === currentPick) || null;
+
+  return roundPicks.find((pick) => pick.DraftNumber === currentPick) || null;
 };
 
 export const getUpcomingPicks = (
   allDraftPicks: { [round: number]: NFLDraftPick[] },
   currentPick: number,
-  count: number = 10
+  count: number = 10,
 ): NFLDraftPick[] => {
   const upcomingPicks: NFLDraftPick[] = [];
   let pickNumber = currentPick;
@@ -31,7 +31,7 @@ export const getUpcomingPicks = (
 
   for (let r = 1; r <= 7; r++) {
     const roundPicks = allDraftPicks[r] || [];
-    if (roundPicks.some(p => p.DraftNumber === currentPick)) {
+    if (roundPicks.some((p) => p.DraftNumber === currentPick)) {
       round = r;
       break;
     }
@@ -54,10 +54,10 @@ export const getUpcomingPicks = (
 export const getRecentPicks = (
   allDraftPicks: { [round: number]: NFLDraftPick[] },
   currentPick: number,
-  count: number = 15
+  count: number = 15,
 ): NFLDraftPick[] => {
   const recentPicks: NFLDraftPick[] = [];
-  
+
   for (let round = 1; round <= 7; round++) {
     const roundPicks = allDraftPicks[round] || [];
     for (const pick of roundPicks) {
@@ -78,11 +78,11 @@ export const getTimeForPick = (pickNumber: number): number => {
   return 120;
 };
 
-export const getDraftedPlayerIds = (
-  allDraftPicks: { [round: number]: NFLDraftPick[] }
-): Set<number> => {
+export const getDraftedPlayerIds = (allDraftPicks: {
+  [round: number]: NFLDraftPick[];
+}): Set<number> => {
   const draftedIds = new Set<number>();
-  
+
   for (let round = 1; round <= 7; round++) {
     const roundPicks = allDraftPicks[round] || [];
     for (const pick of roundPicks) {
@@ -91,63 +91,65 @@ export const getDraftedPlayerIds = (
       }
     }
   }
-  
+
   return draftedIds;
 };
 
 export const getPicksByTeam = (
   allDraftPicks: { [round: number]: NFLDraftPick[] },
-  teamId: number
+  teamId: number,
 ): NFLDraftPick[] => {
   const teamPicks: NFLDraftPick[] = [];
-  
+
   for (let round = 1; round <= 7; round++) {
     const roundPicks = allDraftPicks[round] || [];
-    teamPicks.push(...roundPicks.filter(pick => pick.TeamID === teamId));
+    teamPicks.push(...roundPicks.filter((pick) => pick.TeamID === teamId));
   }
-  
+
   return teamPicks.sort((a, b) => a.DraftNumber - b.DraftNumber);
 };
 
 export const formatDraftPosition = (pick: NFLDraftPick): string => {
   const round = pick.DraftRound;
-  const pickInRound = pick.DraftNumber - ((round - 1) * 32);
-  
+  const pickInRound = pick.DraftNumber - (round - 1) * 32;
+
   const suffix = (n: number) => {
-    if (n % 10 === 1 && n % 100 !== 11) return 'st';
-    if (n % 10 === 2 && n % 100 !== 12) return 'nd';
-    if (n % 10 === 3 && n % 100 !== 13) return 'rd';
-    return 'th';
+    if (n % 10 === 1 && n % 100 !== 11) return "st";
+    if (n % 10 === 2 && n % 100 !== 12) return "nd";
+    if (n % 10 === 3 && n % 100 !== 13) return "rd";
+    return "th";
   };
-  
+
   return `${round}${suffix(round)} Round, ${pickInRound}${suffix(pickInRound)} Pick (#${pick.DraftNumber} Overall)`;
 };
 
-export const isPickTradeable = (pick: NFLDraftPick, currentPick: number): boolean => {
+export const isPickTradeable = (
+  pick: NFLDraftPick,
+  currentPick: number,
+): boolean => {
   if (pick.SelectedPlayerID) return false;
   if (pick.DraftNumber <= currentPick) return false;
-  
+
   return true;
 };
 
 export const calculateDraftValue = (pick: NFLDraftPick): number => {
   const baseValues = [
-    3000, 2600, 2200, 1800, 1700, 1600, 1500, 1400, 1350, 1300,
-    1250, 1200, 1150, 1100, 1050, 1000, 950, 900, 875, 850,
-    800, 780, 760, 740, 720, 700, 680, 660, 640, 620,
-    600, 590
+    3000, 2600, 2200, 1800, 1700, 1600, 1500, 1400, 1350, 1300, 1250, 1200,
+    1150, 1100, 1050, 1000, 950, 900, 875, 850, 800, 780, 760, 740, 720, 700,
+    680, 660, 640, 620, 600, 590,
   ];
-  
+
   const round = pick.DraftRound;
-  const pickInRound = pick.DraftNumber - ((round - 1) * 32);
-  
+  const pickInRound = pick.DraftNumber - (round - 1) * 32;
+
   if (round === 1 && pickInRound <= 32) {
     return baseValues[pickInRound - 1] || 580;
   }
-  
+
   const roundMultiplier = Math.max(0.1, 1 - (round - 1) * 0.15);
   const baseValue = Math.max(100, 600 - (pick.DraftNumber - 33) * 8);
-  
+
   return Math.round(baseValue * roundMultiplier);
 };
 
@@ -156,232 +158,247 @@ export const sortPlayersByDraftRank = (players: NFLDraftee[]): NFLDraftee[] => {
     if (b.Overall !== a.Overall) {
       return b.Overall - a.Overall;
     }
-    
+
     const positionOrder: { [key: string]: number } = {
-      'QB': 1, 'WR': 2, 'RB': 3, 'TE': 4, 'OT': 5, 'OG': 6, 'C': 7,
-      'DE': 8, 'DT': 9, 'OLB': 10, 'ILB': 11, 'CB': 12, 'S': 13,
-      'K': 14, 'P': 15
+      QB: 1,
+      WR: 2,
+      RB: 3,
+      TE: 4,
+      OT: 5,
+      OG: 6,
+      C: 7,
+      DE: 8,
+      DT: 9,
+      OLB: 10,
+      ILB: 11,
+      CB: 12,
+      S: 13,
+      K: 14,
+      P: 15,
     };
-    
+
     const aOrder = positionOrder[a.Position] || 99;
     const bOrder = positionOrder[b.Position] || 99;
-    
+
     return aOrder - bOrder;
   });
 };
 
-export const getScoutableAttributes = (position: string, archetype: string): string[] => {
+export const getScoutableAttributes = (
+  position: string,
+  archetype: string,
+): string[] => {
   switch (position) {
-    case 'QB':
+    case "QB":
       return [
-        'Throw Power',
-        'Throw Accuracy',
-        'Football IQ',
-        'Agility',
-        'Speed',
-        'Stamina',
-        'Potential Grade'
+        "Throw Power",
+        "Throw Accuracy",
+        "Football IQ",
+        "Agility",
+        "Speed",
+        "Stamina",
+        "Potential Grade",
       ];
-    case 'RB':
+    case "RB":
       return [
-        'Speed',
-        'Agility',
-        'Carrying',
-        'Strength',
-        'Football IQ',
-        'Catching',
-        'Potential Grade'
+        "Speed",
+        "Agility",
+        "Carrying",
+        "Strength",
+        "Football IQ",
+        "Catching",
+        "Potential Grade",
       ];
-    case 'FB':
+    case "FB":
       return [
-        'Speed',
-        'Agility',
-        'Carrying',
-        'Strength',
-        'Pass Block',
-        'Run Block',
-        'Potential Grade'
+        "Speed",
+        "Agility",
+        "Carrying",
+        "Strength",
+        "Pass Block",
+        "Run Block",
+        "Potential Grade",
       ];
-    case 'TE':
+    case "TE":
       return [
-        'Speed',
-        'Agility',
-        'Carrying',
-        'Catching',
-        'Route Running',
-        'Strength',
-        'Pass Block',
-        'Run Block',
-        'Potential Grade'
+        "Speed",
+        "Agility",
+        "Carrying",
+        "Catching",
+        "Route Running",
+        "Strength",
+        "Pass Block",
+        "Run Block",
+        "Potential Grade",
       ];
-    case 'WR':
+    case "WR":
       return [
-        'Speed',
-        'Agility',
-        'Carrying',
-        'Catching',
-        'Route Running',
-        'Potential Grade'
+        "Speed",
+        "Agility",
+        "Carrying",
+        "Catching",
+        "Route Running",
+        "Potential Grade",
       ];
-    case 'OG':
-    case 'OT':
-    case 'C':
+    case "OG":
+    case "OT":
+    case "C":
       return [
-        'Agility',
-        'Strength',
-        'Pass Block',
-        'Run Block',
-        'Football IQ',
-        'Potential Grade'
+        "Agility",
+        "Strength",
+        "Pass Block",
+        "Run Block",
+        "Football IQ",
+        "Potential Grade",
       ];
-    case 'DT':
-    case 'DE':
+    case "DT":
+    case "DE":
       return [
-        'Speed',
-        'Agility',
-        'Tackle',
-        'Strength',
-        'Pass Rush',
-        'Run Defense',
-        'Football IQ',
-        'Potential Grade'
+        "Speed",
+        "Agility",
+        "Tackle",
+        "Strength",
+        "Pass Rush",
+        "Run Defense",
+        "Football IQ",
+        "Potential Grade",
       ];
-    case 'OLB':
-    case 'ILB':
+    case "OLB":
+    case "ILB":
       return [
-        'Speed',
-        'Agility',
-        'Tackle',
-        'Pass Rush',
-        'Run Defense',
-        'Man Coverage',
-        'Zone Coverage',
-        'Football IQ',
-        'Potential Grade'
+        "Speed",
+        "Agility",
+        "Tackle",
+        "Pass Rush",
+        "Run Defense",
+        "Man Coverage",
+        "Zone Coverage",
+        "Football IQ",
+        "Potential Grade",
       ];
-    case 'CB':
-    case 'FS':
-    case 'SS':
-    case 'S':
+    case "CB":
+    case "FS":
+    case "SS":
+    case "S":
       return [
-        'Speed',
-        'Agility',
-        'Tackle',
-        'Strength',
-        'Man Coverage',
-        'Zone Coverage',
-        'Catching',
-        'Football IQ',
-        'Potential Grade'
+        "Speed",
+        "Agility",
+        "Tackle",
+        "Strength",
+        "Man Coverage",
+        "Zone Coverage",
+        "Catching",
+        "Football IQ",
+        "Potential Grade",
       ];
-    case 'P':
-    case 'K':
+    case "P":
+    case "K":
       return [
-        'Punt Power',
-        'Punt Accuracy',
-        'Kick Power',
-        'Kick Accuracy',
-        'Football IQ',
-        'Potential Grade'
+        "Punt Power",
+        "Punt Accuracy",
+        "Kick Power",
+        "Kick Accuracy",
+        "Football IQ",
+        "Potential Grade",
       ];
-    case 'ATH':
-      if (archetype === 'Field General') {
+    case "ATH":
+      if (archetype === "Field General") {
         return [
-          'Football IQ',
-          'Throw Power',
-          'Throw Accuracy',
-          'Speed',
-          'Agility',
-          'Man Coverage',
-          'Zone Coverage',
-          'Potential Grade'
+          "Football IQ",
+          "Throw Power",
+          "Throw Accuracy",
+          "Speed",
+          "Agility",
+          "Man Coverage",
+          "Zone Coverage",
+          "Potential Grade",
         ];
-      } else if (archetype === 'Triple-Threat') {
+      } else if (archetype === "Triple-Threat") {
         return [
-          'Football IQ',
-          'Throw Power',
-          'Throw Accuracy',
-          'Speed',
-          'Agility',
-          'Carrying',
-          'Catching',
-          'Route Running',
-          'Potential Grade'
+          "Football IQ",
+          "Throw Power",
+          "Throw Accuracy",
+          "Speed",
+          "Agility",
+          "Carrying",
+          "Catching",
+          "Route Running",
+          "Potential Grade",
         ];
-      } else if (archetype === 'Wingback') {
+      } else if (archetype === "Wingback") {
         return [
-          'Football IQ',
-          'Speed',
-          'Agility',
-          'Carrying',
-          'Catching',
-          'Route Running',
-          'Man Coverage',
-          'Zone Coverage',
-          'Potential Grade'
+          "Football IQ",
+          "Speed",
+          "Agility",
+          "Carrying",
+          "Catching",
+          "Route Running",
+          "Man Coverage",
+          "Zone Coverage",
+          "Potential Grade",
         ];
-      } else if (archetype === 'Slotback') {
+      } else if (archetype === "Slotback") {
         return [
-          'Football IQ',
-          'Strength',
-          'Agility',
-          'Carrying',
-          'Catching',
-          'Route Running',
-          'Pass Block',
-          'Run Block',
-          'Potential Grade'
+          "Football IQ",
+          "Strength",
+          "Agility",
+          "Carrying",
+          "Catching",
+          "Route Running",
+          "Pass Block",
+          "Run Block",
+          "Potential Grade",
         ];
-      } else if (archetype === 'Lineman') {
+      } else if (archetype === "Lineman") {
         return [
-          'Football IQ',
-          'Strength',
-          'Agility',
-          'Pass Block',
-          'Run Block',
-          'Tackle',
-          'Pass Rush',
-          'Run Defense',
-          'Potential Grade'
+          "Football IQ",
+          "Strength",
+          "Agility",
+          "Pass Block",
+          "Run Block",
+          "Tackle",
+          "Pass Rush",
+          "Run Defense",
+          "Potential Grade",
         ];
       } else if (
-        archetype === 'Strongside' ||
-        archetype === 'Weakside' ||
-        archetype === 'Bandit'
+        archetype === "Strongside" ||
+        archetype === "Weakside" ||
+        archetype === "Bandit"
       ) {
         return [
-          'Football IQ',
-          'Speed',
-          'Agility',
-          'Tackle',
-          'Pass Rush',
-          'Run Defense',
-          'Man Coverage',
-          'Zone Coverage',
-          'Potential Grade'
+          "Football IQ",
+          "Speed",
+          "Agility",
+          "Tackle",
+          "Pass Rush",
+          "Run Defense",
+          "Man Coverage",
+          "Zone Coverage",
+          "Potential Grade",
         ];
-      } else if (archetype === 'Return Specialist') {
+      } else if (archetype === "Return Specialist") {
         return [
-          'Football IQ',
-          'Speed',
-          'Agility',
-          'Catching',
-          'Carrying',
-          'Route Running',
-          'Tackle',
-          'Potential Grade'
+          "Football IQ",
+          "Speed",
+          "Agility",
+          "Catching",
+          "Carrying",
+          "Route Running",
+          "Tackle",
+          "Potential Grade",
         ];
-      } else if (archetype === 'Soccer Player') {
+      } else if (archetype === "Soccer Player") {
         return [
-          'Football IQ',
-          'Speed',
-          'Agility',
-          'Catching',
-          'Punt Power',
-          'Punt Accuracy',
-          'Kick Power',
-          'Kick Accuracy',
-          'Potential Grade'
+          "Football IQ",
+          "Speed",
+          "Agility",
+          "Catching",
+          "Punt Power",
+          "Punt Accuracy",
+          "Kick Power",
+          "Kick Accuracy",
+          "Potential Grade",
         ];
       }
       return [];
@@ -393,58 +410,36 @@ export const getScoutableAttributes = (position: string, archetype: string): str
 
 export const getAttributeFieldName = (displayName: string): string => {
   const attributeMap: { [key: string]: string } = {
-    'Football IQ': 'FootballIQ',
-    'Throw Power': 'ThrowPower',
-    'Throw Accuracy': 'ThrowAccuracy',
-    'Route Running': 'RouteRunning',
-    'Pass Block': 'PassBlock',
-    'Run Block': 'RunBlock',
-    'Pass Rush': 'PassRush',
-    'Run Defense': 'RunDefense',
-    'Man Coverage': 'ManCoverage',
-    'Zone Coverage': 'ZoneCoverage',
-    'Punt Power': 'PuntPower',
-    'Punt Accuracy': 'PuntAccuracy',
-    'Kick Power': 'KickPower',
-    'Kick Accuracy': 'KickAccuracy',
-    'Potential Grade': 'PotentialGrade'
+    "Football IQ": "FootballIQ",
+    "Throw Power": "ThrowPower",
+    "Throw Accuracy": "ThrowAccuracy",
+    "Route Running": "RouteRunning",
+    "Pass Block": "PassBlock",
+    "Run Block": "RunBlock",
+    "Pass Rush": "PassRush",
+    "Run Defense": "RunDefense",
+    "Man Coverage": "ManCoverage",
+    "Zone Coverage": "ZoneCoverage",
+    "Punt Power": "PuntPower",
+    "Punt Accuracy": "PuntAccuracy",
+    "Kick Power": "KickPower",
+    "Kick Accuracy": "KickAccuracy",
+    "Potential Grade": "PotentialGrade",
   };
-  
+
   return attributeMap[displayName] || displayName;
 };
 
-export const getAttributeShowProperty = (displayName: string): string => {
-  const showAttributeMap: { [key: string]: string } = {
-    'Football IQ': 'ShowAttribute1',
-    'Speed': 'ShowAttribute2',
-    'Agility': 'ShowAttribute3',
-    'Strength': 'ShowAttribute4',
-    'Stamina': 'ShowAttribute5',
-    'Injury': 'ShowAttribute6',
-    'Potential Grade': 'ShowPotential'
-  };
-  
-  const fieldName = getAttributeFieldName(displayName);
-
-  if (showAttributeMap[displayName]) {
-    return showAttributeMap[displayName];
+export const getAttributeShowProperty = (
+  displayName: string,
+  index: number,
+): string => {
+  if (displayName === "Potential Grade") {
+    return "ShowPotential";
   }
-  
-  const positionSpecificAttributes = [
-    'ThrowPower', 'ThrowAccuracy', 'Carrying', 'Catching', 'RouteRunning',
-    'PassBlock', 'RunBlock', 'Tackle', 'PassRush', 'RunDefense',
-    'ManCoverage', 'ZoneCoverage', 'PuntPower', 'PuntAccuracy',
-    'KickPower', 'KickAccuracy'
-  ];
-  
-  const index = positionSpecificAttributes.indexOf(fieldName);
-  if (index !== -1) {
-    return `ShowAttribute${7 + index}`;
-  }
-  
-  return 'ShowAttribute7';
+  return `ShowAttribute${index + 1}`;
 };
 
 export const getScoutingCost = (attributeName: string): number => {
-  return attributeName === 'Potential Grade' ? 10 : 4;
+  return attributeName === "Potential Grade" ? 10 : 4;
 };

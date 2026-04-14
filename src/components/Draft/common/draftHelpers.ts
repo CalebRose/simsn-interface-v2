@@ -40,7 +40,7 @@ export const getAttributeShowProperty = (
   index: number,
 ): string => {
   if (isNFLLeague(league)) {
-    return getNFLAttributeShowProperty(displayName);
+    return getNFLAttributeShowProperty(displayName, index);
   }
   return getHockeyAttributeShowProperty(displayName, showPotentialGrade, index);
 };

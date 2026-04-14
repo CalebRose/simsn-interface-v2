@@ -61,6 +61,8 @@ export const useAdminUsersPage = () => {
     { label: "NBA", value: "NBA Commissioner" },
     { label: "CHL", value: "CHL Commissioner" },
     { label: "PHL", value: "PHL Commissioner" },
+    { label: "CBL", value: "CBL Commissioner" },
+    { label: "MLB", value: "MLB Commissioner" },
     { label: "Admin", value: "Admin" },
   ];
 
