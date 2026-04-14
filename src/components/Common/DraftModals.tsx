@@ -416,7 +416,7 @@ export const NFLDrafteeInfoModalBody: FC<NFLDrafteeInfoModalBodyProps> = ({
           Overall
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {getOverallGrade(player)}
+          {player.OverallGrade}
         </Text>
       </div>
       <div className="flex flex-col">

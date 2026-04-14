@@ -67,6 +67,19 @@ const getRecipientDocID = (item: AnyTradeProposal): string => {
 const generateUniqueID = (): string =>
   `trade_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
+/** Recursively removes undefined values so Firestore arrayUnion doesn't reject the object */
+const stripUndefined = (obj: any): any => {
+  if (Array.isArray(obj)) return obj.map(stripUndefined);
+  if (obj !== null && typeof obj === "object") {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [k, stripUndefined(v)]),
+    );
+  }
+  return obj;
+};
+
 // ----- Class (kept for compatibility) ---------------------------------------
 
 export class DraftTradeState {
@@ -224,6 +237,18 @@ export const useDraftTradeState = ({
 
   // ---- Helpers -----------------------------------------------------------
 
+  /**
+   * Resolves the Firestore war-room doc ID for a given team object.
+   * NFL uses the team name string (e.g. "New York Jets"); PHL uses the numeric ID.
+   */
+  const getTeamWarRoomDocID = useCallback(
+    (team: any): string => {
+      if (isNFL) return `${team?.TeamName} ${team?.Mascot}`;
+      return team?.ID?.toString() ?? "";
+    },
+    [isNFL],
+  );
+
   /** Returns a Firestore DocumentReference for any team's war-room doc */
   const getWarRoomDocRef = useCallback(
     (teamDocID: string) => doc(firestore, WarRoomCollectionName, teamDocID),
@@ -248,12 +273,18 @@ export const useDraftTradeState = ({
    */
   const handleProposeTrade = useCallback(
     async (modalDTO: AnyTradeProposal) => {
-      const newDTO = {
+      const newDTO = stripUndefined({
         ...modalDTO,
         ID: generateUniqueID(),
-      } as unknown as AnyTradeProposal;
+      }) as unknown as AnyTradeProposal;
+      console.log({ modalDTO, newDTO });
 
-      const recipientDocID = getRecipientDocID(newDTO);
+      // Resolve the recipient's war-room doc ID from the already-resolved
+      // tradePartnerTeam rather than from the DTO, since the DTO may only
+      // carry a numeric team ID while Firestore docs are keyed by team name.
+      const recipientDocID = tradePartnerTeam
+        ? getTeamWarRoomDocID(tradePartnerTeam)
+        : getRecipientDocID(newDTO);
       if (!recipientDocID) return;
 
       // 1. Add to user's sentRequests
@@ -264,7 +295,12 @@ export const useDraftTradeState = ({
         requests: arrayUnion(newDTO),
       });
     },
-    [updateUserWarRoom, getWarRoomDocRef],
+    [
+      updateUserWarRoom,
+      getWarRoomDocRef,
+      tradePartnerTeam,
+      getTeamWarRoomDocID,
+    ],
   );
 
   /**
