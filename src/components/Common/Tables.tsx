@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Table } from "../../_design/Table";
 import { Text } from "../../_design/Typography";
 import { Logo } from "../../_design/Logo";
@@ -9,7 +9,14 @@ import {
   GetGameIndex,
   RevealBBAResults,
 } from "../../_helper/teamHelper";
-import { League, SimCBB, SimNBA } from "../../_constants/constants";
+import {
+  League,
+  SimCBB,
+  SimCHL,
+  SimNBA,
+  SimNFL,
+  SimPHL,
+} from "../../_constants/constants";
 import { CurrentUser } from "../../_hooks/useCurrentUser";
 import { ClickableTeamLabel } from "./Labels";
 
@@ -36,14 +43,54 @@ export const StandingsTable = ({
   if (!standings || standings.length === 0) {
     return <div>No standings available</div>;
   }
-  const columns = [
-    { header: "Rank", accessor: "rank" },
-    { header: "Team", accessor: "TeamName" },
-    { header: "C.W", accessor: "ConferenceWins" },
-    { header: "C.L", accessor: "ConferenceLosses" },
-    { header: "T.W", accessor: "TotalWins" },
-    { header: "T.L", accessor: "TotalLosses" },
-  ];
+  const columns = useMemo(() => {
+    let cols = [
+      { header: "Rank", accessor: "rank" },
+      { header: "Team", accessor: "TeamName" },
+      { header: "C.W", accessor: "ConferenceWins" },
+      { header: "C.L", accessor: "ConferenceLosses" },
+      { header: "T.W", accessor: "TotalWins" },
+      { header: "T.L", accessor: "TotalLosses" },
+    ];
+    if (league === SimNFL) {
+      cols = [
+        { header: "Rank", accessor: "rank" },
+        { header: "Team", accessor: "TeamName" },
+        { header: "C.W", accessor: "ConferenceWins" },
+        { header: "C.L", accessor: "ConferenceLosses" },
+        { header: "C.T", accessor: "ConferenceTies" },
+        { header: "T.W", accessor: "TotalWins" },
+        { header: "T.L", accessor: "TotalLosses" },
+        { header: "T", accessor: "TotalTies" },
+      ];
+    }
+    if (league === SimCHL) {
+      cols = [
+        { header: "Rank", accessor: "rank" },
+        { header: "Team", accessor: "TeamName" },
+        { header: "C.W", accessor: "ConferenceWins" },
+        { header: "C.L", accessor: "ConferenceLosses" },
+        { header: "C.OT", accessor: "ConferenceOTLosses" },
+        { header: "T.W", accessor: "TotalWins" },
+        { header: "T.L", accessor: "TotalLosses" },
+        { header: "OT", accessor: "TotalOTLosses" },
+      ];
+    }
+    if (league === SimPHL) {
+      cols = [
+        { header: "Rank", accessor: "rank" },
+        { header: "Team", accessor: "TeamName" },
+        { header: "C.W", accessor: "ConferenceWins" },
+        { header: "C.L", accessor: "ConferenceLosses" },
+        { header: "C.OT", accessor: "ConferenceOTLosses" },
+        { header: "T.W", accessor: "TotalWins" },
+        { header: "T.L", accessor: "TotalLosses" },
+        { header: "OT", accessor: "TotalOTLosses" },
+        { header: "P", accessor: "Points" },
+      ];
+    }
+    return cols;
+  }, [league]);
   const rowRenderer = (item: any, index: number, backgroundColor: string) => {
     const logoUrl = getLogo(league, item.TeamID, currentUser.IsRetro);
     return (
@@ -83,6 +130,28 @@ export const StandingsTable = ({
         >
           {item.ConferenceLosses}
         </div>
+        {league === SimNFL && (
+          <>
+            {item.ConferenceTies !== undefined && (
+              <div
+                className={`table-cell px-2 align-middle w-[16%] ${textColorClass}`}
+              >
+                {item.ConferenceTies}
+              </div>
+            )}
+          </>
+        )}
+        {(league === SimCHL || league === SimPHL) && (
+          <>
+            {item.ConferenceOTLosses !== undefined && (
+              <div
+                className={`table-cell px-2 align-middle w-[16%] ${textColorClass}`}
+              >
+                {item.ConferenceOTLosses}
+              </div>
+            )}
+          </>
+        )}
         <div
           className={`table-cell px-2 align-middle w-[16%] ${textColorClass}`}
         >
@@ -93,6 +162,39 @@ export const StandingsTable = ({
         >
           {item.TotalLosses}
         </div>
+        {league === SimNFL && (
+          <>
+            {item.TotalTies !== undefined && (
+              <div
+                className={`table-cell px-2 align-middle w-[16%] ${textColorClass}`}
+              >
+                {item.TotalTies}
+              </div>
+            )}
+          </>
+        )}
+        {(league === SimCHL || league === SimPHL) && (
+          <>
+            {item.TotalOTLosses !== undefined && (
+              <div
+                className={`table-cell px-2 align-middle w-[16%] ${textColorClass}`}
+              >
+                {item.TotalOTLosses}
+              </div>
+            )}
+          </>
+        )}
+        {league === SimPHL && (
+          <>
+            {item.Points !== undefined && (
+              <div
+                className={`table-cell px-2 align-middle w-[16%] ${textColorClass}`}
+              >
+                {item.Points}
+              </div>
+            )}
+          </>
+        )}
       </div>
     );
   };

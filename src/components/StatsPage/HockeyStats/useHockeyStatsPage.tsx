@@ -62,6 +62,8 @@ export const useHockeyStats = () => {
     phlTeamGameStatsMap,
     phlTeamSeasonStatsMap,
     hck_Timestamp,
+    collegeInjuryReport,
+    proInjuryReport,
     SearchHockeyStats,
     ExportHockeyStats,
     getBootstrapStatsData,
@@ -289,6 +291,13 @@ export const useHockeyStats = () => {
     handleOpenModal();
   };
 
+  const injuryReport = useMemo(() => {
+    if (selectedLeague === SimCHL) {
+      return collegeInjuryReport;
+    }
+    return proInjuryReport;
+  }, [collegeInjuryReport, proInjuryReport, selectedLeague]);
+
   return {
     team,
     teamMap,
@@ -323,5 +332,6 @@ export const useHockeyStats = () => {
     SelectSeasonOption,
     Search,
     Export,
+    injuryReport,
   };
 };
