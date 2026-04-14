@@ -37,7 +37,6 @@ import {
   SimNFL,
   SimPHL,
 } from "../../_constants/constants";
-import { useResponsive } from "../../_hooks/useMobile";
 import { useCallback, useMemo } from "react";
 import { getThemeColors } from "../../_utility/themeHelpers";
 
@@ -131,7 +130,6 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
   } = useSimHCKStore();
   const currentWeek = GetCurrentWeek(league, ts);
   const headers = Titles.headersMapping[league as LeagueType];
-  const { isMobile } = useResponsive();
 
   const toggleNotificationAsRead = useCallback(
     (league: League, id: number) => {
@@ -462,16 +460,17 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           headerColor={headerColor}
           borderColor={borderColor}
         />
-        <div className="flex-col lg:flex lg:flex-row gap-[1vw] md:gap-4 items-start w-full justify-center">
-          <div className="flex md:gap-[2vw] lg:gap-4 flex-col-reverse md:flex-row">
-            <Border
-              classes="border-4 py-0 px-0 h-[90vw] max-h-[90vh] w-full md:max-w-[45vw] lg:max-w-[30rem] md:h-auto"
-              styles={{
-                backgroundColor: borderColor,
-                borderColor: backgroundColor,
-              }}
-            >
-              {currentUser && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:w-[85vw] items-start">
+          {/* Column 1: Standings */}
+          <div className="flex flex-col gap-4">
+            {currentUser && (
+              <Border
+                classes="border-4 py-0 px-0 w-full h-[50vh] md:h-full"
+                styles={{
+                  backgroundColor: borderColor,
+                  borderColor: backgroundColor,
+                }}
+              >
                 <TeamStandings
                   standings={teamStandings}
                   team={team}
@@ -484,179 +483,135 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                   textColorClass={textColorClass}
                   darkerBackgroundColor={darkerBackgroundColor}
                 />
-              )}
-            </Border>
-            <div className="flex flex-col items-center md:h-auto w-full md:w-[50vw] lg:w-[32em] 3xl:w-[40em]">
-              <Border
-                classes="border-4 py-[0px] px-[0px] w-full md:h-auto md:max-h-[30vh] lg:max-h-[24em] 3xl:max-h-[36em]"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <TeamMatchUp
-                  team={team}
-                  week={gameWeek}
-                  league={league}
-                  ts={ts}
-                  matchUp={teamMatchUp}
-                  homeLogo={homeLogo}
-                  awayLogo={awayLogo}
-                  homeLabel={homeLabel}
-                  awayLabel={awayLabel}
-                  backgroundColor={backgroundColor}
-                  headerColor={headerColor}
-                  borderColor={borderColor}
-                  textColorClass={textColorClass}
-                  darkerBackgroundColor={darkerBackgroundColor}
-                  isLoading={isLoading}
-                  playerMap={playerMap}
-                />
               </Border>
-              {isMobile && (
-                <Border
-                  classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] w-full md:min-w-[18em] md:max-w-[45vw] lg:max-w-[30em] md:max-h-[40em]"
-                  styles={{
-                    backgroundColor: borderColor,
-                    borderColor: backgroundColor,
-                  }}
-                >
-                  <TeamInjuries
-                    team={team}
-                    league={league}
-                    teamInjuries={teamInjuries}
-                    backgroundColor={backgroundColor}
-                    headerColor={headerColor}
-                    borderColor={borderColor}
-                    textColorClass={textColorClass}
-                    darkerBackgroundColor={darkerBackgroundColor}
-                    isLoading={isLoading}
-                  />
-                </Border>
-              )}
-              {isMobile && (
-                <Border
-                  classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] w-full max-w-full md:w-full md:min-w-[18em] md:max-w-[45vw] lg:max-w-[30em] md:max-h-[35em]"
-                  styles={{
-                    backgroundColor: borderColor,
-                    borderColor: backgroundColor,
-                  }}
-                >
-                  <TeamQuickLinks
-                    team={team}
-                    league={league}
-                    backgroundColor={backgroundColor}
-                    headerColor={headerColor}
-                    borderColor={borderColor}
-                    textColorClass={textColorClass}
-                    darkerBackgroundColor={darkerBackgroundColor}
-                  />
-                </Border>
-              )}
-              <div className="flex flex-row gap-[1vw] md:gap-2 h-[14em] w-full max-h-[14em] md:max-h-max lg:gap-0 lg:flex-col">
-                <Border
-                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
-                  styles={{
-                    backgroundColor: borderColor,
-                    borderColor: backgroundColor,
-                  }}
-                >
-                  <ForumPortal
-                    team={team}
-                    league={league}
-                    backgroundColor={backgroundColor}
-                    headerColor={headerColor}
-                    borderColor={borderColor}
-                    textColorClass={textColorClass}
-                    darkerBackgroundColor={darkerBackgroundColor}
-                  />
-                </Border>
-                <Border
-                  classes="border-4 py-[0px] px-[0px] w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
-                  styles={{
-                    backgroundColor: borderColor,
-                    borderColor: backgroundColor,
-                  }}
-                >
-                  <TeamNews
-                    team={team}
-                    teamNews={teamNews}
-                    isLoading={isLoading}
-                    backgroundColor={backgroundColor}
-                    headerColor={headerColor}
-                    borderColor={borderColor}
-                    textColorClass={textColorClass}
-                    darkerBackgroundColor={darkerBackgroundColor}
-                  />
-                </Border>
-              </div>
-            </div>
+            )}
           </div>
-          <div className="flex flex-col items-start pt-1 md:pt-0 h-full md:h-auto md:w-[30vw] lg:w-[32em] md:min-w-[20em] lg:min-w-[20em] md:max-w-[35vw] lg:max-w-[30em] 3xl:min-w-[20em] 3xl:max-w-[42em] justify-center">
-            {!isMobile && (
-              <Border
-                classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] w-full max-w-full md:w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[35em]"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <TeamQuickLinks
-                  team={team}
-                  league={league}
-                  ts={ts}
-                  backgroundColor={backgroundColor}
-                  headerColor={headerColor}
-                  borderColor={borderColor}
-                  textColorClass={textColorClass}
-                  darkerBackgroundColor={darkerBackgroundColor}
-                />
-              </Border>
-            )}
-            {!isMobile && (
-              <Border
-                classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-[70%] md:w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[40em]"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <TeamInjuries
-                  team={team}
-                  league={league}
-                  teamInjuries={teamInjuries}
-                  backgroundColor={backgroundColor}
-                  headerColor={headerColor}
-                  borderColor={borderColor}
-                  textColorClass={textColorClass}
-                  darkerBackgroundColor={darkerBackgroundColor}
-                  isLoading={isLoading}
-                />
-              </Border>
-            )}
-            <div className="flex flex-row md:flex-none md:flex-col w-full">
-              <Border
-                classes="border-4 h-full md:h-auto py-[0px] px-[0px] w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[40em]"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <TeamStats
-                  team={team}
-                  league={league}
-                  header="Team Statistics"
-                  teamStats={teamStats}
-                  titles={headers}
-                  backgroundColor={backgroundColor}
-                  headerColor={headerColor}
-                  borderColor={borderColor}
-                  textColorClass={textColorClass}
-                  darkerBackgroundColor={darkerBackgroundColor}
-                  isLoading={isLoading}
-                />
-              </Border>
-            </div>
+
+          {/* Column 2: MatchUp, Forum, News */}
+          <div className="flex flex-col gap-4">
+            <Border
+              classes="border-4 py-0 px-0 w-full"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
+            >
+              <TeamMatchUp
+                team={team}
+                week={gameWeek}
+                league={league}
+                ts={ts}
+                matchUp={teamMatchUp}
+                homeLogo={homeLogo}
+                awayLogo={awayLogo}
+                homeLabel={homeLabel}
+                awayLabel={awayLabel}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                textColorClass={textColorClass}
+                darkerBackgroundColor={darkerBackgroundColor}
+                isLoading={isLoading}
+                playerMap={playerMap}
+              />
+            </Border>
+            <Border
+              classes="border-4 py-0 px-0 w-full h-[35vh] max-h-[35vh]"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
+            >
+              <ForumPortal
+                team={team}
+                league={league}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                textColorClass={textColorClass}
+                darkerBackgroundColor={darkerBackgroundColor}
+              />
+            </Border>
+            <Border
+              classes="border-4 py-0 px-0 w-full"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
+            >
+              <TeamNews
+                team={team}
+                teamNews={teamNews}
+                isLoading={isLoading}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                textColorClass={textColorClass}
+                darkerBackgroundColor={darkerBackgroundColor}
+              />
+            </Border>
+          </div>
+
+          {/* Column 3: QuickLinks, Injuries, Stats */}
+          <div className="flex flex-col gap-4">
+            <Border
+              classes="border-4 py-0 px-0 w-full"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
+            >
+              <TeamQuickLinks
+                team={team}
+                league={league}
+                ts={ts}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                textColorClass={textColorClass}
+                darkerBackgroundColor={darkerBackgroundColor}
+              />
+            </Border>
+            <Border
+              classes="border-4 py-0 px-0 w-full"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
+            >
+              <TeamInjuries
+                team={team}
+                league={league}
+                teamInjuries={teamInjuries}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                textColorClass={textColorClass}
+                darkerBackgroundColor={darkerBackgroundColor}
+                isLoading={isLoading}
+              />
+            </Border>
+            <Border
+              classes="border-4 py-0 px-0 w-full"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
+            >
+              <TeamStats
+                team={team}
+                league={league}
+                header="Team Statistics"
+                teamStats={teamStats}
+                titles={headers}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                textColorClass={textColorClass}
+                darkerBackgroundColor={darkerBackgroundColor}
+                isLoading={isLoading}
+              />
+            </Border>
           </div>
         </div>
       </div>

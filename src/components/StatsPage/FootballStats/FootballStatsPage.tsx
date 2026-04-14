@@ -17,6 +17,7 @@ import { ToggleSwitch } from "../../../_design/Inputs";
 import { StatsPageHelpModal } from "../Common/StatsPageHelpModal";
 import { AwardsModal } from "../Common/AwardsModal";
 import { darkenColor } from "../../../_utility/getDarkerColor";
+import { InjuryReportModal } from "../Common/InjuryReportModal";
 
 export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
   const {
@@ -54,11 +55,13 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
     SelectSeasonOption,
     Search,
     Export,
+    injuryReport,
   } = useFootballStats();
   const { backgroundColor } = useBackgroundColor();
   const { isMobile, isDesktop } = useResponsive();
   const helpModal = useModal();
   const awardsModal = useModal();
+  const injuryReportModal = useModal();
   const teamColors = useTeamColors(
     team?.ColorOne,
     team?.ColorTwo,
@@ -83,6 +86,15 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
         onClose={helpModal.handleCloseModal}
         league={league}
         modalAction={Help1}
+      />
+      <InjuryReportModal
+        isOpen={injuryReportModal.isModalOpen}
+        onClose={injuryReportModal.handleCloseModal}
+        league={league}
+        injuredPlayers={injuryReport}
+        borderColor={teamColors.Two}
+        backgroundColor="#1f2937"
+        darkerBackgroundColor={darkenColor("#1f2937", -5)}
       />
       <AwardsModal
         isOpen={awardsModal.isModalOpen}
@@ -114,6 +126,7 @@ export const FootballStatsPage: FC<StatsPageProps> = ({ league }) => {
           SelectSeasonOption={SelectSeasonOption}
           Search={Search}
           Export={Export}
+          HandleInjuryReportModal={injuryReportModal.handleOpenModal}
         />
         <div className="flex flex-col w-full max-[1024px]:gap-y-2">
           <div className="flex flex-col sm:flex-row gap-x-2">

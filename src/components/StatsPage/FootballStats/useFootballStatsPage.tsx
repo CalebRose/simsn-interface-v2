@@ -60,11 +60,13 @@ export const useFootballStats = () => {
     SearchFootballStats,
     ExportFootballStats,
     getBootstrapStatsData,
+    collegeInjuryReport,
+    proInjuryReport,
   } = useSimFBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(InfoType);
   const [modalPlayer, setModalPlayer] = useState<NFLPlayer | CollegePlayer>(
-    {} as NFLPlayer
+    {} as NFLPlayer,
   );
   const [statsView, setStatsView] = useState<StatsView>(SEASON_VIEW);
   const [statsType, setStatsType] = useState<StatsType>(PLAYER_VIEW);
@@ -81,7 +83,7 @@ export const useFootballStats = () => {
   const [selectedLeagueOption, setSelectedLeagueOption] = useState<number>(1);
   const [selectedWeek, setSelectedWeek] = useState<number>(2501);
   const [selectedSeason, setSelectedSeason] = useState<number>(
-    cfb_Timestamp!.CollegeSeasonID
+    cfb_Timestamp!.CollegeSeasonID,
   ); // SEASON ID
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [selectedConferences, setSelectedConferences] = useState<string[]>([]);
@@ -134,7 +136,7 @@ export const useFootballStats = () => {
         cfbPlayerGameStatsMap,
         cfbPlayerSeasonStatsMap,
         cfbTeamGameStatsMap,
-        cfbTeamSeasonStatsMap
+        cfbTeamSeasonStatsMap,
       );
     }
     if (selectedLeague === SimNFL) {
@@ -146,7 +148,7 @@ export const useFootballStats = () => {
         nflPlayerGameStatsMap,
         nflPlayerSeasonStatsMap,
         nflTeamGameStatsMap,
-        nflTeamSeasonStatsMap
+        nflTeamSeasonStatsMap,
       );
     }
     return [];
@@ -192,7 +194,7 @@ export const useFootballStats = () => {
       return GetFilteredCFBTeamOptions(
         selectedLeagueOption,
         cfbTeamOptions,
-        cfbTeamMap!!
+        cfbTeamMap!!,
       );
     }
     return nflTeamOptions;
@@ -203,7 +205,7 @@ export const useFootballStats = () => {
       return GetFilteredCFBConferenceOptions(
         selectedLeagueOption,
         cfbConferenceOptions,
-        cfbTeams
+        cfbTeams,
       );
     }
     return nflConferenceOptions;
@@ -269,7 +271,7 @@ export const useFootballStats = () => {
 
   const handlePlayerModal = (
     action: ModalAction,
-    player: CollegePlayer | NFLPlayer
+    player: CollegePlayer | NFLPlayer,
   ) => {
     setModalPlayer(player);
     setModalAction(action);
@@ -300,6 +302,13 @@ export const useFootballStats = () => {
     };
     return await ExportFootballStats(dto);
   };
+
+  const injuryReport = useMemo(() => {
+    if (selectedLeague === SimCFB) {
+      return collegeInjuryReport;
+    }
+    return proInjuryReport;
+  }, [collegeInjuryReport, proInjuryReport, selectedLeague]);
 
   return {
     team,
@@ -336,5 +345,6 @@ export const useFootballStats = () => {
     SelectSeasonOption,
     Search,
     Export,
+    injuryReport,
   };
 };

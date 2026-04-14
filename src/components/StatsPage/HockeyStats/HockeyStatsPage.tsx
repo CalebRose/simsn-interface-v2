@@ -15,6 +15,8 @@ import { Text } from "../../../_design/Typography";
 import { HockeyStatsTable } from "./HockeyStatsTable";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { StatsPageHelpModal } from "../Common/StatsPageHelpModal";
+import { darkenColor } from "../../../_utility/getDarkerColor";
+import { InjuryReportModal } from "../Common/InjuryReportModal";
 
 export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
   const {
@@ -36,6 +38,7 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
     viewGoalieStats,
     gameDay,
     currentPage,
+    injuryReport,
     ChangeGameDay,
     ChangeGoalieView,
     goToPreviousPage,
@@ -55,6 +58,7 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
   const { backgroundColor } = useBackgroundColor();
   const { isMobile, isDesktop } = useResponsive();
   const helpModal = useModal();
+  const injuryReportModal = useModal();
   const teamColors = useTeamColors(
     team?.ColorOne,
     team?.ColorTwo,
@@ -74,6 +78,15 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
           player={modalPlayer}
         />
       )}
+      <InjuryReportModal
+        isOpen={injuryReportModal.isModalOpen}
+        onClose={injuryReportModal.handleCloseModal}
+        league={league}
+        injuredPlayers={injuryReport}
+        borderColor={teamColors.Two}
+        backgroundColor="#1f2937"
+        darkerBackgroundColor={darkenColor("#1f2937", -5)}
+      />
       <StatsPageHelpModal
         isOpen={helpModal.isModalOpen}
         onClose={helpModal.handleCloseModal}
@@ -101,6 +114,7 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
           gameDay={gameDay}
           changeGameDay={ChangeGameDay}
           HandleAwardsModal={() => {}}
+          HandleInjuryReportModal={injuryReportModal.handleOpenModal}
         />
         <div className="flex flex-col w-full max-[1024px]:gap-y-2 min-w-0">
           <div className="flex flex-col sm:flex-row gap-x-2">

@@ -67,6 +67,7 @@ interface StatsSidebarProps {
   ChangeFBStatsType?: (newStatsType: FootballStatsType) => void;
   HandleHelpModal: () => void;
   HandleAwardsModal: () => void;
+  HandleInjuryReportModal: () => void;
   Search: () => Promise<void>;
   Export: () => Promise<void>;
   // ts: HCKTimestamp;
@@ -94,6 +95,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
   Search,
   Export,
   HandleAwardsModal,
+  HandleInjuryReportModal,
 }) => {
   const { backgroundColor } = useBackgroundColor();
   const { isMobile, isTablet, isDesktop } = useResponsive();
@@ -188,6 +190,14 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                 onClick={HandleHelpModal}
               >
                 Help
+              </Button>
+              <Button
+                type="button"
+                size="xs"
+                variant="primary"
+                onClick={HandleInjuryReportModal}
+              >
+                Injury Report
               </Button>
               {league === SimCFB && (
                 <Button
