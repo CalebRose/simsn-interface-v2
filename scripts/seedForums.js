@@ -143,6 +143,14 @@ const forums = [
     "SimSN-wide news and press releases",
   ),
   subforum(
+    "admin-devdiaries",
+    "devdiaries",
+    "Dev Diaries",
+    "admin",
+    0.5,
+    "Development updates and behind-the-scenes looks at new features and improvements",
+  ),
+  subforum(
     "admin-simcfb",
     "simcfb",
     "SimCFB Announcements",
