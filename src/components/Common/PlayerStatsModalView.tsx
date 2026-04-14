@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import {
   CollegePlayer as CFBPlayer,
+  NFLDraftee,
   NFLPlayer,
 } from "../../models/footballModels";
 import { League, SEASON_VIEW } from "../../_constants/constants";
@@ -31,7 +32,7 @@ import {
 } from "../../_hooks/useValueLabels";
 
 interface FootballPlayerStatsModalViewProps {
-  player: CFBPlayer | NFLPlayer;
+  player: CFBPlayer | NFLPlayer | NFLDraftee;
   league: League;
 }
 
