@@ -1,5 +1,6 @@
 import { baseballUrl } from "../_constants/urls";
 import { GetCall, PostCall, PUTCall, DELETECall } from "../_helper/fetchHelper";
+import type { TutorialManifest, TutorialArticle } from "../models/baseball/baseballTutorialModels";
 import { BaseballBootstrapLanding, BaseballBootstrapAll, BaseballOrganization, BaseballRosters, PayrollProjectionResponse, ContractOverviewPlayer, ScheduleParams, ScheduleResponse, ListedPositionResponse } from "../models/baseball/baseballModels";
 import { FaceDataResponse } from "../models/footballModels";
 import {
@@ -25,7 +26,13 @@ import {
 import {
     ProposeTradeRequest, ProposeTradeResponse,
     TradeProposal, TradeProposalActionRequest,
+    AdminApproveTradeRequest, AdminApproveTradeResponse,
+    AdminRejectTradeRequest,
+    DirectTradeRequest, DirectTradeResponse,
+    TradeRosterPlayer, RollbackRequest, RollbackResponse,
+    TransactionLogEntry,
 } from "../models/baseball/baseballTradeModels";
+import type { RosterLevelStatus as TradeRosterLevelStatus } from "../models/baseball/baseballTradeModels";
 import {
     CollegePoolParams, CollegePoolResponse,
     ProPoolParams, ProPoolResponse,
@@ -92,6 +99,26 @@ import {
     SignPickResponse,
     PassPickResponse,
 } from "../models/baseball/baseballDraftModels";
+import {
+    SimulateWeekRequest, SimulateWeekResponse,
+    SimulateSubweekRequest, SimulateSubweekResponse,
+    AdvanceWeekRequest, SimpleStatusResponse,
+    RollbackToWeekRequest,
+    EndSeasonRequest, EndSeasonResponse,
+    StartNewSeasonRequest, StartNewSeasonResponse,
+    SetPhaseRequest,
+    RunSeasonRequest, RunSeasonResponse,
+    TaskStatusResponse,
+    AdvanceRecruitingWeekRequest, AdvanceRecruitingWeekResponse,
+    RecruitingSummaryResponse,
+    OrgLeaderboardResponse,
+    PlayerDemandParams, PlayerDemandResponse,
+    OrgDetailResponse,
+    RecruitingResetWeekRequest,
+    RecruitingWipeRequest, RecruitingWipeResponse,
+    RecruitingFullResetResponse,
+    RankingsWipeResponse, RankingsRegenerateResponse,
+} from "../models/baseball/baseballAdminModels";
 import {
     IFAState,
     IFABonusPool,
@@ -324,6 +351,41 @@ export const BaseballService = {
     },
     CancelProposal: async (proposalId: number, dto: TradeProposalActionRequest = {}): Promise<void> => {
         await PUTCall<TradeProposalActionRequest, void>(`${baseballUrl}transactions/trade/proposals/${proposalId}/cancel`, dto);
+    },
+    // --- Admin Trade Endpoints ---
+    GetAllTradeProposals: async (status?: string): Promise<TradeProposal[]> => {
+        let url = `${baseballUrl}transactions/trade/proposals`;
+        if (status) url += `?status=${status}`;
+        return await GetCall<TradeProposal[]>(url);
+    },
+    GetTradeProposal: async (proposalId: number): Promise<TradeProposal> => {
+        return await GetCall<TradeProposal>(`${baseballUrl}transactions/trade/proposals/${proposalId}`);
+    },
+    AdminApproveTrade: async (proposalId: number, dto: AdminApproveTradeRequest): Promise<AdminApproveTradeResponse> => {
+        return await PUTCall<AdminApproveTradeRequest, AdminApproveTradeResponse>(`${baseballUrl}transactions/trade/proposals/${proposalId}/admin-approve`, dto);
+    },
+    AdminRejectTrade: async (proposalId: number, dto: AdminRejectTradeRequest): Promise<TradeProposal> => {
+        return await PUTCall<AdminRejectTradeRequest, TradeProposal>(`${baseballUrl}transactions/trade/proposals/${proposalId}/admin-reject`, dto);
+    },
+    ExecuteDirectTrade: async (dto: DirectTradeRequest): Promise<DirectTradeResponse> => {
+        return await PostCall<DirectTradeRequest, DirectTradeResponse>(`${baseballUrl}transactions/trade/execute`, dto);
+    },
+    GetTradeRoster: async (orgId: number): Promise<TradeRosterPlayer[]> => {
+        return await GetCall<TradeRosterPlayer[]>(`${baseballUrl}transactions/roster/${orgId}`);
+    },
+    GetTradeRosterStatus: async (orgId: number): Promise<TradeRosterLevelStatus[]> => {
+        return await GetCall<TradeRosterLevelStatus[]>(`${baseballUrl}transactions/roster-status/${orgId}`);
+    },
+    GetTransactionLog: async (orgId?: number, type?: string): Promise<TransactionLogEntry[]> => {
+        let url = `${baseballUrl}transactions/log`;
+        const params: string[] = [];
+        if (orgId) params.push(`org_id=${orgId}`);
+        if (type) params.push(`type=${type}`);
+        if (params.length) url += `?${params.join('&')}`;
+        return await GetCall<TransactionLogEntry[]>(url);
+    },
+    RollbackTransaction: async (dto: RollbackRequest): Promise<RollbackResponse> => {
+        return await PostCall<RollbackRequest, RollbackResponse>(`${baseballUrl}transactions/rollback`, dto);
     },
     // --- Scouting: Pool Endpoints ---
     GetCollegePool: async (params: CollegePoolParams): Promise<CollegePoolResponse> => {
@@ -849,5 +911,116 @@ export const BaseballService = {
         if (params.season_week != null) qs.set("season_week", String(params.season_week));
         if (params.limit != null) qs.set("limit", String(params.limit));
         return await GetCall<AdminInjuryLogResponse>(`${baseballUrl}admin/analytics/injury-log?${qs.toString()}`);
+    },
+
+    // ── Simulation Control ──────────────────────────────────────
+    GetTimestamp: async (): Promise<any> => {
+        return await GetCall<any>(`${baseballUrl}games/timestamp`);
+    },
+    SimulateWeek: async (dto: SimulateWeekRequest): Promise<SimulateWeekResponse> => {
+        return await PostCall<SimulateWeekRequest, SimulateWeekResponse>(`${baseballUrl}games/simulate-week`, dto);
+    },
+    SimulateSubweek: async (dto: SimulateSubweekRequest): Promise<SimulateSubweekResponse> => {
+        return await PostCall<SimulateSubweekRequest, SimulateSubweekResponse>(`${baseballUrl}games/simulate-subweek`, dto);
+    },
+    AdvanceWeek: async (dto?: AdvanceWeekRequest): Promise<SimpleStatusResponse> => {
+        return await PostCall<AdvanceWeekRequest, SimpleStatusResponse>(`${baseballUrl}games/advance-week`, dto ?? {});
+    },
+    ResetWeek: async (): Promise<SimpleStatusResponse> => {
+        return await PostCall<{}, SimpleStatusResponse>(`${baseballUrl}games/reset-week`, {});
+    },
+    RollbackWeek: async (): Promise<SimpleStatusResponse> => {
+        return await PostCall<{}, SimpleStatusResponse>(`${baseballUrl}games/rollback-week`, {});
+    },
+    RollbackToWeek: async (dto: RollbackToWeekRequest): Promise<SimpleStatusResponse> => {
+        return await PostCall<RollbackToWeekRequest, SimpleStatusResponse>(`${baseballUrl}games/rollback-to-week`, dto);
+    },
+    EndSeason: async (dto: EndSeasonRequest): Promise<EndSeasonResponse> => {
+        return await PostCall<EndSeasonRequest, EndSeasonResponse>(`${baseballUrl}games/end-season`, dto);
+    },
+    StartNewSeason: async (dto: StartNewSeasonRequest): Promise<StartNewSeasonResponse> => {
+        return await PostCall<StartNewSeasonRequest, StartNewSeasonResponse>(`${baseballUrl}games/start-new-season`, dto);
+    },
+    SetPhase: async (dto: SetPhaseRequest): Promise<any> => {
+        return await PostCall<SetPhaseRequest, any>(`${baseballUrl}games/set-phase`, dto);
+    },
+    StartFreeAgency: async (): Promise<any> => {
+        return await PostCall<{}, any>(`${baseballUrl}games/start-free-agency`, {});
+    },
+    AdvanceFARound: async (): Promise<any> => {
+        return await PostCall<{}, any>(`${baseballUrl}games/advance-fa-round`, {});
+    },
+    EndFreeAgency: async (): Promise<any> => {
+        return await PostCall<{}, any>(`${baseballUrl}games/end-free-agency`, {});
+    },
+    StartDraftPhase: async (): Promise<any> => {
+        return await PostCall<{}, any>(`${baseballUrl}games/start-draft`, {});
+    },
+    EndDraftPhase: async (): Promise<any> => {
+        return await PostCall<{}, any>(`${baseballUrl}games/end-draft`, {});
+    },
+    StartRecruiting: async (): Promise<any> => {
+        return await PostCall<{}, any>(`${baseballUrl}games/start-recruiting`, {});
+    },
+    EndRecruiting: async (): Promise<any> => {
+        return await PostCall<{}, any>(`${baseballUrl}games/end-recruiting`, {});
+    },
+    RunSeason: async (dto: RunSeasonRequest): Promise<RunSeasonResponse> => {
+        return await PostCall<RunSeasonRequest, RunSeasonResponse>(`${baseballUrl}games/run-season`, dto);
+    },
+    RunSeasonAll: async (dto: RunSeasonRequest): Promise<RunSeasonResponse> => {
+        return await PostCall<RunSeasonRequest, RunSeasonResponse>(`${baseballUrl}games/run-season-all`, dto);
+    },
+    GetTaskStatus: async (taskId: string): Promise<TaskStatusResponse> => {
+        return await GetCall<TaskStatusResponse>(`${baseballUrl}games/tasks/${taskId}`);
+    },
+
+    // ── Recruiting Admin ────────────────────────────────────────
+    AdvanceRecruitingWeek: async (dto: AdvanceRecruitingWeekRequest): Promise<AdvanceRecruitingWeekResponse> => {
+        return await PostCall<AdvanceRecruitingWeekRequest, AdvanceRecruitingWeekResponse>(`${baseballUrl}recruiting/advance-week`, dto);
+    },
+    GetRecruitingSummary: async (leagueYearId: number): Promise<RecruitingSummaryResponse> => {
+        return await GetCall<RecruitingSummaryResponse>(`${baseballUrl}recruiting/admin/report/summary?league_year_id=${leagueYearId}`);
+    },
+    GetOrgLeaderboard: async (leagueYearId: number): Promise<OrgLeaderboardResponse> => {
+        return await GetCall<OrgLeaderboardResponse>(`${baseballUrl}recruiting/admin/report/org-leaderboard?league_year_id=${leagueYearId}`);
+    },
+    GetPlayerDemand: async (params: PlayerDemandParams): Promise<PlayerDemandResponse> => {
+        const qs = new URLSearchParams();
+        qs.set("league_year_id", String(params.league_year_id));
+        if (params.star_rating != null) qs.set("star_rating", String(params.star_rating));
+        if (params.limit != null) qs.set("limit", String(params.limit));
+        return await GetCall<PlayerDemandResponse>(`${baseballUrl}recruiting/admin/report/player-demand?${qs.toString()}`);
+    },
+    GetOrgDetail: async (orgId: number, leagueYearId: number): Promise<OrgDetailResponse> => {
+        return await GetCall<OrgDetailResponse>(`${baseballUrl}recruiting/admin/report/org-detail/${orgId}?league_year_id=${leagueYearId}`);
+    },
+    RecruitingResetWeek: async (dto: RecruitingResetWeekRequest): Promise<SimpleStatusResponse> => {
+        return await PostCall<RecruitingResetWeekRequest, SimpleStatusResponse>(`${baseballUrl}recruiting/admin/reset-week`, dto);
+    },
+    RecruitingWipeInvestments: async (dto: RecruitingWipeRequest): Promise<RecruitingWipeResponse> => {
+        return await PostCall<RecruitingWipeRequest, RecruitingWipeResponse>(`${baseballUrl}recruiting/admin/wipe-investments`, dto);
+    },
+    RecruitingWipeCommitments: async (dto: RecruitingWipeRequest): Promise<RecruitingWipeResponse> => {
+        return await PostCall<RecruitingWipeRequest, RecruitingWipeResponse>(`${baseballUrl}recruiting/admin/wipe-commitments`, dto);
+    },
+    RecruitingWipeBoards: async (dto: RecruitingWipeRequest): Promise<RecruitingWipeResponse> => {
+        return await PostCall<RecruitingWipeRequest, RecruitingWipeResponse>(`${baseballUrl}recruiting/admin/wipe-boards`, dto);
+    },
+    RecruitingFullReset: async (dto: { league_year_id: number }): Promise<RecruitingFullResetResponse> => {
+        return await PostCall<{ league_year_id: number }, RecruitingFullResetResponse>(`${baseballUrl}recruiting/admin/full-reset`, dto);
+    },
+    WipeRankings: async (dto: { league_year_id: number }): Promise<RankingsWipeResponse> => {
+        return await PostCall<{ league_year_id: number }, RankingsWipeResponse>(`${baseballUrl}recruiting/rankings/wipe`, dto);
+    },
+    RegenerateRankings: async (dto: { league_year_id: number }): Promise<RankingsRegenerateResponse> => {
+        return await PostCall<{ league_year_id: number }, RankingsRegenerateResponse>(`${baseballUrl}recruiting/rankings/regenerate`, dto);
+    },
+    // ─── Tutorial ────────────────────────────────────────────────────────────
+    GetTutorialManifest: async (): Promise<TutorialManifest> => {
+        return await GetCall<TutorialManifest>(`${baseballUrl}baseball/tutorial`);
+    },
+    GetTutorialArticle: async (categoryId: string, articleId: string): Promise<TutorialArticle> => {
+        return await GetCall<TutorialArticle>(`${baseballUrl}baseball/tutorial/${categoryId}/${articleId}`);
     },
 };

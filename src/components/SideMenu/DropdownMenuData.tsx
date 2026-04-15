@@ -400,6 +400,14 @@ export const useSideMenu = () => {
         click: () => navigate(routes.COLLEGE_BASEBALL_PLAYOFFS),
         toggle: () => toggleMenu(),
       },
+      {
+        label: "Tutorial / FAQ",
+        isRoute: false,
+        route: "",
+        league: SimCollegeBaseball,
+        click: () => window.open("https://docs.google.com/document/d/1znXTXKPYpIkd1cWTk7kg00pm7mY3N13Qenl9fNVIals/edit?usp=sharing", "_blank"),
+        toggle: () => toggleMenu(),
+      },
     ],
     SimMLB: [
       {
@@ -511,6 +519,14 @@ export const useSideMenu = () => {
         route: routes.MLB_DRAFT_ROOM,
         league: SimMLB,
         click: () => navigate(routes.MLB_DRAFT_ROOM),
+        toggle: () => toggleMenu(),
+      },
+      {
+        label: "Tutorial / FAQ",
+        isRoute: false,
+        route: "",
+        league: SimMLB,
+        click: () => window.open("https://docs.google.com/document/d/1znXTXKPYpIkd1cWTk7kg00pm7mY3N13Qenl9fNVIals/edit?usp=sharing", "_blank"),
         toggle: () => toggleMenu(),
       },
     ],

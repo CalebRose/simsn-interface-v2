@@ -38,20 +38,26 @@ const ACTIONS_GROUP: ColumnGroup = { groupLabel: "Quick Actions", columns: [{ la
 const NO_ACTIONS: ColumnGroup[] = [];
 
 export const ALL_ATTR_GROUPS: ColumnGroup[] = [
-  { groupLabel: "", columns: [...INFO_COLS, { label: "Type", sortKey: "ptype" }, { label: "B/T", sortKey: "" }] },
-  { groupLabel: "Hitting", columns: [
-    { label: "Contact", sortKey: "contact" }, { label: "Power", sortKey: "power" },
-    { label: "Eye", sortKey: "eye" }, { label: "Disc", sortKey: "disc" },
+  { groupLabel: "", columns: [...INFO_COLS, { label: "Type", sortKey: "ptype" }] },
+  { groupLabel: "Position Ratings", columns: [
+    { label: "C", sortKey: "c" }, { label: "1B", sortKey: "1b" },
+    { label: "2B", sortKey: "2b" }, { label: "3B", sortKey: "3b" },
+    { label: "SS", sortKey: "ss" }, { label: "LF", sortKey: "lf" },
+    { label: "CF", sortKey: "cf" }, { label: "RF", sortKey: "rf" },
+    { label: "DH", sortKey: "dh" },
   ]},
-  { groupLabel: "Speed", columns: [{ label: "Speed", sortKey: "speed" }] },
-  { groupLabel: "Defense", columns: [
-    { label: "FldCatch", sortKey: "fldcatch" }, { label: "FldReact", sortKey: "fldreact" },
-    { label: "ThrowAcc", sortKey: "throwacc" }, { label: "ThrowPow", sortKey: "throwpow" },
+  { groupLabel: "Pitching", columns: [
+    { label: "SP", sortKey: "sp" }, { label: "RP", sortKey: "rp" },
   ]},
-  { groupLabel: "Misc", columns: [{ label: "Durability", sortKey: "durability" }, { label: "Stamina", sortKey: "stamina" }] },
+  { groupLabel: "Contract", columns: [
+    { label: "Years", sortKey: "contractYears" }, { label: "Yr", sortKey: "contractCurrentYear" },
+    { label: "Salary", sortKey: "contractSalary" }, { label: "Status", sortKey: "contractStatus" },
+  ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
   ACTIONS_GROUP,
 ];
 
+// Used by trade page for All view potentials
 export const ALL_POT_GROUPS: ColumnGroup[] = [
   { groupLabel: "", columns: [...INFO_COLS, { label: "Type", sortKey: "ptype" }, { label: "B/T", sortKey: "" }] },
   { groupLabel: "Hitting", columns: [
@@ -572,8 +578,19 @@ export const InfoCells = ({ p, orgAbbrev, isCollege, ageOverride, onPositionOver
   );
 };
 
-export const AllAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean }) => {
+export const AllAttrCells = ({ p, isFuzzed, isCollege }: { p: Player; isFuzzed?: boolean; isCollege?: boolean }) => {
   const af = p.visibility_context ? !p.visibility_context.attributes_precise : isFuzzed;
+  const c = p.contract;
+  const salary = c?.current_year_detail?.base_salary;
+  const badges: string[] = [];
+  if (c?.is_buyout) badges.push("Buyout");
+  if (c?.on_ir) badges.push("IR");
+  if (isCollege) {
+    const classYear = c ? getClassYear(c) : null;
+    if (classYear?.abbrev) badges.push(classYear.abbrev);
+  } else {
+    if (c?.is_extension) badges.push("Ext");
+  }
   return (
     <>
       <td data-label="Type" className={`${td} text-center`}>
@@ -581,25 +598,29 @@ export const AllAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean })
           {p.ptype === "Pitcher" ? "P" : "Pos"}
         </span>
       </td>
-      <td data-label="B/T" className={`${td} text-center`}>{p.bat_hand}/{p.pitch_hand}</td>
-      <StatCell value={p.ratings.contact_display} isFuzzed={af} label="Contact" />
-      <StatCell value={p.ratings.power_display} isFuzzed={af} label="Power" />
-      <StatCell value={p.ratings.eye_display} isFuzzed={af} label="Eye" />
-      <StatCell value={p.ratings.discipline_display} isFuzzed={af} label="Disc" />
-      <StatCell value={p.ratings.speed_display} isFuzzed={af} label="Speed" />
-      <StatCell value={p.ratings.fieldcatch_display} isFuzzed={af} label="FldCatch" />
-      <StatCell value={p.ratings.fieldreact_display} isFuzzed={af} label="FldReact" />
-      <StatCell value={p.ratings.throwacc_display} isFuzzed={af} label="ThrowAcc" />
-      <StatCell value={p.ratings.throwpower_display} isFuzzed={af} label="ThrowPow" />
-      <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
+      <RatingCell value={p.ratings.c_rating} isFuzzed={af} label="C" />
+      <RatingCell value={p.ratings.fb_rating} isFuzzed={af} label="1B" />
+      <RatingCell value={p.ratings.sb_rating} isFuzzed={af} label="2B" />
+      <RatingCell value={p.ratings.tb_rating} isFuzzed={af} label="3B" />
+      <RatingCell value={p.ratings.ss_rating} isFuzzed={af} label="SS" />
+      <RatingCell value={p.ratings.lf_rating} isFuzzed={af} label="LF" />
+      <RatingCell value={p.ratings.cf_rating} isFuzzed={af} label="CF" />
+      <RatingCell value={p.ratings.rf_rating} isFuzzed={af} label="RF" />
+      <RatingCell value={p.ratings.dh_rating} isFuzzed={af} label="DH" />
+      <RatingCell value={p.ratings.sp_rating} isFuzzed={af} label="SP" />
+      <RatingCell value={p.ratings.rp_rating} isFuzzed={af} label="RP" />
+      <td data-label="Years" className={`${td} text-center`}>{c?.years ?? "—"}</td>
+      <td data-label="Yr" className={`${td} text-center`}>{c?.current_year ?? "—"}</td>
+      <td data-label="Salary" className={`${td} text-center`}>{salary != null ? `$${(salary / 1_000_000).toFixed(2)}M` : "—"}</td>
+      <td data-label="Status" className={`${td} text-center text-xs`}>{badges.length > 0 ? badges.join(", ") : "Active"}</td>
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {<StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
-        }
+        <StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
       </td>
     </>
   );
 };
 
+// Used by trade page for All view potentials
 export const AllPotCells = ({ p }: { p: Player }) => {
   const pf = p.visibility_context ? !p.visibility_context.potentials_precise : false;
   return (
@@ -621,8 +642,7 @@ export const AllPotCells = ({ p }: { p: Player }) => {
       <PotentialCell pot={p.potentials.throwpower_pot} isFuzzed={pf} label="ThrowPow" />
       <td data-label="Durability" className={`${td} text-center text-xs`}>{p.durability}</td>
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
-        {<StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
-        }
+        <StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
       </td>
     </>
   );
@@ -835,8 +855,6 @@ export const AllPlayersTable = ({ players, orgAbbrev, onPlayerClick, sortConfig,
     ? (hasActions ? CONTRACT_GROUPS : CONTRACT_GROUPS_NO_ACTIONS)
     : category === Stats
     ? (hasActions ? BATTING_STATS_GROUPS : BATTING_STATS_GROUPS_NO_ACTIONS)
-    : category === Potentials
-    ? (hasActions ? ALL_POT_GROUPS : ALL_POT_GROUPS_NO_ACTIONS)
     : (hasActions ? ALL_ATTR_GROUPS : ALL_ATTR_GROUPS_NO_ACTIONS);
   return (
     <div className="baseball-table-wrapper overflow-x-auto max-h-[70vh] overflow-y-auto">
@@ -846,8 +864,7 @@ export const AllPlayersTable = ({ players, orgAbbrev, onPlayerClick, sortConfig,
           {players.map((p) => (
             <tr key={p.id} className={`border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer${isPlayerBenched(p) ? " opacity-50" : ""}`} onClick={() => onPlayerClick(p)}>
               <InfoCells p={p} orgAbbrev={orgAbbrev} isCollege={isCollege} ageOverride={ageOverride?.(p)} onPositionOverride={onPositionOverride} />
-              {category === Attributes && <AllAttrCells p={p} isFuzzed={isFuzzed} />}
-              {category === Potentials && <AllPotCells p={p} />}
+              {category === Attributes && <AllAttrCells p={p} isFuzzed={isFuzzed} isCollege={isCollege} />}
               {category === Contracts && <><ContractCells p={p} isCollege={isCollege} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina} isInjured={p.is_injured} /></td></>}
               {category === Stats && <><BattingStatsCells p={p} statsMap={playerStatsMap} /><td data-label="Stamina" className={`${td} text-center text-xs`}><StaminaBarCell value={p.stamina} isInjured={p.is_injured} /></td></>}
               {renderActions && (

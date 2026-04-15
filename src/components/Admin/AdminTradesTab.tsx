@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { League, SimNFL, SimPHL } from "../../_constants/constants";
+import { League, SimCollegeBaseball, SimMLB, SimNFL, SimPHL } from "../../_constants/constants";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { getLogo } from "../../_utility/getLogo";
 import { useAdminPage } from "../../context/AdminPageContext";
@@ -15,6 +15,7 @@ import {
 } from "../Team/Helpers/tradeModalHelper";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { NFLTeam, NFLTradeProposal } from "../../models/footballModels";
+import { BaseballAdminTradesPanel } from "./BaseballAdminTradesPanel";
 
 export const AdminTradesTab = () => {
   const { selectedLeague } = useLeagueStore();
@@ -22,6 +23,17 @@ export const AdminTradesTab = () => {
     useAdminPage();
   const { phlTeamMap, isLoading: hkLoading } = useSimHCKStore();
   const { proTeamMap, isLoading: fbLoading } = useSimFBAStore();
+
+  const isBaseballLeague =
+    selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball;
+
+  if (isBaseballLeague) {
+    return (
+      <div className="w-full p-4">
+        <BaseballAdminTradesPanel />
+      </div>
+    );
+  }
 
   return (
     <div
