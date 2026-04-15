@@ -67,7 +67,7 @@ export const SUBWEEK_LABELS: Record<string, string> = {
   a: "Day A", b: "Day B", c: "Day C", d: "Day D",
 };
 
-export type ScheduleViewMode = "daily" | "weekly" | "monthly" | "season";
+export type ScheduleViewMode = "daily" | "weekly" | "season";
 
 /** Month structure: 12 months of 4–5 weeks (pattern 4,4,5 × 4 = 52 weeks). */
 export const MONTH_WEEKS = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 5];

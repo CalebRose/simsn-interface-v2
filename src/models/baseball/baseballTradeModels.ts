@@ -59,3 +59,105 @@ export interface TradeProposal {
 export interface TradeProposalActionRequest {
     note?: string;
 }
+
+// ═══════════════════════════════════════════════
+// Admin: Approve Trade
+// ═══════════════════════════════════════════════
+
+export interface AdminApproveTradeRequest {
+    league_year_id: number;
+    game_week_id: number;
+    note?: string;
+    executed_by?: string;
+}
+
+export interface AdminApproveTradeResponse {
+    proposal_id: number;
+    status: string;
+    trade_result: {
+        transaction_id: number;
+        org_a_id: number;
+        org_b_id: number;
+        players_to_b: number[];
+        players_to_a: number[];
+        cash_a_to_b: number;
+    };
+}
+
+// ═══════════════════════════════════════════════
+// Admin: Reject Trade
+// ═══════════════════════════════════════════════
+
+export interface AdminRejectTradeRequest {
+    note?: string;
+}
+
+// ═══════════════════════════════════════════════
+// Admin: Direct Trade Execution
+// ═══════════════════════════════════════════════
+
+export interface DirectTradeRequest {
+    org_a_id: number;
+    org_b_id: number;
+    league_year_id: number;
+    game_week_id: number;
+    players_to_b?: number[];
+    players_to_a?: number[];
+    salary_retention?: Record<string, { retention_pct: number }>;
+    cash_a_to_b?: number;
+    executed_by?: string;
+}
+
+export interface DirectTradeResponse {
+    transaction_id: number;
+    org_a_id: number;
+    org_b_id: number;
+    players_to_b: number[];
+    players_to_a: number[];
+    cash_a_to_b: number;
+}
+
+// ═══════════════════════════════════════════════
+// Roster Context (for trade review)
+// ═══════════════════════════════════════════════
+
+export interface TradeRosterPlayer {
+    contract_id: number;
+    player_id: number;
+    player_name: string;
+    position: string;
+    current_level: number;
+    onIR: number;
+    salary: number;
+}
+
+export interface RosterLevelStatus {
+    level_id: number;
+    level_name: number;
+    count: number;
+    min_roster: number;
+    max_roster: number;
+    over_limit: boolean;
+    under_limit: boolean;
+}
+
+// ═══════════════════════════════════════════════
+// Transaction Log & Rollback
+// ═══════════════════════════════════════════════
+
+export interface TransactionLogEntry {
+    id: number;
+    org_id: number;
+    type: string;
+    details: any;
+    created_at: string;
+}
+
+export interface RollbackRequest {
+    transaction_id: number;
+}
+
+export interface RollbackResponse {
+    status: string;
+    transaction_id: number;
+}

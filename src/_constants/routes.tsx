@@ -70,6 +70,7 @@ export default {
   MLB_WBC: "/mlb/wbc/",
   MLB_DRAFT_ROOM: "/mlb/draft/",
   MLB_IFA: "/mlb/ifa/",
+  BASEBALL_TUTORIAL: "/baseball/tutorial/",
   NEWS: "/news",
   // ─── Forum routes ───────────────────────────
   FORUMS: "/forums",

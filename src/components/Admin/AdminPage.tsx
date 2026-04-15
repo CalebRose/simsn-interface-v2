@@ -29,7 +29,8 @@ import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
 import { AdminTradesTab } from "./AdminTradesTab";
 import { IFAAdminPanel } from "./IFAAdminPanel";
-import { AdminInjuryLog } from "./AdminInjuryLog";
+import { SimulationControlPanel } from "./SimulationControlPanel";
+import { RecruitingAdminPanel } from "./RecruitingAdminPanel";
 import { useMemo } from "react";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 
@@ -40,11 +41,18 @@ const IFAAdminSection = () => {
   return <IFAAdminPanel leagueYearId={leagueYearId} />;
 };
 
-const InjuryLogSection = () => {
+const SimulationControlSection = () => {
   const { seasonContext } = useSimBaseballStore();
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
   if (!leagueYearId) return null;
-  return <AdminInjuryLog leagueYearId={leagueYearId} />;
+  return <SimulationControlPanel leagueYearId={leagueYearId} />;
+};
+
+const RecruitingAdminSection = () => {
+  const { seasonContext } = useSimBaseballStore();
+  const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+  if (!leagueYearId) return null;
+  return <RecruitingAdminPanel leagueYearId={leagueYearId} />;
 };
 
 interface UnAuthPageProps {
@@ -256,7 +264,9 @@ export const AdminPage = () => {
               />
               {(selectedLeague === SimPHL ||
                 selectedLeague === SimNFL ||
-                selectedLeague === SimNBA) && (
+                selectedLeague === SimNBA ||
+                selectedLeague === SimMLB ||
+                selectedLeague === SimCollegeBaseball) && (
                 <>
                   <Tab
                     label={Trades}
@@ -283,7 +293,10 @@ export const AdminPage = () => {
           </Border>
         )}
         {selectedLeague === SimMLB && <IFAAdminSection />}
-        {selectedLeague === SimMLB && <InjuryLogSection />}
+        {(selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball) && (
+          <SimulationControlSection />
+        )}
+        {selectedLeague === SimCollegeBaseball && <RecruitingAdminSection />}
       </PageContainer>
     </>
   );

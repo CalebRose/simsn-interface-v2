@@ -489,15 +489,15 @@ export const SCOUTING_ACTION_LABELS: Record<string, string> = {
 };
 
 export const SCOUTING_ACTION_COSTS: Record<string, number> = {
-  hs_report: 10,
-  recruit_potential_fuzzed: 15,
-  recruit_potential_precise: 25,
+  hs_report: 2,
+  recruit_potential_fuzzed: 10,
+  recruit_potential_precise: 50,
   college_potential_precise: 15,
   draft_attrs_fuzzed: 10,
   draft_attrs_precise: 20,
   draft_potential_precise: 15,
-  pro_attrs_precise: 15,
-  pro_potential_precise: 15,
+  pro_attrs_precise: 10,
+  pro_potential_precise: 50,
 };
 
 // ── Pool → Player adapter ────────────────────────────────────

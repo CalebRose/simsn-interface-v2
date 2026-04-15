@@ -31,9 +31,7 @@ import {
   SUBWEEK_ORDER,
   SUBWEEK_LABELS,
   TOTAL_WEEKS,
-  MONTH_WEEKS,
   getWeekRangeForMonth,
-  getMonthForWeek,
 } from "./baseballScheduleHelpers";
 import { BaseballBoxScoreModal } from "./BaseballBoxScoreModal";
 import { SeriesDetailCard } from "./SeriesDetailCard";
@@ -431,9 +429,6 @@ export const BaseballScheduleView = ({
     defaultTeamId,
   );
   const [selectedSubweek, setSelectedSubweek] = useState<string>("a");
-  const [selectedMonth, setSelectedMonth] = useState(() =>
-    getMonthForWeek(seasonContext.current_week_index),
-  );
   const [scheduleData, setScheduleData] = useState<ScheduleResponse | null>(
     null,
   );
@@ -488,14 +483,11 @@ export const BaseballScheduleView = ({
   useEffect(() => {
     if (viewMode === "weekly" || viewMode === "daily") {
       fetchSchedule(selectedWeek, selectedWeek);
-    } else if (viewMode === "monthly") {
-      const [start, end] = getWeekRangeForMonth(selectedMonth);
-      fetchSchedule(start, end);
     } else {
       // season: fetch everything
       fetchSchedule(1, TOTAL_WEEKS);
     }
-  }, [viewMode, selectedWeek, selectedMonth, fetchSchedule]);
+  }, [viewMode, selectedWeek, fetchSchedule]);
 
   // --- Derived data ---
   const games = scheduleData?.games ?? [];
@@ -557,18 +549,11 @@ export const BaseballScheduleView = ({
   };
 
   const navigatorLabel =
-    viewMode === "daily"
-      ? "Day"
-      : viewMode === "monthly"
-        ? "Month"
-        : viewMode === "season"
-          ? "Season"
-          : "Week";
+    viewMode === "daily" ? "Day" : viewMode === "season" ? "Season" : "Week";
 
   // --- Calendar grid data for monthly + season views ---
   const calendarGameMap = useMemo(() => {
-    if (viewMode !== "monthly" && viewMode !== "season")
-      return new Map<string, ScheduleGame>();
+    if (viewMode !== "season") return new Map<string, ScheduleGame>();
     const map = new Map<string, ScheduleGame>();
     for (const g of games) {
       const key = `${g.season_week}-${g.season_subweek}`;
@@ -585,13 +570,6 @@ export const BaseballScheduleView = ({
     }
     return map;
   }, [games, selectedTeamId, viewMode]);
-
-  const monthWeekRange = useMemo(() => {
-    const [start, end] = getWeekRangeForMonth(selectedMonth);
-    const weeks: number[] = [];
-    for (let w = start; w <= end; w++) weeks.push(w);
-    return weeks;
-  }, [selectedMonth]);
 
   // --- Render ---
   return (
@@ -671,13 +649,6 @@ export const BaseballScheduleView = ({
                 </PillButton>
                 <PillButton
                   variant="primaryOutline"
-                  isSelected={viewMode === "monthly"}
-                  onClick={() => setViewMode("monthly")}
-                >
-                  <Text variant="small">Monthly</Text>
-                </PillButton>
-                <PillButton
-                  variant="primaryOutline"
                   isSelected={viewMode === "season"}
                   onClick={() => setViewMode("season")}
                 >
@@ -743,43 +714,9 @@ export const BaseballScheduleView = ({
                   </>
                 )}
 
-                {/* Monthly: month-by-month navigation */}
-                {viewMode === "monthly" && (
-                  <>
-                    <button
-                      onClick={() =>
-                        setSelectedMonth((m) => Math.max(1, m - 1))
-                      }
-                      disabled={selectedMonth <= 1}
-                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
-                    >
-                      ←
-                    </button>
-                    <span className="text-sm font-semibold min-w-[5rem] text-center">
-                      Month {selectedMonth}
-                    </span>
-                    <button
-                      onClick={() =>
-                        setSelectedMonth((m) => Math.min(12, m + 1))
-                      }
-                      disabled={selectedMonth >= 12}
-                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
-                    >
-                      →
-                    </button>
-                  </>
-                )}
-
                 {/* Current week indicator */}
                 {viewMode === "weekly" &&
                   selectedWeek === seasonContext.current_week_index && (
-                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">
-                      Current
-                    </span>
-                  )}
-                {viewMode === "monthly" &&
-                  selectedMonth ===
-                    getMonthForWeek(seasonContext.current_week_index) && (
                     <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                       Current
                     </span>
@@ -880,14 +817,12 @@ export const BaseballScheduleView = ({
                   </div>
                 ))}
 
-              {/* Monthly / Season calendar grid */}
-              {(viewMode === "monthly" || viewMode === "season") && (
+              {/* Season calendar grid */}
+              {viewMode === "season" && (
                 <div className="overflow-x-auto space-y-6">
-                  {(viewMode === "season"
-                    ? Array.from({ length: 12 }, (_, i) => i + 1)
-                    : [selectedMonth]
-                  ).map((monthNum) => {
-                    const [mStart, mEnd] = getWeekRangeForMonth(monthNum);
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                    (monthNum) => {
+                      const [mStart, mEnd] = getWeekRangeForMonth(monthNum);
                     const weeks: number[] = [];
                     for (let w = mStart; w <= mEnd; w++) weeks.push(w);
 
@@ -909,8 +844,7 @@ export const BaseballScheduleView = ({
 
                     return (
                       <div key={monthNum}>
-                        {/* Month header (always show in season view, show as footer summary in monthly) */}
-                        {viewMode === "season" && (
+                        {/* Month header */}
                           <div
                             className="flex items-center justify-between px-3 py-2 rounded-t-lg"
                             style={{ backgroundColor: `${headerColor}15` }}
@@ -922,7 +856,6 @@ export const BaseballScheduleView = ({
                               <span className="text-sm font-semibold dark:!text-white" style={{ color: headerColor }}>{monthW}-{monthL}</span>
                             )}
                           </div>
-                        )}
                         <table className="w-full border-collapse">
                           <thead>
                             <tr className="border-b-2 border-gray-200 dark:border-gray-600">
@@ -1023,8 +956,8 @@ export const BaseballScheduleView = ({
                     );
                   })}
 
-                  {/* Season totals (season view only) */}
-                  {viewMode === "season" && selectedTeamId && (
+                  {/* Season totals */}
+                  {selectedTeamId && (
                     <div
                       className="flex items-center justify-between px-4 py-3 rounded-lg"
                       style={{
