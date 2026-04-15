@@ -818,8 +818,8 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
   teamProfile,
 }) => {
   if (!player) return <></>;
-  const bbStore = useSimFBAStore();
-  const { transferProfileMapByPlayerID, collegePromiseMap } = bbStore;
+  const fbStore = useSimFBAStore();
+  const { transferProfileMapByPlayerID, collegePromiseMap } = fbStore;
   const { isTablet } = useResponsive();
   const transferProfiles = useMemo(() => {
     if (!player) {

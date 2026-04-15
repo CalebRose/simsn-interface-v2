@@ -51,10 +51,12 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
   let res = 0;
   let region = "";
   let spotsRemaining = 0;
+  let portalReputation = 0;
   switch (league) {
     case SimCHL:
       const tp = TeamProfile as HockeyProfile;
       const t = Team as HockeyTeam;
+      portalReputation = tp.PortalReputation;
       teamLabel = t.TeamName;
       classRank = tp.RecruitingClassRank;
       programDevelopment = t.ProgramPrestige;
@@ -71,6 +73,7 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
     case SimCBB:
       const cbbtp = TeamProfile as BasketballProfile;
       const cbbt = Team as BasketballTeam;
+      portalReputation = cbbtp.PortalReputation;
       teamLabel = cbbt.Team;
       if (cbbtp) {
         region = cbbtp.Region;
@@ -84,6 +87,7 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
       const cfbt = Team as FootballTeam;
       teamLabel = cfbt.TeamName;
       if (cfbtp) {
+        portalReputation = cfbtp.PortalReputation;
         classRank = cfbtp.RecruitingClassRank || 0;
         affinities = getAffinityList(cfbtp);
         res = cfbtp.RecruitingEfficiencyScore * 100;
@@ -115,6 +119,7 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
           <Text variant="xs">State: {Team?.State}</Text>
           {league === SimCBB && <Text variant="xs">Region: {region}</Text>}
           <Text variant="xs">Spots Remaining: {spotsRemaining}</Text>
+          <Text variant="xs">Portal Reputation: {portalReputation}</Text>
         </div>
         {league === SimCFB && (
           <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
