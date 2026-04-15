@@ -1361,7 +1361,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
               <PillButton
                 variant="primaryOutline"
                 isSelected={filterType === "all"}
-                onClick={() => setFilterType("all")}
+                onClick={() => { setFilterType("all"); if (category === Potentials) setCategory(Attributes); }}
               >
                 <Text variant="small">All</Text>
               </PillButton>
@@ -1429,8 +1429,9 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
                 variant="primaryOutline"
                 isSelected={category === Potentials}
                 onClick={() => setCategory(Potentials)}
+                disabled={filterType === "all"}
               >
-                <Text variant="small">Potentials</Text>
+                <Text variant="small" classes={filterType === "all" ? "opacity-40" : ""}>Potentials</Text>
               </PillButton>
               <PillButton
                 variant="primaryOutline"

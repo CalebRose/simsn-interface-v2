@@ -544,127 +544,104 @@ export const BaseballLandingPage = ({
 
   return (
     <div className="flex flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6">
-      {/* Team-colored header bar */}
+      {/* Team-colored header bar with integrated level tabs */}
       <div
-        className={`flex items-center gap-3 mb-2 flex-wrap rounded-lg px-3 py-2 ${headerTextClass}`}
-        style={{
-          backgroundColor: headerColor,
-          borderBottom: `3px solid ${borderColor}`,
-        }}
+        className="mb-2 rounded-lg overflow-hidden"
+        style={{ borderBottom: `3px solid ${borderColor}` }}
       >
-        {logo && (
-          <img
-            src={logo}
-            className="w-10 h-10 object-contain"
-            alt={viewedOrg.org_abbrev}
-          />
-        )}
-        <div className="flex flex-col">
-          <Text variant="h5" classes={`font-semibold ${headerTextClass}`}>
-            {pageTitle}
-          </Text>
-          {seasonLabel && (
-            <Text
-              variant="small"
-              classes={headerTextClass}
-              style={{ opacity: 0.8 }}
-            >
-              {seasonLabel}
+        {/* Title row */}
+        <div
+          className={`flex items-center gap-3 flex-wrap px-4 py-2 ${headerTextClass}`}
+          style={{ backgroundColor: headerColor }}
+        >
+          {logo && (
+            <img
+              src={logo}
+              className="w-10 h-10 object-contain"
+              alt={viewedOrg.org_abbrev}
+            />
+          )}
+          <div className="flex flex-col">
+            <Text variant="h5" classes={`font-semibold ${headerTextClass}`}>
+              {pageTitle}
             </Text>
+            {seasonLabel && (
+              <Text
+                variant="small"
+                classes={headerTextClass}
+                style={{ opacity: 0.8 }}
+              >
+                {seasonLabel}
+              </Text>
+            )}
+          </div>
+          {!isOwnOrg && (
+            <span
+              className={`text-xs italic ${headerTextClass}`}
+              style={{ opacity: 0.7 }}
+            >
+              Viewing — roster actions disabled
+            </span>
           )}
         </div>
-        <div className="ml-auto">
-          <SelectDropdown
-            options={orgOptions}
-            value={selectedOrgOption}
-            onChange={(opt) => {
-              if (opt) handleOrgChange(Number((opt as SelectOption).value));
-            }}
-            formatOptionLabel={formatOrgLabel}
-            isSearchable
-            placeholder="Select organization..."
-            styles={{
-              control: (base, state) => ({
-                ...base,
-                backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-                borderColor: state.isFocused ? borderColor : "#4A5568",
-                color: "#ffffff",
-                minWidth: isMobile ? "60vw" : "280px",
-                maxWidth: "400px",
-                padding: "0.2rem",
-                boxShadow: state.isFocused
-                  ? `0 0 0 1px ${borderColor}`
-                  : "none",
-                borderRadius: "8px",
-                transition: "all 0.2s ease",
-              }),
-            }}
-          />
-        </div>
-        {!isOwnOrg && (
-          <span
-            className={`text-xs italic ${headerTextClass}`}
-            style={{ opacity: 0.7 }}
+
+        {/* Level Navigation Tabs — inline within header */}
+        {viewedOrg.teams && Object.keys(viewedOrg.teams).length > 1 && (
+          <div
+            className="flex items-stretch overflow-x-auto"
+            style={{ backgroundColor: `${headerColor}cc` }}
           >
-            Viewing — roster actions disabled
-          </span>
+            {(league === SimCollegeBaseball
+              ? Object.keys(viewedOrg.teams)
+              : LEVEL_ORDER.filter((l) => viewedOrg.teams?.[l])
+            ).map((level) => {
+              const team = viewedOrg.teams[level];
+              const isActive = activeLevel === level;
+              return (
+                <button
+                  key={level}
+                  onClick={() =>
+                    setSelectedLevel(level === defaultLevel ? null : level)
+                  }
+                  className={`relative flex items-center gap-1.5 px-4 py-2 text-sm whitespace-nowrap transition-all cursor-pointer ${headerTextClass}`}
+                  style={{
+                    backgroundColor: isActive
+                      ? "rgba(255,255,255,0.15)"
+                      : "transparent",
+                    opacity: isActive ? 1 : 0.7,
+                    borderBottom: isActive
+                      ? `2px solid ${borderColor}`
+                      : "2px solid transparent",
+                    fontWeight: isActive ? 600 : 400,
+                  }}
+                >
+                  <img
+                    src={getLogo(
+                      league === SimMLB ? SimMLB : SimCollegeBaseball,
+                      team.team_id,
+                      currentUser?.IsRetro,
+                    )}
+                    className="w-5 h-5 object-contain"
+                    alt=""
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                  <span>{displayLevel(level)}</span>
+                  {team.team_abbrev && (
+                    <span
+                      className={headerTextClass}
+                      style={{ fontSize: "0.65rem", opacity: 0.7 }}
+                    >
+                      {team.team_abbrev}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
-
-      {/* Level Navigation Tabs */}
-      {viewedOrg.teams && Object.keys(viewedOrg.teams).length > 1 && (
-        <div className="flex items-center gap-1 mb-2 overflow-x-auto">
-          {(league === SimCollegeBaseball
-            ? Object.keys(viewedOrg.teams)
-            : LEVEL_ORDER.filter((l) => viewedOrg.teams?.[l])
-          ).map((level) => {
-            const team = viewedOrg.teams[level];
-            const isActive = activeLevel === level;
-            return (
-              <button
-                key={level}
-                onClick={() =>
-                  setSelectedLevel(level === defaultLevel ? null : level)
-                }
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-all cursor-pointer border-2
-                  ${
-                    !isActive
-                      ? "border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400 bg-white dark:bg-gray-800"
-                      : "font-semibold"
-                  }`}
-                style={
-                  isActive
-                    ? {
-                        borderColor: headerColor,
-                        backgroundColor: `${headerColor}15`,
-                        color: headerColor,
-                      }
-                    : undefined
-                }
-              >
-                <img
-                  src={getLogo(
-                    league === SimMLB ? SimMLB : SimCollegeBaseball,
-                    team.team_id,
-                    currentUser?.IsRetro,
-                  )}
-                  className="w-5 h-5 object-contain"
-                  alt=""
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <span>{displayLevel(level)}</span>
-                {team.team_abbrev && (
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {team.team_abbrev}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
 
       {/* Games Bar */}
       {seasonGames.length > 0 && activeTeamId && !isDataStale && (

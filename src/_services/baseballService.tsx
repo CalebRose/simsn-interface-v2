@@ -1,5 +1,6 @@
 import { baseballUrl } from "../_constants/urls";
 import { GetCall, PostCall, PUTCall, DELETECall } from "../_helper/fetchHelper";
+import type { TutorialManifest, TutorialArticle } from "../models/baseball/baseballTutorialModels";
 import { BaseballBootstrapLanding, BaseballBootstrapAll, BaseballOrganization, BaseballRosters, PayrollProjectionResponse, ContractOverviewPlayer, ScheduleParams, ScheduleResponse, ListedPositionResponse } from "../models/baseball/baseballModels";
 import { FaceDataResponse } from "../models/footballModels";
 import {
@@ -1014,5 +1015,12 @@ export const BaseballService = {
     },
     RegenerateRankings: async (dto: { league_year_id: number }): Promise<RankingsRegenerateResponse> => {
         return await PostCall<{ league_year_id: number }, RankingsRegenerateResponse>(`${baseballUrl}recruiting/rankings/regenerate`, dto);
+    },
+    // ─── Tutorial ────────────────────────────────────────────────────────────
+    GetTutorialManifest: async (): Promise<TutorialManifest> => {
+        return await GetCall<TutorialManifest>(`${baseballUrl}baseball/tutorial`);
+    },
+    GetTutorialArticle: async (categoryId: string, articleId: string): Promise<TutorialArticle> => {
+        return await GetCall<TutorialArticle>(`${baseballUrl}baseball/tutorial/${categoryId}/${articleId}`);
     },
 };
