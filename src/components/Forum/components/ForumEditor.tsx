@@ -1,10 +1,11 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   useEditor,
   EditorContent,
   ReactRenderer,
   ReactNodeViewRenderer,
   NodeViewWrapper,
+  NodeViewProps,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -28,6 +29,104 @@ import { Button } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
 import { MentionList, MentionListHandle } from "./MentionList";
 import { ForumService } from "../../../_services/forumService";
+import { ImageKitService } from "../../../_services/imagekitService";
+
+// ─────────────────────────────────────────────
+// Forum image node  (resizable)
+// ─────────────────────────────────────────────
+
+const MIN_WIDTH = 80;
+const MAX_WIDTH = 900;
+
+const ForumImageNodeView: React.FC<NodeViewProps> = ({
+  node,
+  updateAttributes,
+  selected,
+}) => {
+  const width = (node.attrs.width as number | null) ?? null;
+  const dragStartX = useRef<number>(0);
+  const dragStartW = useRef<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const startResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragStartX.current = e.clientX;
+    dragStartW.current =
+      containerRef.current?.getBoundingClientRect().width ?? width ?? 400;
+
+    const onMove = (ev: MouseEvent) => {
+      const delta = ev.clientX - dragStartX.current;
+      const next = Math.min(
+        MAX_WIDTH,
+        Math.max(MIN_WIDTH, Math.round(dragStartW.current + delta)),
+      );
+      updateAttributes({ width: next });
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
+  return (
+    <NodeViewWrapper>
+      <div
+        ref={containerRef}
+        className={`relative block my-2 mx-auto ${
+          selected ? "ring-2 ring-blue-500 rounded" : ""
+        }`}
+        style={{ width: width ? `${width}px` : "auto", maxWidth: "100%" }}
+        contentEditable={false}
+      >
+        <img
+          src={node.attrs.src as string}
+          alt={(node.attrs.alt as string) || ""}
+          className="block w-full h-auto rounded object-contain max-h-[600px]"
+          loading="lazy"
+          draggable={false}
+        />
+        {/* Resize handle — only visible when node is selected */}
+        {selected && (
+          <div
+            onMouseDown={startResize}
+            className="absolute right-0 bottom-0 w-4 h-4 cursor-se-resize bg-blue-500 rounded-tl opacity-80 hover:opacity-100"
+            title="Drag to resize"
+          />
+        )}
+      </div>
+    </NodeViewWrapper>
+  );
+};
+
+const ForumImageExtension = Node.create({
+  name: "forumImage",
+  group: "block",
+  atom: true,
+  draggable: true,
+
+  addAttributes() {
+    return {
+      src: { default: null },
+      alt: { default: "" },
+      width: { default: null },
+    };
+  },
+
+  parseHTML() {
+    return [{ tag: "img[data-forum-image]" }];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ["img", mergeAttributes(HTMLAttributes, { "data-forum-image": "" })];
+  },
+
+  addNodeView() {
+    return ReactNodeViewRenderer(ForumImageNodeView);
+  },
+});
 
 // ─────────────────────────────────────────────
 // YouTube embed helpers
@@ -336,6 +435,8 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
 
   const [isEmpty, setIsEmpty] = useState(!initialContent);
   const [isInTable, setIsInTable] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
     extensions: [
@@ -355,6 +456,7 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
       TableHeader,
       MentionExtension,
       YoutubeEmbedExtension,
+      ForumImageExtension,
     ],
     content: initialContent,
     onCreate: ({ editor }) => {
@@ -387,6 +489,36 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
     onSubmit(json, text, mentions);
     editor.commands.clearContent(true);
   }, [editor, isSubmitting, onSubmit]);
+
+  const handleImageFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file || !editor) return;
+      // Reset so the same file can be re-selected later.
+      e.target.value = "";
+      if (file.size > 5 * 1024 * 1024) {
+        window.alert("Image must be under 5 MB.");
+        return;
+      }
+      setIsUploading(true);
+      try {
+        const url = await ImageKitService.uploadImage(file);
+        editor
+          .chain()
+          .focus()
+          .insertContent({
+            type: "forumImage",
+            attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, "") },
+          })
+          .run();
+      } catch {
+        window.alert("Image upload failed. Please try again.");
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [editor],
+  );
 
   const insertYouTube = () => {
     const url = window.prompt("Paste a YouTube URL:");
@@ -579,6 +711,20 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
         <TBtn title="Embed YouTube video" onClick={insertYouTube}>
           ▶
         </TBtn>
+        <TBtn
+          title="Upload image (max 5 MB)"
+          onClick={() => imageInputRef.current?.click()}
+          disabled={isUploading}
+        >
+          {isUploading ? "⏳" : "🖼"}
+        </TBtn>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          className="hidden"
+          onChange={handleImageFileChange}
+        />
         <Divider />
         <TBtn
           title="Insert table (3×3)"
@@ -640,12 +786,56 @@ export const ForumEditor: React.FC<ForumEditorProps> = ({
         )}
       </div>
 
-      {/* Editor area */}
+      {/* Editor area — also handles image file drops */}
       <div
         className="rounded-b-lg border focus-within:ring-1 focus-within:ring-blue-500 transition-colors"
         style={{
           backgroundColor: "var(--bg-secondary)",
           borderColor: "var(--border-secondary)",
+        }}
+        onDragOver={(e) => {
+          if (
+            Array.from(e.dataTransfer.items).some(
+              (i) => i.kind === "file" && i.type.startsWith("image/"),
+            )
+          ) {
+            e.preventDefault();
+          }
+        }}
+        onDrop={(e) => {
+          const files = Array.from(e.dataTransfer.files).filter((f) =>
+            f.type.startsWith("image/"),
+          );
+          if (files.length === 0 || !editor) return;
+          e.preventDefault();
+          e.stopPropagation();
+          files.forEach((file) => {
+            if (file.size > 5 * 1024 * 1024) {
+              window.alert(
+                `"${file.name}" exceeds the 5 MB limit and was skipped.`,
+              );
+              return;
+            }
+            setIsUploading(true);
+            ImageKitService.uploadImage(file)
+              .then((url) => {
+                setIsUploading(false);
+                editor
+                  .chain()
+                  .focus()
+                  .insertContent({
+                    type: "forumImage",
+                    attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, "") },
+                  })
+                  .run();
+              })
+              .catch(() => {
+                setIsUploading(false);
+                window.alert(
+                  `Failed to upload "${file.name}". Please try again.`,
+                );
+              });
+          });
         }}
       >
         <EditorContent editor={editor} />

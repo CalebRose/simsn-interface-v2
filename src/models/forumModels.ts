@@ -24,6 +24,7 @@ export type RichTextNodeType =
   | "mention"
   | "quoteReference"
   | "youtubeEmbed"
+  | "forumImage"
   | "image"; // future
 
 export interface RichTextMark {

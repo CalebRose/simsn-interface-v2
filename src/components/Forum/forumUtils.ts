@@ -45,7 +45,7 @@ function getImageUrlFromNode(node: RichTextNode | undefined): string | null {
     return markImage.attrs.href;
   }
 
-  if (node.type === "image") {
+  if (node.type === "image" || node.type === "forumImage") {
     const src =
       typeof node.attrs?.src === "string"
         ? node.attrs.src
