@@ -246,6 +246,24 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
       );
     }
 
+    case "forumImage": {
+      const src = node.attrs?.src as string | undefined;
+      if (!src || !/^https?:\/\//.test(src)) return null;
+      const w = node.attrs?.width as number | null | undefined;
+      return (
+        <img
+          key={key}
+          src={src}
+          alt={(node.attrs?.alt as string) || ""}
+          className="max-h-[600px] object-contain rounded my-2 block mx-auto"
+          style={
+            w ? { width: `${w}px`, maxWidth: "100%" } : { maxWidth: "100%" }
+          }
+          loading="lazy"
+        />
+      );
+    }
+
     case "table":
       return (
         <div key={key} className="overflow-x-auto my-2">

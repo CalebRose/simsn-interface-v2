@@ -58,7 +58,6 @@ export const PostList: React.FC<PostListProps> = ({
           permissions={permissions}
           isThreadLocked={isThreadLocked}
           canBypassLock={canBypassLock}
-          hideLeadingFeatureImage={index === 0}
           onReact={onReact}
           onReply={onReply}
           onQuote={onQuote}
