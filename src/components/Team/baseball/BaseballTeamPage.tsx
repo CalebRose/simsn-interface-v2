@@ -151,8 +151,8 @@ const QuickActionButtons = ({
         Pots{potsPrecise ? " ✓" : ""}
       </button>
 
-      {/* Movement — own org only */}
-      {isOwnOrg && canMove && (
+      {/* Movement — own org only, pro only */}
+      {isOwnOrg && canMove && !isCollege && (
         <button
           className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
           onClick={() => onTransaction(player, "promote")}
@@ -162,7 +162,7 @@ const QuickActionButtons = ({
           Move
         </button>
       )}
-      {isOwnOrg && hasContract && !onIR && (
+      {isOwnOrg && hasContract && !onIR && !isCollege && (
         <button
           className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
           onClick={() => onTransaction(player, "ir_place")}
@@ -172,7 +172,7 @@ const QuickActionButtons = ({
           IR
         </button>
       )}
-      {isOwnOrg && hasContract && onIR && (
+      {isOwnOrg && hasContract && onIR && !isCollege && (
         <button
           className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
           onClick={() => onTransaction(player, "ir_activate")}
@@ -189,27 +189,30 @@ const QuickActionButtons = ({
           <button
             className={`${actionBtn} bg-red-600/20 text-red-400 hover:bg-red-600/40`}
             onClick={() => onTransaction(player, "release")}
-            title="Release"
-            aria-label="Release player"
+            title={isCollege ? "Cut" : "Release"}
+            aria-label={isCollege ? "Cut player" : "Release player"}
           >
-            Rel
+            {isCollege ? "Cut" : "Rel"}
           </button>
           <button
-            className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`}
-            onClick={() => onTransaction(player, "extend")}
-            title="Extend"
-            aria-label="Extend contract"
+            className={`${actionBtn} ${isCollege ? "bg-orange-600/20 text-orange-400 hover:bg-orange-600/40" : "bg-gray-600/20 text-gray-500 cursor-not-allowed"}`}
+            onClick={isCollege ? () => onTransaction(player, "extend") : undefined}
+            disabled={!isCollege}
+            title={isCollege ? "Redshirt" : "Extend (coming soon)"}
+            aria-label={isCollege ? "Redshirt player" : "Extend contract"}
           >
-            Ext
+            {isCollege ? "Redshirt" : "Ext"}
           </button>
-          <button
-            className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`}
-            onClick={() => onTransaction(player, "buyout")}
-            title="Buyout"
-            aria-label="Buyout contract"
-          >
-            Buy
-          </button>
+          {!isCollege && (
+            <button
+              className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`}
+              onClick={() => onTransaction(player, "buyout")}
+              title="Buyout"
+              aria-label="Buyout contract"
+            >
+              Buy
+            </button>
+          )}
         </>
       )}
     </div>
@@ -1433,13 +1436,15 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
               >
                 <Text variant="small" classes={filterType === "all" ? "opacity-40" : ""}>Potentials</Text>
               </PillButton>
-              <PillButton
-                variant="primaryOutline"
-                isSelected={category === Contracts}
-                onClick={() => setCategory(Contracts)}
-              >
-                <Text variant="small">Contracts</Text>
-              </PillButton>
+              {!isCollege && (
+                <PillButton
+                  variant="primaryOutline"
+                  isSelected={category === Contracts}
+                  onClick={() => setCategory(Contracts)}
+                >
+                  <Text variant="small">Contracts</Text>
+                </PillButton>
+              )}
               <PillButton
                 variant="primaryOutline"
                 isSelected={category === Stats}
