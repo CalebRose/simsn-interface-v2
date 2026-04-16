@@ -153,6 +153,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     collegePromises,
     createPromise,
     cutCHLPlayer,
+    placeCHLPlayerOnInjuryReserve,
     redshirtPlayer,
     ExportHCKRoster,
     SearchHockeyStats,
@@ -280,6 +281,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
           modalAction={modalAction}
           player={modalPlayer}
           cutPlayer={cutCHLPlayer}
+          placeOnInjuryReserve={placeCHLPlayerOnInjuryReserve}
           redshirtPlayer={redshirtPlayer}
         />
       )}
@@ -431,6 +433,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     phlGameplan,
     cutPHLPlayer,
     affiliatePlayer,
+    placePHLPlayerOnInjuryReserve,
     PlacePHLPlayerOnTradeBlock,
     proposeTrade,
     cancelTrade,
@@ -711,6 +714,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           player={modalPlayer}
           cutPlayer={cutPHLPlayer}
           affiliatePlayer={affiliatePlayer}
+          placeOnInjuryReserve={placePHLPlayerOnInjuryReserve}
           tradeBlockPlayer={PlacePHLPlayerOnTradeBlock}
         />
       )}
@@ -914,6 +918,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     cutCFBPlayer,
     redshirtPlayer,
     promisePlayer,
+    placeCFBPlayerOnInjuryReserve,
     getBootstrapRosterData,
     ExportFBRoster,
   } = useSimFBAStore();
@@ -1025,6 +1030,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
           cutPlayer={cutCFBPlayer}
           redshirtPlayer={redshirtPlayer}
           promisePlayer={promisePlayer}
+          placeOnInjuryReserve={placeCFBPlayerOnInjuryReserve}
         />
       )}
       {modalPlayer && (
@@ -1147,6 +1153,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     cutNFLPlayer,
     sendNFLPlayerToPracticeSquad,
     placeNFLPlayerOnTradeBlock,
+    placeNFLPlayerOnInjuryReserve,
     capsheetMap: nflCapsheetMap,
     proContractMap: nflContractMap,
     tradeProposalsMap,
@@ -1474,6 +1481,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
           player={modalPlayer}
           cutPlayer={cutNFLPlayer}
           sendToPracticeSquad={sendNFLPlayerToPracticeSquad}
+          placeOnInjuryReserve={placeNFLPlayerOnInjuryReserve}
           tradeBlockPlayer={placeNFLPlayerOnTradeBlock}
         />
       )}

@@ -267,7 +267,7 @@ export const CFBTransferPortal = () => {
                   <Button
                     type="button"
                     variant={
-                      teamProfile && teamProfile.SpentPoints <= 50
+                      teamProfile && teamProfile.SpentPoints <= 100
                         ? "primary"
                         : "warning"
                     }

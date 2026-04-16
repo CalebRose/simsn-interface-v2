@@ -16,6 +16,10 @@ export const PlayerService = {
     await PostCall(`${hckUrl}chl/roster/promise/${playerID}`, {});
   },
 
+  PlaceCHLPlayerOnInjuryReserve: async (playerID: number): Promise<void> => {
+    await GetActionCall(`${hckUrl}chl/roster/injury/reserve/${playerID}`);
+  },
+
   CutPHLPlayer: async (playerID: number): Promise<void> => {
     await GetActionCall(`${hckUrl}phl/roster/cut/${playerID}`);
   },
@@ -26,6 +30,10 @@ export const PlayerService = {
 
   SendPHLPlayerToTradeBlock: async (playerID: number): Promise<void> => {
     await GetActionCall(`${hckUrl}phl/roster/tradeblock/${playerID}`);
+  },
+
+  PlacePHLPlayerOnInjuryReserve: async (playerID: number): Promise<void> => {
+    await GetActionCall(`${hckUrl}phl/roster/injury/reserve/${playerID}`);
   },
 
   CutCFBPlayer: async (playerID: number): Promise<void> => {
@@ -40,6 +48,12 @@ export const PlayerService = {
     await PostCall(`${fbaUrl}portal/promise/create/${playerID}/`, {});
   },
 
+  PlaceCFBPlayerOnInjuryReserve: async (playerID: number): Promise<void> => {
+    await GetActionCall(
+      `${fbaUrl}collegeplayers/injury/reserve/player/${playerID}/`,
+    );
+  },
+
   CutNFLPlayer: async (playerID: number): Promise<void> => {
     await GetActionCall(`${fbaUrl}nflplayers/cut/player/${playerID}/`);
   },
@@ -50,6 +64,12 @@ export const PlayerService = {
 
   SendNFLPlayerToTradeBlock: async (playerID: number): Promise<void> => {
     await GetActionCall(`${fbaUrl}trades/nfl/place/block/${playerID}`);
+  },
+
+  PlaceNFLPlayerOnInjuryReserve: async (playerID: number): Promise<void> => {
+    await GetActionCall(
+      `${fbaUrl}nflplayers/injury/reserve/player/${playerID}/`,
+    );
   },
 
   CutCBBPlayer: async (playerID: number): Promise<void> => {

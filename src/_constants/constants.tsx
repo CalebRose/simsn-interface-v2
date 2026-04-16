@@ -54,6 +54,7 @@ export const ExtensionOfferType = "Extension Offer";
 export const CancelOffer = "Cancel Offer";
 export const PracticeSquad = "Practice Squad";
 export const Affiliate = "Affiliate";
+export const InjuryReserve = "Injury Reserve";
 export const Gameplan = "Gameplan";
 export const DepthChart = "Depth Chart";
 export const OffensiveDistributions = "Offensive Distributions";
@@ -95,6 +96,7 @@ export type ModalAction =
   | typeof ExtensionOfferType
   | typeof PracticeSquad
   | typeof Affiliate
+  | typeof InjuryReserve
   | typeof Help1
   | typeof Help2
   | typeof Help3

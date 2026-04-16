@@ -8,7 +8,6 @@ import { ForumBreadcrumbs } from "./components/ForumBreadcrumbs";
 import { ForumEditor } from "./components/ForumEditor";
 import { useForumStore } from "../../context/ForumContext";
 import { useAuthStore } from "../../context/AuthContext";
-import { ForumService } from "../../_services/forumService";
 import {
   Forum,
   RichTextDocument,

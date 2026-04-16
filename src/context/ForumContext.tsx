@@ -50,8 +50,8 @@ function deriveForumRole(currentUser: CurrentUser | null): ForumRole {
     (currentUser.NBATeamID && currentUser.NBATeamID > 0) ||
     (currentUser.CHLTeamID && currentUser.CHLTeamID > 0) ||
     (currentUser.PHLTeamID && currentUser.PHLTeamID > 0) ||
-    currentUser.MLBOrgID != null ||
-    currentUser.CollegeBaseballOrgID != null;
+    (currentUser.MLBOrgID && currentUser.MLBOrgID > 0) ||
+    (currentUser.CollegeBaseballOrgID && currentUser.CollegeBaseballOrgID > 0);
   return hasMemberTeam ? "member" : "guest";
 }
 

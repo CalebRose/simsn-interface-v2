@@ -187,6 +187,14 @@ interface SimFBAContextProps {
   getBootstrapStatsData: () => void;
   cutCFBPlayer: (playerID: number, teamID: number) => Promise<void>;
   cutNFLPlayer: (playerID: number, teamID: number) => Promise<void>;
+  placeCFBPlayerOnInjuryReserve: (
+    playerID: number,
+    teamID: number,
+  ) => Promise<void>;
+  placeNFLPlayerOnInjuryReserve: (
+    playerID: number,
+    teamID: number,
+  ) => Promise<void>;
   sendNFLPlayerToPracticeSquad: (
     playerID: number,
     teamID: number,
@@ -381,6 +389,8 @@ const defaultContext: SimFBAContextProps = {
   getBootstrapStatsData: async () => {},
   cutCFBPlayer: async () => {},
   cutNFLPlayer: async () => {},
+  placeCFBPlayerOnInjuryReserve: async () => {},
+  placeNFLPlayerOnInjuryReserve: async () => {},
   sendNFLPlayerToPracticeSquad: async () => {},
   placeNFLPlayerOnTradeBlock: async () => {},
   redshirtPlayer: async () => {},
@@ -1328,6 +1338,50 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       });
     },
     [proRosterMap],
+  );
+
+  const placeCFBPlayerOnInjuryReserve = useCallback(
+    async (playerID: number, teamID: number) => {
+      await PlayerService.PlaceCFBPlayerOnInjuryReserve(playerID);
+      setCFBRosterMap((prevMap) => {
+        const teamRoster = prevMap![teamID];
+        if (!teamRoster) return prevMap;
+        return {
+          ...prevMap,
+          [teamID]: teamRoster.map((player) =>
+            player.ID === playerID
+              ? new CollegePlayer({
+                  ...player,
+                  InjuryReserve: !player.InjuryReserve,
+                })
+              : player,
+          ),
+        };
+      });
+    },
+    [],
+  );
+
+  const placeNFLPlayerOnInjuryReserve = useCallback(
+    async (playerID: number, teamID: number) => {
+      await PlayerService.PlaceNFLPlayerOnInjuryReserve(playerID);
+      setProRosterMap((prevMap) => {
+        const teamRoster = prevMap![teamID];
+        if (!teamRoster) return prevMap;
+        return {
+          ...prevMap,
+          [teamID]: teamRoster.map((player) =>
+            player.ID === playerID
+              ? new NFLPlayer({
+                  ...player,
+                  InjuryReserve: !player.InjuryReserve,
+                })
+              : player,
+          ),
+        };
+      });
+    },
+    [],
   );
 
   const updateCFBRosterMap = (newMap: Record<number, CollegePlayer[]>) => {
@@ -2719,6 +2773,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         cutCFBPlayer,
         redshirtPlayer,
         cutNFLPlayer,
+        placeCFBPlayerOnInjuryReserve,
+        placeNFLPlayerOnInjuryReserve,
         sendNFLPlayerToPracticeSquad,
         placeNFLPlayerOnTradeBlock,
         updateCFBRosterMap,

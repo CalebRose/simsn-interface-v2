@@ -4,7 +4,6 @@ import {
   RichTextNode,
   RichTextMark,
 } from "../../../models/forumModels";
-import { Text } from "../../../_design/Typography";
 import { parseForumBody } from "../forumUtils";
 
 // ─────────────────────────────────────────────

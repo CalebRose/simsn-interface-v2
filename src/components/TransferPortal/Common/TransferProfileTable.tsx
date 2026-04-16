@@ -1184,6 +1184,7 @@ export const TransferPortalProfileTable: FC<
       columns={columns}
       data={transferPortalProfiles!!}
       team={team}
+      page={league === SimCFB ? "SimCFBPortal" : undefined}
       rowRenderer={rowRenderer(league)}
     />
   );
