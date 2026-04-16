@@ -492,7 +492,7 @@ export const SCOUTING_ACTION_COSTS: Record<string, number> = {
   hs_report: 2,
   recruit_potential_fuzzed: 10,
   recruit_potential_precise: 50,
-  college_potential_precise: 15,
+  college_potential_precise: 50,
   draft_attrs_fuzzed: 10,
   draft_attrs_precise: 20,
   draft_potential_precise: 15,

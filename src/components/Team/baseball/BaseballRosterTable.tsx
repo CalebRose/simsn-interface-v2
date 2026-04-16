@@ -57,6 +57,24 @@ export const ALL_ATTR_GROUPS: ColumnGroup[] = [
   ACTIONS_GROUP,
 ];
 
+// College "All" view: no Salary/Status columns
+export const ALL_ATTR_GROUPS_COLLEGE: ColumnGroup[] = [
+  { groupLabel: "", columns: [...INFO_COLS, { label: "Type", sortKey: "ptype" }] },
+  { groupLabel: "Position Ratings", columns: [
+    { label: "C", sortKey: "c" }, { label: "1B", sortKey: "1b" },
+    { label: "2B", sortKey: "2b" }, { label: "3B", sortKey: "3b" },
+    { label: "SS", sortKey: "ss" }, { label: "LF", sortKey: "lf" },
+    { label: "CF", sortKey: "cf" }, { label: "RF", sortKey: "rf" },
+    { label: "DH", sortKey: "dh" },
+  ]},
+  { groupLabel: "Pitching", columns: [
+    { label: "SP", sortKey: "sp" }, { label: "RP", sortKey: "rp" },
+  ]},
+  { groupLabel: "", columns: [{ label: "Stamina", sortKey: "stamina" }] },
+  ACTIONS_GROUP,
+];
+export const ALL_ATTR_GROUPS_COLLEGE_NO_ACTIONS: ColumnGroup[] = ALL_ATTR_GROUPS_COLLEGE.filter((g) => g !== ACTIONS_GROUP);
+
 // Used by trade page for All view potentials
 export const ALL_POT_GROUPS: ColumnGroup[] = [
   { groupLabel: "", columns: [...INFO_COLS, { label: "Type", sortKey: "ptype" }, { label: "B/T", sortKey: "" }] },
@@ -609,10 +627,14 @@ export const AllAttrCells = ({ p, isFuzzed, isCollege }: { p: Player; isFuzzed?:
       <RatingCell value={p.ratings.dh_rating} isFuzzed={af} label="DH" />
       <RatingCell value={p.ratings.sp_rating} isFuzzed={af} label="SP" />
       <RatingCell value={p.ratings.rp_rating} isFuzzed={af} label="RP" />
-      <td data-label="Years" className={`${td} text-center`}>{c?.years ?? "—"}</td>
-      <td data-label="Yr" className={`${td} text-center`}>{c?.current_year ?? "—"}</td>
-      <td data-label="Salary" className={`${td} text-center`}>{salary != null ? `$${(salary / 1_000_000).toFixed(2)}M` : "—"}</td>
-      <td data-label="Status" className={`${td} text-center text-xs`}>{badges.length > 0 ? badges.join(", ") : "Active"}</td>
+      {!isCollege && (
+        <>
+          <td data-label="Years" className={`${td} text-center`}>{c?.years ?? "—"}</td>
+          <td data-label="Yr" className={`${td} text-center`}>{c?.current_year ?? "—"}</td>
+          <td data-label="Salary" className={`${td} text-center`}>{salary != null ? `$${(salary / 1_000_000).toFixed(2)}M` : "—"}</td>
+          <td data-label="Status" className={`${td} text-center text-xs`}>{badges.length > 0 ? badges.join(", ") : "Active"}</td>
+        </>
+      )}
       <td data-label="Stamina" className={`${td} text-center text-xs`}>
         <StaminaBarCell value={p.stamina} isInjured={p.is_injured} />
       </td>
@@ -855,6 +877,8 @@ export const AllPlayersTable = ({ players, orgAbbrev, onPlayerClick, sortConfig,
     ? (hasActions ? CONTRACT_GROUPS : CONTRACT_GROUPS_NO_ACTIONS)
     : category === Stats
     ? (hasActions ? BATTING_STATS_GROUPS : BATTING_STATS_GROUPS_NO_ACTIONS)
+    : isCollege
+    ? (hasActions ? ALL_ATTR_GROUPS_COLLEGE : ALL_ATTR_GROUPS_COLLEGE_NO_ACTIONS)
     : (hasActions ? ALL_ATTR_GROUPS : ALL_ATTR_GROUPS_NO_ACTIONS);
   return (
     <div className="baseball-table-wrapper overflow-x-auto max-h-[70vh] overflow-y-auto">
