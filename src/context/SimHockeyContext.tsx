@@ -170,6 +170,14 @@ interface SimHCKContextProps {
   addUserToPHLTeam: (teamID: number, user: string, role: string) => void;
   cutCHLPlayer: (playerID: number, teamID: number) => Promise<void>;
   cutPHLPlayer: (playerID: number, teamID: number) => Promise<void>;
+  placeCHLPlayerOnInjuryReserve: (
+    playerID: number,
+    teamID: number,
+  ) => Promise<void>;
+  placePHLPlayerOnInjuryReserve: (
+    playerID: number,
+    teamID: number,
+  ) => Promise<void>;
   affiliatePlayer: (playerID: number, teamID: number) => Promise<void>;
   redshirtPlayer: (playerID: number, teamID: number) => Promise<void>;
   updateCHLRosterMap: (newMap: Record<number, CollegePlayer[]>) => void;
@@ -336,6 +344,8 @@ const defaultContext: SimHCKContextProps = {
   addUserToPHLTeam: () => {},
   cutCHLPlayer: async () => {},
   cutPHLPlayer: async () => {},
+  placeCHLPlayerOnInjuryReserve: async () => {},
+  placePHLPlayerOnInjuryReserve: async () => {},
   affiliatePlayer: async () => {},
   redshirtPlayer: async () => {},
   updateCHLRosterMap: () => {},
@@ -1143,6 +1153,50 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setProRosterMap(rosterMap);
     },
     [proRosterMap],
+  );
+
+  const placeCHLPlayerOnInjuryReserve = useCallback(
+    async (playerID: number, teamID: number) => {
+      await PlayerService.PlaceCHLPlayerOnInjuryReserve(playerID);
+      setCHLRosterMap((prevMap) => {
+        const teamRoster = prevMap[teamID];
+        if (!teamRoster) return prevMap;
+        return {
+          ...prevMap,
+          [teamID]: teamRoster.map((player) =>
+            player.ID === playerID
+              ? new CollegePlayer({
+                  ...player,
+                  IsInjuryReserve: !player.IsInjuryReserve,
+                })
+              : player,
+          ),
+        };
+      });
+    },
+    [],
+  );
+
+  const placePHLPlayerOnInjuryReserve = useCallback(
+    async (playerID: number, teamID: number) => {
+      await PlayerService.PlacePHLPlayerOnInjuryReserve(playerID);
+      setProRosterMap((prevMap) => {
+        const teamRoster = prevMap[teamID];
+        if (!teamRoster) return prevMap;
+        return {
+          ...prevMap,
+          [teamID]: teamRoster.map((player) =>
+            player.ID === playerID
+              ? new ProfessionalPlayer({
+                  ...player,
+                  IsInjuryReserve: !player.IsInjuryReserve,
+                })
+              : player,
+          ),
+        };
+      });
+    },
+    [],
   );
 
   const PlacePHLPlayerOnTradeBlock = useCallback(
@@ -2359,6 +2413,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         cutCHLPlayer,
         redshirtPlayer,
         cutPHLPlayer,
+        placeCHLPlayerOnInjuryReserve,
+        placePHLPlayerOnInjuryReserve,
         PlacePHLPlayerOnTradeBlock,
         affiliatePlayer,
         updateCHLRosterMap,

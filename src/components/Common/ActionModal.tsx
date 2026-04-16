@@ -12,6 +12,7 @@ import {
   ModalAction,
   PortalInfoType,
   PracticeSquad,
+  InjuryReserve,
   Promise,
   RecruitInfoType,
   Redshirt,
@@ -51,6 +52,7 @@ interface ActionModalProps {
   promise?: any;
   cutPlayer?: (playerID: number, teamID: number) => Promise<void>;
   sendToPracticeSquad?: (playerID: number, teamID: number) => Promise<void>;
+  placeOnInjuryReserve?: (playerID: number, teamID: number) => Promise<void>;
   affiliatePlayer?: (playerID: number, teamID: number) => Promise<void>;
   redshirtPlayer?: (playerID: number, teamID: number) => Promise<void>;
   promisePlayer?: (playerID: number, teamID: number) => Promise<void>;
@@ -87,6 +89,7 @@ export const ActionModal: FC<ActionModalProps> = ({
   affiliatePlayer,
   tradeBlockPlayer,
   sendToPracticeSquad,
+  placeOnInjuryReserve,
   tagPlayer,
   attribute = "",
 }) => {
@@ -162,6 +165,11 @@ export const ActionModal: FC<ActionModalProps> = ({
       case PracticeSquad:
         if (sendToPracticeSquad) {
           await sendToPracticeSquad(playerID!, teamID!);
+        }
+        break;
+      case InjuryReserve:
+        if (placeOnInjuryReserve) {
+          await placeOnInjuryReserve(playerID!, teamID!);
         }
         break;
       case AddRecruitType:
@@ -292,6 +300,8 @@ export const ActionModal: FC<ActionModalProps> = ({
         return `Change Trade Status for ${playerLabel}?`;
       case PracticeSquad:
         return `Change Practice Squad Status for ${playerLabel}?`;
+      case InjuryReserve:
+        return `Place ${playerLabel} on Injury Reserve?`;
       case InfoType:
       case RecruitInfoType:
       case PortalInfoType:

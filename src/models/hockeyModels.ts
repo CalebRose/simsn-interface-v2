@@ -1264,6 +1264,7 @@ export class ProfessionalPlayer {
   IsWaived: boolean;
   IsFreeAgent: boolean;
   IsOnTradeBlock: boolean;
+  IsInjuryReserve: boolean;
   IsAcceptingOffers: boolean;
   IsNegotiating: boolean;
   DraftedTeamID: number;
@@ -1412,6 +1413,7 @@ export class ProfessionalPlayer {
     this.IsWaived = source["IsWaived"];
     this.IsFreeAgent = source["IsFreeAgent"];
     this.IsOnTradeBlock = source["IsOnTradeBlock"];
+    this.IsInjuryReserve = source["IsInjuryReserve"];
     this.IsAcceptingOffers = source["IsAcceptingOffers"];
     this.IsNegotiating = source["IsNegotiating"];
     this.DraftedTeamID = source["DraftedTeamID"];
@@ -1872,6 +1874,7 @@ export class RetiredPlayer {
   IsWaived: boolean;
   IsFreeAgent: boolean;
   IsOnTradeBlock: boolean;
+  IsInjuryReserve: boolean;
   IsAcceptingOffers: boolean;
   IsNegotiating: boolean;
   DraftedTeamID: number;
@@ -2020,6 +2023,7 @@ export class RetiredPlayer {
     this.IsWaived = source["IsWaived"];
     this.IsFreeAgent = source["IsFreeAgent"];
     this.IsOnTradeBlock = source["IsOnTradeBlock"];
+    this.IsInjuryReserve = source["IsInjuryReserve"];
     this.IsAcceptingOffers = source["IsAcceptingOffers"];
     this.IsNegotiating = source["IsNegotiating"];
     this.DraftedTeamID = source["DraftedTeamID"];

@@ -21,6 +21,7 @@ import {
   NFLTradeProposal,
 } from "../models/footballModels";
 import {
+  AdminRole,
   League,
   Requests,
   SimCBB,
@@ -50,6 +51,7 @@ import { updateUserByUsername } from "../firebase/firestoreHelper";
 import { useSimHCKStore } from "./SimHockeyContext";
 import { useSimFBAStore } from "./SimFBAContext";
 import { useSimBBAStore } from "./SimBBAContext";
+import { useAuthStore } from "./AuthContext";
 
 interface AdminPageContextType {
   hckCHLRequests: CollegeTeamRequest[];
@@ -102,6 +104,16 @@ interface AdminPageProviderProps {
 export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   children,
 }) => {
+  const authStore = useAuthStore();
+  const { currentUser } = authStore;
+  if (
+    currentUser &&
+    currentUser.roleID &&
+    currentUser.roleID !== AdminRole &&
+    !currentUser.roleID.includes("Commissioner")
+  ) {
+    return <></>;
+  }
   const leagueStore = useLeagueStore();
   const { selectedLeague } = leagueStore;
   const [selectedTab, setSelectedTab] = useState(Requests);
@@ -238,6 +250,11 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       setBaseballCBRequests((prev) =>
         prev.filter((req) => req.ID !== request.ID),
       );
+      const payload = {
+        username: request.Username,
+        CollegeBaseballOrgID: request.OrgID,
+      };
+      await updateUserByUsername(request.Username, payload);
     },
     [baseballCBRequests],
   );
@@ -258,6 +275,11 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       setBaseballMLBRequests((prev) =>
         prev.filter((req) => req.ID !== request.ID),
       );
+      const payload = {
+        username: request.Username,
+        MLBOrgID: request.OrgID,
+      };
+      await updateUserByUsername(request.Username, payload);
     },
     [baseballMLBRequests],
   );

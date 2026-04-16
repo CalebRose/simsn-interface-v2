@@ -126,6 +126,116 @@ const ForumImageExtension = Node.create({
   addNodeView() {
     return ReactNodeViewRenderer(ForumImageNodeView);
   },
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey("forumImageClipboardPaste"),
+        props: {
+          handlePaste(view, event) {
+            const items = Array.from(event.clipboardData?.items ?? []);
+            const imageItem = items.find((item) =>
+              item.type.startsWith("image/"),
+            );
+            if (!imageItem) return false;
+
+            event.preventDefault();
+            const file = imageItem.getAsFile();
+            if (!file) return false;
+
+            // Insert a blob URL node immediately so the image is visible at once.
+            const previewUrl = URL.createObjectURL(file);
+            {
+              const { state, dispatch } = view;
+              const node = state.schema.nodes.forumImage?.create({
+                src: previewUrl,
+                alt: "pasted-image",
+              });
+              if (!node) {
+                URL.revokeObjectURL(previewUrl);
+                return false;
+              }
+              dispatch(state.tr.replaceSelectionWith(node).scrollIntoView());
+            }
+
+            // Find the node that has a given src value and run a callback on it.
+            const withNode = (
+              src: string,
+              cb: (pos: number, nodeSize: number) => void,
+            ) => {
+              const { state: s } = view;
+              s.doc.descendants((n, pos) => {
+                if (n.type.name === "forumImage" && n.attrs.src === src) {
+                  cb(pos, n.nodeSize);
+                  return false;
+                }
+              });
+            };
+
+            // Convert non-PNG files to PNG using a canvas.
+            const toPng = (src: File): Promise<File> =>
+              new Promise((resolve) => {
+                const img = new Image();
+                const tempUrl = URL.createObjectURL(src);
+                img.onload = () => {
+                  const canvas = document.createElement("canvas");
+                  canvas.width = img.naturalWidth;
+                  canvas.height = img.naturalHeight;
+                  const ctx = canvas.getContext("2d")!;
+                  ctx.drawImage(img, 0, 0);
+                  URL.revokeObjectURL(tempUrl);
+                  canvas.toBlob(
+                    (blob) =>
+                      resolve(
+                        blob
+                          ? new File([blob], "pasted-image.png", {
+                              type: "image/png",
+                            })
+                          : src,
+                      ),
+                    "image/png",
+                  );
+                };
+                img.onerror = () => {
+                  URL.revokeObjectURL(tempUrl);
+                  resolve(src);
+                };
+                img.src = tempUrl;
+              });
+
+            (async () => {
+              const uploadFile =
+                file.type === "image/png" ? file : await toPng(file);
+              const realUrl = await ImageKitService.uploadImage(uploadFile);
+
+              // Swap the blob URL for the persisted ImageKit URL.
+              withNode(previewUrl, (pos) => {
+                const { state: s, dispatch: d } = view;
+                const existing = s.doc.nodeAt(pos);
+                d(
+                  s.tr.setNodeMarkup(pos, undefined, {
+                    ...existing?.attrs,
+                    src: realUrl,
+                  }),
+                );
+              });
+              URL.revokeObjectURL(previewUrl);
+            })().catch(() => {
+              // Remove the placeholder node and clean up on failure.
+              withNode(previewUrl, (pos, nodeSize) => {
+                const { state: s, dispatch: d } = view;
+                d(s.tr.delete(pos, pos + nodeSize));
+              });
+              URL.revokeObjectURL(previewUrl);
+              window.alert("Image upload failed. Please try again.");
+            });
+
+            return true;
+          },
+        },
+      }),
+    ];
+  },
 });
 
 // ─────────────────────────────────────────────

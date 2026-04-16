@@ -24,6 +24,7 @@ import {
   Affiliate,
   TradeBlock,
   PracticeSquad,
+  InjuryReserve,
   Promises,
   Draft,
   PickUp,
@@ -573,6 +574,10 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
                       label: `Redshirt - ${item.FirstName} ${item.LastName}`,
                     },
                   ]),
+              {
+                value: "injuredReserve",
+                label: `Send to Injured Reserve - ${item.FirstName} ${item.LastName}`,
+              },
               ...(item.TransferStatus === 0
                 ? []
                 : [
@@ -591,6 +596,9 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
                 hck_Timestamp!.Week < 4
               ) {
                 openModal(Redshirt, item);
+              }
+              if (selectedOption?.value === "injuredReserve") {
+                openModal(InjuryReserve, item);
               }
               if (selectedOption?.value === "promise") {
                 openPromiseModal(item);
@@ -1279,6 +1287,8 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
                 openModal(Cut, item);
               } else if (selectedOption?.value === "affiliate") {
                 openModal(Affiliate, item);
+              } else if (selectedOption?.value === "injuredReserve") {
+                openModal(InjuryReserve, item);
               } else if (selectedOption?.value === "tradeBlock") {
                 openModal(TradeBlock, item);
               } else if (
@@ -1586,6 +1596,10 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
                       label: `Redshirt - ${item.FirstName} ${item.LastName}`,
                     },
                   ]),
+              {
+                value: "injuredReserve",
+                label: `Send to Injured Reserve - ${item.FirstName} ${item.LastName}`,
+              },
               ...(item.TransferStatus === 0
                 ? []
                 : [
@@ -1601,6 +1615,9 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
               }
               if (selectedOption?.value === "redshirt") {
                 openModal(Redshirt, item);
+              }
+              if (selectedOption?.value === "injuredReserve") {
+                openModal(InjuryReserve, item);
               }
               if (selectedOption?.value === "promise") {
                 openPromiseModal(item);
@@ -1948,6 +1965,8 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
                 openModal(Cut, item);
               } else if (selectedOption?.value === "practiceSquad") {
                 openModal(PracticeSquad, item);
+              } else if (selectedOption?.value === "injuredReserve") {
+                openModal(InjuryReserve, item);
               } else if (selectedOption?.value === "tradeBlock") {
                 openModal(TradeBlock, item);
               } else if (selectedOption?.value === "franchise") {
