@@ -740,12 +740,18 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       phlID = currentUser.PHLTeamID;
     }
     const res = await BootstrapService.GetHCKBootstrapTeamData();
-    setCHLTeams(res.AllCollegeTeams);
+    // Sort by LeagueID ascending so that teams are always in the same order (NCAA, ACHA, USPORTS, etc.)
+    const ct = res.AllCollegeTeams.sort((a, b) => a.LeagueID - b.LeagueID);
+    setCHLTeams(ct);
     setProTeams(res.AllProTeams);
     if (res.AllCollegeTeams.length > 0) {
-      const sortedCollegeTeams = res.AllCollegeTeams.sort((a, b) =>
-        a.TeamName.localeCompare(b.TeamName),
-      );
+      // Sort by LeagueID and then TeamName so that teams are always in the same order (NCAA, ACHA, USPORTS, etc.) and then alphabetically within each league
+      const sortedCollegeTeams = res.AllCollegeTeams.sort((a, b) => {
+        if (a.LeagueID === b.LeagueID) {
+          return a.TeamName.localeCompare(b.TeamName);
+        }
+        return a.LeagueID - b.LeagueID;
+      });
       const chlTeamOptions = sortedCollegeTeams.map((team) => ({
         label: `${team.TeamName} | ${team.Abbreviation}`,
         value: team.ID.toString(),
