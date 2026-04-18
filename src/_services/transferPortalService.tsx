@@ -4,6 +4,7 @@ import {
   GetCall,
   GetExportCall,
   PostCall,
+  PostCallNoResponse,
 } from "../_helper/fetchHelper";
 import { CollegePromise, TransferPortalProfile } from "../models/hockeyModels";
 
@@ -89,7 +90,7 @@ export const TransferPortalService = {
   },
 
   FBASaveTransferPortalBoard: async (dto: any): Promise<void> => {
-    await PostCall(`${fbaUrl}portal/saveboard`, dto);
+    await PostCallNoResponse(`${fbaUrl}portal/saveboard`, dto);
   },
 
   FBACreatePromise: async (dto: any): Promise<CollegePromise> => {
