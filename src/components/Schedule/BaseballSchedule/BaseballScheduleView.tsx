@@ -171,7 +171,11 @@ const SeriesCard = ({
         </div>
         <span
           className="text-xs font-bold px-2 py-0.5 rounded dark:!text-white"
-          style={accentColor && record.label !== "—" ? { backgroundColor: `${accentColor}15`, color: accentColor } : undefined}
+          style={
+            accentColor && record.label !== "—"
+              ? { backgroundColor: `${accentColor}15`, color: accentColor }
+              : undefined
+          }
         >
           {record.label}
         </span>
@@ -398,21 +402,31 @@ export const BaseballScheduleView = ({
     refreshBudget();
   }, [refreshBudget]);
 
-  const openPlayerModal = useCallback((playerId: number) => {
-    setModalPlayerId(playerId);
-    handleOpenModal();
-  }, [handleOpenModal]);
+  const openPlayerModal = useCallback(
+    (playerId: number) => {
+      setModalPlayerId(playerId);
+      handleOpenModal();
+    },
+    [handleOpenModal],
+  );
 
   // --- Team color theming ---
   const teamColorsById = useMemo(() => {
     const map: Record<number, { colorOne: string; colorTwo: string }> = {};
     for (const t of allTeams ?? []) {
-      map[t.team_id] = { colorOne: t.color_one ?? "#4B5563", colorTwo: t.color_two ?? "#4B5563" };
+      map[t.team_id] = {
+        colorOne: t.color_one ?? "#4B5563",
+        colorTwo: t.color_two ?? "#4B5563",
+      };
     }
     return map;
   }, [allTeams]);
 
-  const teamColors = useTeamColors(primaryTeam?.color_one ?? undefined, primaryTeam?.color_two ?? undefined, primaryTeam?.color_three ?? undefined);
+  const teamColors = useTeamColors(
+    primaryTeam?.color_one ?? undefined,
+    primaryTeam?.color_two ?? undefined,
+    primaryTeam?.color_three ?? undefined,
+  );
   let headerColor = teamColors.One;
   let borderColor = teamColors.Two;
   if (isBrightColor(headerColor)) {
@@ -761,9 +775,14 @@ export const BaseballScheduleView = ({
           ) : (
             <>
               {/* Weekly view */}
-              {viewMode === "weekly" && (
-                weeklySeriesList.length === 0 ? (
-                  <Text variant="body-small" classes="text-gray-400 py-8 text-center">No games found for Week {selectedWeek}.</Text>
+              {viewMode === "weekly" &&
+                (weeklySeriesList.length === 0 ? (
+                  <Text
+                    variant="body-small"
+                    classes="text-gray-400 py-8 text-center"
+                  >
+                    No games found for Week {selectedWeek}.
+                  </Text>
                 ) : (
                   <div className="flex flex-col gap-4">
                     {weeklySeriesList.map((series) => (
@@ -772,7 +791,7 @@ export const BaseballScheduleView = ({
                         series={series}
                         teamId={selectedTeamId ?? series.home_team_id}
                         league={league}
-                        IsRetro={currentUser?.IsRetro}
+                        isRetro={currentUser?.IsRetro}
                         accentColor={headerColor}
                         teamColorsById={teamColorsById}
                         onGameClick={setBoxScoreGameId}
@@ -808,7 +827,7 @@ export const BaseballScheduleView = ({
                         }}
                         teamId={selectedTeamId ?? g.home_team_id}
                         league={league}
-                        isRetro={currentUser?.isRetro}
+                        isRetro={currentUser?.IsRetro}
                         accentColor={headerColor}
                         teamColorsById={teamColorsById}
                         onGameClick={setBoxScoreGameId}
@@ -823,28 +842,28 @@ export const BaseballScheduleView = ({
                   {Array.from({ length: 12 }, (_, i) => i + 1).map(
                     (monthNum) => {
                       const [mStart, mEnd] = getWeekRangeForMonth(monthNum);
-                    const weeks: number[] = [];
-                    for (let w = mStart; w <= mEnd; w++) weeks.push(w);
+                      const weeks: number[] = [];
+                      for (let w = mStart; w <= mEnd; w++) weeks.push(w);
 
-                    // Month record
-                    let monthW = 0,
-                      monthL = 0;
-                    if (selectedTeamId) {
-                      for (const wk of weeks) {
-                        for (const sw of SUBWEEK_ORDER) {
-                          const g = calendarGameMap.get(`${wk}-${sw}`);
-                          if (g) {
-                            const r = getGameResult(g, selectedTeamId);
-                            if (r.won) monthW++;
-                            else if (r.lost) monthL++;
+                      // Month record
+                      let monthW = 0,
+                        monthL = 0;
+                      if (selectedTeamId) {
+                        for (const wk of weeks) {
+                          for (const sw of SUBWEEK_ORDER) {
+                            const g = calendarGameMap.get(`${wk}-${sw}`);
+                            if (g) {
+                              const r = getGameResult(g, selectedTeamId);
+                              if (r.won) monthW++;
+                              else if (r.lost) monthL++;
+                            }
                           }
                         }
                       }
-                    }
 
-                    return (
-                      <div key={monthNum}>
-                        {/* Month header */}
+                      return (
+                        <div key={monthNum}>
+                          {/* Month header */}
                           <div
                             className="flex items-center justify-between px-3 py-2 rounded-t-lg"
                             style={{ backgroundColor: `${headerColor}15` }}
@@ -853,108 +872,117 @@ export const BaseballScheduleView = ({
                               Month {monthNum}
                             </Text>
                             {selectedTeamId && (monthW > 0 || monthL > 0) && (
-                              <span className="text-sm font-semibold dark:!text-white" style={{ color: headerColor }}>{monthW}-{monthL}</span>
+                              <span
+                                className="text-sm font-semibold dark:!text-white"
+                                style={{ color: headerColor }}
+                              >
+                                {monthW}-{monthL}
+                              </span>
                             )}
                           </div>
-                        <table className="w-full border-collapse">
-                          <thead>
-                            <tr className="border-b-2 border-gray-200 dark:border-gray-600">
-                              <th className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-left">
-                                Week
-                              </th>
-                              {SUBWEEK_ORDER.map((sw) => (
-                                <th
-                                  key={sw}
-                                  className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center min-w-[5rem]"
-                                >
-                                  {SUBWEEK_LABELS[sw]}
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr className="border-b-2 border-gray-200 dark:border-gray-600">
+                                <th className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-left">
+                                  Week
                                 </th>
-                              ))}
-                              {selectedTeamId && (
-                                <th className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center">
-                                  Record
-                                </th>
-                              )}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {weeks.map((weekNum) => {
-                              const isCurrent =
-                                weekNum === seasonContext.current_week_index;
-                              let weekRecord = "";
-                              if (selectedTeamId) {
-                                let w = 0,
-                                  l = 0;
-                                for (const sw of SUBWEEK_ORDER) {
-                                  const g = calendarGameMap.get(
-                                    `${weekNum}-${sw}`,
-                                  );
-                                  if (g) {
-                                    const r = getGameResult(g, selectedTeamId);
-                                    if (r.won) w++;
-                                    else if (r.lost) l++;
-                                  }
-                                }
-                                if (w > 0 || l > 0) weekRecord = `${w}-${l}`;
-                              }
-                              return (
-                                <tr
-                                  key={weekNum}
-                                  className={
-                                    isCurrent
-                                      ? "bg-blue-50/50 dark:bg-blue-900/10"
-                                      : ""
-                                  }
-                                >
-                                  <td className="px-3 py-2 text-sm font-medium whitespace-nowrap border border-gray-100 dark:border-gray-700">
-                                    Wk {weekNum}
-                                    {isCurrent && (
-                                      <span className="ml-1 text-xs text-green-600 dark:text-green-400">
-                                        ●
-                                      </span>
-                                    )}
-                                  </td>
-                                  {SUBWEEK_ORDER.map((sw) => (
-                                    <CalendarCell
-                                      key={sw}
-                                      game={calendarGameMap.get(
-                                        `${weekNum}-${sw}`,
-                                      )}
-                                      teamId={selectedTeamId}
-                                      onGameClick={setBoxScoreGameId}
-                                    />
-                                  ))}
-                                  {selectedTeamId && (
-                                    <td className="px-3 py-2 text-sm text-center font-medium border border-gray-100 dark:border-gray-700">
-                                      {weekRecord || "—"}
-                                    </td>
-                                  )}
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                          {/* Month summary footer */}
-                          {selectedTeamId && (
-                            <tfoot>
-                              <tr className="border-t-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50">
-                                <td
-                                  className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase"
-                                  colSpan={SUBWEEK_ORDER.length + 1}
-                                >
-                                  Month {monthNum} Total
-                                </td>
-                                <td className="px-3 py-2 text-sm text-center font-bold">
-                                  {monthW > 0 || monthL > 0
-                                    ? `${monthW}-${monthL}`
-                                    : "—"}
-                                </td>
+                                {SUBWEEK_ORDER.map((sw) => (
+                                  <th
+                                    key={sw}
+                                    className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center min-w-[5rem]"
+                                  >
+                                    {SUBWEEK_LABELS[sw]}
+                                  </th>
+                                ))}
+                                {selectedTeamId && (
+                                  <th className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center">
+                                    Record
+                                  </th>
+                                )}
                               </tr>
-                            </tfoot>
-                          )}
-                        </table>
-                      </div>
-                    );
-                  })}
+                            </thead>
+                            <tbody>
+                              {weeks.map((weekNum) => {
+                                const isCurrent =
+                                  weekNum === seasonContext.current_week_index;
+                                let weekRecord = "";
+                                if (selectedTeamId) {
+                                  let w = 0,
+                                    l = 0;
+                                  for (const sw of SUBWEEK_ORDER) {
+                                    const g = calendarGameMap.get(
+                                      `${weekNum}-${sw}`,
+                                    );
+                                    if (g) {
+                                      const r = getGameResult(
+                                        g,
+                                        selectedTeamId,
+                                      );
+                                      if (r.won) w++;
+                                      else if (r.lost) l++;
+                                    }
+                                  }
+                                  if (w > 0 || l > 0) weekRecord = `${w}-${l}`;
+                                }
+                                return (
+                                  <tr
+                                    key={weekNum}
+                                    className={
+                                      isCurrent
+                                        ? "bg-blue-50/50 dark:bg-blue-900/10"
+                                        : ""
+                                    }
+                                  >
+                                    <td className="px-3 py-2 text-sm font-medium whitespace-nowrap border border-gray-100 dark:border-gray-700">
+                                      Wk {weekNum}
+                                      {isCurrent && (
+                                        <span className="ml-1 text-xs text-green-600 dark:text-green-400">
+                                          ●
+                                        </span>
+                                      )}
+                                    </td>
+                                    {SUBWEEK_ORDER.map((sw) => (
+                                      <CalendarCell
+                                        key={sw}
+                                        game={calendarGameMap.get(
+                                          `${weekNum}-${sw}`,
+                                        )}
+                                        teamId={selectedTeamId}
+                                        onGameClick={setBoxScoreGameId}
+                                      />
+                                    ))}
+                                    {selectedTeamId && (
+                                      <td className="px-3 py-2 text-sm text-center font-medium border border-gray-100 dark:border-gray-700">
+                                        {weekRecord || "—"}
+                                      </td>
+                                    )}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                            {/* Month summary footer */}
+                            {selectedTeamId && (
+                              <tfoot>
+                                <tr className="border-t-2 border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800/50">
+                                  <td
+                                    className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase"
+                                    colSpan={SUBWEEK_ORDER.length + 1}
+                                  >
+                                    Month {monthNum} Total
+                                  </td>
+                                  <td className="px-3 py-2 text-sm text-center font-bold">
+                                    {monthW > 0 || monthL > 0
+                                      ? `${monthW}-${monthL}`
+                                      : "—"}
+                                  </td>
+                                </tr>
+                              </tfoot>
+                            )}
+                          </table>
+                        </div>
+                      );
+                    },
+                  )}
 
                   {/* Season totals */}
                   {selectedTeamId && (
@@ -965,8 +993,13 @@ export const BaseballScheduleView = ({
                         border: `2px solid ${headerColor}`,
                       }}
                     >
-                      <Text variant="body" classes="font-bold">Season Total</Text>
-                      <span className="text-base font-bold dark:!text-white" style={{ color: headerColor }}>
+                      <Text variant="body" classes="font-bold">
+                        Season Total
+                      </Text>
+                      <span
+                        className="text-base font-bold dark:!text-white"
+                        style={{ color: headerColor }}
+                      >
                         {(() => {
                           let w = 0,
                             l = 0;
