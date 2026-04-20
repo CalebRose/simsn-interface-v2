@@ -7,7 +7,7 @@ import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { Player, BaseballTeam } from "../../../models/baseball/baseballModels";
 import { SimCollegeBaseball } from "../../../_constants/constants";
 import { useModal } from "../../../_hooks/useModal";
-import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import { PlayerModal } from "./PlayerModal";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 import { BaseballService } from "../../../_services/baseballService";
 import { getLogo } from "../../../_utility/getLogo";
@@ -615,7 +615,7 @@ export const CollegeRosterBreakdownPage = () => {
       </div>
 
       {modalPlayerId != null && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={isModalOpen}
           onClose={() => {
             setModalPlayerId(null);
@@ -627,6 +627,7 @@ export const CollegeRosterBreakdownPage = () => {
           scoutingBudget={scoutingBudget}
           onBudgetChanged={refreshBudget}
           league={SimCollegeBaseball}
+          context="scouting"
         />
       )}
     </PageContainer>

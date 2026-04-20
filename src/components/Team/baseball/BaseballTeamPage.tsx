@@ -64,7 +64,7 @@ import {
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
-import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import { PlayerModal } from "./PlayerModal";
 import "./baseballMobile.css";
 import {
   ScoutingActionType,
@@ -1607,7 +1607,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       )}
 
       {scoutingPlayerId > 0 && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={scoutingModal.isModalOpen}
           onClose={handleScoutingModalClose}
           playerId={scoutingPlayerId}
@@ -1623,6 +1623,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
               .catch(() => {});
           }}
           league={league}
+          context="scouting"
         />
       )}
     </PageContainer>

@@ -12,7 +12,8 @@ import { MlbPoolResponse, PoolPlayer, ScoutingBudget } from "../../../models/bas
 import { usePoolTable } from "./BaseballScouting/usePoolTable";
 import { PoolPagination } from "./BaseballScouting/PoolPagination";
 import { ScoutingBudgetBar } from "./BaseballScouting/ScoutingBudgetBar";
-import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import { ScoutingDepartmentPanel } from "./BaseballScouting/ScoutingDepartmentPanel";
+import { PlayerModal } from "./PlayerModal";
 import { BaseballSigningModal } from "./BaseballScouting/BaseballSigningModal";
 import "./baseballMobile.css";
 
@@ -142,6 +143,19 @@ export const BaseballProScoutingPage = (_props: BaseballProScoutingPageProps) =>
               />
             )}
           </div>
+
+          {/* Scouting Department Expansion */}
+          {orgId > 0 && leagueYearId > 0 && (
+            <div className="mb-4">
+              <ScoutingDepartmentPanel
+                orgId={orgId}
+                leagueYearId={leagueYearId}
+                budget={scoutingBudget}
+                refreshKey={budgetRefreshKey}
+                onPurchased={() => setBudgetRefreshKey((k) => k + 1)}
+              />
+            </div>
+          )}
 
           {/* Level Selector */}
           {Object.keys(levelCounts).length > 0 && (
@@ -314,7 +328,7 @@ export const BaseballProScoutingPage = (_props: BaseballProScoutingPageProps) =>
 
       {/* Scouting Modal */}
       {selectedPlayerId > 0 && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={scoutingModal.isModalOpen}
           onClose={scoutingModal.handleCloseModal}
           playerId={selectedPlayerId}
@@ -323,6 +337,7 @@ export const BaseballProScoutingPage = (_props: BaseballProScoutingPageProps) =>
           scoutingBudget={scoutingBudget}
           onBudgetChanged={() => setBudgetRefreshKey((k) => k + 1)}
           league="SimMLB"
+          context="scouting"
         />
       )}
 

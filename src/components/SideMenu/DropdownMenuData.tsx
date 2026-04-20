@@ -337,14 +337,6 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
       {
-        label: "Roster Breakdown",
-        isRoute: true,
-        route: routes.COLLEGE_BASEBALL_FINANCIALS,
-        league: SimCollegeBaseball,
-        click: () => navigate(routes.COLLEGE_BASEBALL_FINANCIALS),
-        toggle: () => toggleMenu(),
-      },
-      {
         label: "Gameplan",
         isRoute: true,
         route: routes.COLLEGE_BASEBALL_GAMEPLAN,

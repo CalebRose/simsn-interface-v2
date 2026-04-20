@@ -41,12 +41,13 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
   // Default to highest available level
   const activeLevel = useMemo(() => {
     if (selectedLevel) return selectedLevel;
-    if (!organization?.teams) return "mlb";
+    if (!organization?.teams) return isCollege ? "college" : "mlb";
+    if (isCollege) return organization.teams["college"] ? "college" : Object.keys(organization.teams)[0] ?? "college";
     for (const level of LEVEL_ORDER) {
       if (organization.teams[level]) return level;
     }
     return "mlb";
-  }, [selectedLevel, organization]);
+  }, [selectedLevel, organization, isCollege]);
 
   const activeTeam = useMemo(() => {
     return organization?.teams?.[activeLevel] ?? null;

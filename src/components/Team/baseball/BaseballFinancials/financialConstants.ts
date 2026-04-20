@@ -1,8 +1,21 @@
 // Tab names
 export const OVERVIEW_TAB = "Overview";
+export const LEDGER_TAB = "Ledger";
 export const CONTRACTS_TAB = "Contracts";
-export const SERVICE_TIME_TAB = "Service Time";
-export const FINANCIALS_TABS = [OVERVIEW_TAB, CONTRACTS_TAB, SERVICE_TIME_TAB];
+export const FINANCIALS_TABS = [OVERVIEW_TAB, LEDGER_TAB, CONTRACTS_TAB];
+
+// Ledger entry type labels
+export const ENTRY_TYPE_LABELS: Record<string, string> = {
+  media: "Media",
+  salary: "Salary",
+  performance: "Performance",
+  bonus: "Signing Bonus",
+  buyout: "Buyout",
+  interest_income: "Interest Income",
+  interest_expense: "Interest Expense",
+  playoff_gate: "Playoff Gate",
+  playoff_media: "Playoff Media",
+};
 
 // Contract phase badge styling
 export const PHASE_CONFIG: Record<string, { label: string; classes: string }> = {
