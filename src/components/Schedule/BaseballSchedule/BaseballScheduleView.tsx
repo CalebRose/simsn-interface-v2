@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../_hooks/useModal";
-import { BaseballScoutingModal } from "../../Team/baseball/BaseballScouting/BaseballScoutingModal";
+import { PlayerModal } from "../../Team/baseball/PlayerModal";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
@@ -1036,7 +1036,7 @@ export const BaseballScheduleView = ({
 
         {/* Player Modal */}
         {modalPlayerId != null && (
-          <BaseballScoutingModal
+          <PlayerModal
             isOpen={isModalOpen}
             onClose={() => {
               setModalPlayerId(null);
@@ -1048,6 +1048,7 @@ export const BaseballScheduleView = ({
             scoutingBudget={scoutingBudget}
             onBudgetChanged={refreshBudget}
             league={league === SimMLB ? SimMLB : SimCollegeBaseball}
+            context="scouting"
           />
         )}
       </div>

@@ -451,6 +451,39 @@ export interface ContractOverviewPlayer {
     is_expiring:      boolean;
 }
 
+// Org Financial Summary (direct API call)
+export interface OrgFinancialSummaryResponse {
+    org:                            { id: number; abbrev: string };
+    league_year:                    number;
+    starting_balance:               number;
+    season_revenue:                 number;
+    season_expenses:                number;
+    year_start_events:              Record<string, number>;
+    weeks:                          FinancialWeek[];
+    interest_events:                Record<string, number>;
+    ending_balance_before_interest: number;
+    ending_balance:                 number;
+}
+
+// Raw Ledger Entries
+export interface LedgerEntry {
+    id:              number;
+    org_id:          number;
+    league_year_id:  number;
+    game_week_id:    number | null;
+    entry_type:      string;
+    amount:          number;
+    created_at:      string;
+    week_index:      number | null;
+}
+
+export interface LedgerResponse {
+    org:          { id: number; abbrev: string };
+    league_year:  number;
+    count:        number;
+    entries:      LedgerEntry[];
+}
+
 // Bootstrap Landing Page Response
 export interface BaseballBootstrapLanding {
     Organization: BaseballOrganization;

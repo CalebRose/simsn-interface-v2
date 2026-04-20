@@ -20,7 +20,7 @@ import {
 } from "../../../models/baseball/baseballStatsModels";
 import { enqueueSnackbar } from "notistack";
 import { useModal } from "../../../_hooks/useModal";
-import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import { PlayerModal } from "./PlayerModal";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 import { Player } from "../../../models/baseball/baseballModels";
 import "./baseballMobile.css";
@@ -836,7 +836,7 @@ export const BaseballInjuryPage = ({ league }: Props) => {
 
       {/* Player Modal */}
       {modalPlayerId != null && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={isModalOpen}
           onClose={() => {
             setModalPlayerId(null);
@@ -848,6 +848,7 @@ export const BaseballInjuryPage = ({ league }: Props) => {
           scoutingBudget={scoutingBudget}
           onBudgetChanged={refreshBudget}
           league={league === SimMLB ? SimMLB : SimCollegeBaseball}
+          context="scouting"
         />
       )}
     </PageContainer>

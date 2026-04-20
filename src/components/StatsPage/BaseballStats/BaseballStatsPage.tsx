@@ -11,7 +11,7 @@ import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
 import { useModal } from "../../../_hooks/useModal";
-import { BaseballScoutingModal } from "../../Team/baseball/BaseballScouting/BaseballScoutingModal";
+import { PlayerModal } from "../../Team/baseball/PlayerModal";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
@@ -984,7 +984,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
 
       {/* Player Scouting Modal */}
       {modalPlayerId != null && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={isModalOpen}
           onClose={() => {
             setModalPlayerId(null);
@@ -996,6 +996,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
           scoutingBudget={scoutingBudget}
           onBudgetChanged={refreshBudget}
           league={league === SimMLB ? SimMLB : SimCollegeBaseball}
+          context="scouting"
         />
       )}
     </PageContainer>

@@ -19,7 +19,6 @@ import {
 } from "../_constants/constants";
 import { BaseballTeamPage } from "../components/Team/baseball/BaseballTeamPage";
 import { BaseballFinancialsPage } from "../components/Team/baseball/BaseballFinancialsPage";
-import { CollegeRosterBreakdownPage } from "../components/Team/baseball/CollegeRosterBreakdownPage";
 import { BaseballGameplanPage } from "../components/Gameplan/BaseballGameplan/BaseballGameplanPage";
 import { BaseballTradePage } from "../components/Team/baseball/BaseballTradePage";
 import { BaseballFreeAgencyPage } from "../components/Team/baseball/BaseballFreeAgencyPage";
@@ -432,20 +431,11 @@ export const AuthRoutes = [
     }
   />,
   <Route
-    key="College Baseball Roster Breakdown"
-    path={routes.COLLEGE_BASEBALL_FINANCIALS}
-    element={
-      <AuthGuard>
-        <CollegeRosterBreakdownPage />
-      </AuthGuard>
-    }
-  />,
-  <Route
     key="MLB Financials"
     path={routes.MLB_FINANCIALS}
     element={
       <AuthGuard>
-        <BaseballFinancialsPage league={SimMLB} />
+        <BaseballFinancialsPage />
       </AuthGuard>
     }
   />,

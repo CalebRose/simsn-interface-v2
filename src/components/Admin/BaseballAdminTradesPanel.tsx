@@ -528,11 +528,17 @@ interface AllProposalsTableProps {
   onViewDetail: (p: TradeProposal) => void;
 }
 
+const PAGE_SIZE = 25;
+
 const AllProposalsTable: React.FC<AllProposalsTableProps> = ({
   proposals,
   organizations,
   onViewDetail,
 }) => {
+  const [page, setPage] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(proposals.length / PAGE_SIZE));
+  const paged = proposals.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
   if (proposals.length === 0) {
     return (
       <div className="text-center py-8 text-gray-400">
@@ -555,7 +561,7 @@ const AllProposalsTable: React.FC<AllProposalsTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {proposals.map((p, i) => (
+          {paged.map((p, i) => (
             <tr
               key={p.id}
               className={`border-b border-gray-700 ${i % 2 === 0 ? "bg-gray-800" : "bg-gray-750"}`}
@@ -582,6 +588,32 @@ const AllProposalsTable: React.FC<AllProposalsTableProps> = ({
           ))}
         </tbody>
       </table>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-3 px-1">
+          <Text variant="xs" className="text-gray-400">
+            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, proposals.length)} of {proposals.length}
+          </Text>
+          <div className="flex gap-1">
+            <Button
+              size="xs"
+              variant="secondary"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              Prev
+            </Button>
+            <Button
+              size="xs"
+              variant="secondary"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

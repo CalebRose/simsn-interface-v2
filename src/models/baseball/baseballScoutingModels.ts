@@ -343,6 +343,60 @@ export interface ScoutingActionsResponse {
     actions: ScoutingAction[];
 }
 
+// ── Scouting Department Expansion ──────────────────────────
+
+export interface DepartmentTierScheduleEntry {
+    tier: number;
+    cost: number;
+    points_gained: number;
+    cumulative_total: number;
+    cumulative_cost: number;
+    cost_per_point: number;
+}
+
+export interface DepartmentPurchase {
+    id: number;
+    tier: number;
+    bonus_points: number;
+    cash_cost: number;
+    rolled_back: boolean;
+    created_at: string;
+}
+
+export interface DepartmentNextTier {
+    tier: number;
+    cost: number;
+    points_gained: number;
+}
+
+export interface ScoutingDepartmentStatus {
+    eligible: boolean;
+    reason?: string;
+    base_budget: number;
+    bonus_points?: number;
+    total_budget: number;
+    current_tier?: number;
+    max_tier?: number;
+    next_tier?: DepartmentNextTier | null;
+    purchases?: DepartmentPurchase[];
+    tier_schedule?: DepartmentTierScheduleEntry[];
+}
+
+export interface DepartmentPurchaseRequest {
+    org_id: number;
+    league_year_id: number;
+    executed_by?: string;
+}
+
+export interface DepartmentPurchaseResponse {
+    status: "purchased";
+    tier: number;
+    bonus_points: number;
+    cash_cost: number;
+    new_total_budget: number;
+    remaining_cash: number;
+}
+
 // ── Signing ─────────────────────────────────────────────────
 
 export interface SignPlayerRequest {
