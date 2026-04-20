@@ -19,7 +19,8 @@ import { BoardPlayer } from "../../../models/baseball/baseballRecruitingModels";
 import { usePoolTable } from "./BaseballScouting/usePoolTable";
 import { PoolPagination } from "./BaseballScouting/PoolPagination";
 import { ScoutingBudgetBar } from "./BaseballScouting/ScoutingBudgetBar";
-import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import { ScoutingDepartmentPanel } from "./BaseballScouting/ScoutingDepartmentPanel";
+import { PlayerModal } from "./PlayerModal";
 import { BaseballSigningModal } from "./BaseballScouting/BaseballSigningModal";
 import {
   type ColumnGroup,
@@ -670,6 +671,19 @@ export const BaseballIntamScoutingPage = (
           </div>
         </div>
 
+        {/* Scouting Department Expansion */}
+        {orgId > 0 && leagueYearId > 0 && (
+          <div className="mb-2">
+            <ScoutingDepartmentPanel
+              orgId={orgId}
+              leagueYearId={leagueYearId}
+              budget={scoutingBudget}
+              refreshKey={budgetRefreshKey}
+              onPurchased={() => setBudgetRefreshKey((k) => k + 1)}
+            />
+          </div>
+        )}
+
         {/* Tab Selector + Filters */}
         <Border
           classes="p-4 mb-2"
@@ -957,7 +971,7 @@ export const BaseballIntamScoutingPage = (
 
       {/* Scouting Modal */}
       {selectedPlayerId > 0 && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={scoutingModal.isModalOpen}
           onClose={handleScoutingModalClose}
           playerId={selectedPlayerId}
@@ -966,6 +980,7 @@ export const BaseballIntamScoutingPage = (
           scoutingBudget={scoutingBudget}
           onBudgetChanged={() => setBudgetRefreshKey((k) => k + 1)}
           league="SimMLB"
+          context="scouting"
         />
       )}
 

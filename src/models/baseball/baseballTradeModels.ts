@@ -52,6 +52,13 @@ export interface TradeProposal {
     updated_at: string;
 }
 
+export interface PaginatedTradeProposals {
+    proposals: TradeProposal[];
+    total: number;
+    limit: number;
+    offset: number;
+}
+
 // ═══════════════════════════════════════════════
 // Action Request (accept/reject/cancel)
 // ═══════════════════════════════════════════════

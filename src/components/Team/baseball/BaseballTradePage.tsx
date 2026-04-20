@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Attributes, Contracts, League, Potentials, SimMLB } from "../../../_constants/constants";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { BaseballService } from "../../../_services/baseballService";
-import { BaseballOrganization, BaseballRosters, Player } from "../../../models/baseball/baseballModels";
+import { BaseballOrganization, Player } from "../../../models/baseball/baseballModels";
 import {
     TradeProposal,
     ProposeTradeRequest,
@@ -505,10 +505,6 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
 
     const userOrg = league === SimMLB ? mlbOrganization : collegeOrganization;
 
-    // ── All rosters (keyed by org_id) ─────────────────────────────────
-    const [allRosters, setAllRosters] = useState<Record<number, Player[]>>({});
-    const [isLoadingRosters, setIsLoadingRosters] = useState(true);
-
     // ── Bootstrap cache: full contract data per org (loaded lazily) ──
     const [bootstrapCache, setBootstrapCache] = useState<Record<number, Player[]>>({});
 
@@ -554,11 +550,7 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
 
     const playerMap = useMemo(() => {
         const map: Record<number, Player> = { ...playerCacheRef.current };
-        // Layer roster data on top (may lack contract info)
-        for (const players of Object.values(allRosters)) {
-            for (const p of players) map[p.id] = p;
-        }
-        // Overlay with bootstrap cache (has contract data for fetched orgs)
+        // Layer bootstrap cache (has contract data for fetched orgs)
         for (const players of Object.values(bootstrapCache)) {
             for (const p of players) map[p.id] = p;
         }
@@ -569,39 +561,14 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
         // Persist all entries for future lookups
         playerCacheRef.current = map;
         return map;
-    }, [allRosters, bootstrapCache, rosterMap]);
-
-    // ── Load all rosters on mount ─────────────────────────────────────
-    useEffect(() => {
-        let cancelled = false;
-        const load = async () => {
-            try {
-                const raw = await BaseballService.GetAllRosters(userOrg?.id);
-                if (cancelled) return;
-                const rostersArray: BaseballRosters[] = Array.isArray(raw)
-                    ? raw
-                    : Object.values(raw as unknown as Record<string, BaseballRosters>);
-                const map: Record<number, Player[]> = {};
-                for (const r of rostersArray) {
-                    map[r.org_id] = r.players.map(normalizePlayer);
-                }
-                setAllRosters(map);
-            } catch (err) {
-                console.error("Failed to load rosters", err);
-            } finally {
-                if (!cancelled) setIsLoadingRosters(false);
-            }
-        };
-        load();
-        return () => { cancelled = true; };
-    }, []);
+    }, [bootstrapCache, rosterMap]);
 
     // ── Load proposals ────────────────────────────────────────────────
     const loadProposals = useCallback(async () => {
         if (!userOrg) return;
         try {
-            const data = await BaseballService.GetTradeProposals(userOrg.id);
-            setProposals(Array.isArray(data) ? data : []);
+            const data = await BaseballService.GetTradeProposals(userOrg.id, undefined, 200);
+            setProposals(data.proposals ?? []);
         } catch (err) {
             console.error("Failed to load trade proposals", err);
         }
@@ -611,42 +578,54 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
         loadProposals();
     }, [loadProposals]);
 
-    // ── Lazy-fetch bootstrap data for target org (gives us contract/salary info) ──
+    // ── Lazy-fetch bootstrap data for an org (gives us roster + contract/salary info) ──
+    const fetchedOrgsRef = useRef<Set<number>>(new Set());
+
+    const fetchBootstrap = useCallback(async (orgId: number) => {
+        if (fetchedOrgsRef.current.has(orgId)) return;
+        fetchedOrgsRef.current.add(orgId);
+        try {
+            const data = await BaseballService.GetBootstrapLandingData(orgId, userOrg?.id);
+            if (!data.RosterMap) return;
+            const players: Player[] = [];
+            for (const arr of Object.values(data.RosterMap)) {
+                for (const p of arr) players.push(normalizePlayer(p));
+            }
+            setBootstrapCache((prev) => ({ ...prev, [orgId]: players }));
+        } catch (err) {
+            console.error("Failed to load bootstrap for org", orgId, err);
+        }
+    }, [userOrg?.id]);
+
+    // Fetch bootstrap for target org when selected
     useEffect(() => {
         if (!targetOrgId || bootstrapCache[targetOrgId]) return;
-        let cancelled = false;
-        const load = async () => {
-            try {
-                const data = await BaseballService.GetBootstrapLandingData(targetOrgId, userOrg?.id);
-                if (cancelled || !data.RosterMap) return;
-                const players: Player[] = [];
-                for (const arr of Object.values(data.RosterMap)) {
-                    for (const p of arr) players.push(normalizePlayer(p));
-                }
-                setBootstrapCache((prev) => ({ ...prev, [targetOrgId]: players }));
-            } catch (err) {
-                console.error("Failed to load target org bootstrap", err);
-            }
-        };
-        load();
-        return () => { cancelled = true; };
-    }, [targetOrgId, bootstrapCache, userOrg?.id]);
+        fetchBootstrap(targetOrgId);
+    }, [targetOrgId, bootstrapCache, fetchBootstrap]);
 
-    // ── Derived: user's players (prefer rosterMap from bootstrap — has contract data) ──
+    // Fetch bootstrap for orgs referenced in proposals (so player names resolve)
+    useEffect(() => {
+        if (proposals.length === 0) return;
+        const orgIds = new Set<number>();
+        for (const p of proposals) {
+            orgIds.add(p.proposing_org_id);
+            orgIds.add(p.receiving_org_id);
+        }
+        if (userOrg) orgIds.delete(userOrg.id);
+        for (const id of orgIds) fetchBootstrap(id);
+    }, [proposals, userOrg, fetchBootstrap]);
+
+    // ── Derived: user's players (from store rosterMap — already loaded by context) ──
     const userPlayers = useMemo(() => {
         if (!userOrg) return [];
-        // rosterMap is keyed by level ("mlb", "aaa", etc.) and comes from bootstrap with full contract data
-        const fromBootstrap = Object.values(rosterMap).flat();
-        if (fromBootstrap.length > 0) return fromBootstrap;
-        // Fallback to allRosters if bootstrap hasn't loaded yet
-        return allRosters[userOrg.id] ?? [];
-    }, [rosterMap, allRosters, userOrg]);
+        return Object.values(rosterMap).flat();
+    }, [rosterMap, userOrg]);
 
-    // ── Derived: target's players (prefer bootstrap cache for contract data) ──
+    // ── Derived: target's players (loaded lazily via bootstrap when org selected) ──
     const targetPlayers = useMemo(() => {
         if (!targetOrgId) return [];
-        return bootstrapCache[targetOrgId] ?? allRosters[targetOrgId] ?? [];
-    }, [targetOrgId, bootstrapCache, allRosters]);
+        return bootstrapCache[targetOrgId] ?? [];
+    }, [targetOrgId, bootstrapCache]);
 
     // ── Derived: exclude sets ─────────────────────────────────────────
     const selectedUserIds = useMemo(
@@ -887,73 +866,69 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
 
                 {targetOrgId && (
                     <>
-                        {isLoadingRosters ? (
-                            <Text>Loading rosters...</Text>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* ── Left: You Send ── */}
-                                <div className="flex flex-col">
-                                    <PlayerPickerTable
-                                        players={userPlayers}
-                                        selectedIds={selectedUserIds}
-                                        onSelect={addUserPlayer}
-                                        label={`${userOrg.org_abbrev} Roster`}
-                                        orgAbbrev={userOrg.org_abbrev}
-                                        statsMap={userStatsMap}
-                                        onStatsNeeded={() => fetchOrgStats(userOrg.id, setUserStatsMap)}
-                                    />
-                                    {selectedUserPlayers.length > 0 && (
-                                        <div className="mt-3">
-                                            <Text variant="small" classes="font-semibold mb-1">
-                                                {userOrg.org_abbrev} Sends ({selectedUserPlayers.length})
-                                            </Text>
-                                            <div className="flex flex-col gap-2">
-                                                {selectedUserPlayers.map((p) => (
-                                                    <SelectedPlayerCard
-                                                        key={p.id}
-                                                        player={p}
-                                                        retentionPct={retentionMap[p.id] ?? 0}
-                                                        onRetentionChange={(pct) => updateRetention(p.id, pct)}
-                                                        onRemove={() => removeUserPlayer(p.id)}
-                                                    />
-                                                ))}
-                                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* ── Left: You Send ── */}
+                            <div className="flex flex-col">
+                                <PlayerPickerTable
+                                    players={userPlayers}
+                                    selectedIds={selectedUserIds}
+                                    onSelect={addUserPlayer}
+                                    label={`${userOrg.org_abbrev} Roster`}
+                                    orgAbbrev={userOrg.org_abbrev}
+                                    statsMap={userStatsMap}
+                                    onStatsNeeded={() => fetchOrgStats(userOrg.id, setUserStatsMap)}
+                                />
+                                {selectedUserPlayers.length > 0 && (
+                                    <div className="mt-3">
+                                        <Text variant="small" classes="font-semibold mb-1">
+                                            {userOrg.org_abbrev} Sends ({selectedUserPlayers.length})
+                                        </Text>
+                                        <div className="flex flex-col gap-2">
+                                            {selectedUserPlayers.map((p) => (
+                                                <SelectedPlayerCard
+                                                    key={p.id}
+                                                    player={p}
+                                                    retentionPct={retentionMap[p.id] ?? 0}
+                                                    onRetentionChange={(pct) => updateRetention(p.id, pct)}
+                                                    onRemove={() => removeUserPlayer(p.id)}
+                                                />
+                                            ))}
                                         </div>
-                                    )}
-                                </div>
-
-                                {/* ── Right: You Receive ── */}
-                                <div className="flex flex-col">
-                                    <PlayerPickerTable
-                                        players={targetPlayers}
-                                        selectedIds={selectedTargetIds}
-                                        onSelect={addTargetPlayer}
-                                        label={`${orgMap[targetOrgId]?.org_abbrev ?? "Target"} Roster`}
-                                        orgAbbrev={orgMap[targetOrgId]?.org_abbrev ?? ""}
-                                        statsMap={targetStatsMap}
-                                        onStatsNeeded={() => fetchOrgStats(targetOrgId, setTargetStatsMap)}
-                                    />
-                                    {selectedTargetPlayers.length > 0 && (
-                                        <div className="mt-3">
-                                            <Text variant="small" classes="font-semibold mb-1">
-                                                {orgMap[targetOrgId]?.org_abbrev ?? "Target"} Sends ({selectedTargetPlayers.length})
-                                            </Text>
-                                            <div className="flex flex-col gap-2">
-                                                {selectedTargetPlayers.map((p) => (
-                                                    <SelectedPlayerCard
-                                                        key={p.id}
-                                                        player={p}
-                                                        retentionPct={retentionMap[p.id] ?? 0}
-                                                        onRetentionChange={(pct) => updateRetention(p.id, pct)}
-                                                        onRemove={() => removeTargetPlayer(p.id)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
+
+                            {/* ── Right: You Receive ── */}
+                            <div className="flex flex-col">
+                                <PlayerPickerTable
+                                    players={targetPlayers}
+                                    selectedIds={selectedTargetIds}
+                                    onSelect={addTargetPlayer}
+                                    label={`${orgMap[targetOrgId]?.org_abbrev ?? "Target"} Roster`}
+                                    orgAbbrev={orgMap[targetOrgId]?.org_abbrev ?? ""}
+                                    statsMap={targetStatsMap}
+                                    onStatsNeeded={() => fetchOrgStats(targetOrgId, setTargetStatsMap)}
+                                />
+                                {selectedTargetPlayers.length > 0 && (
+                                    <div className="mt-3">
+                                        <Text variant="small" classes="font-semibold mb-1">
+                                            {orgMap[targetOrgId]?.org_abbrev ?? "Target"} Sends ({selectedTargetPlayers.length})
+                                        </Text>
+                                        <div className="flex flex-col gap-2">
+                                            {selectedTargetPlayers.map((p) => (
+                                                <SelectedPlayerCard
+                                                    key={p.id}
+                                                    player={p}
+                                                    retentionPct={retentionMap[p.id] ?? 0}
+                                                    onRetentionChange={(pct) => updateRetention(p.id, pct)}
+                                                    onRemove={() => removeTargetPlayer(p.id)}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
                         {/* Cash + Submit */}
                         <div className="flex flex-wrap items-end gap-4 mt-4">

@@ -1,7 +1,7 @@
 import { baseballUrl } from "../_constants/urls";
 import { GetCall, PostCall, PUTCall, DELETECall } from "../_helper/fetchHelper";
 import type { TutorialManifest, TutorialArticle } from "../models/baseball/baseballTutorialModels";
-import { BaseballBootstrapLanding, BaseballBootstrapAll, BaseballOrganization, BaseballRosters, PayrollProjectionResponse, ContractOverviewPlayer, ScheduleParams, ScheduleResponse, ListedPositionResponse } from "../models/baseball/baseballModels";
+import { BaseballBootstrapLanding, BaseballBootstrapAll, BaseballOrganization, BaseballRosters, PayrollProjectionResponse, ContractOverviewPlayer, ScheduleParams, ScheduleResponse, ListedPositionResponse, OrgFinancialSummaryResponse, LedgerResponse } from "../models/baseball/baseballModels";
 import { FaceDataResponse } from "../models/footballModels";
 import {
     OrgPlayerStrategiesResponse,
@@ -26,6 +26,7 @@ import {
 import {
     ProposeTradeRequest, ProposeTradeResponse,
     TradeProposal, TradeProposalActionRequest,
+    PaginatedTradeProposals,
     AdminApproveTradeRequest, AdminApproveTradeResponse,
     AdminRejectTradeRequest,
     DirectTradeRequest, DirectTradeResponse,
@@ -43,6 +44,8 @@ import {
     ScoutingActionRequest, ScoutingActionResponse,
     ScoutingBatchActionRequest, ScoutingBatchActionResponse,
     ScoutingBudget, ScoutingActionsResponse,
+    ScoutingDepartmentStatus,
+    DepartmentPurchaseRequest, DepartmentPurchaseResponse,
     SignPlayerRequest, SignPlayerResponse,
     SigningBudgetResponse,
     IntamSigningsResponse,
@@ -328,6 +331,14 @@ export const BaseballService = {
         return await GetCall<RosterLevelStatus[]>(`${baseballUrl}transactions/roster-status/${orgId}`);
     },
     // --- Financials / Contract Data ---
+    GetOrgFinancialSummary: async (orgAbbrev: string, leagueYear: number): Promise<OrgFinancialSummaryResponse> => {
+        return await GetCall<OrgFinancialSummaryResponse>(`${baseballUrl}orgs/${orgAbbrev}/financial_summary?league_year=${leagueYear}`);
+    },
+    GetLedgerEntries: async (orgAbbrev: string, leagueYear: number, entryType?: string): Promise<LedgerResponse> => {
+        let url = `${baseballUrl}orgs/${orgAbbrev}/ledger?league_year=${leagueYear}`;
+        if (entryType) url += `&entry_type=${entryType}`;
+        return await GetCall<LedgerResponse>(url);
+    },
     GetPayrollProjection: async (orgId: number): Promise<PayrollProjectionResponse> => {
         return await GetCall<PayrollProjectionResponse>(`${baseballUrl}transactions/payroll-projection/${orgId}`);
     },
@@ -338,10 +349,10 @@ export const BaseballService = {
     ProposeTrade: async (dto: ProposeTradeRequest): Promise<ProposeTradeResponse> => {
         return await PostCall<ProposeTradeRequest, ProposeTradeResponse>(`${baseballUrl}transactions/trade/propose`, dto);
     },
-    GetTradeProposals: async (orgId: number, status?: string): Promise<TradeProposal[]> => {
-        let url = `${baseballUrl}transactions/trade/proposals?org_id=${orgId}`;
+    GetTradeProposals: async (orgId: number, status?: string, limit = 50, offset = 0): Promise<PaginatedTradeProposals> => {
+        let url = `${baseballUrl}transactions/trade/proposals?org_id=${orgId}&limit=${limit}&offset=${offset}`;
         if (status) url += `&status=${status}`;
-        return await GetCall<TradeProposal[]>(url);
+        return await GetCall<PaginatedTradeProposals>(url);
     },
     AcceptProposal: async (proposalId: number, dto: TradeProposalActionRequest = {}): Promise<void> => {
         await PUTCall<TradeProposalActionRequest, void>(`${baseballUrl}transactions/trade/proposals/${proposalId}/accept`, dto);
@@ -353,10 +364,10 @@ export const BaseballService = {
         await PUTCall<TradeProposalActionRequest, void>(`${baseballUrl}transactions/trade/proposals/${proposalId}/cancel`, dto);
     },
     // --- Admin Trade Endpoints ---
-    GetAllTradeProposals: async (status?: string): Promise<TradeProposal[]> => {
-        let url = `${baseballUrl}transactions/trade/proposals`;
-        if (status) url += `?status=${status}`;
-        return await GetCall<TradeProposal[]>(url);
+    GetAllTradeProposals: async (status?: string, limit = 50, offset = 0): Promise<PaginatedTradeProposals> => {
+        let url = `${baseballUrl}transactions/trade/proposals?limit=${limit}&offset=${offset}`;
+        if (status) url += `&status=${status}`;
+        return await GetCall<PaginatedTradeProposals>(url);
     },
     GetTradeProposal: async (proposalId: number): Promise<TradeProposal> => {
         return await GetCall<TradeProposal>(`${baseballUrl}transactions/trade/proposals/${proposalId}`);
@@ -464,6 +475,13 @@ export const BaseballService = {
     },
     GetScoutingActions: async (orgId: number, leagueYearId: number): Promise<ScoutingActionsResponse> => {
         return await GetCall<ScoutingActionsResponse>(`${baseballUrl}scouting/actions/${orgId}?league_year_id=${leagueYearId}`);
+    },
+    // --- Scouting: Department Expansion ---
+    GetDepartmentStatus: async (orgId: number, leagueYearId: number): Promise<ScoutingDepartmentStatus> => {
+        return await GetCall<ScoutingDepartmentStatus>(`${baseballUrl}scouting/department/${orgId}?league_year_id=${leagueYearId}`);
+    },
+    PurchaseDepartmentTier: async (dto: DepartmentPurchaseRequest): Promise<DepartmentPurchaseResponse> => {
+        return await PostCall<DepartmentPurchaseRequest, DepartmentPurchaseResponse>(`${baseballUrl}scouting/department/purchase`, dto);
     },
     // --- Scouting: Signing ---
     SignPlayer: async (dto: SignPlayerRequest): Promise<SignPlayerResponse> => {

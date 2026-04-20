@@ -20,7 +20,7 @@ import {
 } from "../../../models/baseball/baseballIFAModels";
 import type { Player } from "../../../models/baseball/baseballModels";
 import { IFAOfferModal } from "./IFA/IFAOfferModal";
-import { IFAPlayerDetail } from "./IFA/IFAPlayerDetail";
+import { PlayerModal } from "./PlayerModal";
 import { adaptIFAEligiblePlayer, adaptIFAAuctionEntry, type IFAPlayer } from "./IFA/ifaPlayerAdapter";
 import {
   AllPlayersTable,
@@ -653,13 +653,17 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
 
       {/* Auction Detail Modal */}
       {selectedAuctionId > 0 && (
-        <IFAPlayerDetail
+        <PlayerModal
           isOpen={detailModal.isModalOpen}
           onClose={detailModal.handleCloseModal}
-          auctionId={selectedAuctionId}
+          playerId={0}
           orgId={orgId}
+          leagueYearId={leagueYearId}
+          league={league}
+          context="ifa"
+          auctionId={selectedAuctionId}
           ifaStatus={ifaState?.status ?? "pending"}
-          onMakeOffer={openOfferFromDetail}
+          onMakeOfferIFA={openOfferFromDetail}
           onWithdraw={handleWithdraw}
         />
       )}

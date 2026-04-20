@@ -48,7 +48,6 @@ export default {
   CFB_TEAMPROFILE: "/cfb/teamprofile/",
   COLLEGE_BASEBALL_TEAM: "/collegebaseball/team/",
   MLB_TEAM: "/mlb/team/",
-  COLLEGE_BASEBALL_FINANCIALS: "/collegebaseball/financials/",
   MLB_FINANCIALS: "/mlb/financials/",
   COLLEGE_BASEBALL_GAMEPLAN: "/collegebaseball/gameplan/",
   MLB_GAMEPLAN: "/mlb/gameplan/",

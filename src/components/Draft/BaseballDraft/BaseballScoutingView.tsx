@@ -4,7 +4,7 @@ import {
   BASEBALL_DRAFT_POSITIONS,
 } from "../../../models/baseball/baseballDraftModels";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
-import { BaseballScoutingModal } from "../../Team/baseball/BaseballScouting/BaseballScoutingModal";
+import { PlayerModal } from "../../Team/baseball/PlayerModal";
 import { SimCollegeBaseball } from "../../../_constants/constants";
 
 interface BaseballScoutingViewProps {
@@ -203,7 +203,7 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
 
       {/* Scouting Modal */}
       {isScoutModalOpen && scoutModalPlayerId && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={isScoutModalOpen}
           onClose={onCloseScoutModal}
           playerId={scoutModalPlayerId}
@@ -212,6 +212,7 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
           scoutingBudget={scoutingBudget}
           onBudgetChanged={onBudgetChanged}
           league={SimCollegeBaseball}
+          context="scouting"
         />
       )}
     </div>

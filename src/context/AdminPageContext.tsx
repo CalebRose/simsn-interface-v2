@@ -219,9 +219,9 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
 
   const getBaseballTradeProposals = async () => {
     try {
-      const proposals = await BaseballService.GetAllTradeProposals();
-      if (proposals) {
-        setBaseballTradeProposals(Array.isArray(proposals) ? proposals : []);
+      const data = await BaseballService.GetAllTradeProposals(undefined, 200);
+      if (data) {
+        setBaseballTradeProposals(data.proposals ?? []);
       }
     } catch (e) {
       console.error("Failed to load baseball trade proposals", e);

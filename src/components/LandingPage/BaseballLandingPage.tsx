@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Border } from "../../_design/Borders";
 import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
+import { SectionCards } from "../../_design/SectionCards";
 import { CheckCircle, Medic, TrashCan } from "../../_design/Icons";
 import { SelectDropdown } from "../../_design/Select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
@@ -15,13 +16,15 @@ import {
   BaseballNewsLog,
   BaseballInjury,
   BaseballTeam,
-  BaseballFinancials,
 } from "../../models/baseball/baseballModels";
 import { SimCollegeBaseball, SimMLB, League } from "../../_constants/constants";
 import { useModal } from "../../_hooks/useModal";
-import { BaseballScoutingModal } from "../Team/baseball/BaseballScouting/BaseballScoutingModal";
+import { PlayerModal } from "../Team/baseball/PlayerModal";
 import { ScoutingBudget } from "../../models/baseball/baseballScoutingModels";
 import { BaseballService } from "../../_services/baseballService";
+import { OrgFinancialSummaryResponse } from "../../models/baseball/baseballModels";
+import { formatMoney } from "../Team/baseball/BaseballFinancials/financialConstants";
+import { ScoutingDepartmentPanel } from "../Team/baseball/BaseballScouting/ScoutingDepartmentPanel";
 import { Player } from "../../models/baseball/baseballModels";
 import { getLogo } from "../../_utility/getLogo";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
@@ -37,7 +40,7 @@ import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { getThemeColors } from "../../_utility/themeHelpers";
 import { getThemeAwareDarkenColor } from "../../_utility/getDarkerColor";
-import { ForumPortal } from "./TeamLandingPageComponents";
+import { ForumPortal, TeamQuickLinks } from "./TeamLandingPageComponents";
 import { BaseballBoxScoreModal } from "../Schedule/BaseballSchedule/BaseballBoxScoreModal";
 import {
   BattingLeaderRow,
@@ -57,7 +60,6 @@ export const BaseballLandingPage = ({
   ts,
 }: BaseballLandingPageProps) => {
   const { currentUser, isDarkMode } = useAuthStore();
-  const navigate = useNavigate();
   const {
     organizations,
     standings,
@@ -67,7 +69,6 @@ export const BaseballLandingPage = ({
     news,
     injuryReport,
     seasonContext,
-    financials,
     toggleNotificationAsRead,
     deleteNotification,
     loadBootstrapForOrg,
@@ -91,6 +92,20 @@ export const BaseballLandingPage = ({
   );
   const orgId = userOrg.id;
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+  const [deptEligible, setDeptEligible] = useState(false);
+
+  // Check scouting department eligibility once
+  useEffect(() => {
+    if (!orgId || !leagueYearId || league === SimCollegeBaseball) {
+      setDeptEligible(false);
+      return;
+    }
+    let cancelled = false;
+    BaseballService.GetDepartmentStatus(orgId, leagueYearId)
+      .then((d) => { if (!cancelled) setDeptEligible(d?.eligible ?? false); })
+      .catch(() => { if (!cancelled) setDeptEligible(false); });
+    return () => { cancelled = true; };
+  }, [orgId, leagueYearId, league]);
 
   const refreshBudget = useCallback(() => {
     if (orgId && leagueYearId) {
@@ -111,6 +126,22 @@ export const BaseballLandingPage = ({
     },
     [handleOpenModal],
   );
+
+  // --- Financial summary ---
+  const [financialSummary, setFinancialSummary] = useState<OrgFinancialSummaryResponse | null>(null);
+  const leagueYear = seasonContext?.league_year ?? 0;
+
+  useEffect(() => {
+    if (!userOrg.org_abbrev || !leagueYear || league === SimCollegeBaseball) {
+      setFinancialSummary(null);
+      return;
+    }
+    let cancelled = false;
+    BaseballService.GetOrgFinancialSummary(userOrg.org_abbrev, leagueYear)
+      .then((res) => { if (!cancelled) setFinancialSummary(res); })
+      .catch(() => { if (!cancelled) setFinancialSummary(null); });
+    return () => { cancelled = true; };
+  }, [userOrg.org_abbrev, leagueYear, league]);
 
   // --- Org selector: view any org ---
   const [viewedOrgId, setViewedOrgId] = useState<number | null>(null);
@@ -197,20 +228,6 @@ export const BaseballLandingPage = ({
       currentUser?.IsRetro,
     );
   }, [activeTeam, league, currentUser?.IsRetro]);
-
-  const roleDisplay = useMemo(() => {
-    if (!viewedOrg) return "";
-    if (league === SimCollegeBaseball) {
-      return viewedOrg.coach ? `Coach: ${viewedOrg.coach}` : "Coach";
-    }
-    const roles: string[] = [];
-    if (viewedOrg.owner_name) roles.push(`Owner: ${viewedOrg.owner_name}`);
-    if (viewedOrg.gm_name) roles.push(`GM: ${viewedOrg.gm_name}`);
-    if (viewedOrg.manager_name)
-      roles.push(`Manager: ${viewedOrg.manager_name}`);
-    if (viewedOrg.scout_name) roles.push(`Scout: ${viewedOrg.scout_name}`);
-    return roles.join(" | ");
-  }, [viewedOrg, league]);
 
   const seasonLabel = seasonContext
     ? `Season ${seasonContext.league_year}, Week ${seasonContext.current_week_index}`
@@ -398,16 +415,6 @@ export const BaseballLandingPage = ({
   }, [injuryReport, activeLevel, activeTeam]);
 
   const abbrev = (teamId: number) => teamIdToAbbrev[teamId] ?? "???";
-
-  // --- Financial display ---
-  const currentBalance = useMemo(() => {
-    if (financials?.summary?.ending_balance != null) {
-      return financials.summary.ending_balance;
-    }
-    return viewedOrg.cash ?? null;
-  }, [financials, viewedOrg.cash]);
-
-  const obligationsTotal = financials?.obligations?.totals?.overall ?? null;
 
   // --- Computed leaders (fetched from stats endpoints) ---
   const [avgLeader, setAvgLeader] = useState<BattingLeaderRow | null>(null);
@@ -662,26 +669,33 @@ export const BaseballLandingPage = ({
         <div className="flex md:gap-[2vw] lg:gap-4 flex-col-reverse md:flex-row">
           {/* Standings */}
           <Border
-            classes="py-0 px-0 w-full md:max-w-[45vw] lg:max-w-[30rem]"
-            styles={{ borderTop: `3px solid ${headerColor}` }}
+            classes="border-4 py-0 px-0 h-[90vw] max-h-[90vh] w-full md:max-w-[45vw] lg:max-w-[30rem] md:h-auto"
+            styles={{
+              backgroundColor: borderColor,
+              borderColor: backgroundColor,
+            }}
           >
-            <div className="p-3">
-              <Text variant="h5" classes="mb-2 font-semibold">
-                {isCollege
-                  ? "Standings"
-                  : `${displayLevel(activeLevel)} Standings`}
-              </Text>
+            <SectionCards
+              team={activeTeam}
+              header={isCollege ? "Standings" : `${displayLevel(activeLevel)} Standings`}
+              classes={`${textColorClass} h-full max-w-[30rem]`}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              darkerBackgroundColor={darkerBackgroundColor}
+              textColorClass={textColorClass}
+            >
               {isDataStale ? (
                 <Text
                   variant="body-small"
-                  classes="text-gray-500 dark:text-gray-400"
+                  classes={textColorClass}
                 >
                   Loading...
                 </Text>
               ) : teamStandings.length === 0 ? (
                 <Text
                   variant="body-small"
-                  classes="text-gray-500 dark:text-gray-400"
+                  classes={textColorClass}
                 >
                   No standings available.
                 </Text>
@@ -777,24 +791,33 @@ export const BaseballLandingPage = ({
                   )}
                 </div>
               )}
-            </div>
+            </SectionCards>
           </Border>
 
           {/* Middle Column: Matchup + Inbox + News */}
-          <div className="flex flex-col items-center md:h-auto w-full md:w-[50vw] lg:w-[32em]">
+          <div className="flex flex-col items-center md:h-auto w-full md:w-[50vw] lg:w-[32em] 3xl:w-[40em]">
             {/* Next Game Matchup */}
             <Border
-              classes="py-0 px-0 w-full mb-2"
-              styles={{ borderTop: `3px solid ${headerColor}` }}
+              classes="border-4 py-0 px-0 w-full md:h-auto md:max-h-[30vh] lg:max-h-[24em] 3xl:max-h-[36em]"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
             >
-              <div className="p-3">
-                <Text variant="h5" classes="mb-2 font-semibold">
-                  Next Game
-                </Text>
+              <SectionCards
+                team={activeTeam}
+                header="Next Game"
+                classes={textColorClass}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                darkerBackgroundColor={darkerBackgroundColor}
+                textColorClass={textColorClass}
+              >
                 {isDataStale ? (
                   <Text
                     variant="body-small"
-                    classes="text-gray-500 dark:text-gray-400"
+                    classes={textColorClass}
                   >
                     Loading...
                   </Text>
@@ -820,7 +843,7 @@ export const BaseballLandingPage = ({
                     <div className="flex flex-col items-center">
                       <Text
                         variant="body-small"
-                        classes="text-gray-500 dark:text-gray-400"
+                        classes={`${textColorClass} opacity-70`}
                       >
                         Week {nextGame.week}
                       </Text>
@@ -849,322 +872,437 @@ export const BaseballLandingPage = ({
                 ) : (
                   <Text
                     variant="body-small"
-                    classes="text-gray-500 dark:text-gray-400"
+                    classes={`${textColorClass} opacity-70`}
                   >
                     No upcoming games.
                   </Text>
                 )}
-              </div>
+              </SectionCards>
             </Border>
 
             {/* Injuries (mobile) */}
             {isMobile && !isDataStale && (
               <Border
-                classes="py-0 px-0 w-full mb-2"
-                styles={{ borderTop: `3px solid ${headerColor}` }}
+                classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] md:max-w-[45vw] lg:max-w-[30em] md:max-h-[40em]"
+                styles={{
+                  backgroundColor: borderColor,
+                  borderColor: backgroundColor,
+                }}
               >
-                <BaseballInjuriesSection injuries={teamInjuries} />
+                <SectionCards
+                  team={activeTeam}
+                  header="Injury Report"
+                  classes={`${textColorClass} h-full`}
+                  backgroundColor={backgroundColor}
+                  headerColor={headerColor}
+                  borderColor={borderColor}
+                  darkerBackgroundColor={darkerBackgroundColor}
+                  textColorClass={textColorClass}
+                >
+                  <BaseballInjuriesContent injuries={teamInjuries} textColorClass={textColorClass} />
+                </SectionCards>
               </Border>
             )}
 
-            {/* Team Inbox (only for own org) */}
-            {isOwnOrg && (
+            {/* Quick Links (mobile) */}
+            {isMobile && (
               <Border
-                classes="py-0 px-0 w-full mb-2"
-                styles={{ borderTop: `3px solid ${headerColor}` }}
+                classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full md:min-w-[18em] md:max-w-[45vw] lg:max-w-[30em] md:max-h-[35em]"
+                styles={{
+                  backgroundColor: borderColor,
+                  borderColor: backgroundColor,
+                }}
               >
-                <div className="p-3">
-                  <Text variant="h5" classes="mb-2 font-semibold">
-                    Team Inbox
-                  </Text>
-                  {teamNotifications.length === 0 ? (
+                <BaseballQuickLinks
+                  league={league}
+                  isCollege={isCollege}
+                  backgroundColor={backgroundColor}
+                  headerColor={headerColor}
+                  borderColor={borderColor}
+                  textColorClass={textColorClass}
+                  darkerBackgroundColor={darkerBackgroundColor}
+                  activeTeam={activeTeam}
+                />
+              </Border>
+            )}
+
+            {/* Scouting Department (mobile, MLB only) */}
+            {isMobile && !isCollege && isOwnOrg && deptEligible && orgId > 0 && leagueYearId > 0 && (
+              <Border
+                classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full"
+                styles={{
+                  backgroundColor: borderColor,
+                  borderColor: backgroundColor,
+                }}
+              >
+                <SectionCards
+                  team={activeTeam}
+                  header="Scouting Department"
+                  classes={`${textColorClass} h-full`}
+                  backgroundColor={backgroundColor}
+                  headerColor={headerColor}
+                  borderColor={borderColor}
+                  darkerBackgroundColor={darkerBackgroundColor}
+                  textColorClass={textColorClass}
+                >
+                  <ScoutingDepartmentPanel
+                    orgId={orgId}
+                    leagueYearId={leagueYearId}
+                    budget={scoutingBudget}
+                    onPurchased={refreshBudget}
+                  />
+                </SectionCards>
+              </Border>
+            )}
+
+            {/* Financial Summary (mobile, MLB only, own org only) */}
+            {isMobile && !isCollege && isOwnOrg && financialSummary && (
+              <Border
+                classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full"
+                styles={{
+                  backgroundColor: borderColor,
+                  borderColor: backgroundColor,
+                }}
+              >
+                <SectionCards
+                  team={activeTeam}
+                  header="Finances"
+                  classes={`${textColorClass} h-full`}
+                  backgroundColor={backgroundColor}
+                  headerColor={headerColor}
+                  borderColor={borderColor}
+                  darkerBackgroundColor={darkerBackgroundColor}
+                  textColorClass={textColorClass}
+                >
+                  <FinancialSummaryPanel data={financialSummary} />
+                </SectionCards>
+              </Border>
+            )}
+
+            {/* Team Inbox (only for own org) + Forum + News in a row */}
+            <div className="flex flex-row gap-[1vw] md:gap-2 w-full lg:gap-0 lg:flex-col">
+              {/* Team Inbox (only for own org) */}
+              {isOwnOrg && (
+                <Border
+                  classes="border-4 py-0 px-0 w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
+                  styles={{
+                    backgroundColor: borderColor,
+                    borderColor: backgroundColor,
+                  }}
+                >
+                  <SectionCards
+                    team={activeTeam}
+                    header="Team Inbox"
+                    classes={`${textColorClass} h-full`}
+                    backgroundColor={backgroundColor}
+                    headerColor={headerColor}
+                    borderColor={borderColor}
+                    darkerBackgroundColor={darkerBackgroundColor}
+                    textColorClass={textColorClass}
+                  >
+                    {teamNotifications.length === 0 ? (
+                      <Text
+                        variant="body-small"
+                        classes={`${textColorClass} opacity-70`}
+                      >
+                        Your inbox is empty.
+                      </Text>
+                    ) : (
+                      <div className="space-y-1 max-h-[30vh] overflow-y-auto">
+                        {teamNotifications.map((n: BaseballNotification) => (
+                          <div
+                            key={n.id}
+                            className={`flex items-start justify-between gap-2 p-2 rounded text-sm ${
+                              n.is_read
+                                ? "bg-gray-50 dark:bg-gray-800 opacity-70"
+                                : "bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-500"
+                            }`}
+                          >
+                            <Text variant="small" classes="flex-1">
+                              {n.message}
+                            </Text>
+                            <div className="flex gap-1 shrink-0">
+                              <Button
+                                size="xs"
+                                onClick={() => toggleNotificationAsRead(n.id)}
+                                disabled={n.is_read}
+                                title="Mark as read"
+                              >
+                                <CheckCircle textColorClass="text-white" />
+                              </Button>
+                              <Button
+                                size="xs"
+                                onClick={() => deleteNotification(n.id)}
+                                title="Delete"
+                              >
+                                <TrashCan textColorClass="text-white" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </SectionCards>
+                </Border>
+              )}
+
+              {/* Forum Preview */}
+              <Border
+                classes="border-4 py-0 px-0 w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
+                styles={{
+                  backgroundColor: borderColor,
+                  borderColor: backgroundColor,
+                }}
+              >
+                <ForumPortal
+                  team={activeTeam}
+                  league={league as League}
+                  backgroundColor={backgroundColor}
+                  headerColor={headerColor}
+                  borderColor={borderColor}
+                  textColorClass={textColorClass}
+                  darkerBackgroundColor={darkerBackgroundColor}
+                />
+              </Border>
+
+              {/* Team News */}
+              <Border
+                classes="border-4 py-0 px-0 w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
+                styles={{
+                  backgroundColor: borderColor,
+                  borderColor: backgroundColor,
+                }}
+              >
+                <SectionCards
+                  team={activeTeam}
+                  header="Team News"
+                  classes={`${textColorClass} h-full`}
+                  backgroundColor={backgroundColor}
+                  headerColor={headerColor}
+                  borderColor={borderColor}
+                  darkerBackgroundColor={darkerBackgroundColor}
+                  textColorClass={textColorClass}
+                >
+                  {teamNews.length === 0 ? (
                     <Text
                       variant="body-small"
-                      classes="text-gray-500 dark:text-gray-400"
+                      classes={`${textColorClass} opacity-70`}
                     >
-                      Your inbox is empty.
+                      No news to show.
                     </Text>
                   ) : (
-                    <div className="space-y-1 max-h-[30vh] overflow-y-auto">
-                      {teamNotifications.map((n: BaseballNotification) => (
-                        <div
-                          key={n.id}
-                          className={`flex items-start justify-between gap-2 p-2 rounded text-sm ${
-                            n.is_read
-                              ? "bg-gray-50 dark:bg-gray-800 opacity-70"
-                              : "bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-500"
-                          }`}
-                        >
-                          <Text variant="small" classes="flex-1">
-                            {n.message}
+                    <div className="space-y-2 max-h-[30vh] overflow-y-auto">
+                      {teamNews.map((n: BaseballNewsLog) => (
+                        <div key={n.id} className="py-1">
+                          <Text variant="small">{n.message}</Text>
+                          <Text variant="small" classes="text-right opacity-70">
+                            Week {n.week} | {n.message_type} news
                           </Text>
-                          <div className="flex gap-1 shrink-0">
-                            <Button
-                              size="xs"
-                              onClick={() => toggleNotificationAsRead(n.id)}
-                              disabled={n.is_read}
-                              title="Mark as read"
-                            >
-                              <CheckCircle textColorClass="text-white" />
-                            </Button>
-                            <Button
-                              size="xs"
-                              onClick={() => deleteNotification(n.id)}
-                              title="Delete"
-                            >
-                              <TrashCan textColorClass="text-white" />
-                            </Button>
-                          </div>
                         </div>
                       ))}
                     </div>
                   )}
-                </div>
+                </SectionCards>
               </Border>
-            )}
+            </div>
+          </div>
+        </div>
 
-            {/* Forum Preview */}
+        {/* Right Column: Quick Links + Org Info + Financials + Injuries + Stats */}
+        <div className="flex flex-col items-start pt-1 md:pt-0 h-full md:h-auto md:w-[30vw] lg:w-[32em] md:min-w-[20em] lg:min-w-[20em] md:max-w-[35vw] lg:max-w-[30em] 3xl:min-w-[20em] 3xl:max-w-[42em] justify-center">
+          {/* Quick Links (desktop) */}
+          {!isMobile && (
             <Border
-              classes="py-0 px-0 w-full mb-2"
-              styles={{ borderTop: `3px solid ${headerColor}` }}
+              classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[35em]"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
             >
-              <ForumPortal
-                team={activeTeam}
-                league={league as League}
+              <BaseballQuickLinks
+                league={league}
+                isCollege={isCollege}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
+                activeTeam={activeTeam}
               />
             </Border>
+          )}
 
-            {/* Team News */}
+          {/* Scouting Department (desktop, MLB only) */}
+          {!isMobile && !isCollege && isOwnOrg && deptEligible && orgId > 0 && leagueYearId > 0 && (
             <Border
-              classes="py-0 px-0 w-full"
-              styles={{ borderTop: `3px solid ${headerColor}` }}
+              classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em]"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
             >
-              <div className="p-3">
-                <Text variant="h5" classes="mb-2 font-semibold">
-                  Team News
-                </Text>
-                {teamNews.length === 0 ? (
-                  <Text
-                    variant="body-small"
-                    classes="text-gray-500 dark:text-gray-400"
-                  >
-                    No news to show.
-                  </Text>
-                ) : (
-                  <div className="space-y-2 max-h-[30vh] overflow-y-auto">
-                    {teamNews.map((n: BaseballNewsLog) => (
-                      <div key={n.id} className="py-1">
-                        <Text variant="small">{n.message}</Text>
-                        <Text variant="small" classes="text-right opacity-70">
-                          Week {n.week} | {n.message_type} news
-                        </Text>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <SectionCards
+                team={activeTeam}
+                header="Scouting Department"
+                classes={`${textColorClass} h-full`}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                darkerBackgroundColor={darkerBackgroundColor}
+                textColorClass={textColorClass}
+              >
+                <ScoutingDepartmentPanel
+                  orgId={orgId}
+                  leagueYearId={leagueYearId}
+                  budget={scoutingBudget}
+                  onPurchased={refreshBudget}
+                  accentColor={borderColor}
+                />
+              </SectionCards>
             </Border>
-          </div>
-        </div>
+          )}
 
-        {/* Right Column: Org Info + Financials + Injuries + Stats */}
-        <div className="flex flex-col items-start pt-1 md:pt-0 h-full md:h-auto md:w-[30vw] lg:w-[32em] md:min-w-[20em] lg:min-w-[20em] md:max-w-[35vw] lg:max-w-[30em]">
-          {/* Org Info */}
-          <Border
-            classes="py-0 px-0 w-full mb-2"
-            styles={{ borderTop: `3px solid ${headerColor}` }}
-          >
-            <div className="p-3">
-              <Text variant="h5" classes="mb-2 font-semibold">
-                {selectedLevel ? displayLevel(selectedLevel) : "Organization"}
-              </Text>
-              <div className="flex items-center gap-3 mb-2">
-                {logo && (
-                  <img
-                    src={logo}
-                    className="w-10 h-10 object-contain"
-                    alt={viewedOrg.org_abbrev}
-                  />
-                )}
-                <div>
-                  <Text variant="body" classes="font-semibold">
-                    {pageTitle}
-                  </Text>
-                  {seasonLabel && (
-                    <Text
-                      variant="small"
-                      classes="text-gray-500 dark:text-gray-400"
-                    >
-                      {seasonLabel}
-                    </Text>
-                  )}
-                </div>
-              </div>
-              <div className="space-y-1 text-sm">
-                {roleDisplay && <Text variant="small">{roleDisplay}</Text>}
-              </div>
-            </div>
-          </Border>
-
-          {/* Financials (MLB) or Roster Breakdown link (College) */}
-          {isCollege ? (
+          {/* Financial Summary (desktop, MLB only, own org only) */}
+          {!isMobile && !isCollege && isOwnOrg && financialSummary && (
             <Border
-              classes="py-0 px-0 w-full mb-2"
-              styles={{ borderTop: `3px solid ${headerColor}` }}
+              classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em]"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
             >
-              <div className="p-3">
-                <Text variant="h5" classes="mb-2 font-semibold">
-                  Roster
-                </Text>
-                <div className="space-y-1 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 dark:text-gray-400">
-                      Players
-                    </span>
-                    <span className="font-semibold">
-                      {Object.values(viewedOrg.teams ?? {}).length > 0
-                        ? "View breakdown"
-                        : "—"}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => navigate(routes.COLLEGE_BASEBALL_FINANCIALS)}
-                  className="mt-3 text-sm text-blue-500 hover:text-blue-400 hover:underline cursor-pointer"
-                >
-                  Roster Breakdown →
-                </button>
-              </div>
-            </Border>
-          ) : (
-            <Border
-              classes="py-0 px-0 w-full mb-2"
-              styles={{ borderTop: `3px solid ${headerColor}` }}
-            >
-              <div className="p-3">
-                <Text variant="h5" classes="mb-2 font-semibold">
-                  Financials
-                </Text>
-                {isDataStale ? (
-                  <Text
-                    variant="body-small"
-                    classes="text-gray-500 dark:text-gray-400"
-                  >
-                    Loading...
-                  </Text>
-                ) : (
-                  <FinancialsSection
-                    financials={financials}
-                    fallbackCash={viewedOrg.cash}
-                  />
-                )}
-                <button
-                  onClick={() => navigate(routes.MLB_FINANCIALS)}
-                  className="mt-3 text-sm text-blue-500 hover:text-blue-400 hover:underline cursor-pointer"
-                >
-                  See Full Financials →
-                </button>
-              </div>
+              <SectionCards
+                team={activeTeam}
+                header="Finances"
+                classes={`${textColorClass} h-full`}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                darkerBackgroundColor={darkerBackgroundColor}
+                textColorClass={textColorClass}
+              >
+                <FinancialSummaryPanel data={financialSummary} />
+              </SectionCards>
             </Border>
           )}
 
           {/* Injuries (desktop) */}
           {!isMobile && !isDataStale && (
             <Border
-              classes="py-0 px-0 w-full mb-2"
-              styles={{ borderTop: `3px solid ${headerColor}` }}
+              classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[40em]"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
             >
-              <BaseballInjuriesSection injuries={teamInjuries} />
+              <SectionCards
+                team={activeTeam}
+                header="Injury Report"
+                classes={`${textColorClass} h-full`}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                darkerBackgroundColor={darkerBackgroundColor}
+                textColorClass={textColorClass}
+              >
+                <BaseballInjuriesContent injuries={teamInjuries} textColorClass={textColorClass} />
+              </SectionCards>
             </Border>
           )}
 
           {/* Team Leaders */}
-          <Border
-            classes="py-0 px-0 w-full"
-            styles={{ borderTop: `3px solid ${headerColor}` }}
-          >
-            <div className="p-3">
-              <Text variant="h5" classes="mb-2 font-semibold">
-                Team Leaders
-              </Text>
-              {leadersLoading ? (
-                <Text
-                  variant="body-small"
-                  classes="text-gray-500 dark:text-gray-400"
-                >
-                  Loading leaders...
-                </Text>
-              ) : (
-                <div className="space-y-3">
-                  {avgLeader && (
-                    <LeaderCard
-                      label="AVG Leader"
-                      labelColor="text-blue-600 dark:text-blue-400"
-                      playerId={avgLeader.player_id}
-                      name={avgLeader.name}
-                      team={activeTeam}
-                      league={league}
-                      statLine={`${avgLeader.avg}/${avgLeader.obp}/${avgLeader.slg} (${avgLeader.ops} OPS)`}
-                      details={`${avgLeader.h} H | ${avgLeader.hr} HR | ${avgLeader.rbi} RBI | ${avgLeader.ab} AB`}
-                    />
-                  )}
+          <div className="flex flex-row md:flex-none md:flex-col w-full">
+            <Border
+              classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[40em]"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
+            >
+              <SectionCards
+                team={activeTeam}
+                header="Team Leaders"
+                classes={`${textColorClass} h-full`}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                darkerBackgroundColor={darkerBackgroundColor}
+                textColorClass={textColorClass}
+              >
+                {leadersLoading ? (
+                  <Text
+                    variant="body-small"
+                    classes={textColorClass}
+                  >
+                    Loading leaders...
+                  </Text>
+                ) : (
+                  <div className="space-y-3">
+                    {avgLeader && (
+                      <LeaderCard
+                        label="AVG Leader"
+                        labelColor="text-blue-600 dark:text-blue-400"
+                        playerId={avgLeader.player_id}
+                        name={avgLeader.name}
+                        team={activeTeam}
+                        league={league}
+                        statLine={`${avgLeader.avg}/${avgLeader.obp}/${avgLeader.slg} (${avgLeader.ops} OPS)`}
+                        details={`${avgLeader.h} H | ${avgLeader.hr} HR | ${avgLeader.rbi} RBI | ${avgLeader.ab} AB`}
+                      />
+                    )}
 
-                  {hrLeader && hrLeader.player_id !== avgLeader?.player_id && (
-                    <LeaderCard
-                      label="Power Leader"
-                      labelColor="text-purple-600 dark:text-purple-400"
-                      playerId={hrLeader.player_id}
-                      name={hrLeader.name}
-                      team={activeTeam}
-                      league={league}
-                      statLine={`${hrLeader.avg}/${hrLeader.obp}/${hrLeader.slg} (${hrLeader.ops} OPS)`}
-                      details={`${hrLeader.hr} HR | ${hrLeader.rbi} RBI | ${hrLeader.h} H | ${hrLeader.ab} AB`}
-                    />
-                  )}
+                    {hrLeader && hrLeader.player_id !== avgLeader?.player_id && (
+                      <LeaderCard
+                        label="Power Leader"
+                        labelColor="text-purple-600 dark:text-purple-400"
+                        playerId={hrLeader.player_id}
+                        name={hrLeader.name}
+                        team={activeTeam}
+                        league={league}
+                        statLine={`${hrLeader.avg}/${hrLeader.obp}/${hrLeader.slg} (${hrLeader.ops} OPS)`}
+                        details={`${hrLeader.hr} HR | ${hrLeader.rbi} RBI | ${hrLeader.h} H | ${hrLeader.ab} AB`}
+                      />
+                    )}
 
-                  {spLeader && (
-                    <LeaderCard
-                      label="Starting Pitcher"
-                      labelColor="text-red-600 dark:text-red-400"
-                      playerId={spLeader.player_id}
-                      name={spLeader.name}
-                      team={activeTeam}
-                      league={league}
-                      statLine={`${spLeader.era} ERA | ${spLeader.whip} WHIP`}
-                      details={`${spLeader.w}-${spLeader.l} | ${spLeader.ip} IP | ${spLeader.so} K | ${spLeader.bb} BB`}
-                    />
-                  )}
+                    {spLeader && (
+                      <LeaderCard
+                        label="Starting Pitcher"
+                        labelColor="text-red-600 dark:text-red-400"
+                        playerId={spLeader.player_id}
+                        name={spLeader.name}
+                        team={activeTeam}
+                        league={league}
+                        statLine={`${spLeader.era} ERA | ${spLeader.whip} WHIP`}
+                        details={`${spLeader.w}-${spLeader.l} | ${spLeader.ip} IP | ${spLeader.so} K | ${spLeader.bb} BB`}
+                      />
+                    )}
 
-                  {rpLeader && (
-                    <LeaderCard
-                      label="Top Reliever"
-                      labelColor="text-teal-600 dark:text-teal-400"
-                      playerId={rpLeader.player_id}
-                      name={rpLeader.name}
-                      team={activeTeam}
-                      league={league}
-                      statLine={`${rpLeader.era} ERA | ${rpLeader.whip} WHIP`}
-                      details={`${rpLeader.w}-${rpLeader.l} | ${rpLeader.sv} SV | ${rpLeader.ip} IP | ${rpLeader.so} K`}
-                    />
-                  )}
+                    {rpLeader && (
+                      <LeaderCard
+                        label="Top Reliever"
+                        labelColor="text-teal-600 dark:text-teal-400"
+                        playerId={rpLeader.player_id}
+                        name={rpLeader.name}
+                        team={activeTeam}
+                        league={league}
+                        statLine={`${rpLeader.era} ERA | ${rpLeader.whip} WHIP`}
+                        details={`${rpLeader.w}-${rpLeader.l} | ${rpLeader.sv} SV | ${rpLeader.ip} IP | ${rpLeader.so} K`}
+                      />
+                    )}
 
-                  {!avgLeader && !spLeader && !rpLeader && (
-                    <Text
-                      variant="body-small"
-                      classes="text-gray-500 dark:text-gray-400"
-                    >
-                      No stats available yet.
-                    </Text>
-                  )}
-                </div>
-              )}
-            </div>
-          </Border>
+                    {!avgLeader && !spLeader && !rpLeader && (
+                      <Text
+                        variant="body-small"
+                        classes={`${textColorClass} opacity-70`}
+                      >
+                        No stats available yet.
+                      </Text>
+                    )}
+                  </div>
+                )}
+              </SectionCards>
+            </Border>
+          </div>
         </div>
       </div>
 
@@ -1180,7 +1318,7 @@ export const BaseballLandingPage = ({
 
       {/* Player Modal */}
       {modalPlayerId != null && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={isModalOpen}
           onClose={() => {
             setModalPlayerId(null);
@@ -1192,6 +1330,7 @@ export const BaseballLandingPage = ({
           scoutingBudget={scoutingBudget}
           onBudgetChanged={refreshBudget}
           league={league === SimMLB ? SimMLB : SimCollegeBaseball}
+          context="scouting"
         />
       )}
     </div>
@@ -1200,142 +1339,16 @@ export const BaseballLandingPage = ({
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-const formatMoney = (n: number) =>
-  `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
-
-const FinancialsSection = ({
-  financials,
-  fallbackCash,
-}: {
-  financials: BaseballFinancials | null;
-  fallbackCash: number;
-}) => {
-  if (!financials) {
-    return (
-      <div className="space-y-1 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-500 dark:text-gray-400">Cash Balance</span>
-          <span className="font-semibold">
-            {formatMoney(Number(fallbackCash ?? 0))}
-          </span>
-        </div>
-      </div>
-    );
-  }
-
-  const { summary, obligations, future_obligations } = financials;
-  const futureYears = future_obligations
-    ? Object.entries(future_obligations).sort(([a], [b]) => a.localeCompare(b))
-    : [];
-
-  return (
-    <div className="space-y-3 text-sm">
-      {/* Balance */}
-      {summary && (
-        <div className="space-y-1">
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">
-              Current Balance
-            </span>
-            <span className="font-bold text-base">
-              {formatMoney(summary.ending_balance)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">
-              Season Revenue
-            </span>
-            <span className="text-green-600 dark:text-green-400">
-              +{formatMoney(summary.season_revenue)}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">
-              Season Expenses
-            </span>
-            <span className="text-red-600 dark:text-red-400">
-              -{formatMoney(summary.season_expenses)}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Obligations */}
-      {obligations && (
-        <div className="border-t dark:border-gray-600 pt-2 space-y-1">
-          <Text variant="small" classes="font-semibold">
-            {obligations.league_year} Obligations
-          </Text>
-          <div className="flex justify-between">
-            <span className="text-gray-500 dark:text-gray-400">
-              Active Salary
-            </span>
-            <span>{formatMoney(obligations.totals.active_salary)}</span>
-          </div>
-          {obligations.totals.inactive_salary > 0 && (
-            <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">
-                Inactive Salary
-              </span>
-              <span>{formatMoney(obligations.totals.inactive_salary)}</span>
-            </div>
-          )}
-          {obligations.totals.buyout > 0 && (
-            <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">Buyouts</span>
-              <span>{formatMoney(obligations.totals.buyout)}</span>
-            </div>
-          )}
-          {obligations.totals.signing_bonus > 0 && (
-            <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">
-                Signing Bonuses
-              </span>
-              <span>{formatMoney(obligations.totals.signing_bonus)}</span>
-            </div>
-          )}
-          <div className="flex justify-between font-semibold border-t dark:border-gray-600 pt-1">
-            <span>Total Committed</span>
-            <span>{formatMoney(obligations.totals.overall)}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Future Obligations */}
-      {futureYears.length > 0 && (
-        <div className="border-t dark:border-gray-600 pt-2 space-y-1">
-          <Text variant="small" classes="font-semibold">
-            Future Commitments
-          </Text>
-          {futureYears.map(([year, amount]) => (
-            <div key={year} className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">{year}</span>
-              <span>{formatMoney(amount)}</span>
-            </div>
-          ))}
-          <Text
-            variant="small"
-            classes="text-gray-400 dark:text-gray-500 text-xs italic"
-          >
-            Committed contracts only — see Contracts tab for projected renewals
-          </Text>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const BaseballInjuriesSection = ({
+const BaseballInjuriesContent = ({
   injuries,
+  textColorClass,
 }: {
   injuries: BaseballInjury[];
+  textColorClass: string;
 }) => (
-  <div className="p-3">
-    <Text variant="h5" classes="mb-2 font-semibold">
-      Injury Report
-    </Text>
+  <>
     {injuries.length === 0 ? (
-      <Text variant="body-small" classes="text-gray-500 dark:text-gray-400">
+      <Text variant="body-small" classes={`${textColorClass} opacity-70`}>
         No injuries to report.
       </Text>
     ) : (
@@ -1360,8 +1373,91 @@ const BaseballInjuriesSection = ({
         ))}
       </div>
     )}
-  </div>
+  </>
 );
+
+// ─── Quick Links ────────────────────────────────────────────────────────────
+
+const BaseballQuickLinks = ({
+  league,
+  isCollege,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  textColorClass,
+  darkerBackgroundColor,
+  activeTeam,
+}: {
+  league: string;
+  isCollege: boolean;
+  backgroundColor: string;
+  headerColor: string;
+  borderColor: string;
+  textColorClass: string;
+  darkerBackgroundColor: string;
+  activeTeam: BaseballTeam | null;
+}) => {
+  const navigate = useNavigate();
+  return (
+    <SectionCards
+      team={activeTeam}
+      header="Quick Links"
+      classes={`${textColorClass} h-full`}
+      backgroundColor={backgroundColor}
+      headerColor={headerColor}
+      borderColor={borderColor}
+      textColorClass={textColorClass}
+      darkerBackgroundColor={darkerBackgroundColor}
+    >
+      <div className="flex justify-around p-1 md:py-3 mt-4 flex-wrap gap-2">
+        <Button
+          size="xs"
+          onClick={() =>
+            navigate(
+              isCollege
+                ? routes.COLLEGE_BASEBALL_TEAM
+                : routes.MLB_TEAM,
+            )
+          }
+        >
+          Roster
+        </Button>
+        {!isCollege && (
+          <Button
+            size="xs"
+            onClick={() => navigate(routes.MLB_FINANCIALS)}
+          >
+            Finances
+          </Button>
+        )}
+        <Button
+          size="xs"
+          onClick={() =>
+            navigate(
+              isCollege
+                ? routes.COLLEGE_BASEBALL_STATS
+                : routes.MLB_STATS,
+            )
+          }
+        >
+          Statistics
+        </Button>
+        <Button
+          size="xs"
+          onClick={() =>
+            navigate(
+              isCollege
+                ? routes.COLLEGE_BASEBALL_SCHEDULE
+                : routes.MLB_SCHEDULE,
+            )
+          }
+        >
+          Schedule
+        </Button>
+      </div>
+    </SectionCards>
+  );
+};
 
 // ─── Leader Card ─────────────────────────────────────────────────────────────
 
@@ -1671,6 +1767,119 @@ const StandingsTable = ({
           })}
         </tbody>
       </table>
+    </div>
+  );
+};
+
+// ─── Financial Summary Panel ────────────────────────────────────────────────
+
+const FinancialSummaryPanel = ({ data }: { data: OrgFinancialSummaryResponse }) => {
+  const navigate = useNavigate();
+  const netChange = data.ending_balance - data.starting_balance;
+
+  // Compute revenue/expense category breakdowns from data already loaded
+  const categories = useMemo(() => {
+    const rev: { label: string; amount: number }[] = [];
+    const exp: { label: string; amount: number }[] = [];
+
+    // Year-start events
+    if (data.year_start_events) {
+      for (const [key, val] of Object.entries(data.year_start_events)) {
+        const label = key.charAt(0).toUpperCase() + key.slice(1);
+        if (val >= 0) rev.push({ label, amount: val });
+        else exp.push({ label, amount: Math.abs(val) });
+      }
+    }
+
+    // Weekly totals (salary + performance)
+    let totalSalary = 0;
+    let totalPerformance = 0;
+    for (const w of data.weeks) {
+      totalSalary += w.salary_out;
+      totalPerformance += w.performance_in;
+    }
+    if (totalPerformance > 0) rev.push({ label: "Performance", amount: totalPerformance });
+    if (totalSalary > 0) exp.push({ label: "Salary", amount: totalSalary });
+
+    // Interest
+    if (data.interest_events) {
+      for (const [key, val] of Object.entries(data.interest_events)) {
+        const label = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        if (val >= 0) rev.push({ label, amount: val });
+        else exp.push({ label, amount: Math.abs(val) });
+      }
+    }
+
+    // Sort by amount descending
+    rev.sort((a, b) => b.amount - a.amount);
+    exp.sort((a, b) => b.amount - a.amount);
+
+    return { rev, exp };
+  }, [data]);
+
+  return (
+    <div className="space-y-3 p-1">
+      {/* Balance */}
+      <div className="flex justify-between items-baseline">
+        <span className="text-xs text-gray-500 dark:text-gray-400">Current Balance</span>
+        <span className="text-lg font-bold">{formatMoney(data.ending_balance)}</span>
+      </div>
+
+      {/* Revenue / Expenses / Net */}
+      <div className="grid grid-cols-3 gap-2 text-sm">
+        <div>
+          <span className="text-xs text-gray-500 dark:text-gray-400 block">Revenue</span>
+          <span className="font-semibold text-green-600 dark:text-green-400">
+            {formatMoney(data.season_revenue)}
+          </span>
+        </div>
+        <div>
+          <span className="text-xs text-gray-500 dark:text-gray-400 block">Expenses</span>
+          <span className="font-semibold text-red-600 dark:text-red-400">
+            {formatMoney(data.season_expenses)}
+          </span>
+        </div>
+        <div>
+          <span className="text-xs text-gray-500 dark:text-gray-400 block">Net Change</span>
+          <span className={`font-semibold ${netChange >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
+            {netChange >= 0 ? "+" : "-"}{formatMoney(Math.abs(netChange))}
+          </span>
+        </div>
+      </div>
+
+      {/* Category breakdowns */}
+      {(categories.rev.length > 0 || categories.exp.length > 0) && (
+        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs border-t dark:border-gray-600 pt-2">
+          {/* Revenue categories */}
+          <div>
+            <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Revenue</span>
+            {categories.rev.map((c) => (
+              <div key={c.label} className="flex justify-between py-0.5">
+                <span className="text-gray-500 dark:text-gray-400">{c.label}</span>
+                <span className="text-green-600 dark:text-green-400 font-medium">{formatMoney(c.amount)}</span>
+              </div>
+            ))}
+          </div>
+          {/* Expense categories */}
+          <div>
+            <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Expenses</span>
+            {categories.exp.map((c) => (
+              <div key={c.label} className="flex justify-between py-0.5">
+                <span className="text-gray-500 dark:text-gray-400">{c.label}</span>
+                <span className="text-red-600 dark:text-red-400 font-medium">{formatMoney(c.amount)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Link to full financials page */}
+      <button
+        onClick={() => navigate(routes.MLB_FINANCIALS)}
+        className="w-full text-center text-xs text-blue-500 hover:text-blue-400 transition-colors py-1"
+      >
+        View Full Financials →
+      </button>
     </div>
   );
 };

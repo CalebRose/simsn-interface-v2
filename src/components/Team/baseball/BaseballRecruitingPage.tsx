@@ -17,7 +17,7 @@ import {
 import { usePoolTable } from "./BaseballScouting/usePoolTable";
 import { PoolPagination } from "./BaseballScouting/PoolPagination";
 import { ScoutingBudgetBar } from "./BaseballScouting/ScoutingBudgetBar";
-import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import { PlayerModal } from "./PlayerModal";
 import {
   type ColumnGroup,
   GroupedTableHeader,
@@ -1440,7 +1440,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
 
       {/* Scouting Modal */}
       {selectedPlayerId > 0 && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={scoutingModal.isModalOpen}
           onClose={handleScoutingModalClose}
           playerId={selectedPlayerId}
@@ -1449,6 +1449,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
           scoutingBudget={scoutingBudget}
           onBudgetChanged={() => setBudgetRefreshKey((k) => k + 1)}
           league="SimCollegeBaseball"
+          context="scouting"
         />
       )}
     </PageContainer>

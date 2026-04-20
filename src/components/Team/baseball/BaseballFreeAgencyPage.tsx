@@ -13,7 +13,7 @@ import {
   AuctionBoardEntry,
 } from "../../../models/baseball/baseballFreeAgencyModels";
 import type { Player } from "../../../models/baseball/baseballModels";
-import { BaseballScoutingModal } from "./BaseballScouting/BaseballScoutingModal";
+import { PlayerModal } from "./PlayerModal";
 import { SimMLB } from "../../../_constants/constants";
 import type { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 import { FAOfferModal } from "./FreeAgency/FAOfferModal";
@@ -541,7 +541,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
 
       {/* Player Detail Modal */}
       {selectedPlayerId > 0 && (
-        <BaseballScoutingModal
+        <PlayerModal
           isOpen={detailModal.isModalOpen}
           onClose={detailModal.handleCloseModal}
           playerId={selectedPlayerId}
@@ -552,6 +552,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
           league={SimMLB}
           faDetail={faDetail}
           onMakeOffer={openOfferFromDetail}
+          context="freeAgency"
         />
       )}
 

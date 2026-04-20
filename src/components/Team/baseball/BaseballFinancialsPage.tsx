@@ -1,57 +1,50 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { PageContainer } from "../../../_design/Container";
 import { TabGroup, Tab } from "../../../_design/Tabs";
 import { SelectDropdown } from "../../../_design/Select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
-import { SimCollegeBaseball, SimMLB } from "../../../_constants/constants";
+import { SimMLB } from "../../../_constants/constants";
 import { getLogo } from "../../../_utility/getLogo";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
-import { formatMoney } from "./BaseballFinancials/financialConstants";
+import { ScoutingDepartmentPanel } from "./BaseballScouting/ScoutingDepartmentPanel";
+import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
+import { BaseballService } from "../../../_services/baseballService";
 import {
   FINANCIALS_TABS,
   OVERVIEW_TAB,
+  LEDGER_TAB,
   CONTRACTS_TAB,
-  SERVICE_TIME_TAB,
 } from "./BaseballFinancials/financialConstants";
 import { OverviewTab } from "./BaseballFinancials/OverviewTab";
+import { LedgerTab } from "./BaseballFinancials/LedgerTab";
 import { ContractsTab } from "./BaseballFinancials/ContractsTab";
-import { ServiceTimeTab } from "./BaseballFinancials/ServiceTimeTab";
 
-interface BaseballFinancialsPageProps {
-  league: string;
-}
-
-export const BaseballFinancialsPage = ({
-  league,
-}: BaseballFinancialsPageProps) => {
+export const BaseballFinancialsPage = () => {
   const { currentUser } = useAuthStore();
   const {
     organizations,
     mlbOrganization,
-    collegeOrganization,
-    financials,
     seasonContext,
-    loadBootstrapForOrg,
   } = useSimBaseballStore();
 
   const [selectedTab, setSelectedTab] = useState(OVERVIEW_TAB);
 
-  const userOrg = league === SimMLB ? mlbOrganization : collegeOrganization;
+  const userOrg = mlbOrganization;
+  const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+  const leagueYear = seasonContext?.league_year ?? 0;
 
   // --- Org selector ---
   const [viewedOrgId, setViewedOrgId] = useState<number | null>(null);
 
-  const leagueKey = league === SimMLB ? "mlb" : "college";
-
   const leagueOrgs = useMemo(() => {
     if (!organizations) return [];
     return organizations
-      .filter((o) => o.league === leagueKey)
+      .filter((o) => o.league === "mlb")
       .sort((a, b) => a.org_abbrev.localeCompare(b.org_abbrev));
-  }, [organizations, leagueKey]);
+  }, [organizations]);
 
   const viewedOrg = useMemo(() => {
     if (viewedOrgId == null) return userOrg;
@@ -60,16 +53,13 @@ export const BaseballFinancialsPage = ({
 
   const orgOptions: SelectOption[] = useMemo(() => {
     return leagueOrgs.map((org) => {
-      const t =
-        league === SimMLB
-          ? org.teams?.["mlb"]
-          : Object.values(org.teams ?? {})[0];
+      const t = org.teams?.["mlb"];
       return {
         value: String(org.id),
         label: t?.team_full_name || org.org_abbrev,
       };
     });
-  }, [leagueOrgs, league]);
+  }, [leagueOrgs]);
 
   const selectedOrgOption = useMemo(() => {
     return orgOptions.find((o) => o.value === String(viewedOrg?.id)) ?? null;
@@ -78,10 +68,39 @@ export const BaseballFinancialsPage = ({
   const handleOrgChange = useCallback(
     (orgId: number) => {
       setViewedOrgId(orgId === userOrg?.id ? null : orgId);
-      loadBootstrapForOrg(orgId);
     },
-    [userOrg?.id, loadBootstrapForOrg],
+    [userOrg?.id],
   );
+
+  // --- Scouting department (for department panel) ---
+  const [scoutingBudget, setScoutingBudget] = useState<ScoutingBudget | null>(null);
+  const [deptEligible, setDeptEligible] = useState(false);
+  const viewedOrgIdForBudget = viewedOrg?.id ?? 0;
+
+  const refreshScoutingBudget = useCallback(() => {
+    if (viewedOrgIdForBudget && leagueYearId) {
+      BaseballService.GetScoutingBudget(viewedOrgIdForBudget, leagueYearId)
+        .then(setScoutingBudget)
+        .catch(() => {});
+    }
+  }, [viewedOrgIdForBudget, leagueYearId]);
+
+  useEffect(() => {
+    refreshScoutingBudget();
+  }, [refreshScoutingBudget]);
+
+  // Check scouting department eligibility
+  useEffect(() => {
+    if (!viewedOrgIdForBudget || !leagueYearId) {
+      setDeptEligible(false);
+      return;
+    }
+    let cancelled = false;
+    BaseballService.GetDepartmentStatus(viewedOrgIdForBudget, leagueYearId)
+      .then((d) => { if (!cancelled) setDeptEligible(d?.eligible ?? false); })
+      .catch(() => { if (!cancelled) setDeptEligible(false); });
+    return () => { cancelled = true; };
+  }, [viewedOrgIdForBudget, leagueYearId]);
 
   // --- Derived display ---
 
@@ -89,22 +108,11 @@ export const BaseballFinancialsPage = ({
 
   const logo = useMemo(() => {
     if (!organization?.teams) return "";
-    if (league === SimMLB) {
-      const mlbTeam = organization.teams["mlb"];
-      if (mlbTeam)
-        return getLogo(SimMLB, mlbTeam.team_id, currentUser?.IsRetro);
-    }
-    if (league === SimCollegeBaseball) {
-      const teamEntries = Object.values(organization.teams);
-      if (teamEntries.length > 0)
-        return getLogo(
-          SimCollegeBaseball,
-          teamEntries[0].team_id,
-          currentUser?.IsRetro,
-        );
-    }
+    const mlbTeam = organization.teams["mlb"];
+    if (mlbTeam)
+      return getLogo(SimMLB, mlbTeam.team_id, currentUser?.IsRetro);
     return "";
-  }, [organization, league, currentUser?.IsRetro]);
+  }, [organization, currentUser?.IsRetro]);
 
   const pageTitle = useMemo(() => {
     if (!organization) return "";
@@ -124,6 +132,8 @@ export const BaseballFinancialsPage = ({
       </PageContainer>
     );
   }
+
+  const orgAbbrev = organization.org_abbrev;
 
   return (
     <PageContainer>
@@ -169,6 +179,19 @@ export const BaseballFinancialsPage = ({
           </div>
         </Border>
 
+        {/* Scouting Department */}
+        {deptEligible && viewedOrgIdForBudget > 0 && leagueYearId > 0 && (
+          <Border classes="p-4 mb-2">
+            <Text variant="h6" classes="font-semibold mb-2">Scouting Department</Text>
+            <ScoutingDepartmentPanel
+              orgId={viewedOrgIdForBudget}
+              leagueYearId={leagueYearId}
+              budget={scoutingBudget}
+              onPurchased={refreshScoutingBudget}
+            />
+          </Border>
+        )}
+
         {/* Tabs */}
         <Border classes="p-4">
           <TabGroup classes="mb-4">
@@ -183,36 +206,18 @@ export const BaseballFinancialsPage = ({
           </TabGroup>
 
           {/* Overview Tab */}
-          {selectedTab === OVERVIEW_TAB && financials && (
-            <OverviewTab financials={financials} />
+          {selectedTab === OVERVIEW_TAB && (
+            <OverviewTab orgAbbrev={orgAbbrev} leagueYear={leagueYear} />
           )}
-          {selectedTab === OVERVIEW_TAB && !financials && (
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Text variant="body" classes="font-semibold">
-                  Cash Balance
-                </Text>
-                <Text variant="h5" classes="font-bold">
-                  {formatMoney(organization.cash ?? 0)}
-                </Text>
-              </div>
-              <Text
-                variant="body-small"
-                classes="text-gray-500 dark:text-gray-400"
-              >
-                Detailed financial data not yet available.
-              </Text>
-            </div>
+
+          {/* Ledger Tab */}
+          {selectedTab === LEDGER_TAB && (
+            <LedgerTab orgAbbrev={orgAbbrev} leagueYear={leagueYear} />
           )}
 
           {/* Contracts Tab */}
           {selectedTab === CONTRACTS_TAB && (
-            <ContractsTab orgId={organization.id} />
-          )}
-
-          {/* Service Time Tab */}
-          {selectedTab === SERVICE_TIME_TAB && (
-            <ServiceTimeTab orgId={organization.id} />
+            <ContractsTab orgId={organization.id} leagueYearId={leagueYearId} />
           )}
         </Border>
       </div>
