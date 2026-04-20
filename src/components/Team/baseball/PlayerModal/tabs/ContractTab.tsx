@@ -19,11 +19,79 @@ export const ContractTab: FC<ContractTabProps> = memo(
         faDetail.contract_history?.length ||
         faDetail.auction);
 
-    // FA mode — show demands, contract history, and auction status
+    // Current contract section (MLB) — shown for both FA and standard views
+    const renderCurrentContract = () => {
+      if (!contract || isCollege) return null;
+      const salary = contract.current_year_detail?.base_salary;
+      const salaryDisplay = salary != null ? formatMoney(salary) : "—";
+      const bonusDisplay = contract.bonus ? formatMoney(contract.bonus) : "—";
+
+      return (
+        <Border classes="p-3">
+          <Text variant="small" classes="font-semibold mb-3">
+            Current Contract
+          </Text>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="flex flex-col">
+              <Text
+                variant="body"
+                classes="mb-1 whitespace-nowrap font-semibold"
+              >
+                Term
+              </Text>
+              <Text variant="small">
+                Yr {contract.current_year} of {contract.years}
+              </Text>
+            </div>
+            <div className="flex flex-col">
+              <Text
+                variant="body"
+                classes="mb-1 whitespace-nowrap font-semibold"
+              >
+                Salary
+              </Text>
+              <Text variant="small">{salaryDisplay}</Text>
+            </div>
+            {contract.bonus > 0 && (
+              <div className="flex flex-col">
+                <Text
+                  variant="body"
+                  classes="mb-1 whitespace-nowrap font-semibold"
+                >
+                  Bonus
+                </Text>
+                <Text variant="small">{bonusDisplay}</Text>
+              </div>
+            )}
+            {contract.on_ir && (
+              <div className="flex flex-col">
+                <Text
+                  variant="body"
+                  classes="mb-1 whitespace-nowrap font-semibold"
+                >
+                  IL Status
+                </Text>
+                <Text
+                  variant="small"
+                  classes="text-red-600 dark:text-red-400 font-semibold"
+                >
+                  On IL
+                </Text>
+              </div>
+            )}
+          </div>
+        </Border>
+      );
+    };
+
+    // FA mode — show current contract, demands, contract history, and auction status
     if (hasFAData) {
       const { demand, contract_history, auction } = faDetail;
       return (
         <div className="space-y-3">
+          {/* Current Contract (the contract a claiming team would adopt) */}
+          {renderCurrentContract()}
+
           {/* Demands */}
           {demand && (
             <Border classes="p-3">
@@ -179,65 +247,12 @@ export const ContractTab: FC<ContractTabProps> = memo(
       );
     }
 
-    // MLB contract
-    const salary = contract.current_year_detail?.base_salary;
-    const salaryDisplay = salary != null ? formatMoney(salary) : "—";
-    const bonusDisplay = contract.bonus ? formatMoney(contract.bonus) : "—";
-
-    return (
+    // MLB contract (non-FA)
+    return renderCurrentContract() ?? (
       <Border classes="p-3">
-        <Text variant="small" classes="font-semibold mb-3">
-          Contract
+        <Text variant="xs" classes="text-gray-400">
+          No contract data available.
         </Text>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div className="flex flex-col">
-            <Text
-              variant="body"
-              classes="mb-1 whitespace-nowrap font-semibold"
-            >
-              Term
-            </Text>
-            <Text variant="small">
-              Yr {contract.current_year} of {contract.years}
-            </Text>
-          </div>
-          <div className="flex flex-col">
-            <Text
-              variant="body"
-              classes="mb-1 whitespace-nowrap font-semibold"
-            >
-              Salary
-            </Text>
-            <Text variant="small">{salaryDisplay}</Text>
-          </div>
-          {contract.bonus > 0 && (
-            <div className="flex flex-col">
-              <Text
-                variant="body"
-                classes="mb-1 whitespace-nowrap font-semibold"
-              >
-                Bonus
-              </Text>
-              <Text variant="small">{bonusDisplay}</Text>
-            </div>
-          )}
-          {contract.on_ir && (
-            <div className="flex flex-col">
-              <Text
-                variant="body"
-                classes="mb-1 whitespace-nowrap font-semibold"
-              >
-                IL Status
-              </Text>
-              <Text
-                variant="small"
-                classes="text-red-600 dark:text-red-400 font-semibold"
-              >
-                On IL
-              </Text>
-            </div>
-          )}
-        </div>
       </Border>
     );
   },

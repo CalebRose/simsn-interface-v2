@@ -330,8 +330,18 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
     setBoardLoading(true);
     BaseballService.GetRecruitingBoard(orgId, leagueYearId)
       .then((r) => {
-        setBoardPlayers(r.players ?? []);
-        setBoardPlayerIds(new Set((r.players ?? []).filter(bp => bp.on_board).map(bp => bp.player_id)));
+        const players = r.players ?? [];
+        setBoardPlayers(players);
+        setBoardPlayerIds(new Set(players.filter(bp => bp.on_board).map(bp => bp.player_id)));
+        // Seed allocations from per-week field so the input reflects current week, not cumulative
+        setInvestAllocations((prev) => {
+          const next: Record<number, number> = {};
+          players.forEach((bp) => {
+            if (bp.your_points_this_week > 0) next[bp.player_id] = bp.your_points_this_week;
+          });
+          // Preserve any unsaved local edits if they exist
+          return Object.keys(prev).length > 0 ? prev : next;
+        });
       })
       .catch((err) => {
         console.error(

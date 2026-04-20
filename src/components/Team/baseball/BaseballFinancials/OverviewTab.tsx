@@ -173,7 +173,18 @@ const CumulativeBalanceChart = ({ weeks }: { weeks: FinancialWeek[] }) => {
 
   if (!weeks || weeks.length === 0) return null;
 
-  const chartData = weeks.map((w) => ({
+  // Find the last week with any activity, only chart up through that point
+  let lastPlayedIdx = -1;
+  for (let i = weeks.length - 1; i >= 0; i--) {
+    const w = weeks[i];
+    if (w.salary_out !== 0 || w.performance_in !== 0 || w.other_in !== 0 || w.other_out !== 0 || w.net !== 0) {
+      lastPlayedIdx = i;
+      break;
+    }
+  }
+  if (lastPlayedIdx < 0) return null;
+
+  const chartData = weeks.slice(0, lastPlayedIdx + 1).map((w) => ({
     week: w.week_index,
     balance: w.cumulative_balance,
   }));

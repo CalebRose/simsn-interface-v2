@@ -11,6 +11,7 @@ import {
 interface FAWaiverWireProps {
   orgId: number;
   leagueYearId: number;
+  onPlayerClick?: (playerId: number) => void;
 }
 
 const LEVEL_LABELS: Record<number, string> = {
@@ -25,6 +26,7 @@ const LEVEL_LABELS: Record<number, string> = {
 export const FAWaiverWire: FC<FAWaiverWireProps> = ({
   orgId,
   leagueYearId,
+  onPlayerClick,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
   const [waivers, setWaivers] = useState<WaiverEntry[]>([]);
@@ -123,6 +125,9 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
             <th className={th}>OVR</th>
             <th className={th}>Tier</th>
             <th className={th}>Level</th>
+            <th className={th}>Svc Yrs</th>
+            <th className={th}>Contract</th>
+            <th className={th}>Salary</th>
             <th className={th}>Released By</th>
             <th className={th}>Expires</th>
             <th className={th}>Claims</th>
@@ -136,9 +141,24 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
             return (
               <tr
                 key={w.waiver_claim_id}
-                className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                onClick={() => onPlayerClick?.(w.player_id)}
               >
-                <td className="px-2 py-1 font-medium">{w.player_name}</td>
+                <td className="px-2 py-1 font-medium">
+                  {onPlayerClick ? (
+                    <button
+                      className="text-blue-400 hover:text-blue-300 hover:underline bg-transparent border-none p-0 font-medium text-sm text-left cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPlayerClick(w.player_id);
+                      }}
+                    >
+                      {w.player_name}
+                    </button>
+                  ) : (
+                    w.player_name
+                  )}
+                </td>
                 <td className="px-2 py-1">{w.age}</td>
                 <td className="px-2 py-1">
                   {w.ptype === "Pitcher" ? "P" : "Pos"}
@@ -162,10 +182,21 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
                 <td className="px-2 py-1">
                   {LEVEL_LABELS[w.last_level] ?? `Lvl ${w.last_level}`}
                 </td>
+                <td className="px-2 py-1">{w.service_years}</td>
+                <td className="px-2 py-1">
+                  {w.contract_years != null
+                    ? `Yr ${w.contract_current_year} of ${w.contract_years}`
+                    : "—"}
+                </td>
+                <td className="px-2 py-1">
+                  {w.contract_salary != null
+                    ? `$${(w.contract_salary / 1_000_000).toFixed(1)}M`
+                    : "—"}
+                </td>
                 <td className="px-2 py-1">{w.releasing_org_abbrev}</td>
                 <td className="px-2 py-1">Wk {w.expires_week}</td>
                 <td className="px-2 py-1">{w.bid_count}</td>
-                <td className="px-2 py-1">
+                <td className="px-2 py-1" onClick={(e) => e.stopPropagation()}>
                   {isOwnRelease ? (
                     <span className="text-xs text-gray-500">Your release</span>
                   ) : w.my_bid ? (
