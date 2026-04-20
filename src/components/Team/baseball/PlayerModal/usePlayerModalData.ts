@@ -93,14 +93,14 @@ export function usePlayerModalData({
         });
     } else if (context === "freeAgency") {
       if (!playerId) return;
-      Promise.all([
-        BaseballService.GetScoutedPlayer(playerId, orgId, leagueYearId),
-        BaseballService.GetFAPlayerDetail(playerId, orgId, leagueYearId),
-      ])
-        .then(([playerData, faData]) => {
+      // Fetch FA detail and scouting data independently so the modal can
+      // render the FA-only view as soon as faDetail arrives, then upgrade
+      // to the full tabbed view once scouting data loads.
+      BaseballService.GetFAPlayerDetail(playerId, orgId, leagueYearId)
+        .then((faData) => {
           if (!cancelled) {
-            setPlayer(playerData);
             setFaDetail(faData);
+            setIsLoading(false);
           }
         })
         .catch((err) => {
@@ -109,8 +109,16 @@ export function usePlayerModalData({
               err?.message || "Failed to load player",
               { variant: "error" },
             );
+        });
+      BaseballService.GetScoutedPlayer(playerId, orgId, leagueYearId)
+        .then((playerData) => {
+          if (!cancelled) {
+            setPlayer(playerData);
+            setIsLoading(false);
+          }
         })
-        .finally(() => {
+        .catch(() => {
+          // Scouting data is optional — FA-only view still works
           if (!cancelled) setIsLoading(false);
         });
     } else {

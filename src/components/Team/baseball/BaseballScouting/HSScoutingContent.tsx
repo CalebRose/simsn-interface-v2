@@ -285,7 +285,8 @@ export const HSScoutingContent: FC<HSScoutingContentProps> = ({
             <BioField label="Star Rating" value={`${"★".repeat(recruitDetail.star_rating)} (${recruitDetail.star_rating})`} />
             <BioField label="Overall Rank" value={`#${recruitDetail.rank_overall}`} />
             <BioField label="Position Rank" value={`#${recruitDetail.rank_by_ptype}`} />
-            <BioField label="Your Investment" value={`${recruitDetail.your_investment} pts`} />
+            <BioField label="This Week" value={`${recruitDetail.your_investment_this_week} pts`} />
+            <BioField label="Total Invested" value={`${recruitDetail.your_investment} pts`} />
             <div>
               <span className="text-gray-400 text-xs">Interest: </span>
               <span className={`text-xs font-semibold ${

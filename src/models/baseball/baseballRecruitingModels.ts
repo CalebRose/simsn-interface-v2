@@ -45,6 +45,7 @@ export interface BoardPlayer {
     star_rating: number | null;
     rank_overall: number | null;
     your_points: number;
+    your_points_this_week: number;
     on_board: boolean;
     interest_gauge: "Low" | "Medium" | "High" | "Very High";
     competitor_team_ids: number[];
@@ -84,6 +85,7 @@ export interface RecruitingPlayerDetail {
     interest_gauge: "Low" | "Medium" | "High" | "Very High";
     competitor_team_ids: number[];
     your_investment: number;
+    your_investment_this_week: number;
     commitment?: {
         org_id: number;
         org_abbrev: string;

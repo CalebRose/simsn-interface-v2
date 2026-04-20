@@ -378,6 +378,10 @@ export interface WaiverEntry {
     fa_type: FAType;
     bid_count: number;
     my_bid?: boolean;
+    contract_years: number | null;
+    contract_current_year: number | null;
+    contract_years_remaining: number | null;
+    contract_salary: number | null;
 }
 
 export interface WaiverListResponse {

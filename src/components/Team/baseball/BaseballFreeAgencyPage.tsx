@@ -162,9 +162,6 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     setSelectedPlayerId(playerId);
     setFaDetail(null);
     detailModal.handleOpenModal();
-    BaseballService.GetFAPlayerDetail(playerId, orgId, leagueYearId)
-      .then(setFaDetail)
-      .catch(() => {});
   };
 
   // ── Offer Modal ──
@@ -530,7 +527,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
 
         {/* Waivers Tab */}
         {activeTab === "waivers" && (
-          <FAWaiverWire orgId={orgId} leagueYearId={leagueYearId} />
+          <FAWaiverWire orgId={orgId} leagueYearId={leagueYearId} onPlayerClick={openDetail} />
         )}
 
         {/* Market Tab */}
