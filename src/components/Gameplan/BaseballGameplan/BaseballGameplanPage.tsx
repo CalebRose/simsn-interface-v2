@@ -28,12 +28,19 @@ interface BaseballGameplanPageProps {
 
 export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
   const { currentUser } = useAuthStore();
-  const { mlbOrganization, collegeOrganization, rosterMap, seasonContext } =
+  const { mlbOrganization, collegeOrganization, rosterMap, seasonContext, loadBootstrapForOrg } =
     useSimBaseballStore();
 
   const isCollege = league === SimCollegeBaseball;
   const organization =
     league === SimMLB ? mlbOrganization : collegeOrganization;
+
+  // Ensure the correct org's bootstrap data is loaded
+  useEffect(() => {
+    if (organization?.id) {
+      loadBootstrapForOrg(organization.id);
+    }
+  }, [organization?.id, loadBootstrapForOrg]);
 
   const [selectedTab, setSelectedTab] = useState(DEFENSE_LINEUP_TAB);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
