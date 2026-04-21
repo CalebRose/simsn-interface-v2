@@ -333,15 +333,6 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
         const players = r.players ?? [];
         setBoardPlayers(players);
         setBoardPlayerIds(new Set(players.filter(bp => bp.on_board).map(bp => bp.player_id)));
-        // Seed allocations from per-week field so the input reflects current week, not cumulative
-        setInvestAllocations((prev) => {
-          const next: Record<number, number> = {};
-          players.forEach((bp) => {
-            if (bp.your_points_this_week > 0) next[bp.player_id] = bp.your_points_this_week;
-          });
-          // Preserve any unsaved local edits if they exist
-          return Object.keys(prev).length > 0 ? prev : next;
-        });
       })
       .catch((err) => {
         console.error(
@@ -519,15 +510,10 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   const handleInvestChange = useCallback(
     (playerId: number, value: number) => {
       const clamped = Math.max(0, Math.min(investMaxPerPlayer, value));
-      setInvestAllocations((prev) => {
-        const next = { ...prev };
-        if (clamped === 0) {
-          delete next[playerId];
-        } else {
-          next[playerId] = clamped;
-        }
-        return next;
-      });
+      setInvestAllocations((prev) => ({
+        ...prev,
+        [playerId]: clamped,
+      }));
     },
     [investMaxPerPlayer],
   );
@@ -542,8 +528,11 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
     }
     setInvestSaving(true);
     try {
-      const investments = Object.entries(investAllocations)
-        .map(([pid, pts]) => ({ player_id: Number(pid), points: pts }));
+      // Include every board player so the backend can zero-out removed allocations
+      const investments = boardPlayers.map((bp) => ({
+        player_id: bp.player_id,
+        points: investAllocations[bp.player_id] ?? 0,
+      }));
       const resp = await BaseballService.SubmitInvestment({
         org_id: orgId,
         league_year_id: leagueYearId,
@@ -575,6 +564,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
     investState,
     investAllocations,
     investRemaining,
+    boardPlayers,
     orgId,
     leagueYearId,
     enqueueSnackbar,
