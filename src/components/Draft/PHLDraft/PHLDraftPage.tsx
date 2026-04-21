@@ -36,6 +36,7 @@ import { DraftWarRoom } from "../common/WarRoom";
 import { BigDraftBoard } from "../common/BigBoard";
 import { useModal } from "../../../_hooks/useModal";
 import ProposeDraftTradeModal from "../common/ProposeDraftTradeModal";
+import { ManageDraftTradesModal } from "../common/ManageDraftTradesModal";
 import { getSecondsByRound } from "./utils/draftHelpers";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 
@@ -235,6 +236,18 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
         proposeTrade={proposeTrade}
         backgroundColor={backgroundColor}
         borderColor={teamColors?.secondary}
+      />
+      <ManageDraftTradesModal
+        isOpen={receiveTradeModal.isModalOpen}
+        onClose={receiveTradeModal.handleCloseModal}
+        league={SimPHL}
+        userTeam={userTeam as ProfessionalTeam}
+        sentRequests={userWarRoomData?.sentRequests ?? []}
+        receivedRequests={userWarRoomData?.requests ?? []}
+        cancelTrade={rejectTrade}
+        acceptTrade={acceptTrade}
+        rejectTrade={rejectTrade}
+        backgroundColor={backgroundColor}
       />
       {modalPlayer && (
         <ActionModal

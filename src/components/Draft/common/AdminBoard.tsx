@@ -204,10 +204,7 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
           </div>
           <div className="flex flex-col">
             <Text variant="body-small">Draft Trades</Text>
-            <Button
-              disabled={!(isDraftComplete && draftState.exportComplete)}
-              onClick={handleOpenAdminProposalsModal}
-            >
+            <Button onClick={handleOpenAdminProposalsModal}>
               Process Trades
             </Button>
           </div>

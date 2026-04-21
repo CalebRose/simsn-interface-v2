@@ -34,6 +34,8 @@ import { DraftAdminBoard } from "../common/AdminBoard";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import { useModal } from "../../../_hooks/useModal";
 import { ProposeDraftTradeModal } from "../common/ProposeDraftTradeModal";
+import { ManageDraftTradesModal } from "../common/ManageDraftTradesModal";
+import { ProcessAcceptedTradesModal } from "../common/ProcessAcceptedTradesModal";
 
 interface NFLDraftPageProps {
   league: League;
@@ -223,6 +225,26 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
         proposeTrade={proposeTrade}
         backgroundColor={backgroundColor}
         borderColor={teamColors?.secondary}
+      />
+      <ManageDraftTradesModal
+        isOpen={receiveTradeModal.isModalOpen}
+        onClose={receiveTradeModal.handleCloseModal}
+        league={SimNFL}
+        userTeam={userTeam as NFLTeam}
+        sentRequests={userWarRoomData?.sentRequests ?? []}
+        receivedRequests={userWarRoomData?.requests ?? []}
+        cancelTrade={rejectTrade}
+        acceptTrade={acceptTrade}
+        rejectTrade={rejectTrade}
+        backgroundColor={backgroundColor}
+      />
+      <ProcessAcceptedTradesModal
+        isOpen={adminProposalsModal.isModalOpen}
+        onClose={adminProposalsModal.handleCloseModal}
+        league={SimNFL}
+        approvedRequests={approvedRequests}
+        processTrade={handleProcessTrade}
+        vetoTrade={vetoTrade}
       />
       {modalPlayer && (
         <ActionModal

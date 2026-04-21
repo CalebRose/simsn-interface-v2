@@ -9,6 +9,7 @@ import {
   ScoutingProfile,
 } from "../../../models/footballModels";
 import { useDraftState } from "../hooks/useDraftState";
+import { AnyTradeProposal } from "../hooks/useDraftTradeState";
 import { useModal } from "../../../_hooks/useModal";
 import {
   DraftBoardStr,
@@ -35,6 +36,7 @@ export const getTimeForPick = (pickNumber: number): number => {
 
 export const useNFLDraft = () => {
   const {
+    cfb_Timestamp,
     nflDraftees,
     nflTeam,
     nflTeamOptions,
@@ -758,83 +760,108 @@ export const useNFLDraft = () => {
   }, [draftPicksFromState, tradePartnerTeam]);
 
   const handleProcessTrade = useCallback(
-    (id: number) => {
-      const adminTradeQueue = [...approvedRequests];
-      const itemIdx = adminTradeQueue.findIndex((x) => x.ID === id);
-      if (itemIdx < 0) {
-        return;
-      }
-      const item = adminTradeQueue[itemIdx];
-      let dto = {};
-      const it = item as NFLTradeProposal;
-      dto = {
-        TeamID: it.NFLTeamID,
-        RecepientTeamID: it.RecepientTeamID,
+    async (trade: AnyTradeProposal) => {
+      const proposal = trade as any;
+
+      // Normalize field names — Firestore proposals use plain-object field names
+      // (TeamID, DraftPickID) while class instances use NFLTeamID, NFLDraftPickID.
+      const senderTeamID = proposal.NFLTeamID ?? proposal.TeamID ?? 0;
+      const recipientTeamID = proposal.RecepientTeamID ?? 0;
+
+      const normalizeOptions = (opts: any[], ownerTeamID: number) =>
+        (opts ?? []).map((opt: any) => ({
+          NFLTeamID: opt.NFLTeamID ?? opt.TeamID ?? ownerTeamID,
+          NFLPlayerID: opt.NFLPlayerID ?? opt.PlayerID ?? 0,
+          NFLDraftPickID: opt.NFLDraftPickID ?? opt.DraftPickID ?? 0,
+          OptionType: opt.OptionType ?? "DraftPick",
+          SalaryPercentage: opt.SalaryPercentage ?? 0,
+        }));
+
+      const senderOptions = normalizeOptions(
+        proposal.NFLTeamTradeOptions ?? proposal.TeamTradeOptions ?? [],
+        senderTeamID,
+      );
+      const recipientOptions = normalizeOptions(
+        proposal.RecepientTeamTradeOptions ?? [],
+        recipientTeamID,
+      );
+
+      const senderTeamObj = proTeamMap?.[senderTeamID];
+      const recipientTeamObj = proTeamMap?.[recipientTeamID];
+
+      const dto = {
+        NFLTeamID: senderTeamID,
+        NFLTeam: senderTeamObj
+          ? `${senderTeamObj.TeamName} ${senderTeamObj.Mascot}`
+          : "",
+        RecepientTeamID: recipientTeamID,
+        RecepientTeam: recipientTeamObj
+          ? `${recipientTeamObj.TeamName} ${recipientTeamObj.Mascot}`
+          : "",
         IsTradeAccepted: true,
         IsTradeRejected: false,
         IsSynced: false,
-        TeamTradeOptions: it.NFLTeamTradeOptions,
-        RecepientTeamTradeOptions: it.RecepientTeamTradeOptions,
+        NFLTeamTradeOptions: senderOptions,
+        RecepientTeamTradeOptions: recipientOptions,
       };
 
-      const res = TradeService.FBAProcessDraftTrade(dto);
-      // 2. Swap the draft picks, don't worry about players
-      const teamTradeDPs = it.NFLTeamTradeOptions.filter(
-        (x) => x.NFLDraftPickID > 0,
+      // 1. Persist the swap on the backend.
+      await TradeService.FBAProcessDraftTrade(dto);
+
+      // 2. Swap picks in the Firestore draft state.
+      //    allDraftPicks already contains only current-season picks (SeasonID ===
+      //    cfb_Timestamp.NFLSeasonID) so no extra filtering is needed.
+      const senderPickIDs = new Set(
+        senderOptions
+          .filter((o) => o.NFLDraftPickID > 0)
+          .map((o) => o.NFLDraftPickID),
+      );
+      const recipientPickIDs = new Set(
+        recipientOptions
+          .filter((o) => o.NFLDraftPickID > 0)
+          .map((o) => o.NFLDraftPickID),
       );
 
-      const recTradeDPs = it.RecepientTeamTradeOptions.filter(
-        (x) => x.NFLDraftPickID > 0,
+      if (senderPickIDs.size > 0 || recipientPickIDs.size > 0) {
+        const allDPs: Record<number, NFLDraftPick[]> = {};
+        for (const round in allDraftPicks) {
+          allDPs[round] = (allDraftPicks[round] as NFLDraftPick[]).map(
+            (pick) => {
+              const p = { ...pick } as NFLDraftPick;
+              if (senderPickIDs.has(p.ID)) {
+                // Sender's pick → goes to recipient
+                p.PreviousTeamID = p.TeamID;
+                p.PreviousTeam = p.Team;
+                p.TeamID = recipientTeamID;
+                p.Team = recipientTeamObj?.TeamName ?? p.Team;
+              } else if (recipientPickIDs.has(p.ID)) {
+                // Recipient's pick → goes to sender
+                p.PreviousTeamID = p.TeamID;
+                p.PreviousTeam = p.Team;
+                p.TeamID = senderTeamID;
+                p.Team = senderTeamObj?.TeamName ?? p.Team;
+              }
+              return p;
+            },
+          );
+        }
+
+        await handleManualDraftStateUpdate({ allDraftPicks: allDPs });
+      }
+
+      // 3. Remove the trade from the admin approved queue.
+      const filteredQueue = approvedRequests.filter(
+        (x) => (x as any).ID !== proposal.ID,
       );
-
-      // Sent Team Options
-      const swapMapSent: Record<number, boolean> = {};
-      // Receiving Team Options
-      const swapMapRec: Record<number, boolean> = {};
-
-      for (let i = 0; i < teamTradeDPs.length; i++) {
-        const dpObj = teamTradeDPs[i];
-        if (dpObj.NFLDraftPickID > 0) {
-          swapMapSent[dpObj.NFLDraftPickID] = true;
-        }
-      }
-
-      for (let i = 0; i < recTradeDPs.length; i++) {
-        const dpObj = recTradeDPs[i];
-        if (dpObj.NFLDraftPickID > 0) {
-          swapMapRec[dpObj.NFLDraftPickID] = true;
-        }
-      }
-
-      const allDPs = { ...allDraftPicks };
-      // 3. Place updated draft picks into map
-      // 4. Iterate over draft pick list
-
-      for (let i = 1; i < 8; i++) {
-        for (let j = 0; j < allDPs[i].length; j++) {
-          const pick = allDPs[i][j];
-          if (swapMapSent[pick.ID]) {
-            pick.PreviousTeamID = pick.TeamID;
-            pick.PreviousTeam = pick.Team;
-            pick.TeamID = it.RecepientTeamID;
-          } else if (swapMapRec[pick.ID]) {
-            pick.PreviousTeamID = pick.TeamID;
-            pick.PreviousTeam = pick.Team;
-            pick.TeamID = it.NFLTeamID;
-          }
-        }
-      }
-
-      handleManualDraftStateUpdate({
-        allDraftPicks: allDPs,
-      });
-      // 7. Filter out item from Admin Trades
-      // 8. Save Admin State
-      const filteredQueue = adminTradeQueue.filter((x) => x.ID !== id);
-      const apt = { approvedRequests: filteredQueue };
-      updateApprovedTrades(apt);
+      await updateApprovedTrades({ approvedRequests: filteredQueue as any });
     },
-    [approvedRequests, updateApprovedTrades, proRosterMap, allDraftPicks],
+    [
+      approvedRequests,
+      updateApprovedTrades,
+      allDraftPicks,
+      proTeamMap,
+      handleManualDraftStateUpdate,
+    ],
   );
 
   return {

@@ -255,6 +255,47 @@ export const useDraftTradeState = ({
     [WarRoomCollectionName],
   );
 
+  /**
+   * Resolves the sender's war-room doc ID from a stored proposal.
+   * Handles both new proposals (which have NFLTeam stamped) and old ones
+   * (which only have a numeric TeamID — resolved via teamMap fallback).
+   */
+  const getSenderDocIDFromProposal = useCallback(
+    (item: AnyTradeProposal): string => {
+      const proposal = item as any;
+      if (proposal.NFLTeam) return proposal.NFLTeam;
+      if (isNFL) {
+        const numericID = proposal.NFLTeamID ?? proposal.TeamID ?? 0;
+        if (numericID && teamMap) {
+          const team = teamMap[numericID];
+          if (team) return getTeamWarRoomDocID(team);
+        }
+      }
+      return proposal.TeamID?.toString() ?? "";
+    },
+    [isNFL, teamMap, getTeamWarRoomDocID],
+  );
+
+  /**
+   * Resolves the recipient's war-room doc ID from a stored proposal.
+   * Same fallback logic as getSenderDocIDFromProposal.
+   */
+  const getRecipientDocIDFromProposal = useCallback(
+    (item: AnyTradeProposal): string => {
+      const proposal = item as any;
+      if (proposal.RecepientTeam) return proposal.RecepientTeam;
+      if (isNFL) {
+        const numericID = proposal.RecepientTeamID ?? 0;
+        if (numericID && teamMap) {
+          const team = teamMap[numericID];
+          if (team) return getTeamWarRoomDocID(team);
+        }
+      }
+      return proposal.RecepientTeamID?.toString() ?? "";
+    },
+    [isNFL, teamMap, getTeamWarRoomDocID],
+  );
+
   const selectTradePartner = useCallback((teamID: number) => {
     setTradePartnerTeamID(teamID);
   }, []);
@@ -273,19 +314,21 @@ export const useDraftTradeState = ({
    */
   const handleProposeTrade = useCallback(
     async (modalDTO: AnyTradeProposal) => {
+      const senderDocID = getTeamWarRoomDocID(userTeam);
+      const recipientDocID = tradePartnerTeam
+        ? getTeamWarRoomDocID(tradePartnerTeam)
+        : getRecipientDocID(modalDTO);
+      if (!recipientDocID) return;
+
       const newDTO = stripUndefined({
         ...modalDTO,
         ID: generateUniqueID(),
+        // Stamp war-room doc IDs so accept/reject can resolve them later
+        ...(isNFL
+          ? { NFLTeam: senderDocID, RecepientTeam: recipientDocID }
+          : {}),
       }) as unknown as AnyTradeProposal;
       console.log({ modalDTO, newDTO });
-
-      // Resolve the recipient's war-room doc ID from the already-resolved
-      // tradePartnerTeam rather than from the DTO, since the DTO may only
-      // carry a numeric team ID while Firestore docs are keyed by team name.
-      const recipientDocID = tradePartnerTeam
-        ? getTeamWarRoomDocID(tradePartnerTeam)
-        : getRecipientDocID(newDTO);
-      if (!recipientDocID) return;
 
       // 1. Add to user's sentRequests
       await updateUserWarRoom({ sentRequests: arrayUnion(newDTO) as any });
@@ -296,6 +339,8 @@ export const useDraftTradeState = ({
       });
     },
     [
+      isNFL,
+      userTeam,
       updateUserWarRoom,
       getWarRoomDocRef,
       tradePartnerTeam,
@@ -310,8 +355,8 @@ export const useDraftTradeState = ({
    */
   const handleAcceptTrade = useCallback(
     async (item: AnyTradeProposal) => {
-      const senderDocID = getSenderDocID(item);
-      const recipientDocID = getRecipientDocID(item);
+      const senderDocID = getSenderDocIDFromProposal(item);
+      const recipientDocID = getRecipientDocIDFromProposal(item);
       if (!senderDocID || !recipientDocID) return;
 
       // Remove from sender's sentRequests
@@ -328,7 +373,13 @@ export const useDraftTradeState = ({
       const updatedQueue = [...approvedRequests, item];
       await updateApprovedTrades({ approvedRequests: updatedQueue as any });
     },
-    [approvedRequests, updateApprovedTrades, getWarRoomDocRef],
+    [
+      approvedRequests,
+      updateApprovedTrades,
+      getWarRoomDocRef,
+      getSenderDocIDFromProposal,
+      getRecipientDocIDFromProposal,
+    ],
   );
 
   /**
@@ -337,8 +388,8 @@ export const useDraftTradeState = ({
    */
   const handleRejectTrade = useCallback(
     async (item: AnyTradeProposal) => {
-      const senderDocID = getSenderDocID(item);
-      const recipientDocID = getRecipientDocID(item);
+      const senderDocID = getSenderDocIDFromProposal(item);
+      const recipientDocID = getRecipientDocIDFromProposal(item);
       if (!senderDocID || !recipientDocID) return;
 
       await updateDoc(getWarRoomDocRef(senderDocID), {
@@ -349,7 +400,11 @@ export const useDraftTradeState = ({
         requests: arrayRemove(item),
       });
     },
-    [getWarRoomDocRef],
+    [
+      getWarRoomDocRef,
+      getSenderDocIDFromProposal,
+      getRecipientDocIDFromProposal,
+    ],
   );
 
   /**
