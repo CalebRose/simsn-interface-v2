@@ -172,15 +172,29 @@ const ForumImageExtension = Node.create({
               });
             };
 
-            // Convert non-PNG files to PNG using a canvas.
+            // Web-native types that don't need a canvas round-trip before
+            // upload (imagekitService will still compress them to WebP).
+            const WEB_NATIVE_TYPES = new Set([
+              "image/png",
+              "image/jpeg",
+              "image/gif",
+              "image/webp",
+              "image/avif",
+              "image/svg+xml",
+            ]);
+
+            // Convert exotic formats (BMP, TIFF, etc.) to PNG via canvas so
+            // ImageKit always receives a format it can process.
             const toPng = (src: File): Promise<File> =>
               new Promise((resolve) => {
                 const img = new Image();
                 const tempUrl = URL.createObjectURL(src);
                 img.onload = () => {
                   const canvas = document.createElement("canvas");
-                  canvas.width = img.naturalWidth;
-                  canvas.height = img.naturalHeight;
+                  // SVGs without explicit dimensions report 0×0 — use a
+                  // sensible fallback so the canvas isn't empty.
+                  canvas.width = img.naturalWidth || 800;
+                  canvas.height = img.naturalHeight || 600;
                   const ctx = canvas.getContext("2d")!;
                   ctx.drawImage(img, 0, 0);
                   URL.revokeObjectURL(tempUrl);
@@ -197,6 +211,8 @@ const ForumImageExtension = Node.create({
                   );
                 };
                 img.onerror = () => {
+                  // Browser can't render this format (e.g. HEIC, EMF).
+                  // Pass the original through; imagekitService will handle it.
                   URL.revokeObjectURL(tempUrl);
                   resolve(src);
                 };
@@ -204,8 +220,9 @@ const ForumImageExtension = Node.create({
               });
 
             (async () => {
-              const uploadFile =
-                file.type === "image/png" ? file : await toPng(file);
+              const uploadFile = WEB_NATIVE_TYPES.has(file.type)
+                ? file
+                : await toPng(file);
               const realUrl = await ImageKitService.uploadImage(uploadFile);
 
               // Swap the blob URL for the persisted ImageKit URL.
