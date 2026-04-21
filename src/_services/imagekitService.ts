@@ -64,7 +64,9 @@ async function compressToWebP(
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error("Failed to load image for compression"));
+      // Format not renderable by the browser (e.g. HEIC, TIFF).
+      // Skip compression and upload the original file as-is.
+      resolve(file);
     };
 
     img.src = objectUrl;

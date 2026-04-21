@@ -1240,7 +1240,7 @@ export const BaseballLogos = {
   CHC: `${baseUrl}/logos/ChicagoCubs.png`,
   CWS: `${baseUrl}/logos/ChicagoWhiteSox.png`,
   CIN: `${baseUrl}/logos/CincinnatiReds.png`,
-  CLE: `${baseUrl}/logos/ClevelandGuardians.png`,
+  CLE: `${baseUrl}/logos/cleveland_spiders.png`,
   COL: `${baseUrl}/logos/ColoradoRockies.png`,
   DET: `${baseUrl}/logos/DetroitTigers2.png`,
   HOU: `${baseUrl}/logos/HoustonAstros.png`,
