@@ -416,6 +416,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                   handleOpenAdminProposalsModal={
                     adminProposalsModal.handleOpenModal
                   }
+                  approvedRequestsCount={approvedRequests?.length ?? 0}
                 />
               </>
             )}

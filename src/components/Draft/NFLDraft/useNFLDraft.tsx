@@ -115,6 +115,19 @@ export const useNFLDraft = () => {
   const [seconds, setSeconds] = useState<number>(300);
   const [isPaused, setIsPaused] = useState<boolean>(true);
 
+  // Normalize draftEndTime to a stable primitive so effects only re-run when
+  // the timestamp value actually changes, not on every Firestore snapshot that
+  // returns a new object reference for the same time.
+  const endTimeMs = useMemo(() => {
+    if (!draftEndTime) return 0;
+    if (draftEndTime instanceof Date) return draftEndTime.getTime();
+    if (typeof draftEndTime === "object" && "seconds" in draftEndTime) {
+      const ts = draftEndTime as { seconds: number; nanoseconds?: number };
+      return ts.seconds * 1000 + (ts.nanoseconds || 0) / 1000000;
+    }
+    return new Date(draftEndTime as any).getTime();
+  }, [draftEndTime]);
+
   const draftPicksFromState = useMemo(() => {
     // Transform the allDraftPicks map into a flat array
     let picks: NFLDraftPick[] = [];
@@ -163,72 +176,36 @@ export const useNFLDraft = () => {
     loadDraftData();
   }, []);
 
+  // Sync Firestore → local state when the draft state meaningfully changes
+  // (another admin action, auto-advance, etc.). endTimeMs is a primitive so
+  // this only fires when the timestamp value changes, not on every snapshot.
   useEffect(() => {
-    if (!draftEndTime) return;
+    if (!endTimeMs) return;
     setIsPaused(draftIsPaused);
     setSeconds(draftSeconds);
-  }, [draftEndTime, draftIsPaused, draftSeconds]);
+  }, [endTimeMs, draftIsPaused, draftSeconds]);
 
+  // Wall-clock countdown.
+  // - deps are [isPaused, endTimeMs] only — no `seconds`, so setSeconds inside
+  //   the interval does NOT restart the interval on every tick.
+  // - Math.floor gives clean per-second decrements without the rounding
+  //   artifact that made the timer appear slow near minute boundaries.
+  // - Firestore is only written when the clock hits zero.
   useEffect(() => {
-    if (draftState.isPaused || draftState.seconds <= 0) return;
+    if (isPaused || !endTimeMs) return;
 
     const interval = setInterval(() => {
-      updateDraftState({
-        ...draftState,
-        seconds: Math.max(0, draftState.seconds - 1),
-      });
-    }, 1000);
+      const secondsLeft = Math.floor((endTimeMs - Date.now()) / 1000);
+      setSeconds(secondsLeft >= 0 ? secondsLeft : 0);
 
-    return () => clearInterval(interval);
-  }, [draftState.isPaused, draftState.seconds]);
-
-  // Optimize timer to reduce Firestore calls and ensure multi-user sync
-  useEffect(() => {
-    if (isPaused || seconds <= 0) return;
-    const interval = setInterval(() => {
-      const now = new Date();
-
-      // Handle Firestore Timestamp object properly
-      let endTimeJS: Date;
-      if (draftEndTime instanceof Date) {
-        endTimeJS = draftEndTime;
-      } else if (
-        draftEndTime &&
-        typeof draftEndTime === "object" &&
-        "seconds" in draftEndTime
-      ) {
-        // Firestore Timestamp object
-        const timestamp = draftEndTime as {
-          seconds: number;
-          nanoseconds?: number;
-        };
-        endTimeJS = new Date(
-          timestamp.seconds * 1000 + (timestamp.nanoseconds || 0) / 1000000,
-        );
-      } else if (draftEndTime) {
-        // String or other format
-        endTimeJS = new Date(draftEndTime);
-      } else {
-        // No end time set
-        return;
-      }
-
-      const secondsLeft = Math.round(
-        (endTimeJS.getTime() - now.getTime()) / 1000,
-      );
-      const newSeconds = secondsLeft >= 0 ? secondsLeft : 0;
-      setSeconds(newSeconds);
-
-      // Only update Firestore when time runs out (not every second)
       if (secondsLeft <= 0) {
-        updateDraftState({
-          isPaused: true,
-        });
+        setIsPaused(true);
+        updateDraftState({ isPaused: true });
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isPaused, seconds, draftEndTime, updateDraftState]);
+  }, [isPaused, endTimeMs, updateDraftState]);
 
   const currentPick = useMemo(() => {
     return (
@@ -449,18 +426,18 @@ export const useNFLDraft = () => {
 
   const togglePause = useCallback(async () => {
     if (draftIsPaused) {
-      // Resuming - create new endTime based on current remaining seconds
+      // Resuming — flip local state immediately, then write fresh endTime
       const newEndTime = new Date(Date.now() + seconds * 1000);
       await handleManualDraftStateUpdate({
         isPaused: false,
         endTime: newEndTime,
-        seconds: seconds, // Preserve current countdown
+        seconds,
       });
     } else {
-      // Pausing - save current remaining time
+      // Pausing — stop local timer immediately, persist remaining seconds
       await handleManualDraftStateUpdate({
         isPaused: true,
-        seconds: seconds, // Save current countdown value
+        seconds,
       });
     }
   }, [handleManualDraftStateUpdate, draftIsPaused, seconds]);
@@ -471,7 +448,7 @@ export const useNFLDraft = () => {
     await handleManualDraftStateUpdate({
       isPaused: true,
       endTime: newEndTime,
-      seconds: newSeconds, // Reset to original timer value
+      seconds: newSeconds,
     });
     setSeconds(newSeconds);
     setIsPaused(true);
@@ -763,6 +740,14 @@ export const useNFLDraft = () => {
     async (trade: AnyTradeProposal) => {
       const proposal = trade as any;
 
+      // Pause locally first so the timer useEffect clears its interval
+      // immediately — before any async work starts.
+      const wasRunning = !isPaused;
+      if (wasRunning) {
+        setIsPaused(true);
+        await handleManualDraftStateUpdate({ isPaused: true, seconds });
+      }
+
       // Normalize field names — Firestore proposals use plain-object field names
       // (TeamID, DraftPickID) while class instances use NFLTeamID, NFLDraftPickID.
       const senderTeamID = proposal.NFLTeamID ?? proposal.TeamID ?? 0;
@@ -861,6 +846,8 @@ export const useNFLDraft = () => {
       allDraftPicks,
       proTeamMap,
       handleManualDraftStateUpdate,
+      isPaused,
+      seconds,
     ],
   );
 

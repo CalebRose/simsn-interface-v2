@@ -422,6 +422,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   handleOpenAdminProposalsModal={
                     adminProposalsModal.handleOpenModal
                   }
+                  approvedRequestsCount={approvedRequests?.length ?? 0}
                 />
               </>
             )}
