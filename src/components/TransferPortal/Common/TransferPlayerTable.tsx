@@ -487,7 +487,9 @@ const CFBRow: React.FC<CFBRowProps> = ({
       <TableCell classes="text-xs">{item.State}</TableCell>
       <TableCell classes="text-xs">{getPlayerOverall(item, SimCFB)}</TableCell>
       <TableCell classes="text-xs">{item.PotentialGrade}</TableCell>
-      <TableCell classes="text-xs">{leadingTeams}</TableCell>
+      <TableCell classes="text-xs">
+        <div className="flex flex-row gap-x-1 text-xs">{leadingTeams}</div>
+      </TableCell>
       <TableCell>
         <ButtonGroup classes="flex-nowrap">
           <Button
