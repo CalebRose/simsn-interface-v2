@@ -1,4 +1,4 @@
-import { GameplanData } from '../Gameplan/GameplanHelper';
+import { GameplanData } from "../Gameplan/GameplanHelper";
 
 export interface PlayTypeTotals {
   traditionalRun: number;
@@ -25,101 +25,222 @@ const memoCache = new Map<string, MemoizedCalculations>();
 
 const createCacheKey = (gameplan: GameplanData): string => {
   const keyProps = [
-    gameplan.OffForm1TraditionalRun, gameplan.OffForm1OptionRun, gameplan.OffForm1RPO, gameplan.OffForm1Pass,
-    gameplan.OffForm2TraditionalRun, gameplan.OffForm2OptionRun, gameplan.OffForm2RPO, gameplan.OffForm2Pass,
-    gameplan.OffForm3TraditionalRun, gameplan.OffForm3OptionRun, gameplan.OffForm3RPO, gameplan.OffForm3Pass,
-    gameplan.OffForm4TraditionalRun, gameplan.OffForm4OptionRun, gameplan.OffForm4RPO, gameplan.OffForm4Pass,
-    gameplan.OffForm5TraditionalRun, gameplan.OffForm5OptionRun, gameplan.OffForm5RPO, gameplan.OffForm5Pass,
-    gameplan.RunOutsideLeft, gameplan.RunOutsideRight, gameplan.RunInsideLeft, gameplan.RunInsideRight,
-    gameplan.RunPowerLeft, gameplan.RunPowerRight, gameplan.RunDrawLeft, gameplan.RunDrawRight,
-    gameplan.PassShort, gameplan.PassMedium, gameplan.PassLong, gameplan.PassDeep, gameplan.PassScreen, gameplan.PassPAMedium, gameplan.PassPALong, gameplan.PassPADeep,
-    gameplan.ReadOptionLeft, gameplan.ReadOptionRight, gameplan.SpeedOptionLeft, gameplan.SpeedOptionRight,
-    gameplan.InvertedOptionLeft, gameplan.InvertedOptionRight, gameplan.TripleOptionLeft, gameplan.TripleOptionRight,
-    gameplan.ChoiceOutside, gameplan.ChoiceInside, gameplan.ChoicePower, gameplan.PeekOutside, gameplan.PeekInside, gameplan.PeekPower,
-    gameplan.TargetingWR1, gameplan.TargetingWR2, gameplan.TargetingWR3, gameplan.TargetingWR4, gameplan.TargetingWR5,
-    gameplan.TargetingTE1, gameplan.TargetingTE2, gameplan.TargetingTE3, gameplan.TargetingRB1, gameplan.TargetingRB2, gameplan.TargetingFB1,
-    gameplan.RunnerDistributionQB, gameplan.RunnerDistributionRB1, gameplan.RunnerDistributionRB2, gameplan.RunnerDistributionRB3,
-    gameplan.RunnerDistributionFB1, gameplan.RunnerDistributionFB2, gameplan.RunnerDistributionWR
+    gameplan.OffForm1TraditionalRun,
+    gameplan.OffForm1OptionRun,
+    gameplan.OffForm1RPO,
+    gameplan.OffForm1Pass,
+    gameplan.OffForm2TraditionalRun,
+    gameplan.OffForm2OptionRun,
+    gameplan.OffForm2RPO,
+    gameplan.OffForm2Pass,
+    gameplan.OffForm3TraditionalRun,
+    gameplan.OffForm3OptionRun,
+    gameplan.OffForm3RPO,
+    gameplan.OffForm3Pass,
+    gameplan.OffForm4TraditionalRun,
+    gameplan.OffForm4OptionRun,
+    gameplan.OffForm4RPO,
+    gameplan.OffForm4Pass,
+    gameplan.OffForm5TraditionalRun,
+    gameplan.OffForm5OptionRun,
+    gameplan.OffForm5RPO,
+    gameplan.OffForm5Pass,
+    gameplan.RunOutsideLeft,
+    gameplan.RunOutsideRight,
+    gameplan.RunInsideLeft,
+    gameplan.RunInsideRight,
+    gameplan.RunPowerLeft,
+    gameplan.RunPowerRight,
+    gameplan.RunDrawLeft,
+    gameplan.RunDrawRight,
+    gameplan.PassShort,
+    gameplan.PassMedium,
+    gameplan.PassLong,
+    gameplan.PassDeep,
+    gameplan.PassScreen,
+    gameplan.PassPAMedium,
+    gameplan.PassPALong,
+    gameplan.PassPADeep,
+    gameplan.ReadOptionLeft,
+    gameplan.ReadOptionRight,
+    gameplan.SpeedOptionLeft,
+    gameplan.SpeedOptionRight,
+    gameplan.InvertedOptionLeft,
+    gameplan.InvertedOptionRight,
+    gameplan.TripleOptionLeft,
+    gameplan.TripleOptionRight,
+    gameplan.ChoiceOutside,
+    gameplan.ChoiceInside,
+    gameplan.ChoicePower,
+    gameplan.PeekOutside,
+    gameplan.PeekInside,
+    gameplan.PeekPower,
+    gameplan.TargetingWR1,
+    gameplan.TargetingWR2,
+    gameplan.TargetingWR3,
+    gameplan.TargetingWR4,
+    gameplan.TargetingWR5,
+    gameplan.TargetingTE1,
+    gameplan.TargetingTE2,
+    gameplan.TargetingTE3,
+    gameplan.TargetingRB1,
+    gameplan.TargetingRB2,
+    gameplan.TargetingFB1,
+    gameplan.RunnerDistributionQB,
+    gameplan.RunnerDistributionRB1,
+    gameplan.RunnerDistributionRB2,
+    gameplan.RunnerDistributionRB3,
+    gameplan.RunnerDistributionFB1,
+    gameplan.RunnerDistributionFB2,
+    gameplan.RunnerDistributionWR,
   ];
-  return keyProps.join('|');
+  return keyProps.join("|");
 };
 
-const getMemoizedCalculations = (gameplan: GameplanData): MemoizedCalculations => {
+const getMemoizedCalculations = (
+  gameplan: GameplanData,
+): MemoizedCalculations => {
   const cacheKey = createCacheKey(gameplan);
   const cached = memoCache.get(cacheKey);
-  
+
   if (cached) {
     return cached;
   }
-  
+
   const formationWeights = [
-    gameplan.OffForm1TraditionalRun + gameplan.OffForm1OptionRun + gameplan.OffForm1RPO + gameplan.OffForm1Pass,
-    gameplan.OffForm2TraditionalRun + gameplan.OffForm2OptionRun + gameplan.OffForm2RPO + gameplan.OffForm2Pass,
-    gameplan.OffForm3TraditionalRun + gameplan.OffForm3OptionRun + gameplan.OffForm3RPO + gameplan.OffForm3Pass,
-    gameplan.OffForm4TraditionalRun + gameplan.OffForm4OptionRun + gameplan.OffForm4RPO + gameplan.OffForm4Pass,
-    gameplan.OffForm5TraditionalRun + gameplan.OffForm5OptionRun + gameplan.OffForm5RPO + gameplan.OffForm5Pass
+    gameplan.OffForm1TraditionalRun +
+      gameplan.OffForm1OptionRun +
+      gameplan.OffForm1RPO +
+      gameplan.OffForm1Pass,
+    gameplan.OffForm2TraditionalRun +
+      gameplan.OffForm2OptionRun +
+      gameplan.OffForm2RPO +
+      gameplan.OffForm2Pass,
+    gameplan.OffForm3TraditionalRun +
+      gameplan.OffForm3OptionRun +
+      gameplan.OffForm3RPO +
+      gameplan.OffForm3Pass,
+    gameplan.OffForm4TraditionalRun +
+      gameplan.OffForm4OptionRun +
+      gameplan.OffForm4RPO +
+      gameplan.OffForm4Pass,
+    gameplan.OffForm5TraditionalRun +
+      gameplan.OffForm5OptionRun +
+      gameplan.OffForm5RPO +
+      gameplan.OffForm5Pass,
   ];
-  
+
   const playTypeTotals = {
-    traditionalRun: 
-      gameplan.OffForm1TraditionalRun + gameplan.OffForm2TraditionalRun + 
-      gameplan.OffForm3TraditionalRun + gameplan.OffForm4TraditionalRun + 
+    traditionalRun:
+      gameplan.OffForm1TraditionalRun +
+      gameplan.OffForm2TraditionalRun +
+      gameplan.OffForm3TraditionalRun +
+      gameplan.OffForm4TraditionalRun +
       gameplan.OffForm5TraditionalRun,
-    optionRun: 
-      gameplan.OffForm1OptionRun + gameplan.OffForm2OptionRun + 
-      gameplan.OffForm3OptionRun + gameplan.OffForm4OptionRun + 
+    optionRun:
+      gameplan.OffForm1OptionRun +
+      gameplan.OffForm2OptionRun +
+      gameplan.OffForm3OptionRun +
+      gameplan.OffForm4OptionRun +
       gameplan.OffForm5OptionRun,
-    rpo: 
-      gameplan.OffForm1RPO + gameplan.OffForm2RPO + 
-      gameplan.OffForm3RPO + gameplan.OffForm4RPO + 
+    rpo:
+      gameplan.OffForm1RPO +
+      gameplan.OffForm2RPO +
+      gameplan.OffForm3RPO +
+      gameplan.OffForm4RPO +
       gameplan.OffForm5RPO,
-    pass: 
-      gameplan.OffForm1Pass + gameplan.OffForm2Pass + 
-      gameplan.OffForm3Pass + gameplan.OffForm4Pass + 
-      gameplan.OffForm5Pass
+    pass:
+      gameplan.OffForm1Pass +
+      gameplan.OffForm2Pass +
+      gameplan.OffForm3Pass +
+      gameplan.OffForm4Pass +
+      gameplan.OffForm5Pass,
   };
-  
+
   const calculations: MemoizedCalculations = {
     playTypeTotals,
     formationWeights,
-    runDistribution: gameplan.RunOutsideLeft + gameplan.RunOutsideRight + 
-                    gameplan.RunInsideLeft + gameplan.RunInsideRight + 
-                    gameplan.RunPowerLeft + gameplan.RunPowerRight + 
-                    gameplan.RunDrawLeft + gameplan.RunDrawRight,
-    passDistribution: gameplan.PassShort + gameplan.PassMedium + gameplan.PassLong + gameplan.PassDeep + 
-                     gameplan.PassScreen + gameplan.PassPAMedium + gameplan.PassPALong + gameplan.PassPADeep,
-    optionDistribution: gameplan.ReadOptionLeft + gameplan.ReadOptionRight + 
-                       gameplan.SpeedOptionLeft + gameplan.SpeedOptionRight + 
-                       gameplan.InvertedOptionLeft + gameplan.InvertedOptionRight + 
-                       gameplan.TripleOptionLeft + gameplan.TripleOptionRight,
-    rpoDistribution: gameplan.ChoiceOutside + gameplan.ChoiceInside + gameplan.ChoicePower + 
-                    gameplan.PeekOutside + gameplan.PeekInside + gameplan.PeekPower,
-    targetingDistribution: gameplan.TargetingWR1 + gameplan.TargetingWR2 + gameplan.TargetingWR3 + 
-                          gameplan.TargetingWR4 + gameplan.TargetingWR5 + gameplan.TargetingTE1 + 
-                          gameplan.TargetingTE2 + gameplan.TargetingTE3 + gameplan.TargetingRB1 + 
-                          gameplan.TargetingRB2 + gameplan.TargetingFB1,
-    runnerDistribution: gameplan.RunnerDistributionQB + gameplan.RunnerDistributionRB1 + 
-                       gameplan.RunnerDistributionRB2 + gameplan.RunnerDistributionRB3 + 
-                       gameplan.RunnerDistributionFB1 + gameplan.RunnerDistributionFB2 + 
-                       gameplan.RunnerDistributionWR,
-    totalFormationWeight: formationWeights.reduce((sum, weight) => sum + weight, 0),
-    usedFormationsCount: formationWeights.filter(weight => weight > 0).length,
-    totalPlayTypeWeight: playTypeTotals.traditionalRun + playTypeTotals.optionRun + playTypeTotals.rpo + playTypeTotals.pass
+    runDistribution:
+      gameplan.RunOutsideLeft +
+      gameplan.RunOutsideRight +
+      gameplan.RunInsideLeft +
+      gameplan.RunInsideRight +
+      gameplan.RunPowerLeft +
+      gameplan.RunPowerRight +
+      gameplan.RunDrawLeft +
+      gameplan.RunDrawRight,
+    passDistribution:
+      gameplan.PassShort +
+      gameplan.PassMedium +
+      gameplan.PassLong +
+      gameplan.PassDeep +
+      gameplan.PassScreen +
+      gameplan.PassPAMedium +
+      gameplan.PassPALong +
+      gameplan.PassPADeep,
+    optionDistribution:
+      gameplan.ReadOptionLeft +
+      gameplan.ReadOptionRight +
+      gameplan.SpeedOptionLeft +
+      gameplan.SpeedOptionRight +
+      gameplan.InvertedOptionLeft +
+      gameplan.InvertedOptionRight +
+      gameplan.TripleOptionLeft +
+      gameplan.TripleOptionRight,
+    rpoDistribution:
+      gameplan.ChoiceOutside +
+      gameplan.ChoiceInside +
+      gameplan.ChoicePower +
+      gameplan.PeekOutside +
+      gameplan.PeekInside +
+      gameplan.PeekPower,
+    targetingDistribution:
+      gameplan.TargetingWR1 +
+      gameplan.TargetingWR2 +
+      gameplan.TargetingWR3 +
+      gameplan.TargetingWR4 +
+      gameplan.TargetingWR5 +
+      gameplan.TargetingTE1 +
+      gameplan.TargetingTE2 +
+      gameplan.TargetingTE3 +
+      gameplan.TargetingRB1 +
+      gameplan.TargetingRB2 +
+      gameplan.TargetingFB1,
+    runnerDistribution:
+      gameplan.RunnerDistributionQB +
+      gameplan.RunnerDistributionRB1 +
+      gameplan.RunnerDistributionRB2 +
+      gameplan.RunnerDistributionRB3 +
+      gameplan.RunnerDistributionFB1 +
+      gameplan.RunnerDistributionFB2 +
+      gameplan.RunnerDistributionWR,
+    totalFormationWeight: formationWeights.reduce(
+      (sum, weight) => sum + weight,
+      0,
+    ),
+    usedFormationsCount: formationWeights.filter((weight) => weight > 0).length,
+    totalPlayTypeWeight:
+      playTypeTotals.traditionalRun +
+      playTypeTotals.optionRun +
+      playTypeTotals.rpo +
+      playTypeTotals.pass,
   };
-  
+
   memoCache.set(cacheKey, calculations);
-  
+
   if (memoCache.size > 100) {
     const firstKey = memoCache.keys().next().value;
     if (firstKey) {
       memoCache.delete(firstKey);
     }
   }
-  
+
   return calculations;
 };
 
-export const calculatePlayTypeTotals = (gameplan: GameplanData): PlayTypeTotals => {
+export const calculatePlayTypeTotals = (
+  gameplan: GameplanData,
+): PlayTypeTotals => {
   return getMemoizedCalculations(gameplan).playTypeTotals;
 };
 
@@ -127,39 +248,57 @@ export const calculateFormationWeights = (gameplan: GameplanData): number[] => {
   return getMemoizedCalculations(gameplan).formationWeights;
 };
 
-export const calculateRunDistributionTotal = (gameplan: GameplanData): number => {
+export const calculateRunDistributionTotal = (
+  gameplan: GameplanData,
+): number => {
   return getMemoizedCalculations(gameplan).runDistribution;
 };
 
-export const calculatePassDistributionTotal = (gameplan: GameplanData): number => {
+export const calculatePassDistributionTotal = (
+  gameplan: GameplanData,
+): number => {
   return getMemoizedCalculations(gameplan).passDistribution;
 };
 
-export const calculateOptionDistributionTotal = (gameplan: GameplanData): number => {
+export const calculateOptionDistributionTotal = (
+  gameplan: GameplanData,
+): number => {
   return getMemoizedCalculations(gameplan).optionDistribution;
 };
 
-export const calculateRPODistributionTotal = (gameplan: GameplanData): number => {
+export const calculateRPODistributionTotal = (
+  gameplan: GameplanData,
+): number => {
   return getMemoizedCalculations(gameplan).rpoDistribution;
 };
 
-export const calculateTargetingDistributionTotal = (gameplan: GameplanData): number => {
+export const calculateTargetingDistributionTotal = (
+  gameplan: GameplanData,
+): number => {
   return getMemoizedCalculations(gameplan).targetingDistribution;
 };
 
-export const calculateRunnerDistributionTotal = (gameplan: GameplanData): number => {
+export const calculateRunnerDistributionTotal = (
+  gameplan: GameplanData,
+): number => {
   return getMemoizedCalculations(gameplan).runnerDistribution;
 };
 
-export const calculateTotalFormationWeight = (gameplan: GameplanData): number => {
+export const calculateTotalFormationWeight = (
+  gameplan: GameplanData,
+): number => {
   return getMemoizedCalculations(gameplan).totalFormationWeight;
 };
 
-export const calculateUsedFormationsCount = (gameplan: GameplanData): number => {
+export const calculateUsedFormationsCount = (
+  gameplan: GameplanData,
+): number => {
   return getMemoizedCalculations(gameplan).usedFormationsCount;
 };
 
-export const calculateTotalPlayTypeWeight = (gameplan: GameplanData): number => {
+export const calculateTotalPlayTypeWeight = (
+  gameplan: GameplanData,
+): number => {
   return getMemoizedCalculations(gameplan).totalPlayTypeWeight;
 };
 
@@ -176,83 +315,157 @@ export const calculateAllDistributionTotals = (gameplan: GameplanData) => {
     runnerDistribution: memoized.runnerDistribution,
     totalFormationWeight: memoized.totalFormationWeight,
     usedFormationsCount: memoized.usedFormationsCount,
-    totalPlayTypeWeight: memoized.totalPlayTypeWeight
+    totalPlayTypeWeight: memoized.totalPlayTypeWeight,
   };
 };
 
-export const getPassTypeRanges = (passType: string): { scheme: string; max: number; note?: string }[] => {
+export const getPassTypeRanges = (
+  passType: string,
+): { scheme: string; max: number; note?: string }[] => {
   const ranges = [];
-  
+
   switch (passType) {
-    case 'Short':
+    case "Short":
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
-        { scheme: 'Pro, Power Run, I Option', max: 45 },
-        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 50 },
-        { scheme: 'Spread Option, Pistol', max: 50 }
+        {
+          scheme: "Air Raid, Vertical, West Coast, Run and Shoot",
+          max: 50,
+          note: "Combined with PA Short: max 50%",
+        },
+        {
+          scheme: "Pro, Power Run, I Option",
+          max: 45,
+          note: "Combined with PA Short: max 45%",
+        },
+        {
+          scheme: "Double Wing Option, Wing-T, Flexbone, Wishbone",
+          max: 50,
+          note: "Combined with PA Short: max 50%",
+        },
+        {
+          scheme: "Spread Option, Pistol",
+          max: 50,
+          note: "Combined with PA Short: max 50%",
+        },
       );
       break;
-    case 'Medium':
+    case "Medium":
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
-        { scheme: 'Pro, Power Run, I Option', max: 45 },
-        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 50 },
-        { scheme: 'Spread Option, Pistol', max: 50 }
+        {
+          scheme: "Air Raid, Vertical, West Coast, Run and Shoot",
+          max: 50,
+          note: "Combined with PA Medium: max 50%",
+        },
+        {
+          scheme: "Pro, Power Run, I Option",
+          max: 45,
+          note: "PA Medium separate limit: max 20%",
+        },
+        {
+          scheme: "Double Wing Option, Wing-T, Flexbone, Wishbone",
+          max: 50,
+          note: "PA Medium separate limit: max 30%",
+        },
+        {
+          scheme: "Spread Option, Pistol",
+          max: 50,
+          note: "PA Medium separate limit: max 25%",
+        },
       );
       break;
-    case 'Long':
+    case "Long":
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
-        { scheme: 'Pro, Power Run, I Option', max: 45 },
-        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 50 },
-        { scheme: 'Spread Option, Pistol', max: 50 }
+        { scheme: "Air Raid, Vertical, West Coast, Run and Shoot", max: 50 },
+        { scheme: "Pro, Power Run, I Option", max: 45 },
+        { scheme: "Double Wing Option, Wing-T, Flexbone, Wishbone", max: 50 },
+        { scheme: "Spread Option, Pistol", max: 50 },
       );
       break;
-    case 'Deep':
+    case "Deep":
       ranges.push(
-        { scheme: 'Air Raid, Vertical', max: 15, note: 'Combined with PA Deep: max 15%' },
-        { scheme: 'West Coast, Run and Shoot', max: 10, note: 'Combined with PA Deep: max 10%' },
-        { scheme: 'Pro, Power Run, I Option', max: 10, note: 'Combined with PA Deep: max 10%' },
-        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 10, note: 'Combined with PA Deep: max 10%' },
-        { scheme: 'Spread Option, Pistol', max: 10, note: 'Combined with PA Deep: max 10%' }
+        {
+          scheme: "Air Raid, Vertical",
+          max: 15,
+          note: "Combined with PA Deep: max 15%",
+        },
+        {
+          scheme: "West Coast, Run and Shoot",
+          max: 10,
+          note: "Combined with PA Deep: max 10%",
+        },
+        {
+          scheme: "Pro, Power Run, I Option",
+          max: 10,
+          note: "Combined with PA Deep: max 10%",
+        },
+        {
+          scheme: "Double Wing Option, Wing-T, Flexbone, Wishbone",
+          max: 10,
+          note: "Combined with PA Deep: max 10%",
+        },
+        {
+          scheme: "Spread Option, Pistol",
+          max: 10,
+          note: "Combined with PA Deep: max 10%",
+        },
       );
       break;
-    case 'Screen':
+    case "Screen":
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 20 },
-        { scheme: 'Pro, Power Run, I Option', max: 20 },
-        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 20 },
-        { scheme: 'Spread Option, Pistol', max: 20 }
+        { scheme: "Air Raid, Vertical, West Coast, Run and Shoot", max: 20 },
+        { scheme: "Pro, Power Run, I Option", max: 20 },
+        { scheme: "Double Wing Option, Wing-T, Flexbone, Wishbone", max: 20 },
+        { scheme: "Spread Option, Pistol", max: 20 },
       );
       break;
-    case 'PAMedium':
+    case "PAMedium":
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
-        { scheme: 'Pro, Power Run, I Option', max: 20 },
-        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 30 },
-        { scheme: 'Spread Option, Pistol', max: 25 }
+        { scheme: "Air Raid, Vertical, West Coast, Run and Shoot", max: 50 },
+        { scheme: "Pro, Power Run, I Option", max: 20 },
+        { scheme: "Double Wing Option, Wing-T, Flexbone, Wishbone", max: 30 },
+        { scheme: "Spread Option, Pistol", max: 25 },
       );
       break;
-    case 'PALong':
+    case "PALong":
       ranges.push(
-        { scheme: 'Air Raid, Vertical, West Coast, Run and Shoot', max: 50 },
-        { scheme: 'Pro, Power Run, I Option', max: 20 },
-        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 30 },
-        { scheme: 'Spread Option, Pistol', max: 25 }
+        { scheme: "Air Raid, Vertical, West Coast, Run and Shoot", max: 50 },
+        { scheme: "Pro, Power Run, I Option", max: 20 },
+        { scheme: "Double Wing Option, Wing-T, Flexbone, Wishbone", max: 30 },
+        { scheme: "Spread Option, Pistol", max: 25 },
       );
       break;
-    case 'PADeep':
+    case "PADeep":
       ranges.push(
-        { scheme: 'Air Raid, Vertical', max: 15, note: 'Combined with Deep: max 15%' },
-        { scheme: 'West Coast, Run and Shoot', max: 10, note: 'Combined with Deep: max 10%' },
-        { scheme: 'Pro, Power Run, I Option', max: 10, note: 'Combined with Deep: max 10%' },
-        { scheme: 'Double Wing Option, Wing-T, Flexbone, Wishbone', max: 10, note: 'Combined with Deep: max 10%' },
-        { scheme: 'Spread Option, Pistol', max: 10, note: 'Combined with Deep: max 10%' }
+        {
+          scheme: "Air Raid, Vertical",
+          max: 15,
+          note: "Combined with Deep: max 15%",
+        },
+        {
+          scheme: "West Coast, Run and Shoot",
+          max: 10,
+          note: "Combined with Deep: max 10%",
+        },
+        {
+          scheme: "Pro, Power Run, I Option",
+          max: 10,
+          note: "Combined with Deep: max 10%",
+        },
+        {
+          scheme: "Double Wing Option, Wing-T, Flexbone, Wishbone",
+          max: 10,
+          note: "Combined with Deep: max 10%",
+        },
+        {
+          scheme: "Spread Option, Pistol",
+          max: 10,
+          note: "Combined with Deep: max 10%",
+        },
       );
       break;
     default:
       break;
   }
-  
+
   return ranges;
 };
