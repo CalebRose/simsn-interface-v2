@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
@@ -19,7 +19,7 @@ import {
 import routes from "../../_constants/routes";
 import { MEDIA_TAGS, MediaTag, isMediaForum } from "../../_constants/mediaTags";
 
-const MAX_TITLE = 75;
+const MAX_TITLE = 100;
 const MAX_POLL_OPTIONS = 10;
 
 export const CreateThreadPage: React.FC = () => {
@@ -42,6 +42,7 @@ export const CreateThreadPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMediaTags, setSelectedMediaTags] = useState<MediaTag[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const bodyEditorRef = useRef<{ focus: () => void }>(null);
 
   useEffect(() => {
     if (forums.length === 0) loadForums();
@@ -327,6 +328,12 @@ export const CreateThreadPage: React.FC = () => {
               maxLength={MAX_TITLE}
               className="bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
               disabled={isSubmitting}
+              onKeyDown={(e) => {
+                if (e.key === "Tab") {
+                  e.preventDefault();
+                  bodyEditorRef.current?.focus();
+                }
+              }}
             />
             <Text variant="xs" classes="text-gray-500 text-right">
               {title.length}/{MAX_TITLE}
@@ -409,6 +416,7 @@ export const CreateThreadPage: React.FC = () => {
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium">Body</span>
             <ForumEditor
+              ref={bodyEditorRef}
               placeholder="Write the opening post…"
               onSubmit={handleSubmit}
               onCancel={() => navigate(-1)}

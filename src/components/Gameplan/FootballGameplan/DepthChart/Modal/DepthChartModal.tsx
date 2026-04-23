@@ -1,20 +1,22 @@
-import React, { useState } from 'react';
-import { CollegePlayer, NFLPlayer } from '../../../../../models/footballModels';
-import { SimCFB, SimNFL, ManagementCard } from '../../../../../_constants/constants';
-import { Text } from '../../../../../_design/Typography';
-import { Modal } from '../../../../../_design/Modal';
-import { Button } from '../../../../../_design/Buttons';
-import DepthChartCard from '../../Common/DepthChartCard';
-import PlayerAttributeCard from '../../Common/PlayerAttributeCard';
+import React, { useState } from "react";
+import { CollegePlayer, NFLPlayer } from "../../../../../models/footballModels";
+import {
+  SimCFB,
+  SimNFL,
+  ManagementCard,
+} from "../../../../../_constants/constants";
+import { Text } from "../../../../../_design/Typography";
+import { Modal } from "../../../../../_design/Modal";
+import { Button } from "../../../../../_design/Buttons";
+import DepthChartCard from "../../Common/DepthChartCard";
+import PlayerAttributeCard from "../../Common/PlayerAttributeCard";
 import {
   getUnassignedPlayersForPosition,
   getAllAssignedPlayersForPosition,
   getOverarchingPosition,
-  isPlayerOnTeam
-} from './DepthChartModalHelper';
-import { 
-  ArrowsUpDown 
-} from '../../../../../_design/Icons';
+  isPlayerOnTeam,
+} from "./DepthChartModalHelper";
+import { ArrowsUpDown } from "../../../../../_design/Icons";
 
 interface DepthChartModalProps {
   isOpen: boolean;
@@ -24,8 +26,18 @@ interface DepthChartModalProps {
   depthChart: any;
   team: any;
   league: typeof SimCFB | typeof SimNFL;
-  onPlayerMove: (playerId: number, position: string, positionLevel: number) => void;
-  onPlayerSwap: (fromPlayerId: number, toPlayerId: number, position: string, fromLevel: number, toLevel: number) => void;
+  onPlayerMove: (
+    playerId: number,
+    position: string,
+    positionLevel: number,
+  ) => void;
+  onPlayerSwap: (
+    fromPlayerId: number,
+    toPlayerId: number,
+    position: string,
+    fromLevel: number,
+    toLevel: number,
+  ) => void;
 }
 
 const DepthChartModal: React.FC<DepthChartModalProps> = ({
@@ -37,12 +49,13 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
   team,
   league,
   onPlayerMove,
-  onPlayerSwap
+  onPlayerSwap,
 }) => {
   const [showAttributes, setShowAttributes] = useState(false);
   const [swapTargetLevel, setSwapTargetLevel] = useState<number | null>(null);
-  const [selectedAvailablePlayer, setSelectedAvailablePlayer] = useState<(CollegePlayer | NFLPlayer) | null>(null);
-
+  const [selectedAvailablePlayer, setSelectedAvailablePlayer] = useState<
+    (CollegePlayer | NFLPlayer) | null
+  >(null);
 
   const handlePlayerSelect = (player: CollegePlayer | NFLPlayer) => {
     if (swapTargetLevel !== null) {
@@ -68,7 +81,9 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
 
   const handlePositionLevelClick = (level: number) => {
     if (selectedAvailablePlayer) {
-      const playerId = (selectedAvailablePlayer as any).PlayerID || (selectedAvailablePlayer as any).ID;
+      const playerId =
+        (selectedAvailablePlayer as any).PlayerID ||
+        (selectedAvailablePlayer as any).ID;
       onPlayerMove(playerId, modalPosition, level);
       setSelectedAvailablePlayer(null);
       setSwapTargetLevel(null);
@@ -79,34 +94,52 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
 
   const handleSwapBetweenLevels = (fromLevel: number, toLevel: number) => {
     if (modalPosition) {
-      const allAssigned = getAllAssignedPlayersForPosition(modalPosition, players, depthChart);
-      const fromPlayer = allAssigned.find(p => p.PositionLevel === fromLevel);
-      const toPlayer = allAssigned.find(p => p.PositionLevel === toLevel);
-      
+      const allAssigned = getAllAssignedPlayersForPosition(
+        modalPosition,
+        players,
+        depthChart,
+      );
+      const fromPlayer = allAssigned.find((p) => p.PositionLevel === fromLevel);
+      const toPlayer = allAssigned.find((p) => p.PositionLevel === toLevel);
+
       const hasFromPlayer = fromPlayer && fromPlayer.playerData;
       const hasToPlayer = toPlayer && toPlayer.playerData;
-      
+
       if (hasFromPlayer && hasToPlayer) {
-        const fromPlayerId = (fromPlayer.playerData as any).PlayerID || (fromPlayer.playerData as any).ID;
-        const toPlayerId = (toPlayer.playerData as any).PlayerID || (toPlayer.playerData as any).ID;
-        
+        const fromPlayerId =
+          (fromPlayer.playerData as any).PlayerID ||
+          (fromPlayer.playerData as any).ID;
+        const toPlayerId =
+          (toPlayer.playerData as any).PlayerID ||
+          (toPlayer.playerData as any).ID;
+
         const fromPlayerOnTeam = isPlayerOnTeam(fromPlayerId, players);
         const toPlayerOnTeam = isPlayerOnTeam(toPlayerId, players);
-        
+
         if (fromPlayerOnTeam && toPlayerOnTeam) {
-          onPlayerSwap(fromPlayerId, toPlayerId, modalPosition, fromLevel, toLevel);
+          onPlayerSwap(
+            fromPlayerId,
+            toPlayerId,
+            modalPosition,
+            fromLevel,
+            toLevel,
+          );
         } else if (fromPlayerOnTeam && !toPlayerOnTeam) {
           onPlayerMove(fromPlayerId, modalPosition, toLevel);
         } else {
-          console.warn('Cannot swap - from player is no longer on team');
+          console.warn("Cannot swap - from player is no longer on team");
         }
       } else if (hasFromPlayer && !hasToPlayer) {
-        const fromPlayerId = (fromPlayer.playerData as any).PlayerID || (fromPlayer.playerData as any).ID;
+        const fromPlayerId =
+          (fromPlayer.playerData as any).PlayerID ||
+          (fromPlayer.playerData as any).ID;
         if (isPlayerOnTeam(fromPlayerId, players)) {
           onPlayerMove(fromPlayerId, modalPosition, toLevel);
         }
       } else if (!hasFromPlayer && hasToPlayer) {
-        const toPlayerId = (toPlayer.playerData as any).PlayerID || (toPlayer.playerData as any).ID;
+        const toPlayerId =
+          (toPlayer.playerData as any).PlayerID ||
+          (toPlayer.playerData as any).ID;
         if (isPlayerOnTeam(toPlayerId, players)) {
           onPlayerMove(toPlayerId, modalPosition, fromLevel);
         }
@@ -154,9 +187,18 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
       </div>
       <div className="max-h-[70vh] overflow-y-auto space-y-6">
         {(() => {
-          const availablePlayers = getUnassignedPlayersForPosition(modalPosition, players, depthChart, league);
-          const allAssignedPlayers = getAllAssignedPlayersForPosition(modalPosition, players, depthChart);
-          
+          const availablePlayers = getUnassignedPlayersForPosition(
+            modalPosition,
+            players,
+            depthChart,
+            league,
+          );
+          const allAssignedPlayers = getAllAssignedPlayersForPosition(
+            modalPosition,
+            players,
+            depthChart,
+          );
+
           return (
             <div className="space-y-2">
               <div>
@@ -171,41 +213,57 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
                 <div className="mb-4 p-3 bg-blue-900 bg-opacity-50 rounded-lg">
                   {swapTargetLevel && selectedAvailablePlayer ? (
                     <Text variant="body" classes="text-green-300">
-                      Ready to swap! {selectedAvailablePlayer.FirstName} {selectedAvailablePlayer.LastName} → {modalPosition}{swapTargetLevel}
+                      Ready to swap! {selectedAvailablePlayer.FirstName}{" "}
+                      {selectedAvailablePlayer.LastName} → {modalPosition}
+                      {swapTargetLevel}
                     </Text>
                   ) : swapTargetLevel ? (
                     <Text variant="body" classes="text-blue-300">
-                      {modalPosition}{swapTargetLevel} selected. Now select an available player to swap.
+                      {modalPosition}
+                      {swapTargetLevel} selected. Now select an available player
+                      to swap.
                     </Text>
                   ) : selectedAvailablePlayer ? (
                     <Text variant="body" classes="text-blue-300">
-                      {selectedAvailablePlayer.FirstName} {selectedAvailablePlayer.LastName} selected. Now select a position level.
+                      {selectedAvailablePlayer.FirstName}{" "}
+                      {selectedAvailablePlayer.LastName} selected. Now select a
+                      position level.
                     </Text>
                   ) : (
                     <Text variant="body" classes="text-gray-300">
-                      Select a position level or an available player to begin swapping.
+                      Select a position level or an available player to begin
+                      swapping.
                     </Text>
                   )}
                 </div>
-                <div className={`grid gap-3 ${
-                  showAttributes 
-                    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5' 
-                    : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'
-                }`}>
+                <div
+                  className={`grid gap-3 ${
+                    showAttributes
+                      ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                      : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+                  }`}
+                >
                   {allAssignedPlayers.map((assignedPlayer: any) => (
                     <div
                       key={`swap-${modalPosition}-${assignedPlayer.PositionLevel}`}
                       className={`relative cursor-pointer transform scale-90 hover:scale-95 transition-transform duration-200 ${
-                        swapTargetLevel === assignedPlayer.PositionLevel ? 'animate-pulse rounded-lg scale-95' : ''
+                        swapTargetLevel === assignedPlayer.PositionLevel
+                          ? "animate-pulse rounded-lg scale-95"
+                          : ""
                       }`}
                       onClick={() => {
                         if (swapTargetLevel === assignedPlayer.PositionLevel) {
                           setSwapTargetLevel(null);
                         } else if (swapTargetLevel !== null) {
-                          handleSwapBetweenLevels(swapTargetLevel, assignedPlayer.PositionLevel);
+                          handleSwapBetweenLevels(
+                            swapTargetLevel,
+                            assignedPlayer.PositionLevel,
+                          );
                           setSwapTargetLevel(null);
                         } else {
-                          handlePositionLevelClick(assignedPlayer.PositionLevel);
+                          handlePositionLevelClick(
+                            assignedPlayer.PositionLevel,
+                          );
                         }
                       }}
                     >
@@ -231,6 +289,7 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
                               team={team}
                               league={league}
                               depthChartManager={true}
+                              position={getOverarchingPosition(modalPosition)}
                               size="sm"
                               classes="cursor-pointer hover:shadow-lg rounded-lg items-center justify-center"
                             />
@@ -242,13 +301,20 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
                             </Text>
                           </div>
                         )}
-                        <div className={`absolute -top-5 -left-1 text-white rounded-full w-6 h-6 p-4 flex items-center justify-center text-xs font-bold ${
-                          swapTargetLevel === assignedPlayer.PositionLevel ? 'bg-blue-400' : 'bg-blue-500'
-                        }`}>
-                          {modalPosition}{assignedPlayer.PositionLevel}
+                        <div
+                          className={`absolute -top-5 -left-1 text-white rounded-full w-6 h-6 p-4 flex items-center justify-center text-xs font-bold ${
+                            swapTargetLevel === assignedPlayer.PositionLevel
+                              ? "bg-blue-400"
+                              : "bg-blue-500"
+                          }`}
+                        >
+                          {modalPosition}
+                          {assignedPlayer.PositionLevel}
                         </div>
                         <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold">
-                          {swapTargetLevel === assignedPlayer.PositionLevel ? 'SELECTED' : 'SWAP'}
+                          {swapTargetLevel === assignedPlayer.PositionLevel
+                            ? "SELECTED"
+                            : "SWAP"}
                         </div>
                       </div>
                     </div>
@@ -260,21 +326,28 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
                   <Text variant="h5" classes="text-white font-semibold mb-4">
                     Available Players
                   </Text>
-                  <div className={`grid gap-3 ${
-                    showAttributes 
-                      ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5' 
-                      : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6'
-                  }`}>
+                  <div
+                    className={`grid gap-3 ${
+                      showAttributes
+                        ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                        : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+                    }`}
+                  >
                     {availablePlayers.map((player) => {
-                      const playerId = (player as any).PlayerID || (player as any).ID;
-                      const isSelected = selectedAvailablePlayer && 
-                        ((selectedAvailablePlayer as any).PlayerID || (selectedAvailablePlayer as any).ID) === playerId;
-                      
+                      const playerId =
+                        (player as any).PlayerID || (player as any).ID;
+                      const isSelected =
+                        selectedAvailablePlayer &&
+                        ((selectedAvailablePlayer as any).PlayerID ||
+                          (selectedAvailablePlayer as any).ID) === playerId;
+
                       return (
                         <div
                           key={playerId}
                           className={`cursor-pointer transform scale-95 hover:scale-100 transition-transform duration-200 ${
-                            isSelected ? 'animate-pulse rounded-lg scale-95' : ''
+                            isSelected
+                              ? "animate-pulse rounded-lg scale-95"
+                              : ""
                           }`}
                           onClick={() => handleAvailablePlayerClick(player)}
                         >
@@ -287,7 +360,9 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
                               category={ManagementCard}
                               size="sm"
                               classes="cursor-pointer hover:shadow-lg"
-                              onPlayerSelect={() => handleAvailablePlayerClick(player)}
+                              onPlayerSelect={() =>
+                                handleAvailablePlayerClick(player)
+                              }
                             />
                           ) : (
                             <DepthChartCard

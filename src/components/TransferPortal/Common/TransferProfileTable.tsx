@@ -196,6 +196,7 @@ const getTransferProfileTableColumns = (
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
+      { header: "Year", accessor: "Year" },
       { header: "⭐", accessor: "Stars" },
       { header: "Region", accessor: "State" },
       { header: "Ovr", accessor: "OverallGrade" },
@@ -962,6 +963,9 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
       </TableCell>
       <TableCell>
         <span className={`text-xs`}>{player.Archetype}</span>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{player.Year}</span>
       </TableCell>
       <TableCell>
         <span className={`text-xs`}>{player.Stars}</span>

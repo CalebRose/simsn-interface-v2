@@ -1,4 +1,10 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useRef,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import {
   useEditor,
   EditorContent,
@@ -366,6 +372,10 @@ interface ForumEditorProps {
   maxLength?: number;
 }
 
+export interface ForumEditorHandle {
+  focus: () => void;
+}
+
 /** Converts a plain string into a minimal RichTextDocument. */
 export function plaintextToDoc(text: string): RichTextDocument {
   const paragraphs = text.split("\n").map((line) => ({
@@ -547,461 +557,479 @@ const Divider = () => (
 );
 
 // ── Main component ────────────────────────────────────────────────────────────
-export const ForumEditor: React.FC<ForumEditorProps> = ({
-  initialText = "",
-  initialDoc,
-  placeholder = "Write your post…",
-  onSubmit,
-  onCancel,
-  submitLabel = "Post",
-  isSubmitting = false,
-  maxLength = MAX_DEFAULT,
-}) => {
-  const initialContent =
-    initialDoc ?? (initialText ? plaintextToDoc(initialText) : undefined);
+export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
+  function ForumEditor(
+    {
+      initialText = "",
+      initialDoc,
+      placeholder = "Write your post…",
+      onSubmit,
+      onCancel,
+      submitLabel = "Post",
+      isSubmitting = false,
+      maxLength = MAX_DEFAULT,
+    },
+    ref,
+  ) {
+    const initialContent =
+      initialDoc ?? (initialText ? plaintextToDoc(initialText) : undefined);
 
-  const [isEmpty, setIsEmpty] = useState(!initialContent);
-  const [isInTable, setIsInTable] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const imageInputRef = useRef<HTMLInputElement>(null);
+    const [isEmpty, setIsEmpty] = useState(!initialContent);
+    const [isInTable, setIsInTable] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ codeBlock: { HTMLAttributes: { class: "" } } }),
-      Underline,
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
-        validate: (href) => /^https?:\/\//.test(href),
-      }),
-      Placeholder.configure({ placeholder }),
-      CharacterCount.configure({ limit: maxLength }),
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Table.configure({ resizable: false }),
-      TableRow,
-      TableCell,
-      TableHeader,
-      MentionExtension,
-      YoutubeEmbedExtension,
-      ForumImageExtension,
-    ],
-    content: initialContent,
-    onCreate: ({ editor }) => {
-      setIsEmpty(editor.isEmpty);
-      setIsInTable(editor.isActive("table"));
-    },
-    onUpdate: ({ editor }) => {
-      setIsEmpty(editor.isEmpty);
-      setIsInTable(editor.isActive("table"));
-    },
-    onSelectionUpdate: ({ editor }) => {
-      setIsInTable(editor.isActive("table"));
-    },
-    editorProps: {
-      handleKeyDown(_view, event) {
-        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-          handleSubmit();
-          return true;
-        }
-        return false;
+    const editor = useEditor({
+      extensions: [
+        StarterKit.configure({ codeBlock: { HTMLAttributes: { class: "" } } }),
+        Underline,
+        Link.configure({
+          openOnClick: false,
+          HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
+          validate: (href) => /^https?:\/\//.test(href),
+        }),
+        Placeholder.configure({ placeholder }),
+        CharacterCount.configure({ limit: maxLength }),
+        TextAlign.configure({ types: ["heading", "paragraph"] }),
+        Table.configure({ resizable: false }),
+        TableRow,
+        TableCell,
+        TableHeader,
+        MentionExtension,
+        YoutubeEmbedExtension,
+        ForumImageExtension,
+      ],
+      content: initialContent,
+      onCreate: ({ editor }) => {
+        setIsEmpty(editor.isEmpty);
+        setIsInTable(editor.isActive("table"));
       },
-    },
-  });
+      onUpdate: ({ editor }) => {
+        setIsEmpty(editor.isEmpty);
+        setIsInTable(editor.isActive("table"));
+      },
+      onSelectionUpdate: ({ editor }) => {
+        setIsInTable(editor.isActive("table"));
+      },
+      editorProps: {
+        handleKeyDown(_view, event) {
+          if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+            handleSubmit();
+            return true;
+          }
+          return false;
+        },
+      },
+    });
 
-  const handleSubmit = useCallback(() => {
-    if (!editor || editor.isEmpty || isSubmitting) return;
-    const json = editor.getJSON() as RichTextDocument;
-    const text = editor.getText({ blockSeparator: "\n" });
-    const mentions = extractMentionsFromDoc(json);
-    onSubmit(json, text, mentions);
-    editor.commands.clearContent(true);
-  }, [editor, isSubmitting, onSubmit]);
+    useImperativeHandle(ref, () => ({
+      focus: () => {
+        editor?.commands.focus();
+      },
+    }));
 
-  const handleImageFileChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file || !editor) return;
-      // Reset so the same file can be re-selected later.
-      e.target.value = "";
-      if (file.size > 5 * 1024 * 1024) {
-        window.alert("Image must be under 5 MB.");
+    const handleSubmit = useCallback(() => {
+      if (!editor || editor.isEmpty || isSubmitting) return;
+      const json = editor.getJSON() as RichTextDocument;
+      const text = editor.getText({ blockSeparator: "\n" });
+      const mentions = extractMentionsFromDoc(json);
+      onSubmit(json, text, mentions);
+      editor.commands.clearContent(true);
+    }, [editor, isSubmitting, onSubmit]);
+
+    const handleImageFileChange = useCallback(
+      async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !editor) return;
+        // Reset so the same file can be re-selected later.
+        e.target.value = "";
+        if (file.size > 5 * 1024 * 1024) {
+          window.alert("Image must be under 5 MB.");
+          return;
+        }
+        setIsUploading(true);
+        try {
+          const url = await ImageKitService.uploadImage(file);
+          editor
+            .chain()
+            .focus()
+            .insertContent({
+              type: "forumImage",
+              attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, "") },
+            })
+            .run();
+        } catch {
+          window.alert("Image upload failed. Please try again.");
+        } finally {
+          setIsUploading(false);
+        }
+      },
+      [editor],
+    );
+
+    const insertYouTube = () => {
+      const url = window.prompt("Paste a YouTube URL:");
+      if (!url) return;
+      const videoId = extractYouTubeId(url.trim());
+      if (!videoId) {
+        window.alert("Could not find a YouTube video ID in that URL.");
         return;
       }
-      setIsUploading(true);
-      try {
-        const url = await ImageKitService.uploadImage(file);
-        editor
-          .chain()
-          .focus()
-          .insertContent({
-            type: "forumImage",
-            attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, "") },
-          })
-          .run();
-      } catch {
-        window.alert("Image upload failed. Please try again.");
-      } finally {
-        setIsUploading(false);
+      editor
+        ?.chain()
+        .focus()
+        .insertContent({ type: "youtubeEmbed", attrs: { videoId } })
+        .run();
+    };
+
+    const setLink = () => {
+      const prev = editor?.getAttributes("link").href as string | undefined;
+      const url = window.prompt("Enter URL (https://…)", prev ?? "");
+      if (url === null) return;
+      if (url === "") {
+        editor?.chain().focus().unsetLink().run();
+        return;
       }
-    },
-    [editor],
-  );
+      if (!/^https?:\/\//.test(url)) {
+        window.alert("Only https:// links are allowed.");
+        return;
+      }
+      editor?.chain().focus().setLink({ href: url }).run();
+    };
 
-  const insertYouTube = () => {
-    const url = window.prompt("Paste a YouTube URL:");
-    if (!url) return;
-    const videoId = extractYouTubeId(url.trim());
-    if (!videoId) {
-      window.alert("Could not find a YouTube video ID in that URL.");
-      return;
-    }
-    editor
-      ?.chain()
-      .focus()
-      .insertContent({ type: "youtubeEmbed", attrs: { videoId } })
-      .run();
-  };
+    const charCount = editor?.storage.characterCount.characters() ?? 0;
+    const remaining = maxLength - charCount;
+    const isOverLimit = remaining < 0;
 
-  const setLink = () => {
-    const prev = editor?.getAttributes("link").href as string | undefined;
-    const url = window.prompt("Enter URL (https://…)", prev ?? "");
-    if (url === null) return;
-    if (url === "") {
-      editor?.chain().focus().unsetLink().run();
-      return;
-    }
-    if (!/^https?:\/\//.test(url)) {
-      window.alert("Only https:// links are allowed.");
-      return;
-    }
-    editor?.chain().focus().setLink({ href: url }).run();
-  };
-
-  const charCount = editor?.storage.characterCount.characters() ?? 0;
-  const remaining = maxLength - charCount;
-  const isOverLimit = remaining < 0;
-
-  return (
-    <div className="flex flex-col gap-2 w-full">
-      {/* Toolbar */}
-      <div
-        className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 rounded-t-lg border-b"
-        style={{
-          backgroundColor: "var(--bg-primary)",
-          borderColor: "var(--border-secondary)",
-        }}
-      >
-        <TBtn
-          title="Bold (Ctrl+B)"
-          onClick={() => editor?.chain().focus().toggleBold().run()}
-          active={editor?.isActive("bold")}
+    return (
+      <div className="flex flex-col gap-2 w-full">
+        {/* Toolbar */}
+        <div
+          className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 rounded-t-lg border-b"
+          style={{
+            backgroundColor: "var(--bg-primary)",
+            borderColor: "var(--border-secondary)",
+          }}
         >
-          {" "}
-          <strong>B</strong>
-        </TBtn>
-        <TBtn
-          title="Italic (Ctrl+I)"
-          onClick={() => editor?.chain().focus().toggleItalic().run()}
-          active={editor?.isActive("italic")}
-        >
-          {" "}
-          <em>I</em>
-        </TBtn>
-        <TBtn
-          title="Underline (Ctrl+U)"
-          onClick={() => editor?.chain().focus().toggleUnderline().run()}
-          active={editor?.isActive("underline")}
-        >
-          {" "}
-          <u>U</u>
-        </TBtn>
-        <TBtn
-          title="Strikethrough"
-          onClick={() => editor?.chain().focus().toggleStrike().run()}
-          active={editor?.isActive("strike")}
-        >
-          <s>S</s>
-        </TBtn>
-        <TBtn
-          title="Inline code"
-          onClick={() => editor?.chain().focus().toggleCode().run()}
-          active={editor?.isActive("code")}
-        >
-          {" "}
-          <code className="text-xs">{"<>"}</code>
-        </TBtn>
-        <Divider />
-        <TBtn
-          title="Heading 2"
-          onClick={() =>
-            editor?.chain().focus().toggleHeading({ level: 2 }).run()
-          }
-          active={editor?.isActive("heading", { level: 2 })}
-        >
-          H2
-        </TBtn>
-        <TBtn
-          title="Heading 3"
-          onClick={() =>
-            editor?.chain().focus().toggleHeading({ level: 3 }).run()
-          }
-          active={editor?.isActive("heading", { level: 3 })}
-        >
-          H3
-        </TBtn>
-        <Divider />
-        <TBtn
-          title="Bullet list"
-          onClick={() => editor?.chain().focus().toggleBulletList().run()}
-          active={editor?.isActive("bulletList")}
-        >
-          {" "}
-          ≡
-        </TBtn>
-        <TBtn
-          title="Numbered list"
-          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-          active={editor?.isActive("orderedList")}
-        >
-          {" "}
-          1.
-        </TBtn>
-        <Divider />
-        <TBtn
-          title="Blockquote"
-          onClick={() => editor?.chain().focus().toggleBlockquote().run()}
-          active={editor?.isActive("blockquote")}
-        >
-          {" "}
-          ❝
-        </TBtn>
-        <TBtn
-          title="Code block"
-          onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
-          active={editor?.isActive("codeBlock")}
-        >
-          {" "}
-          {"{ }"}
-        </TBtn>
-        <Divider />
-        <TBtn title="Link" onClick={setLink} active={editor?.isActive("link")}>
-          {" "}
-          🔗
-        </TBtn>
-        <TBtn
-          title="Horizontal rule"
-          onClick={() => editor?.chain().focus().setHorizontalRule().run()}
-        >
-          {" "}
-          —
-        </TBtn>
-        <Divider />
-        <TBtn
-          title="Align left"
-          onClick={() => editor?.chain().focus().setTextAlign("left").run()}
-          active={editor?.isActive({ textAlign: "left" })}
-        >
-          &#8676;
-        </TBtn>
-        <TBtn
-          title="Align center"
-          onClick={() => editor?.chain().focus().setTextAlign("center").run()}
-          active={editor?.isActive({ textAlign: "center" })}
-        >
-          &#9636;
-        </TBtn>
-        <TBtn
-          title="Align right"
-          onClick={() => editor?.chain().focus().setTextAlign("right").run()}
-          active={editor?.isActive({ textAlign: "right" })}
-        >
-          &#8677;
-        </TBtn>
-        <Divider />
-        <TBtn
-          title="Undo (Ctrl+Z)"
-          onClick={() => editor?.chain().focus().undo().run()}
-          disabled={!editor?.can().undo()}
-        >
-          {" "}
-          ↩
-        </TBtn>
-        <TBtn
-          title="Redo (Ctrl+Y)"
-          onClick={() => editor?.chain().focus().redo().run()}
-          disabled={!editor?.can().redo()}
-        >
-          {" "}
-          ↪
-        </TBtn>
-        <Divider />
-        <TBtn title="Embed YouTube video" onClick={insertYouTube}>
-          ▶
-        </TBtn>
-        <TBtn
-          title="Upload image (max 5 MB)"
-          onClick={() => imageInputRef.current?.click()}
-          disabled={isUploading}
-        >
-          {isUploading ? "⏳" : "🖼"}
-        </TBtn>
-        <input
-          ref={imageInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/gif,image/webp"
-          className="hidden"
-          onChange={handleImageFileChange}
-        />
-        <Divider />
-        <TBtn
-          title="Insert table (3×3)"
-          onClick={() =>
-            editor
-              ?.chain()
-              .focus()
-              .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-              .run()
-          }
-        >
-          ⊞
-        </TBtn>
-        {isInTable && (
-          <>
-            <TBtn
-              title="Add column before"
-              onClick={() => editor?.chain().focus().addColumnBefore().run()}
-            >
-              ◁+
-            </TBtn>
-            <TBtn
-              title="Add column after"
-              onClick={() => editor?.chain().focus().addColumnAfter().run()}
-            >
-              +▷
-            </TBtn>
-            <TBtn
-              title="Delete column"
-              onClick={() => editor?.chain().focus().deleteColumn().run()}
-            >
-              ✕col
-            </TBtn>
-            <TBtn
-              title="Add row before"
-              onClick={() => editor?.chain().focus().addRowBefore().run()}
-            >
-              △+
-            </TBtn>
-            <TBtn
-              title="Add row after"
-              onClick={() => editor?.chain().focus().addRowAfter().run()}
-            >
-              +▽
-            </TBtn>
-            <TBtn
-              title="Delete row"
-              onClick={() => editor?.chain().focus().deleteRow().run()}
-            >
-              ✕row
-            </TBtn>
-            <TBtn
-              title="Delete table"
-              onClick={() => editor?.chain().focus().deleteTable().run()}
-            >
-              ✕tbl
-            </TBtn>
-          </>
-        )}
-      </div>
-
-      {/* Editor area — also handles image file drops */}
-      <div
-        className="rounded-b-lg border focus-within:ring-1 focus-within:ring-blue-500 transition-colors"
-        style={{
-          backgroundColor: "var(--bg-secondary)",
-          borderColor: "var(--border-secondary)",
-        }}
-        onDragOver={(e) => {
-          if (
-            Array.from(e.dataTransfer.items).some(
-              (i) => i.kind === "file" && i.type.startsWith("image/"),
-            )
-          ) {
-            e.preventDefault();
-          }
-        }}
-        onDrop={(e) => {
-          const files = Array.from(e.dataTransfer.files).filter((f) =>
-            f.type.startsWith("image/"),
-          );
-          if (files.length === 0 || !editor) return;
-          e.preventDefault();
-          e.stopPropagation();
-          files.forEach((file) => {
-            if (file.size > 5 * 1024 * 1024) {
-              window.alert(
-                `"${file.name}" exceeds the 5 MB limit and was skipped.`,
-              );
-              return;
-            }
-            setIsUploading(true);
-            ImageKitService.uploadImage(file)
-              .then((url) => {
-                setIsUploading(false);
-                editor
-                  .chain()
-                  .focus()
-                  .insertContent({
-                    type: "forumImage",
-                    attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, "") },
-                  })
-                  .run();
-              })
-              .catch(() => {
-                setIsUploading(false);
-                window.alert(
-                  `Failed to upload "${file.name}". Please try again.`,
-                );
-              });
-          });
-        }}
-      >
-        <EditorContent editor={editor} />
-      </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-between">
-        <Text
-          variant="xs"
-          classes={isOverLimit ? "text-red-400" : "text-gray-500"}
-        >
-          {isOverLimit
-            ? `${Math.abs(remaining)} characters over limit`
-            : `${remaining.toLocaleString()} characters remaining`}
-        </Text>
-        <div className="flex gap-2">
-          {onCancel && (
-            <Button
-              variant="secondaryOutline"
-              size="sm"
-              onClick={onCancel}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-          )}
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSubmit}
-            disabled={isSubmitting || isEmpty || isOverLimit}
+          <TBtn
+            title="Bold (Ctrl+B)"
+            onClick={() => editor?.chain().focus().toggleBold().run()}
+            active={editor?.isActive("bold")}
           >
-            {isSubmitting ? "Posting…" : submitLabel}
-          </Button>
+            {" "}
+            <strong>B</strong>
+          </TBtn>
+          <TBtn
+            title="Italic (Ctrl+I)"
+            onClick={() => editor?.chain().focus().toggleItalic().run()}
+            active={editor?.isActive("italic")}
+          >
+            {" "}
+            <em>I</em>
+          </TBtn>
+          <TBtn
+            title="Underline (Ctrl+U)"
+            onClick={() => editor?.chain().focus().toggleUnderline().run()}
+            active={editor?.isActive("underline")}
+          >
+            {" "}
+            <u>U</u>
+          </TBtn>
+          <TBtn
+            title="Strikethrough"
+            onClick={() => editor?.chain().focus().toggleStrike().run()}
+            active={editor?.isActive("strike")}
+          >
+            <s>S</s>
+          </TBtn>
+          <TBtn
+            title="Inline code"
+            onClick={() => editor?.chain().focus().toggleCode().run()}
+            active={editor?.isActive("code")}
+          >
+            {" "}
+            <code className="text-xs">{"<>"}</code>
+          </TBtn>
+          <Divider />
+          <TBtn
+            title="Heading 2"
+            onClick={() =>
+              editor?.chain().focus().toggleHeading({ level: 2 }).run()
+            }
+            active={editor?.isActive("heading", { level: 2 })}
+          >
+            H2
+          </TBtn>
+          <TBtn
+            title="Heading 3"
+            onClick={() =>
+              editor?.chain().focus().toggleHeading({ level: 3 }).run()
+            }
+            active={editor?.isActive("heading", { level: 3 })}
+          >
+            H3
+          </TBtn>
+          <Divider />
+          <TBtn
+            title="Bullet list"
+            onClick={() => editor?.chain().focus().toggleBulletList().run()}
+            active={editor?.isActive("bulletList")}
+          >
+            {" "}
+            ≡
+          </TBtn>
+          <TBtn
+            title="Numbered list"
+            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+            active={editor?.isActive("orderedList")}
+          >
+            {" "}
+            1.
+          </TBtn>
+          <Divider />
+          <TBtn
+            title="Blockquote"
+            onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+            active={editor?.isActive("blockquote")}
+          >
+            {" "}
+            ❝
+          </TBtn>
+          <TBtn
+            title="Code block"
+            onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+            active={editor?.isActive("codeBlock")}
+          >
+            {" "}
+            {"{ }"}
+          </TBtn>
+          <Divider />
+          <TBtn
+            title="Link"
+            onClick={setLink}
+            active={editor?.isActive("link")}
+          >
+            {" "}
+            🔗
+          </TBtn>
+          <TBtn
+            title="Horizontal rule"
+            onClick={() => editor?.chain().focus().setHorizontalRule().run()}
+          >
+            {" "}
+            —
+          </TBtn>
+          <Divider />
+          <TBtn
+            title="Align left"
+            onClick={() => editor?.chain().focus().setTextAlign("left").run()}
+            active={editor?.isActive({ textAlign: "left" })}
+          >
+            &#8676;
+          </TBtn>
+          <TBtn
+            title="Align center"
+            onClick={() => editor?.chain().focus().setTextAlign("center").run()}
+            active={editor?.isActive({ textAlign: "center" })}
+          >
+            &#9636;
+          </TBtn>
+          <TBtn
+            title="Align right"
+            onClick={() => editor?.chain().focus().setTextAlign("right").run()}
+            active={editor?.isActive({ textAlign: "right" })}
+          >
+            &#8677;
+          </TBtn>
+          <Divider />
+          <TBtn
+            title="Undo (Ctrl+Z)"
+            onClick={() => editor?.chain().focus().undo().run()}
+            disabled={!editor?.can().undo()}
+          >
+            {" "}
+            ↩
+          </TBtn>
+          <TBtn
+            title="Redo (Ctrl+Y)"
+            onClick={() => editor?.chain().focus().redo().run()}
+            disabled={!editor?.can().redo()}
+          >
+            {" "}
+            ↪
+          </TBtn>
+          <Divider />
+          <TBtn title="Embed YouTube video" onClick={insertYouTube}>
+            ▶
+          </TBtn>
+          <TBtn
+            title="Upload image (max 5 MB)"
+            onClick={() => imageInputRef.current?.click()}
+            disabled={isUploading}
+          >
+            {isUploading ? "⏳" : "🖼"}
+          </TBtn>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            className="hidden"
+            onChange={handleImageFileChange}
+          />
+          <Divider />
+          <TBtn
+            title="Insert table (3×3)"
+            onClick={() =>
+              editor
+                ?.chain()
+                .focus()
+                .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+                .run()
+            }
+          >
+            ⊞
+          </TBtn>
+          {isInTable && (
+            <>
+              <TBtn
+                title="Add column before"
+                onClick={() => editor?.chain().focus().addColumnBefore().run()}
+              >
+                ◁+
+              </TBtn>
+              <TBtn
+                title="Add column after"
+                onClick={() => editor?.chain().focus().addColumnAfter().run()}
+              >
+                +▷
+              </TBtn>
+              <TBtn
+                title="Delete column"
+                onClick={() => editor?.chain().focus().deleteColumn().run()}
+              >
+                ✕col
+              </TBtn>
+              <TBtn
+                title="Add row before"
+                onClick={() => editor?.chain().focus().addRowBefore().run()}
+              >
+                △+
+              </TBtn>
+              <TBtn
+                title="Add row after"
+                onClick={() => editor?.chain().focus().addRowAfter().run()}
+              >
+                +▽
+              </TBtn>
+              <TBtn
+                title="Delete row"
+                onClick={() => editor?.chain().focus().deleteRow().run()}
+              >
+                ✕row
+              </TBtn>
+              <TBtn
+                title="Delete table"
+                onClick={() => editor?.chain().focus().deleteTable().run()}
+              >
+                ✕tbl
+              </TBtn>
+            </>
+          )}
         </div>
+
+        {/* Editor area — also handles image file drops */}
+        <div
+          className="rounded-b-lg border focus-within:ring-1 focus-within:ring-blue-500 transition-colors"
+          style={{
+            backgroundColor: "var(--bg-secondary)",
+            borderColor: "var(--border-secondary)",
+          }}
+          onDragOver={(e) => {
+            if (
+              Array.from(e.dataTransfer.items).some(
+                (i) => i.kind === "file" && i.type.startsWith("image/"),
+              )
+            ) {
+              e.preventDefault();
+            }
+          }}
+          onDrop={(e) => {
+            const files = Array.from(e.dataTransfer.files).filter((f) =>
+              f.type.startsWith("image/"),
+            );
+            if (files.length === 0 || !editor) return;
+            e.preventDefault();
+            e.stopPropagation();
+            files.forEach((file) => {
+              if (file.size > 5 * 1024 * 1024) {
+                window.alert(
+                  `"${file.name}" exceeds the 5 MB limit and was skipped.`,
+                );
+                return;
+              }
+              setIsUploading(true);
+              ImageKitService.uploadImage(file)
+                .then((url) => {
+                  setIsUploading(false);
+                  editor
+                    .chain()
+                    .focus()
+                    .insertContent({
+                      type: "forumImage",
+                      attrs: {
+                        src: url,
+                        alt: file.name.replace(/\.[^.]+$/, ""),
+                      },
+                    })
+                    .run();
+                })
+                .catch(() => {
+                  setIsUploading(false);
+                  window.alert(
+                    `Failed to upload "${file.name}". Please try again.`,
+                  );
+                });
+            });
+          }}
+        >
+          <EditorContent editor={editor} />
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between">
+          <Text
+            variant="xs"
+            classes={isOverLimit ? "text-red-400" : "text-gray-500"}
+          >
+            {isOverLimit
+              ? `${Math.abs(remaining)} characters over limit`
+              : `${remaining.toLocaleString()} characters remaining`}
+          </Text>
+          <div className="flex gap-2">
+            {onCancel && (
+              <Button
+                variant="secondaryOutline"
+                size="sm"
+                onClick={onCancel}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSubmit}
+              disabled={isSubmitting || isEmpty || isOverLimit}
+            >
+              {isSubmitting ? "Posting…" : submitLabel}
+            </Button>
+          </div>
+        </div>
+        <Text variant="xs" classes="text-gray-600">
+          Tip: Ctrl+Enter to submit
+        </Text>
       </div>
-      <Text variant="xs" classes="text-gray-600">
-        Tip: Ctrl+Enter to submit
-      </Text>
-    </div>
-  );
-};
+    );
+  },
+);
