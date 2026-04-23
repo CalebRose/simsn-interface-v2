@@ -125,7 +125,7 @@ export const PlayerAttributeCard: React.FC<PlayerAttributeCardProps> = ({
         >
           <Text
             variant={getTextSize(size)}
-            classes={`font-bold ${getRatingColor(overallRating)}`}
+            classes={`font-bold ${getRatingColor(overallRating, league)}`}
           >
             {overallRating}
           </Text>
@@ -136,6 +136,16 @@ export const PlayerAttributeCard: React.FC<PlayerAttributeCardProps> = ({
             style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
           >
             <Text variant="xs" classes={`font-bold text-white`}>
+              {player.Position}
+            </Text>
+          </div>
+        )}
+        {(position === "STU" || position === "KR" || position === "PR") && (
+          <div
+            className="absolute top-3 left-0 px-1 py-0.5 rounded-bl-lg rounded-tl-lg z-10"
+            style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
+          >
+            <Text variant={getTextSize(size)} classes={`font-semibold`}>
               {player.Position}
             </Text>
           </div>
