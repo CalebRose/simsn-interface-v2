@@ -243,14 +243,16 @@ const ForumImageExtension = Node.create({
                 );
               });
               URL.revokeObjectURL(previewUrl);
-            })().catch(() => {
+            })().catch((err) => {
               // Remove the placeholder node and clean up on failure.
               withNode(previewUrl, (pos, nodeSize) => {
                 const { state: s, dispatch: d } = view;
                 d(s.tr.delete(pos, pos + nodeSize));
               });
               URL.revokeObjectURL(previewUrl);
-              window.alert("Image upload failed. Please try again.");
+              window.alert(
+                "Image upload failed. Please try again. Error: " + err,
+              );
             });
 
             return true;
@@ -658,8 +660,8 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
               attrs: { src: url, alt: file.name.replace(/\.[^.]+$/, "") },
             })
             .run();
-        } catch {
-          window.alert("Image upload failed. Please try again.");
+        } catch (err) {
+          window.alert("Image upload failed. Please try again. Error:" + err);
         } finally {
           setIsUploading(false);
         }
