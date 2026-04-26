@@ -167,6 +167,11 @@ export const ForumService = {
     return { id: snap.id, ...snap.data() } as Thread;
   },
 
+  RecordThreadView: async (threadId: string): Promise<void> => {
+    const ref = doc(firestore, "threads", threadId);
+    await updateDoc(ref, { viewCount: increment(1) });
+  },
+
   CreateThread: async (
     dto: CreateThreadDTO,
     uid: string,

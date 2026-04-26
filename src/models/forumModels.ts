@@ -110,6 +110,7 @@ export interface Thread {
   referencedGameId?: string | null;
   referencedLeague?: string | null;
   replyCount: number;
+  viewCount: number;
   participantCount: number;
   latestPostId?: string | null;
   latestActivityAt: Timestamp;

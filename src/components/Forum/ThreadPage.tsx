@@ -106,6 +106,14 @@ export const ThreadPage: React.FC = () => {
   const [league, setLeague] = useState<any>("");
   const gameModal = useModal();
 
+  // Record a view once per page visit when the thread has loaded
+  useEffect(() => {
+    if (!threadId) return;
+    ForumService.RecordThreadView(threadId).catch(() => {
+      /* non-critical */
+    });
+  }, [threadId]);
+
   const [replyingTo, setReplyingTo] = useState<Post | null>(null);
   const [quotingPost, setQuotingPost] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);

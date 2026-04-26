@@ -100,13 +100,19 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread }) => {
         )}
       </div>
 
-      {/* Right: reply count + latest activity */}
+      {/* Right: reply count + view count + latest activity */}
       <div className="flex sm:flex-col items-end gap-4 sm:gap-0.5 shrink-0 text-right">
         <div>
           <Text variant="xs" classes="text-gray-400">
             Replies
           </Text>
           <Text variant="small">{thread.replyCount}</Text>
+        </div>
+        <div>
+          <Text variant="xs" classes="text-gray-400">
+            Views
+          </Text>
+          <Text variant="small">{thread.viewCount ?? 0}</Text>
         </div>
         <div>
           <Text variant="xs" classes="text-gray-400">
