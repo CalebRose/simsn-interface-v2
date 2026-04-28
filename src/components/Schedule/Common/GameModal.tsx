@@ -983,7 +983,6 @@ export const HockeyGameModal = ({
     } else {
       response = await scheduleService.GetCHLGameResultData(game.ID);
     }
-    console.log({ response });
 
     const filteredHomePlayerList = isPro
       ? FilterStatsData(response.PHLHomeStats)
@@ -1090,7 +1089,6 @@ export const HockeyGameModal = ({
       if (!player) {
         player = playerMap![game.AwayTeamID][playerID];
       }
-      console.log({ player, playerID, playerMap, game });
       if (!player) {
         return null;
       }
@@ -1145,7 +1143,6 @@ export const HockeyGameModal = ({
     return getLogo(league, game.AwayTeamID, false);
   }, [game, league]);
 
-  console.log({ threeStars, viewableHomePlayers, viewableAwayPlayers });
   return (
     <>
       {isLoading ? (

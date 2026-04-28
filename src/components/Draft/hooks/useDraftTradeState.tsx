@@ -328,7 +328,6 @@ export const useDraftTradeState = ({
           ? { NFLTeam: senderDocID, RecepientTeam: recipientDocID }
           : {}),
       }) as unknown as AnyTradeProposal;
-      console.log({ modalDTO, newDTO });
 
       // 1. Add to user's sentRequests
       await updateUserWarRoom({ sentRequests: arrayUnion(newDTO) as any });

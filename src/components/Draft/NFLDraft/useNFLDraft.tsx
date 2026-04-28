@@ -461,7 +461,6 @@ export const useNFLDraft = () => {
       if (!draftMap[pick.DraftRound]) {
         draftMap[pick.DraftRound] = [];
       }
-      console.log({ pick });
       draftMap[pick.DraftRound].push(pick);
     });
 
