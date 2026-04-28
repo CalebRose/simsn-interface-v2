@@ -1,8 +1,10 @@
 import {
+  Attributes,
   FootballArchetypeOptions,
   FootballPositionOptions,
   Help1,
   Overview,
+  Preferences,
   RecruitingClassView,
   RecruitingRankings,
   RecruitingTeamBoard,
@@ -85,7 +87,7 @@ export const CFBRecruiting = () => {
   const teamColors = useTeamColors(
     cfbTeam?.ColorOne,
     cfbTeam?.ColorTwo,
-    cfbTeam?.ColorThree
+    cfbTeam?.ColorThree,
   );
   const helpModal = useModal();
   const aiSettingsModal = useModal();
@@ -149,6 +151,7 @@ export const CFBRecruiting = () => {
               <ButtonGroup classes="sm:flex sm:flex-auto sm:flex-1">
                 <Button
                   type="button"
+                  size="xs"
                   variant={
                     recruitingCategory === Overview ? "success" : "secondary"
                   }
@@ -158,6 +161,7 @@ export const CFBRecruiting = () => {
                 </Button>
                 <Button
                   type="button"
+                  size="xs"
                   variant={
                     recruitingCategory === RecruitingTeamBoard
                       ? "success"
@@ -169,6 +173,7 @@ export const CFBRecruiting = () => {
                 </Button>
                 <Button
                   type="button"
+                  size="xs"
                   variant={
                     recruitingCategory === RecruitingRankings
                       ? "success"
@@ -180,6 +185,7 @@ export const CFBRecruiting = () => {
                 </Button>
                 <Button
                   type="button"
+                  size="xs"
                   variant={
                     recruitingCategory === RecruitingClassView
                       ? "success"
@@ -188,6 +194,28 @@ export const CFBRecruiting = () => {
                   onClick={() => setRecruitingCategory(RecruitingClassView)}
                 >
                   Class
+                </Button>
+              </ButtonGroup>
+              <ButtonGroup classes="sm:flex sm:flex-auto sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  size="xs"
+                  variant={
+                    tableViewType === Attributes ? "success" : "secondary"
+                  }
+                  onClick={() => setTableViewType(Attributes)}
+                >
+                  Attributes
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant={
+                    tableViewType === Preferences ? "success" : "secondary"
+                  }
+                  onClick={() => setTableViewType(Preferences)}
+                >
+                  Preferences
                 </Button>
               </ButtonGroup>
             </Border>

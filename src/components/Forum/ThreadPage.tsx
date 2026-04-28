@@ -22,7 +22,7 @@ import {
   CreatePostDTO,
 } from "../../models/forumModels";
 import { plaintextToDoc } from "./components/ForumEditor";
-import { parseForumBody } from "./forumUtils";
+import { parseForumBody, analyzeContentQuality } from "./forumUtils";
 import routes from "../../_constants/routes";
 import { MEDIA_TAG_MAP, MediaTag } from "../../_constants/mediaTags";
 import { ThreadSEOMeta } from "./components/ThreadSEOMeta";
@@ -106,6 +106,14 @@ export const ThreadPage: React.FC = () => {
   const [league, setLeague] = useState<any>("");
   const gameModal = useModal();
 
+  // Record a view once per page visit when the thread has loaded
+  useEffect(() => {
+    if (!threadId) return;
+    ForumService.RecordThreadView(threadId).catch(() => {
+      /* non-critical */
+    });
+  }, [threadId]);
+
   const [replyingTo, setReplyingTo] = useState<Post | null>(null);
   const [quotingPost, setQuotingPost] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
@@ -118,6 +126,8 @@ export const ThreadPage: React.FC = () => {
   const [moveTargetForumId, setMoveTargetForumId] = useState("");
   const [moveReason, setMoveReason] = useState("");
   const [isMoving, setIsMoving] = useState(false);
+  const [isAwardingPoint, setIsAwardingPoint] = useState(false);
+  const [pointAwardedLocally, setPointAwardedLocally] = useState(false);
 
   // Load game reference if applicable
   useEffect(() => {
@@ -258,6 +268,26 @@ export const ThreadPage: React.FC = () => {
       setMoveReason("");
     } finally {
       setIsMoving(false);
+    }
+  };
+
+  const handleAwardMediaPoint = async () => {
+    if (!activeThread || !currentUser) return;
+    setIsAwardingPoint(true);
+    try {
+      await ForumService.AwardMediaPoint(
+        activeThread.id,
+        activeThread.author.uid,
+        activeThread.forumId,
+        activeThread.title,
+        currentUser.id,
+        currentUser.username,
+      );
+      setPointAwardedLocally(true);
+    } catch (err) {
+      console.error("Failed to award media point:", err);
+    } finally {
+      setIsAwardingPoint(false);
     }
   };
 
@@ -438,6 +468,18 @@ export const ThreadPage: React.FC = () => {
   const isLocked = activeThread?.isLocked ?? false;
   const isAdmin = permissions.canLockThread;
   const canReply = permissions.canReply && (!isLocked || isAdmin);
+  const isMediaSubforum = activeThread?.forumId.startsWith("media-") ?? false;
+  const isPointAwarded =
+    pointAwardedLocally || (activeThread?.mediaPointAwarded ?? false);
+
+  const firstPost = useMemo(
+    () => posts.find((p) => p.id === activeThread?.firstPostId) ?? null,
+    [posts, activeThread?.firstPostId],
+  );
+  const contentQuality = useMemo(
+    () => (firstPost ? analyzeContentQuality(firstPost.bodyText) : null),
+    [firstPost],
+  );
   const threadHeroImageUrl = useMemo(() => {
     if (!activeThread) return null;
     if (activeThread.featureImageUrl) return activeThread.featureImageUrl;
@@ -556,6 +598,95 @@ export const ThreadPage: React.FC = () => {
               </div>
             </div>
           </ForumBorder>
+        )}
+
+        {/* Award Media Point — visible only to admins/commissioners on media subforums */}
+        {activeThread && isAdmin && isMediaSubforum && (
+          <div className="mb-3 rounded border border-amber-700/50 bg-amber-900/20 overflow-hidden">
+            {/* Award row */}
+            <div className="flex items-center justify-between px-3 py-2">
+              <div>
+                <Text variant="small" classes="text-amber-300 font-medium">
+                  Media Point Award
+                </Text>
+                <Text variant="xs" classes="text-amber-400/70">
+                  {isPointAwarded
+                    ? "A media point has been awarded to the original poster."
+                    : "Award a media point to the original poster for quality content."}
+                </Text>
+              </div>
+              {contentQuality && (
+                <div className="">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-1 px-3 pt-2 pb-2">
+                    {/* Word count */}
+                    <span
+                      className={`text-xs font-mono ${
+                        contentQuality.wordCount < 20
+                          ? "text-red-400"
+                          : contentQuality.wordCount < 75
+                            ? "text-yellow-400"
+                            : "text-green-400"
+                      }`}
+                    >
+                      {contentQuality.wordCount} words
+                    </span>
+                    {/* Unique word ratio */}
+                    <span
+                      className={`text-xs font-mono ${
+                        contentQuality.uniqueWordRatio < 0.4
+                          ? "text-red-400"
+                          : contentQuality.uniqueWordRatio < 0.6
+                            ? "text-yellow-400"
+                            : "text-green-400"
+                      }`}
+                    >
+                      {Math.round(contentQuality.uniqueWordRatio * 100)}% unique
+                      words
+                    </span>
+                    {/* Quality badge */}
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded font-semibold ${
+                        contentQuality.level === "good"
+                          ? "bg-green-800 text-green-200"
+                          : contentQuality.level === "moderate"
+                            ? "bg-yellow-800 text-yellow-200"
+                            : "bg-red-800 text-red-200"
+                      }`}
+                    >
+                      {contentQuality.level === "good"
+                        ? "Good quality"
+                        : contentQuality.level === "moderate"
+                          ? "Moderate quality"
+                          : "Low quality"}
+                    </span>
+                  </div>
+                  {contentQuality.flags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {contentQuality.flags.map((flag) => (
+                        <span
+                          key={flag}
+                          className="text-xs bg-red-900/50 text-red-300 border border-red-700/40 px-1.5 py-0.5 rounded"
+                        >
+                          ⚠ {flag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <Button
+                variant="warning"
+                onClick={handleAwardMediaPoint}
+                disabled={isPointAwarded || isAwardingPoint}
+              >
+                {isPointAwarded
+                  ? "🏆 Awarded"
+                  : isAwardingPoint
+                    ? "Awarding…"
+                    : "Award Point"}
+              </Button>
+            </div>
+          </div>
         )}
 
         {/* Game reference card */}
