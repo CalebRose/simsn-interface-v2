@@ -511,6 +511,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     if (userTeamPicks) {
       for (let i = 0; i < userTeamPicks.length; i++) {
         const pick = userTeamPicks[i];
+        if (pick.DrafteeID > 0) continue; // Don't include picks that have been used to draft a player
         const block: TradeBlockRow = {
           id: pick.ID,
           pick: pick,
@@ -559,6 +560,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     if (selectedTeamDraftPicks) {
       for (let i = 0; i < selectedTeamDraftPicks.length; i++) {
         const pick = selectedTeamDraftPicks[i];
+        if (pick.DrafteeID > 0) continue; // Don't include picks that have been used to draft a player
         const block: TradeBlockRow = {
           id: pick.ID,
           pick: pick,

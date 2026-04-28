@@ -63,6 +63,7 @@ import {
   ValidateAffinity,
   ValidateCloseToHome,
 } from "../../../_helper/recruitingHelper";
+import { CFBRecruitingPrefLabel } from "./RecruitingPrefColumn";
 
 const getRecruitProfileColumns = (
   league: League,
@@ -146,20 +147,44 @@ const getRecruitProfileColumns = (
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
       { header: "⭐", accessor: "Stars" },
-      { header: "City", accessor: "City" },
-      { header: "HS", accessor: "HighSchool" },
-      { header: "State", accessor: "State" },
-      { header: "Ovr", accessor: "OverallGrade" },
-      { header: "Pot", accessor: "PotentialGrade" },
-      { header: "AF1", accessor: "AffinityOne" },
-      { header: "AF2", accessor: "AffinityTwo" },
-      { header: "Status", accessor: "RecruitingStatus" },
+    ];
+    if (!isMobile && category === Attributes) {
+      columns = columns.concat([
+        { header: "City", accessor: "City" },
+        { header: "HS", accessor: "HighSchool" },
+        { header: "State", accessor: "State" },
+        { header: "Ovr", accessor: "OverallGrade" },
+        { header: "Pot", accessor: "PotentialGrade" },
+        { header: "Status", accessor: "RecruitingStatus" },
+      ]);
+    } else if (category === Preferences) {
+      columns = columns.concat([
+        { header: "CTH.", accessor: "CloseToHome" },
+        { header: "Prog.", accessor: "ProgramPref" },
+        { header: "Prof.", accessor: "ProfDevPref" },
+        { header: "Trad.", accessor: "TraditionsPref" },
+        { header: "Fac.", accessor: "FacilitiesPref" },
+        { header: "Atm.", accessor: "AtmospherePref" },
+        { header: "Aca.", accessor: "AcademicsPref" },
+        { header: "Cam.", accessor: "CampusLifePref" },
+        { header: "Conf.", accessor: "ConferencePref" },
+        { header: "Coach", accessor: "CoachPref" },
+        { header: "Season", accessor: "SeasonMomentumPref" },
+        { header: "Media", accessor: "MediaSpotlightPref" },
+        { header: "Rel.", accessor: "ReligionPref" },
+        { header: "Serv.", accessor: "ServiceAcademyPref" },
+        { header: "ST.", accessor: "SmallTownPref" },
+        { header: "BC.", accessor: "BigCityPref" },
+      ]);
+    }
+
+    columns = columns.concat([
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "CurrentWeeksPoints" },
       { header: "Mod.", accessor: "ModifiedPoints" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
-    ];
+    ]);
     return columns;
   }
   if (league === SimCBB) {
@@ -520,9 +545,6 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
         ? "danger"
         : "secondary";
 
-  // 3) Compute modifier
-  let modifier = CalculateAdjustedCFBPoints(profile, teamProfile, croot);
-
   // 4) Change handler
   const onPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = Math.max(0, Math.min(20, Number(e.target.value)));
@@ -584,19 +606,13 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
     }
   }, [croot, isCrootGoodFit, isCrootBadFit]);
 
-  const affinityOneValid = useMemo(() => {
-    if (croot.AffinityOne === CloseToHome) {
-      return ValidateCloseToHome(croot, teamProfile.TeamAbbreviation);
-    }
-    return ValidateAffinity(croot.AffinityOne, teamProfile);
+  const isCloseToHome = useMemo(() => {
+    return ValidateCloseToHome(croot, teamProfile.TeamAbbreviation);
   }, [croot, teamProfile]);
 
-  const affinityTwoValid = useMemo(() => {
-    if (croot.AffinityTwo === CloseToHome) {
-      return ValidateCloseToHome(croot, teamProfile.TeamAbbreviation);
-    }
-    return ValidateAffinity(croot.AffinityTwo, teamProfile);
-  }, [croot, teamProfile]);
+  const recruitModifier = useMemo(() => {
+    return profile.PreferenceModifier;
+  }, [profile]);
 
   return (
     <div
@@ -629,34 +645,161 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
       <TableCell>
         <span className={`text-xs`}>{croot.Stars}</span>
       </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>{croot.City}</span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>{croot.HighSchool}</span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>{annotateRegion(croot.State)}</span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>{croot.OverallGrade}</span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>{croot.PotentialGrade}</span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs ${affinityOneValid ? "text-blue-400" : ""}`}>
-          {croot.AffinityOne}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs ${affinityTwoValid ? "text-blue-400" : ""}`}>
-          {croot.AffinityTwo}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`text-xs`}>{croot.RecruitingStatus}</span>
-      </TableCell>
+      {category === Attributes && !isMobile && (
+        <>
+          <TableCell>
+            <span className={`text-xs`}>{croot.City}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.HighSchool}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{annotateRegion(croot.State)}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.OverallGrade}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.PotentialGrade}</span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>{croot.RecruitingStatus}</span>
+          </TableCell>
+        </>
+      )}
+      {category === Preferences && !isMobile && (
+        <>
+          <TableCell>
+            <div className="flex justify-center text-center">
+              {isCloseToHome ? (
+                <CheckCircle textColorClass={`${TextGreen}`} />
+              ) : (
+                <CrossCircle textColorClass="text-red-500" />
+              )}
+            </div>
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="ProgramPref"
+              value={croot.ProgramPref}
+              crootValue={croot.ProgramPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="ProfDevPref"
+              value={croot.ProfDevPref}
+              crootValue={croot.ProfDevPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="TraditionsPref"
+              value={croot.TraditionsPref}
+              crootValue={croot.TraditionsPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="FacilitiesPref"
+              value={croot.FacilitiesPref}
+              crootValue={croot.FacilitiesPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="AtmospherePref"
+              value={croot.AtmospherePref}
+              crootValue={croot.AtmospherePref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="AcademicsPref"
+              value={croot.AcademicsPref}
+              crootValue={croot.AcademicsPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="CampusLifePref"
+              value={croot.CampusLifePref}
+              crootValue={croot.CampusLifePref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="ConferencePref"
+              value={croot.ConferencePref}
+              crootValue={croot.ConferencePref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="CoachPref"
+              value={croot.CoachPref}
+              crootValue={croot.CoachPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="SeasonMomentumPref"
+              value={croot.SeasonMomentumPref}
+              crootValue={croot.SeasonMomentumPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="MediaSpotlightPref"
+              value={croot.MediaSpotlightPref}
+              crootValue={croot.MediaSpotlightPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="ReligionPref"
+              value={croot.ReligionPref}
+              crootValue={croot.ReligionPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="ServiceAcademyPref"
+              value={croot.ServiceAcademyPref}
+              crootValue={croot.ServiceAcademyPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="SmallTownPref"
+              value={croot.SmallTownPref}
+              crootValue={croot.SmallTownPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+          <TableCell>
+            <CFBRecruitingPrefLabel
+              label="BigCityPref"
+              value={croot.BigCityPref}
+              crootValue={croot.BigCityPref}
+              teamProfile={teamProfile}
+            />
+          </TableCell>
+        </>
+      )}
       <TableCell>
         <div className="flex flex-row gap-x-2 text-xs">{leadingTeams}</div>
       </TableCell>
@@ -675,7 +818,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <span className={`text-xs`}>{modifier.toFixed(3)}</span>
+        <span className={`text-xs`}>{recruitModifier.toFixed(3)}</span>
       </TableCell>
       <TableCell>
         <span className={`text-xs`}>{profile.TotalPoints.toFixed(3)}</span>

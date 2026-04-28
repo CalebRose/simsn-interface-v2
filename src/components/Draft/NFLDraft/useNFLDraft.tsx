@@ -461,13 +461,14 @@ export const useNFLDraft = () => {
       if (!draftMap[pick.DraftRound]) {
         draftMap[pick.DraftRound] = [];
       }
+      console.log({ pick });
       draftMap[pick.DraftRound].push(pick);
     });
 
     // Update this once the NFL season is complete
-    // handleManualDraftStateUpdate({
-    //   allDraftPicks: draftMap,
-    // });
+    handleManualDraftStateUpdate({
+      allDraftPicks: draftMap,
+    });
   }, [currentSeasonDraftPicks, handleManualDraftStateUpdate]);
 
   const offensiveSystem = useMemo(() => {

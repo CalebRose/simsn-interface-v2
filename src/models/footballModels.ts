@@ -2219,6 +2219,7 @@ export class NFLDraftPick {
   DraftValue: number;
   Notes: string;
   SelectedPlayerID: number;
+  OverallPickNumber: number;
   SelectedPlayerName: string;
   SelectedPlayerPosition: string;
   IsCompensation: boolean;
@@ -2246,6 +2247,7 @@ export class NFLDraftPick {
     this.SelectedPlayerID = source["SelectedPlayerID"];
     this.SelectedPlayerName = source["SelectedPlayerName"];
     this.SelectedPlayerPosition = source["SelectedPlayerPosition"];
+    this.OverallPickNumber = source["OverallPickNumber"];
     this.IsCompensation = source["IsCompensation"];
     this.IsVoid = source["IsVoid"];
   }
@@ -2815,6 +2817,21 @@ export class Croot {
   OverallGrade: string;
   TotalRank: number;
   LeadingTeams: LeadingTeams[];
+  ProgramPref: number;
+  ProfDevPref: number;
+  TraditionsPref: number;
+  FacilitiesPref: number;
+  AtmospherePref: number;
+  AcademicsPref: number;
+  ConferencePref: number;
+  CoachPref: number;
+  SeasonMomentumPref: number;
+  CampusLifePref: number;
+  MediaSpotlightPref: number;
+  ReligionPref: number;
+  ServiceAcademyPref: number;
+  SmallTownPref: number;
+  BigCityPref: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -2850,6 +2867,21 @@ export class Croot {
       source["LeadingTeams"],
       LeadingTeams,
     );
+    this.ProgramPref = source["ProgramPref"];
+    this.ProfDevPref = source["ProfDevPref"];
+    this.TraditionsPref = source["TraditionsPref"];
+    this.FacilitiesPref = source["FacilitiesPref"];
+    this.AtmospherePref = source["AtmospherePref"];
+    this.AcademicsPref = source["AcademicsPref"];
+    this.ConferencePref = source["ConferencePref"];
+    this.CoachPref = source["CoachPref"];
+    this.SeasonMomentumPref = source["SeasonMomentumPref"];
+    this.CampusLifePref = source["CampusLifePref"];
+    this.MediaSpotlightPref = source["MediaSpotlightPref"];
+    this.ReligionPref = source["ReligionPref"];
+    this.ServiceAcademyPref = source["ServiceAcademyPref"];
+    this.SmallTownPref = source["SmallTownPref"];
+    this.BigCityPref = source["BigCityPref"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -4780,6 +4812,17 @@ export class Recruit {
   RecruitingModifier: number;
   RecruitingStatus: string;
   RecruitPlayerProfiles: RecruitPlayerProfile[];
+  ProgramPref: number;
+  ProfDevPref: number;
+  TraditionsPref: number;
+  FacilitiesPref: number;
+  AtmospherePref: number;
+  AcademicsPref: number;
+  ConferencePref: number;
+  CoachPref: number;
+  SeasonMomentumPref: number;
+  CampusLifePref: number;
+  MediaSpotlightPref: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -4863,6 +4906,17 @@ export class Recruit {
       source["RecruitPlayerProfiles"],
       RecruitPlayerProfile,
     );
+    this.ProgramPref = source["ProgramPref"];
+    this.ProfDevPref = source["ProfDevPref"];
+    this.TraditionsPref = source["TraditionsPref"];
+    this.FacilitiesPref = source["FacilitiesPref"];
+    this.AtmospherePref = source["AtmospherePref"];
+    this.AcademicsPref = source["AcademicsPref"];
+    this.ConferencePref = source["ConferencePref"];
+    this.CoachPref = source["CoachPref"];
+    this.SeasonMomentumPref = source["SeasonMomentumPref"];
+    this.CampusLifePref = source["CampusLifePref"];
+    this.MediaSpotlightPref = source["MediaSpotlightPref"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -4909,6 +4963,7 @@ export class RecruitPlayerProfile {
   CaughtCheating: boolean;
   TeamReachedMax: boolean;
   Recruit: Recruit;
+  PreferenceModifier: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -4936,6 +4991,7 @@ export class RecruitPlayerProfile {
     this.CaughtCheating = source["CaughtCheating"];
     this.TeamReachedMax = source["TeamReachedMax"];
     this.Recruit = this.convertValues(source["Recruit"], Recruit);
+    this.PreferenceModifier = source["PreferenceModifier"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -5016,6 +5072,17 @@ export class RecruitingTeamProfile {
   RisingStarsAffinity: boolean;
   Recruits: RecruitPlayerProfile[];
   Affinities: ProfileAffinity[];
+  ProgramPrestige: number;
+  ProfessionalPrestige: number;
+  Traditions: number;
+  Facilities: number;
+  Atmosphere: number;
+  Academics: number;
+  CampusLife: number;
+  ConferencePrestige: number;
+  CoachRating: number;
+  SeasonMomentum: number;
+  MediaSpotlight: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -5079,6 +5146,17 @@ export class RecruitingTeamProfile {
       RecruitPlayerProfile,
     );
     this.Affinities = this.convertValues(source["Affinities"], ProfileAffinity);
+    this.ProgramPrestige = source["ProgramPrestige"];
+    this.ProfessionalPrestige = source["ProfessionalPrestige"];
+    this.Traditions = source["Traditions"];
+    this.Facilities = source["Facilities"];
+    this.Atmosphere = source["Atmosphere"];
+    this.Academics = source["Academics"];
+    this.CampusLife = source["CampusLife"];
+    this.ConferencePrestige = source["ConferencePrestige"];
+    this.CoachRating = source["CoachRating"];
+    this.SeasonMomentum = source["SeasonMomentum"];
+    this.MediaSpotlight = source["MediaSpotlight"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

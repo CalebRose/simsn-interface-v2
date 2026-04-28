@@ -26,6 +26,14 @@ export interface CurrentUser {
   IsBanned?: boolean;
   Reports?: number;
   forumMutedUntil?: string | null;
+  SimCFBMediaPoints?: number;
+  SimNFLMediaPoints?: number;
+  SimCBBMediaPoints?: number;
+  SimNBAMediaPoints?: number;
+  SimCHLMediaPoints?: number;
+  SimPHLMediaPoints?: number;
+  SimCBLMediaPoints?: number;
+  SimMLBMediaPoints?: number;
 }
 type UseCurrentUserReturn = [
   CurrentUser | null,
