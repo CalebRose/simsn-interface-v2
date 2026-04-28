@@ -118,6 +118,7 @@ export interface Thread {
     uid: string;
     username: string;
   } | null;
+  mediaPointAwarded?: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -257,6 +258,7 @@ export type NotificationForumType =
   | "free_agency"
   | "transfer"
   | "schedule"
+  | "media_point"
   | "system";
 
 export interface ForumNotification {

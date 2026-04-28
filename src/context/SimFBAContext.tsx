@@ -1549,6 +1549,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         const newProfile = new RecruitPlayerProfile({
           ...profile,
           ID: GenerateNumberFromRange(500000, 1000000),
+          PreferenceModifier: profile.PreferenceModifier || 1,
         });
         setRecruitProfiles((profiles) => [...profiles, newProfile]);
       }

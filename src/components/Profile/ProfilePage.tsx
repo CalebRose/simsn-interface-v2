@@ -187,6 +187,35 @@ export const ProfilePage = () => {
           </div>
         </Border>
         <Border classes="w-full p-4 mt-2">
+          <Text variant="h6">Media Points</Text>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+            {(
+              [
+                { label: SimCFB, key: "SimCFBMediaPoints" },
+                { label: SimNFL, key: "SimNFLMediaPoints" },
+                { label: SimCBB, key: "SimCBBMediaPoints" },
+                { label: SimNBA, key: "SimNBAMediaPoints" },
+                { label: SimCHL, key: "SimCHLMediaPoints" },
+                { label: SimPHL, key: "SimPHLMediaPoints" },
+                { label: "SimCBL", key: "SimCBLMediaPoints" },
+                { label: SimMLB, key: "SimMLBMediaPoints" },
+              ] as { label: string; key: keyof typeof currentUser }[]
+            ).map(({ label, key }) => (
+              <div
+                key={key as string}
+                className="flex flex-col items-center rounded p-2 bg-black/20 border border-white/10"
+              >
+                <Text variant="body-small" classes="font-semibold">
+                  {label}
+                </Text>
+                <Text variant="h6" classes="text-amber-400">
+                  {(currentUser?.[key] as number | undefined) ?? 0}
+                </Text>
+              </div>
+            ))}
+          </div>
+        </Border>
+        <Border classes="w-full p-4 mt-2">
           <Text variant="h6">Teams</Text>
           <div className="flex flex-row flex-wrap justify-between pb-2 gap-4 overflow-y-auto max-h-[40vh] lg:max-h-[50vh]">
             {isCHLUser && (

@@ -3,6 +3,7 @@ import {
   DrafteeInfoType,
   League,
   ModalAction,
+  SimNBA,
   SimPHL,
 } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
@@ -167,8 +168,14 @@ export const DraftPickCard: React.FC<{
 
   const draftNumber = useMemo(() => {
     if (view === "") return pick.DraftNumber;
-    return (pick.DraftRound - 1) * 24 + pick.DraftNumber;
-  }, [view, pick]);
+    if (league === SimPHL) {
+      return (pick.DraftRound - 1) * 24 + pick.DraftNumber;
+    }
+    if (league === SimNBA) {
+      return (pick.DraftRound - 1) * 32 + pick.DraftNumber;
+    }
+    return pick.OverallPickNumber;
+  }, [view, pick, league]);
 
   return (
     <div

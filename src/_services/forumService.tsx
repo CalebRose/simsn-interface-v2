@@ -997,6 +997,64 @@ export const ForumService = {
     );
   },
 
+  // ─────────────────────────────────────────────
+  // Media Points
+  // ─────────────────────────────────────────────
+
+  /** Map from media subforum Firestore document ID → CurrentUser media points key */
+  MEDIA_FORUM_POINTS_MAP: {
+    "media-simcfb": "SimCFBMediaPoints",
+    "media-simnfl": "SimNFLMediaPoints",
+    "media-simcbb": "SimCBBMediaPoints",
+    "media-simnba": "SimNBAMediaPoints",
+    "media-simchl": "SimCHLMediaPoints",
+    "media-simphl": "SimPHLMediaPoints",
+    "media-simcbl": "SimCBLMediaPoints",
+    "media-simmlb": "SimMLBMediaPoints",
+  } as Record<string, string>,
+
+  AwardMediaPoint: async (
+    threadId: string,
+    authorUid: string,
+    forumId: string,
+    threadTitle: string,
+    awardedByUid: string,
+    awardedByUsername: string,
+  ): Promise<void> => {
+    const pointsKey = ForumService.MEDIA_FORUM_POINTS_MAP[forumId];
+    if (!pointsKey)
+      throw new Error(`No media points mapping for forum: ${forumId}`);
+
+    const batch = writeBatch(firestore);
+
+    // Mark thread as awarded to prevent duplicates
+    const threadRef = doc(firestore, "threads", threadId);
+    batch.update(threadRef, {
+      mediaPointAwarded: true,
+      updatedAt: serverTimestamp(),
+    });
+
+    // Increment the author's media points
+    const userRef = doc(firestore, "users", authorUid);
+    batch.update(userRef, { [pointsKey]: increment(1) });
+
+    await batch.commit();
+
+    // Send notification to the original poster
+    await addDoc(collection(firestore, "notifications"), {
+      uid: authorUid,
+      type: "media_point",
+      domain: "forum",
+      linkTo: `/forums/thread/${threadId}`,
+      threadId,
+      actorUid: awardedByUid,
+      actorUsername: awardedByUsername,
+      message: `Your thread "${threadTitle}" was awarded a media point! 🏆`,
+      isRead: false,
+      createdAt: serverTimestamp(),
+    });
+  },
+
   SendReactionNotification: async (
     postAuthorUid: string,
     actorUid: string,
