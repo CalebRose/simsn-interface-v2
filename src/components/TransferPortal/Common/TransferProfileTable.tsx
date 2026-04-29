@@ -1011,7 +1011,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
       )}
       <TableCell>
         <div className="flex flex-row gap-x-2 text-xs">
-          {player.TeamID > 0 && player.TeamID < 75 ? (
+          {player.TeamID > 0 ? (
             <div key={player.TeamID}>
               <Logo
                 url={getLogo(SimCBB, player.TeamID, false)}
