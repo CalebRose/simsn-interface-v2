@@ -605,6 +605,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           backgroundColor={backgroundColor}
                           borderColor={borderColor}
                           score={score}
+                          coach={game.HomeTeamCoach}
                           isHome
                         />
                       </div>
@@ -628,6 +629,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           backgroundColor={backgroundColor}
                           borderColor={borderColor}
                           score={score}
+                          coach={game.AwayTeamCoach}
                         />
                       </div>
                     </div>

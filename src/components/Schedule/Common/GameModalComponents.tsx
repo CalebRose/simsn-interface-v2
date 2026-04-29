@@ -19,6 +19,7 @@ interface GameStatsMappingProps {
   isHome?: boolean;
   game?: any;
   homeTeam?: any;
+  coach?: any;
 }
 
 export const FBGameModalInfo = ({
@@ -182,6 +183,7 @@ export const FBGameModalStrategy = ({
   backgroundColor,
   borderColor,
   score,
+  coach,
   isHome,
 }: GameStatsMappingProps) => {
   return (
@@ -192,6 +194,9 @@ export const FBGameModalStrategy = ({
         </Text>
         <Text variant="xs" classes="col-span-3 text-left">
           Defensive Scheme
+        </Text>
+        <Text variant="xs" classes="col-span-3 text-left">
+          Coach
         </Text>
       </div>
 
@@ -206,6 +211,9 @@ export const FBGameModalStrategy = ({
         </Text>
         <Text variant="xs" classes="col-span-3 text-left">
           {isHome ? score.HomeDefensiveScheme : score.AwayDefensiveScheme}
+        </Text>
+        <Text variant="xs" classes="col-span-3 text-left">
+          {coach ? coach : "N/A"}
         </Text>
       </div>
     </div>
@@ -252,7 +260,7 @@ export const FBGameModalPassing = ({
           passAttempts,
           passingYards,
           passingTDs,
-          interceptions
+          interceptions,
         );
 
         return (
@@ -678,8 +686,8 @@ export const FBGameModalPBP = ({
         const bgColor = isTouchdown
           ? "#189E5B"
           : index % 2 === 0
-          ? backgroundColor
-          : "transparent";
+            ? backgroundColor
+            : "transparent";
         const textColor = isTouchdown
           ? { color: backgroundColor, fontWeight: "700" }
           : { color: "inherit" };
@@ -737,10 +745,10 @@ export const FBGameModalPBP = ({
                     play.Down === 1
                       ? "1st"
                       : play.Down === 2
-                      ? "2nd"
-                      : play.Down === 3
-                      ? "3rd"
-                      : "4th"
+                        ? "2nd"
+                        : play.Down === 3
+                          ? "3rd"
+                          : "4th"
                   } 
                   and ${play.Distance}`}
             </Text>
@@ -1085,8 +1093,8 @@ export const HKGameModalPBP = ({
         const bgColor = isScoreChange
           ? "#189E5B"
           : index % 2 === 0
-          ? backgroundColor
-          : "transparent";
+            ? backgroundColor
+            : "transparent";
         const textColor = isScoreChange
           ? { color: backgroundColor, fontWeight: "700" }
           : { color: "inherit" };
