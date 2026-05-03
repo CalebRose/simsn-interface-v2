@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// --- HELPER: Display Period Name ---
 const getPeriodName = (p: number, isSO: boolean) => {
   if (isSO || p === 5) return "SO";
   if (p === 4) return "OT";
-  if (p === 0) return "1st"; // Default for scheduled
+  if (p === 0) return "1st"; 
   return `P${p}`;
 };
 
@@ -14,7 +13,6 @@ const formatClock = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-// --- COMPONENT: Side Column List (Upcoming/Results) ---
 const GameMiniList = ({ title, games, color, onSelect }: { title: string, games: any[], color: string, onSelect: (id: number) => void }) => (
   <div className="flex flex-col h-full min-h-0 py-2">
     <h3 className={`text-[1.8vh] font-black text-white mb-4 uppercase tracking-[0.2em] border-l-4 ${color} pl-3 text-left shrink-0`}>
@@ -54,7 +52,6 @@ const GameMiniList = ({ title, games, color, onSelect }: { title: string, games:
   </div>
 );
 
-// --- COMPONENT: Team Stats Sidebar (Specific Game View) ---
 const TeamStatsSidebar = ({ title, teamName, stats }: { title: string, teamName: string, stats: any }) => {
   const SectionHeader = ({ label }: { label: string }) => (
     <div className="bg-[var(--bg-surface)] py-1 px-2 border-y border-[var(--border-primary)] mt-3 first:mt-0 shrink-0">
@@ -116,8 +113,8 @@ const TeamStatsSidebar = ({ title, teamName, stats }: { title: string, teamName:
   );
 };
 
-// --- COMPONENT: The Ice Rink ---
 const RinkVisualizer = ({ currentZone, goalScored }: { currentZone: number, goalScored: 'home' | 'away' | null }) => {
+  // Zones are 9, 10, 11, 12, 13 per source[cite: 1]
   const zones = [{ id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }];
   return (
     <div className="bg-[var(--bg-surface)] p-2 border-x border-b border-[var(--border-primary)] rounded-b-lg shrink-0">
@@ -142,106 +139,72 @@ const LiveRink = () => {
   const [gameDetails, setGameDetails] = useState<any>(null); 
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
   const [goalFlash, setGoalFlash] = useState<Record<number, 'home' | 'away' | null>>({});
-  
-  // Spoofing State
   const [isSpoofing, setIsSpoofing] = useState(false);
   const [spoofLoading, setSpoofLoading] = useState(false);
   const targetGamesRef = useRef<Record<number, any>>({});
-  const bulkPlaysRef = useRef<Record<number, any[]>>({}); // Holds ALL plays for ALL games
-  const currentPlaysRef = useRef<Record<number, any[]>>({}); // Holds plays that have "happened" so far in spoof
-  
+  const bulkPlaysRef = useRef<Record<number, any[]>>({}); 
+  const currentPlaysRef = useRef<Record<number, any[]>>({}); 
+  const gameCooldowns = useRef<Record<number, number>>({}); 
   const prevScores = useRef<Record<number, { home: number, away: number, homeSO: number, awaySO: number }>>({});
-
   const MAX_CONCURRENT_GAMES = 8; 
-  const CLOCK_TICK_SECONDS = 1; // 1 second of game time per tick
-  const TICK_SPEED_MS = 250; // How fast real-time passes (e.g. 250ms = 4x speed)
 
-  // 1. Fetch Hub Data on Load
   useEffect(() => {
-    fetch('http://localhost:8080/api/games/live/chl?week=2606B')
+    fetch('http://localhost:8080/api/games/live/chl')
       .then(res => res.json())
       .then(data => {
-         if (data && Object.keys(data).length > 0) {
-            setGames(data);
-         }
+         if (data && Object.keys(data).length > 0) setGames(data);
       })
       .catch(err => console.error("Error fetching live games:", err));
   }, []);
 
-  // 2. Fetch Specific Game Details on Click (Only if NOT spoofing)
   useEffect(() => {
-    if (selectedGameId !== null && !isSpoofing) {
-      setGameDetails(null); 
+    if (selectedGameId !== null) {
       fetch(`http://localhost:8080/api/games/details/chl/${selectedGameId}`)
         .then(res => res.json())
-        .then(data => setGameDetails(data))
+        .then(data => {
+          if (isSpoofing) {
+            setGameDetails({ ...data, Feeds: currentPlaysRef.current[selectedGameId] || [] });
+          } else {
+            setGameDetails(data);
+          }
+        })
         .catch(err => console.error("Error fetching game details:", err));
-    } else if (selectedGameId !== null && isSpoofing) {
-        // If spoofing, build a fake details object using the currentPlaysRef!
-        setGameDetails({
-            Feeds: currentPlaysRef.current[selectedGameId] || [],
-            HomeStats: null, // Stats won't load dynamically during spoofing yet
-            AwayStats: null
-        });
     }
   }, [selectedGameId, isSpoofing]);
 
-  const triggerGoal = (gameId: number, side: 'home' | 'away') => {
+  const triggerGoal = (gameId: number, side: 'home' | 'away', duration: number = 4000) => {
     setGoalFlash(prev => ({ ...prev, [gameId]: side }));
-    setTimeout(() => setGoalFlash(prev => ({ ...prev, [gameId]: null })), 4000);
+    setTimeout(() => setGoalFlash(prev => ({ ...prev, [gameId]: null })), duration);
   };
 
-  // --- REPLAY ENGINE LOGIC ---
   const startSpoofLive = async () => {
     if (Object.keys(games).length === 0) return;
     setSpoofLoading(true);
-    
-    // Fetch ALL plays for this week
     try {
-        const res = await fetch('http://localhost:8080/api/games/plays/bulk/chl?week=2606B');
+        const res = await fetch('http://localhost:8080/api/games/plays/bulk/chl');
         const bulkData = await res.json();
-        
-        // Reverse the arrays so period 1, time 1200 is at the END (we will pop() off them)
         Object.keys(bulkData).forEach(gId => {
-             // Assuming DB returns them chronological (or reverse). Let's sort to be safe:
-             // We want the EARLIEST plays at the END of the array so we can pop()
              bulkData[gId].sort((a: any, b: any) => {
-                 if (a.Period !== b.Period) return b.Period - a.Period; // Period 3 before Period 1
-                 return a.TimeOnClock - b.TimeOnClock; // Time 0 before Time 1200
+                 if (a.Period !== b.Period) return b.Period - a.Period; 
+                 return a.TimeOnClock - b.TimeOnClock; 
              });
         });
-        
         bulkPlaysRef.current = bulkData;
     } catch (e) {
-        console.error("Failed to load bulk plays", e);
         setSpoofLoading(false);
         return;
     }
-
-    // 1. Save the historical "Final" targets
     targetGamesRef.current = JSON.parse(JSON.stringify(games));
-    
-    // 2. Reset the board to 0-0, queueing them up.
+    gameCooldowns.current = {}; 
     const resetGames: Record<number, any> = {};
     let count = 0;
-    
     Object.values(games).forEach((g: any) => {
         const isInitialLive = count < MAX_CONCURRENT_GAMES;
-        resetGames[g.GameID] = {
-            ...g,
-            HomeTeamScore: 0,
-            AwayTeamScore: 0,
-            HomeTeamShootoutScore: 0,
-            AwayTeamShootoutScore: 0,
-            Period: isInitialLive ? 1 : 0, 
-            TimeOnClock: 1200,
-            GameComplete: false,
-            IsShootout: false
-        };
-        currentPlaysRef.current[g.GameID] = []; // Reset visual ticker
+        resetGames[g.GameID] = { ...g, HomeTeamScore: 0, AwayTeamScore: 0, HomeTeamShootoutScore: 0, AwayTeamShootoutScore: 0, Period: isInitialLive ? 1 : 0, TimeOnClock: 1200, GameComplete: false, IsShootout: false, Zone: 11 };
+        currentPlaysRef.current[g.GameID] = []; 
+        gameCooldowns.current[g.GameID] = 0;
         count++;
     });
-    
     setGames(resetGames);
     setSpoofLoading(false);
     setIsSpoofing(true);
@@ -249,122 +212,73 @@ const LiveRink = () => {
 
   useEffect(() => {
     if (!isSpoofing) return;
-
     const interval = setInterval(() => {
         setGames(prevGames => {
             const newGames = { ...prevGames };
             let activeCount = 0;
             let upcomingIds: number[] = [];
-
-            // Pass 1: Count active games and gather upcoming queue
+            const now = Date.now();
             Object.values(newGames).forEach((g: any) => {
                 if (!g.GameComplete && g.Period > 0) activeCount++;
                 if (!g.GameComplete && g.Period === 0) upcomingIds.push(g.GameID);
             });
-
-            // Pass 2: If we have room, activate upcoming games!
             while (activeCount < MAX_CONCURRENT_GAMES && upcomingIds.length > 0) {
                 const nextId = upcomingIds.shift();
-                if (nextId) {
-                    newGames[nextId].Period = 1; 
-                    newGames[nextId].TimeOnClock = 1200;
-                    activeCount++;
-                }
+                if (nextId) { newGames[nextId].Period = 1; newGames[nextId].TimeOnClock = 1200; activeCount++; }
             }
-
             let anyActive = false;
-
-            // Pass 3: Tick all currently live games
             Object.values(newGames).forEach((g: any) => {
                 if (g.GameComplete || g.Period === 0) return;
                 anyActive = true;
-
-                // 1. Tick Clock
-                g.TimeOnClock -= CLOCK_TICK_SECONDS;
-                if (g.TimeOnClock < 0) g.TimeOnClock = 0;
-                
-                // Random zone movement for visuals
-                g.Zone = [9, 10, 11, 12, 13][Math.floor(Math.random() * 5)];
-
+                if (now < (gameCooldowns.current[g.GameID] || 0)) return;
                 const playsToProcess = bulkPlaysRef.current[g.GameID] || [];
+                if (playsToProcess.length === 0) { g.GameComplete = true; g.TimeOnClock = 0; g.Zone = 11; return; }
+                const play = playsToProcess.pop()!;
+                g.Period = play.Period;
+                g.TimeOnClock = play.TimeOnClock;
                 
-                // 2. Process ALL plays that occurred at or before this exact second in this period
-                let updatedPlays = false;
-                while (playsToProcess.length > 0) {
-                    const nextPlay = playsToProcess[playsToProcess.length - 1]; // Peek
-                    
-                    // Stop processing if the play happens in the future or a future period
-                    if (nextPlay.Period > g.Period) break;
-                    if (nextPlay.Period === g.Period && nextPlay.TimeOnClock < g.TimeOnClock) break;
-
-                    // Play occurred! Pop it and process
-                    const play = playsToProcess.pop()!;
-                    updatedPlays = true;
-
-                    // Add to visible ticker (prepend so newest is on top)
-                    currentPlaysRef.current[g.GameID].unshift(play);
-
-                    // Did someone score?
-                    const playText = play.PlayText.toLowerCase();
-                    if (playText.includes("goal!")) {
-                         if (playText.includes(g.HomeTeam.toLowerCase()) || playText.includes(targetGamesRef.current[g.GameID].HomeTeam.toLowerCase())) {
-                            if (g.Period === 5) {
-                                g.HomeTeamShootoutScore += 1;
-                            } else {
-                                g.HomeTeamScore += 1;
-                            }
-                            triggerGoal(g.GameID, 'home');
-                         } else {
-                            if (g.Period === 5) {
-                                g.AwayTeamShootoutScore += 1;
-                            } else {
-                                g.AwayTeamScore += 1;
-                            }
-                            triggerGoal(g.GameID, 'away');
-                         }
-                    }
+                // MAPPING FIX: Use play.Zone (9-13) exactly as provided[cite: 1]
+                // Only default to 11 if the value is missing or null
+                g.Zone = (play.Zone !== undefined && play.Zone !== null && play.Zone !== 0) ? play.Zone : 11; 
+                
+                if (g.Period === 5) g.IsShootout = true;
+                currentPlaysRef.current[g.GameID].unshift(play);
+                let isGoal = false;
+                const playText = play.PlayText.toLowerCase();
+                if (playText.includes("goal!")) {
+                     if (playText.includes(targetGamesRef.current[g.GameID].HomeTeam.toLowerCase()) || playText.includes(g.HomeTeam.toLowerCase())) {
+                        if (g.Period === 5) g.HomeTeamShootoutScore += 1;
+                        else g.HomeTeamScore += 1;
+                        triggerGoal(g.GameID, 'home', 10000); 
+                        isGoal = true;
+                     } else {
+                        if (g.Period === 5) g.AwayTeamShootoutScore += 1;
+                        else g.AwayTeamScore += 1;
+                        triggerGoal(g.GameID, 'away', 10000); 
+                        isGoal = true;
+                     }
                 }
-
-                // If we are looking at this game, trigger a re-render of the details
-                if (updatedPlays && selectedGameId === g.GameID) {
-                     setGameDetails({ Feeds: [...currentPlaysRef.current[g.GameID]] });
-                }
-
-                // 3. Period / Game End Logic
-                if (g.TimeOnClock === 0) {
-                    // Are there any more plays left in the whole game?
-                    if (playsToProcess.length === 0) {
-                        g.GameComplete = true;
-                    } else {
-                        // Move to next period
-                        const nextPlay = playsToProcess[playsToProcess.length - 1];
-                        g.Period = nextPlay.Period;
-                        // Period 4 is OT (usually 300s). Period 5 is SO.
-                        g.TimeOnClock = g.Period === 4 ? 300 : (g.Period === 5 ? 0 : 1200); 
-                    }
-                }
+                gameCooldowns.current[g.GameID] = now + (isGoal ? 10000 : 3000);
+                if (selectedGameId === g.GameID) setGameDetails((prev: any) => ({ ...prev, Feeds: [...currentPlaysRef.current[g.GameID]] }));
             });
-
-            if (!anyActive) setIsSpoofing(false); // Stop when all games are done
+            if (!anyActive) setIsSpoofing(false); 
             return newGames;
         });
-    }, TICK_SPEED_MS);
-
+    }, 250); 
     return () => clearInterval(interval);
   }, [isSpoofing, selectedGameId]);
 
-  // 3. Real Live SSE Stream (Hidden underneath, still perfectly active!)
   useEffect(() => {
     const source = new EventSource('http://localhost:8080/api/stream/live/chl');
     source.onmessage = (event: MessageEvent) => {
-      if (isSpoofing) return; // Don't listen to real stream while spoofing
+      if (isSpoofing) return;
       try {
         const play = JSON.parse(event.data);
         const gId = play.GameID;
         const prev = prevScores.current[gId];
         if (prev) {
-          if (play.HomeTeamScore > prev.home || (play.HomeTeamShootoutScore || 0) > prev.homeSO) triggerGoal(gId, 'home');
-          if (play.AwayTeamScore > prev.away || (play.AwayTeamShootoutScore || 0) > prev.awaySO) triggerGoal(gId, 'away');
+          if (play.HomeTeamScore > prev.home || (play.HomeTeamShootoutScore || 0) > prev.homeSO) triggerGoal(gId, 'home', 4000);
+          if (play.AwayTeamScore > prev.away || (play.AwayTeamShootoutScore || 0) > prev.awaySO) triggerGoal(gId, 'away', 4000);
         }
         prevScores.current[gId] = { home: play.HomeTeamScore, away: play.AwayTeamScore, homeSO: play.HomeTeamShootoutScore || 0, awaySO: play.AwayTeamShootoutScore || 0 };
         setGames((prevG: any) => ({ ...prevG, [gId]: play }));
@@ -378,11 +292,9 @@ const LiveRink = () => {
   const upcomingGames = allGames.filter(g => !g.GameComplete && g.Period === 0);
   const resultsGames = allGames.filter(g => g.GameComplete);
 
-  // VIEW 1: THE HUB (All Games)
   if (selectedGameId === null) {
     return (
       <div className="h-screen w-full bg-[var(--bg-primary)] pt-[calc(8vh+10px)] flex flex-col overflow-hidden relative">
-        {/* THE SPOOF BUTTON */}
         <button 
           onClick={startSpoofLive} 
           disabled={isSpoofing || spoofLoading}
@@ -390,14 +302,11 @@ const LiveRink = () => {
         >
           {spoofLoading ? 'Loading Plays...' : isSpoofing ? 'Spoofing...' : '🧪 Spoof Live Run'}
         </button>
-
         <div className="flex-1 px-4 lg:px-8 pb-6 flex flex-col min-h-0 mt-8">
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 h-full min-h-0">
-            
             <div className="hidden lg:flex lg:col-span-2 flex-col h-full min-h-0 border-r border-[var(--border-primary)]/40 pr-2">
               <GameMiniList title="Upcoming" games={upcomingGames} color="border-blue-500" onSelect={setSelectedGameId} />
             </div>
-            
             <div className="col-span-1 lg:col-span-8 flex flex-col h-full min-h-0 px-2">
               <h1 className="text-[2.5vh] font-black text-white mb-6 uppercase tracking-[0.4em] text-center flex items-center justify-center gap-3 shrink-0">
                 <span className={`w-2 h-2 rounded-full ${isSpoofing ? 'bg-purple-500 animate-bounce' : 'bg-red-600 animate-ping'}`}></span> 
@@ -431,18 +340,15 @@ const LiveRink = () => {
                 })}
               </div>
             </div>
-            
             <div className="hidden lg:flex lg:col-span-2 flex-col h-full min-h-0 border-l border-[var(--border-primary)]/40 pl-2">
               <GameMiniList title="Results" games={resultsGames} color="border-[var(--accent-success)]" onSelect={setSelectedGameId} />
             </div>
-            
           </div>
         </div>
       </div>
     );
   }
 
-  // VIEW 2: SPECIFIC GAME DETAILS
   const activeGame = games[selectedGameId];
   const activeFeed = gameDetails?.Feeds || [];
   const activeGoal = goalFlash[selectedGameId];
@@ -451,15 +357,11 @@ const LiveRink = () => {
     <div className="h-screen w-full bg-[var(--bg-primary)] pt-[calc(8vh+10px)] flex flex-col overflow-hidden">
       <div className="flex-1 px-4 lg:px-8 pb-4 flex flex-col min-h-0 justify-center">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 h-full min-h-0">
-          
           <div className="hidden lg:block lg:col-span-2 h-full min-h-0">
             <TeamStatsSidebar title="Home Team Stats" teamName={activeGame?.HomeTeam || "Home"} stats={gameDetails?.HomeStats} />
           </div>
-          
           <div className="col-span-1 lg:col-span-8 flex flex-col h-full min-h-0">
-            <button onClick={() => setSelectedGameId(null)} className="text-tiny text-[var(--text-muted)] hover:text-white uppercase font-bold mb-2 text-left transition-colors shrink-0">
-              ← BACK TO ALL GAMES
-            </button>
+            <button onClick={() => setSelectedGameId(null)} className="text-tiny text-[var(--text-muted)] hover:text-white uppercase font-bold mb-2 text-left transition-colors shrink-0">← BACK TO ALL GAMES</button>
             <div className={`border rounded-t-lg p-4 flex justify-between items-center relative overflow-hidden transition-all duration-500 shadow-xl shrink-0 ${activeGoal ? 'bg-red-800 border-white' : 'bg-[var(--bg-secondary)] border-[var(--border-primary)]'}`}>
               <div className="text-center w-1/3">
                 <h2 className={`text-tiny font-bold uppercase mb-1 ${activeGoal ? 'text-white' : 'text-[var(--text-muted)]'}`}>Home</h2>
@@ -469,12 +371,8 @@ const LiveRink = () => {
                 </div>
               </div>
               <div className={`text-center border-x px-8 ${activeGoal ? 'border-red-400' : 'border-[var(--border-secondary)]'}`}>
-                <span className={`text-[1.2vh] font-bold uppercase block mb-1 tracking-widest ${activeGoal ? 'text-white' : 'text-red-600'}`}>
-                    {getPeriodName(activeGame?.Period, activeGame?.IsShootout)}
-                </span>
-                <span className={`text-[4.5vh] font-mono font-bold italic leading-none ${activeGoal ? 'text-white' : 'text-white'}`}>
-                    {activeGame?.IsShootout || activeGame?.Period === 5 ? '--' : formatClock(activeGame?.TimeOnClock || 1200)}
-                </span>
+                <span className={`text-[1.2vh] font-bold uppercase block mb-1 tracking-widest ${activeGoal ? 'text-white' : 'text-red-600'}`}>{getPeriodName(activeGame?.Period, activeGame?.IsShootout)}</span>
+                <span className={`text-[4.5vh] font-mono font-bold italic leading-none text-white`}>{activeGame?.IsShootout || activeGame?.Period === 5 ? '--' : formatClock(activeGame?.TimeOnClock || 1200)}</span>
               </div>
               <div className="text-center w-1/3">
                 <h2 className={`text-tiny font-bold uppercase mb-1 ${activeGoal ? 'text-white' : 'text-[var(--text-muted)]'}`}>Away</h2>
@@ -484,9 +382,8 @@ const LiveRink = () => {
                 </div>
               </div>
             </div>
-            
+            {/* The activeGame?.Zone value is pulled directly from the DB ZoneID[cite: 1] */}
             <RinkVisualizer currentZone={activeGame?.Zone || 11} goalScored={activeGoal} />
-            
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg mt-4 p-5 flex-1 flex flex-col min-h-0 shadow-lg">
               <h3 className="text-tiny font-black text-[var(--text-muted)] mb-3 uppercase tracking-[0.2em] text-left border-b border-[var(--border-primary)]/30 pb-2 shrink-0">Live Play-By-Play</h3>
               <div className="flex-1 min-h-0 overflow-y-auto pr-2 scrollbar pb-4">
@@ -500,11 +397,9 @@ const LiveRink = () => {
               </div>
             </div>
           </div>
-          
           <div className="hidden lg:block lg:col-span-2 h-full min-h-0">
             <TeamStatsSidebar title="Away Team Stats" teamName={activeGame?.AwayTeam || "Away"} stats={gameDetails?.AwayStats} />
           </div>
-          
         </div>
       </div>
     </div>
