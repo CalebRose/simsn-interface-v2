@@ -284,7 +284,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                     currentPick={currentPick as NFLDraftPick}
                     currentRound={draftState.currentRound}
                     pickNumber={draftState.currentPick}
-                    timeLeft={draftState.seconds}
+                    timeLeft={seconds}
                     isPaused={draftState.isPaused}
                     teamColors={teamColors}
                     league={SimNFL}
