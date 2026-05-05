@@ -63,6 +63,7 @@ export const getLandingCFBData = (
   topCFBReceivers: CollegePlayer[],
   collegeNews: NewsLog[],
   cfbRosterMap: Record<number, CollegePlayer[]> | null,
+  cfbTeamMap: Record<number, CollegeTeam> | null,
 ) => {
   // Team Standings
   const teamStandings = allCFBStandings
@@ -176,6 +177,7 @@ export const getLandingCFBData = (
     teamStats,
     teamNews,
     teamInjuries,
+    teamMap: cfbTeamMap,
   };
 };
 
@@ -193,6 +195,7 @@ export const getLandingNFLData = (
   topNFLReceivers: NFLPlayer[],
   proNews: NewsLog[],
   proRosterMap: Record<number, NFLPlayer[]> | null,
+  nflTeamMap: Record<number, NFLTeam> | null,
 ) => {
   // Team Standings
   const teamStandings = allProStandings
@@ -307,6 +310,7 @@ export const getLandingNFLData = (
     teamStats,
     teamNews,
     teamInjuries,
+    teamMap: nflTeamMap,
   };
 };
 
@@ -325,6 +329,7 @@ export const getLandingCBBData = (
   topCBBRebounds: CBBPlayer[],
   cbbNews: BasketballNewsLog[],
   cbbRosterMap: Record<number, CBBPlayer[]> | null,
+  cbbTeamMap: Record<number, CBBTeam> | null,
 ) => {
   // Team Standings
   const teamStandings = allCBBStandings
@@ -443,6 +448,7 @@ export const getLandingCBBData = (
     teamStats,
     teamNews,
     teamInjuries,
+    teamMap: cbbTeamMap,
   };
 };
 
@@ -461,6 +467,7 @@ export const getLandingNBAData = (
   topNBARebounds: NBAPlayer[],
   nbaNews: BasketballNewsLog[],
   nbaRosterMap: Record<number, NBAPlayer[]> | null,
+  nbaTeamMap: Record<number, NBATeam> | null,
 ) => {
   // Team Standings
   const teamStandings = allNBAStandings
@@ -579,6 +586,7 @@ export const getLandingNBAData = (
     teamStats,
     teamNews,
     teamInjuries,
+    teamMap: nbaTeamMap,
   };
 };
 
@@ -597,6 +605,7 @@ export const getLandingCHLData = (
   topCHLAssists: CHLPlayer[],
   topCHLSaves: CHLPlayer[],
   chlRosterMap: Record<number, CHLPlayer[]> | null,
+  chlTeamMap: Record<number, CHLTeam>,
 ) => {
   // Team Standings
   const teamStandings = allCHLStandings
@@ -719,6 +728,7 @@ export const getLandingCHLData = (
     gameWeek,
     teamStats,
     teamInjuries,
+    teamMap: chlTeamMap,
   };
 };
 
@@ -737,6 +747,7 @@ export const getLandingPHLData = (
   topPHLAssists: PHLPlayer[],
   topPHLSaves: PHLPlayer[],
   phlRosterMap: Record<number, PHLPlayer[]> | null,
+  phlTeamMap: Record<number, PHLTeam>,
 ) => {
   // Team Standings
   const teamStandings = allPHLStandings
@@ -858,6 +869,7 @@ export const getLandingPHLData = (
     gameWeek,
     teamStats,
     teamInjuries,
+    teamMap: phlTeamMap,
   };
 };
 
