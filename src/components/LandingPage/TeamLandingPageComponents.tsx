@@ -324,6 +324,7 @@ interface TeamMatchUpProps {
   darkerBackgroundColor: string;
   isLoading: boolean;
   playerMap: any;
+  teamMap: any;
 }
 
 export const TeamMatchUp = ({
@@ -343,6 +344,7 @@ export const TeamMatchUp = ({
   darkerBackgroundColor,
   isLoading: isLoading,
   playerMap,
+  teamMap,
 }: TeamMatchUpProps) => {
   const [selectedGame, setSelectedGame] = useState<any>(null);
   const { cfbStandingsMap, proStandingsMap, allProStandings } =
@@ -471,6 +473,7 @@ export const TeamMatchUp = ({
         game={{ ...matchUp[0], HomeTeamLogo: homeLogo, AwayTeamLogo: awayLogo }}
         title={`${selectedGame?.HomeTeam} vs ${selectedGame?.AwayTeam}`}
         playerMap={playerMap}
+        teamMap={teamMap}
       />
       {isLoading ? (
         <div className="flex justify-center items-center pb-2">
