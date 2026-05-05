@@ -194,12 +194,12 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
         resultsOverride,
       ).sort((a, b) => {
         if (a.Week !== b.Week) {
-          return a.Week < b.Week;
+          return a.Week - b.Week;
         }
         if (a.GameDay && b.GameDay) {
           return a.GameDay.localeCompare(b.GameDay);
         }
-        return true;
+        return 0;
       }),
     [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );
@@ -783,12 +783,12 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
         resultsOverride,
       ).sort((a, b) => {
         if (a.Week !== b.Week) {
-          return a.Week < b.Week;
+          return a.Week - b.Week;
         }
         if (a.GameDay && b.GameDay) {
           return a.GameDay.localeCompare(b.GameDay);
         }
-        return true;
+        return 0;
       }),
     [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );

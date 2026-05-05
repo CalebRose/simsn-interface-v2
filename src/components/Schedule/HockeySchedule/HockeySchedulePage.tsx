@@ -160,7 +160,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         resultsOverride,
       ).sort((a, b) => {
         if (a.Week !== b.Week) {
-          return a.Week < b.Week;
+          return a.Week - b.Week;
         }
         if (a.GameDay && b.GameDay) {
           return a.GameDay.localeCompare(b.GameDay);
@@ -169,7 +169,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
           return a.LeagueID - b.LeagueID;
         }
 
-        return true;
+        return 0;
       }),
     [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );

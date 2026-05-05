@@ -715,11 +715,7 @@ export const AdditionalTeamInfo = ({
             <Text variant="small" classes={`${textColorClass} font-semibold`}>
               Manage Trades
             </Text>
-            <Button
-              size="sm"
-              disabled={!isUserTeam || team.TeamName === "Denver"}
-              onClick={openTradeModal}
-            >
+            <Button size="sm" disabled={!isUserTeam} onClick={openTradeModal}>
               <Bell />
             </Button>
           </div>
@@ -730,7 +726,7 @@ export const AdditionalTeamInfo = ({
             <Button
               size="sm"
               classes="text-center justify-center"
-              disabled={isUserTeam || team.TeamName === "Denver"}
+              disabled={isUserTeam}
               onClick={openProposeTradeModal}
             >
               <ChatBubble />

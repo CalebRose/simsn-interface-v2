@@ -46,50 +46,62 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
 }) => {
   return (
     <Border classes="w-full p-2">
-      <div className="flex flex-row items-start w-full">
+      {/* Mobile: 2-col grid (logo/info top, activity/stats middle, button full-width).
+          Desktop (lg): horizontal flex row. */}
+      <div className="grid grid-cols-2 gap-2 lg:flex lg:flex-row lg:items-start lg:w-full">
+        {/* Logo */}
         <Border
-          classes="items-center justify-center mt-1"
+          classes="items-center justify-center"
           styles={{ backgroundColor, borderColor }}
         >
-          <div className="flex flex-col w-[6rem] h-[6rem] items-center justify-center">
-            <Logo url={logo} variant="normal" classes="" containerClass="p-4" />
+          <div className="flex flex-col w-full h-[5rem] lg:w-[6rem] lg:h-[6rem] items-center justify-center">
+            <Logo
+              url={logo}
+              variant="normal"
+              classes=""
+              containerClass="p-3 lg:p-4"
+            />
           </div>
         </Border>
-        <div className="flex flex-col pt-2 px-2 mx-auto flex-grow">
-          <Text variant="small" classes="mb-2">
+
+        {/* Team info */}
+        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:mx-auto lg:flex-grow">
+          <Text variant="small" classes="mb-1 lg:mb-2">
             {teamLabel}
           </Text>
           {owner && (
-            <Text variant="xs" classes="mb-2">
+            <Text variant="xs" classes="mb-1 lg:mb-2">
               Owner: {owner.length > 0 ? owner : "Open"}
             </Text>
           )}
           {gm && (
-            <Text variant="xs" classes="mb-2">
+            <Text variant="xs" classes="mb-1 lg:mb-2">
               GM: {gm.length > 0 ? gm : "Open"}
             </Text>
           )}
           {coach && (
-            <Text variant="xs" classes="mb-2">
+            <Text variant="xs" classes="mb-1 lg:mb-2">
               Coach: {coach.length > 0 ? coach : "Open"}
             </Text>
           )}
           {scout && (
-            <Text variant="xs" classes="mb-2">
+            <Text variant="xs" classes="mb-1 lg:mb-2">
               Scout: {scout.length > 0 ? scout : "Open"}
             </Text>
           )}
           {marketing && (
-            <Text variant="xs" classes="mb-2">
+            <Text variant="xs" classes="mb-1 lg:mb-2">
               Marketing: {marketing.length > 0 ? marketing : "Open"}
             </Text>
           )}
         </div>
-        <div className="flex flex-col pt-2 px-2 min-w-[120px]">
-          <Text variant="xs" classes="mb-2">
+
+        {/* Last activity */}
+        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-[120px]">
+          <Text variant="xs" classes="mb-1 lg:mb-2">
             Last Activity
           </Text>
-          <Text variant="xs" classes="mb-2">
+          <Text variant="xs" classes="mb-1 lg:mb-2">
             {lastLogin}
           </Text>
           <Text
@@ -99,29 +111,33 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
             {isInGoodStanding ? "In Good Standing" : "Inactive"}
           </Text>
         </div>
-        <div className="flex flex-col pt-2 px-2 min-w-[100px]">
+
+        {/* Penalty marks / weeks missed */}
+        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-[100px]">
           {penaltyMarks && (
             <>
-              <Text variant="xs" classes="mb-2">
+              <Text variant="xs" classes="mb-1 lg:mb-2">
                 Penalty Marks
               </Text>
-              <Text variant="xs" classes="mb-2">
+              <Text variant="xs" classes="mb-1 lg:mb-2">
                 {penaltyMarks}
               </Text>
             </>
           )}
           {weeksMissed !== undefined && (
             <>
-              <Text variant="xs" classes="mb-2">
+              <Text variant="xs" classes="mb-1 lg:mb-2">
                 Weeks Missed
               </Text>
-              <Text variant="xs" classes="mb-2">
+              <Text variant="xs" classes="mb-1 lg:mb-2">
                 {weeksMissed} {isAIInRecruiting ? "(AI Active)" : ""}
               </Text>
             </>
           )}
         </div>
-        <div className="flex flex-col pt-2 px-2 my-auto">
+
+        {/* Remove button — spans full width on mobile, auto on desktop */}
+        <div className="col-span-2 flex justify-center lg:col-span-1 lg:flex-col lg:pt-2 lg:px-2 lg:my-auto">
           <Button variant="danger" onClick={onClick} disabled={disable}>
             Remove
           </Button>
