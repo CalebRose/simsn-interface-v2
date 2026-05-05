@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
@@ -7,12 +7,14 @@ import { ForumBorder } from "../../_design/Borders";
 import { ForumBreadcrumbs } from "./components/ForumBreadcrumbs";
 import { PostList } from "./components/PostList";
 import { ForumEditor } from "./components/ForumEditor";
+import type { ForumEditorHandle } from "./components/ForumEditor";
 import { PollBlock } from "./components/PollBlock";
 import { GameReferenceCard } from "./components/GameReferenceCard";
 import { ModerationControls } from "./components/ModerationControls";
 import { useThread } from "../../_hooks/useForumHooks";
 import { useForumStore } from "../../context/ForumContext";
 import { useAuthStore } from "../../context/AuthContext";
+import { useForumDraft } from "../../_hooks/useForumDraft";
 import { ForumService } from "../../_services/forumService";
 import {
   Post,
@@ -118,6 +120,20 @@ export const ThreadPage: React.FC = () => {
   const [quotingPost, setQuotingPost] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ── Draft persistence ──────────────────────────────────────────────────────
+  const replyDraftKey = currentUser
+    ? `forum_draft_reply_${threadId}_${currentUser.id}`
+    : null;
+  const {
+    draft: replyDraft,
+    saveDraft: saveReplyDraft,
+    clearDraft: clearReplyDraft,
+    hasDraft: hasReplyDraft,
+  } = useForumDraft<RichTextDocument>(replyDraftKey);
+  const replyEditorRef = useRef<ForumEditorHandle>(null);
+  const [draftBannerDismissed, setDraftBannerDismissed] = useState(false);
+  const showDraftBanner = hasReplyDraft && !draftBannerDismissed;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
     null,
   );
@@ -212,6 +228,8 @@ export const ThreadPage: React.FC = () => {
       };
 
       await createPost(dto);
+      clearReplyDraft();
+      setDraftBannerDismissed(false);
       setReplyingTo(null);
       setQuotingPost(null);
     } finally {
@@ -819,9 +837,30 @@ export const ThreadPage: React.FC = () => {
                 </button>
               </div>
             )}
+
+            {/* Draft restore banner */}
+            {showDraftBanner && (
+              <div className="flex items-center justify-between mb-2 px-3 py-2 rounded text-sm bg-blue-950/60 border border-blue-700/50 text-blue-300">
+                <span>Draft restored from your last session.</span>
+                <button
+                  onClick={() => {
+                    clearReplyDraft();
+                    replyEditorRef.current?.clear();
+                    setDraftBannerDismissed(true);
+                  }}
+                  className="ml-4 text-xs text-blue-400 hover:text-blue-200 underline underline-offset-2"
+                >
+                  Discard draft
+                </button>
+              </div>
+            )}
+
             <ForumEditor
+              ref={replyEditorRef}
               placeholder="Write a reply…"
+              initialDoc={replyDraft ?? undefined}
               onSubmit={handleReply}
+              onDocChange={saveReplyDraft}
               isSubmitting={isSubmitting}
             />
           </div>

@@ -372,10 +372,14 @@ interface ForumEditorProps {
   submitLabel?: string;
   isSubmitting?: boolean;
   maxLength?: number;
+  /** Called on every editor content change (debounce externally if needed). */
+  onDocChange?: (doc: RichTextDocument) => void;
 }
 
 export interface ForumEditorHandle {
   focus: () => void;
+  clear: () => void;
+  setContent: (doc: RichTextDocument | null) => void;
 }
 
 /** Converts a plain string into a minimal RichTextDocument. */
@@ -570,6 +574,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
       submitLabel = "Post",
       isSubmitting = false,
       maxLength = MAX_DEFAULT,
+      onDocChange,
     },
     ref,
   ) {
@@ -580,6 +585,10 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
     const [isInTable, setIsInTable] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
+    // Keep a stable ref to the latest onDocChange so the editor closure never
+    // captures a stale version of the callback.
+    const onDocChangeRef = useRef(onDocChange);
+    onDocChangeRef.current = onDocChange;
 
     const editor = useEditor({
       extensions: [
@@ -609,6 +618,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
       onUpdate: ({ editor }) => {
         setIsEmpty(editor.isEmpty);
         setIsInTable(editor.isActive("table"));
+        onDocChangeRef.current?.(editor.getJSON() as RichTextDocument);
       },
       onSelectionUpdate: ({ editor }) => {
         setIsInTable(editor.isActive("table"));
@@ -627,6 +637,17 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
     useImperativeHandle(ref, () => ({
       focus: () => {
         editor?.commands.focus();
+      },
+      clear: () => {
+        editor?.commands.clearContent(true);
+      },
+      setContent: (doc: RichTextDocument | null) => {
+        if (!editor) return;
+        if (doc) {
+          editor.commands.setContent(doc);
+        } else {
+          editor.commands.clearContent(true);
+        }
       },
     }));
 
