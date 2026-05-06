@@ -1014,7 +1014,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
           {player.TeamID > 0 ? (
             <div key={player.TeamID}>
               <Logo
-                url={getLogo(SimCBB, player.TeamID, false)}
+                url={getLogo(SimCFB, player.TeamID, false)}
                 variant="small"
               />
             </div>
