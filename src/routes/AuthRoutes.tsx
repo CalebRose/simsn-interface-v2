@@ -342,6 +342,7 @@ export const AuthRoutes = [
   </AuthGuard>
   }  
   />,
+  
   <Route
     key="CFB STATS"
     path={routes.CFB_STATS}
