@@ -33,6 +33,7 @@ import { SimulationControlPanel } from "./SimulationControlPanel";
 import { RecruitingAdminPanel } from "./RecruitingAdminPanel";
 import { useMemo } from "react";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
+import { NFLUDFAAdminPanel } from "./NFLUDFAAdminPanel";
 
 const IFAAdminSection = () => {
   const { seasonContext } = useSimBaseballStore();
@@ -292,6 +293,9 @@ export const AdminPage = () => {
             <CommissionerHub league={selectedLeague} />
           </Border>
         )}
+        {/* NEW NFL UDFA PANEL */}
+        {selectedLeague === SimNFL && <NFLUDFAAdminPanel />}
+
         {selectedLeague === SimMLB && <IFAAdminSection />}
         {(selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball) && (
           <SimulationControlSection />

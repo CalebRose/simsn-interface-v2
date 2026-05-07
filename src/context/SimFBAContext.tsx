@@ -97,6 +97,7 @@ import FBAScheduleService from "../_services/scheduleService";
 import { notificationService } from "../_services/notificationService";
 import { TransferPortalService } from "../_services/transferPortalService";
 import { DraftService } from "../_services/draftService";
+import { CollegeTeam, NFLTeam, Timestamp, NFLPlayer, NFLDraftee, NFLUDFABoard } from "../models/footballModels";
 
 // ✅ Define Types for Context
 interface SimFBAContextProps {
@@ -299,6 +300,11 @@ interface SimFBAContextProps {
   setNFLDraftPicks: (draftPicks: any[]) => void;
   exportNFLDraftees: () => Promise<void>;
   exportNFLFreeAgents: () => Promise<void>;
+  nflUDFABoard: NFLUDFABoard | null;
+  getUDFABoard: (teamID: number) => Promise<void>;
+  addPlayerToUDFABoard: (player: any) => Promise<void>;
+  saveUDFABoard: (board: any) => Promise<void>;
+  removePlayerFromUDFABoard: (profileID: number) => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -625,6 +631,39 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [freeAgents, setFreeAgents] = useState<NFLPlayer[]>([]);
   const [waiverPlayers, setWaiverPlayers] = useState<NFLPlayer[]>([]);
   const [nflDraftees, setNFLDraftees] = useState<NFLDraftee[]>([]);
+  const [nflUDFABoard, setNflUDFABoard] = useState<NFLUDFABoard | null>(null);
+
+  const getUDFABoard = async (teamID: number) => {
+    const res = await DraftService.GetUDFABoard(teamID);
+    setNflUDFABoard(new NFLUDFABoard(res));
+  };
+
+  const addPlayerToUDFABoard = async (player: any) => {
+    if (!nflTeam) return;
+    const dto = {
+      PlayerID: player.ID,
+      PlayerName: `${player.FirstName} ${player.LastName}`,
+      Position: player.Position,
+      TeamID: nflTeam.ID,
+      TeamAbbr: nflTeam.TeamAbbr,
+      Points: 1
+    };
+    await DraftService.AddPlayerToUDFABoard(dto);
+    await getUDFABoard(nflTeam.ID);
+    enqueueSnackbar("Added to UDFA Board", { variant: "success" });
+  };
+
+  const saveUDFABoard = async (board: any) => {
+    await DraftService.SaveUDFABoard(board);
+    setNflUDFABoard(board);
+    enqueueSnackbar("Bids Saved", { variant: "success" });
+  };
+
+  const removePlayerFromUDFABoard = async (profileID: number) => {
+    await DraftService.RemovePlayerFromUDFABoard(profileID);
+    if (nflTeam) await getUDFABoard(nflTeam.ID);
+    enqueueSnackbar("Removed from Board", { variant: "info" });
+  };
   const [collegePolls, setCollegePolls] = useState<CollegePollOfficial[]>([]);
   const [collegePollSubmission, setCollegePollSubmission] =
     useState<CollegePollSubmission>({} as CollegePollSubmission);
