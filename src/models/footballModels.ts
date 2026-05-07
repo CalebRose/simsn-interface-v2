@@ -9655,4 +9655,49 @@ export class NFLRetiredPlayer {
     }
     return a;
   }
+  
+}
+export class NFLUDFAProfile {
+    ID: number;
+    NFLUDFABoardID: number;
+    PlayerID: number;
+    PlayerName: string;
+    Position: string;
+    TeamID: number;
+    TeamAbbr: string;
+    Points: number;
+    IsSigned: boolean;
+
+    constructor(source: any = {}) {
+        if ("string" === typeof source) source = JSON.parse(source);
+        this.ID = source["ID"];
+        this.NFLUDFABoardID = source["NFLUDFABoardID"];
+        this.PlayerID = source["PlayerID"];
+        this.PlayerName = source["PlayerName"];
+        this.Position = source["Position"];
+        this.TeamID = source["TeamID"];
+        this.TeamAbbr = source["TeamAbbr"];
+        this.Points = source["Points"] || 0;
+        this.IsSigned = source["IsSigned"] || false;
+    }
+}
+
+export class NFLUDFABoard {
+    ID: number;
+    TeamID: number;
+    TeamAbbr: string;
+    Profiles: NFLUDFAProfile[];
+
+    constructor(source: any = {}) {
+        if ("string" === typeof source) source = JSON.parse(source);
+        this.ID = source["ID"];
+        this.TeamID = source["TeamID"];
+        this.TeamAbbr = source["TeamAbbr"];
+        this.Profiles = this.convertValues(source["Profiles"], NFLUDFAProfile);
+    }
+
+    convertValues(a: any, classs: any): any {
+        if (!a) return [];
+        return (a as any[]).map((elem) => new classs(elem));
+    }
 }

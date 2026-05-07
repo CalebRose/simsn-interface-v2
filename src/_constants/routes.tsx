@@ -25,6 +25,7 @@ export default {
   PHL_FREE_AGENCY: "/phl/freeagency/",
   NBA_FREE_AGENCY: "/nba/freeagency/",
   NFL_FREE_AGENCY: "/nfl/freeagency/",
+  NFL_UDFA_RECRUITING: "/nfl/udfa-recruiting",
   CFB_STATS: "/cfb/statistics",
   CBB_STATS: "/cbb/statistics",
   NFL_STATS: "/nfl/statistics",

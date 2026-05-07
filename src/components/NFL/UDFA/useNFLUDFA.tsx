@@ -2,14 +2,23 @@ import { useEffect, useState } from "react";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 
 export const useNFLUDFA = () => {
-    const { nflTeam, nflUDFABoard, saveUDFABoard, removePlayerFromUDFABoard } = useSimFBAStore();
+    // We added getUDFABoard here
+    const { nflTeam, nflUDFABoard, getUDFABoard, saveUDFABoard, removePlayerFromUDFABoard } = useSimFBAStore();
     const [localBoard, setLocalBoard] = useState<any>(null);
     const [pointsRemaining, setPointsRemaining] = useState(20);
 
+    // Self-Healing Logic: If the page loads and the board is missing, fetch it automatically.
+    useEffect(() => {
+        if (nflTeam && !nflUDFABoard) {
+            getUDFABoard(nflTeam.ID);
+        }
+    }, [nflTeam, nflUDFABoard, getUDFABoard]);
+
+    // Keep the local state in sync with the global board
     useEffect(() => {
         if (nflUDFABoard) {
             setLocalBoard(nflUDFABoard);
-            const used = nflUDFABoard.Profiles?.reduce((sum, p) => sum + p.Points, 0) || 0;
+            const used = nflUDFABoard.Profiles?.reduce((sum: number, p: any) => sum + p.Points, 0) || 0;
             setPointsRemaining(20 - used);
         }
     }, [nflUDFABoard]);

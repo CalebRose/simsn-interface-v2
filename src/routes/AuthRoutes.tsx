@@ -49,6 +49,8 @@ import { ForumCategoryPage } from "../components/Forum/ForumCategoryPage";
 import { ThreadPage } from "../components/Forum/ThreadPage";
 import { CreateThreadPage } from "../components/Forum/CreateThreadPage";
 import { EditPostPage } from "../components/Forum/EditPostPage";
+import { NFLUDFAView } from "../components/NFL/UDFA/NFLUDFAView";
+import { NFLUDFA_LocalTest } from "../components/NFL/UDFA/NFLUDFA_LocalTest";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
@@ -321,6 +323,24 @@ export const AuthRoutes = [
         <FreeAgencyPage league={SimNFL} />
       </AuthGuard>
     }
+  />,
+  <Route 
+    key="NFL UDFA RECRUITING"
+   path={routes.NFL_UDFA_RECRUITING}
+   element={
+   <AuthGuard>
+   <NFLUDFAView />
+  </AuthGuard>
+  }  
+  />,
+  <Route 
+    key="NFL UDFA TEST"
+   path="/nfl/udfa-test"
+   element={
+   <AuthGuard>
+   <NFLUDFA_LocalTest />
+  </AuthGuard>
+  }  
   />,
   <Route
     key="CFB STATS"

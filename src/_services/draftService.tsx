@@ -4,7 +4,6 @@ import {
   PostCall,
   GetActionCall,
   GetExportCall,
-  DeleteCall,
 } from "../_helper/fetchHelper";
 
 export const DraftService = {
@@ -51,7 +50,7 @@ export const DraftService = {
     PostCall(`${fbaUrl}nfl/udfa/board/save`, dto),
 
   RemovePlayerFromUDFABoard: async (profileID: number) => 
-    DeleteCall(`${fbaUrl}nfl/udfa/board/remove/${profileID}`),
+    GetActionCall(`${fbaUrl}nfl/udfa/board/remove/${profileID}`),
 
   ProcessUDFAs: async (isDryRun: boolean) => 
     GetCall(`${fbaUrl}admin/process-udfas?dryRun=${isDryRun}`),

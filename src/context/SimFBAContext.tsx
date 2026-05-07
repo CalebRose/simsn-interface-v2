@@ -65,6 +65,7 @@ import {
   NFLTeamProposals,
   AwardsList,
   TransferPortalProfile,
+  NFLUDFABoard,
 } from "../models/footballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { fba_ws } from "../_constants/urls";
@@ -97,7 +98,6 @@ import FBAScheduleService from "../_services/scheduleService";
 import { notificationService } from "../_services/notificationService";
 import { TransferPortalService } from "../_services/transferPortalService";
 import { DraftService } from "../_services/draftService";
-import { CollegeTeam, NFLTeam, Timestamp, NFLPlayer, NFLDraftee, NFLUDFABoard } from "../models/footballModels";
 
 // ✅ Define Types for Context
 interface SimFBAContextProps {
@@ -469,6 +469,11 @@ const defaultContext: SimFBAContextProps = {
   setNFLDraftPicks: () => {},
   exportNFLDraftees: async () => {},
   exportNFLFreeAgents: async () => {},
+  nflUDFABoard: null,
+  getUDFABoard: async () => {},
+  addPlayerToUDFABoard: async () => {},
+  saveUDFABoard: async () => {},
+  removePlayerFromUDFABoard: async () => {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -633,9 +638,15 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [nflDraftees, setNFLDraftees] = useState<NFLDraftee[]>([]);
   const [nflUDFABoard, setNflUDFABoard] = useState<NFLUDFABoard | null>(null);
 
-  const getUDFABoard = async (teamID: number) => {
-    const res = await DraftService.GetUDFABoard(teamID);
-    setNflUDFABoard(new NFLUDFABoard(res));
+const getUDFABoard = async (teamID: number) => {
+    try {
+        const res = await DraftService.GetUDFABoard(teamID);
+        setNflUDFABoard(new NFLUDFABoard(res));
+    } catch (e) {
+        console.error("Could not fetch UDFA Board", e);
+        // Fallback: Set an empty board so the loading spinner stops!
+        setNflUDFABoard(new NFLUDFABoard({ TeamID: teamID, Profiles: [] }));
+    }
   };
 
   const addPlayerToUDFABoard = async (player: any) => {
@@ -2634,7 +2645,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       });
 
       try {
-        await DraftService.RemoveNFLPlayerFromBoard(id);
+        await DraftService.RemovePlayerFromBoard(id);
       } catch (error) {
         console.error("Failed to remove player from scouting board:", error);
         if (teamID && removedProfile) {
@@ -2891,6 +2902,11 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         setNFLDraftPicks,
         exportNFLDraftees,
         exportNFLFreeAgents,
+        nflUDFABoard,
+        getUDFABoard,
+        addPlayerToUDFABoard,
+        saveUDFABoard,
+        removePlayerFromUDFABoard,
       }}
     >
       {children}
