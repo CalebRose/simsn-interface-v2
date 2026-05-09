@@ -174,26 +174,26 @@ const LiveRink = () => {
       ? (hckTs?.CollegeWeekID || hckTs?.WeekID || hckTs?.CollegeWeek || hckTs?.Week || 0)
       : (hckTs?.ProWeekID || hckTs?.WeekID || hckTs?.ProWeek || hckTs?.Week || 0);
 
-  const currentTimeslot = useMemo(() => {
-      if (!hckTs) return "";
-      if (!hckTs.GamesARan) return "A";
-      if (!hckTs.GamesBRan) return "B";
-      if (!hckTs.GamesCRan) return "C";
-      return "D"; 
-  }, [hckTs]);
+ // NEW: Manual control over the timeslot
+  const [selectedTimeslot, setSelectedTimeslot] = useState<string>("C");
+  
 
-  // --- FETCHING HUB DATA ---
+ // --- FETCHING HUB DATA ---
   useEffect(() => {
     if (!ts) return;
     const isCollege = selectedLeague === SimCHL;
-    fetch(`${hckUrl}games/live/chl?isCollege=${isCollege}&season=${currentSeason}&week=${currentWeek}&timeslot=${currentTimeslot}`)
+    // Updated variable here:
+    fetch(`${hckUrl}games/live/chl?isCollege=${isCollege}&season=${currentSeason}&week=${currentWeek}&timeslot=${selectedTimeslot}`)
       .then(res => res.json())
       .then(data => {
          if (data && Object.keys(data).length > 0) setGames(data);
          else setGames({});
       })
       .catch(err => console.error("Error fetching live games:", err));
-  }, [selectedLeague, currentSeason, currentWeek, currentTimeslot, ts]);
+  // Updated dependency array here:
+  }, [selectedLeague, currentSeason, currentWeek, selectedTimeslot, ts]);
+  
+
 
   // --- FETCHING GAME DETAILS ---
   useEffect(() => {
@@ -222,8 +222,7 @@ const LiveRink = () => {
     setSpoofLoading(true);
     const isCollege = selectedLeague === SimCHL;
     try {
-        const res = await fetch(`${hckUrl}games/plays/bulk/chl?isCollege=${isCollege}&season=${currentSeason}&week=${currentWeek}&timeslot=${currentTimeslot}`);
-        const bulkData = await res.json();
+        const res = await fetch(`${hckUrl}games/plays/bulk/chl?isCollege=${isCollege}&season=${currentSeason}&week=${currentWeek}&timeslot=${selectedTimeslot}`);        const bulkData = await res.json();
         Object.keys(bulkData).forEach(gId => {
              bulkData[gId].sort((a: any, b: any) => {
                  if (a.Period !== b.Period) return b.Period - a.Period; 
@@ -305,20 +304,23 @@ const LiveRink = () => {
                 if (g.Period === 5) g.IsShootout = true;
                 currentPlaysRef.current[g.GameID].unshift(play);
                 let isGoal = false;
-                const playText = play.PlayText.toLowerCase();
-                if (playText.includes("goal!")) {
-                     if (playText.includes(targetGamesRef.current[g.GameID].HomeTeam.toLowerCase()) || playText.includes(g.HomeTeam.toLowerCase())) {
-                        if (g.Period === 5) g.HomeTeamShootoutScore += 1;
-                        else g.HomeTeamScore += 1;
-                        triggerGoal(g.GameID, 'home', 10000); 
-                        isGoal = true;
-                     } else {
-                        if (g.Period === 5) g.AwayTeamShootoutScore += 1;
-                        else g.AwayTeamScore += 1;
-                        triggerGoal(g.GameID, 'away', 10000); 
-                        isGoal = true;
-                     }
+                
+                // BULLETPROOF DETECTOR: Did the raw DB score go up on this exact play?
+                if (play.HomeScore > g.HomeTeamScore || play.HomeSOScore > g.HomeTeamShootoutScore) {
+                    triggerGoal(g.GameID, 'home', 10000); 
+                    isGoal = true;
+                } else if (play.AwayScore > g.AwayTeamScore || play.AwaySOScore > g.AwayTeamShootoutScore) {
+                    triggerGoal(g.GameID, 'away', 10000); 
+                    isGoal = true;
                 }
+
+                // ALWAYS strictly sync the scoreboard to the current play's DB score
+                g.HomeTeamScore = play.HomeScore;
+                g.AwayTeamScore = play.AwayScore;
+                g.HomeTeamShootoutScore = play.HomeSOScore;
+                g.AwayTeamShootoutScore = play.AwaySOScore;
+
+                // Pause the feed for 10s if a goal is scored to let the horn flash
                 gameCooldowns.current[g.GameID] = now + (isGoal ? 10000 : 3000);
                 if (selectedGameId === g.GameID) setGameDetails((prev: any) => ({ ...prev, Feeds: [...currentPlaysRef.current[g.GameID]] }));
             });
@@ -362,20 +364,37 @@ const LiveRink = () => {
               <span className={`w-2 h-2 rounded-full ${isSpoofing ? 'bg-purple-500 animate-bounce' : 'bg-red-600 animate-ping'}`}></span> 
               {isSpoofing ? 'SPOOFED REPLAY HUB' : 'Live Hockey Hub'}
             </h1>
-            <ButtonGroup>
-                <PillButton 
-                    isSelected={selectedLeague === SimCHL} 
-                    onClick={() => { setSelectedLeague(SimCHL); setSelectedGameId(null); }}
-                >
-                    College
-                </PillButton>
-                <PillButton 
-                    isSelected={selectedLeague === SimPHL} 
-                    onClick={() => { setSelectedLeague(SimPHL); setSelectedGameId(null); }}
-                >
-                    Pro
-                </PillButton>
-            </ButtonGroup>
+            
+            <div className="flex gap-4">
+                {/* NEW TIMESLOT SELECTOR */}
+                <ButtonGroup>
+                    {['A', 'B', 'C', 'D'].map(slot => (
+                        <PillButton 
+                            key={slot}
+                            isSelected={selectedTimeslot === slot} 
+                            onClick={() => { setSelectedTimeslot(slot); setSelectedGameId(null); }}
+                        >
+                            {slot}
+                        </PillButton>
+                    ))}
+                </ButtonGroup>
+
+                {/* EXISTING LEAGUE SELECTOR */}
+                <ButtonGroup>
+                    <PillButton 
+                        isSelected={selectedLeague === SimCHL} 
+                        onClick={() => { setSelectedLeague(SimCHL); setSelectedGameId(null); }}
+                    >
+                        College
+                    </PillButton>
+                    <PillButton 
+                        isSelected={selectedLeague === SimPHL} 
+                        onClick={() => { setSelectedLeague(SimPHL); setSelectedGameId(null); }}
+                    >
+                        Pro
+                    </PillButton>
+                </ButtonGroup>
+            </div>
           </div>
 
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 h-full min-h-0">
