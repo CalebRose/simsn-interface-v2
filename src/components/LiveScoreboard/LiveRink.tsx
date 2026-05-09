@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useLeagueStore } from '../../context/LeagueContext';
+import { useAuthStore } from '../../context/AuthContext';
+import { SimCHL, SimPHL, League } from '../../_constants/constants';
+import { PillButton, ButtonGroup } from '../../_design/Buttons';
+import { hckUrl } from '../../_constants/urls';
 
 const getPeriodName = (p: number, isSO: boolean) => {
   if (isSO || p === 5) return "SO";
@@ -13,7 +18,7 @@ const formatClock = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-const GameMiniList = ({ title, games, color, onSelect }: { title: string, games: any[], color: string, onSelect: (id: number) => void }) => (
+const GameMiniList = ({ title, games, color, onSelect, userTeamID }: { title: string, games: any[], color: string, onSelect: (id: number) => void, userTeamID?: number }) => (
   <div className="flex flex-col h-full min-h-0 py-2">
     <h3 className={`text-[1.8vh] font-black text-white mb-4 uppercase tracking-[0.2em] border-l-4 ${color} pl-3 text-left shrink-0`}>
       {title} <span className="text-[var(--text-muted)] text-[1.4vh]">({games.length})</span>
@@ -23,30 +28,36 @@ const GameMiniList = ({ title, games, color, onSelect }: { title: string, games:
       {games.length === 0 ? (
         <p className="text-tiny text-[var(--text-muted)] italic text-left opacity-40 px-3">No games found.</p>
       ) : (
-        games.map((game) => (
-          <div 
-            key={game.GameID} 
-            onClick={() => onSelect(game.GameID)}
-            className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded p-3 shadow-sm hover:border-[var(--text-muted)] hover:bg-white/5 transition-all text-left cursor-pointer shrink-0"
-          >
-             <div className="flex justify-between text-[1vh] font-bold text-[var(--text-muted)] mb-1 uppercase">
-                <span>{game.IsShootout || game.Period === 5 ? 'SO' : game.Period === 4 ? 'OT' : game.GameComplete ? 'FINAL' : 'SCHEDULED'}</span>
-                <span>ID: {game.GameID}</span>
-             </div>
-             <div className="flex justify-between items-center text-[1.4vh] font-black text-[var(--text-primary)]">
-                <span>{game.HomeTeam}</span>
-                <span className="text-[var(--text-muted)] font-normal px-2 text-[1vh]">@</span>
-                <span>{game.AwayTeam}</span>
-             </div>
-             {game.GameComplete && (
-                <div className="mt-1 text-right text-[1.6vh] font-mono font-bold text-[var(--accent-success)]">
-                   {game.HomeTeamScore} {game.HomeTeamShootoutScore > 0 || game.AwayTeamShootoutScore > 0 ? `(${game.HomeTeamShootoutScore})` : ''} 
-                   {" - "} 
-                   {game.AwayTeamScore} {game.HomeTeamShootoutScore > 0 || game.AwayTeamShootoutScore > 0 ? `(${game.AwayTeamShootoutScore})` : ''}
-                </div>
-             )}
-          </div>
-        ))
+        games.map((game) => {
+          const isMyTeam = game.HomeTeamID === userTeamID || game.AwayTeamID === userTeamID;
+          return (
+            <div 
+              key={game.GameID} 
+              onClick={() => onSelect(game.GameID)}
+              className={`bg-[var(--bg-secondary)] border ${isMyTeam ? 'border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.15)]' : 'border-[var(--border-primary)]'} rounded p-3 shadow-sm hover:border-[var(--text-muted)] hover:bg-white/5 transition-all text-left cursor-pointer shrink-0`}
+            >
+              <div className="flex justify-between text-[1vh] font-bold text-[var(--text-muted)] mb-1 uppercase">
+                  <div className="flex items-center gap-2">
+                    <span>{game.IsShootout || game.Period === 5 ? 'SO' : game.Period === 4 ? 'OT' : game.GameComplete ? 'FINAL' : 'SCHEDULED'}</span>
+                    {isMyTeam && <span className="bg-yellow-500/20 text-yellow-500 px-1 rounded">MY TEAM</span>}
+                  </div>
+                  <span>ID: {game.GameID}</span>
+              </div>
+              <div className="flex justify-between items-center text-[1.4vh] font-black text-[var(--text-primary)]">
+                  <span className={game.HomeTeamID === userTeamID ? "text-yellow-400" : ""}>{game.HomeTeam}</span>
+                  <span className="text-[var(--text-muted)] font-normal px-2 text-[1vh]">@</span>
+                  <span className={game.AwayTeamID === userTeamID ? "text-yellow-400" : ""}>{game.AwayTeam}</span>
+              </div>
+              {game.GameComplete && (
+                  <div className="mt-1 text-right text-[1.6vh] font-mono font-bold text-[var(--accent-success)]">
+                    {game.HomeTeamScore} {game.HomeTeamShootoutScore > 0 || game.AwayTeamShootoutScore > 0 ? `(${game.HomeTeamShootoutScore})` : ''} 
+                    {" - "} 
+                    {game.AwayTeamScore} {game.HomeTeamShootoutScore > 0 || game.AwayTeamShootoutScore > 0 ? `(${game.AwayTeamShootoutScore})` : ''}
+                  </div>
+              )}
+            </div>
+          )
+        })
       )}
     </div>
   </div>
@@ -114,7 +125,6 @@ const TeamStatsSidebar = ({ title, teamName, stats }: { title: string, teamName:
 };
 
 const RinkVisualizer = ({ currentZone, goalScored }: { currentZone: number, goalScored: 'home' | 'away' | null }) => {
-  // Zones are 9, 10, 11, 12, 13 per source[cite: 1]
   const zones = [{ id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }, { id: 13 }];
   return (
     <div className="bg-[var(--bg-surface)] p-2 border-x border-b border-[var(--border-primary)] rounded-b-lg shrink-0">
@@ -135,12 +145,17 @@ const RinkVisualizer = ({ currentZone, goalScored }: { currentZone: number, goal
 };
 
 const LiveRink = () => {
+  const { currentUser } = useAuthStore();
+  const { ts } = useLeagueStore();
+  
+  const [selectedLeague, setSelectedLeague] = useState<League>(SimCHL);
   const [games, setGames] = useState<Record<number, any>>({});
   const [gameDetails, setGameDetails] = useState<any>(null); 
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
   const [goalFlash, setGoalFlash] = useState<Record<number, 'home' | 'away' | null>>({});
   const [isSpoofing, setIsSpoofing] = useState(false);
   const [spoofLoading, setSpoofLoading] = useState(false);
+  
   const targetGamesRef = useRef<Record<number, any>>({});
   const bulkPlaysRef = useRef<Record<number, any[]>>({}); 
   const currentPlaysRef = useRef<Record<number, any[]>>({}); 
@@ -148,18 +163,43 @@ const LiveRink = () => {
   const prevScores = useRef<Record<number, { home: number, away: number, homeSO: number, awaySO: number }>>({});
   const MAX_CONCURRENT_GAMES = 8; 
 
+  // --- SMART VARIABLES ---
+  const userTeamID = useMemo(() => {
+      return selectedLeague === SimCHL ? currentUser?.CHLTeamID : currentUser?.PHLTeamID;
+  }, [selectedLeague, currentUser]);
+
+  const hckTs = ts as any;
+  const currentSeason = hckTs?.SeasonID || hckTs?.Season || 0;
+  const currentWeek = selectedLeague === SimCHL 
+      ? (hckTs?.CollegeWeekID || hckTs?.WeekID || hckTs?.CollegeWeek || hckTs?.Week || 0)
+      : (hckTs?.ProWeekID || hckTs?.WeekID || hckTs?.ProWeek || hckTs?.Week || 0);
+
+  const currentTimeslot = useMemo(() => {
+      if (!hckTs) return "";
+      if (!hckTs.GamesARan) return "A";
+      if (!hckTs.GamesBRan) return "B";
+      if (!hckTs.GamesCRan) return "C";
+      return "D"; 
+  }, [hckTs]);
+
+  // --- FETCHING HUB DATA ---
   useEffect(() => {
-    fetch('http://localhost:8080/api/games/live/chl')
+    if (!ts) return;
+    const isCollege = selectedLeague === SimCHL;
+    fetch(`${hckUrl}games/live/chl?isCollege=${isCollege}&season=${currentSeason}&week=${currentWeek}&timeslot=${currentTimeslot}`)
       .then(res => res.json())
       .then(data => {
          if (data && Object.keys(data).length > 0) setGames(data);
+         else setGames({});
       })
       .catch(err => console.error("Error fetching live games:", err));
-  }, []);
+  }, [selectedLeague, currentSeason, currentWeek, currentTimeslot, ts]);
 
+  // --- FETCHING GAME DETAILS ---
   useEffect(() => {
     if (selectedGameId !== null) {
-      fetch(`http://localhost:8080/api/games/details/chl/${selectedGameId}`)
+      const isCollege = selectedLeague === SimCHL;
+      fetch(`${hckUrl}games/details/chl/${selectedGameId}?isCollege=${isCollege}`)
         .then(res => res.json())
         .then(data => {
           if (isSpoofing) {
@@ -170,7 +210,7 @@ const LiveRink = () => {
         })
         .catch(err => console.error("Error fetching game details:", err));
     }
-  }, [selectedGameId, isSpoofing]);
+  }, [selectedGameId, isSpoofing, selectedLeague]);
 
   const triggerGoal = (gameId: number, side: 'home' | 'away', duration: number = 4000) => {
     setGoalFlash(prev => ({ ...prev, [gameId]: side }));
@@ -180,8 +220,9 @@ const LiveRink = () => {
   const startSpoofLive = async () => {
     if (Object.keys(games).length === 0) return;
     setSpoofLoading(true);
+    const isCollege = selectedLeague === SimCHL;
     try {
-        const res = await fetch('http://localhost:8080/api/games/plays/bulk/chl');
+        const res = await fetch(`${hckUrl}games/plays/bulk/chl?isCollege=${isCollege}&season=${currentSeason}&week=${currentWeek}&timeslot=${currentTimeslot}`);
         const bulkData = await res.json();
         Object.keys(bulkData).forEach(gId => {
              bulkData[gId].sort((a: any, b: any) => {
@@ -198,7 +239,17 @@ const LiveRink = () => {
     gameCooldowns.current = {}; 
     const resetGames: Record<number, any> = {};
     let count = 0;
-    Object.values(games).forEach((g: any) => {
+    
+    // Sort games before initializing spoof so My Team gets prioritized in the active 8
+    const sortedVals = Object.values(games).sort((a: any, b: any) => {
+        const isA = a.HomeTeamID === userTeamID || a.AwayTeamID === userTeamID;
+        const isB = b.HomeTeamID === userTeamID || b.AwayTeamID === userTeamID;
+        if (isA && !isB) return -1;
+        if (!isA && isB) return 1;
+        return 0;
+    });
+
+    sortedVals.forEach((g: any) => {
         const isInitialLive = count < MAX_CONCURRENT_GAMES;
         resetGames[g.GameID] = { ...g, HomeTeamScore: 0, AwayTeamScore: 0, HomeTeamShootoutScore: 0, AwayTeamShootoutScore: 0, Period: isInitialLive ? 1 : 0, TimeOnClock: 1200, GameComplete: false, IsShootout: false, Zone: 11 };
         currentPlaysRef.current[g.GameID] = []; 
@@ -218,14 +269,27 @@ const LiveRink = () => {
             let activeCount = 0;
             let upcomingIds: number[] = [];
             const now = Date.now();
+            
+            // Collect and sort so "My Team" always enters Live queue first
+            const upcomingList = Object.values(newGames).filter((g: any) => !g.GameComplete && g.Period === 0);
+            upcomingList.sort((a: any, b: any) => {
+                const isA = a.HomeTeamID === userTeamID || a.AwayTeamID === userTeamID;
+                const isB = b.HomeTeamID === userTeamID || b.AwayTeamID === userTeamID;
+                if (isA && !isB) return -1;
+                if (!isA && isB) return 1;
+                return 0;
+            });
+            upcomingIds = upcomingList.map((g: any) => g.GameID);
+
             Object.values(newGames).forEach((g: any) => {
                 if (!g.GameComplete && g.Period > 0) activeCount++;
-                if (!g.GameComplete && g.Period === 0) upcomingIds.push(g.GameID);
             });
+
             while (activeCount < MAX_CONCURRENT_GAMES && upcomingIds.length > 0) {
                 const nextId = upcomingIds.shift();
                 if (nextId) { newGames[nextId].Period = 1; newGames[nextId].TimeOnClock = 1200; activeCount++; }
             }
+
             let anyActive = false;
             Object.values(newGames).forEach((g: any) => {
                 if (g.GameComplete || g.Period === 0) return;
@@ -236,9 +300,6 @@ const LiveRink = () => {
                 const play = playsToProcess.pop()!;
                 g.Period = play.Period;
                 g.TimeOnClock = play.TimeOnClock;
-                
-                // MAPPING FIX: Use play.Zone (9-13) exactly as provided[cite: 1]
-                // Only default to 11 if the value is missing or null
                 g.Zone = (play.Zone !== undefined && play.Zone !== null && play.Zone !== 0) ? play.Zone : 11; 
                 
                 if (g.Period === 5) g.IsShootout = true;
@@ -266,31 +327,23 @@ const LiveRink = () => {
         });
     }, 250); 
     return () => clearInterval(interval);
-  }, [isSpoofing, selectedGameId]);
+  }, [isSpoofing, selectedGameId, userTeamID]);
 
-  useEffect(() => {
-    const source = new EventSource('http://localhost:8080/api/stream/live/chl');
-    source.onmessage = (event: MessageEvent) => {
-      if (isSpoofing) return;
-      try {
-        const play = JSON.parse(event.data);
-        const gId = play.GameID;
-        const prev = prevScores.current[gId];
-        if (prev) {
-          if (play.HomeTeamScore > prev.home || (play.HomeTeamShootoutScore || 0) > prev.homeSO) triggerGoal(gId, 'home', 4000);
-          if (play.AwayTeamScore > prev.away || (play.AwayTeamShootoutScore || 0) > prev.awaySO) triggerGoal(gId, 'away', 4000);
-        }
-        prevScores.current[gId] = { home: play.HomeTeamScore, away: play.AwayTeamScore, homeSO: play.HomeTeamShootoutScore || 0, awaySO: play.AwayTeamShootoutScore || 0 };
-        setGames((prevG: any) => ({ ...prevG, [gId]: play }));
-      } catch (err) { console.error(err); }
-    };
-    return () => source.close();
-  }, [isSpoofing]);
+  // --- SORTING ARRAYS FOR RENDERING ---
+  const sortGamesTeamFirst = (gameArray: any[]) => {
+      return [...gameArray].sort((a, b) => {
+          const isA = a.HomeTeamID === userTeamID || a.AwayTeamID === userTeamID;
+          const isB = b.HomeTeamID === userTeamID || b.AwayTeamID === userTeamID;
+          if (isA && !isB) return -1;
+          if (!isA && isB) return 1;
+          return 0;
+      });
+  };
 
   const allGames = Object.values(games);
-  const liveGames = allGames.filter(g => !g.GameComplete && g.Period > 0);
-  const upcomingGames = allGames.filter(g => !g.GameComplete && g.Period === 0);
-  const resultsGames = allGames.filter(g => g.GameComplete);
+  const upcomingGames = sortGamesTeamFirst(allGames.filter(g => !g.GameComplete && g.Period === 0));
+  const liveGames = sortGamesTeamFirst(allGames.filter(g => !g.GameComplete && g.Period > 0));
+  const resultsGames = sortGamesTeamFirst(allGames.filter(g => g.GameComplete));
 
   if (selectedGameId === null) {
     return (
@@ -303,36 +356,62 @@ const LiveRink = () => {
           {spoofLoading ? 'Loading Plays...' : isSpoofing ? 'Spoofing...' : '🧪 Spoof Live Run'}
         </button>
         <div className="flex-1 px-4 lg:px-8 pb-6 flex flex-col min-h-0 mt-8">
+          
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 shrink-0">
+            <h1 className="text-[2.5vh] font-black text-white uppercase tracking-[0.4em] flex items-center gap-3">
+              <span className={`w-2 h-2 rounded-full ${isSpoofing ? 'bg-purple-500 animate-bounce' : 'bg-red-600 animate-ping'}`}></span> 
+              {isSpoofing ? 'SPOOFED REPLAY HUB' : 'Live Hockey Hub'}
+            </h1>
+            <ButtonGroup>
+                <PillButton 
+                    isSelected={selectedLeague === SimCHL} 
+                    onClick={() => { setSelectedLeague(SimCHL); setSelectedGameId(null); }}
+                >
+                    College
+                </PillButton>
+                <PillButton 
+                    isSelected={selectedLeague === SimPHL} 
+                    onClick={() => { setSelectedLeague(SimPHL); setSelectedGameId(null); }}
+                >
+                    Pro
+                </PillButton>
+            </ButtonGroup>
+          </div>
+
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 h-full min-h-0">
             <div className="hidden lg:flex lg:col-span-2 flex-col h-full min-h-0 border-r border-[var(--border-primary)]/40 pr-2">
-              <GameMiniList title="Upcoming" games={upcomingGames} color="border-blue-500" onSelect={setSelectedGameId} />
+              <GameMiniList title="Upcoming" games={upcomingGames} color="border-blue-500" onSelect={setSelectedGameId} userTeamID={userTeamID} />
             </div>
+            
             <div className="col-span-1 lg:col-span-8 flex flex-col h-full min-h-0 px-2">
-              <h1 className="text-[2.5vh] font-black text-white mb-6 uppercase tracking-[0.4em] text-center flex items-center justify-center gap-3 shrink-0">
-                <span className={`w-2 h-2 rounded-full ${isSpoofing ? 'bg-purple-500 animate-bounce' : 'bg-red-600 animate-ping'}`}></span> 
-                {isSpoofing ? 'SPOOFED REPLAY HUB' : 'Live Hockey Hub'}
-              </h1>
               <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto pr-2 scrollbar pb-10">
                 {liveGames.length === 0 && <div className="col-span-2 text-center text-[var(--text-muted)] italic mt-10">No live games currently broadcasting...</div>}
                 {liveGames.map((game: any) => {
                   const isGoal = goalFlash[game.GameID];
+                  const isMyTeam = game.HomeTeamID === userTeamID || game.AwayTeamID === userTeamID;
                   return (
                     <div key={game.GameID} onClick={() => setSelectedGameId(game.GameID)} 
                       className={`relative border rounded-lg p-6 cursor-pointer transition-all duration-300 h-fit min-h-[14vh] flex flex-col justify-center shadow-lg
-                        ${isGoal ? 'bg-red-700 border-white scale-[1.02] shadow-[0_0_40px_rgba(239,68,68,0.6)] z-10' : 'bg-[var(--bg-secondary)] border-[var(--border-primary)] hover:border-[var(--accent-error)]'}`}>
+                        ${isGoal ? 'bg-red-700 border-white scale-[1.02] shadow-[0_0_40px_rgba(239,68,68,0.6)] z-10' : 'bg-[var(--bg-secondary)] hover:border-[var(--accent-error)]'}
+                        ${isMyTeam && !isGoal ? 'border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.15)]' : 'border-[var(--border-primary)]'} `}>
+                      
                       {isGoal && <div className="absolute inset-0 flex items-center justify-center bg-red-700 z-20 rounded-lg"><span className="text-white font-black text-[4vh] italic animate-bounce">GOAL!</span></div>}
+                      
                       <div className="text-[1.1vh] text-[var(--text-muted)] font-bold mb-3 text-left uppercase flex justify-between border-b border-[var(--border-primary)]/30 pb-2">
-                         <span>{getPeriodName(game.Period, game.IsShootout)} | {game.IsShootout || game.Period === 5 ? 'SHOOTOUT' : formatClock(game.TimeOnClock)}</span>
+                         <div className="flex gap-2 items-center">
+                           <span>{getPeriodName(game.Period, game.IsShootout)} | {game.IsShootout || game.Period === 5 ? 'SHOOTOUT' : formatClock(game.TimeOnClock)}</span>
+                           {isMyTeam && <span className="bg-yellow-500/20 text-yellow-500 px-1 rounded">MY TEAM</span>}
+                         </div>
                       </div>
                       <div className="flex justify-between items-center text-[2.8vh] font-black text-[var(--text-primary)]">
                         <div className="flex items-center gap-2">
-                            <span>{game.HomeTeam} {game.HomeTeamScore}</span>
+                            <span className={game.HomeTeamID === userTeamID ? "text-yellow-400" : ""}>{game.HomeTeam} {game.HomeTeamScore}</span>
                             {(game.HomeTeamShootoutScore > 0 || game.Period === 5) && <span className="text-[1.8vh] text-[var(--accent-warning)]">({game.HomeTeamShootoutScore})</span>}
                         </div>
                         <span className="text-[var(--text-muted)] text-[1.4vh] font-normal italic px-4 opacity-40">VS</span>
                         <div className="flex items-center gap-2">
                             {(game.AwayTeamShootoutScore > 0 || game.Period === 5) && <span className="text-[1.8vh] text-[var(--accent-warning)]">({game.AwayTeamShootoutScore})</span>}
-                            <span>{game.AwayTeamScore} {game.AwayTeam}</span>
+                            <span className={game.AwayTeamID === userTeamID ? "text-yellow-400" : ""}>{game.AwayTeamScore} {game.AwayTeam}</span>
                         </div>
                       </div>
                     </div>
@@ -340,8 +419,9 @@ const LiveRink = () => {
                 })}
               </div>
             </div>
+
             <div className="hidden lg:flex lg:col-span-2 flex-col h-full min-h-0 border-l border-[var(--border-primary)]/40 pl-2">
-              <GameMiniList title="Results" games={resultsGames} color="border-[var(--accent-success)]" onSelect={setSelectedGameId} />
+              <GameMiniList title="Results" games={resultsGames} color="border-[var(--accent-success)]" onSelect={setSelectedGameId} userTeamID={userTeamID} />
             </div>
           </div>
         </div>
@@ -382,7 +462,6 @@ const LiveRink = () => {
                 </div>
               </div>
             </div>
-            {/* The activeGame?.Zone value is pulled directly from the DB ZoneID[cite: 1] */}
             <RinkVisualizer currentZone={activeGame?.Zone || 11} goalScored={activeGoal} />
             <div className="bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg mt-4 p-5 flex-1 flex flex-col min-h-0 shadow-lg">
               <h3 className="text-tiny font-black text-[var(--text-muted)] mb-3 uppercase tracking-[0.2em] text-left border-b border-[var(--border-primary)]/30 pb-2 shrink-0">Live Play-By-Play</h3>

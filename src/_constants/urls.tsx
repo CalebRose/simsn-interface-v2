@@ -17,12 +17,13 @@ const apiURL = "https://simnba.azurewebsites.net/api/";
 export const bbaUrl = apiURL;
 
 const hckLocal = "http://localhost:8080/api/";
-const hckApiURL =
-  "https://simhck-hqd2bme9gse5d7g9.westus-01.azurewebsites.net/api/";
+const hckApiURL = "https://simhck-hqd2bme9gse5d7g9.westus-01.azurewebsites.net/api/";
 const localHckWSUrl = "ws://localhost:8080/ws";
 const HCKWSURL = "wss://simhck-hqd2bme9gse5d7g9.westus-01.azurewebsites.net/ws";
-export const hckUrl = hckApiURL;
-export const hck_ws = HCKWSURL;
+
+// TEMPORARILY SWAPPED TO LOCAL FOR TESTING:
+export const hckUrl = hckLocal;
+export const hck_ws = localHckWSUrl;
 
 const localBASEBALL = "https://localhost:6001/api/";
 const baseballApiURL =
