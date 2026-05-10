@@ -33,7 +33,8 @@ import { SimulationControlPanel } from "./SimulationControlPanel";
 import { RecruitingAdminPanel } from "./RecruitingAdminPanel";
 import { useMemo } from "react";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
-import { NFLUDFAAdminPanel } from "./NFLUDFAAdminPanel";
+// FIXED PATH
+import { AdminUDFAControls } from './NFLUDFAAdminPanel';
 
 const IFAAdminSection = () => {
   const { seasonContext } = useSimBaseballStore();
@@ -81,6 +82,7 @@ export const AdminPage = () => {
   const { currentUser } = authStore;
   const { RefreshRequests } = useAdminPage();
   const navigate = useNavigate();
+  
   if (
     currentUser &&
     currentUser.roleID &&
@@ -279,22 +281,25 @@ export const AdminPage = () => {
             </TabGroup>
           </div>
           <div className="flex sm:flex-col md:flex-row md:justify-evenly flex-wrap md:gap-2 w-full max-h-[calc(55vh-12rem)] overflow-y-auto">
-            {/* Logic for league select & tab selected here */}
             {selectedTab === Requests && <AdminRequestsTab />}
             {selectedTab === Teams && <AdminTeamsTab />}
             {selectedTab === Trades && <AdminTradesTab />}
           </div>
         </Border>
+        
         {selectedLeague === SimNFL && (
-          <Border classes="w-full sm:max-w-[65vw]">
-            <div className="flex justify-center p-4">
-              <Text variant="h6">{selectedLeague} Commissioner Hub</Text>
-            </div>
-            <CommissionerHub league={selectedLeague} />
-          </Border>
+          <div className="flex flex-col w-full gap-y-4">
+            <Border classes="w-full">
+              <div className="flex justify-center p-4">
+                <Text variant="h6">{selectedLeague} Commissioner Hub</Text>
+              </div>
+              <CommissionerHub league={selectedLeague} />
+            </Border>
+
+            {/* NFL UDFA PANEL - Uses w-full from NFLUDFAAdminPanel.tsx */}
+            <AdminUDFAControls />
+          </div>
         )}
-        {/* NEW NFL UDFA PANEL */}
-        {selectedLeague === SimNFL && <NFLUDFAAdminPanel />}
 
         {selectedLeague === SimMLB && <IFAAdminSection />}
         {(selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball) && (
