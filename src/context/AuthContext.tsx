@@ -24,6 +24,7 @@ interface AuthContextProps {
   isCHLUser: boolean;
   isPHLUser: boolean;
   isDarkMode: boolean;
+  isModerator: boolean;
 }
 
 // ✅ Initial Context Values
@@ -42,6 +43,7 @@ const defaultAuthContext: AuthContextProps = {
   isNBAUser: false,
   isPHLUser: false,
   isDarkMode: true,
+  isModerator: false,
 };
 
 // ✅ Create Auth Context
@@ -190,6 +192,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return true;
   }, [viewMode]);
 
+  const isModerator = useMemo(() => {
+    if (currentUser) {
+      const isAdmin = currentUser.roleID?.toLocaleLowerCase() === "admin";
+      const isCommissioner =
+        typeof currentUser.roleID === "string" &&
+        currentUser.roleID.toLocaleLowerCase().includes("commissioner");
+      return isAdmin || isCommissioner;
+    }
+    return false;
+  }, [currentUser]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -207,6 +220,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isNFLUser,
         isPHLUser,
         isDarkMode,
+        isModerator,
       }}
     >
       {children}
