@@ -206,7 +206,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         timestamp={ts}
       />
       <GameRequestModal
-        title="Request an OOC Game"
+        title="Request a CFB OOC Game"
         isOpen={gameRequestModal.isModalOpen}
         onClose={gameRequestModal.handleCloseModal}
       />
@@ -254,6 +254,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   variant="primary"
                   classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
                   onClick={gameRequestModal.handleOpenModal}
+                  disabled={ts.CollegeWeek > 0}
                 >
                   <Text variant="small">Request Game</Text>
                 </Button>
@@ -431,6 +432,8 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     ExportFootballSchedule,
   } = fbStore;
 
+  const gameRequestModal = useModal();
+
   const [selectedTeam, setSelectedTeam] = useState(nflTeam);
   const [category, setCategory] = useState(Overview);
   const [scheduleView, setScheduleView] = useState(TeamGames);
@@ -551,6 +554,11 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   return (
     <>
+      <GameRequestModal
+        title="Request an NFL Preseason Game"
+        isOpen={gameRequestModal.isModalOpen}
+        onClose={gameRequestModal.handleCloseModal}
+      />
       <div className="flex flex-col w-full">
         <div className="sm:grid sm:grid-cols-6 sm:gap-4 w-full h-[82vh]">
           <div className="flex flex-col w-full sm:col-span-1 items-center gap-4 pb-2">
@@ -573,6 +581,15 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
                 >
                   <Text variant="small">Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  onClick={gameRequestModal.handleOpenModal}
+                  disabled={ts.NFLWeek > 0}
+                >
+                  <Text variant="small">Request Game</Text>
                 </Button>
               </ButtonGroup>
             </div>

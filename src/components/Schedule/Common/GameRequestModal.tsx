@@ -434,9 +434,13 @@ const NFLGameRequestModal = () => {
                   </Text>
                   <Text variant="small">
                     <strong>Coach:</strong>{" "}
-                    {homeTeam?.Coach && homeTeam.Coach !== "AI"
-                      ? homeTeam.Coach
-                      : "—"}
+                    {homeTeam?.NFLCoachName &&
+                    homeTeam.NFLCoachName !== "AI" &&
+                    homeTeam.NFLCoachName !== ""
+                      ? homeTeam.NFLCoachName
+                      : homeTeam?.NFLOwnerName && homeTeam.NFLOwnerName !== "AI"
+                        ? homeTeam.NFLOwnerName
+                        : "—"}
                   </Text>
                 </div>
                 <Text variant="small">
@@ -526,9 +530,13 @@ const NFLGameRequestModal = () => {
                   </Text>
                   <Text variant="small">
                     <strong>Coach:</strong>{" "}
-                    {awayTeam?.Coach && awayTeam.Coach !== "AI"
-                      ? awayTeam.Coach
-                      : "—"}
+                    {awayTeam?.NFLCoachName &&
+                    awayTeam.NFLCoachName !== "AI" &&
+                    awayTeam.NFLCoachName !== ""
+                      ? awayTeam.NFLCoachName
+                      : awayTeam?.NFLOwnerName && awayTeam.NFLOwnerName !== "AI"
+                        ? awayTeam.NFLOwnerName
+                        : "—"}
                   </Text>
                 </div>
                 <Text variant="small">
