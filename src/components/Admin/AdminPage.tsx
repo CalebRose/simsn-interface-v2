@@ -9,6 +9,7 @@ import { ToggleSwitch } from "../../_design/Inputs";
 import { Tab, TabGroup } from "../../_design/Tabs";
 import {
   AdminRole,
+  Games,
   Requests,
   SimCBB,
   SimCFB,
@@ -76,9 +77,10 @@ const UnAuthAdminPage: React.FC<UnAuthPageProps> = ({ navigate }) => {
 };
 
 export const AdminPage = () => {
+  const { ts, selectedLeague, setSelectedLeague } = useLeagueStore();
   const authStore = useAuthStore();
   const { currentUser } = authStore;
-  const { RefreshRequests } = useAdminPage();
+  const { RefreshRequests, selectedTab, setSelectedTab } = useAdminPage();
   const navigate = useNavigate();
   if (
     currentUser &&
@@ -123,10 +125,6 @@ export const AdminPage = () => {
     if (!currentUser) return false;
     return currentUser.roleID?.includes("PHL Commissioner");
   }, [currentUser]);
-
-  const leagueStore = useLeagueStore();
-  const { ts, selectedLeague, setSelectedLeague } = leagueStore;
-  const { selectedTab, setSelectedTab } = useAdminPage();
 
   return (
     <>
@@ -201,7 +199,7 @@ export const AdminPage = () => {
                   classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimCollegeBaseball)}
                 >
-                  SimCB
+                  SimCBL
                 </PillButton>
               )}
               {isAdmin && (
@@ -262,6 +260,17 @@ export const AdminPage = () => {
                 selected={selectedTab === Teams}
                 setSelected={setSelectedTab}
               />
+              {(selectedLeague === SimCFB ||
+                selectedLeague === SimCBB ||
+                selectedLeague === SimCHL) && (
+                <>
+                  <Tab
+                    label={Games}
+                    selected={selectedTab === Games}
+                    setSelected={setSelectedTab}
+                  />
+                </>
+              )}
               {(selectedLeague === SimPHL ||
                 selectedLeague === SimNFL ||
                 selectedLeague === SimNBA ||
@@ -293,7 +302,8 @@ export const AdminPage = () => {
           </Border>
         )}
         {selectedLeague === SimMLB && <IFAAdminSection />}
-        {(selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball) && (
+        {(selectedLeague === SimMLB ||
+          selectedLeague === SimCollegeBaseball) && (
           <SimulationControlSection />
         )}
         {selectedLeague === SimCollegeBaseball && <RecruitingAdminSection />}

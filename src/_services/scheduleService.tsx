@@ -111,6 +111,46 @@ export default class FBAScheduleService {
     );
   }
 
+  async FBACreateCFBGameRequest(dto: any): Promise<void> {
+    await PostCall(`${fbaUrl}cfb/schedule/game/request/create`, dto);
+  }
+
+  async FBAAcceptCFBGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${fbaUrl}cfb/schedule/game/request/accept/${requestID}`);
+  }
+
+  async FBARejectCFBGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${fbaUrl}cfb/schedule/game/request/reject/${requestID}`);
+  }
+
+  async FBAProcessCFBGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${fbaUrl}cfb/schedule/game/request/process/${requestID}`);
+  }
+
+  async FBAVetoCFBGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${fbaUrl}cfb/schedule/game/request/veto/${requestID}`);
+  }
+
+  async FBACreateNFLGameRequest(dto: any): Promise<void> {
+    await PostCall(`${fbaUrl}nfl/schedule/game/request/create`, dto);
+  }
+
+  async FBAAcceptNFLGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${fbaUrl}nfl/schedule/game/request/accept/${requestID}`);
+  }
+
+  async FBARejectNFLGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${fbaUrl}nfl/schedule/game/request/reject/${requestID}`);
+  }
+
+  async FBAProcessNFLGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${fbaUrl}nfl/schedule/game/request/process/${requestID}`);
+  }
+
+  async FBAVetoNFLGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${fbaUrl}nfl/schedule/game/request/veto/${requestID}`);
+  }
+
   // async ExportPlayByPlay(isNFL, id, ht, at) {
   //     const prefix = isNFL ? 'nfl' : 'cfb';
   //     let fullURL = `${url}statistics/${prefix}/export/play/by/play/${id}`;

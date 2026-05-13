@@ -44,6 +44,7 @@ import { useModal } from "../../../_hooks/useModal";
 import { getFBAWeekID } from "../../../_helper/statsPageHelper";
 import FBAScheduleService from "../../../_services/scheduleService";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
+import GameRequestModal from "../Common/GameRequestModal";
 
 interface SchedulePageProps {
   league: League;
@@ -79,10 +80,11 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [seasonCFBGames, setSeasonCFBGames] = useState<any[]>([]);
   const submitPollModal = useModal();
   const collegePollModal = useModal();
+  const gameRequestModal = useModal();
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
@@ -104,11 +106,11 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const seasonID = (selectedSeason ?? 0) - 2020;
     if (!selectedSeason || seasonID <= 0) return;
     const availableSeasons = new Set(
-      (allCFBGames || []).map((g: any) => g.SeasonID)
+      (allCFBGames || []).map((g: any) => g.SeasonID),
     );
     if (availableSeasons.has(seasonID)) {
       const filtered = (allCFBGames || []).filter(
-        (g: any) => g.SeasonID === seasonID
+        (g: any) => g.SeasonID === seasonID,
       );
       setSeasonCFBGames(filtered);
       return;
@@ -142,7 +144,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       league,
       allCFBStandings,
       seasonCFBGames.length > 0 ? seasonCFBGames : allCFBGames,
-      cfbTeams
+      cfbTeams,
     );
   }, [
     selectedTeam,
@@ -159,7 +161,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const processedSchedule = useMemo(
     () =>
       processSchedule(teamSchedule, selectedTeam, ts, league, resultsOverride),
-    [teamSchedule, selectedTeam, ts, league, resultsOverride]
+    [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );
 
   const weeklyGames = useMemo(() => {
@@ -181,7 +183,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const onExportSchedule = async (weekID: SingleValue<SelectOption>) => {
     const numericWeekID = getFBAWeekID(
       Number(weekID?.value),
-      selectedSeason - 2020
+      selectedSeason - 2020,
     );
     const dto = { SeasonID: selectedSeason - 2020, WeekID: numericWeekID };
     await ExportFootballSchedule(dto);
@@ -202,6 +204,11 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         pollSubmission={collegePollSubmission}
         submitPoll={submitCollegePoll}
         timestamp={ts}
+      />
+      <GameRequestModal
+        title="Request an OOC Game"
+        isOpen={gameRequestModal.isModalOpen}
+        onClose={gameRequestModal.handleCloseModal}
       />
       <div className="flex flex-col w-full">
         <div className="sm:grid sm:grid-cols-6 sm:gap-4 w-full h-[82vh]">
@@ -241,6 +248,14 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   onClick={collegePollModal.handleOpenModal}
                 >
                   <Text variant="small">College Poll</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  onClick={gameRequestModal.handleOpenModal}
+                >
+                  <Text variant="small">Request Game</Text>
                 </Button>
               </ButtonGroup>
             </div>
@@ -429,7 +444,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree
+    selectedTeam?.ColorThree,
   );
   const { backgroundColor } = useBackgroundColor();
   let headerColor = teamColors.One;
@@ -447,11 +462,11 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const seasonID = (selectedSeason ?? 0) - 2020;
     if (!selectedSeason || seasonID <= 0) return;
     const availableSeasons = new Set(
-      (allNFLGames || []).map((g: any) => g.SeasonID)
+      (allNFLGames || []).map((g: any) => g.SeasonID),
     );
     if (availableSeasons.has(seasonID)) {
       const filtered = (allNFLGames || []).filter(
-        (g: any) => g.SeasonID === seasonID
+        (g: any) => g.SeasonID === seasonID,
       );
       setSeasonNFLGames(filtered);
       return;
@@ -486,7 +501,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         league,
         allNFLStandings,
         seasonNFLGames.length > 0 ? seasonNFLGames : allNFLGames,
-        nflTeams
+        nflTeams,
       );
     }, [
       selectedTeam,
@@ -503,7 +518,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const processedSchedule = useMemo(
     () =>
       processSchedule(teamSchedule, selectedTeam, ts, league, resultsOverride),
-    [teamSchedule, selectedTeam, ts, league, resultsOverride]
+    [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );
 
   const weeklyGames = useMemo(() => {
@@ -514,7 +529,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const onExportSchedule = async (weekID: SingleValue<SelectOption>) => {
     const numericWeekID = getFBAWeekID(
       Number(weekID?.value),
-      selectedSeason - 2020
+      selectedSeason - 2020,
     );
     const dto = { SeasonID: selectedSeason - 2020, WeekID: numericWeekID };
     await ExportFootballSchedule(dto);
