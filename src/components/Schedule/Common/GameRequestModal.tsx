@@ -1039,7 +1039,7 @@ const CFBGameRequestModal = () => {
   const availableWeeks = useMemo<SelectOption[]>(() => {
     let weeks_available = isSpringGame ? 3 : REGULAR_SEASON_WEEKS;
     const options: SelectOption[] = [];
-    for (let week = 1; week <= weeks_available; week++) {
+    for (let week = 0; week <= weeks_available; week++) {
       if (!myGamesMapByWeek[week]) {
         options.push({ label: `Week ${week}`, value: String(week) });
       }
