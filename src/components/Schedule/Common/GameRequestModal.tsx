@@ -8,7 +8,12 @@ import { Button } from "../../../_design/Buttons";
 import { SelectDropdown } from "../../../_design/Select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { Text } from "../../../_design/Typography";
-import { CFBGameRequest, CollegeGame } from "../../../models/footballModels";
+import {
+  CFBGameRequest,
+  CollegeGame,
+  NFLGame,
+  NFLGameRequest,
+} from "../../../models/footballModels";
 import FBAScheduleService from "../../../_services/scheduleService";
 import { ToggleSwitch } from "../../../_design/Inputs";
 import { getPlayerOverall } from "../../Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
@@ -40,7 +45,7 @@ export const GameRequestModal = ({
       classes={`h-[80vh] sm:min-w-[1650px] overflow-auto`}
     >
       {selectedLeague === SimCFB && <CFBGameRequestModal />}
-      {selectedLeague === SimNFL && <>NFL Component</>}
+      {selectedLeague === SimNFL && <NFLGameRequestModal />}
       {selectedLeague === SimCBB && <>CBB Component</>}
       {selectedLeague === SimCHL && <>CHL Component</>}
     </Modal>
@@ -63,7 +68,836 @@ const MAX_HOME_GAMES = 7;
 const MAX_AWAY_GAMES = 7;
 const REGULAR_SEASON_WEEKS = 14;
 
+const MAX_NFL_PRESEASON_GAMES = 3;
+const NFL_PRESEASON_WEEKS = 3;
+
 const scheduleService = new FBAScheduleService();
+
+// ─── NFLGameRequestModal ─────────────────────────────────────────────────────
+
+const NFLGameRequestModal = () => {
+  const { isModerator } = useAuthStore();
+  const {
+    nflTeam,
+    nflTeamOptions,
+    proTeamMap,
+    allProGames,
+    nflGameRequests,
+    cfb_Timestamp,
+    proRosterMap,
+    nflGameplanMap,
+  } = useSimFBAStore();
+
+  // ── Local state ─────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<string>(TABS.CREATE);
+  const [selectedOpponent, setSelectedOpponent] = useState<SelectOption | null>(
+    null,
+  );
+  const [selectedWeek, setSelectedWeek] = useState<SelectOption | null>(null);
+  const [homeTeamID, setHomeTeamID] = useState<number>(nflTeam?.ID ?? 0);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const [localRequests, setLocalRequests] =
+    useState<NFLGameRequest[]>(nflGameRequests);
+
+  useEffect(() => {
+    setLocalRequests(nflGameRequests);
+  }, [nflGameRequests]);
+
+  useEffect(() => {
+    if (nflTeam) setHomeTeamID(nflTeam.ID);
+  }, [nflTeam]);
+
+  // ── Memoized computations ───────────────────────────────────────────────
+
+  /** My team's preseason games keyed by week number. */
+  const myGamesMapByWeek = useMemo<Record<number, NFLGame>>(() => {
+    if (!nflTeam || !allProGames) return {};
+    const map: Record<number, NFLGame> = {};
+    for (const game of allProGames) {
+      if (
+        (game.HomeTeamID === nflTeam.ID || game.AwayTeamID === nflTeam.ID) &&
+        game.IsPreseasonGame
+      ) {
+        map[game.Week] = game;
+      }
+    }
+    return map;
+  }, [nflTeam, allProGames]);
+
+  /** Total preseason games scheduled for my team. */
+  const totalGames = useMemo(() => {
+    if (!nflTeam || !allProGames) return 0;
+    return allProGames.filter(
+      (g) =>
+        (g.HomeTeamID === nflTeam.ID || g.AwayTeamID === nflTeam.ID) &&
+        g.IsPreseasonGame,
+    ).length;
+  }, [nflTeam, allProGames]);
+
+  /** Total preseason games per team across the league. */
+  const gameCountByTeam = useMemo<Record<number, number>>(() => {
+    if (!allProGames) return {};
+    const counts: Record<number, number> = {};
+    for (const game of allProGames) {
+      if (!game.IsPreseasonGame) continue;
+      counts[game.HomeTeamID] = (counts[game.HomeTeamID] ?? 0) + 1;
+      counts[game.AwayTeamID] = (counts[game.AwayTeamID] ?? 0) + 1;
+    }
+    return counts;
+  }, [allProGames]);
+
+  /** Set of preseason weeks each team is already scheduled. */
+  const busyWeeksByTeam = useMemo<Record<number, Set<number>>>(() => {
+    if (!allProGames) return {};
+    const map: Record<number, Set<number>> = {};
+    for (const game of allProGames) {
+      if (!game.IsPreseasonGame) continue;
+      if (!map[game.HomeTeamID]) map[game.HomeTeamID] = new Set();
+      if (!map[game.AwayTeamID]) map[game.AwayTeamID] = new Set();
+      map[game.HomeTeamID].add(game.Week);
+      map[game.AwayTeamID].add(game.Week);
+    }
+    return map;
+  }, [allProGames]);
+
+  /** Preseason weeks 1–3 where my team has no game. */
+  const availableWeeks = useMemo<SelectOption[]>(() => {
+    const options: SelectOption[] = [];
+    for (let week = 1; week <= NFL_PRESEASON_WEEKS; week++) {
+      if (!myGamesMapByWeek[week]) {
+        options.push({ label: `Week ${week}`, value: String(week) });
+      }
+    }
+    return options;
+  }, [myGamesMapByWeek]);
+
+  /** Team IDs already on my preseason schedule. */
+  const alreadyScheduledOpponents = useMemo<Set<number>>(() => {
+    if (!nflTeam || !allProGames) return new Set();
+    const set = new Set<number>();
+    for (const game of allProGames) {
+      if (!game.IsPreseasonGame) continue;
+      if (game.HomeTeamID === nflTeam.ID) set.add(game.AwayTeamID);
+      else if (game.AwayTeamID === nflTeam.ID) set.add(game.HomeTeamID);
+    }
+    return set;
+  }, [nflTeam, allProGames]);
+
+  /** Available opponents: any team except self, those at the game limit,
+   *  already-scheduled opponents, and teams busy on the selected week. */
+  const availableOpponents = useMemo<SelectOption[]>(() => {
+    if (!nflTeam || !nflTeamOptions || !proTeamMap) return [];
+    const selectedWeekNum = selectedWeek ? parseInt(selectedWeek.value) : null;
+    return nflTeamOptions.filter((option) => {
+      const teamID = parseInt(option.value);
+      if (teamID === nflTeam.ID) return false;
+      if ((gameCountByTeam[teamID] ?? 0) >= MAX_NFL_PRESEASON_GAMES)
+        return false;
+      if (alreadyScheduledOpponents.has(teamID)) return false;
+      if (
+        selectedWeekNum !== null &&
+        busyWeeksByTeam[teamID]?.has(selectedWeekNum)
+      )
+        return false;
+      return true;
+    });
+  }, [
+    nflTeam,
+    nflTeamOptions,
+    proTeamMap,
+    selectedWeek,
+    gameCountByTeam,
+    alreadyScheduledOpponents,
+    busyWeeksByTeam,
+  ]);
+
+  /** Requests sent TO my team that are not yet accepted. */
+  const incomingRequests = useMemo<NFLGameRequest[]>(() => {
+    if (!nflTeam) return [];
+    return localRequests.filter(
+      (r) =>
+        r.RequestingTeamID === nflTeam.ID && !r.IsAccepted && !r.IsApproved,
+    );
+  }, [nflTeam, localRequests]);
+
+  /** Requests my team sent out. */
+  const outgoingRequests = useMemo<NFLGameRequest[]>(() => {
+    if (!nflTeam) return [];
+    return localRequests.filter((r) => r.SendingTeamID === nflTeam.ID);
+  }, [nflTeam, localRequests]);
+
+  /** Accepted-but-not-yet-approved requests (moderator view). */
+  const acceptedRequests = useMemo<NFLGameRequest[]>(() => {
+    return localRequests.filter((r) => r.IsAccepted && !r.IsApproved);
+  }, [localRequests]);
+
+  // ── Derived values ───────────────────────────────────────────────────
+
+  const opponentID = selectedOpponent ? parseInt(selectedOpponent.value) : null;
+  const weekNum = selectedWeek ? parseInt(selectedWeek.value) : null;
+
+  const awayTeamID =
+    opponentID !== null && nflTeam
+      ? homeTeamID === nflTeam.ID
+        ? opponentID
+        : nflTeam.ID
+      : null;
+
+  const homeTeam = proTeamMap?.[homeTeamID];
+  const awayTeam = proTeamMap?.[awayTeamID ?? 0];
+  const homeTeamName = homeTeam?.TeamName ?? "—";
+  const awayTeamName = awayTeam?.TeamName ?? "—";
+  const homeTeamRoster = proRosterMap?.[homeTeamID] ?? [];
+  const awayTeamRoster = proRosterMap?.[awayTeamID ?? 0] ?? [];
+  const sortedHomeRoster = [...homeTeamRoster]
+    .sort((a, b) => b.Overall - a.Overall)
+    .slice(0, 20);
+  const sortedAwayRoster = [...awayTeamRoster]
+    .sort((a, b) => b.Overall - a.Overall)
+    .slice(0, 20);
+  const homeTeamGameplan = nflGameplanMap?.[homeTeamID];
+  const awayTeamGameplan = nflGameplanMap?.[awayTeamID ?? 0];
+
+  const canSubmit =
+    !!nflTeam &&
+    !!opponentID &&
+    !!weekNum &&
+    !isSubmitting &&
+    totalGames < MAX_NFL_PRESEASON_GAMES;
+
+  // ── Event handlers ──────────────────────────────────────────────────
+
+  const handleOpponentChange = useCallback(
+    (opt: SelectOption | null) => {
+      setSelectedOpponent(opt);
+      if (opt && nflTeam) setHomeTeamID(nflTeam.ID);
+    },
+    [nflTeam],
+  );
+
+  const handleSwapHOA = useCallback(() => {
+    if (!nflTeam || !opponentID) return;
+    setHomeTeamID((prev) => (prev === nflTeam.ID ? opponentID : nflTeam.ID));
+  }, [nflTeam, opponentID]);
+
+  const handleSubmitRequest = useCallback(async () => {
+    if (!nflTeam || !opponentID || !weekNum || !cfb_Timestamp) return;
+    const away = homeTeamID === nflTeam.ID ? opponentID : nflTeam.ID;
+    const dto = {
+      HomeTeamID: homeTeamID,
+      AwayTeamID: away,
+      SendingTeamID: nflTeam.ID,
+      RequestingTeamID: opponentID,
+      WeekID: getFBAWeekID(weekNum, cfb_Timestamp.NFLSeasonID),
+      Week: weekNum,
+      SeasonID: cfb_Timestamp.NFLSeasonID,
+      IsNeutralSite: false,
+      ArenaID: homeTeam?.StadiumID ?? 0,
+      Arena: homeTeam?.Stadium ?? "",
+      IsPreseason: true,
+    };
+    setIsSubmitting(true);
+    try {
+      await scheduleService.FBACreateNFLGameRequest(dto);
+      setSelectedOpponent(null);
+      setSelectedWeek(null);
+      setHomeTeamID(nflTeam.ID);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [nflTeam, opponentID, weekNum, cfb_Timestamp, homeTeamID, homeTeam]);
+
+  const handleAcceptRequest = useCallback(async (requestID: number) => {
+    await scheduleService.FBAAcceptNFLGameRequest(requestID);
+    setLocalRequests((prev) => prev.filter((r) => r.ID !== requestID));
+  }, []);
+
+  const handleRejectRequest = useCallback(async (requestID: number) => {
+    await scheduleService.FBARejectNFLGameRequest(requestID);
+    setLocalRequests((prev) => prev.filter((r) => r.ID !== requestID));
+  }, []);
+
+  const handleProcessRequest = useCallback(async (requestID: number) => {
+    await scheduleService.FBAProcessNFLGameRequest(requestID);
+    setLocalRequests((prev) =>
+      prev.map((r) =>
+        r.ID === requestID
+          ? Object.assign(new NFLGameRequest(r), { IsApproved: true })
+          : r,
+      ),
+    );
+  }, []);
+
+  const handleVetoRequest = useCallback(async (requestID: number) => {
+    await scheduleService.FBAVetoNFLGameRequest(requestID);
+    setLocalRequests((prev) => prev.filter((r) => r.ID !== requestID));
+  }, []);
+
+  // ── Render ────────────────────────────────────────────────────────────
+
+  if (!nflTeam) return null;
+
+  return (
+    <div className="flex flex-col gap-4 p-2">
+      {/* Tabs */}
+      <TabGroup>
+        <Tab
+          label={TABS.CREATE}
+          selected={activeTab === TABS.CREATE}
+          setSelected={setActiveTab}
+        />
+        <Tab
+          label={TABS.INCOMING}
+          selected={activeTab === TABS.INCOMING}
+          setSelected={setActiveTab}
+        />
+        <Tab
+          label={TABS.SENT}
+          selected={activeTab === TABS.SENT}
+          setSelected={setActiveTab}
+        />
+        {isModerator && (
+          <Tab
+            label={TABS.ACCEPTED}
+            selected={activeTab === TABS.ACCEPTED}
+            setSelected={setActiveTab}
+          />
+        )}
+      </TabGroup>
+
+      {/* ── Create Request View ────────────────────────────────────────────────────────── */}
+      {activeTab === TABS.CREATE && (
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-3 justify-between items-center">
+            <div>
+              <Text variant="primary">
+                Preseason games remaining:{" "}
+                {MAX_NFL_PRESEASON_GAMES - totalGames}
+              </Text>
+              {totalGames >= MAX_NFL_PRESEASON_GAMES && (
+                <Text variant="danger">
+                  Maximum preseason games ({MAX_NFL_PRESEASON_GAMES}) reached.
+                </Text>
+              )}
+            </div>
+            <div />
+            <div>
+              <Button
+                variant="success"
+                onClick={handleSubmitRequest}
+                disabled={!canSubmit}
+              >
+                {isSubmitting ? "Sending…" : "Send Game Request"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Week + Opponent selectors */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1 justify-start items-start">
+              <Text variant="small">Select Preseason Week</Text>
+              <SelectDropdown
+                options={availableWeeks}
+                value={selectedWeek}
+                onChange={(opt) => {
+                  setSelectedWeek(opt as SelectOption | null);
+                  setSelectedOpponent(null);
+                  setHomeTeamID(nflTeam.ID);
+                }}
+                placeholder="Select week..."
+                isDisabled={totalGames >= MAX_NFL_PRESEASON_GAMES}
+              />
+            </div>
+            <div className="flex flex-col gap-1 justify-end items-end">
+              <Text variant="small">Select Opponent</Text>
+              <SelectDropdown
+                options={availableOpponents}
+                value={selectedOpponent}
+                onChange={(opt) =>
+                  handleOpponentChange(opt as SelectOption | null)
+                }
+                placeholder="Select opponent..."
+                isDisabled={totalGames >= MAX_NFL_PRESEASON_GAMES}
+              />
+            </div>
+          </div>
+
+          {/* HOA panel */}
+          {selectedOpponent && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Home team */}
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-row space-x-2 items-center justify-center">
+                  <Text variant="small">
+                    <strong>Home:</strong> {homeTeamName}
+                  </Text>
+                  <Text variant="small">
+                    <strong>Coach:</strong>{" "}
+                    {homeTeam?.Coach && homeTeam.Coach !== "AI"
+                      ? homeTeam.Coach
+                      : "—"}
+                  </Text>
+                </div>
+                <Text variant="small">
+                  <strong>Scheme</strong>
+                </Text>
+                <div className="grid grid-cols-2 gap-2">
+                  <Text variant="small">
+                    Offense: {homeTeamGameplan?.OffensiveScheme ?? "—"}
+                  </Text>
+                  <Text variant="small">
+                    Defense: {homeTeamGameplan?.DefensiveScheme ?? "—"}
+                  </Text>
+                </div>
+                <Text variant="small">
+                  <strong>Grades</strong>
+                </Text>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <Text variant="small">
+                    Offense: {homeTeam?.OffenseGrade ?? "—"}
+                  </Text>
+                  <Text variant="small">
+                    Defense: {homeTeam?.DefenseGrade ?? "—"}
+                  </Text>
+                  <Text variant="small">
+                    Special Teams: {homeTeam?.SpecialTeamsGrade ?? "—"}
+                  </Text>
+                </div>
+                <Text variant="small">
+                  <strong>Top Players</strong>
+                </Text>
+                {sortedHomeRoster.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-[12rem]">
+                    {sortedHomeRoster.map((player) => (
+                      <>
+                        <Text key={player.ID} variant="small">
+                          Exp {player.Experience} {player.Position}
+                          {player.PositionTwo.length > 0
+                            ? `/${player.PositionTwo}`
+                            : ""}{" "}
+                          {player.Archetype}
+                          {player.ArchetypeTwo.length > 0
+                            ? `/${player.ArchetypeTwo}`
+                            : ""}
+                        </Text>
+                        <Text key={`${player.ID}-name`} variant="small">
+                          {player.FirstName} {player.LastName}
+                        </Text>
+                        <Text key={`${player.ID}-overall`} variant="small">
+                          Overall: {getPlayerOverall(player, SimNFL)}
+                        </Text>
+                      </>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Center column */}
+              <div className="flex flex-col gap-3 justify-center items-center">
+                <Text variant="h4">
+                  <span className="text-gray-400 mx-1">vs.</span>
+                </Text>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleSwapHOA}
+                  disabled={!selectedOpponent}
+                >
+                  Swap Home / Away
+                </Button>
+                <Text variant="small">
+                  <strong>Stadium:</strong> {homeTeam?.Stadium ?? "—"}
+                </Text>
+                <Text variant="small">
+                  <strong>Capacity:</strong> {homeTeam?.StadiumCapacity ?? "—"}
+                </Text>
+                <Text variant="small">
+                  <strong>Location:</strong> {homeTeam?.City ?? "—"},{" "}
+                  {homeTeam?.State ?? "—"}
+                </Text>
+              </div>
+
+              {/* Away team */}
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-row space-x-2 items-center justify-center">
+                  <Text variant="small">
+                    <strong>Away:</strong> {awayTeamName}
+                  </Text>
+                  <Text variant="small">
+                    <strong>Coach:</strong>{" "}
+                    {awayTeam?.Coach && awayTeam.Coach !== "AI"
+                      ? awayTeam.Coach
+                      : "—"}
+                  </Text>
+                </div>
+                <Text variant="small">
+                  <strong>Scheme</strong>
+                </Text>
+                <div className="grid grid-cols-2 gap-2">
+                  <Text variant="small">
+                    Offense: {awayTeamGameplan?.OffensiveScheme ?? "—"}
+                  </Text>
+                  <Text variant="small">
+                    Defense: {awayTeamGameplan?.DefensiveScheme ?? "—"}
+                  </Text>
+                </div>
+                <Text variant="small">
+                  <strong>Grades</strong>
+                </Text>
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <Text variant="small">
+                    Offense: {awayTeam?.OffenseGrade ?? "—"}
+                  </Text>
+                  <Text variant="small">
+                    Defense: {awayTeam?.DefenseGrade ?? "—"}
+                  </Text>
+                  <Text variant="small">
+                    Special Teams: {awayTeam?.SpecialTeamsGrade ?? "—"}
+                  </Text>
+                </div>
+                <Text variant="small">
+                  <strong>Top Players</strong>
+                </Text>
+                {sortedAwayRoster.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-[12rem]">
+                    {sortedAwayRoster.map((player) => (
+                      <>
+                        <Text key={player.ID} variant="small">
+                          Exp {player.Experience} {player.Position}
+                          {player.PositionTwo.length > 0
+                            ? `/${player.PositionTwo}`
+                            : ""}{" "}
+                          {player.Archetype}
+                          {player.ArchetypeTwo.length > 0
+                            ? `/${player.ArchetypeTwo}`
+                            : ""}
+                        </Text>
+                        <Text key={`${player.ID}-name`} variant="small">
+                          {player.FirstName} {player.LastName}
+                        </Text>
+                        <Text key={`${player.ID}-overall`} variant="small">
+                          Overall: {getPlayerOverall(player, SimNFL)}
+                        </Text>
+                      </>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Incoming Requests View ───────────────────────────────────────────────── */}
+      {activeTab === TABS.INCOMING && (
+        <div className="flex flex-col gap-3">
+          {incomingRequests.length === 0 ? (
+            <Text variant="small">No incoming game requests.</Text>
+          ) : (
+            incomingRequests.map((req) => (
+              <NFLIncomingRequestCard
+                key={req.ID}
+                request={req}
+                proTeamMap={proTeamMap}
+                onAccept={handleAcceptRequest}
+                onReject={handleRejectRequest}
+              />
+            ))
+          )}
+        </div>
+      )}
+
+      {/* ── Sent Requests View ───────────────────────────────────────────────────────── */}
+      {activeTab === TABS.SENT && (
+        <div className="flex flex-col gap-3">
+          {outgoingRequests.length === 0 ? (
+            <Text variant="small">No sent game requests.</Text>
+          ) : (
+            outgoingRequests.map((req) => (
+              <NFLSentRequestCard
+                key={req.ID}
+                request={req}
+                proTeamMap={proTeamMap}
+              />
+            ))
+          )}
+        </div>
+      )}
+
+      {/* ── Accepted Requests View (moderator only) ───────────────────────────── */}
+      {activeTab === TABS.ACCEPTED && isModerator && (
+        <div className="flex flex-col gap-3">
+          {acceptedRequests.length === 0 ? (
+            <Text variant="small">No accepted requests pending approval.</Text>
+          ) : (
+            acceptedRequests.map((req) => (
+              <NFLAcceptedRequestCard
+                key={req.ID}
+                request={req}
+                proTeamMap={proTeamMap}
+                onProcess={handleProcessRequest}
+                onVeto={handleVetoRequest}
+              />
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── NFL Request Card Sub-components ─────────────────────────────────────────────
+
+interface NFLIncomingRequestCardProps {
+  request: NFLGameRequest;
+  proTeamMap: Record<number, any> | null;
+  onAccept: (id: number) => void;
+  onReject: (id: number) => void;
+}
+
+const NFLIncomingRequestCard: React.FC<NFLIncomingRequestCardProps> = ({
+  request,
+  proTeamMap,
+  onAccept,
+  onReject,
+}) => {
+  const sendingTeam = proTeamMap?.[request.SendingTeamID];
+  const homeTeam = proTeamMap?.[request.HomeTeamID];
+  const awayTeam = proTeamMap?.[request.AwayTeamID];
+
+  return (
+    <div className="border border-gray-600 border-l-4 border-l-blue-500 rounded-lg p-3 flex items-center gap-4">
+      <div className="flex-shrink-0">
+        <Logo url={getLogo(SimNFL, request.SendingTeamID, false)} />
+      </div>
+      <div className="flex flex-1 items-start gap-6 min-w-0 flex-wrap sm:flex-nowrap">
+        <div className="flex flex-col gap-1 w-44 shrink-0">
+          <Text variant="xs" classes="text-gray-400 uppercase tracking-wide">
+            From
+          </Text>
+          <Text variant="small" classes="font-semibold truncate">
+            {sendingTeam?.TeamName ?? `Team #${request.SendingTeamID}`}
+          </Text>
+          <Tag variant="blue">Action Required</Tag>
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
+          <Text variant="xs" classes="text-gray-400 uppercase tracking-wide">
+            Matchup
+          </Text>
+          <Text variant="small">
+            <span className="font-medium">
+              {homeTeam?.TeamName ?? `#${request.HomeTeamID}`}
+            </span>
+            <span className="text-gray-400"> (H) vs. </span>
+            <span className="font-medium">
+              {awayTeam?.TeamName ?? `#${request.AwayTeamID}`}
+            </span>
+            <span className="text-gray-400"> (A)</span>
+          </Text>
+          <Text variant="xs" classes="text-gray-400 truncate">
+            @{" "}
+            {homeTeam?.Stadium ||
+              homeTeam?.TeamName ||
+              `#${request.HomeTeamID}`}
+          </Text>
+        </div>
+        <div className="flex flex-col gap-1 items-end shrink-0">
+          <Text variant="xs" classes="text-gray-400 uppercase tracking-wide">
+            Week
+          </Text>
+          <Text variant="small" classes="font-semibold">
+            Week {request.Week}
+          </Text>
+          <Tag variant="indigo">Preseason</Tag>
+        </div>
+        <div className="flex flex-col gap-2 shrink-0 justify-center">
+          <Button
+            variant="success"
+            size="sm"
+            onClick={() => onAccept(request.ID)}
+          >
+            Accept
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => onReject(request.ID)}
+          >
+            Reject
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface NFLSentRequestCardProps {
+  request: NFLGameRequest;
+  proTeamMap: Record<number, any> | null;
+}
+
+const NFLSentRequestCard: React.FC<NFLSentRequestCardProps> = ({
+  request,
+  proTeamMap,
+}) => {
+  const requestingTeam = proTeamMap?.[request.RequestingTeamID];
+  const homeTeam = proTeamMap?.[request.HomeTeamID];
+  const awayTeam = proTeamMap?.[request.AwayTeamID];
+
+  const status = request.IsApproved
+    ? "Approved"
+    : request.IsAccepted
+      ? "Accepted – Pending Approval"
+      : "Pending";
+
+  const statusTagVariant: TagProps["variant"] = request.IsApproved
+    ? "green"
+    : request.IsAccepted
+      ? "yellow"
+      : "gray";
+
+  const statusBorderAccent = request.IsApproved
+    ? "border-l-green-500"
+    : request.IsAccepted
+      ? "border-l-yellow-500"
+      : "border-l-gray-500";
+
+  return (
+    <div
+      className={`border border-gray-600 border-l-4 ${statusBorderAccent} rounded-lg p-3 flex items-center gap-4`}
+    >
+      <div className="flex-shrink-0">
+        <Logo url={getLogo(SimNFL, request.RequestingTeamID, false)} />
+      </div>
+      <div className="flex flex-1 items-start gap-6 min-w-0 flex-wrap sm:flex-nowrap">
+        <div className="flex flex-col gap-1 w-44 shrink-0">
+          <Text variant="xs" classes="text-gray-400 uppercase tracking-wide">
+            To
+          </Text>
+          <Text variant="small" classes="font-semibold truncate">
+            {requestingTeam?.TeamName ?? `Team #${request.RequestingTeamID}`}
+          </Text>
+          <Tag variant={statusTagVariant}>{status}</Tag>
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
+          <Text variant="xs" classes="text-gray-400 uppercase tracking-wide">
+            Matchup
+          </Text>
+          <Text variant="small">
+            <span className="font-medium">
+              {homeTeam?.TeamName ?? `#${request.HomeTeamID}`}
+            </span>
+            <span className="text-gray-400"> (H) vs. </span>
+            <span className="font-medium">
+              {awayTeam?.TeamName ?? `#${request.AwayTeamID}`}
+            </span>
+            <span className="text-gray-400"> (A)</span>
+          </Text>
+          <Text variant="xs" classes="text-gray-400 truncate">
+            @{" "}
+            {homeTeam?.Stadium ||
+              homeTeam?.TeamName ||
+              `#${request.HomeTeamID}`}
+          </Text>
+        </div>
+        <div className="flex flex-col gap-1 items-end shrink-0">
+          <Text variant="xs" classes="text-gray-400 uppercase tracking-wide">
+            Week
+          </Text>
+          <Text variant="small" classes="font-semibold">
+            Week {request.Week}
+          </Text>
+          <Tag variant="indigo">Preseason</Tag>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface NFLAcceptedRequestCardProps {
+  request: NFLGameRequest;
+  proTeamMap: Record<number, any> | null;
+  onProcess: (id: number) => void;
+  onVeto: (id: number) => void;
+}
+
+const NFLAcceptedRequestCard: React.FC<NFLAcceptedRequestCardProps> = ({
+  request,
+  proTeamMap,
+  onProcess,
+  onVeto,
+}) => {
+  const sendingTeam = proTeamMap?.[request.SendingTeamID];
+  const requestingTeam = proTeamMap?.[request.RequestingTeamID];
+  const homeTeam = proTeamMap?.[request.HomeTeamID];
+  const awayTeam = proTeamMap?.[request.AwayTeamID];
+
+  return (
+    <div className="border border-gray-600 border-l-4 border-l-yellow-500 rounded-lg p-3 flex items-center gap-4">
+      <div className="flex-shrink-0">
+        <Logo url={getLogo(SimNFL, request.SendingTeamID, false)} />
+      </div>
+      <div className="flex flex-1 items-start gap-6 min-w-0 flex-wrap sm:flex-nowrap">
+        <div className="flex flex-col gap-1 w-44 shrink-0">
+          <Text variant="xs" classes="text-gray-400 uppercase tracking-wide">
+            Sent By
+          </Text>
+          <Text variant="small" classes="font-semibold truncate">
+            {sendingTeam?.TeamName ?? `Team #${request.SendingTeamID}`}
+          </Text>
+          <Text variant="xs" classes="text-gray-400 truncate">
+            To:{" "}
+            {requestingTeam?.TeamName ?? `Team #${request.RequestingTeamID}`}
+          </Text>
+          <Tag variant="yellow">Pending Approval</Tag>
+        </div>
+        <div className="flex flex-col gap-1 flex-1 min-w-0">
+          <Text variant="xs" classes="text-gray-400 uppercase tracking-wide">
+            Matchup
+          </Text>
+          <Text variant="small">
+            <span className="font-medium">
+              {homeTeam?.TeamName ?? `#${request.HomeTeamID}`}
+            </span>
+            <span className="text-gray-400"> (H) vs. </span>
+            <span className="font-medium">
+              {awayTeam?.TeamName ?? `#${request.AwayTeamID}`}
+            </span>
+            <span className="text-gray-400"> (A)</span>
+          </Text>
+          <Text variant="xs" classes="text-gray-400 truncate">
+            @{" "}
+            {homeTeam?.Stadium ||
+              homeTeam?.TeamName ||
+              `#${request.HomeTeamID}`}
+          </Text>
+        </div>
+        <div className="flex flex-col gap-1 items-end shrink-0">
+          <Text variant="xs" classes="text-gray-400 uppercase tracking-wide">
+            Week
+          </Text>
+          <Text variant="small" classes="font-semibold">
+            Week {request.Week}
+          </Text>
+          <Tag variant="indigo">Preseason</Tag>
+        </div>
+        <div className="flex flex-col gap-2 shrink-0 justify-center">
+          <Button
+            variant="success"
+            size="sm"
+            onClick={() => onProcess(request.ID)}
+          >
+            Process
+          </Button>
+          <Button variant="danger" size="sm" onClick={() => onVeto(request.ID)}>
+            Veto
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // ─── CFBGameRequestModal ──────────────────────────────────────────────────────
 
@@ -781,7 +1615,7 @@ const CFBGameRequestModal = () => {
               <AcceptedRequestCard
                 key={req.ID}
                 request={req}
-                cfbTeamMap={cfbTeamMap}
+                teamMap={cfbTeamMap}
                 onProcess={handleProcessRequest}
                 onVeto={handleVetoRequest}
               />
@@ -899,21 +1733,21 @@ const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
 
 interface AcceptedRequestCardProps {
   request: CFBGameRequest;
-  cfbTeamMap: Record<number, any> | null;
+  teamMap: Record<number, any> | null;
   onProcess: (id: number) => void;
   onVeto: (id: number) => void;
 }
 
 const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
   request,
-  cfbTeamMap,
+  teamMap,
   onProcess,
   onVeto,
 }) => {
-  const sendingTeam = cfbTeamMap?.[request.SendingTeamID];
-  const requestingTeam = cfbTeamMap?.[request.RequestingTeamID];
-  const homeTeam = cfbTeamMap?.[request.HomeTeamID];
-  const awayTeam = cfbTeamMap?.[request.AwayTeamID];
+  const sendingTeam = teamMap?.[request.SendingTeamID];
+  const requestingTeam = teamMap?.[request.RequestingTeamID];
+  const homeTeam = teamMap?.[request.HomeTeamID];
+  const awayTeam = teamMap?.[request.AwayTeamID];
 
   return (
     <div className="border border-gray-600 border-l-4 border-l-yellow-500 rounded-lg p-3 flex items-center gap-4">

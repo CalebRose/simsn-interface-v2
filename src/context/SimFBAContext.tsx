@@ -66,6 +66,7 @@ import {
   AwardsList,
   TransferPortalProfile,
   CFBGameRequest,
+  NFLGameRequest,
   Stadium,
 } from "../models/footballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
@@ -176,6 +177,7 @@ interface SimFBAContextProps {
   individualDraftPickMap: Record<number, NFLDraftPick>;
   stadiums: Stadium[];
   cfbGameRequests: CFBGameRequest[];
+  nflGameRequests: NFLGameRequest[];
   removeUserfromCFBTeamCall: (teamID: number) => Promise<void>;
   removeUserfromNFLTeamCall: (request: NFLRequest) => Promise<void>;
   addUserToCFBTeam: (teamID: number, user: string) => void;
@@ -377,6 +379,7 @@ const defaultContext: SimFBAContextProps = {
   individualDraftPickMap: {},
   stadiums: [],
   cfbGameRequests: [],
+  nflGameRequests: [],
   tradePreferencesMap: {},
   tradeProposalsMap: {},
   cfbPostSeasonAwards: {} as AwardsList,
@@ -656,6 +659,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   >([]);
   const [stadiums, setStadiums] = useState<Stadium[]>([]);
   const [cfbGameRequests, setCFBGameRequests] = useState<CFBGameRequest[]>([]);
+  const [nflGameRequests, setNFLGameRequests] = useState<NFLGameRequest[]>([]);
 
   // Loading states for double-click prevention
   const [recruitingLoading, setRecruitingLoading] = useState<boolean>(false);
@@ -1093,6 +1097,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       setNFLRetiredPlayers(res.RetiredPlayers);
       setStadiums(res.Stadiums || []);
       setCFBGameRequests(res.CFBGameRequests || []);
+      setNFLGameRequests(res.NFLGameRequests || []);
+      setCollegeGameplanMap(res.CollegeGameplanMap);
+      setNFLGameplanMap(res.NFLGameplanMap);
     } finally {
       isScheduleDataFetching.current = false;
     }
@@ -2766,6 +2773,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         nflDraftPickMap,
         stadiums,
         cfbGameRequests,
+        nflGameRequests,
         tradeProposalsMap,
         tradePreferencesMap,
         submitCollegePoll,
