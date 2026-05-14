@@ -52,6 +52,7 @@ import { EditPostPage } from "../components/Forum/EditPostPage";
 import { NFLUDFAView } from "../components/NFL/UDFA/NFLUDFAView";
 import { NFLUDFA_LocalTest } from "../components/NFL/UDFA/NFLUDFA_LocalTest";
 
+
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
   <Route
@@ -324,23 +325,23 @@ export const AuthRoutes = [
       </AuthGuard>
     }
   />,
-  <Route 
+<Route 
     key="NFL UDFA RECRUITING"
-   path={routes.NFL_UDFA_RECRUITING}
-   element={
-   <AuthGuard>
-   <NFLUDFAView />
-  </AuthGuard>
-  }  
+    path="/nfl/udfa" // HARDCODED TO ENSURE IT MATCHES THE URL
+    element={
+      <AuthGuard>
+        <NFLUDFAView />
+      </AuthGuard>
+    }  
   />,
   <Route 
     key="NFL UDFA TEST"
-   path="/nfl/udfa-test"
-   element={
-   <AuthGuard>
-   <NFLUDFA_LocalTest />
-  </AuthGuard>
-  }  
+    path="/nfl/udfa-test" // Matches the dash in your working URL
+    element={
+      <AuthGuard>
+        <NFLUDFA_LocalTest />
+      </AuthGuard>
+    }  
   />,
   
   <Route

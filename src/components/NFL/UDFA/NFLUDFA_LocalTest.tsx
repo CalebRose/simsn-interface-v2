@@ -3,31 +3,34 @@ import { useSimFBAStore } from '../../../context/SimFBAContext';
 import { Table, TableCell } from '../../../_design/Table';
 import { Button, ButtonGroup } from '../../../_design/Buttons';
 import { Text } from '../../../_design/Typography';
+import { TabGroup, Tab } from '../../../_design/Tabs';
 import { Plus } from '../../../_design/Icons';
 import { useTeamColors } from '../../../_hooks/useTeamColors';
 import { useBackgroundColor } from '../../../_hooks/useBackgroundColor';
-import { TabGroup, Tab } from '../../../_design/Tabs';
 
-const MOCK_PLAYERS = Array.from({ length: 50 }, (_, i) => ({
-    ID: 9901 + i, FirstName: `Prospect`, LastName: `#${i}`,
-    Position: ["QB", "RB", "WR", "OT", "CB"][i % 5], Archetype: ["Balanced", "Speed", "Power"][i % 3], OverallGrade: ["A", "B+", "B", "C+"][i % 4]
-}));
+const MOCK_PLAYERS = [
+    { ID: 9901, FirstName: "Speedy", LastName: "McCatch", Position: "WR", Archetype: "Deep Threat", OverallGrade: "B" },
+    { ID: 9902, FirstName: "Tank", LastName: "Smash", Position: "RB", Archetype: "Power", OverallGrade: "C+" },
+    { ID: 9903, FirstName: "Cannon", LastName: "Arm", Position: "QB", Archetype: "Gunslinger", OverallGrade: "C" },
+    { ID: 9904, FirstName: "Brick", LastName: "Wall", Position: "OT", Archetype: "Pass Blocker", OverallGrade: "B-" },
+    { ID: 9905, FirstName: "Hit", LastName: "Stick", Position: "MLB", Archetype: "Run Stopper", OverallGrade: "C+" },
+    { ID: 9906, FirstName: "Sticky", LastName: "Hands", Position: "CB", Archetype: "Man Coverage", OverallGrade: "B" },
+];
 
 export const NFLUDFA_LocalTest = () => {
     const { nflTeam, nflDraftees } = useSimFBAStore();
     const { backgroundColor } = useBackgroundColor();
-    const teamColors = useTeamColors(nflTeam?.ColorOne, nflTeam?.ColorTwo);
+    const teamColors = useTeamColors(nflTeam?.ColorOne || "#1f2937", nflTeam?.ColorTwo || "#111827");
     
     const [selectedTab, setSelectedTab] = useState("Available UDFAs");
     const [localBoard, setLocalBoard] = useState<any[]>([]);
     const [simulationResults, setSimulationResults] = useState<any[] | null>(null);
 
-    const pointsSpent = localBoard.reduce((sum, p) => sum + p.Points, 0);
-    const pointsRemaining = 20 - pointsSpent;
+    const pointsRemaining = 20 - localBoard.reduce((sum, p) => sum + p.Points, 0);
 
     const availableUDFAs = useMemo(() => {
         if (nflDraftees && nflDraftees.length > 0) {
-            const undrafted = nflDraftees.filter((p: any) => p.DraftPickID === 0 || p.DraftedTeamID === 0);
+            const undrafted = nflDraftees.filter((player: any) => player.DraftPickID === 0 || player.DraftedTeamID === 0);
             if (undrafted.length > 0) return undrafted;
         }
         return MOCK_PLAYERS;
@@ -35,11 +38,7 @@ export const NFLUDFA_LocalTest = () => {
 
     const addPlayer = (e: React.MouseEvent, player: any) => {
         e.stopPropagation(); e.preventDefault();
-        setLocalBoard([...localBoard, { 
-            PlayerID: player.ID, 
-            PlayerName: `${player.FirstName} ${player.LastName}`, 
-            Position: player.Position, Points: 0 
-        }]);
+        setLocalBoard([...localBoard, { PlayerID: player.ID, PlayerName: `${player.FirstName} ${player.LastName}`, Position: player.Position, Points: 0 }]);
     };
 
     const runSimulation = () => {
@@ -54,8 +53,7 @@ export const NFLUDFA_LocalTest = () => {
         setSelectedTab("Results");
     };
 
-    if (!nflTeam) return null;
-
+    // FIXED: REMOVED THE RETURN NULL GATE
     return (
         <div className="w-full min-h-screen p-4 flex flex-col gap-y-4 bg-gray-900" style={{ backgroundColor }}>
             <h1 className="text-3xl font-black text-white italic uppercase tracking-tighter border-l-8 pl-4 mb-2" style={{ borderColor: teamColors.One }}>LOCAL TEST: NFL UDFA</h1>
@@ -71,24 +69,21 @@ export const NFLUDFA_LocalTest = () => {
             <div className="w-full flex flex-col">
                 {selectedTab === "Available UDFAs" && (
                     <div className="flex flex-col border-2 rounded-xl p-6 w-full shadow-2xl" style={{ borderColor: teamColors.One, backgroundColor: 'rgba(0,0,0,0.4)' }}>
+                        <Text variant="h5" classes="text-yellow-500 font-bold mb-4 uppercase italic">Sandbox Mode</Text>
                         <Table
-                            team={nflTeam}
+                            team={nflTeam || ({} as any)}
                             columns={[{ header: "Name", accessor: "PlayerName" }, { header: "Pos", accessor: "Position" }, { header: "Archetype", accessor: "Archetype" }, { header: "Overall", accessor: "OverallGrade" }, { header: "Action", accessor: "" }]}
                             data={availableUDFAs}
                             rowRenderer={(player: any, index: number, bg: string) => {
                                 const isOnBoard = localBoard.some(p => p.PlayerID === player.ID);
                                 return (
                                     <div className="table-row border-b border-gray-700" style={{ backgroundColor: bg }} key={player.ID}>
-                                        <TableCell classes="font-bold">{player.FirstName} {player.LastName}</TableCell>
+                                        <TableCell classes="font-bold text-lg">{player.FirstName} {player.LastName}</TableCell>
                                         <TableCell>{player.Position}</TableCell>
                                         <TableCell>{player.Archetype}</TableCell>
                                         <TableCell classes="font-mono font-bold text-lg">{player.OverallGrade}</TableCell>
                                         <TableCell>
-                                            <button 
-                                                onClick={(e) => addPlayer(e, player)}
-                                                disabled={isOnBoard}
-                                                className={`p-1 rounded flex items-center justify-center transition-all ${isOnBoard ? 'bg-gray-600 opacity-50' : 'bg-green-600 hover:scale-110 shadow-lg'}`}
-                                            >
+                                            <button onClick={(e) => addPlayer(e, player)} disabled={isOnBoard} className={`p-1 rounded flex items-center justify-center transition-all ${isOnBoard ? 'bg-gray-600 opacity-50' : 'bg-green-600 hover:scale-110 shadow-lg'}`}>
                                                 {isOnBoard ? <Text classes="text-xs px-1 text-white">Added</Text> : <Plus />}
                                             </button>
                                         </TableCell>

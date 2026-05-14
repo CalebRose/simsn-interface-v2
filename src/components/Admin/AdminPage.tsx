@@ -9,7 +9,6 @@ import { ToggleSwitch } from "../../_design/Inputs";
 import { Tab, TabGroup } from "../../_design/Tabs";
 import {
   AdminRole,
-  Games,
   Requests,
   SimCBB,
   SimCFB,
@@ -34,7 +33,7 @@ import { SimulationControlPanel } from "./SimulationControlPanel";
 import { RecruitingAdminPanel } from "./RecruitingAdminPanel";
 import { useMemo } from "react";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
-// FIXED PATH
+// FIXED: Corrected sibling path and component name
 import { AdminUDFAControls } from './NFLUDFAAdminPanel';
 
 const IFAAdminSection = () => {
@@ -65,7 +64,7 @@ interface UnAuthPageProps {
 const UnAuthAdminPage: React.FC<UnAuthPageProps> = ({ navigate }) => {
   return (
     <PageContainer isLoading={false}>
-      <div className="flex flex-col justify-center relative h-full mt-40">
+      <div className="flex flex-col justify-center relative h-[100%] mt-[10rem]">
         <Text variant="h3">Warning! Please return to Dashboard</Text>
         <Text variant="body" classes="mb-4">
           You are not an admin.
@@ -79,12 +78,12 @@ const UnAuthAdminPage: React.FC<UnAuthPageProps> = ({ navigate }) => {
 };
 
 export const AdminPage = () => {
-  const { ts, selectedLeague, setSelectedLeague } = useLeagueStore();
   const authStore = useAuthStore();
   const { currentUser } = authStore;
-  const { RefreshRequests, selectedTab, setSelectedTab } = useAdminPage();
+  const { RefreshRequests } = useAdminPage();
   const navigate = useNavigate();
-  
+
+  // Role gating logic
   if (
     currentUser &&
     currentUser.roleID &&
@@ -129,6 +128,10 @@ export const AdminPage = () => {
     return currentUser.roleID?.includes("PHL Commissioner");
   }, [currentUser]);
 
+  const leagueStore = useLeagueStore();
+  const { ts, selectedLeague, setSelectedLeague } = leagueStore;
+  const { selectedTab, setSelectedTab } = useAdminPage();
+
   return (
     <>
       <PageContainer direction="col" isLoading={false} title="Admin">
@@ -141,7 +144,7 @@ export const AdminPage = () => {
               {(isAdmin || isCFBCommissioner) && (
                 <PillButton
                   isSelected={selectedLeague === SimCFB}
-                  classes="w-32"
+                  classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimCFB)}
                 >
                   {SimCFB}
@@ -150,7 +153,7 @@ export const AdminPage = () => {
               {(isAdmin || isNFLCommissioner) && (
                 <PillButton
                   isSelected={selectedLeague === SimNFL}
-                  classes="w-32"
+                  classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimNFL)}
                 >
                   {SimNFL}
@@ -160,7 +163,7 @@ export const AdminPage = () => {
                 <PillButton
                   isSelected={selectedLeague === SimNBA}
                   variant="basketball"
-                  classes="w-32"
+                  classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimCBB)}
                 >
                   {SimCBB}
@@ -170,7 +173,7 @@ export const AdminPage = () => {
                 <PillButton
                   isSelected={selectedLeague === SimCBB}
                   variant="basketball"
-                  classes="w-32"
+                  classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimNBA)}
                 >
                   {SimNBA}
@@ -180,7 +183,7 @@ export const AdminPage = () => {
                 <PillButton
                   isSelected={selectedLeague === SimCHL}
                   variant="hockey"
-                  classes="w-32"
+                  classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimCHL)}
                 >
                   {SimCHL}
@@ -190,7 +193,7 @@ export const AdminPage = () => {
                 <PillButton
                   isSelected={selectedLeague === SimPHL}
                   variant="hockey"
-                  classes="w-32"
+                  classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimPHL)}
                 >
                   {SimPHL}
@@ -199,16 +202,16 @@ export const AdminPage = () => {
               {isAdmin && (
                 <PillButton
                   isSelected={selectedLeague === SimCollegeBaseball}
-                  classes="w-32"
+                  classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimCollegeBaseball)}
                 >
-                  SimCBL
+                  SimCB
                 </PillButton>
               )}
               {isAdmin && (
                 <PillButton
                   isSelected={selectedLeague === SimMLB}
-                  classes="w-32"
+                  classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimMLB)}
                 >
                   {SimMLB}
@@ -252,7 +255,7 @@ export const AdminPage = () => {
         )}
         <Border classes="w-full">
           <div className="flex flex-row flex-wrap justify-between pt-1 pb-2 mb-2">
-            <TabGroup classes="flex grow justify-between">
+            <TabGroup classes="flex flex-grow justify-between">
               <Tab
                 label={Requests}
                 selected={selectedTab === Requests}
@@ -263,17 +266,6 @@ export const AdminPage = () => {
                 selected={selectedTab === Teams}
                 setSelected={setSelectedTab}
               />
-              {(selectedLeague === SimCFB ||
-                selectedLeague === SimCBB ||
-                selectedLeague === SimCHL) && (
-                <>
-                  <Tab
-                    label={Games}
-                    selected={selectedTab === Games}
-                    setSelected={setSelectedTab}
-                  />
-                </>
-              )}
               {(selectedLeague === SimPHL ||
                 selectedLeague === SimNFL ||
                 selectedLeague === SimNBA ||
@@ -295,24 +287,24 @@ export const AdminPage = () => {
             {selectedTab === Trades && <AdminTradesTab />}
           </div>
         </Border>
-        
+
+        {/* SimNFL Section: Hub + UDFA Panel */}
         {selectedLeague === SimNFL && (
           <div className="flex flex-col w-full gap-y-4">
-            <Border classes="w-full">
+            <Border classes="w-full sm:max-w-[65vw]">
               <div className="flex justify-center p-4">
                 <Text variant="h6">{selectedLeague} Commissioner Hub</Text>
               </div>
               <CommissionerHub league={selectedLeague} />
             </Border>
 
-            {/* NFL UDFA PANEL - Uses w-full from NFLUDFAAdminPanel.tsx */}
+            {/* FIXED: Using the correctly imported component name */}
             <AdminUDFAControls />
           </div>
         )}
 
         {selectedLeague === SimMLB && <IFAAdminSection />}
-        {(selectedLeague === SimMLB ||
-          selectedLeague === SimCollegeBaseball) && (
+        {(selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball) && (
           <SimulationControlSection />
         )}
         {selectedLeague === SimCollegeBaseball && <RecruitingAdminSection />}
