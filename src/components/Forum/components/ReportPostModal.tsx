@@ -118,7 +118,7 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as ReportCategory)}
-              className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+              className="w-full bg-gray-800 border border-gray-600 rounded-sm px-3 py-2 text-sm text-white focus:outline-hidden focus:border-blue-500"
             >
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -142,7 +142,7 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
               placeholder="Describe why this post violates community guidelines…"
               rows={4}
               maxLength={500}
-              className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:border-blue-500"
+              className="w-full bg-gray-800 border border-gray-600 rounded-sm px-3 py-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-hidden focus:border-blue-500"
             />
             <Text variant="xs" classes="text-gray-500 text-right">
               {reason.length}/500

@@ -36,7 +36,7 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread }) => {
 
   return (
     <div
-      className="forum-thread-item flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-3 px-3 border-b last:border-b-0 cursor-pointer transition-colors rounded"
+      className="forum-thread-item flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-3 px-3 border-b last:border-b-0 cursor-pointer transition-colors rounded-sm"
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -46,27 +46,27 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread }) => {
       <div className="flex flex-col flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
           {thread.isPinned && (
-            <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded-sm font-medium">
               Pinned
             </span>
           )}
           {thread.isAnnouncement && (
-            <span className="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded-sm font-medium">
               Announcement
             </span>
           )}
           {thread.isLocked && (
-            <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded-sm font-medium">
               🔒 Locked
             </span>
           )}
           {thread.threadType === "poll" && (
-            <span className="text-xs bg-green-700 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-green-700 text-white px-1.5 py-0.5 rounded-sm font-medium">
               Poll
             </span>
           )}
           {thread.threadType === "game_reference" && (
-            <span className="text-xs bg-orange-700 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-orange-700 text-white px-1.5 py-0.5 rounded-sm font-medium">
               🎮 Game
             </span>
           )}
@@ -76,7 +76,7 @@ export const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread }) => {
             return (
               <span
                 key={tag}
-                className={`text-xs ${def.color} text-white px-1.5 py-0.5 rounded font-medium`}
+                className={`text-xs ${def.color} text-white px-1.5 py-0.5 rounded-sm font-medium`}
               >
                 {def.label}
               </span>

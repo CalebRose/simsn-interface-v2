@@ -42,13 +42,13 @@ export const getThemeColors = (isDark: boolean): ThemeColors => {
 
 export const getNotificationStyles = (isDark: boolean, isUnread: boolean) => {
   const baseClasses =
-    "col-span-8 grid grid-cols-8 border-b border-opacity-30 pb-2 mb-1";
+    "col-span-8 grid grid-cols-8 border-b border-black/30 pb-2 mb-1";
 
   if (!isUnread) return baseClasses;
 
   const unreadClasses = isDark
-    ? "border-l-4 border-l-blue-400 pl-2 bg-blue-900 bg-opacity-20"
-    : "border-l-4 border-l-blue-500 pl-2 bg-blue-100 bg-opacity-30";
+    ? "border-l-4 border-l-blue-400 pl-2 bg-blue-900 bg-black/20"
+    : "border-l-4 border-l-blue-500 pl-2 bg-blue-100 bg-black/30";
 
   return `${baseClasses} ${unreadClasses}`;
 };
@@ -57,7 +57,7 @@ export const getButtonStyles = (
   isDark: boolean,
   variant: "primary" | "success" | "error" | "warning"
 ) => {
-  const baseClasses = "rounded text-white transition-colors";
+  const baseClasses = "rounded-sm text-white transition-colors";
 
   const variants = {
     primary: isDark

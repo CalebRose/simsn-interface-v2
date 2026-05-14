@@ -62,7 +62,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={`rounded shadow transition-all duration-200 ${buttonStyle} ${classes}`}
+      className={`rounded-sm shadow-sm transition-all duration-200 ${buttonStyle} ${classes}`}
       onClick={onClick}
       disabled={disabled}
       {...props}
@@ -138,7 +138,7 @@ export const PillButton: React.FC<PillButtonProps> = ({
   return (
     <button
       type="button"
-      className={`flex items-center justify-center rounded-full shadow ${sizes[size] || sizes.md} ${buttonStyle} ${classes}`}
+      className={`flex items-center justify-center rounded-full shadow-sm ${sizes[size] || sizes.md} ${buttonStyle} ${classes}`}
       onClick={onClick}
       {...props}
     >
@@ -163,7 +163,7 @@ export const ButtonGroup: React.FC<ButtonGroupProps> = ({
 }) => {
   return (
     <div
-      className={`flex pt-1 lg:pt-0 flex-wrap flex-${direction} gap-x-1 sm:gap-x-2 gap-y-2 ${classes}`}
+      className={`flex pt-1 lg:pt-0 flex-wrap ${direction === "col" ? "flex-col" : "flex-row"} gap-x-1 sm:gap-x-2 gap-y-2 ${classes}`}
       {...props}
     >
       {children}

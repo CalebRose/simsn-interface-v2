@@ -20,7 +20,7 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   actions,
   classes = "",
-  maxWidth = "max-w-[36rem]",
+  maxWidth = "max-w-xl",
 }) => {
   // ✅ Strongly Typed Ref
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -55,7 +55,7 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-black/50">
       <div
         ref={modalRef}
         className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full ${maxWidth} max-h-[90vh] flex flex-col p-6 ${classes}`}

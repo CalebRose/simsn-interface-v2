@@ -49,17 +49,20 @@ export const CurrencyInput: FC<CurrencyInputProps> = ({
     onChange(parsed);
   }, [editText, onChange]);
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    // Only allow digits (strip anything else as they type)
-    const digitsOnly = raw.replace(/[^\d]/g, "");
-    setEditText(digitsOnly);
-    // Live-update the parent so validation runs in real time
-    const parsed = parseInt(digitsOnly, 10);
-    onChange(isNaN(parsed) ? 0 : parsed);
-  }, [onChange]);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      // Only allow digits (strip anything else as they type)
+      const digitsOnly = raw.replace(/[^\d]/g, "");
+      setEditText(digitsOnly);
+      // Live-update the parent so validation runs in real time
+      const parsed = parseInt(digitsOnly, 10);
+      onChange(isNaN(parsed) ? 0 : parsed);
+    },
+    [onChange],
+  );
 
-  const inputClasses = `w-full text-sm border rounded px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+  const inputClasses = `w-full text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
     disabled ? "opacity-40 cursor-not-allowed" : ""
   } ${className ?? ""}`;
 

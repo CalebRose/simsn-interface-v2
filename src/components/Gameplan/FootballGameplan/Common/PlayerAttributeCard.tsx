@@ -120,7 +120,7 @@ export const PlayerAttributeCard: React.FC<PlayerAttributeCardProps> = ({
           style={generateBackgroundPattern(accentColor)}
         />
         <div
-          className="absolute top-1 right-1 px-1.5 py-0.5 rounded z-10"
+          className="absolute top-1 right-1 px-1.5 py-0.5 rounded-sm z-10"
           style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
         >
           <Text
@@ -132,7 +132,7 @@ export const PlayerAttributeCard: React.FC<PlayerAttributeCardProps> = ({
         </div>
         {category === ManagementCard && (
           <div
-            className="absolute top-1 left-1 px-1.5 py-0.5 rounded z-10"
+            className="absolute top-1 left-1 px-1.5 py-0.5 rounded-sm z-10"
             style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
           >
             <Text variant="xs" classes={`font-bold text-white`}>
@@ -182,7 +182,7 @@ export const PlayerAttributeCard: React.FC<PlayerAttributeCardProps> = ({
               {displayAttributes.map((attr, index) => (
                 <div
                   key={index}
-                  className="flex flex-col items-center justify-center bg-black bg-opacity-20 rounded text-center h-4/5 p-0.5"
+                  className="flex flex-col items-center justify-center bg-black/20 rounded-sm text-center h-4/5 p-0.5"
                 >
                   <Text
                     variant="xs"
@@ -208,7 +208,7 @@ export const PlayerAttributeCard: React.FC<PlayerAttributeCardProps> = ({
             </div>
           </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white opacity-0 hover:opacity-10 transition-opacity duration-200 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-t from-transparent via-transparent to-white opacity-0 hover:opacity-10 transition-opacity duration-200 pointer-events-none" />
       </Border>
     </div>
   );

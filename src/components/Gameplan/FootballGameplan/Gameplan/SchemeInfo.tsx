@@ -17,7 +17,7 @@ export const SchemeInfo: React.FC<SchemeInfoProps> = ({
 
   if (!schemeData) {
     return (
-      <div className={`bg-gray-800 bg-opacity-50 rounded-lg p-3 ${className}`}>
+      <div className={`bg-gray-800 bg-black/50 rounded-lg p-3 ${className}`}>
         <Text variant="small" classes="text-gray-400">
           No information available for this scheme.
         </Text>
@@ -28,7 +28,7 @@ export const SchemeInfo: React.FC<SchemeInfoProps> = ({
   const { SchemeFits, BadFits, Notes, Strengths, Weaknesses, Ranges } = schemeData;
 
   return (
-    <div className={`bg-gray-800 bg-opacity-50 rounded-lg p-3 space-y-3 ${className}`}>
+    <div className={`bg-gray-800 bg-black/50 rounded-lg p-3 space-y-3 ${className}`}>
       <div>
         <Text variant="small" classes="text-green-400 font-semibold mb-1">
           Scheme Fits:
@@ -118,7 +118,7 @@ export const FormationInfo: React.FC<FormationInfoProps> = ({
   className = ''
 }) => {
   return (
-    <div className={`bg-gray-800 bg-opacity-50 rounded-lg p-3 ${className}`}>
+    <div className={`bg-gray-800 bg-black/50 rounded-lg p-3 ${className}`}>
       <Text variant="small" classes="text-blue-400 font-semibold mb-2">
         Available Formations:
       </Text>
@@ -148,7 +148,7 @@ export const OpposingSchemeInfo: React.FC<OpposingSchemeInfoProps> = ({
   className = ''
 }) => {
   return (
-    <div className={`bg-orange-900 bg-opacity-30 border border-orange-500 rounded-lg p-3 ${className} w-full`}>
+    <div className={`bg-orange-900 bg-black/30 border border-orange-500 rounded-lg p-3 ${className} w-full`}>
       <Text variant="small" classes="text-orange-400 font-semibold mb-1">
         Opposing Scheme:
       </Text>

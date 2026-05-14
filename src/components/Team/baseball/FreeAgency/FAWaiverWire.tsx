@@ -38,7 +38,9 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
     setIsLoading(true);
     BaseballService.GetWaivers(leagueYearId, orgId)
       .then((res) => setWaivers(res.waivers ?? []))
-      .catch(() => enqueueSnackbar("Failed to load waivers", { variant: "error" }))
+      .catch(() =>
+        enqueueSnackbar("Failed to load waivers", { variant: "error" }),
+      )
       .finally(() => setIsLoading(false));
   }, [orgId, leagueYearId, enqueueSnackbar]);
 
@@ -50,7 +52,10 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
     async (waiverClaimId: number, playerName: string) => {
       setActionInFlight(waiverClaimId);
       try {
-        const res = await BaseballService.PlaceWaiverClaim(waiverClaimId, orgId);
+        const res = await BaseballService.PlaceWaiverClaim(
+          waiverClaimId,
+          orgId,
+        );
         if (res.already_claimed) {
           enqueueSnackbar(`You already have a claim on ${playerName}`, {
             variant: "info",
@@ -111,8 +116,7 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
     );
   }
 
-  const th =
-    "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap";
+  const th = "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap";
 
   return (
     <div className="baseball-table-wrapper overflow-x-auto">
@@ -166,7 +170,7 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
                 <td className="px-2 py-1">{w.displayovr ?? "—"}</td>
                 <td className="px-2 py-1">
                   <span
-                    className={`px-1.5 py-0.5 text-[10px] rounded font-semibold ${
+                    className={`px-1.5 py-0.5 text-[10px] rounded-sm font-semibold ${
                       w.fa_type === "mlb_fa"
                         ? "bg-purple-600/20 text-purple-400"
                         : w.fa_type === "arb"
@@ -201,7 +205,7 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
                     <span className="text-xs text-gray-500">Your release</span>
                   ) : w.my_bid ? (
                     <button
-                      className="px-2 py-0.5 rounded text-xs font-semibold bg-red-600/20 text-red-400 hover:bg-red-600/40 disabled:opacity-40"
+                      className="px-2 py-0.5 rounded-sm text-xs font-semibold bg-red-600/20 text-red-400 hover:bg-red-600/40 disabled:opacity-40"
                       onClick={() =>
                         handleWithdraw(w.waiver_claim_id, w.player_name)
                       }
@@ -211,7 +215,7 @@ export const FAWaiverWire: FC<FAWaiverWireProps> = ({
                     </button>
                   ) : (
                     <button
-                      className="px-2 py-0.5 rounded text-xs font-semibold bg-green-600/20 text-green-400 hover:bg-green-600/40 disabled:opacity-40"
+                      className="px-2 py-0.5 rounded-sm text-xs font-semibold bg-green-600/20 text-green-400 hover:bg-green-600/40 disabled:opacity-40"
                       onClick={() =>
                         handleClaim(w.waiver_claim_id, w.player_name)
                       }

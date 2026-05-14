@@ -25,7 +25,9 @@ interface BaseballAdminBoardProps {
   isAutoRoundsRunning: boolean;
   roundModes: RoundModeConfig[];
   leagueYearId: number | null;
-  onInitializeDraft: (params: DraftInitializeParams) => Promise<DraftInitializeResponse>;
+  onInitializeDraft: (
+    params: DraftInitializeParams,
+  ) => Promise<DraftInitializeResponse>;
   onSetRoundModes: (modes: Record<string, string>) => Promise<void>;
   onStartDraft: () => Promise<void>;
   onPauseDraft: () => Promise<void>;
@@ -87,11 +89,17 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
   // Sync round mode editor from props
   React.useEffect(() => {
     const modes: Record<number, RoundMode> = {};
-    roundModes.forEach((r) => { modes[r.round] = r.mode; });
+    roundModes.forEach((r) => {
+      modes[r.round] = r.mode;
+    });
     setEditModes(modes);
   }, [roundModes]);
 
-  const runAsync = async (key: string, fn: () => Promise<void>, msg?: string) => {
+  const runAsync = async (
+    key: string,
+    fn: () => Promise<void>,
+    msg?: string,
+  ) => {
     setLoading(key);
     setError(null);
     setSuccessMsg(null);
@@ -149,17 +157,25 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
       <h2 className="text-xl font-bold">Draft Administration</h2>
 
       {error && (
-        <div className="rounded bg-red-900/50 px-4 py-2 text-sm text-red-300">{error}</div>
+        <div className="rounded-sm bg-red-900/50 px-4 py-2 text-sm text-red-300">
+          {error}
+        </div>
       )}
       {successMsg && (
-        <div className="rounded bg-green-900/50 px-4 py-2 text-sm text-green-300">{successMsg}</div>
+        <div className="rounded-sm bg-green-900/50 px-4 py-2 text-sm text-green-300">
+          {successMsg}
+        </div>
       )}
 
       {/* Section 1: Draft Controls */}
-      <section className="rounded border border-gray-700 bg-gray-800 p-4">
-        <h3 className="mb-3 text-lg font-semibold text-gray-300">Draft Controls</h3>
+      <section className="rounded-sm border border-gray-700 bg-gray-800 p-4">
+        <h3 className="mb-3 text-lg font-semibold text-gray-300">
+          Draft Controls
+        </h3>
         <div className="flex flex-wrap items-center gap-3">
-          <span className={`rounded px-3 py-1 text-sm font-medium ${phaseColors[phase]}`}>
+          <span
+            className={`rounded-sm px-3 py-1 text-sm font-medium ${phaseColors[phase]}`}
+          >
             {phase.replace("_", " ")}
           </span>
 
@@ -167,7 +183,7 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
             <button
               onClick={() => runAsync("start", onStartDraft)}
               disabled={isLoading("start")}
-              className="rounded bg-green-600 px-4 py-2 text-sm font-medium hover:bg-green-500 disabled:opacity-50"
+              className="rounded-sm bg-green-600 px-4 py-2 text-sm font-medium hover:bg-green-500 disabled:opacity-50"
             >
               {isLoading("start") ? "Starting..." : "Start Draft"}
             </button>
@@ -178,7 +194,7 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
               <button
                 onClick={() => runAsync("pause", onPauseDraft)}
                 disabled={isLoading("pause")}
-                className="rounded bg-yellow-600 px-4 py-2 text-sm font-medium hover:bg-yellow-500 disabled:opacity-50"
+                className="rounded-sm bg-yellow-600 px-4 py-2 text-sm font-medium hover:bg-yellow-500 disabled:opacity-50"
               >
                 {isLoading("pause") ? "Pausing..." : "Pause"}
               </button>
@@ -186,7 +202,7 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
                 <button
                   onClick={() => runAsync("resetTimer", onResetTimer)}
                   disabled={isLoading("resetTimer")}
-                  className="rounded bg-gray-600 px-4 py-2 text-sm font-medium hover:bg-gray-500 disabled:opacity-50"
+                  className="rounded-sm bg-gray-600 px-4 py-2 text-sm font-medium hover:bg-gray-500 disabled:opacity-50"
                 >
                   {isLoading("resetTimer") ? "Resetting..." : "Reset Timer"}
                 </button>
@@ -198,7 +214,7 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
             <button
               onClick={() => runAsync("resume", onResumeDraft)}
               disabled={isLoading("resume")}
-              className="rounded bg-green-600 px-4 py-2 text-sm font-medium hover:bg-green-500 disabled:opacity-50"
+              className="rounded-sm bg-green-600 px-4 py-2 text-sm font-medium hover:bg-green-500 disabled:opacity-50"
             >
               {isLoading("resume") ? "Resuming..." : "Resume"}
             </button>
@@ -208,39 +224,47 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
 
       {/* Section 2: Initialize Draft (SETUP only) */}
       {phase === "SETUP" && (
-        <section className="rounded border border-gray-700 bg-gray-800 p-4">
-          <h3 className="mb-3 text-lg font-semibold text-gray-300">Initialize Draft</h3>
+        <section className="rounded-sm border border-gray-700 bg-gray-800 p-4">
+          <h3 className="mb-3 text-lg font-semibold text-gray-300">
+            Initialize Draft
+          </h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="mb-1 block text-xs text-gray-400">Total Rounds</label>
+              <label className="mb-1 block text-xs text-gray-400">
+                Total Rounds
+              </label>
               <input
                 type="number"
                 min={1}
                 max={50}
                 value={initRounds}
                 onChange={(e) => setInitRounds(Number(e.target.value))}
-                className="w-full rounded border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white"
+                className="w-full rounded-sm border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-gray-400">Seconds Per Pick</label>
+              <label className="mb-1 block text-xs text-gray-400">
+                Seconds Per Pick
+              </label>
               <input
                 type="number"
                 min={15}
                 max={600}
                 value={initSecondsPerPick}
                 onChange={(e) => setInitSecondsPerPick(Number(e.target.value))}
-                className="w-full rounded border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white"
+                className="w-full rounded-sm border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-gray-400">Live Rounds (comma-separated)</label>
+              <label className="mb-1 block text-xs text-gray-400">
+                Live Rounds (comma-separated)
+              </label>
               <input
                 type="text"
                 value={initLiveRounds}
                 onChange={(e) => setInitLiveRounds(e.target.value)}
                 placeholder="1,2,3"
-                className="w-full rounded border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white"
+                className="w-full rounded-sm border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white"
               />
             </div>
             <div className="flex items-end">
@@ -258,7 +282,7 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
           <button
             onClick={handleInitialize}
             disabled={isLoading("init")}
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-500 disabled:opacity-50"
+            className="rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-500 disabled:opacity-50"
           >
             {isLoading("init") ? "Initializing..." : "Initialize Draft"}
           </button>
@@ -267,46 +291,52 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
 
       {/* Section 3: Round Mode Editor (SETUP only) */}
       {phase === "SETUP" && roundModes.length > 0 && (
-        <section className="rounded border border-gray-700 bg-gray-800 p-4">
-          <h3 className="mb-3 text-lg font-semibold text-gray-300">Round Modes</h3>
+        <section className="rounded-sm border border-gray-700 bg-gray-800 p-4">
+          <h3 className="mb-3 text-lg font-semibold text-gray-300">
+            Round Modes
+          </h3>
           {autoRoundsLocked && (
-            <div className="mb-3 rounded bg-red-900/30 px-3 py-2 text-xs text-red-300">
+            <div className="mb-3 rounded-sm bg-red-900/30 px-3 py-2 text-xs text-red-300">
               Round modes are locked — auto rounds have started.
             </div>
           )}
           <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 mb-4">
-            {Array.from({ length: totalRounds }, (_, i) => i + 1).map((roundNum) => {
-              const mode = editModes[roundNum] ?? "auto";
-              const isLive = mode === "live";
-              return (
-                <button
-                  key={roundNum}
-                  onClick={() => {
-                    if (!autoRoundsLocked) {
-                      setEditModes((prev) => ({
-                        ...prev,
-                        [roundNum]: isLive ? "auto" : "live",
-                      }));
-                    }
-                  }}
-                  disabled={autoRoundsLocked}
-                  className={`
-                    flex flex-col items-center rounded p-2 text-xs font-medium transition-colors
+            {Array.from({ length: totalRounds }, (_, i) => i + 1).map(
+              (roundNum) => {
+                const mode = editModes[roundNum] ?? "auto";
+                const isLive = mode === "live";
+                return (
+                  <button
+                    key={roundNum}
+                    onClick={() => {
+                      if (!autoRoundsLocked) {
+                        setEditModes((prev) => ({
+                          ...prev,
+                          [roundNum]: isLive ? "auto" : "live",
+                        }));
+                      }
+                    }}
+                    disabled={autoRoundsLocked}
+                    className={`
+                    flex flex-col items-center rounded-sm p-2 text-xs font-medium transition-colors
                     ${isLive ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-400"}
                     ${autoRoundsLocked ? "opacity-50 cursor-not-allowed" : "hover:opacity-80 cursor-pointer"}
                   `}
-                >
-                  <span className="font-bold">R{roundNum}</span>
-                  <span className="text-[10px]">{isLive ? "Live" : "Auto"}</span>
-                </button>
-              );
-            })}
+                  >
+                    <span className="font-bold">R{roundNum}</span>
+                    <span className="text-[10px]">
+                      {isLive ? "Live" : "Auto"}
+                    </span>
+                  </button>
+                );
+              },
+            )}
           </div>
           {!autoRoundsLocked && (
             <button
               onClick={handleSaveRoundModes}
               disabled={isLoading("roundModes")}
-              className="rounded bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-500 disabled:opacity-50"
+              className="rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-500 disabled:opacity-50"
             >
               {isLoading("roundModes") ? "Saving..." : "Save Round Modes"}
             </button>
@@ -316,15 +346,18 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
 
       {/* Section 4: Auto Rounds */}
       {phase === "IN_PROGRESS" && currentRoundMode === "auto" && (
-        <section className="rounded border border-gray-700 bg-gray-800 p-4">
-          <h3 className="mb-3 text-lg font-semibold text-gray-300">Auto Rounds</h3>
+        <section className="rounded-sm border border-gray-700 bg-gray-800 p-4">
+          <h3 className="mb-3 text-lg font-semibold text-gray-300">
+            Auto Rounds
+          </h3>
           <p className="text-sm text-gray-400 mb-3">
-            Live rounds are complete. Trigger auto rounds to process remaining picks based on team preferences and BPA.
+            Live rounds are complete. Trigger auto rounds to process remaining
+            picks based on team preferences and BPA.
           </p>
           <button
             onClick={handleRunAutoRounds}
             disabled={isLoading("autoRounds") || isAutoRoundsRunning}
-            className="rounded bg-orange-600 px-4 py-2 text-sm font-medium hover:bg-orange-500 disabled:opacity-50"
+            className="rounded-sm bg-orange-600 px-4 py-2 text-sm font-medium hover:bg-orange-500 disabled:opacity-50"
           >
             {isLoading("autoRounds") || isAutoRoundsRunning
               ? "Processing Auto Rounds..."
@@ -339,8 +372,10 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
       )}
 
       {/* Section 5: Current Pick Info */}
-      <section className="rounded border border-gray-700 bg-gray-800 p-4">
-        <h3 className="mb-3 text-lg font-semibold text-gray-300">Current Pick Info</h3>
+      <section className="rounded-sm border border-gray-700 bg-gray-800 p-4">
+        <h3 className="mb-3 text-lg font-semibold text-gray-300">
+          Current Pick Info
+        </h3>
         <div className="grid grid-cols-5 gap-4">
           <div className="text-center">
             <p className="text-xs text-gray-400">Round</p>
@@ -356,37 +391,45 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
           </div>
           <div className="text-center">
             <p className="text-xs text-gray-400">Mode</p>
-            <p className={`text-lg font-bold ${currentRoundMode === "live" ? "text-blue-400" : "text-gray-400"}`}>
+            <p
+              className={`text-lg font-bold ${currentRoundMode === "live" ? "text-blue-400" : "text-gray-400"}`}
+            >
               {currentRoundMode === "live" ? "LIVE" : "AUTO"}
             </p>
           </div>
           <div className="text-center">
             <p className="text-xs text-gray-400">Timer</p>
             <p className="text-2xl font-bold font-mono">
-              {currentRoundMode === "live" ? formatDraftTime(secondsRemaining) : "—"}
+              {currentRoundMode === "live"
+                ? formatDraftTime(secondsRemaining)
+                : "—"}
             </p>
           </div>
         </div>
       </section>
 
       {/* Section 6: Phase Transitions */}
-      <section className="rounded border border-gray-700 bg-gray-800 p-4">
-        <h3 className="mb-3 text-lg font-semibold text-gray-300">Phase Transitions</h3>
+      <section className="rounded-sm border border-gray-700 bg-gray-800 p-4">
+        <h3 className="mb-3 text-lg font-semibold text-gray-300">
+          Phase Transitions
+        </h3>
         <div className="flex flex-wrap gap-3">
           {(phase === "IN_PROGRESS" || phase === "PAUSED") && (
             <button
               onClick={() => runAsync("signing", onAdvanceToSigning)}
               disabled={isLoading("signing")}
-              className="rounded bg-purple-600 px-4 py-2 text-sm font-medium hover:bg-purple-500 disabled:opacity-50"
+              className="rounded-sm bg-purple-600 px-4 py-2 text-sm font-medium hover:bg-purple-500 disabled:opacity-50"
             >
-              {isLoading("signing") ? "Advancing..." : "Advance to Signing Phase"}
+              {isLoading("signing")
+                ? "Advancing..."
+                : "Advance to Signing Phase"}
             </button>
           )}
           {(phase === "SIGNING" || phase === "COMPLETE") && (
             <button
               onClick={() => runAsync("export", onExportDraft)}
               disabled={isLoading("export")}
-              className="rounded bg-green-600 px-4 py-2 text-sm font-medium hover:bg-green-500 disabled:opacity-50"
+              className="rounded-sm bg-green-600 px-4 py-2 text-sm font-medium hover:bg-green-500 disabled:opacity-50"
             >
               {isLoading("export") ? "Exporting..." : "Export Draft"}
             </button>
@@ -395,7 +438,7 @@ const BaseballAdminBoard: React.FC<BaseballAdminBoardProps> = ({
             <button
               onClick={() => runAsync("complete", onCompleteDraft)}
               disabled={isLoading("complete")}
-              className="rounded bg-green-700 px-4 py-2 text-sm font-medium hover:bg-green-600 disabled:opacity-50"
+              className="rounded-sm bg-green-700 px-4 py-2 text-sm font-medium hover:bg-green-600 disabled:opacity-50"
             >
               {isLoading("complete") ? "Completing..." : "Complete Draft"}
             </button>

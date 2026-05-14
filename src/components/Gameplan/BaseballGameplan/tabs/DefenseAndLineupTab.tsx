@@ -456,7 +456,7 @@ const PositionCard = ({
         </Text>
         <button
           onClick={onAdd}
-          className="text-sm sm:text-xs px-2 py-1.5 sm:px-0 sm:py-0 rounded sm:rounded-none bg-blue-600/10 sm:bg-transparent text-blue-500 hover:text-blue-400 cursor-pointer font-medium"
+          className="text-sm sm:text-xs px-2 py-1.5 sm:px-0 sm:py-0 rounded-sm sm:rounded-none bg-blue-600/10 sm:bg-transparent text-blue-500 hover:text-blue-400 cursor-pointer font-medium"
           aria-label={`Add ${PositionShortMap[positionCode] ?? positionCode.toUpperCase()} assignment`}
         >
           + Add
@@ -511,7 +511,7 @@ const PositionCard = ({
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       {assignedPlayer.bat_hand && (
-                        <span className="text-xs px-1 py-0.5 rounded bg-gray-700/50 text-gray-300">
+                        <span className="text-xs px-1 py-0.5 rounded-sm bg-gray-700/50 text-gray-300">
                           Bats: {assignedPlayer.bat_hand}
                         </span>
                       )}
@@ -522,7 +522,7 @@ const PositionCard = ({
                         // so use displayValueColor (handles both) instead of ratingColor.
                         const val: DisplayValue = rKey ? (assignedPlayer.ratings[rKey] as DisplayValue) : null;
                         return val != null ? (
-                          <span className={`text-xs px-1.5 py-0.5 rounded font-semibold ${displayValueColor(val)} bg-gray-700/50`}>
+                          <span className={`text-xs px-1.5 py-0.5 rounded-sm font-semibold ${displayValueColor(val)} bg-gray-700/50`}>
                             {PositionShortMap[positionCode]}: {val}
                           </span>
                         ) : null;
@@ -629,7 +629,7 @@ const PositionCard = ({
                         onUpdate(globalIdx, { target_weight: next });
                       }}
                       disabled={entry.target_weight <= 0}
-                      className="w-8 h-8 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+                      className="w-8 h-8 sm:w-6 sm:h-6 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
                       aria-label="Decrease weight"
                     >
                       −
@@ -643,7 +643,7 @@ const PositionCard = ({
                       onChange={(e) =>
                         onUpdate(globalIdx, { target_weight: parseFloat(e.target.value) || 1.0 })
                       }
-                      className="w-14 px-1 py-1 text-sm text-center border rounded bg-black text-white border-gray-500"
+                      className="w-14 px-1 py-1 text-sm text-center border rounded-sm bg-black text-white border-gray-500"
                     />
                     <button
                       onClick={() => {
@@ -651,7 +651,7 @@ const PositionCard = ({
                         onUpdate(globalIdx, { target_weight: next });
                       }}
                       disabled={entry.target_weight >= 10}
-                      className="w-8 h-8 sm:w-6 sm:h-6 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+                      className="w-8 h-8 sm:w-6 sm:h-6 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
                       aria-label="Increase weight"
                     >
                       +
@@ -667,7 +667,7 @@ const PositionCard = ({
                       <button
                         onClick={() => onMove(globalIdx, -1)}
                         disabled={posIdx === 0}
-                        className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
+                        className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
                         aria-label="Move up"
                       >
                         ↑
@@ -675,7 +675,7 @@ const PositionCard = ({
                       <button
                         onClick={() => onMove(globalIdx, 1)}
                         disabled={posIdx === entries.length - 1}
-                        className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
+                        className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm sm:text-xs"
                         aria-label="Move down"
                       >
                         ↓
@@ -684,7 +684,7 @@ const PositionCard = ({
                   </Tooltip>
                   <button
                     onClick={() => onRemove(globalIdx)}
-                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-red-700 text-white border border-red-500 hover:bg-red-600 text-sm sm:text-xs"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm bg-red-700 text-white border border-red-500 hover:bg-red-600 text-sm sm:text-xs"
                     title="Remove this assignment"
                     aria-label="Remove assignment"
                   >

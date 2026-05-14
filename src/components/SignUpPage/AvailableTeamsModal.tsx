@@ -134,7 +134,7 @@ export const AvailableTeamsModal: FC<AvailableTeamsModalProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title="Available Teams"
-        maxWidth="max-w-[60rem]"
+        maxWidth="max-w-240"
         actions={
           <>
             <ButtonGroup>

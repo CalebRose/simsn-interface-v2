@@ -53,7 +53,7 @@ const SeriesCard = ({
   const gameNumber = series.status === "active" ? series.wins_a + series.wins_b + 1 : null;
 
   return (
-    <div className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-full sm:min-w-[14rem]`}>
+    <div className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-full sm:min-w-56`}>
       {/* Series format header */}
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 font-semibold">
@@ -158,7 +158,7 @@ const ByeCard = ({
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
   const logo = getLogo(leagueType, team.id, isRetro);
   return (
-    <div className="border-2 rounded-lg p-3 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 min-w-full sm:min-w-[14rem]">
+    <div className="border-2 rounded-lg p-3 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 min-w-full sm:min-w-56">
       <div className="flex items-center justify-between gap-2 py-1 font-semibold">
         <div className="flex items-center gap-2">
           {logo && <img src={logo} className="w-5 h-5 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
@@ -530,7 +530,7 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
             styles={{ borderTop: `3px solid ${headerColor}` }}
           >
             <div className="flex items-end gap-4">
-              <div className="min-w-[8rem]">
+              <div className="min-w-32">
                 <Text variant="small" classes="font-semibold mb-1">
                   Level
                 </Text>

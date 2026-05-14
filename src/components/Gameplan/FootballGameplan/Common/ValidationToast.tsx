@@ -26,9 +26,9 @@ const ValidationToast: React.FC<ValidationToastProps> = ({
   if (isValid && errors.length === 0 && warnings.length === 0) {
     return (
       <div className="fixed sm:top-4 top-5 right-20 sm:right-24 z-50 max-w-sm">
-        <div className="bg-green-900 bg-opacity-90 border border-green-500 rounded-lg p-3 shadow-lg backdrop-blur-sm">
+        <div className="bg-green-900 bg-black/90 border border-green-500 rounded-lg p-3 shadow-lg backdrop-blur-xs">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0" />
+            <div className="w-2 h-2 bg-green-400 rounded-full shrink-0" />
             <Text variant="xs" classes="text-green-300 font-semibold">
               ✓ {contextName} Valid
             </Text>
@@ -45,9 +45,9 @@ const ValidationToast: React.FC<ValidationToastProps> = ({
   return (
     <div className="fixed top-4 right-4 z-50 max-w-sm space-y-2">
       {errors.length > 0 && (
-        <div className="bg-red-900 bg-opacity-90 border border-red-500 rounded-lg p-3 shadow-lg backdrop-blur-sm">
+        <div className="bg-red-900 bg-black/90 border border-red-500 rounded-lg p-3 shadow-lg backdrop-blur-xs">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 bg-red-400 rounded-full flex-shrink-0" />
+            <div className="w-2 h-2 bg-red-400 rounded-full shrink-0" />
             <Text variant="small" classes="text-red-300 font-semibold">
               {errors.length} {contextName} Issue{errors.length > 1 ? 's' : ''}
             </Text>
@@ -57,7 +57,7 @@ const ValidationToast: React.FC<ValidationToastProps> = ({
               <div className="space-y-1">
                 {errors.map((error, index) => (
                   <div key={index} className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-red-400 rounded-full mt-1.5 flex-shrink-0" />
+                    <div className="w-1.5 h-1.5 bg-red-400 rounded-full mt-1.5 shrink-0" />
                     <Text variant="xs" classes="text-red-200 leading-relaxed">
                       {error.message}
                     </Text>
@@ -83,9 +83,9 @@ const ValidationToast: React.FC<ValidationToastProps> = ({
         </div>
       )}
       {warnings.length > 0 && (
-        <div className="bg-yellow-900 bg-opacity-90 border border-yellow-500 rounded-lg p-3 shadow-lg backdrop-blur-sm">
+        <div className="bg-yellow-900 bg-black/90 border border-yellow-500 rounded-lg p-3 shadow-lg backdrop-blur-xs">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0" />
+            <div className="w-2 h-2 bg-yellow-400 rounded-full shrink-0" />
             <Text variant="small" classes="text-yellow-300 font-semibold">
               {warnings.length} Warning{warnings.length > 1 ? 's' : ''}
             </Text>
@@ -95,7 +95,7 @@ const ValidationToast: React.FC<ValidationToastProps> = ({
               <div className="space-y-1">
                 {warnings.map((warning, index) => (
                   <div key={index} className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-1.5 flex-shrink-0" />
+                    <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full mt-1.5 shrink-0" />
                     <Text variant="xs" classes="text-yellow-200 leading-relaxed">
                       {warning.message}
                     </Text>

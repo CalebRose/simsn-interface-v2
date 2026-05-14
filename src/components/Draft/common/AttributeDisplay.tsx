@@ -24,7 +24,7 @@ export const AttributeDisplay: FC<AttributeDisplayProps> = ({
           {name}
         </Text>
         {positionSpecific && (
-          <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded">
+          <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-400 text-xs rounded-sm">
             Key
           </span>
         )}

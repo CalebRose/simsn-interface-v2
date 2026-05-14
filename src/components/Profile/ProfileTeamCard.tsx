@@ -55,7 +55,7 @@ const ProfileTeamCard: React.FC<ProfileTeamCardProps> = ({
   return (
     <>
       <Border classes="w-full" styles={{ backgroundColor, borderColor }}>
-        <div className="flex flex-row flex-grow h-[12rem] w-full p-2">
+        <div className="flex flex-row grow h-48 w-full p-2">
           <Border
             styles={{ borderColor: secondaryBorderColor }}
             classes="items-center justify-center self-center mt-1"
@@ -69,7 +69,7 @@ const ProfileTeamCard: React.FC<ProfileTeamCardProps> = ({
               />
             </div>
           </Border>
-          <div className="flex flex-col justify-center p-2 mx-auto mr-[1rem] flex-grow">
+          <div className="flex flex-col justify-center p-2 mx-auto mr-4 grow">
             <Text variant="h5" classes={`mb-2 ${textColorClass}`}>
               {league}
             </Text>

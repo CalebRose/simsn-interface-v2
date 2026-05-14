@@ -106,7 +106,7 @@ export const OffensiveDistributionsPanel: React.FC<
               onClick={() => setViewMode(Team)}
               className={`px-3 py-1 ${
                 viewMode === Team
-                  ? "bg-orange-900 bg-opacity-50 hover:bg-orange-700 text-white border-orange-500"
+                  ? "bg-orange-900 bg-black/50 hover:bg-orange-700 text-white border-orange-500"
                   : ""
               }`}
             >
@@ -118,7 +118,7 @@ export const OffensiveDistributionsPanel: React.FC<
               onClick={() => setViewMode(Player)}
               className={`px-3 py-1 ${
                 viewMode === Player
-                  ? "bg-orange-900 bg-opacity-50 hover:bg-orange-700 text-white border-orange-500"
+                  ? "bg-orange-900 bg-black/50 hover:bg-orange-700 text-white border-orange-500"
                   : ""
               }`}
             >
@@ -137,7 +137,7 @@ export const OffensiveDistributionsPanel: React.FC<
       </div>
       {viewMode === Team && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div className="bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg p-2">
+          <div className="bg-gray-700 bg-black/50 border border-gray-600 rounded-lg p-2">
             <div className="flex items-center justify-between mb-4 ">
               <Text variant="h5" classes="text-white font-semibold">
                 Pass Type
@@ -185,7 +185,7 @@ export const OffensiveDistributionsPanel: React.FC<
               })}
             </div>
           </div>
-          <div className="bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg p-2">
+          <div className="bg-gray-700 bg-black/50 border border-gray-600 rounded-lg p-2">
             <div className="flex items-center justify-between mb-4">
               <Text variant="h5" classes="text-white font-semibold">
                 RPO
@@ -204,7 +204,7 @@ export const OffensiveDistributionsPanel: React.FC<
                 RPOLabels.map((label, idx) => {
                   if (idx === 6) {
                     return (
-                      <div className="bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg p-2">
+                      <div className="bg-gray-800 bg-black/50 border border-gray-600 rounded-lg p-2">
                         <Slider
                           key={label}
                           name={label}
@@ -250,7 +250,7 @@ export const OffensiveDistributionsPanel: React.FC<
               )}
             </div>
           </div>
-          <div className="bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg p-2">
+          <div className="bg-gray-700 bg-black/50 border border-gray-600 rounded-lg p-2">
             <div className="flex items-center justify-between mb-4">
               <Text variant="h5" classes="text-white font-semibold">
                 Run Type
@@ -284,7 +284,7 @@ export const OffensiveDistributionsPanel: React.FC<
               })}
             </div>
           </div>
-          <div className="bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg p-2">
+          <div className="bg-gray-700 bg-black/50 border border-gray-600 rounded-lg p-2">
             <div className="flex items-center justify-between mb-4">
               <Text variant="h5" classes="text-white font-semibold">
                 Option Run
@@ -321,7 +321,7 @@ export const OffensiveDistributionsPanel: React.FC<
       )}
       {viewMode === Player && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg p-2">
+          <div className="bg-gray-700 bg-black/50 border border-gray-600 rounded-lg p-2">
             <Text variant="h5" classes="text-white font-semibold mb-4">
               Target Distributions (0-10 weights)
             </Text>
@@ -375,7 +375,7 @@ export const OffensiveDistributionsPanel: React.FC<
             </div>
           </div>
           <div className="flex flex-col gap-4">
-            <div className="bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg p-2 h-3/4">
+            <div className="bg-gray-700 bg-black/50 border border-gray-600 rounded-lg p-2 h-3/4">
               <Text variant="h5" classes="text-white font-semibold mb-4">
                 Running Distributions (0-10 weights)
               </Text>
@@ -522,7 +522,7 @@ export const OffensiveDistributionsPanel: React.FC<
                 />
               </div>
             </div>
-            <div className="bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg p-4">
+            <div className="bg-gray-700 bg-black/50 border border-gray-600 rounded-lg p-4">
               <Text variant="h5" classes="text-white font-semibold mb-4">
                 Primary HB Usage
               </Text>
@@ -626,7 +626,7 @@ export const OffensiveDistributionsPanel: React.FC<
                 getPassTypeRanges(passTypeInfoModal).map((range, index) => (
                   <div
                     key={index}
-                    className="bg-gray-800 bg-opacity-50 border border-gray-600 rounded-lg p-3"
+                    className="bg-gray-800 bg-black/50 border border-gray-600 rounded-lg p-3"
                   >
                     <div className="flex items-center justify-between mb-2">
                       <Text variant="body" classes="text-white font-semibold">

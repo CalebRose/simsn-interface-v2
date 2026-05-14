@@ -84,7 +84,7 @@ const BaseballDraftPickCard: React.FC<BaseballDraftPickCardProps> = ({
           <div className="flex items-center gap-1">
             {pick.is_auto_pick && (
               <span
-                className={`rounded bg-orange-600/30 text-orange-400 px-1 font-mono ${isSm ? "text-[8px]" : "text-[10px]"}`}
+                className={`rounded-sm bg-orange-600/30 text-orange-400 px-1 font-mono ${isSm ? "text-[8px]" : "text-[10px]"}`}
                 title="Auto-drafted"
               >
                 A
@@ -92,7 +92,7 @@ const BaseballDraftPickCard: React.FC<BaseballDraftPickCardProps> = ({
             )}
             {showSignStatus && pick.sign_status && (
               <span
-                className={`rounded px-1 text-white ${isSm ? "text-[8px]" : "text-[10px]"} ${signStatusColors[pick.sign_status]}`}
+                className={`rounded-sm px-1 text-white ${isSm ? "text-[8px]" : "text-[10px]"} ${signStatusColors[pick.sign_status]}`}
               >
                 {pick.sign_status}
               </span>

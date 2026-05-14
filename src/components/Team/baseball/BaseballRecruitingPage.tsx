@@ -216,7 +216,8 @@ interface BaseballRecruitingPageProps {
 export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   const { enqueueSnackbar } = useSnackbar();
   const { currentUser } = useAuthStore();
-  const { collegeOrganization, seasonContext, allTeams } = useSimBaseballStore();
+  const { collegeOrganization, seasonContext, allTeams } =
+    useSimBaseballStore();
   const orgId = collegeOrganization?.id ?? 0;
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
 
@@ -332,7 +333,11 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
       .then((r) => {
         const players = r.players ?? [];
         setBoardPlayers(players);
-        setBoardPlayerIds(new Set(players.filter(bp => bp.on_board).map(bp => bp.player_id)));
+        setBoardPlayerIds(
+          new Set(
+            players.filter((bp) => bp.on_board).map((bp) => bp.player_id),
+          ),
+        );
       })
       .catch((err) => {
         console.error(
@@ -626,12 +631,17 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   }
 
   const myTeamId = primaryTeam?.team_id;
-  const getCompetitorIds = (ids: number[] | undefined | null, hasOwnPoints: boolean) => {
+  const getCompetitorIds = (
+    ids: number[] | undefined | null,
+    hasOwnPoints: boolean,
+  ) => {
     const base = [...(ids ?? [])];
     if (hasOwnPoints && myTeamId && !base.includes(myTeamId)) {
       base.push(myTeamId);
     }
-    base.sort((a, b) => (teamNameMap.get(a) ?? "").localeCompare(teamNameMap.get(b) ?? ""));
+    base.sort((a, b) =>
+      (teamNameMap.get(a) ?? "").localeCompare(teamNameMap.get(b) ?? ""),
+    );
     return base;
   };
 
@@ -642,15 +652,17 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
       <>
         <td className={`${cell} text-center`}>
           {bp ? (
-            <span className={`px-1.5 py-0.5 text-xs rounded-full ${
-              bp.interest_gauge === "Very High"
-                ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
-                : bp.interest_gauge === "High"
-                  ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
-                  : bp.interest_gauge === "Medium"
-                    ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-            }`}>
+            <span
+              className={`px-1.5 py-0.5 text-xs rounded-full ${
+                bp.interest_gauge === "Very High"
+                  ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
+                  : bp.interest_gauge === "High"
+                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                    : bp.interest_gauge === "Medium"
+                      ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+              }`}
+            >
               {bp.interest_gauge}
             </span>
           ) : (
@@ -659,7 +671,9 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
         </td>
         <td className={`${cell} text-center`}>
           {(() => {
-            const cIds = bp ? getCompetitorIds(bp.competitor_team_ids, bp.your_points > 0) : [];
+            const cIds = bp
+              ? getCompetitorIds(bp.competitor_team_ids, bp.your_points > 0)
+              : [];
             return cIds.length > 0 ? (
               <div className="flex items-center justify-center gap-0.5 flex-wrap">
                 {cIds.map((tid) => (
@@ -708,7 +722,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            className={`w-6 h-6 rounded text-xs font-bold transition-colors ${
+            className={`w-6 h-6 rounded-sm text-xs font-bold transition-colors ${
               onBoard
                 ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400"
@@ -722,7 +736,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
           </button>
         </td>
         <td
-          className={`${cell} font-medium whitespace-nowrap sticky left-[2.5rem] bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
+          className={`${cell} font-medium whitespace-nowrap sticky left-10 bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
         >
           {pp.firstname} {pp.lastname}
         </td>
@@ -809,7 +823,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            className={`w-6 h-6 rounded text-xs font-bold transition-colors ${
+            className={`w-6 h-6 rounded-sm text-xs font-bold transition-colors ${
               onBoard
                 ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400"
@@ -823,7 +837,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
           </button>
         </td>
         <td
-          className={`${cell} font-medium whitespace-nowrap sticky left-[2.5rem] bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
+          className={`${cell} font-medium whitespace-nowrap sticky left-10 bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
         >
           {pp.firstname} {pp.lastname}
         </td>
@@ -909,7 +923,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
         {/* Recruiting Status Banner */}
         {recruitingState && (
           <div
-            className={`px-4 py-2 mb-2 rounded text-sm ${
+            className={`px-4 py-2 mb-2 rounded-sm text-sm ${
               recruitingState.status === "active"
                 ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
                 : recruitingState.status === "complete"
@@ -1015,7 +1029,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                   value={pool.search}
                   onChange={(e) => pool.setSearch(e.target.value)}
                   placeholder="Search player..."
-                  className="text-sm border rounded px-2 py-1 w-48 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-sm border rounded-sm px-2 py-1 w-48 dark:bg-gray-700 dark:border-gray-600"
                 />
                 <input
                   type="text"
@@ -1024,7 +1038,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                     pool.setFilter("area", e.target.value || undefined)
                   }
                   placeholder="Filter by area..."
-                  className="text-sm border rounded px-2 py-1 w-40 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-sm border rounded-sm px-2 py-1 w-40 dark:bg-gray-700 dark:border-gray-600"
                 />
                 <Text
                   variant="small"
@@ -1120,7 +1134,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                 <>
                   {/* Investment Budget Bar */}
                   {investState?.status === "active" && (
-                    <div className="mb-4 p-3 rounded bg-gray-50 dark:bg-gray-700/50">
+                    <div className="mb-4 p-3 rounded-sm bg-gray-50 dark:bg-gray-700/50">
                       <div className="flex items-center justify-between mb-2">
                         <Text variant="small" classes="font-semibold">
                           Week {investState.current_week} — Recruiting Points
@@ -1151,13 +1165,13 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                     </div>
                   )}
                   {investState?.status === "pending" && (
-                    <div className="mb-4 p-3 rounded bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 text-sm">
+                    <div className="mb-4 p-3 rounded-sm bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 text-sm">
                       Recruiting has not started yet. Point investment will be
                       available once recruiting is active.
                     </div>
                   )}
                   {investState?.status === "complete" && (
-                    <div className="mb-4 p-3 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm">
+                    <div className="mb-4 p-3 rounded-sm bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-sm">
                       Recruiting is complete. Point investment is closed.
                     </div>
                   )}
@@ -1194,7 +1208,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <button
-                                  className="w-6 h-6 rounded text-xs font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors"
+                                  className="w-6 h-6 rounded-sm text-xs font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors"
                                   title="Remove from board"
                                   onClick={() =>
                                     handleRemoveFromBoard(bp.player_id)
@@ -1245,7 +1259,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                                         parseInt(e.target.value) || 0,
                                       )
                                     }
-                                    className="w-14 text-center text-sm border rounded px-1 py-0.5 dark:bg-gray-700 dark:border-gray-600
+                                    className="w-14 text-center text-sm border rounded-sm px-1 py-0.5 dark:bg-gray-700 dark:border-gray-600
                                     [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                   />
                                 ) : (
@@ -1274,13 +1288,20 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                               </td>
                               <td className={td}>
                                 {(() => {
-                                  const cIds = getCompetitorIds(bp.competitor_team_ids, bp.your_points > 0);
+                                  const cIds = getCompetitorIds(
+                                    bp.competitor_team_ids,
+                                    bp.your_points > 0,
+                                  );
                                   return cIds.length > 0 ? (
                                     <div className="flex items-center gap-1 flex-wrap">
                                       {cIds.map((tid) => (
                                         <img
                                           key={tid}
-                                          src={getLogo(SimCollegeBaseball, tid, false)}
+                                          src={getLogo(
+                                            SimCollegeBaseball,
+                                            tid,
+                                            false,
+                                          )}
                                           alt=""
                                           className="w-5 h-5 object-contain"
                                         />
@@ -1292,7 +1313,9 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                                 })()}
                               </td>
                               <td className={td}>
-                                <span className={`px-2 py-0.5 text-xs rounded-full whitespace-nowrap ${getStatusBadgeClasses(bp.status)}`}>
+                                <span
+                                  className={`px-2 py-0.5 text-xs rounded-full whitespace-nowrap ${getStatusBadgeClasses(bp.status)}`}
+                                >
                                   {bp.status}
                                 </span>
                               </td>
@@ -1319,7 +1342,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                       <button
                         onClick={handleSaveInvestments}
                         disabled={investSaving || investRemaining < 0}
-                        className={`px-4 py-1.5 text-sm font-medium rounded transition-colors ${
+                        className={`px-4 py-1.5 text-sm font-medium rounded-sm transition-colors ${
                           investSaving || investRemaining < 0
                             ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                             : "bg-blue-600 hover:bg-blue-700 text-white"
@@ -1380,7 +1403,11 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                             <td className={td}>
                               <div className="flex items-center gap-1">
                                 <img
-                                  src={getLogo(SimCollegeBaseball, c.org_id, false)}
+                                  src={getLogo(
+                                    SimCollegeBaseball,
+                                    c.org_id,
+                                    false,
+                                  )}
                                   alt={c.org_abbrev}
                                   className="w-5 h-5 object-contain"
                                 />
@@ -1389,15 +1416,23 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                             </td>
                             <td className={td}>
                               {(() => {
-                                const sorted = [...(c.competitor_team_ids ?? [])].sort(
-                                  (a, b) => (teamNameMap.get(a) ?? "").localeCompare(teamNameMap.get(b) ?? "")
+                                const sorted = [
+                                  ...(c.competitor_team_ids ?? []),
+                                ].sort((a, b) =>
+                                  (teamNameMap.get(a) ?? "").localeCompare(
+                                    teamNameMap.get(b) ?? "",
+                                  ),
                                 );
                                 return sorted.length > 0 ? (
                                   <div className="flex items-center gap-1 flex-wrap">
                                     {sorted.map((tid) => (
                                       <img
                                         key={tid}
-                                        src={getLogo(SimCollegeBaseball, tid, false)}
+                                        src={getLogo(
+                                          SimCollegeBaseball,
+                                          tid,
+                                          false,
+                                        )}
                                         alt=""
                                         className="w-5 h-5 object-contain"
                                       />

@@ -1,4 +1,11 @@
-import React, { FC, useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, {
+  FC,
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   BaseballDraftee,
   BASEBALL_DRAFT_POSITIONS,
@@ -55,8 +62,11 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const sortConfig: SortConfig = { key: sortKey, dir: sortDir };
   const handleSort = (key: string) => {
-    if (sortKey === key) setSortDir((d) => d === "asc" ? "desc" : "asc");
-    else { setSortKey(key); setSortDir("asc"); }
+    if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
   };
 
   // Debounced search
@@ -103,44 +113,57 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
 
   // Action button styling
   const actionBtn =
-    "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
+    "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded-sm text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
 
-  const renderActions = useCallback((p: Player) => {
-    const dp = p as DraftPlayer;
-    const isDrafted = draftedPlayerIds.has(dp.player_id);
-    const attrsScouted = dp.scouting_state?.attrs_precise;
-    const potsScouted = dp.scouting_state?.pots_precise;
+  const renderActions = useCallback(
+    (p: Player) => {
+      const dp = p as DraftPlayer;
+      const isDrafted = draftedPlayerIds.has(dp.player_id);
+      const attrsScouted = dp.scouting_state?.attrs_precise;
+      const potsScouted = dp.scouting_state?.pots_precise;
 
-    return (
-      <div className="flex gap-1.5 sm:gap-0.5 items-center">
-        <button
-          className={`${actionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-gray-600/20 text-gray-300 hover:bg-gray-600/40"}`}
-          disabled={attrsScouted}
-          onClick={attrsScouted ? undefined : () => onScoutPlayer(dp.player_id)}
-        >
-          Scout{attrsScouted ? " \u2713" : ""}
-        </button>
-        {isUserTurn && !isDrafted && (
+      return (
+        <div className="flex gap-1.5 sm:gap-0.5 items-center">
           <button
-            className={`${actionBtn} bg-blue-600/20 text-blue-400 hover:bg-blue-600/40`}
-            onClick={() => {
-              const raw = drafteeMap.get(dp.player_id);
-              if (raw) onDraftPlayer(raw);
-            }}
+            className={`${actionBtn} ${attrsScouted ? "bg-gray-600/20 text-gray-500 line-through cursor-not-allowed" : "bg-gray-600/20 text-gray-300 hover:bg-gray-600/40"}`}
+            disabled={attrsScouted}
+            onClick={
+              attrsScouted ? undefined : () => onScoutPlayer(dp.player_id)
+            }
           >
-            Draft
+            Scout{attrsScouted ? " \u2713" : ""}
           </button>
-        )}
-      </div>
-    );
-  }, [actionBtn, draftedPlayerIds, isUserTurn, onScoutPlayer, onDraftPlayer, drafteeMap]);
+          {isUserTurn && !isDrafted && (
+            <button
+              className={`${actionBtn} bg-blue-600/20 text-blue-400 hover:bg-blue-600/40`}
+              onClick={() => {
+                const raw = drafteeMap.get(dp.player_id);
+                if (raw) onDraftPlayer(raw);
+              }}
+            >
+              Draft
+            </button>
+          )}
+        </div>
+      );
+    },
+    [
+      actionBtn,
+      draftedPlayerIds,
+      isUserTurn,
+      onScoutPlayer,
+      onDraftPlayer,
+      drafteeMap,
+    ],
+  );
 
   // Determine which table variant based on position filter
-  const TableComponent = selectedPosition && (selectedPosition === "SP" || selectedPosition === "RP")
-    ? PitcherTable
-    : selectedPosition && selectedPosition !== "DH"
-      ? PositionTable
-      : AllPlayersTable;
+  const TableComponent =
+    selectedPosition && (selectedPosition === "SP" || selectedPosition === "RP")
+      ? PitcherTable
+      : selectedPosition && selectedPosition !== "DH"
+        ? PositionTable
+        : AllPlayersTable;
 
   return (
     <div className="bg-gray-950 rounded-lg p-4 space-y-4">
@@ -151,7 +174,7 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
           placeholder="Search players..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="bg-gray-800 text-white border border-gray-700 rounded-sm px-3 py-2 w-full sm:w-64 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
         />
         {scoutingBudget && (
           <div className="text-sm text-gray-400">
@@ -170,7 +193,7 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
           <button
             key={pos.value}
             onClick={() => handlePositionToggle(pos.value)}
-            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+            className={`px-3 py-1 rounded-sm text-sm font-medium transition-colors ${
               selectedPosition === pos.value
                 ? "bg-blue-600 text-white"
                 : "bg-gray-800 text-gray-300 hover:bg-gray-700"
@@ -188,7 +211,7 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
             <button
               key={cat}
               onClick={() => setCategory(cat)}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`px-3 py-1 rounded-sm text-sm font-medium transition-colors ${
                 category === cat
                   ? "bg-blue-600 text-white"
                   : "bg-gray-800 text-gray-300 hover:bg-gray-700"
@@ -231,14 +254,14 @@ const BaseballDraftBoard: FC<BaseballDraftBoardProps> = ({
           <button
             disabled={drafteesPage <= 1}
             onClick={() => handlePageChange(drafteesPage - 1)}
-            className="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1 rounded-sm bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Prev
           </button>
           <button
             disabled={drafteesPage >= drafteesPages}
             onClick={() => handlePageChange(drafteesPage + 1)}
-            className="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1 rounded-sm bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Next
           </button>

@@ -175,7 +175,7 @@ const PollDropdown: FC<PollDropdownProps> = ({
   };
 
   return (
-    <div className="flex flex-col mb-2 min-h-[5rem]">
+    <div className="flex flex-col mb-2 min-h-20">
       <div className="flex flex-row space-x-4">
         <h5 className="text-start align-middle">{label}</h5>
         {selectedTeam && <Logo url={teamLogo} variant="tiny" />}
@@ -286,7 +286,7 @@ export const SubmitHockeyPoll: FC<SubmitHockeyPollProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title={`Submit SimCHL Poll`}
-        maxWidth="max-w-[80rem]"
+        maxWidth="max-w-7xl"
         actions={
           <>
             <ButtonGroup>
@@ -297,7 +297,7 @@ export const SubmitHockeyPoll: FC<SubmitHockeyPollProps> = ({
           </>
         }
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-[30rem]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-120">
           {ranks.map((x, idx) => (
             <PollDropdown
               key={`rank-${idx + 1}`}
@@ -412,7 +412,7 @@ export const SubmitBasketballPoll: FC<SubmitBasketballPollProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title={`Submit SimCBB Poll`}
-        maxWidth="max-w-[80rem]"
+        maxWidth="max-w-7xl"
         actions={
           <>
             <ButtonGroup>
@@ -423,7 +423,7 @@ export const SubmitBasketballPoll: FC<SubmitBasketballPollProps> = ({
           </>
         }
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-[30rem]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-120">
           {ranks.map((x, idx) => (
             <PollDropdown
               key={`rank-${idx + 1}`}
@@ -542,7 +542,7 @@ export const SubmitFootballPoll: FC<SubmitFootballPollProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title={`Submit SimCFB Poll`}
-        maxWidth="max-w-[80rem]"
+        maxWidth="max-w-7xl"
         actions={
           <>
             <ButtonGroup>
@@ -553,7 +553,7 @@ export const SubmitFootballPoll: FC<SubmitFootballPollProps> = ({
           </>
         }
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-[30rem]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 overflow-y-auto max-h-120">
           {ranks.map((x, idx) => (
             <PollDropdown
               key={`rank-${idx + 1}`}

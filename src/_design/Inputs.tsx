@@ -73,12 +73,12 @@ export const Input: React.FC<InputProps> = ({
       <input
         {...props}
         className={`
-          flex-grow ${
+          grow ${
             gameplan
               ? "max-w-[80px]"
               : "min-w-[20vw] sm:min-w-[15vw] md:min-w-[10vw] lg:min-w-[8vw] xl:min-w-[5vw]"
           }
-          px-4 py-2 border rounded-lg focus:outline-none 
+          px-4 py-2 border rounded-lg focus:outline-hidden 
           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
           text-base
           placeholder-gray-400 bg-black text-white border-gray-500

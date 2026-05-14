@@ -65,6 +65,9 @@ import {
   NFLTeamProposals,
   AwardsList,
   TransferPortalProfile,
+  CFBGameRequest,
+  NFLGameRequest,
+  Stadium,
   NFLUDFABoard,
 } from "../models/footballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
@@ -173,6 +176,9 @@ interface SimFBAContextProps {
   currentSeasonDraftPicks: NFLDraftPick[];
   nflDraftPickMap: Record<number, NFLDraftPick[]>;
   individualDraftPickMap: Record<number, NFLDraftPick>;
+  stadiums: Stadium[];
+  cfbGameRequests: CFBGameRequest[];
+  nflGameRequests: NFLGameRequest[];
   removeUserfromCFBTeamCall: (teamID: number) => Promise<void>;
   removeUserfromNFLTeamCall: (request: NFLRequest) => Promise<void>;
   addUserToCFBTeam: (teamID: number, user: string) => void;
@@ -377,6 +383,9 @@ const defaultContext: SimFBAContextProps = {
   currentSeasonDraftPicks: [],
   nflDraftPickMap: {},
   individualDraftPickMap: {},
+  stadiums: [],
+  cfbGameRequests: [],
+  nflGameRequests: [],
   tradePreferencesMap: {},
   tradeProposalsMap: {},
   cfbPostSeasonAwards: {} as AwardsList,
@@ -698,6 +707,9 @@ const getUDFABoard = async (teamID: number) => {
   const [transferPortalProfiles, setTransferPortalProfiles] = useState<
     TransferPortalProfile[]
   >([]);
+  const [stadiums, setStadiums] = useState<Stadium[]>([]);
+  const [cfbGameRequests, setCFBGameRequests] = useState<CFBGameRequest[]>([]);
+  const [nflGameRequests, setNFLGameRequests] = useState<NFLGameRequest[]>([]);
 
   // Loading states for double-click prevention
   const [recruitingLoading, setRecruitingLoading] = useState<boolean>(false);
@@ -873,16 +885,17 @@ const getUDFABoard = async (teamID: number) => {
     setNFLTeams(res.AllProTeams);
 
     if (res.AllCollegeTeams.length > 0) {
-      const sortedCollegeTeams = res.AllCollegeTeams.sort((a, b) =>
-        a.TeamName.localeCompare(b.TeamName),
+      const sortedCollegeTeams = res.AllCollegeTeams.sort(
+        (a: CollegeTeam, b: CollegeTeam) =>
+          a.TeamName.localeCompare(b.TeamName),
       );
-      const teamOptionsList = sortedCollegeTeams.map((team) => ({
+      const teamOptionsList = sortedCollegeTeams.map((team: CollegeTeam) => ({
         label: `${team.TeamName} | ${team.TeamAbbr}`,
         value: team.ID.toString(),
       }));
       const conferenceOptions = Array.from(
         new Map(
-          sortedCollegeTeams.map((team) => [
+          sortedCollegeTeams.map((team: CollegeTeam) => [
             team.ConferenceID,
             { label: team.Conference, value: team.ConferenceID.toString() },
           ]),
@@ -1129,9 +1142,14 @@ const getUDFABoard = async (teamID: number) => {
         seasonId,
       );
       setCollegePolls(res.OfficialPolls);
-      setCollegePollSubmission(res.CollegePollSubmission);
+      setCollegePollSubmission(res.PollSubmission);
       setHistoricCollegePlayers(res.HistoricCollegePlayers);
       setNFLRetiredPlayers(res.RetiredPlayers);
+      setStadiums(res.Stadiums || []);
+      setCFBGameRequests(res.CFBGameRequests || []);
+      setNFLGameRequests(res.NFLGameRequests || []);
+      setCollegeGameplanMap(res.CollegeGameplanMap);
+      setNFLGameplanMap(res.NFLGameplanMap);
     } finally {
       isScheduleDataFetching.current = false;
     }
@@ -2803,6 +2821,9 @@ const getUDFABoard = async (teamID: number) => {
         individualDraftPickMap,
         currentSeasonDraftPicks,
         nflDraftPickMap,
+        stadiums,
+        cfbGameRequests,
+        nflGameRequests,
         tradeProposalsMap,
         tradePreferencesMap,
         submitCollegePoll,

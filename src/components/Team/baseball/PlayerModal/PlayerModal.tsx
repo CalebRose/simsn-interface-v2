@@ -173,7 +173,7 @@ export const PlayerModal: FC<PlayerModalProps> = ({
     context === "ifa"
       ? "min-[1025px]:max-w-[50vw]"
       : context === "freeAgency" && !player
-        ? "max-w-[48rem]"
+        ? "max-w-3xl"
         : "max-w-2xl";
 
   return (

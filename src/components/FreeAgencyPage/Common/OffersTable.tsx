@@ -200,7 +200,7 @@ export const OfferTable: FC<OfferTableProps> = ({
         className={`table-row border-b dark:border-gray-700 text-left`}
         style={{ backgroundColor }}
       >
-        <TableCell classes="w-[5em] min-[430px]:w-[4em]">
+        <TableCell classes="w-[5em] 430px:w-[4em]">
           <div className="flex flex-row">
             {player && player.TeamID > 0 ? (
               <Logo url={winningLogo} variant="tiny" containerClass="p-2" />
@@ -214,7 +214,7 @@ export const OfferTable: FC<OfferTableProps> = ({
         {attributes.map((attr, idx) => (
           <TableCell
             key={idx}
-            classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+            classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
           text-wrap sm:max-w-full text-left`}
           >
             {attr.label === "Name" ? (
@@ -240,7 +240,7 @@ export const OfferTable: FC<OfferTableProps> = ({
         <TableCell>{player.PotentialGrade}</TableCell>
         <TableCell>{player.MinimumValue.toFixed(2)}</TableCell>
         <TableCell>{player.AAV.toFixed(2)}</TableCell>
-        <TableCell classes="w-[5em] min-[430px]:w-[10em]">
+        <TableCell classes="w-[5em] 430px:w-[10em]">
           <div className="flex flex-row">
             {!offers || (offers.length === 0 && "None")}
             {logos.length > 0 &&
@@ -249,7 +249,7 @@ export const OfferTable: FC<OfferTableProps> = ({
               ))}
           </div>
         </TableCell>
-        <TableCell classes="w-[5.5em] min-[430px]:w-[6em] sm:w-[7rem]">
+        <TableCell classes="w-[5.5em] 430px:w-[6em] sm:w-28">
           <ButtonGroup direction="row" classes="">
             <Button
               variant="success"
@@ -317,7 +317,7 @@ export const OfferTable: FC<OfferTableProps> = ({
         className={`table-row border-b dark:border-gray-700 text-left`}
         style={{ backgroundColor }}
       >
-        <TableCell classes="w-[5em] min-[430px]:w-[4em]">
+        <TableCell classes="w-[5em] 430px:w-[4em]">
           <div className="flex flex-row">
             {player.TeamID > 0 ? (
               <Logo url={winningLogo} variant="tiny" containerClass="p-2" />
@@ -331,7 +331,7 @@ export const OfferTable: FC<OfferTableProps> = ({
         {attributes.map((attr, idx) => (
           <TableCell
             key={idx}
-            classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+            classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
           text-wrap sm:max-w-full ${
             category === Attributes && idx === 6
               ? "text-left"
@@ -388,7 +388,7 @@ export const OfferTable: FC<OfferTableProps> = ({
           </>
         )}
         <TableCell>{player.MinimumValue}</TableCell>
-        <TableCell classes="w-[5em] min-[430px]:w-[10em]">
+        <TableCell classes="w-[5em] 430px:w-[10em]">
           <div className="flex flex-row">
             {!offers || (offers.length === 0 && "None")}
             {logos.length > 0 &&
@@ -397,7 +397,7 @@ export const OfferTable: FC<OfferTableProps> = ({
               ))}
           </div>
         </TableCell>
-        <TableCell classes="w-[5.5em] min-[430px]:w-[6em] sm:w-[7rem]">
+        <TableCell classes="w-[5.5em] 430px:w-[6em] sm:w-28">
           <ButtonGroup direction="row" classes="">
             <Button
               variant="success"

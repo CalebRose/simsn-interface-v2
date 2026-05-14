@@ -114,7 +114,7 @@ export const ForumCategoryPage: React.FC = () => {
         </div>
 
         {forum?.isLocked && (
-          <div className="mb-3 p-2 bg-yellow-900/40 border border-yellow-700 rounded text-sm text-yellow-300">
+          <div className="mb-3 p-2 bg-yellow-900/40 border border-yellow-700 rounded-sm text-sm text-yellow-300">
             🔒 This forum is locked. No new threads can be posted.
           </div>
         )}

@@ -252,7 +252,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
           <Button
             variant="primary"
             onClick={() => setSortByNewest((prev) => !prev)}
-            classes="flex gap-x-2 text-xs text-center justify-center items-center py-1 px-2 flex-shrink-0"
+            classes="flex gap-x-2 text-xs text-center justify-center items-center py-1 px-2 shrink-0"
           >
             {sortByNewest ? <BarsArrowDown /> : <BarsArrowUp />}
           </Button>
@@ -263,14 +263,14 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
           <Button
             variant="success"
             onClick={refreshNews}
-            classes="flex gap-x-1 text-center justify-center items-center text-xs py-1 px-2 flex-shrink-0"
+            classes="flex gap-x-1 text-center justify-center items-center text-xs py-1 px-2 shrink-0"
           >
             <Refresh />
           </Button>
           <Button
             variant="primary"
             onClick={() => setSortByNewest((prev) => !prev)}
-            classes="flex gap-x-1 text-center justify-center items-center text-xs py-1 px-2 flex-shrink-0"
+            classes="flex gap-x-1 text-center justify-center items-center text-xs py-1 px-2 shrink-0"
           >
             {sortByNewest ? <BarsArrowDown /> : <BarsArrowUp />}
           </Button>
