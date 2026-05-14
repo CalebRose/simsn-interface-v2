@@ -15,7 +15,7 @@ export const DraftService = {
     return await PostCall(`${fbaUrl}nfl/draft/reveal/attribute`, dto);
   },
 
-  RemoveNFLPlayerFromBoard: async (id: number): Promise<void> => {
+  RemovePlayerFromBoard: async (id: number): Promise<void> => {
     await GetActionCall(`${fbaUrl}nfl/draft/remove/${id}`);
   },
 
@@ -39,6 +39,23 @@ export const DraftService = {
     return await GetCall(`${fbaUrl}nfl/draft/page/${TeamID}`);
   },
 
+  // NEW UDFA ENDPOINTS
+  GetUDFABoard: async (teamID: number) => 
+    GetCall(`${fbaUrl}nfl/udfa/board/${teamID}`),
+
+  AddPlayerToUDFABoard: async (dto: any) => 
+    PostCall(`${fbaUrl}nfl/udfa/board/add`, dto),
+
+  SaveUDFABoard: async (dto: any) => 
+    PostCall(`${fbaUrl}nfl/udfa/board/save`, dto),
+
+  RemovePlayerFromUDFABoard: async (profileID: number) => 
+    GetActionCall(`${fbaUrl}nfl/udfa/board/remove/${profileID}`),
+
+  ProcessUDFAs: async (isDryRun: boolean) => 
+    GetCall(`${fbaUrl}admin/process-udfas?dryRun=${isDryRun}`),
+
+  // HOCKEY / PHL ENDPOINTS
   GetPHLDraftPageData: async (teamID: number): Promise<any> => {
     return await GetCall(`${hckUrl}phl/draft/page/${teamID}`);
   },
@@ -61,19 +78,5 @@ export const DraftService = {
 
   ExportPHLDraftPicks: async (dto: any): Promise<any> => {
     return await PostCall(`${hckUrl}phl/draft/export/picks`, dto);
-  },
-
-  ExportPHLDraftees: async (): Promise<any> => {
-    return await GetExportCall(
-      `${hckUrl}export/draftable/players`,
-      "blob",
-      "phl_draftees_export",
-    );
-  },
-
-  BringUpCollegePlayer: async (draftPickID: number): Promise<any> => {
-    return await GetCall(
-      `${hckUrl}phl/roster/bringup/college/player/${draftPickID}`,
-    );
   },
 };

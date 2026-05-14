@@ -1,5 +1,6 @@
 const localURL = "http://localhost:5001/api/";
 const FBAApiURL = "https://simfba.azurewebsites.net/api/";
+//const FBAApiURL = "http://localhost:5001/api/";
 export const fbaUrl = FBAApiURL;
 
 export const imagekitAuthUrl = `${FBAApiURL}imagekit/auth/`;

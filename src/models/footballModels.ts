@@ -9615,8 +9615,8 @@ export class NFLRetiredPlayer {
     }
     return a;
   }
+  
 }
-
 export class NFLGameRequest {
   ID: number;
   CreatedAt: Time;
