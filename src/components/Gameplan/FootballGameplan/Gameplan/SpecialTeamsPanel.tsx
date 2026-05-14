@@ -107,7 +107,7 @@ export const SpecialTeamsPanel: React.FC<SpecialTeamsPanelProps> = ({
           <InformationCircle />
         </Button>
       </div>
-      <div className="bg-gray-800 bg-opacity-50 rounded-lg p-4">
+      <div className="bg-gray-800 bg-black/50 rounded-lg p-4">
         <Text variant="h5" classes="text-white font-semibold mb-4">
           4th Down Aggression
         </Text>
@@ -140,7 +140,7 @@ export const SpecialTeamsPanel: React.FC<SpecialTeamsPanelProps> = ({
               disabled={disabled || gameplan.DefaultSpecialTeams}
             />
           </div>
-          <div className="mt-4 p-3 bg-gray-700 bg-opacity-50 rounded-lg col-span-2">
+          <div className="mt-4 p-3 bg-gray-700 bg-black/50 rounded-lg col-span-2">
             <Text variant="small" classes="text-blue-400 font-semibold mb-2">
               4th Down Strategy Summary:
             </Text>
@@ -188,8 +188,8 @@ export const SpecialTeamsPanel: React.FC<SpecialTeamsPanelProps> = ({
         <div
           className={`p-3 rounded-lg border ${
             getFieldError(validation, "specialTeams")
-              ? "bg-red-900 bg-opacity-50 border-red-500"
-              : "bg-yellow-900 bg-opacity-50 border-yellow-500"
+              ? "bg-red-900 bg-black/50 border-red-500"
+              : "bg-yellow-900 bg-black/50 border-yellow-500"
           }`}
         >
           <Text
@@ -259,7 +259,7 @@ export const SpecialTeamsPanel: React.FC<SpecialTeamsPanelProps> = ({
                 situations.
               </Text>
             </div>
-            <div className="bg-yellow-900 bg-opacity-30 border border-yellow-500 rounded-lg p-3">
+            <div className="bg-yellow-900 bg-black/30 border border-yellow-500 rounded-lg p-3">
               <Text variant="small" classes="text-yellow-400 font-semibold">
                 Strategy Tips:
               </Text>

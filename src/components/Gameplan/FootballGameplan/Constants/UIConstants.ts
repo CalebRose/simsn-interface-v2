@@ -93,19 +93,19 @@ export const VALIDATION_COLORS = {
   ERROR: {
     text: "text-red-400",
     border: "border-red-500",
-    bg: "bg-red-900 bg-opacity-50 border-red-500",
+    bg: "bg-red-900 bg-black/50 border-red-500",
     ring: "ring-2 ring-red-500 ring-opacity-50",
   },
   WARNING: {
     text: "text-yellow-400",
     border: "border-yellow-500",
-    bg: "bg-yellow-900 bg-opacity-50 border-yellow-500",
+    bg: "bg-yellow-900 bg-black/50 border-yellow-500",
     ring: "ring-2 ring-yellow-500 ring-opacity-50",
   },
   SUCCESS: {
     text: "text-green-400",
     border: "border-green-500",
-    bg: "bg-green-900 bg-opacity-50 border-green-500",
+    bg: "bg-green-900 bg-black/50 border-green-500",
     ring: "",
   },
 } as const;
@@ -132,14 +132,14 @@ export const CARD_CLASSES = {
   BASE: "relative cursor-pointer select-none",
   DRAGGABLE: "cursor-move",
   OVERLAY:
-    "absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white opacity-0 hover:opacity-10 transition-opacity duration-200 pointer-events-none",
+    "absolute inset-0 bg-linear-to-t from-transparent via-transparent to-white opacity-0 hover:opacity-10 transition-opacity duration-200 pointer-events-none",
 } as const;
 
 export const INPUT_CLASSES = {
   BASE: "w-full",
   DISABLED: "disabled:opacity-50 disabled:cursor-not-allowed",
   FOCUS:
-    "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50",
+    "focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50",
 } as const;
 
 export const DROPDOWN_CLASSES = {
@@ -151,7 +151,7 @@ export const DROPDOWN_CLASSES = {
 } as const;
 
 export const MODAL_CLASSES = {
-  OVERLAY: "fixed inset-0 bg-black bg-opacity-50 z-40",
+  OVERLAY: "fixed inset-0 bg-black/50 z-40",
   CONTAINER: "fixed inset-0 flex items-center justify-center z-50 p-4",
   CONTENT:
     "bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-hidden",
@@ -220,8 +220,8 @@ export const PERCENTAGE_STATUS_COLORS = {
 } as const;
 
 export const PERCENTAGE_STATUS_BG_COLORS = {
-  COMPLETE: "bg-green-900 bg-opacity-50",
-  INCOMPLETE: "bg-red-900 bg-opacity-50",
+  COMPLETE: "bg-green-900 bg-black/50",
+  INCOMPLETE: "bg-red-900 bg-black/50",
 } as const;
 
 export const SLIDER_CLASSES = {
@@ -229,7 +229,7 @@ export const SLIDER_CLASSES = {
   THUMB:
     "slider-thumb:appearance-none slider-thumb:h-4 slider-thumb:w-4 slider-thumb:rounded-full slider-thumb:bg-blue-500 slider-thumb:cursor-pointer slider-thumb:hover:bg-blue-400 slider-thumb:transition-colors",
   FOCUS:
-    "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50",
+    "focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50",
   DISABLED: "disabled:opacity-50 disabled:cursor-not-allowed",
 } as const;
 
@@ -240,6 +240,6 @@ export const FULL_SIZE_CLASSES = "w-full h-full";
 
 export const EMPTY_STATE_CLASSES = {
   CONTAINER:
-    "text-center py-8 bg-gray-800 bg-opacity-30 rounded-lg border-2 border-dashed border-gray-600",
+    "text-center py-8 bg-gray-800 bg-black/30 rounded-lg border-2 border-dashed border-gray-600",
   TEXT: "text-gray-400",
 } as const;

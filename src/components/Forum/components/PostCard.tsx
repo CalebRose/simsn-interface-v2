@@ -93,7 +93,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             <img
               src={post.author.logoUrl}
               alt=""
-              className="w-8 h-8 object-contain flex-shrink-0 mt-0.5"
+              className="w-8 h-8 object-contain shrink-0 mt-0.5"
             />
           )}
           <div>
@@ -153,7 +153,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               😀
             </Button>
             {showReactions && (
-              <div className="absolute left-0 bottom-full mb-1 flex gap-1 bg-gray-800 border border-gray-600 rounded p-1 z-10 shadow-lg">
+              <div className="absolute left-0 bottom-full mb-1 flex gap-1 bg-gray-800 border border-gray-600 rounded-sm p-1 z-10 shadow-lg">
                 {reactionEntries.map(([type, emoji]) => {
                   const count = post.reactions?.[type]?.length ?? 0;
                   const reacted = currentUserId
@@ -167,7 +167,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                         onReact(post.id, type);
                         setShowReactions(false);
                       }}
-                      className={`text-lg px-1 py-0.5 rounded hover:bg-white/10 transition-colors ${
+                      className={`text-lg px-1 py-0.5 rounded-sm hover:bg-white/10 transition-colors ${
                         reacted ? "bg-blue-900" : ""
                       }`}
                     >
@@ -195,7 +195,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <button
                     key={type}
                     onClick={() => onReact(post.id, type)}
-                    className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded border transition-colors ${
+                    className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-sm border transition-colors ${
                       reacted
                         ? "bg-blue-900 border-blue-600"
                         : "bg-gray-800 border-gray-600 hover:bg-gray-700"

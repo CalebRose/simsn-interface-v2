@@ -197,7 +197,6 @@ export const useNFLDraft = () => {
     const interval = setInterval(() => {
       const secondsLeft = Math.floor((endTimeMs - Date.now()) / 1000);
       setSeconds(secondsLeft >= 0 ? secondsLeft : 0);
-
       if (secondsLeft <= 0) {
         setIsPaused(true);
         updateDraftState({ isPaused: true });
@@ -465,9 +464,9 @@ export const useNFLDraft = () => {
     });
 
     // Update this once the NFL season is complete
-    // handleManualDraftStateUpdate({
-    //   allDraftPicks: draftMap,
-    // });
+    handleManualDraftStateUpdate({
+      allDraftPicks: draftMap,
+    });
   }, [currentSeasonDraftPicks, handleManualDraftStateUpdate]);
 
   const offensiveSystem = useMemo(() => {

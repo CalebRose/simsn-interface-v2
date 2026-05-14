@@ -34,7 +34,7 @@ export const Tag: FC<TagProps> = ({
 
   return (
     <span
-      className={`${sizeClasses} ${variantClasses} rounded font-medium ${className}`}
+      className={`${sizeClasses} ${variantClasses} rounded-sm font-medium ${className}`}
     >
       {children}
     </span>

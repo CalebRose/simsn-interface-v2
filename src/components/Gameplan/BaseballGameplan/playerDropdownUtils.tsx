@@ -1,8 +1,21 @@
 import { FC, useState, useMemo, useCallback, useRef, ReactNode } from "react";
-import { components, GroupBase, OptionProps, GroupHeadingProps } from "react-select";
-import { Player, PlayerRatings, Ptype, DisplayValue } from "../../../models/baseball/baseballModels";
+import {
+  components,
+  GroupBase,
+  OptionProps,
+  GroupHeadingProps,
+} from "react-select";
+import {
+  Player,
+  PlayerRatings,
+  Ptype,
+  DisplayValue,
+} from "../../../models/baseball/baseballModels";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
-import { PositionShortMap, PositionRatingKey } from "./BaseballGameplanConstants";
+import {
+  PositionShortMap,
+  PositionRatingKey,
+} from "./BaseballGameplanConstants";
 import { Text } from "../../../_design/Typography";
 import { ToggleSwitch } from "../../../_design/Inputs";
 import { resolveDisplayValue } from "../../../_utility/baseballHelpers";
@@ -15,7 +28,7 @@ export const ratingHexColor = (v: number): string => {
   if (v >= 50) return "#eab308"; // yellow-500
   if (v >= 40) return "#f97316"; // orange-500
   if (v >= 30) return "#fb923c"; // orange-400
-  return "#ef4444";              // red-500
+  return "#ef4444"; // red-500
 };
 
 export const staminaHexColor = (v: number): string => {
@@ -23,7 +36,7 @@ export const staminaHexColor = (v: number): string => {
   if (v >= 70) return "#4ade80"; // green-400
   if (v >= 50) return "#eab308"; // yellow-500
   if (v >= 30) return "#f97316"; // orange-500
-  return "#ef4444";              // red-500
+  return "#ef4444"; // red-500
 };
 
 // ── Extended option with extra data for custom rendering ──
@@ -67,7 +80,8 @@ export function buildGroupedPlayerOptions(
     const raw = p.ratings[ratingKey] as DisplayValue;
     return resolveDisplayValue(raw).sortValue ?? -Infinity;
   };
-  const sortByRating = (a: Player, b: Player) => ratingSortValue(b) - ratingSortValue(a);
+  const sortByRating = (a: Player, b: Player) =>
+    ratingSortValue(b) - ratingSortValue(a);
   posPlayers.sort(sortByRating);
   pitchers.sort(sortByRating);
 
@@ -75,13 +89,13 @@ export function buildGroupedPlayerOptions(
     const rating = (p.ratings[ratingKey] as DisplayValue) ?? null;
     const resolved = resolveDisplayValue(rating);
     const posLabel = p.listed_position
-      ? PositionShortMap[p.listed_position] ?? p.listed_position.toUpperCase()
+      ? (PositionShortMap[p.listed_position] ?? p.listed_position.toUpperCase())
       : null;
     const typeTag = p.ptype === Ptype.Pitcher ? "P" : "Pos";
     const posTag = posLabel ? `${typeTag} · ${posLabel}` : typeTag;
     return {
       value: String(p.id),
-      // resolved.text handles all three cases: number → rounded string,
+      // resolved.text handles all three cases: number → rounded-sm string,
       // letter grade → the grade as-is, null → "—".
       label: `[${posTag}] ${p.firstname} ${p.lastname} (${resolved.text})`,
       ptype: p.ptype,
@@ -94,7 +108,10 @@ export function buildGroupedPlayerOptions(
 
   const groups: GroupBase<PlayerSelectOption>[] = [];
   if (posPlayers.length > 0) {
-    groups.push({ label: "Position Players", options: posPlayers.map(toOption) });
+    groups.push({
+      label: "Position Players",
+      options: posPlayers.map(toOption),
+    });
   }
   if (pitchers.length > 0) {
     groups.push({ label: "Pitchers", options: pitchers.map(toOption) });
@@ -103,46 +120,57 @@ export function buildGroupedPlayerOptions(
 }
 
 /** Flat option list (for finding the currently-selected value across groups). */
-export function flattenGroups(groups: GroupBase<PlayerSelectOption>[]): PlayerSelectOption[] {
+export function flattenGroups(
+  groups: GroupBase<PlayerSelectOption>[],
+): PlayerSelectOption[] {
   return groups.flatMap((g) => g.options);
 }
 
 // ── Custom react-select components for color-coded ratings ──
 
-export const ColoredOptionSimple: FC<OptionProps<PlayerSelectOption, false, GroupBase<PlayerSelectOption>>> = (props) => {
+export const ColoredOptionSimple: FC<
+  OptionProps<PlayerSelectOption, false, GroupBase<PlayerSelectOption>>
+> = (props) => {
   const { data } = props;
   // Resolve to a sortValue (numeric equivalent of letter grades) so the
   // hex color works for both precise and fuzzed ratings. ratingHexColor
   // only understands the numeric 20-80 scale.
   const ratingNumeric = resolveDisplayValue(data.rating).sortValue;
-  const ratingColor = ratingNumeric != null ? ratingHexColor(ratingNumeric) : "#9ca3af";
+  const ratingColor =
+    ratingNumeric != null ? ratingHexColor(ratingNumeric) : "#9ca3af";
   const nameMatch = data.label.match(/^(\[.+?\]) (.+?) \((.+?)\)$/);
   if (!nameMatch) return <components.Option {...props} />;
   const [, badge, name, ratingStr] = nameMatch;
   return (
     <components.Option {...props}>
       <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-        <span style={{
-          fontSize: "0.65rem",
-          padding: "1px 4px",
-          borderRadius: "3px",
-          backgroundColor: "rgba(255,255,255,0.08)",
-          color: data.ptype === Ptype.Pitcher ? "#60a5fa" : "#a78bfa",
-          fontWeight: 600,
-        }}>
+        <span
+          style={{
+            fontSize: "0.65rem",
+            padding: "1px 4px",
+            borderRadius: "3px",
+            backgroundColor: "rgba(255,255,255,0.08)",
+            color: data.ptype === Ptype.Pitcher ? "#60a5fa" : "#a78bfa",
+            fontWeight: 600,
+          }}
+        >
           {badge.slice(1, -1)}
         </span>
         <span>{name}</span>
-        <span style={{ color: ratingColor, fontWeight: 600, marginLeft: "auto" }}>
+        <span
+          style={{ color: ratingColor, fontWeight: 600, marginLeft: "auto" }}
+        >
           {ratingStr}
         </span>
         {data.stamina != null && (
-          <span style={{
-            color: staminaHexColor(data.stamina),
-            fontSize: "0.6rem",
-            fontWeight: 600,
-            marginLeft: "4px",
-          }}>
+          <span
+            style={{
+              color: staminaHexColor(data.stamina),
+              fontSize: "0.6rem",
+              fontWeight: 600,
+              marginLeft: "4px",
+            }}
+          >
             S:{data.stamina}
           </span>
         )}
@@ -151,18 +179,22 @@ export const ColoredOptionSimple: FC<OptionProps<PlayerSelectOption, false, Grou
   );
 };
 
-export const StyledGroupHeading: FC<GroupHeadingProps<PlayerSelectOption, false, GroupBase<PlayerSelectOption>>> = (props) => (
+export const StyledGroupHeading: FC<
+  GroupHeadingProps<PlayerSelectOption, false, GroupBase<PlayerSelectOption>>
+> = (props) => (
   <components.GroupHeading {...props}>
-    <span style={{
-      fontSize: "0.7rem",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: "0.05em",
-      color: "#9ca3af",
-      borderBottom: "1px solid rgba(255,255,255,0.1)",
-      display: "block",
-      paddingBottom: "4px",
-    }}>
+    <span
+      style={{
+        fontSize: "0.7rem",
+        fontWeight: 700,
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+        color: "#9ca3af",
+        borderBottom: "1px solid rgba(255,255,255,0.1)",
+        display: "block",
+        paddingBottom: "4px",
+      }}
+    >
       {props.children}
     </span>
   </components.GroupHeading>
@@ -190,8 +222,20 @@ export const PlayerFilter: FC<PlayerFilterProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const pitcherIds = useMemo(() => new Set(players.filter((p) => p.ptype === Ptype.Pitcher).map((p) => p.id)), [players]);
-  const positionIds = useMemo(() => new Set(players.filter((p) => p.ptype === Ptype.Position).map((p) => p.id)), [players]);
+  const pitcherIds = useMemo(
+    () =>
+      new Set(
+        players.filter((p) => p.ptype === Ptype.Pitcher).map((p) => p.id),
+      ),
+    [players],
+  );
+  const positionIds = useMemo(
+    () =>
+      new Set(
+        players.filter((p) => p.ptype === Ptype.Position).map((p) => p.id),
+      ),
+    [players],
+  );
 
   const allPitchersHidden = useMemo(() => {
     if (pitcherIds.size === 0) return false;
@@ -209,23 +253,32 @@ export const PlayerFilter: FC<PlayerFilterProps> = ({
     return true;
   }, [positionIds, hiddenPlayerIds]);
 
-  const bulkHide = useCallback((ids: Set<number>) => {
-    const next = new Set(hiddenPlayerIds);
-    for (const id of ids) next.add(id);
-    onHiddenChange(next);
-  }, [hiddenPlayerIds, onHiddenChange]);
+  const bulkHide = useCallback(
+    (ids: Set<number>) => {
+      const next = new Set(hiddenPlayerIds);
+      for (const id of ids) next.add(id);
+      onHiddenChange(next);
+    },
+    [hiddenPlayerIds, onHiddenChange],
+  );
 
-  const bulkUnhide = useCallback((ids: Set<number>) => {
-    const next = new Set(hiddenPlayerIds);
-    for (const id of ids) next.delete(id);
-    onHiddenChange(next);
-  }, [hiddenPlayerIds, onHiddenChange]);
+  const bulkUnhide = useCallback(
+    (ids: Set<number>) => {
+      const next = new Set(hiddenPlayerIds);
+      for (const id of ids) next.delete(id);
+      onHiddenChange(next);
+    },
+    [hiddenPlayerIds, onHiddenChange],
+  );
 
-  const unhideSingle = useCallback((id: number) => {
-    const next = new Set(hiddenPlayerIds);
-    next.delete(id);
-    onHiddenChange(next);
-  }, [hiddenPlayerIds, onHiddenChange]);
+  const unhideSingle = useCallback(
+    (id: number) => {
+      const next = new Set(hiddenPlayerIds);
+      next.delete(id);
+      onHiddenChange(next);
+    },
+    [hiddenPlayerIds, onHiddenChange],
+  );
 
   // Players that are manually hidden (for chip display)
   const hiddenPlayers = useMemo(() => {
@@ -241,10 +294,14 @@ export const PlayerFilter: FC<PlayerFilterProps> = ({
         className="w-full flex items-center justify-between px-3 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-650 transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2">
-          <Text variant="small" classes="font-semibold">Dropdown Filters</Text>
+          <Text variant="small" classes="font-semibold">
+            Dropdown Filters
+          </Text>
           {(hiddenCount > 0 || hideAssigned) && (
-            <span className="text-xs px-1.5 py-0.5 rounded bg-blue-600/20 text-blue-400">
-              {hideAssigned ? "auto-hide" : ""}{hideAssigned && hiddenCount > 0 ? " + " : ""}{hiddenCount > 0 ? `${hiddenCount} hidden` : ""}
+            <span className="text-xs px-1.5 py-0.5 rounded-sm bg-blue-600/20 text-blue-400">
+              {hideAssigned ? "auto-hide" : ""}
+              {hideAssigned && hiddenCount > 0 ? " + " : ""}
+              {hiddenCount > 0 ? `${hiddenCount} hidden` : ""}
             </span>
           )}
         </div>
@@ -255,7 +312,10 @@ export const PlayerFilter: FC<PlayerFilterProps> = ({
         <div className="px-3 py-3 bg-gray-50 dark:bg-gray-800 space-y-3">
           {/* Hide assigned toggle */}
           <div className="flex items-center gap-2">
-            <ToggleSwitch checked={hideAssigned} onChange={onHideAssignedChange} />
+            <ToggleSwitch
+              checked={hideAssigned}
+              onChange={onHideAssignedChange}
+            />
             <Text variant="small" classes="text-gray-300">
               Hide already-assigned players from dropdowns
             </Text>
@@ -264,8 +324,12 @@ export const PlayerFilter: FC<PlayerFilterProps> = ({
           {/* Bulk buttons */}
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => allPitchersHidden ? bulkUnhide(pitcherIds) : bulkHide(pitcherIds)}
-              className={`text-xs px-2.5 py-1.5 rounded border font-medium transition-colors ${
+              onClick={() =>
+                allPitchersHidden
+                  ? bulkUnhide(pitcherIds)
+                  : bulkHide(pitcherIds)
+              }
+              className={`text-xs px-2.5 py-1.5 rounded-sm border font-medium transition-colors ${
                 allPitchersHidden
                   ? "bg-blue-600/20 border-blue-500 text-blue-400 hover:bg-blue-600/30"
                   : "bg-gray-700 border-gray-500 text-gray-300 hover:bg-gray-600"
@@ -274,19 +338,25 @@ export const PlayerFilter: FC<PlayerFilterProps> = ({
               {allPitchersHidden ? "Show All Pitchers" : "Hide All Pitchers"}
             </button>
             <button
-              onClick={() => allPositionHidden ? bulkUnhide(positionIds) : bulkHide(positionIds)}
-              className={`text-xs px-2.5 py-1.5 rounded border font-medium transition-colors ${
+              onClick={() =>
+                allPositionHidden
+                  ? bulkUnhide(positionIds)
+                  : bulkHide(positionIds)
+              }
+              className={`text-xs px-2.5 py-1.5 rounded-sm border font-medium transition-colors ${
                 allPositionHidden
                   ? "bg-purple-600/20 border-purple-500 text-purple-400 hover:bg-purple-600/30"
                   : "bg-gray-700 border-gray-500 text-gray-300 hover:bg-gray-600"
               }`}
             >
-              {allPositionHidden ? "Show All Position Players" : "Hide All Position Players"}
+              {allPositionHidden
+                ? "Show All Position Players"
+                : "Hide All Position Players"}
             </button>
             {hiddenCount > 0 && (
               <button
                 onClick={() => onHiddenChange(new Set())}
-                className="text-xs px-2.5 py-1.5 rounded border border-gray-500 text-gray-400 hover:text-white hover:bg-gray-600 transition-colors"
+                className="text-xs px-2.5 py-1.5 rounded-sm border border-gray-500 text-gray-400 hover:text-white hover:bg-gray-600 transition-colors"
               >
                 Clear All
               </button>
@@ -303,9 +373,11 @@ export const PlayerFilter: FC<PlayerFilterProps> = ({
                 {hiddenPlayers.map((p) => (
                   <span
                     key={p.id}
-                    className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded bg-gray-700 text-gray-300 border border-gray-600"
+                    className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-sm bg-gray-700 text-gray-300 border border-gray-600"
                   >
-                    <span className={`font-semibold ${p.ptype === Ptype.Pitcher ? "text-blue-400" : "text-purple-400"}`}>
+                    <span
+                      className={`font-semibold ${p.ptype === Ptype.Pitcher ? "text-blue-400" : "text-purple-400"}`}
+                    >
                       {p.ptype === Ptype.Pitcher ? "P" : "Pos"}
                     </span>
                     {p.firstname} {p.lastname}
@@ -348,10 +420,14 @@ export const Tooltip: FC<TooltipProps> = ({ text, children }) => {
   };
 
   return (
-    <div className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+    <div
+      className="relative"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
       {children}
       {show && (
-        <div className="pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-56 px-2.5 py-1.5 rounded bg-gray-900 border border-gray-600 text-xs text-gray-300 leading-relaxed shadow-lg animate-fade-in">
+        <div className="pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-56 px-2.5 py-1.5 rounded-sm bg-gray-900 border border-gray-600 text-xs text-gray-300 leading-relaxed shadow-lg animate-fade-in">
           {text}
         </div>
       )}

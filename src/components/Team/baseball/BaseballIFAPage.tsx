@@ -50,7 +50,7 @@ const phaseBadge = (phase: IFAAuctionPhase) => {
   };
   const color = IFA_PHASE_COLORS[phase] ?? "gray";
   return (
-    <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold capitalize ${colorMap[color]}`}>
+    <span className={`px-1.5 py-0.5 rounded-sm text-[10px] font-semibold capitalize ${colorMap[color]}`}>
       {phase}
     </span>
   );
@@ -66,7 +66,7 @@ const offerStatusBadge = (status: IFAOfferStatus) => {
   };
   const color = IFA_OFFER_STATUS_COLORS[status] ?? "gray";
   return (
-    <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold capitalize ${colorMap[color]}`}>
+    <span className={`px-1.5 py-0.5 rounded-sm text-[10px] font-semibold capitalize ${colorMap[color]}`}>
       {status}
     </span>
   );
@@ -322,7 +322,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
   // ── Action button styling ──
   const th = "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap select-none";
   const ifaActionBtn =
-    "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
+    "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded-sm text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
   const isActive = ifaState?.status === "active";
   const isPending = ifaState?.status === "pending";
   const isComplete = ifaState?.status === "complete";
@@ -450,9 +450,9 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                 </div>
               </div>
               <div className="flex gap-4 mt-1 text-xs text-gray-400">
-                <span><span className="inline-block w-2 h-2 rounded bg-blue-500 mr-1" />Spent: {formatCurrency(pool.spent)}</span>
-                <span><span className="inline-block w-2 h-2 rounded bg-yellow-500 mr-1" />Committed: {formatCurrency(pool.committed)}</span>
-                <span><span className="inline-block w-2 h-2 rounded bg-gray-600 mr-1" />Available: {formatCurrency(pool.remaining)}</span>
+                <span><span className="inline-block w-2 h-2 rounded-sm bg-blue-500 mr-1" />Spent: {formatCurrency(pool.spent)}</span>
+                <span><span className="inline-block w-2 h-2 rounded-sm bg-yellow-500 mr-1" />Committed: {formatCurrency(pool.committed)}</span>
+                <span><span className="inline-block w-2 h-2 rounded-sm bg-gray-600 mr-1" />Available: {formatCurrency(pool.remaining)}</span>
               </div>
             </div>
           )}
@@ -502,7 +502,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                 <select
                   value={filterStars}
                   onChange={(e) => setFilterStars(e.target.value)}
-                  className="text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-sm border rounded-sm px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
                 >
                   <option value="all">All</option>
                   <option value="5">5 Stars</option>
@@ -519,7 +519,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                   value={searchInput}
                   onChange={(e) => handleSearchInput(e.target.value)}
                   placeholder="Search player..."
-                  className="text-sm border rounded px-2 py-1 w-full sm:w-48 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-sm border rounded-sm px-2 py-1 w-full sm:w-48 dark:bg-gray-700 dark:border-gray-600"
                 />
               </div>
             </div>
@@ -630,7 +630,7 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
                         <td className="px-2 py-1">
                           {o.status === "active" && o.auction_phase !== "completed" && isActive ? (
                             <button
-                              className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"
+                              className="px-2 py-0.5 rounded-sm text-xs font-semibold bg-blue-600/20 text-blue-400 hover:bg-blue-600/40"
                               onClick={() => openOfferFromOrgOffer(o)}
                             >
                               Update

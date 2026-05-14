@@ -2,7 +2,11 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Text } from "../../../../_design/Typography";
 import { Button, PillButton, ButtonGroup } from "../../../../_design/Buttons";
 import { SelectOption } from "../../../../_hooks/useSelectStyles";
-import { Player, PlayerRatings, DisplayValue } from "../../../../models/baseball/baseballModels";
+import {
+  Player,
+  PlayerRatings,
+  DisplayValue,
+} from "../../../../models/baseball/baseballModels";
 import {
   PlayerStrategy,
   PlayerStrategyValidationDetail,
@@ -24,7 +28,13 @@ import {
   SP_DISPLAY_ATTRS,
   RP_DISPLAY_ATTRS,
 } from "../BaseballGameplanConstants";
-import { ratingColor, displayValueColor, PlayerAttributeRow, PitchOverallChips, StaminaBar } from "../ratingUtils";
+import {
+  ratingColor,
+  displayValueColor,
+  PlayerAttributeRow,
+  PitchOverallChips,
+  StaminaBar,
+} from "../ratingUtils";
 import { Tooltip } from "../playerDropdownUtils";
 
 interface PlayerStrategyTabProps {
@@ -63,7 +73,11 @@ const POSITION_RATING_KEYS: { key: keyof PlayerRatings; label: string }[] = [
 
 // Pitch OVR rating keys for the weight UI
 const PITCH_OVR_KEYS: (keyof PlayerRatings)[] = [
-  "pitch1_ovr", "pitch2_ovr", "pitch3_ovr", "pitch4_ovr", "pitch5_ovr",
+  "pitch1_ovr",
+  "pitch2_ovr",
+  "pitch3_ovr",
+  "pitch4_ovr",
+  "pitch5_ovr",
 ];
 
 // Athletic/baserunning attributes for the player summary card
@@ -118,18 +132,20 @@ interface BulkFieldDef {
 }
 
 const BULK_FIELDS: BulkFieldDef[] = [
-  { key: "plate_approach",       label: "Plate Approach",       kind: "enum" },
-  { key: "stealfreq",            label: "Steal Frequency",      kind: "number" },
+  { key: "plate_approach", label: "Plate Approach", kind: "enum" },
+  { key: "stealfreq", label: "Steal Frequency", kind: "number" },
   { key: "baserunning_approach", label: "Baserunning Approach", kind: "enum" },
-  { key: "pitching_approach",    label: "Pitching Approach",    kind: "enum" },
-  { key: "usage_preference",     label: "Usage Preference",     kind: "enum" },
-  { key: "pickofffreq",          label: "Pickoff Frequency",    kind: "number" },
-  { key: "pitchpull",            label: "Pull at Pitch #",      kind: "nullable_number" },
-  { key: "pulltend",             label: "Pull Tendency",        kind: "nullable_enum" },
+  { key: "pitching_approach", label: "Pitching Approach", kind: "enum" },
+  { key: "usage_preference", label: "Usage Preference", kind: "enum" },
+  { key: "pickofffreq", label: "Pickoff Frequency", kind: "number" },
+  { key: "pitchpull", label: "Pull at Pitch #", kind: "nullable_number" },
+  { key: "pulltend", label: "Pull Tendency", kind: "nullable_enum" },
 ];
 
 // Lookup tables used by the bulk value picker. Keyed by field key.
-const BULK_ENUM_OPTIONS: Partial<Record<keyof PlayerStrategy, { value: string; label: string }[]>> = {
+const BULK_ENUM_OPTIONS: Partial<
+  Record<keyof PlayerStrategy, { value: string; label: string }[]>
+> = {
   plate_approach: PlateApproachOptions,
   baserunning_approach: BaserunningApproachOptions,
   pitching_approach: PitchingApproachOptions,
@@ -137,7 +153,9 @@ const BULK_ENUM_OPTIONS: Partial<Record<keyof PlayerStrategy, { value: string; l
   pulltend: PullTendencyOptions,
 };
 
-const BULK_NUMBER_PRESETS: Partial<Record<keyof PlayerStrategy, { label: string; value: number | null }[]>> = {
+const BULK_NUMBER_PRESETS: Partial<
+  Record<keyof PlayerStrategy, { label: string; value: number | null }[]>
+> = {
   stealfreq: STEAL_PRESETS,
   pickofffreq: PICKOFF_PRESETS,
   pitchpull: [
@@ -148,14 +166,22 @@ const BULK_NUMBER_PRESETS: Partial<Record<keyof PlayerStrategy, { label: string;
   ],
 };
 
-export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategyTabProps) => {
+export const PlayerStrategyTab = ({
+  orgId,
+  players,
+  levelLabel,
+}: PlayerStrategyTabProps) => {
   const [strategies, setStrategies] = useState<PlayerStrategy[]>([]);
   const [selectedPlayerId, setSelectedPlayerId] = useState<number | null>(null);
   // Dirty-tracking: any player_id present here has unsaved changes.
   // Switching players preserves edits across the whole org until Save All / Discard All.
-  const [pendingEdits, setPendingEdits] = useState<Map<number, PlayerStrategy>>(new Map());
+  const [pendingEdits, setPendingEdits] = useState<Map<number, PlayerStrategy>>(
+    new Map(),
+  );
   // Per-row validation errors from the most recent save attempt, keyed by player_id.
-  const [rowErrors, setRowErrors] = useState<Map<number, PlayerStrategyValidationDetail[]>>(new Map());
+  const [rowErrors, setRowErrors] = useState<
+    Map<number, PlayerStrategyValidationDetail[]>
+  >(new Map());
   const [filterType, setFilterType] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -177,7 +203,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
       .filter(
         (p) =>
           !searchTerm ||
-          `${p.firstname} ${p.lastname}`.toLowerCase().includes(searchTerm.toLowerCase()),
+          `${p.firstname} ${p.lastname}`
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()),
       )
       .sort((a, b) => a.lastname.localeCompare(b.lastname));
   }, [players, filterType, searchTerm]);
@@ -199,7 +227,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
       }
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [orgId]);
 
   // Resolves the strategy to display/edit for a given player:
@@ -270,7 +300,10 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
     setIsSaving(true);
     setMessage("");
     try {
-      const resp = await BaseballService.SaveOrgPlayerStrategiesBatch(orgId, entries);
+      const resp = await BaseballService.SaveOrgPlayerStrategiesBatch(
+        orgId,
+        entries,
+      );
 
       // Merge returned canonical rows back into `strategies`.
       setStrategies((prev) => {
@@ -301,7 +334,8 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
       setMessage(`Saved ${n} player${n === 1 ? "" : "s"}`);
     } catch (err: any) {
       const status = err?.status;
-      const details: PlayerStrategyValidationDetail[] | undefined = err?.body?.details;
+      const details: PlayerStrategyValidationDetail[] | undefined =
+        err?.body?.details;
       if (status === 400 && Array.isArray(details)) {
         const map = new Map<number, PlayerStrategyValidationDetail[]>();
         for (const d of details) {
@@ -310,11 +344,18 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
           map.set(d.player_id, arr);
         }
         setRowErrors(map);
-        setMessage(`Validation failed for ${map.size} player${map.size === 1 ? "" : "s"} — see highlighted rows`);
+        setMessage(
+          `Validation failed for ${map.size} player${map.size === 1 ? "" : "s"} — see highlighted rows`,
+        );
       } else if (status === 413) {
-        setMessage("Too many changes to save at once (max 500). Save in smaller batches.");
+        setMessage(
+          "Too many changes to save at once (max 500). Save in smaller batches.",
+        );
       } else {
-        const detail = err?.message && err.message !== "Failed to fetch" ? err.message : "Unknown error";
+        const detail =
+          err?.message && err.message !== "Failed to fetch"
+            ? err.message
+            : "Unknown error";
         setMessage(`Failed to save: ${detail}`);
       }
     } finally {
@@ -358,9 +399,10 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
 
   const dirtyCount = pendingEdits.size;
   const errorCount = rowErrors.size;
-  const isCurrentDirty = selectedPlayerId != null && pendingEdits.has(selectedPlayerId);
+  const isCurrentDirty =
+    selectedPlayerId != null && pendingEdits.has(selectedPlayerId);
   const currentRowErrors =
-    selectedPlayerId != null ? rowErrors.get(selectedPlayerId) ?? [] : [];
+    selectedPlayerId != null ? (rowErrors.get(selectedPlayerId) ?? []) : [];
 
   // ── Multi-selection / bulk apply ──
 
@@ -416,7 +458,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
     }
 
     if (targets.length === 0) {
-      setMessage("No players matched (all selected players already have non-default values)");
+      setMessage(
+        "No players matched (all selected players already have non-default values)",
+      );
       setTimeout(() => setMessage(""), 5000);
       return;
     }
@@ -431,7 +475,11 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
         const base =
           pending ??
           strategies.find((s) => s.player_id === id) ??
-          ({ ...DEFAULT_STRATEGY, org_id: orgId, player_id: id } as PlayerStrategy);
+          ({
+            ...DEFAULT_STRATEGY,
+            org_id: orgId,
+            player_id: id,
+          } as PlayerStrategy);
         m.set(id, { ...base, [bulkField]: bulkValue } as PlayerStrategy);
       }
       return m;
@@ -445,12 +493,16 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
       return m;
     });
 
-    setMessage(`Applied ${def.label} to ${targets.length} player${targets.length === 1 ? "" : "s"}`);
+    setMessage(
+      `Applied ${def.label} to ${targets.length} player${targets.length === 1 ? "" : "s"}`,
+    );
     setTimeout(() => setMessage(""), 5000);
   };
 
   // Get the best position rating for player list badges
-  const getBestRating = (p: Player): { label: string; value: number | string } | null => {
+  const getBestRating = (
+    p: Player,
+  ): { label: string; value: number | string } | null => {
     if (p.ptype === "Pitcher") {
       const sp = p.ratings.sp_rating;
       if (sp != null) return { label: "SP", value: sp };
@@ -472,7 +524,11 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
   };
 
   if (isLoading) {
-    return <Text variant="body-small" classes="text-gray-400">Loading player strategies...</Text>;
+    return (
+      <Text variant="body-small" classes="text-gray-400">
+        Loading player strategies...
+      </Text>
+    );
   }
 
   return (
@@ -498,7 +554,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
             onClick={handleSaveAll}
             disabled={isSaving || dirtyCount === 0}
           >
-            {isSaving ? "Saving..." : `Save All${dirtyCount > 0 ? ` (${dirtyCount})` : ""}`}
+            {isSaving
+              ? "Saving..."
+              : `Save All${dirtyCount > 0 ? ` (${dirtyCount})` : ""}`}
           </Button>
           <Button
             variant="primaryOutline"
@@ -512,7 +570,16 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
       </div>
       {message && (
         <div className="mb-2">
-          <Text variant="small" classes={message.includes("Failed") || message.includes("Validation") || message.includes("Too many") ? "text-red-400" : "text-green-400"}>
+          <Text
+            variant="small"
+            classes={
+              message.includes("Failed") ||
+              message.includes("Validation") ||
+              message.includes("Too many")
+                ? "text-red-400"
+                : "text-green-400"
+            }
+          >
             {message}
           </Text>
         </div>
@@ -522,11 +589,16 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
       <div className="mb-3 p-3 rounded-lg bg-gray-800/50 border border-gray-700">
         <Text variant="small" classes="text-gray-400 leading-relaxed">
           Configure individual player strategies. Set each player's
-          <strong className="text-gray-300"> plate approach </strong> and <strong className="text-gray-300">steal tendency</strong> at the plate,
-          <strong className="text-gray-300"> pitching style</strong>, <strong className="text-gray-300">usage preference</strong>,
-          and <strong className="text-gray-300">pitch selection weights</strong> on the mound,
-          and <strong className="text-gray-300">baserunning aggression</strong> on the bases.
-          These settings override the engine defaults for each individual player.
+          <strong className="text-gray-300"> plate approach </strong> and{" "}
+          <strong className="text-gray-300">steal tendency</strong> at the
+          plate,
+          <strong className="text-gray-300"> pitching style</strong>,{" "}
+          <strong className="text-gray-300">usage preference</strong>, and{" "}
+          <strong className="text-gray-300">pitch selection weights</strong> on
+          the mound, and{" "}
+          <strong className="text-gray-300">baserunning aggression</strong> on
+          the bases. These settings override the engine defaults for each
+          individual player.
         </Text>
       </div>
 
@@ -560,72 +632,79 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
             </div>
           </Subsection>
 
-          {bulkField && (() => {
-            const def = BULK_FIELDS.find((f) => f.key === bulkField);
-            if (!def) return null;
+          {bulkField &&
+            (() => {
+              const def = BULK_FIELDS.find((f) => f.key === bulkField);
+              if (!def) return null;
 
-            if (def.kind === "enum" || def.kind === "nullable_enum") {
-              const opts = BULK_ENUM_OPTIONS[def.key] ?? [];
-              const allOpts: { value: string | null; label: string }[] =
-                def.kind === "nullable_enum"
-                  ? [{ value: null, label: "Default" }, ...opts]
-                  : opts;
+              if (def.kind === "enum" || def.kind === "nullable_enum") {
+                const opts = BULK_ENUM_OPTIONS[def.key] ?? [];
+                const allOpts: { value: string | null; label: string }[] =
+                  def.kind === "nullable_enum"
+                    ? [{ value: null, label: "Default" }, ...opts]
+                    : opts;
+                return (
+                  <Subsection label="Value">
+                    <div className="flex flex-wrap gap-1">
+                      {allOpts.map((o) => (
+                        <OptionPill
+                          key={o.value === null ? "_default" : String(o.value)}
+                          variant="purple"
+                          selected={
+                            isBulkValueChosen && (bulkValue ?? null) === o.value
+                          }
+                          onClick={() => setBulkValue(o.value)}
+                        >
+                          {o.label}
+                        </OptionPill>
+                      ))}
+                    </div>
+                  </Subsection>
+                );
+              }
+
+              // number / nullable_number
+              const presets = BULK_NUMBER_PRESETS[def.key] ?? [];
+              const isNullable = def.kind === "nullable_number";
+              const stepperStep =
+                def.key === "stealfreq"
+                  ? 0.5
+                  : def.key === "pickofffreq"
+                    ? 0.25
+                    : def.key === "pitchpull"
+                      ? 5
+                      : 1;
+              const stepperMin = def.key === "pitchpull" ? 1 : 0;
+              const stepperMax = def.key === "pitchpull" ? 200 : 100;
               return (
                 <Subsection label="Value">
-                  <div className="flex flex-wrap gap-1">
-                    {allOpts.map((o) => (
-                      <OptionPill
-                        key={o.value === null ? "_default" : String(o.value)}
-                        variant="purple"
-                        selected={isBulkValueChosen && (bulkValue ?? null) === o.value}
-                        onClick={() => setBulkValue(o.value)}
-                      >
-                        {o.label}
-                      </OptionPill>
-                    ))}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <NumericStepper
+                      value={bulkValue == null ? null : (bulkValue as number)}
+                      onChange={(v) => setBulkValue(isNullable ? v : (v ?? 0))}
+                      min={stepperMin}
+                      max={stepperMax}
+                      step={stepperStep}
+                      nullable={isNullable}
+                      nullDefault={def.key === "pitchpull" ? 100 : undefined}
+                      placeholder={isNullable ? "Default" : "0"}
+                    />
+                    <div className="flex flex-wrap gap-1">
+                      {presets.map((p) => (
+                        <OptionPill
+                          key={p.label}
+                          variant="purple"
+                          selected={isBulkValueChosen && bulkValue === p.value}
+                          onClick={() => setBulkValue(p.value)}
+                        >
+                          {p.label}
+                        </OptionPill>
+                      ))}
+                    </div>
                   </div>
                 </Subsection>
               );
-            }
-
-            // number / nullable_number
-            const presets = BULK_NUMBER_PRESETS[def.key] ?? [];
-            const isNullable = def.kind === "nullable_number";
-            const stepperStep =
-              def.key === "stealfreq" ? 0.5 :
-              def.key === "pickofffreq" ? 0.25 :
-              def.key === "pitchpull" ? 5 : 1;
-            const stepperMin = def.key === "pitchpull" ? 1 : 0;
-            const stepperMax = def.key === "pitchpull" ? 200 : 100;
-            return (
-              <Subsection label="Value">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <NumericStepper
-                    value={bulkValue == null ? null : (bulkValue as number)}
-                    onChange={(v) => setBulkValue(isNullable ? v : (v ?? 0))}
-                    min={stepperMin}
-                    max={stepperMax}
-                    step={stepperStep}
-                    nullable={isNullable}
-                    nullDefault={def.key === "pitchpull" ? 100 : undefined}
-                    placeholder={isNullable ? "Default" : "0"}
-                  />
-                  <div className="flex flex-wrap gap-1">
-                    {presets.map((p) => (
-                      <OptionPill
-                        key={p.label}
-                        variant="purple"
-                        selected={isBulkValueChosen && bulkValue === p.value}
-                        onClick={() => setBulkValue(p.value)}
-                      >
-                        {p.label}
-                      </OptionPill>
-                    ))}
-                  </div>
-                </div>
-              </Subsection>
-            );
-          })()}
+            })()}
 
           {/* Apply controls */}
           <div className="flex items-center justify-between gap-2 mt-3 flex-wrap">
@@ -650,7 +729,8 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
             </Button>
           </div>
           <Text variant="xs" classes="text-gray-500 mt-2 block">
-            Bulk apply stages changes as unsaved edits — review the dirty rows in the list below, then Save All to commit.
+            Bulk apply stages changes as unsaved edits — review the dirty rows
+            in the list below, then Save All to commit.
           </Text>
         </Card>
       )}
@@ -660,13 +740,25 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
         <div className="lg:w-[340px] shrink-0">
           <div className="flex gap-1 mb-2 items-center justify-between flex-wrap">
             <ButtonGroup>
-              <PillButton variant="primaryOutline" isSelected={filterType === "all"} onClick={() => setFilterType("all")}>
+              <PillButton
+                variant="primaryOutline"
+                isSelected={filterType === "all"}
+                onClick={() => setFilterType("all")}
+              >
                 <Text variant="small">All</Text>
               </PillButton>
-              <PillButton variant="primaryOutline" isSelected={filterType === "Pitcher"} onClick={() => setFilterType("Pitcher")}>
+              <PillButton
+                variant="primaryOutline"
+                isSelected={filterType === "Pitcher"}
+                onClick={() => setFilterType("Pitcher")}
+              >
                 <Text variant="small">P</Text>
               </PillButton>
-              <PillButton variant="primaryOutline" isSelected={filterType === "Position"} onClick={() => setFilterType("Position")}>
+              <PillButton
+                variant="primaryOutline"
+                isSelected={filterType === "Position"}
+                onClick={() => setFilterType("Position")}
+              >
                 <Text variant="small">Pos</Text>
               </PillButton>
             </ButtonGroup>
@@ -692,14 +784,14 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search player..."
-            className="w-full mb-2 px-2 py-1 text-sm border rounded bg-black text-white border-gray-500 focus:ring-blue-500"
+            className="w-full mb-2 px-2 py-1 text-sm border rounded-sm bg-black text-white border-gray-500 focus:ring-blue-500"
           />
           <div className="mb-1 px-1">
             <Text variant="xs" classes="text-gray-500">
               Click name to edit · Check ☐ for bulk apply
             </Text>
           </div>
-          <div className="max-h-[50vh] overflow-y-auto border rounded dark:border-gray-600">
+          <div className="max-h-[50vh] overflow-y-auto border rounded-sm dark:border-gray-600">
             {filteredPlayers.map((p) => {
               const best = getBestRating(p);
               const isDirty = pendingEdits.has(p.id);
@@ -709,13 +801,14 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                 <div
                   key={p.id}
                   className={`flex items-stretch border-b dark:border-gray-700 transition-colors
-                    ${hasError
-                      ? "bg-red-900/20 border-l-2 border-l-red-500"
-                      : isSelected
-                        ? "bg-purple-900/20"
-                        : p.id === selectedPlayerId
-                          ? "bg-blue-50 dark:bg-blue-900/30"
-                          : "hover:bg-gray-50 dark:hover:bg-gray-700"
+                    ${
+                      hasError
+                        ? "bg-red-900/20 border-l-2 border-l-red-500"
+                        : isSelected
+                          ? "bg-purple-900/20"
+                          : p.id === selectedPlayerId
+                            ? "bg-blue-50 dark:bg-blue-900/30"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-700"
                     }`}
                 >
                   {/* Checkbox is OUTSIDE the navigation button so we don't
@@ -753,18 +846,24 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                           title="Unsaved changes"
                         />
                       ) : null}
-                      <span className="truncate">{p.firstname} {p.lastname}</span>
-                      <span className={`text-xs px-1 py-0.5 rounded shrink-0 ${
-                        p.ptype === "Pitcher"
-                          ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
-                          : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                      }`}>
+                      <span className="truncate">
+                        {p.firstname} {p.lastname}
+                      </span>
+                      <span
+                        className={`text-xs px-1 py-0.5 rounded-sm shrink-0 ${
+                          p.ptype === "Pitcher"
+                            ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                            : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                        }`}
+                      >
                         {p.ptype === "Pitcher" ? "P" : "Pos"}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       {best && (
-                        <span className={`text-xs ${displayValueColor(best.value)}`}>
+                        <span
+                          className={`text-xs ${displayValueColor(best.value)}`}
+                        >
                           {best.label} {best.value}
                         </span>
                       )}
@@ -783,7 +882,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
             })}
             {filteredPlayers.length === 0 && (
               <div className="px-3 py-2">
-                <Text variant="small" classes="text-gray-500">No players found.</Text>
+                <Text variant="small" classes="text-gray-500">
+                  No players found.
+                </Text>
               </div>
             )}
           </div>
@@ -802,8 +903,10 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     ›
                   </span>
                   <Text variant="body-small" classes="text-gray-300">
-                    <strong className="text-gray-100">Click a player's name</strong> in the list to edit
-                    their individual strategy.
+                    <strong className="text-gray-100">
+                      Click a player's name
+                    </strong>{" "}
+                    in the list to edit their individual strategy.
                   </Text>
                 </div>
                 <div className="flex items-start gap-3">
@@ -814,8 +917,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     ☐
                   </span>
                   <Text variant="body-small" classes="text-gray-300">
-                    <strong className="text-gray-100">Check the boxes</strong> to select multiple players,
-                    then use the bulk apply panel to set the same value across all of them at once.
+                    <strong className="text-gray-100">Check the boxes</strong>{" "}
+                    to select multiple players, then use the bulk apply panel to
+                    set the same value across all of them at once.
                   </Text>
                 </div>
               </div>
@@ -829,7 +933,7 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     {selectedPlayer.firstname} {selectedPlayer.lastname}
                   </Text>
                   {isCurrentDirty && (
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
+                    <span className="text-xs px-1.5 py-0.5 rounded-sm bg-yellow-500/20 text-yellow-300 border border-yellow-500/40">
                       Unsaved
                     </span>
                   )}
@@ -855,15 +959,19 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
               </div>
 
               {currentRowErrors.length > 0 && (
-                <div className="mb-3 p-2 rounded border border-red-500/50 bg-red-900/20">
-                  <Text variant="small" classes="font-semibold text-red-300 mb-1">
+                <div className="mb-3 p-2 rounded-sm border border-red-500/50 bg-red-900/20">
+                  <Text
+                    variant="small"
+                    classes="font-semibold text-red-300 mb-1"
+                  >
                     Validation errors:
                   </Text>
                   <ul className="list-disc list-inside space-y-0.5">
                     {currentRowErrors.map((e, i) => (
                       <li key={i}>
                         <Text variant="small" classes="text-red-300">
-                          <span className="font-mono">{e.field}</span>: {e.message}
+                          <span className="font-mono">{e.field}</span>:{" "}
+                          {e.message}
                         </Text>
                       </li>
                     ))}
@@ -875,43 +983,65 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
               <Card>
                 <div className="space-y-2 text-center">
                   <div className="flex items-center gap-2 flex-wrap justify-center">
-                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
-                      selectedPlayer.ptype === "Pitcher"
-                        ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
-                        : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                    }`}>
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded-sm font-medium ${
+                        selectedPlayer.ptype === "Pitcher"
+                          ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                          : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                      }`}
+                    >
                       {selectedPlayer.ptype}
                     </span>
-                    <span className="text-xs text-gray-500">Age {selectedPlayer.age}</span>
+                    <span className="text-xs text-gray-500">
+                      Age {selectedPlayer.age}
+                    </span>
                     {selectedPlayer.bat_hand && (
-                      <span className="text-xs text-gray-500">Bats: {selectedPlayer.bat_hand}</span>
+                      <span className="text-xs text-gray-500">
+                        Bats: {selectedPlayer.bat_hand}
+                      </span>
                     )}
                     {selectedPlayer.pitch_hand && (
-                      <span className="text-xs text-gray-500">Throws: {selectedPlayer.pitch_hand}</span>
+                      <span className="text-xs text-gray-500">
+                        Throws: {selectedPlayer.pitch_hand}
+                      </span>
                     )}
                     {selectedPlayer.displayovr && (
-                      <span className={`text-xs font-semibold ${ratingColor(Number(selectedPlayer.displayovr))}`}>
+                      <span
+                        className={`text-xs font-semibold ${ratingColor(Number(selectedPlayer.displayovr))}`}
+                      >
                         OVR: {selectedPlayer.displayovr}
                       </span>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    <PlayerAttributeRow player={selectedPlayer} attributes={BATTING_DISPLAY_ATTRS} />
+                    <PlayerAttributeRow
+                      player={selectedPlayer}
+                      attributes={BATTING_DISPLAY_ATTRS}
+                    />
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    <PlayerAttributeRow player={selectedPlayer} attributes={ATHLETIC_DISPLAY_ATTRS} />
+                    <PlayerAttributeRow
+                      player={selectedPlayer}
+                      attributes={ATHLETIC_DISPLAY_ATTRS}
+                    />
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    <PlayerAttributeRow player={selectedPlayer} attributes={SP_DISPLAY_ATTRS} />
+                    <PlayerAttributeRow
+                      player={selectedPlayer}
+                      attributes={SP_DISPLAY_ATTRS}
+                    />
                   </div>
                   <div className="flex flex-wrap gap-1 justify-center">
                     {POSITION_RATING_KEYS.map(({ key, label }) => {
-                      const val = selectedPlayer.ratings[key] as number | string | null;
+                      const val = selectedPlayer.ratings[key] as
+                        | number
+                        | string
+                        | null;
                       if (val == null) return null;
                       return (
                         <span
                           key={key}
-                          className={`text-xs px-1.5 py-0.5 rounded bg-gray-700/50 ${displayValueColor(val)}`}
+                          className={`text-xs px-1.5 py-0.5 rounded-sm bg-gray-700/50 ${displayValueColor(val)}`}
                         >
                           {label}: {val}
                         </span>
@@ -935,14 +1065,21 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                     <div>
                       <FieldLabel label="Usage Preference" />
                       <div className="mb-2">
-                        <StaminaBar player={selectedPlayer} label="Current Stamina:" />
+                        <StaminaBar
+                          player={selectedPlayer}
+                          label="Current Stamina:"
+                        />
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {UsagePreferenceOptions.map((o) => (
                           <OptionPill
                             key={o.value}
                             selected={editing.usage_preference === o.value}
-                            onClick={() => updateEditing({ usage_preference: o.value as UsagePreference })}
+                            onClick={() =>
+                              updateEditing({
+                                usage_preference: o.value as UsagePreference,
+                              })
+                            }
                           >
                             {o.label}
                           </OptionPill>
@@ -962,7 +1099,11 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                             <OptionPill
                               key={o.value}
                               selected={editing.plate_approach === o.value}
-                              onClick={() => updateEditing({ plate_approach: o.value as PlateApproach })}
+                              onClick={() =>
+                                updateEditing({
+                                  plate_approach: o.value as PlateApproach,
+                                })
+                              }
                             >
                               {o.label}
                             </OptionPill>
@@ -977,7 +1118,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                         <div className="flex items-center gap-2 flex-wrap">
                           <NumericStepper
                             value={editing.stealfreq}
-                            onChange={(v) => updateEditing({ stealfreq: v ?? 0 })}
+                            onChange={(v) =>
+                              updateEditing({ stealfreq: v ?? 0 })
+                            }
                             min={0}
                             max={100}
                             step={0.5}
@@ -987,7 +1130,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                               <OptionPill
                                 key={p.label}
                                 selected={editing.stealfreq === p.value}
-                                onClick={() => updateEditing({ stealfreq: p.value })}
+                                onClick={() =>
+                                  updateEditing({ stealfreq: p.value })
+                                }
                               >
                                 {p.label}
                               </OptionPill>
@@ -1009,7 +1154,12 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                             <OptionPill
                               key={o.value}
                               selected={editing.pitching_approach === o.value}
-                              onClick={() => updateEditing({ pitching_approach: o.value as PitchingApproach })}
+                              onClick={() =>
+                                updateEditing({
+                                  pitching_approach:
+                                    o.value as PitchingApproach,
+                                })
+                              }
                             >
                               {o.label}
                             </OptionPill>
@@ -1024,7 +1174,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                         <div className="flex items-center gap-2 flex-wrap">
                           <NumericStepper
                             value={editing.pickofffreq}
-                            onChange={(v) => updateEditing({ pickofffreq: v ?? 0 })}
+                            onChange={(v) =>
+                              updateEditing({ pickofffreq: v ?? 0 })
+                            }
                             min={0}
                             max={100}
                             step={0.25}
@@ -1034,7 +1186,9 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                               <OptionPill
                                 key={p.label}
                                 selected={editing.pickofffreq === p.value}
-                                onClick={() => updateEditing({ pickofffreq: p.value })}
+                                onClick={() =>
+                                  updateEditing({ pickofffreq: p.value })
+                                }
                               >
                                 {p.label}
                               </OptionPill>
@@ -1060,12 +1214,18 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                           />
                           <div className="flex flex-wrap gap-1">
                             {PITCH_PULL_PRESETS.map((p) => {
-                              const numericValue = p.value ? Number(p.value) : null;
+                              const numericValue = p.value
+                                ? Number(p.value)
+                                : null;
                               return (
                                 <OptionPill
                                   key={p.label}
-                                  selected={(editing.pitchpull ?? null) === numericValue}
-                                  onClick={() => updateEditing({ pitchpull: numericValue })}
+                                  selected={
+                                    (editing.pitchpull ?? null) === numericValue
+                                  }
+                                  onClick={() =>
+                                    updateEditing({ pitchpull: numericValue })
+                                  }
                                 >
                                   {p.label}
                                 </OptionPill>
@@ -1080,11 +1240,20 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                       <div>
                         <FieldLabel label="Pull Tendency" />
                         <div className="flex flex-wrap gap-1">
-                          {[{ value: "", label: "Default" }, ...PullTendencyOptions].map((o) => (
+                          {[
+                            { value: "", label: "Default" },
+                            ...PullTendencyOptions,
+                          ].map((o) => (
                             <OptionPill
                               key={o.value || "_default"}
                               selected={(editing.pulltend ?? "") === o.value}
-                              onClick={() => updateEditing({ pulltend: o.value ? (o.value as PullTendency) : null })}
+                              onClick={() =>
+                                updateEditing({
+                                  pulltend: o.value
+                                    ? (o.value as PullTendency)
+                                    : null,
+                                })
+                              }
                             >
                               {o.label}
                             </OptionPill>
@@ -1104,7 +1273,12 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                           <OptionPill
                             key={o.value}
                             selected={editing.baserunning_approach === o.value}
-                            onClick={() => updateEditing({ baserunning_approach: o.value as BaserunningApproach })}
+                            onClick={() =>
+                              updateEditing({
+                                baserunning_approach:
+                                  o.value as BaserunningApproach,
+                              })
+                            }
                           >
                             {o.label}
                           </OptionPill>
@@ -1130,7 +1304,10 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                       const hasPitches = pitchNames.some((n) => !!n);
                       if (!hasPitches) {
                         return (
-                          <Text variant="small" classes="text-gray-500 dark:text-gray-400 italic">
+                          <Text
+                            variant="small"
+                            classes="text-gray-500 dark:text-gray-400 italic"
+                          >
                             No pitches assigned to this player.
                           </Text>
                         );
@@ -1139,14 +1316,26 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                         <div className="flex flex-col gap-2">
                           {pitchNames.map((name, i) => {
                             if (!name) return null;
-                            const ovr = selectedPlayer.ratings[PITCH_OVR_KEYS[i]] as DisplayValue;
+                            const ovr = selectedPlayer.ratings[
+                              PITCH_OVR_KEYS[i]
+                            ] as DisplayValue;
                             return (
-                              <div key={i} className="flex items-center gap-3 flex-wrap py-1">
+                              <div
+                                key={i}
+                                className="flex items-center gap-3 flex-wrap py-1"
+                              >
                                 {/* Pitch name + rating */}
                                 <div className="flex items-center gap-1.5 min-w-[120px]">
-                                  <Text variant="small" classes="text-gray-300 font-medium truncate">{name}</Text>
+                                  <Text
+                                    variant="small"
+                                    classes="text-gray-300 font-medium truncate"
+                                  >
+                                    {name}
+                                  </Text>
                                   {ovr != null && (
-                                    <span className={`text-xs px-1 py-0.5 rounded bg-gray-700/50 font-semibold ${displayValueColor(ovr)}`}>
+                                    <span
+                                      className={`text-xs px-1 py-0.5 rounded-sm bg-gray-700/50 font-semibold ${displayValueColor(ovr)}`}
+                                    >
                                       {ovr}
                                     </span>
                                   )}
@@ -1166,11 +1355,17 @@ export const PlayerStrategyTab = ({ orgId, players, levelLabel }: PlayerStrategy
                                   {PITCH_WEIGHT_PRESETS.map((p) => (
                                     <OptionPill
                                       key={p.label}
-                                      selected={editing.pitchchoices[i] === p.value}
+                                      selected={
+                                        editing.pitchchoices[i] === p.value
+                                      }
                                       onClick={() => {
-                                        const updated = [...editing.pitchchoices];
+                                        const updated = [
+                                          ...editing.pitchchoices,
+                                        ];
                                         updated[i] = p.value;
-                                        updateEditing({ pitchchoices: updated });
+                                        updateEditing({
+                                          pitchchoices: updated,
+                                        });
                                       }}
                                     >
                                       {p.label}
@@ -1278,7 +1473,7 @@ const OptionPill = ({
     <button
       type="button"
       onClick={onClick}
-      className={`text-xs px-2.5 py-1.5 rounded border transition-colors ${
+      className={`text-xs px-2.5 py-1.5 rounded-sm border transition-colors ${
         selected
           ? selectedClasses
           : "bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
@@ -1323,7 +1518,7 @@ const NumericStepper = ({
         type="button"
         onClick={decrement}
         disabled={value != null && value <= min}
-        className="w-7 h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+        className="w-7 h-7 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
       >
         −
       </button>
@@ -1343,13 +1538,13 @@ const NumericStepper = ({
           }
         }}
         placeholder={placeholder}
-        className="w-24 px-2 py-1 text-sm text-center border rounded bg-black text-white border-gray-500 appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0"
+        className="w-24 px-2 py-1 text-sm text-center border rounded-sm bg-black text-white border-gray-500 appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0"
       />
       <button
         type="button"
         onClick={increment}
         disabled={value != null && value >= max}
-        className="w-7 h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
+        className="w-7 h-7 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed text-sm font-bold"
       >
         +
       </button>
@@ -1383,7 +1578,7 @@ const SmallActionButton = ({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`text-xs px-2 py-1 rounded border transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${variantClasses}`}
+      className={`text-xs px-2 py-1 rounded-sm border transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${variantClasses}`}
     >
       {children}
     </button>

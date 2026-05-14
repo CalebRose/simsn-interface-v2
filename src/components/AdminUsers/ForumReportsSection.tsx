@@ -67,7 +67,7 @@ export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
           <button
             key={tab.value}
             onClick={() => setActiveTab(tab.value)}
-            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+            className={`px-3 py-1 rounded-sm text-sm font-medium transition-colors ${
               activeTab === tab.value
                 ? "bg-blue-600 text-white"
                 : "bg-gray-800 text-gray-300 hover:bg-gray-700"
@@ -78,7 +78,7 @@ export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
         ))}
         <button
           onClick={fetchReports}
-          className="ml-auto px-3 py-1 rounded text-sm bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+          className="ml-auto px-3 py-1 rounded-sm text-sm bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
           disabled={reportsLoading}
         >
           {reportsLoading ? "Loading…" : "↻ Refresh"}
@@ -104,7 +104,7 @@ export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
                 <div className="flex flex-col gap-0.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
-                      className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                      className={`text-xs px-1.5 py-0.5 rounded-sm font-medium ${
                         report.status === "pending"
                           ? "bg-yellow-700 text-yellow-100"
                           : report.status === "reviewed"
@@ -114,7 +114,7 @@ export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
                     >
                       {report.status}
                     </span>
-                    <span className="text-xs bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded">
+                    <span className="text-xs bg-gray-800 text-gray-300 px-1.5 py-0.5 rounded-sm">
                       {report.category}
                     </span>
                   </div>
@@ -163,7 +163,7 @@ export const ForumReportsSection: React.FC<ForumReportsSectionProps> = ({
                     }
                     placeholder="Optional admin note…"
                     rows={2}
-                    className="w-full bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:border-blue-500"
+                    className="w-full bg-gray-800 border border-gray-600 rounded-sm px-2 py-1 text-sm text-white placeholder-gray-500 resize-none focus:outline-hidden focus:border-blue-500"
                   />
                   <ButtonGroup>
                     <Button

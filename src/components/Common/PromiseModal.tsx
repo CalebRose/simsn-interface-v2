@@ -333,7 +333,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title={title}
-        maxWidth="max-w-[60rem]"
+        maxWidth="max-w-240"
         actions={
           <>
             <ButtonGroup>
@@ -686,7 +686,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
               <Text variant="h4">Promise Details</Text>
             </div>
             {errors.length > 0 && (
-              <Border classes="mb-4 max-h-[8rem] overflow-y-auto p-2">
+              <Border classes="mb-4 max-h-32 overflow-y-auto p-2">
                 {errors.map((error, index) => (
                   <Text key={index} variant="xs">
                     {error}

@@ -30,7 +30,8 @@ export const useCFBTransferPortal = () => {
     teamTransferPortalProfiles,
     cfbTeamOptions,
     cfb_Timestamp,
-    portalPlayerMap,
+    portalPlayerMap: transferPortalPlayerMap,
+    cfbPlayerMap,
     getBootstrapPortalData,
   } = useSimFBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -55,6 +56,21 @@ export const useCFBTransferPortal = () => {
   useEffect(() => {
     getBootstrapPortalData();
   }, []);
+
+  const portalPlayerMap = useMemo(() => {
+    const map: Record<number, FootballPlayer> = {};
+    if (cfbPlayerMap) {
+      Object.values(cfbPlayerMap).forEach((player) => {
+        map[player.ID] = player;
+      });
+    }
+    if (transferPortalPlayerMap) {
+      Object.values(transferPortalPlayerMap).forEach((player) => {
+        map[player.ID] = player;
+      });
+    }
+    return map;
+  }, [cfbPlayerMap, transferPortalPlayerMap]);
 
   const isPortalOpen = useMemo(() => {
     if (cfb_Timestamp) {

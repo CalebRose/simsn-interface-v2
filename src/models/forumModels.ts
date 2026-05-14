@@ -110,6 +110,7 @@ export interface Thread {
   referencedGameId?: string | null;
   referencedLeague?: string | null;
   replyCount: number;
+  viewCount: number;
   participantCount: number;
   latestPostId?: string | null;
   latestActivityAt: Timestamp;
@@ -117,6 +118,7 @@ export interface Thread {
     uid: string;
     username: string;
   } | null;
+  mediaPointAwarded?: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -256,6 +258,7 @@ export type NotificationForumType =
   | "free_agency"
   | "transfer"
   | "schedule"
+  | "media_point"
   | "system";
 
 export interface ForumNotification {

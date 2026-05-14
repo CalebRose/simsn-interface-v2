@@ -108,7 +108,7 @@ const PickCard: FC<PickCardProps> = ({
   return (
     <div
       className={`
-        flex-shrink-0 w-[35rem] mx-2 cursor-pointer transition-all duration-300
+        shrink-0 w-140 mx-2 cursor-pointer transition-all duration-300
         ${isHovered ? "transform scale-105" : ""}
         ${isNew ? "animate-slideIn" : ""}
       `}
@@ -123,7 +123,7 @@ const PickCard: FC<PickCardProps> = ({
     >
       <Border
         classes={`
-          p-4 bg-gradient-to-r from-gray-800 to-gray-700 border-2
+          p-4 bg-linear-to-r from-gray-800 to-gray-700 border-2
           ${isNew ? "ring-2 ring-blue-500 ring-opacity-50" : ""}
         `}
         styles={{
@@ -131,7 +131,7 @@ const PickCard: FC<PickCardProps> = ({
         }}
       >
         <div className="flex items-center space-x-3">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div
               className={`
               w-12 h-12 rounded-full flex items-center justify-center font-bold
@@ -172,7 +172,7 @@ const PickCard: FC<PickCardProps> = ({
               )}
             </div>
           </div>
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <span className="text-xs text-gray-500 uppercase">
               R{pick.DraftRound}
             </span>
@@ -259,11 +259,11 @@ export const DraftTicker: FC<DraftTickerProps> = ({
         style={{ contain: "layout style" }}
       >
         <div
-          className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-900 to-transparent z-10 pointer-events-none"
+          className="absolute left-0 top-0 bottom-0 w-20 bg-linear-to-r from-gray-900 to-transparent z-10 pointer-events-none"
           style={{ contain: "strict" }}
         />
         <div
-          className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-900 to-transparent z-10 pointer-events-none"
+          className="absolute right-0 top-0 bottom-0 w-20 bg-linear-to-l from-gray-900 to-transparent z-10 pointer-events-none"
           style={{ contain: "strict" }}
         />
         <div

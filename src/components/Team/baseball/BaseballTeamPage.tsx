@@ -87,7 +87,7 @@ const Stats = "Stats";
 // ═══════════════════════════════════════════════
 
 const actionBtn =
-  "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
+  "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded-sm text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
 
 const QuickActionButtons = ({
   player,
@@ -242,11 +242,11 @@ const TeamSelectorCard = ({
 }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all cursor-pointer min-w-[8rem]
+    className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all cursor-pointer min-w-32
       ${
         !isSelected
           ? "border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400 bg-white dark:bg-gray-800"
-          : "shadow-sm"
+          : "shadow-xs"
       }`}
     style={
       isSelected
@@ -1310,7 +1310,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
                   return (
                     <div
                       key={rs.level_id}
-                      className={`flex flex-col items-center px-3 py-1.5 rounded border ${statusColor} min-w-[5rem]`}
+                      className={`flex flex-col items-center px-3 py-1.5 rounded-sm border ${statusColor} min-w-20`}
                     >
                       <span className="text-xs font-semibold uppercase text-gray-600 dark:text-gray-300">
                         {displayLevel(rs.level_name)}
@@ -1462,7 +1462,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search player..."
-              className="text-sm border rounded px-2 py-1 w-48 dark:bg-gray-700 dark:border-gray-600"
+              className="text-sm border rounded-sm px-2 py-1 w-48 dark:bg-gray-700 dark:border-gray-600"
             />
             <Text variant="small" classes="text-gray-500 dark:text-gray-400">
               {filteredPlayers.length} players

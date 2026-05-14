@@ -77,12 +77,18 @@ export const ScoutingDepartmentPanel: FC<ScoutingDepartmentPanelProps> = ({
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [orgId, leagueYearId, refreshKey]);
 
   const btnStyle = useMemo(() => {
     if (!accentColor) return undefined;
-    return { backgroundColor: accentColor, color: getTextColorBasedOnBg(accentColor) === "text-white" ? "#fff" : "#111" };
+    return {
+      backgroundColor: accentColor,
+      color:
+        getTextColorBasedOnBg(accentColor) === "text-white" ? "#fff" : "#111",
+    };
   }, [accentColor]);
 
   const spendingBreakdown = useMemo(() => {
@@ -116,11 +122,15 @@ export const ScoutingDepartmentPanel: FC<ScoutingDepartmentPanelProps> = ({
         league_year_id: leagueYearId,
       });
       // Refresh department status
-      const updated = await BaseballService.GetDepartmentStatus(orgId, leagueYearId);
+      const updated = await BaseballService.GetDepartmentStatus(
+        orgId,
+        leagueYearId,
+      );
       setDept(updated);
       onPurchased?.();
     } catch (err: any) {
-      const msg = err?.response?.data?.message ?? err?.message ?? "Purchase failed";
+      const msg =
+        err?.response?.data?.message ?? err?.message ?? "Purchase failed";
       setError(msg);
     } finally {
       setPurchasing(false);
@@ -172,7 +182,8 @@ export const ScoutingDepartmentPanel: FC<ScoutingDepartmentPanelProps> = ({
             {spent.toLocaleString()} / {totalBudget.toLocaleString()} pts used
           </Text>
           <Text variant="xs" classes="text-gray-500">
-            Base: {baseBudget.toLocaleString()} {bonusPoints > 0 && <>| Bonus: +{bonusPoints.toLocaleString()}</>}
+            Base: {baseBudget.toLocaleString()}{" "}
+            {bonusPoints > 0 && <>| Bonus: +{bonusPoints.toLocaleString()}</>}
           </Text>
         </div>
       </div>
@@ -186,22 +197,29 @@ export const ScoutingDepartmentPanel: FC<ScoutingDepartmentPanelProps> = ({
                 onClick={() => setShowConfirm(true)}
                 disabled={purchasing}
                 className={`px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                  btnStyle ? "hover:brightness-110" : "bg-green-600 hover:bg-green-700 text-white"
+                  btnStyle
+                    ? "hover:brightness-110"
+                    : "bg-green-600 hover:bg-green-700 text-white"
                 }`}
                 style={btnStyle}
               >
-                Expand Department — {formatMoney(dept.next_tier.cost)} for +{dept.next_tier.points_gained.toLocaleString()} pts
+                Expand Department — {formatMoney(dept.next_tier.cost)} for +
+                {dept.next_tier.points_gained.toLocaleString()} pts
               </button>
             ) : (
               <div className="flex items-center gap-2 p-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10">
                 <Text variant="xs" classes="text-yellow-300">
-                  Spend {formatMoney(dept.next_tier!.cost)} to gain +{dept.next_tier!.points_gained.toLocaleString()} scouting points?
+                  Spend {formatMoney(dept.next_tier!.cost)} to gain +
+                  {dept.next_tier!.points_gained.toLocaleString()} scouting
+                  points?
                 </Text>
                 <button
                   onClick={handlePurchase}
                   disabled={purchasing}
-                  className={`px-2 py-1 text-xs font-semibold rounded transition-colors disabled:opacity-50 ${
-                    btnStyle ? "hover:brightness-110" : "bg-green-600 hover:bg-green-700 text-white"
+                  className={`px-2 py-1 text-xs font-semibold rounded-sm transition-colors disabled:opacity-50 ${
+                    btnStyle
+                      ? "hover:brightness-110"
+                      : "bg-green-600 hover:bg-green-700 text-white"
                   }`}
                   style={btnStyle}
                 >
@@ -209,7 +227,7 @@ export const ScoutingDepartmentPanel: FC<ScoutingDepartmentPanelProps> = ({
                 </button>
                 <button
                   onClick={() => setShowConfirm(false)}
-                  className="px-2 py-1 text-xs font-semibold rounded bg-gray-600 hover:bg-gray-500
+                  className="px-2 py-1 text-xs font-semibold rounded-sm bg-gray-600 hover:bg-gray-500
                     text-white transition-colors"
                 >
                   Cancel
@@ -268,23 +286,34 @@ export const ScoutingDepartmentPanel: FC<ScoutingDepartmentPanelProps> = ({
                       isPurchased
                         ? "text-gray-500"
                         : isNext
-                        ? "text-green-400 font-semibold"
-                        : ""
+                          ? "text-green-400 font-semibold"
+                          : ""
                     }`}
                   >
                     <td className="px-2 py-1">
-                      {t.tier}{isPurchased && " *"}
+                      {t.tier}
+                      {isPurchased && " *"}
                     </td>
-                    <td className="px-2 py-1 text-right">{formatMoney(t.cost)}</td>
-                    <td className="px-2 py-1 text-right">+{t.points_gained.toLocaleString()}</td>
-                    <td className="px-2 py-1 text-right">{t.cumulative_total.toLocaleString()}</td>
-                    <td className="px-2 py-1 text-right">{formatMoney(t.cost_per_point)}</td>
+                    <td className="px-2 py-1 text-right">
+                      {formatMoney(t.cost)}
+                    </td>
+                    <td className="px-2 py-1 text-right">
+                      +{t.points_gained.toLocaleString()}
+                    </td>
+                    <td className="px-2 py-1 text-right">
+                      {t.cumulative_total.toLocaleString()}
+                    </td>
+                    <td className="px-2 py-1 text-right">
+                      {formatMoney(t.cost_per_point)}
+                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-          <Text variant="xs" classes="text-gray-500 mt-1">* = purchased this season</Text>
+          <Text variant="xs" classes="text-gray-500 mt-1">
+            * = purchased this season
+          </Text>
         </div>
       )}
 
@@ -292,34 +321,38 @@ export const ScoutingDepartmentPanel: FC<ScoutingDepartmentPanelProps> = ({
       {showBreakdown && spendingBreakdown.length > 0 && (
         <div>
           <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-gray-700 text-gray-400">
-                    <th className="px-2 py-1 text-left">Category</th>
-                    <th className="px-2 py-1 text-right">Actions</th>
-                    <th className="px-2 py-1 text-right">Points</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {spendingBreakdown.map((row) => (
-                    <tr key={row.type} className="border-b border-gray-800">
-                      <td className="px-2 py-1">{row.label}</td>
-                      <td className="px-2 py-1 text-right">{row.count}</td>
-                      <td className="px-2 py-1 text-right">{row.points.toLocaleString()}</td>
-                    </tr>
-                  ))}
-                  <tr className="border-t border-gray-600 font-semibold">
-                    <td className="px-2 py-1">Total</td>
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-gray-700 text-gray-400">
+                  <th className="px-2 py-1 text-left">Category</th>
+                  <th className="px-2 py-1 text-right">Actions</th>
+                  <th className="px-2 py-1 text-right">Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                {spendingBreakdown.map((row) => (
+                  <tr key={row.type} className="border-b border-gray-800">
+                    <td className="px-2 py-1">{row.label}</td>
+                    <td className="px-2 py-1 text-right">{row.count}</td>
                     <td className="px-2 py-1 text-right">
-                      {spendingBreakdown.reduce((s, r) => s + r.count, 0)}
-                    </td>
-                    <td className="px-2 py-1 text-right">
-                      {spendingBreakdown.reduce((s, r) => s + r.points, 0).toLocaleString()}
+                      {row.points.toLocaleString()}
                     </td>
                   </tr>
-                </tbody>
-              </table>
-            </div>
+                ))}
+                <tr className="border-t border-gray-600 font-semibold">
+                  <td className="px-2 py-1">Total</td>
+                  <td className="px-2 py-1 text-right">
+                    {spendingBreakdown.reduce((s, r) => s + r.count, 0)}
+                  </td>
+                  <td className="px-2 py-1 text-right">
+                    {spendingBreakdown
+                      .reduce((s, r) => s + r.points, 0)
+                      .toLocaleString()}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -330,7 +363,8 @@ export const ScoutingDepartmentPanel: FC<ScoutingDepartmentPanelProps> = ({
             onClick={() => {}} // inline toggle could be added if desired
             className="text-xs text-gray-400 mb-1"
           >
-            {dept.purchases.length} upgrade{dept.purchases.length !== 1 ? "s" : ""} this season
+            {dept.purchases.length} upgrade
+            {dept.purchases.length !== 1 ? "s" : ""} this season
           </button>
         </div>
       )}

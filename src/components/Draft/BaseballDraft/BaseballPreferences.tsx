@@ -58,7 +58,7 @@ const SortableQueueItem: React.FC<SortableQueueItemProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 rounded bg-gray-800 px-3 py-2 border border-gray-700"
+      className="flex items-center gap-3 rounded-sm bg-gray-800 px-3 py-2 border border-gray-700"
     >
       {!disabled && (
         <button
@@ -209,21 +209,21 @@ const BaseballPreferences: React.FC<BaseballPreferencesProps> = ({
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold">Auto-Draft Preferences</h2>
         {isLocked && (
-          <span className="rounded bg-red-600 px-3 py-1 text-xs font-bold uppercase">
+          <span className="rounded-sm bg-red-600 px-3 py-1 text-xs font-bold uppercase">
             Locked
           </span>
         )}
       </div>
 
       {error && (
-        <div className="rounded bg-red-900/50 px-4 py-2 text-sm text-red-300">{error}</div>
+        <div className="rounded-sm bg-red-900/50 px-4 py-2 text-sm text-red-300">{error}</div>
       )}
       {success && (
-        <div className="rounded bg-green-900/50 px-4 py-2 text-sm text-green-300">Preferences saved!</div>
+        <div className="rounded-sm bg-green-900/50 px-4 py-2 text-sm text-green-300">Preferences saved!</div>
       )}
 
       {/* Quotas */}
-      <section className="rounded border border-gray-700 bg-gray-800 p-4">
+      <section className="rounded-sm border border-gray-700 bg-gray-800 p-4">
         <h3 className="mb-3 text-lg font-semibold text-gray-300">Position Quotas</h3>
         <p className="text-xs text-gray-500 mb-3">
           Target number of pitchers/hitters to auto-draft. These are soft targets — once both are filled, remaining picks use best player available.
@@ -238,7 +238,7 @@ const BaseballPreferences: React.FC<BaseballPreferencesProps> = ({
               value={pitcherQuota}
               onChange={(e) => setPitcherQuota(Number(e.target.value))}
               disabled={isLocked}
-              className="w-20 rounded border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white disabled:opacity-50"
+              className="w-20 rounded-sm border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white disabled:opacity-50"
             />
           </div>
           <div>
@@ -250,14 +250,14 @@ const BaseballPreferences: React.FC<BaseballPreferencesProps> = ({
               value={hitterQuota}
               onChange={(e) => setHitterQuota(Number(e.target.value))}
               disabled={isLocked}
-              className="w-20 rounded border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white disabled:opacity-50"
+              className="w-20 rounded-sm border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white disabled:opacity-50"
             />
           </div>
         </div>
       </section>
 
       {/* Queue */}
-      <section className="rounded border border-gray-700 bg-gray-800 p-4">
+      <section className="rounded-sm border border-gray-700 bg-gray-800 p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-gray-300">Priority Queue</h3>
           {!isLocked && (
@@ -266,7 +266,7 @@ const BaseballPreferences: React.FC<BaseballPreferencesProps> = ({
                 setShowSearch(!showSearch);
                 if (!showSearch) onFetchPlayers({ offset: 0 });
               }}
-              className="rounded bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-500"
+              className="rounded-sm bg-purple-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-purple-500"
             >
               + Add Player
             </button>
@@ -278,13 +278,13 @@ const BaseballPreferences: React.FC<BaseballPreferencesProps> = ({
 
         {/* Add player search */}
         {showSearch && !isLocked && (
-          <div className="mb-4 rounded border border-gray-600 bg-gray-900 p-3">
+          <div className="mb-4 rounded-sm border border-gray-600 bg-gray-900 p-3">
             <input
               type="text"
               placeholder="Search for a player to add..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              className="w-full rounded border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white mb-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full rounded-sm border border-gray-600 bg-gray-700 px-3 py-2 text-sm text-white mb-2 focus:outline-hidden focus:ring-2 focus:ring-purple-500"
               autoFocus
             />
             {searchResults.length > 0 && (
@@ -293,7 +293,7 @@ const BaseballPreferences: React.FC<BaseballPreferencesProps> = ({
                   <button
                     key={p.player_id}
                     onClick={() => addToQueue(p.player_id)}
-                    className="w-full flex items-center justify-between rounded bg-gray-800 px-3 py-2 text-sm text-white hover:bg-gray-700"
+                    className="w-full flex items-center justify-between rounded-sm bg-gray-800 px-3 py-2 text-sm text-white hover:bg-gray-700"
                   >
                     <span>{p.first_name} {p.last_name}</span>
                     <span className="text-xs text-gray-400">
@@ -345,7 +345,7 @@ const BaseballPreferences: React.FC<BaseballPreferencesProps> = ({
         <button
           onClick={handleSave}
           disabled={saving}
-          className="rounded bg-green-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-50 self-start"
+          className="rounded-sm bg-green-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-green-500 disabled:opacity-50 self-start"
         >
           {saving ? "Saving..." : "Save Preferences"}
         </button>

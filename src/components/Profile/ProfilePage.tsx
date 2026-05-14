@@ -93,7 +93,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimCFB}
                 onClick={() => setDefaultLeague(SimCFB)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimCFB}
               </PillButton>
@@ -101,7 +101,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimNFL}
                 onClick={() => setDefaultLeague(SimNFL)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimNFL}
               </PillButton>
@@ -109,7 +109,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimCBB}
                 onClick={() => setDefaultLeague(SimCBB)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimCBB}
               </PillButton>
@@ -117,7 +117,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimNBA}
                 onClick={() => setDefaultLeague(SimNBA)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimNBA}
               </PillButton>
@@ -125,7 +125,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimCHL}
                 onClick={() => setDefaultLeague(SimCHL)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimCHL}
               </PillButton>
@@ -133,7 +133,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimPHL}
                 onClick={() => setDefaultLeague(SimPHL)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimPHL}
               </PillButton>
@@ -141,7 +141,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimCollegeBaseball}
                 onClick={() => setDefaultLeague(SimCollegeBaseball)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 SimCBL
               </PillButton>
@@ -149,7 +149,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimMLB}
                 onClick={() => setDefaultLeague(SimMLB)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimMLB}
               </PillButton>
@@ -184,6 +184,35 @@ export const ProfilePage = () => {
                 className="min-w-[140px]"
               />
             </div>
+          </div>
+        </Border>
+        <Border classes="w-full p-4 mt-2">
+          <Text variant="h6">Media Points</Text>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+            {(
+              [
+                { label: SimCFB, key: "SimCFBMediaPoints" },
+                { label: SimNFL, key: "SimNFLMediaPoints" },
+                { label: SimCBB, key: "SimCBBMediaPoints" },
+                { label: SimNBA, key: "SimNBAMediaPoints" },
+                { label: SimCHL, key: "SimCHLMediaPoints" },
+                { label: SimPHL, key: "SimPHLMediaPoints" },
+                { label: "SimCBL", key: "SimCBLMediaPoints" },
+                { label: SimMLB, key: "SimMLBMediaPoints" },
+              ] as { label: string; key: keyof typeof currentUser }[]
+            ).map(({ label, key }) => (
+              <div
+                key={key as string}
+                className="flex flex-col items-center rounded-sm p-2 bg-black/20 border border-white/10"
+              >
+                <Text variant="body-small" classes="font-semibold">
+                  {label}
+                </Text>
+                <Text variant="h6" classes="text-amber-400">
+                  {(currentUser?.[key] as number | undefined) ?? 0}
+                </Text>
+              </div>
+            ))}
           </div>
         </Border>
         <Border classes="w-full p-4 mt-2">

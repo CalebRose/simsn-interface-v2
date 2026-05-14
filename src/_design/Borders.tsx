@@ -24,7 +24,7 @@ export const Border: React.FC<BorderProps> = ({
   return (
     <div
       className={`${
-        isFlex ? `flex flex-${direction}` : ""
+        isFlex ? `flex ${direction === "row" ? "flex-row" : "flex-col"}` : ""
       } border-2 rounded-xl mb-2 ${classes}`}
       style={{ ...styles }}
     >
@@ -51,7 +51,7 @@ export const ForumBorder: React.FC<BorderProps> = ({
   return (
     <div
       className={`${
-        isFlex ? `flex flex-${direction}` : ""
+        isFlex ? `flex ${direction === "row" ? "flex-row" : "flex-col"}` : ""
       } rounded-xl mb-2 border ${classes}`}
       style={{
         backgroundColor: "var(--bg-secondary)",

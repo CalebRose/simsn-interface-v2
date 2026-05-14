@@ -242,7 +242,7 @@ export const RecruitingAISettingsModal: FC<RecruitAISettingsProps> = ({
             />
           </div>
           <div className="grid grid-cols-2">
-            <div className="flex flex-col gap-y-2 w-[12rem]">
+            <div className="flex flex-col gap-y-2 w-48">
               <Input
                 label="AI Star Min"
                 type="number"
@@ -260,7 +260,7 @@ export const RecruitingAISettingsModal: FC<RecruitAISettingsProps> = ({
                 onChange={ChangeNumericInput}
               />
             </div>
-            <div className="flex flex-col gap-y-2 w-[12rem]">
+            <div className="flex flex-col gap-y-2 w-48">
               <Input
                 label="AI Points Min"
                 type="number"

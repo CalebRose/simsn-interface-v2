@@ -25,7 +25,11 @@ import "../../Team/baseball/baseballMobile.css";
 // ═══════════════════════════════════════════════
 
 /** Derive a human-readable label for a CT round based on its position from the end. */
-function ctRoundLabel(roundKey: string, totalRounds: number, roundKeys: string[]): string {
+function ctRoundLabel(
+  roundKey: string,
+  totalRounds: number,
+  roundKeys: string[],
+): string {
   const idx = roundKeys.indexOf(roundKey);
   const fromEnd = totalRounds - 1 - idx;
   if (fromEnd === 0) return "Final";
@@ -53,19 +57,34 @@ interface ConferenceSummary {
   champion: string | null;
 }
 
-function getConferenceSummary(name: string, data: ConferenceTournamentData): ConferenceSummary {
+function getConferenceSummary(
+  name: string,
+  data: ConferenceTournamentData,
+): ConferenceSummary {
   const roundKeys = sortCTRounds(Object.keys(data.rounds));
   const totalRounds = roundKeys.length;
 
   if (totalRounds === 0) {
-    return { name, status: "not_started", currentRound: 0, totalRounds: 0, champion: null };
+    return {
+      name,
+      status: "not_started",
+      currentRound: 0,
+      totalRounds: 0,
+      champion: null,
+    };
   }
 
   // Check if the final round is complete
   const finalRound = data.rounds[roundKeys[roundKeys.length - 1]] ?? [];
   const finalSeries = finalRound[0];
   if (finalSeries && finalSeries.status === "complete" && finalSeries.winner) {
-    return { name, status: "complete", currentRound: totalRounds, totalRounds, champion: finalSeries.winner.abbrev };
+    return {
+      name,
+      status: "complete",
+      currentRound: totalRounds,
+      totalRounds,
+      champion: finalSeries.winner.abbrev,
+    };
   }
 
   // Find the latest round that has activity
@@ -78,7 +97,13 @@ function getConferenceSummary(name: string, data: ConferenceTournamentData): Con
     }
   }
 
-  return { name, status: "in_progress", currentRound, totalRounds, champion: null };
+  return {
+    name,
+    status: "in_progress",
+    currentRound,
+    totalRounds,
+    champion: null,
+  };
 }
 
 // ═══════════════════════════════════════════════
@@ -104,7 +129,9 @@ const CTSeriesCard = ({
   const isWinnerB = series.winner?.id === series.team_b.id;
 
   return (
-    <div className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-full sm:min-w-[14rem]`}>
+    <div
+      className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-full sm:min-w-56`}
+    >
       {/* Format header */}
       <div className="flex items-center justify-between mb-1.5">
         <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500 font-semibold">
@@ -121,7 +148,9 @@ const CTSeriesCard = ({
               src={logoA}
               className="w-5 h-5 object-contain"
               alt=""
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
             />
           )}
           <span className="text-sm">{series.team_a.abbrev}</span>
@@ -131,7 +160,9 @@ const CTSeriesCard = ({
             </span>
           )}
         </div>
-        <span className="text-sm font-semibold tabular-nums">{series.wins_a}</span>
+        <span className="text-sm font-semibold tabular-nums">
+          {series.wins_a}
+        </span>
       </div>
       {/* Divider */}
       <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
@@ -145,7 +176,9 @@ const CTSeriesCard = ({
               src={logoB}
               className="w-5 h-5 object-contain"
               alt=""
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
             />
           )}
           <span className="text-sm">{series.team_b.abbrev}</span>
@@ -155,7 +188,9 @@ const CTSeriesCard = ({
             </span>
           )}
         </div>
-        <span className="text-sm font-semibold tabular-nums">{series.wins_b}</span>
+        <span className="text-sm font-semibold tabular-nums">
+          {series.wins_b}
+        </span>
       </div>
       {/* Status badge */}
       <div className="mt-1.5 text-center">
@@ -177,19 +212,31 @@ const CTSeriesCard = ({
 
 /** Placeholder card for teams with first-round byes. */
 const CTByeCard = ({
-  team, isRetro,
+  team,
+  isRetro,
 }: {
   team: { id: number; abbrev: string; seed: number };
   isRetro?: boolean;
 }) => {
   const logo = getLogo(SimCollegeBaseball, team.id, isRetro);
   return (
-    <div className="border-2 rounded-lg p-3 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 min-w-full sm:min-w-[14rem]">
+    <div className="border-2 rounded-lg p-3 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 min-w-full sm:min-w-56">
       <div className="flex items-center justify-between gap-2 py-1 font-semibold">
         <div className="flex items-center gap-2">
-          {logo && <img src={logo} className="w-5 h-5 object-contain" alt="" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
+          {logo && (
+            <img
+              src={logo}
+              className="w-5 h-5 object-contain"
+              alt=""
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = "none";
+              }}
+            />
+          )}
           <span className="text-sm">{team.abbrev}</span>
-          <span className="text-[11px] sm:text-[10px] text-gray-400">({team.seed})</span>
+          <span className="text-[11px] sm:text-[10px] text-gray-400">
+            ({team.seed})
+          </span>
         </div>
       </div>
       <div className="mt-1 text-center">
@@ -202,7 +249,11 @@ const CTByeCard = ({
 };
 
 const CTRoundColumn = ({
-  roundKey, seriesList, roundKeys, isRetro, byeTeams,
+  roundKey,
+  seriesList,
+  roundKeys,
+  isRetro,
+  byeTeams,
 }: {
   roundKey: string;
   seriesList: PlayoffSeries[];
@@ -222,9 +273,10 @@ const CTRoundColumn = ({
       >
         {label}
       </Text>
-      {showByes && byeTeams!.map((bt) => (
-        <CTByeCard key={bt.id} team={bt} isRetro={isRetro} />
-      ))}
+      {showByes &&
+        byeTeams!.map((bt) => (
+          <CTByeCard key={bt.id} team={bt} isRetro={isRetro} />
+        ))}
       {seriesList.length === 0 && !showByes ? (
         <div className="text-xs text-gray-400 italic">TBD</div>
       ) : (
@@ -238,7 +290,9 @@ const CTRoundColumn = ({
 
 /** Overview card showing a conference's tournament status at a glance. */
 const ConferenceOverviewCard = ({
-  summary, isSelected, onClick,
+  summary,
+  isSelected,
+  onClick,
 }: {
   summary: ConferenceSummary;
   isSelected: boolean;
@@ -287,7 +341,8 @@ const ConferenceOverviewCard = ({
 // ═══════════════════════════════════════════════
 
 const CWSReadiness = ({
-  summaries, headerColor,
+  summaries,
+  headerColor,
 }: {
   summaries: ConferenceSummary[];
   headerColor: string;
@@ -297,7 +352,10 @@ const CWSReadiness = ({
   const allDone = remaining.length === 0 && summaries.length > 0;
 
   return (
-    <Border classes="p-4 mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
+    <Border
+      classes="p-4 mb-2"
+      styles={{ borderTop: `3px solid ${headerColor}` }}
+    >
       <div className="flex items-center gap-2 mb-3">
         <Text variant="h5">CWS Readiness</Text>
         {allDone ? (
@@ -314,7 +372,7 @@ const CWSReadiness = ({
         {summaries.map((s) => (
           <div
             key={s.name}
-            className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded text-sm ${
+            className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-sm text-sm ${
               s.status === "complete"
                 ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
                 : "bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400"
@@ -322,9 +380,13 @@ const CWSReadiness = ({
           >
             <span className="truncate">{s.name}</span>
             {s.status === "complete" ? (
-              <span className="font-semibold whitespace-nowrap">{s.champion}</span>
+              <span className="font-semibold whitespace-nowrap">
+                {s.champion}
+              </span>
             ) : s.status === "in_progress" ? (
-              <span className="text-xs whitespace-nowrap">R{s.currentRound}/{s.totalRounds}</span>
+              <span className="text-xs whitespace-nowrap">
+                R{s.currentRound}/{s.totalRounds}
+              </span>
             ) : (
               <span className="text-xs">—</span>
             )}
@@ -349,7 +411,9 @@ export const ConferenceTournamentPage = () => {
   } = useSimBaseballStore();
 
   const organization = collegeOrganization;
-  const primaryTeam = organization ? getPrimaryBaseballTeam(organization) : undefined;
+  const primaryTeam = organization
+    ? getPrimaryBaseballTeam(organization)
+    : undefined;
 
   useEffect(() => {
     if (organization && organization.id !== bootstrappedOrgId) {
@@ -372,19 +436,28 @@ export const ConferenceTournamentPage = () => {
 
   const logo = useMemo(() => {
     if (!primaryTeam) return "";
-    return getLogo(SimCollegeBaseball, primaryTeam.team_id, currentUser?.IsRetro);
+    return getLogo(
+      SimCollegeBaseball,
+      primaryTeam.team_id,
+      currentUser?.IsRetro,
+    );
   }, [primaryTeam, currentUser?.IsRetro]);
 
   // Data state
   const [bracket, setBracket] = useState<PlayoffBracketResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedConference, setSelectedConference] = useState<string | null>(null);
+  const [selectedConference, setSelectedConference] = useState<string | null>(
+    null,
+  );
 
   const fetchData = useCallback(async () => {
     if (!seasonContext) return;
     setIsLoading(true);
     try {
-      const data = await BaseballService.GetPlayoffBracket(seasonContext.current_league_year_id, 3);
+      const data = await BaseballService.GetPlayoffBracket(
+        seasonContext.current_league_year_id,
+        3,
+      );
       setBracket(data);
     } catch (e) {
       console.error("Failed to load bracket data", e);
@@ -398,9 +471,10 @@ export const ConferenceTournamentPage = () => {
   }, [fetchData]);
 
   // Extract conference tournament data
-  const confTournaments: Record<string, ConferenceTournamentData> = useMemo(() => {
-    return bracket?.conf_tournaments ?? {};
-  }, [bracket]);
+  const confTournaments: Record<string, ConferenceTournamentData> =
+    useMemo(() => {
+      return bracket?.conf_tournaments ?? {};
+    }, [bracket]);
 
   const conferenceNames = useMemo(() => {
     return Object.keys(confTournaments).sort();
@@ -410,11 +484,15 @@ export const ConferenceTournamentPage = () => {
 
   // Conference summaries for overview
   const conferenceSummaries = useMemo(() => {
-    return conferenceNames.map((name) => getConferenceSummary(name, confTournaments[name]));
+    return conferenceNames.map((name) =>
+      getConferenceSummary(name, confTournaments[name]),
+    );
   }, [conferenceNames, confTournaments]);
 
   // Selected conference bracket data
-  const selectedConfData = selectedConference ? confTournaments[selectedConference] : null;
+  const selectedConfData = selectedConference
+    ? confTournaments[selectedConference]
+    : null;
   const selectedRoundKeys = useMemo(() => {
     if (!selectedConfData) return [];
     return sortCTRounds(Object.keys(selectedConfData.rounds));
@@ -434,10 +512,18 @@ export const ConferenceTournamentPage = () => {
     const byes: { id: number; abbrev: string; seed: number }[] = [];
     for (const s of r2Series) {
       if (!r1TeamIds.has(s.team_a.id)) {
-        byes.push({ id: s.team_a.id, abbrev: s.team_a.abbrev, seed: s.team_a.seed });
+        byes.push({
+          id: s.team_a.id,
+          abbrev: s.team_a.abbrev,
+          seed: s.team_a.seed,
+        });
       }
       if (!r1TeamIds.has(s.team_b.id)) {
-        byes.push({ id: s.team_b.id, abbrev: s.team_b.abbrev, seed: s.team_b.seed });
+        byes.push({
+          id: s.team_b.id,
+          abbrev: s.team_b.abbrev,
+          seed: s.team_b.seed,
+        });
       }
     }
     return byes;
@@ -477,13 +563,21 @@ export const ConferenceTournamentPage = () => {
 
         {/* CWS Readiness */}
         {hasData && (
-          <CWSReadiness summaries={conferenceSummaries} headerColor={headerColor} />
+          <CWSReadiness
+            summaries={conferenceSummaries}
+            headerColor={headerColor}
+          />
         )}
 
         {/* Overview Dashboard */}
         {hasData && (
-          <Border classes="p-4 mb-2" styles={{ borderTop: `3px solid ${headerColor}` }}>
-            <Text variant="h5" classes="mb-3">All Conferences</Text>
+          <Border
+            classes="p-4 mb-2"
+            styles={{ borderTop: `3px solid ${headerColor}` }}
+          >
+            <Text variant="h5" classes="mb-3">
+              All Conferences
+            </Text>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
               {conferenceSummaries.map((summary) => (
                 <ConferenceOverviewCard
@@ -503,11 +597,16 @@ export const ConferenceTournamentPage = () => {
 
         {/* Conference Bracket View */}
         {selectedConference && selectedConfData ? (
-          <Border classes="p-4" styles={{ borderTop: `3px solid ${headerColor}` }}>
+          <Border
+            classes="p-4"
+            styles={{ borderTop: `3px solid ${headerColor}` }}
+          >
             <div className="flex items-center justify-between mb-4">
               <Text variant="h5">{selectedConference}</Text>
               {(() => {
-                const summary = conferenceSummaries.find((s) => s.name === selectedConference);
+                const summary = conferenceSummaries.find(
+                  (s) => s.name === selectedConference,
+                );
                 if (!summary) return null;
                 if (summary.status === "complete") {
                   return (
@@ -537,7 +636,9 @@ export const ConferenceTournamentPage = () => {
                       seriesList={seriesList}
                       roundKeys={selectedRoundKeys}
                       isRetro={currentUser?.IsRetro}
-                      byeTeams={roundKey === selectedRoundKeys[0] ? byeTeams : undefined}
+                      byeTeams={
+                        roundKey === selectedRoundKeys[0] ? byeTeams : undefined
+                      }
                     />
                   );
                 })}
@@ -545,7 +646,10 @@ export const ConferenceTournamentPage = () => {
             </div>
           </Border>
         ) : (
-          <Border classes="p-4" styles={{ borderTop: `3px solid ${headerColor}` }}>
+          <Border
+            classes="p-4"
+            styles={{ borderTop: `3px solid ${headerColor}` }}
+          >
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Text variant="body" classes="text-gray-500 dark:text-gray-400">

@@ -5,6 +5,7 @@ import { SideMenu } from "../components/SideMenu/SideMenu";
 import { DeepLinkProvider } from "../context/DeepLinkContext";
 import LiveRink from '../components/LiveScoreboard/LiveRink';
 
+
 function AppRoutes() {
   return (
     <Router basename="/simsn-interface-v2">

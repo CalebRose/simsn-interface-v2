@@ -39,7 +39,7 @@ export const ForumCard: React.FC<ForumCardProps> = ({
         <div className="flex items-center gap-2 mb-1">
           <Text variant="h6">{forum.name}</Text>
           {forum.isLocked && (
-            <span className="text-xs bg-yellow-600 text-white px-1 rounded">
+            <span className="text-xs bg-yellow-600 text-white px-1 rounded-sm">
               Locked
             </span>
           )}
@@ -59,7 +59,7 @@ export const ForumCard: React.FC<ForumCardProps> = ({
                   e.stopPropagation();
                   navigate(`${routes.FORUMS}/${forum.slug}/${sf.slug}`);
                 }}
-                className="text-xs bg-gray-700 hover:bg-gray-600 text-blue-300 hover:text-blue-200 px-2 py-0.5 rounded transition-colors"
+                className="text-xs bg-gray-700 hover:bg-gray-600 text-blue-300 hover:text-blue-200 px-2 py-0.5 rounded-sm transition-colors"
               >
                 {sf.name}
               </button>

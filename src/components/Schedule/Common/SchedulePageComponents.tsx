@@ -161,7 +161,7 @@ export const TeamSchedule = ({
                     <Logo
                       variant="xs"
                       classes="w-4 h-4"
-                      containerClass="flex-shrink-0 p-2"
+                      containerClass="shrink-0 p-2"
                       url={game.opponentLogo}
                     />
                     <ClickableTeamLabel
@@ -356,7 +356,7 @@ export const WeeklySchedule = ({
                   <Logo
                     variant="xs"
                     classes="w-4 h-4"
-                    containerClass="flex-shrink-0 p-2"
+                    containerClass="shrink-0 p-2"
                     url={getLogo(league, game.HomeTeamID, currentUser?.IsRetro)}
                   />
                   <ClickableTeamLabel
@@ -373,7 +373,7 @@ export const WeeklySchedule = ({
                   <Logo
                     variant="xs"
                     classes="w-4 h-4"
-                    containerClass="flex-shrink-0 p-2"
+                    containerClass="shrink-0 p-2"
                     url={getLogo(league, game.AwayTeamID, currentUser?.IsRetro)}
                   />
                   <ClickableTeamLabel
@@ -470,9 +470,7 @@ export const TeamStandings = ({
       ) : (
         <div className="grid">
           <div
-            className={`grid grid-cols-${
-              league === SimCHL || league === SimPHL ? "9" : "7"
-            } font-semibold border-b-2 pb-2`}
+            className={`grid ${league === SimCHL || league === SimPHL ? "grid-cols-9" : "grid-cols-7"} font-semibold border-b-2 pb-2`}
             style={{
               borderColor,
             }}
@@ -525,9 +523,7 @@ export const TeamStandings = ({
           {standings.map((standing, index) => (
             <div
               key={index}
-              className={`grid grid-cols-${
-                league === SimCHL || league === SimPHL ? "9" : "7"
-              } border-b border-b-[#34455d] items-center`}
+              className={`grid ${league === SimCHL || league === SimPHL ? "grid-cols-9" : "grid-cols-7"} border-b border-b-[#34455d] items-center`}
               style={{
                 backgroundColor:
                   index % 2 === 0 ? darkerBackgroundColor : backgroundColor,
@@ -542,7 +538,7 @@ export const TeamStandings = ({
                 <Logo
                   variant="xs"
                   classes="w-4 h-4 p-0"
-                  containerClass="flex-shrink-0 p-2"
+                  containerClass="shrink-0 p-2"
                   url={getLogo(league, standing.TeamID, currentUser?.IsRetro)}
                 />
                 <ClickableTeamLabel
@@ -688,9 +684,7 @@ export const LeagueStandings = ({
               >
                 <div className="grid">
                   <div
-                    className={`grid grid-cols-${
-                      league === SimCHL || league === SimPHL ? "9" : "7"
-                    } font-semibold border-b-2 pb-2`}
+                    className={`grid ${league === SimCHL || league === SimPHL ? "grid-cols-9" : "grid-cols-7"} font-semibold border-b-2 pb-2`}
                     style={{
                       borderColor,
                     }}
@@ -743,9 +737,7 @@ export const LeagueStandings = ({
                   {groupStandings.map((standing: any, index: number) => (
                     <div
                       key={index}
-                      className={`grid grid-cols-${
-                        league === SimCHL || league === SimPHL ? "9" : "7"
-                      } border-b border-b-[#34455d] items-center`}
+                      className={`grid ${league === SimCHL || league === SimPHL ? "grid-cols-9" : "grid-cols-7"} border-b border-b-[#34455d] items-center`}
                       style={{
                         backgroundColor:
                           index % 2 === 0
@@ -762,7 +754,7 @@ export const LeagueStandings = ({
                         <Logo
                           variant="xs"
                           classes="w-4 h-4 p-0"
-                          containerClass="flex-shrink-0 p-2"
+                          containerClass="shrink-0 p-2"
                           url={getLogo(
                             league,
                             standing.TeamID,
@@ -880,7 +872,7 @@ export const LeagueStats = ({
             >
               <div
                 className={`flex my-1 items-center justify-center 
-                                    px-3 h-[3rem] min-h-[3rem] md:h-[6rem] w-[6rem] max-w-[5rem] rounded-lg border-2`}
+                                    px-3 h-12 min-h-12 md:h-24 w-24 max-w-20 rounded-lg border-2`}
                 style={{ borderColor: borderColor, backgroundColor: "white" }}
               >
                 <PlayerPicture

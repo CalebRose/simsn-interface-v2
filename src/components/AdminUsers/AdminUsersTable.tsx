@@ -160,7 +160,7 @@ export const AdminUsersTable: FC<AdminUsersTableProps> = ({
         )}
 
         {/* Actions */}
-        <TableCell classes="min-w-[10rem]">
+        <TableCell classes="min-w-40">
           <SelectDropdown
             placeholder="Set Role"
             options={commissionerOptions}

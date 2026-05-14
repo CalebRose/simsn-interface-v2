@@ -257,7 +257,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
 
   // ── Action buttons for pool row (scouting + transaction) ──
   const actionBtn =
-    "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
+    "px-2 py-1.5 sm:px-1.5 sm:py-0.5 rounded-sm text-xs sm:text-[11px] min-h-[36px] sm:min-h-0 font-semibold leading-tight whitespace-nowrap disabled:opacity-30 disabled:cursor-not-allowed transition-colors";
 
   const renderPoolActions = useCallback((p: Player) => {
     const fa = p as FAPlayer;
@@ -434,7 +434,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
                   <select
                     value={filterFAType}
                     onChange={(e) => { setFilterFAType(e.target.value); setPage(1); }}
-                    className="text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
+                    className="text-sm border rounded-sm px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
                   >
                     <option value="all">All</option>
                     <option value="mlb_fa">MLB FA</option>
@@ -450,7 +450,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
                   value={searchInput}
                   onChange={(e) => handleSearchInput(e.target.value)}
                   placeholder="Search player..."
-                  className="text-sm border rounded px-2 py-1 w-full sm:w-48 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-sm border rounded-sm px-2 py-1 w-full sm:w-48 dark:bg-gray-700 dark:border-gray-600"
                 />
                 <Text variant="small" classes="text-gray-500 dark:text-gray-400">
                   {totalPlayers} players

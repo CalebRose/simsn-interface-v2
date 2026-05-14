@@ -792,7 +792,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
 
             {/* Team filter (not for Team tab) */}
             {activeTab !== "Team" && (
-              <div className="w-full sm:w-auto sm:min-w-[14rem]">
+              <div className="w-full sm:w-auto sm:min-w-56">
                 <Text variant="small" classes="font-semibold mb-1">
                   Team
                 </Text>
@@ -812,7 +812,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
 
             {/* Level filter (MLB only) */}
             {!isCollege && levelOptions.length > 0 && (
-              <div className="w-full sm:w-auto sm:min-w-[8rem]">
+              <div className="w-full sm:w-auto sm:min-w-32">
                 <Text variant="small" classes="font-semibold mb-1">
                   Level
                 </Text>
@@ -833,7 +833,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
 
             {/* Qualifying minimum (not for Team tab) */}
             {activeTab !== "Team" && qualifyingOptions.length > 0 && (
-              <div className="w-full sm:w-auto sm:min-w-[9rem]">
+              <div className="w-full sm:w-auto sm:min-w-36">
                 <Text variant="small" classes="font-semibold mb-1">
                   Qualifying
                 </Text>
@@ -961,7 +961,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                   <button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page <= 1}
-                    className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                    className="px-3 py-1 rounded-sm border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
                   >
                     Previous
                   </button>
@@ -971,7 +971,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
                   <button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page >= totalPages}
-                    className="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                    className="px-3 py-1 rounded-sm border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
                   >
                     Next
                   </button>

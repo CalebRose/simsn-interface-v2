@@ -218,7 +218,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
         {attributes.map((attr, idx) => (
           <TableCell
             key={idx}
-            classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+            classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full ${
           category === Attributes && idx === 6
             ? "text-left"
@@ -260,7 +260,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
         <TableCell>{item.FreeAgency}</TableCell>
         <TableCell>{item.MinimumValue.toFixed(2)}</TableCell>
         <TableCell>{item.AAV.toFixed(2)}</TableCell>
-        <TableCell classes="w-[5em] min-[430px]:w-[10em]">
+        <TableCell classes="w-[5em] 430px:w-[10em]">
           <div className="flex flex-row">
             {(!offers || offers.length === 0) && "None"}
             {logos.length > 0 &&
@@ -269,7 +269,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
               ))}
           </div>
         </TableCell>
-        <TableCell classes="w-[5em] min-[430px]:w-[6em] sm:w-[6SSSem]">
+        <TableCell classes="w-[5em] 430px:w-[6em] sm:w-[6SSSem]">
           <Button
             variant={actionVariant}
             size="xs"
@@ -321,7 +321,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
           {attributes.map((attr, idx) => (
             <TableCell
               key={idx}
-              classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+              classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full ${
           category === Attributes && idx === 6
             ? "text-left"
@@ -377,7 +377,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
           </>
         )}
         <TableCell>{item.MinimumValue}</TableCell>
-        <TableCell classes="w-[5em] min-[430px]:w-[10em]">
+        <TableCell classes="w-[5em] 430px:w-[10em]">
           <div className="flex flex-row">
             {!offers || (offers.length === 0 && "None")}
             {logos.length > 0 &&
@@ -386,7 +386,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
               ))}
           </div>
         </TableCell>
-        <TableCell classes="w-[5em] min-[430px]:w-[6em] sm:w-[6SSSem]">
+        <TableCell classes="w-[5em] 430px:w-[6em] sm:w-[6SSSem]">
           <Button
             variant={actionVariant}
             size="xs"
@@ -433,7 +433,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
             return (
               <TableCell
                 key={idx}
-                classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+                classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full ${
           category === Attributes && idx === 6
             ? "text-left"
@@ -463,7 +463,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
           })}
         </>
         <TableCell>{item.MinimumValue}</TableCell>
-        <TableCell classes="w-[5em] min-[430px]:w-[10em]">
+        <TableCell classes="w-[5em] 430px:w-[10em]">
           <div className="flex flex-row">
             {!offers || offers === undefined || (offers.length === 0 && "None")}
             {logos.length > 0 &&
@@ -472,7 +472,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
               ))}
           </div>
         </TableCell>
-        <TableCell classes="w-[5em] min-[430px]:w-[6em] sm:w-[6SSSem]">
+        <TableCell classes="w-[5em] 430px:w-[6em] sm:w-[6SSSem]">
           <Button
             variant={actionVariant}
             size="xs"

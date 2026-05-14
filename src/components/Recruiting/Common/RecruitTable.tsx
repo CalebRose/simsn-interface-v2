@@ -46,6 +46,7 @@ import {
   ValidateAffinity,
   ValidateCloseToHome,
 } from "../../../_helper/recruitingHelper";
+import { CFBRecruitingPrefLabel } from "./RecruitingPrefColumn";
 
 const getRecruitingColumns = (
   league: League,
@@ -59,19 +60,41 @@ const getRecruitingColumns = (
       { header: "Pos", accessor: "Position" },
       { header: "Arch.", accessor: "Archetype" },
       { header: "⭐", accessor: "Stars" },
-      { header: "Ht", accessor: "Height" },
-      { header: "Wt", accessor: "Weight" },
-      { header: "City", accessor: "City" },
-      { header: "HS", accessor: "HighSchool" },
-      { header: "State", accessor: "State" },
-      { header: "Ovr", accessor: "OverallGrade" },
-      { header: "Pot", accessor: "PotentialGrade" },
-      { header: "AF1", accessor: "AffinityOne" },
-      { header: "AF2", accessor: "AffinityTwo" },
-      { header: "Status", accessor: "RecruitingStatus" },
-      { header: "Leaders", accessor: "lead" },
-      { header: "Actions", accessor: "actions" },
     ];
+
+    if (!isMobile && category === Attributes) {
+      columns = columns.concat([
+        { header: "Ht", accessor: "Height" },
+        { header: "Wt", accessor: "Weight" },
+        { header: "City", accessor: "City" },
+        { header: "HS", accessor: "HighSchool" },
+        { header: "State", accessor: "State" },
+        { header: "Ovr", accessor: "OverallGrade" },
+        { header: "Pot", accessor: "PotentialGrade" },
+      ]);
+    } else if (!isMobile && category === Preferences) {
+      columns = columns.concat([
+        { header: "Prog.", accessor: "ProgramPref" },
+        { header: "Prof. Dev.", accessor: "ProfDevPref" },
+        { header: "Trad.", accessor: "TraditionsPref" },
+        { header: "Fac.", accessor: "FacilitiesPref" },
+        { header: "Atm.", accessor: "AtmospherePref" },
+        { header: "Aca.", accessor: "AcademicsPref" },
+        { header: "Cam.", accessor: "CampusLifePref" },
+        { header: "Conf.", accessor: "ConferencePref" },
+        { header: "Coach", accessor: "CoachPref" },
+        { header: "Season", accessor: "SeasonMomentumPref" },
+        { header: "Media", accessor: "MediaSpotlightPref" },
+        { header: "Rel.", accessor: "ReligionPref" },
+        { header: "Serv.", accessor: "ServiceAcademyPref" },
+        { header: "ST.", accessor: "SmallTownPref" },
+        { header: "BC.", accessor: "BigCityPref" },
+      ]);
+    }
+    columns.push({ header: "Close To Home", accessor: "CloseToHome" });
+    columns.push({ header: "Status", accessor: "RecruitingStatus" });
+    columns.push({ header: "Leaders", accessor: "lead" });
+    columns.push({ header: "Actions", accessor: "actions" });
 
     return columns;
   }
@@ -422,18 +445,8 @@ const CFBRow: React.FC<CFBRowProps> = ({
     }
   }, [item, isCrootGoodFit, isCrootBadFit]);
 
-  const affinityOneValid = useMemo(() => {
-    if (item.AffinityOne === CloseToHome) {
-      return ValidateCloseToHome(item, teamProfile.TeamAbbreviation);
-    }
-    return ValidateAffinity(item.AffinityOne, teamProfile);
-  }, [item, teamProfile]);
-
-  const affinityTwoValid = useMemo(() => {
-    if (item.AffinityTwo === CloseToHome) {
-      return ValidateCloseToHome(item, teamProfile.TeamAbbreviation);
-    }
-    return ValidateAffinity(item.AffinityTwo, teamProfile);
+  const isCloseToHome = useMemo(() => {
+    return ValidateCloseToHome(item, teamProfile.TeamAbbreviation);
   }, [item, teamProfile]);
 
   return (
@@ -457,23 +470,27 @@ const CFBRow: React.FC<CFBRowProps> = ({
             >
               {attr.value}
             </span>
-          ) : attr.label === "AF1" ? (
-            <span
-              className={`text-xs ${affinityOneValid ? "text-blue-400" : ""}`}
-            >
-              {attr.value}
-            </span>
-          ) : attr.label === "AF2" ? (
-            <span
-              className={`text-xs ${affinityTwoValid ? "text-blue-400" : ""}`}
-            >
-              {attr.value}
-            </span>
+          ) : attr.label.includes("Pref") ? (
+            <CFBRecruitingPrefLabel
+              label={attr.label}
+              value={attr.value}
+              crootValue={attr.value}
+              teamProfile={teamProfile}
+            />
           ) : (
             <span className="text-xs">{attr.value}</span>
           )}
         </TableCell>
       ))}
+      <TableCell classes="text-xs">
+        <div className="justify-center items-center flex">
+          {isCloseToHome ? (
+            <CheckCircle textColorClass="text-green-500" />
+          ) : (
+            <CrossCircle textColorClass="text-red-500" />
+          )}
+        </div>
+      </TableCell>
       <TableCell classes="text-xs">
         {item.RecruitingStatus === "" ? "None" : item.RecruitingStatus}
       </TableCell>

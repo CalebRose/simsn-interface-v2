@@ -1167,7 +1167,7 @@ export const HCKAIGameplanModal: FC<HCKAIGameplanModalProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title={title}
-        maxWidth="max-w-[50rem]"
+        maxWidth="max-w-200"
         actions={
           <>
             <ButtonGroup>

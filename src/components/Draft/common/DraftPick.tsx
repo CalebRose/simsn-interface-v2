@@ -3,6 +3,7 @@ import {
   DrafteeInfoType,
   League,
   ModalAction,
+  SimNBA,
   SimPHL,
 } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
@@ -36,7 +37,7 @@ export const WarRoomDraftPick: React.FC<WarRoomDraftPickProps> = ({
       style={{ contain: "layout style" }}
     >
       <div className={`flex items-center space-x-4 gap-2`}>
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <div
             className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-gray-700 text-gray-300`}
           >
@@ -116,11 +117,11 @@ export const DraftPickCard: React.FC<{
   const getStatusStyles = (status: string) => {
     switch (status) {
       case "current":
-        return "bg-gradient-to-r from-[#1f2937] to-blue-900 border-blue-400 shadow-lg shadow-blue-500/25";
+        return "bg-linear-to-r from-[#1f2937] to-blue-900 border-blue-400 shadow-lg shadow-blue-500/25";
       case "user":
-        return "bg-gradient-to-r from-[#189E5B] to-green-900 border-green-400";
+        return "bg-linear-to-r from-[#189E5B] to-green-900 border-green-400";
       case "next":
-        return "bg-gradient-to-r from-gray-700 to-gray-900 border-gray-500";
+        return "bg-linear-to-r from-gray-700 to-gray-900 border-gray-500";
       default:
         return "bg-gray-800 border-gray-600 opacity-75";
     }
@@ -167,8 +168,14 @@ export const DraftPickCard: React.FC<{
 
   const draftNumber = useMemo(() => {
     if (view === "") return pick.DraftNumber;
-    return (pick.DraftRound - 1) * 24 + pick.DraftNumber;
-  }, [view, pick]);
+    if (league === SimPHL) {
+      return (pick.DraftRound - 1) * 24 + pick.DraftNumber;
+    }
+    if (league === SimNBA) {
+      return (pick.DraftRound - 1) * 32 + pick.DraftNumber;
+    }
+    return pick.OverallPickNumber;
+  }, [view, pick, league]);
 
   return (
     <div
@@ -185,7 +192,7 @@ export const DraftPickCard: React.FC<{
       onClick={() => viewPlayer(draftee!!)}
     >
       {statusLabel && (
-        <div className="absolute -top-3 left-3 px-2 py-0.5 bg-gray-900 rounded z-10">
+        <div className="absolute -top-3 left-3 px-2 py-0.5 bg-gray-900 rounded-sm z-10">
           <Text variant="small" classes={`font-bold ${statusLabel.color}`}>
             {statusLabel.text}
           </Text>
@@ -194,7 +201,7 @@ export const DraftPickCard: React.FC<{
       <div
         className={`flex items-center space-x-4 gap-2 ${status === "current" ? "pt-1" : ""}`}
       >
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <div
             className={`
             w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm

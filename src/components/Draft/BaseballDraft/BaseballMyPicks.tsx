@@ -60,14 +60,14 @@ const BaseballMyPicks: React.FC<BaseballMyPicksProps> = ({
         <h2 className="text-xl font-bold">My Picks — {userOrgAbbrev}</h2>
         <button
           onClick={onRefresh}
-          className="rounded bg-gray-700 px-3 py-1.5 text-sm hover:bg-gray-600"
+          className="rounded-sm bg-gray-700 px-3 py-1.5 text-sm hover:bg-gray-600"
         >
           Refresh
         </button>
       </div>
 
       {error && (
-        <div className="rounded bg-red-900/50 px-4 py-2 text-sm text-red-300">{error}</div>
+        <div className="rounded-sm bg-red-900/50 px-4 py-2 text-sm text-red-300">{error}</div>
       )}
 
       {/* Picks with players */}
@@ -95,7 +95,7 @@ const BaseballMyPicks: React.FC<BaseballMyPicksProps> = ({
                 <td className="px-3 py-2 font-medium">{p.player_name}</td>
                 <td className="px-3 py-2">
                   {p.is_auto_pick && (
-                    <span className="rounded bg-orange-600/30 text-orange-400 px-1.5 py-0.5 text-xs">
+                    <span className="rounded-sm bg-orange-600/30 text-orange-400 px-1.5 py-0.5 text-xs">
                       Auto
                     </span>
                   )}
@@ -119,14 +119,14 @@ const BaseballMyPicks: React.FC<BaseballMyPicksProps> = ({
                         <button
                           onClick={() => runAction(p.pick_id, () => onSignPick(p.pick_id))}
                           disabled={actionLoading === p.pick_id}
-                          className="rounded bg-green-600 px-3 py-1 text-xs font-medium hover:bg-green-500 disabled:opacity-50"
+                          className="rounded-sm bg-green-600 px-3 py-1 text-xs font-medium hover:bg-green-500 disabled:opacity-50"
                         >
                           {actionLoading === p.pick_id ? "..." : "Sign"}
                         </button>
                         <button
                           onClick={() => runAction(p.pick_id, () => onPassPick(p.pick_id))}
                           disabled={actionLoading === p.pick_id}
-                          className="rounded bg-gray-600 px-3 py-1 text-xs font-medium hover:bg-gray-500 disabled:opacity-50"
+                          className="rounded-sm bg-gray-600 px-3 py-1 text-xs font-medium hover:bg-gray-500 disabled:opacity-50"
                         >
                           Pass
                         </button>
@@ -168,7 +168,7 @@ const BaseballMyPicks: React.FC<BaseballMyPicksProps> = ({
               return (
                 <div
                   key={p.pick_id}
-                  className="rounded border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs text-gray-300"
+                  className="rounded-sm border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs text-gray-300"
                 >
                   Rd {p.round}, Pick {p.pick_in_round}
                   {isTraded && (

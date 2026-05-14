@@ -65,6 +65,10 @@ import {
   NFLTeamProposals,
   AwardsList,
   TransferPortalProfile,
+  CFBGameRequest,
+  NFLGameRequest,
+  Stadium,
+  NFLUDFABoard,
 } from "../models/footballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { fba_ws } from "../_constants/urls";
@@ -172,6 +176,9 @@ interface SimFBAContextProps {
   currentSeasonDraftPicks: NFLDraftPick[];
   nflDraftPickMap: Record<number, NFLDraftPick[]>;
   individualDraftPickMap: Record<number, NFLDraftPick>;
+  stadiums: Stadium[];
+  cfbGameRequests: CFBGameRequest[];
+  nflGameRequests: NFLGameRequest[];
   removeUserfromCFBTeamCall: (teamID: number) => Promise<void>;
   removeUserfromNFLTeamCall: (request: NFLRequest) => Promise<void>;
   addUserToCFBTeam: (teamID: number, user: string) => void;
@@ -299,6 +306,11 @@ interface SimFBAContextProps {
   setNFLDraftPicks: (draftPicks: any[]) => void;
   exportNFLDraftees: () => Promise<void>;
   exportNFLFreeAgents: () => Promise<void>;
+  nflUDFABoard: NFLUDFABoard | null;
+  getUDFABoard: (teamID: number) => Promise<void>;
+  addPlayerToUDFABoard: (player: any) => Promise<void>;
+  saveUDFABoard: (board: any) => Promise<void>;
+  removePlayerFromUDFABoard: (profileID: number) => Promise<void>;
 }
 
 // ✅ Initial Context State
@@ -371,6 +383,9 @@ const defaultContext: SimFBAContextProps = {
   currentSeasonDraftPicks: [],
   nflDraftPickMap: {},
   individualDraftPickMap: {},
+  stadiums: [],
+  cfbGameRequests: [],
+  nflGameRequests: [],
   tradePreferencesMap: {},
   tradeProposalsMap: {},
   cfbPostSeasonAwards: {} as AwardsList,
@@ -463,6 +478,11 @@ const defaultContext: SimFBAContextProps = {
   setNFLDraftPicks: () => {},
   exportNFLDraftees: async () => {},
   exportNFLFreeAgents: async () => {},
+  nflUDFABoard: null,
+  getUDFABoard: async () => {},
+  addPlayerToUDFABoard: async () => {},
+  saveUDFABoard: async () => {},
+  removePlayerFromUDFABoard: async () => {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -625,6 +645,45 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [freeAgents, setFreeAgents] = useState<NFLPlayer[]>([]);
   const [waiverPlayers, setWaiverPlayers] = useState<NFLPlayer[]>([]);
   const [nflDraftees, setNFLDraftees] = useState<NFLDraftee[]>([]);
+  const [nflUDFABoard, setNflUDFABoard] = useState<NFLUDFABoard | null>(null);
+
+const getUDFABoard = async (teamID: number) => {
+    try {
+        const res = await DraftService.GetUDFABoard(teamID);
+        setNflUDFABoard(new NFLUDFABoard(res));
+    } catch (e) {
+        console.error("Could not fetch UDFA Board", e);
+        // Fallback: Set an empty board so the loading spinner stops!
+        setNflUDFABoard(new NFLUDFABoard({ TeamID: teamID, Profiles: [] }));
+    }
+  };
+
+  const addPlayerToUDFABoard = async (player: any) => {
+    if (!nflTeam) return;
+    const dto = {
+      PlayerID: player.ID,
+      PlayerName: `${player.FirstName} ${player.LastName}`,
+      Position: player.Position,
+      TeamID: nflTeam.ID,
+      TeamAbbr: nflTeam.TeamAbbr,
+      Points: 1
+    };
+    await DraftService.AddPlayerToUDFABoard(dto);
+    await getUDFABoard(nflTeam.ID);
+    enqueueSnackbar("Added to UDFA Board", { variant: "success" });
+  };
+
+  const saveUDFABoard = async (board: any) => {
+    await DraftService.SaveUDFABoard(board);
+    setNflUDFABoard(board);
+    enqueueSnackbar("Bids Saved", { variant: "success" });
+  };
+
+  const removePlayerFromUDFABoard = async (profileID: number) => {
+    await DraftService.RemovePlayerFromUDFABoard(profileID);
+    if (nflTeam) await getUDFABoard(nflTeam.ID);
+    enqueueSnackbar("Removed from Board", { variant: "info" });
+  };
   const [collegePolls, setCollegePolls] = useState<CollegePollOfficial[]>([]);
   const [collegePollSubmission, setCollegePollSubmission] =
     useState<CollegePollSubmission>({} as CollegePollSubmission);
@@ -648,6 +707,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [transferPortalProfiles, setTransferPortalProfiles] = useState<
     TransferPortalProfile[]
   >([]);
+  const [stadiums, setStadiums] = useState<Stadium[]>([]);
+  const [cfbGameRequests, setCFBGameRequests] = useState<CFBGameRequest[]>([]);
+  const [nflGameRequests, setNFLGameRequests] = useState<NFLGameRequest[]>([]);
 
   // Loading states for double-click prevention
   const [recruitingLoading, setRecruitingLoading] = useState<boolean>(false);
@@ -823,16 +885,17 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setNFLTeams(res.AllProTeams);
 
     if (res.AllCollegeTeams.length > 0) {
-      const sortedCollegeTeams = res.AllCollegeTeams.sort((a, b) =>
-        a.TeamName.localeCompare(b.TeamName),
+      const sortedCollegeTeams = res.AllCollegeTeams.sort(
+        (a: CollegeTeam, b: CollegeTeam) =>
+          a.TeamName.localeCompare(b.TeamName),
       );
-      const teamOptionsList = sortedCollegeTeams.map((team) => ({
+      const teamOptionsList = sortedCollegeTeams.map((team: CollegeTeam) => ({
         label: `${team.TeamName} | ${team.TeamAbbr}`,
         value: team.ID.toString(),
       }));
       const conferenceOptions = Array.from(
         new Map(
-          sortedCollegeTeams.map((team) => [
+          sortedCollegeTeams.map((team: CollegeTeam) => [
             team.ConferenceID,
             { label: team.Conference, value: team.ConferenceID.toString() },
           ]),
@@ -1079,9 +1142,14 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         seasonId,
       );
       setCollegePolls(res.OfficialPolls);
-      setCollegePollSubmission(res.CollegePollSubmission);
+      setCollegePollSubmission(res.PollSubmission);
       setHistoricCollegePlayers(res.HistoricCollegePlayers);
       setNFLRetiredPlayers(res.RetiredPlayers);
+      setStadiums(res.Stadiums || []);
+      setCFBGameRequests(res.CFBGameRequests || []);
+      setNFLGameRequests(res.NFLGameRequests || []);
+      setCollegeGameplanMap(res.CollegeGameplanMap);
+      setNFLGameplanMap(res.NFLGameplanMap);
     } finally {
       isScheduleDataFetching.current = false;
     }
@@ -1549,6 +1617,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         const newProfile = new RecruitPlayerProfile({
           ...profile,
           ID: GenerateNumberFromRange(500000, 1000000),
+          PreferenceModifier: profile.PreferenceModifier || 1,
         });
         setRecruitProfiles((profiles) => [...profiles, newProfile]);
       }
@@ -2594,7 +2663,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       });
 
       try {
-        await DraftService.RemoveNFLPlayerFromBoard(id);
+        await DraftService.RemovePlayerFromBoard(id);
       } catch (error) {
         console.error("Failed to remove player from scouting board:", error);
         if (teamID && removedProfile) {
@@ -2752,6 +2821,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         individualDraftPickMap,
         currentSeasonDraftPicks,
         nflDraftPickMap,
+        stadiums,
+        cfbGameRequests,
+        nflGameRequests,
         tradeProposalsMap,
         tradePreferencesMap,
         submitCollegePoll,
@@ -2851,6 +2923,11 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         setNFLDraftPicks,
         exportNFLDraftees,
         exportNFLFreeAgents,
+        nflUDFABoard,
+        getUDFABoard,
+        addPlayerToUDFABoard,
+        saveUDFABoard,
+        removePlayerFromUDFABoard,
       }}
     >
       {children}

@@ -42,7 +42,7 @@ function isFeaturedCard(index: number): boolean {
 const SkeletonCard: React.FC<{ index: number }> = ({ index }) => (
   <ForumBorder
     classes={`relative min-w-0 overflow-hidden p-0 mb-0 ${
-      isFeaturedCard(index) ? "min-h-[26rem] lg:row-span-2" : "min-h-[12.75rem]"
+      isFeaturedCard(index) ? "min-h-104 lg:row-span-2" : "min-h-51"
     }`}
   >
     <div className="relative flex h-full flex-col justify-end gap-3 p-5 lg:p-6 animate-pulse">
@@ -64,7 +64,7 @@ const EditorialCard: React.FC<{
   return (
     <ForumBorder
       classes={`group relative min-w-0 overflow-hidden p-0 mb-0 ${
-        featured ? "min-h-[26rem] lg:row-span-2" : "min-h-[12.75rem]"
+        featured ? "min-h-104 lg:row-span-2" : "min-h-51"
       }`}
     >
       {item.heroImageUrl && (
@@ -83,8 +83,8 @@ const EditorialCard: React.FC<{
       <button
         type="button"
         onClick={() => navigate(`${routes.FORUM_THREAD}/${item.thread.id}`)}
-        className={`relative flex w-full appearance-none cursor-pointer flex-col justify-between overflow-hidden border-0 bg-transparent p-0 text-left focus:outline-none hover:bg-transparent hover:border-transparent lg:h-full ${
-          featured ? "min-h-[26rem] lg:min-h-0" : "min-h-[12.75rem] lg:min-h-0"
+        className={`relative flex w-full appearance-none cursor-pointer flex-col justify-between overflow-hidden border-0 bg-transparent p-0 text-left focus:outline-hidden hover:bg-transparent hover:border-transparent lg:h-full ${
+          featured ? "min-h-104 lg:min-h-0" : "min-h-51 lg:min-h-0"
         }`}
       >
         <div className="relative flex items-start justify-between gap-3 p-5 pb-0 lg:p-6 lg:pb-0">
@@ -178,7 +178,7 @@ export const ForumEditorialSection: React.FC<ForumEditorialSectionProps> = ({
                       prev === 0 ? visibleItems.length - 1 : prev - 1,
                     )
                   }
-                  className="rounded-md border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-3 py-1.5 text-sm text-white/80 transition-opacity hover:opacity-90"
+                  className="rounded-md border border-(--border-secondary) bg-(--bg-secondary) px-3 py-1.5 text-sm text-white/80 transition-opacity hover:opacity-90"
                 >
                   Prev
                 </button>
@@ -202,7 +202,7 @@ export const ForumEditorialSection: React.FC<ForumEditorialSectionProps> = ({
                   onClick={() =>
                     setMobileIndex((prev) => (prev + 1) % visibleItems.length)
                   }
-                  className="rounded-md border border-[var(--border-secondary)] bg-[var(--bg-secondary)] px-3 py-1.5 text-sm text-white/80 transition-opacity hover:opacity-90"
+                  className="rounded-md border border-(--border-secondary) bg-(--bg-secondary) px-3 py-1.5 text-sm text-white/80 transition-opacity hover:opacity-90"
                 >
                   Next
                 </button>

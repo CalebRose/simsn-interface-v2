@@ -112,7 +112,7 @@ export const BaseballBoxScoreModal = ({
       onClose={onClose}
       title={title}
       maxWidth="max-w-5xl"
-      classes="max-h-[85vh] overflow-y-auto mx-2 sm:mx-auto !p-3 sm:!p-6"
+      classes="max-h-[85vh] overflow-y-auto mx-2 sm:mx-auto p-3! sm:p-6!"
     >
       {isLoading && (
         <div className="flex items-center justify-center py-12">
@@ -345,9 +345,9 @@ const LinescoreTable = ({
       <table className="border-collapse text-sm">
         <thead>
           <tr className="border-b-2 border-gray-300 dark:border-gray-500">
-            <th className="px-3 py-1 text-left min-w-[5rem]"></th>
+            <th className="px-3 py-1 text-left min-w-20"></th>
             {innings.map((i) => (
-              <th key={i} className="px-2 py-1 text-center min-w-[2rem]">
+              <th key={i} className="px-2 py-1 text-center min-w-8">
                 {i + 1}
               </th>
             ))}
@@ -455,7 +455,7 @@ const BattingLineTable = ({
             {hasBattingOrder && (
               <th className="px-1 py-1 text-center w-6">#</th>
             )}
-            <th className="px-1.5 sm:px-2 py-1 text-left min-w-[8rem]">
+            <th className="px-1.5 sm:px-2 py-1 text-left min-w-32">
               Player
             </th>
             <th className="px-1 py-1 text-center">Pos</th>
@@ -647,7 +647,7 @@ const PitchingLineTable = ({
         <thead>
           <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
             <th className="px-1 py-1 text-center w-8"></th>
-            <th className="px-1.5 sm:px-2 py-1 text-left min-w-[8rem]">
+            <th className="px-1.5 sm:px-2 py-1 text-left min-w-32">
               Pitcher
             </th>
             <th className="px-1 py-1 text-center">Dec</th>
@@ -701,7 +701,7 @@ const PitchingLineTable = ({
                       line.name
                     )}
                     {isQS && (
-                      <span className="text-[9px] font-bold px-1 py-px rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                      <span className="text-[9px] font-bold px-1 py-px rounded-sm bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
                         QS
                       </span>
                     )}
@@ -822,26 +822,26 @@ const SubstitutionsList = ({
     switch (sub.type) {
       case "emergency_pitcher":
         return (
-          <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+          <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
             EMERGENCY
           </span>
         );
       case "pinch_hit":
         return (
-          <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+          <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
             PH
           </span>
         );
       case "defensive_sub":
         return (
-          <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+          <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
             DEF
           </span>
         );
       default: {
         if (sub.entry_is_save_situation) {
           return (
-            <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300">
+            <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300">
               SAVE SIT
             </span>
           );
@@ -870,7 +870,7 @@ const SubstitutionsList = ({
         return (
           <div
             key={idx}
-            className="flex flex-col gap-0.5 text-xs py-1 px-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800/50"
+            className="flex flex-col gap-0.5 text-xs py-1 px-2 rounded-sm hover:bg-gray-50 dark:hover:bg-gray-800/50"
           >
             <div className="flex items-center gap-2">
               <span className="font-mono font-semibold text-gray-500 dark:text-gray-400 w-8 shrink-0">
@@ -892,7 +892,7 @@ const SubstitutionsList = ({
               {getTypeBadge(sub)}
             </div>
             {entryContext && (
-              <div className="ml-[2.5rem] text-[10px] text-gray-500 dark:text-gray-400 italic">
+              <div className="ml-10 text-[10px] text-gray-500 dark:text-gray-400 italic">
                 {entryContext}
               </div>
             )}
@@ -1033,7 +1033,7 @@ const PlayByPlayTab = ({
         return (
           <div
             key={group.label}
-            className="rounded border border-gray-200 dark:border-gray-700 overflow-hidden"
+            className="rounded-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
           >
             {/* Inning header */}
             <button

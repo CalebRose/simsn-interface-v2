@@ -657,16 +657,36 @@ export const getCFBCrootAttributes = (
     { label: "Pos", value: player.Position },
     { label: "Arch", value: player.Archetype },
     { label: "Stars", value: player.Stars },
-    { label: "Ht", value: `${heightObj.feet}' ${heightObj.inches}"` },
-    { label: "Wt (lbs)", value: player.Weight },
-    { label: "City", value: player.City },
-    { label: "HS", value: player.HighSchool },
-    { label: "St", value: annotateRegion(player.State) },
-    { label: "Ovr", value: player.OverallGrade },
-    { label: "Pot", value: player.PotentialGrade },
-    { label: "AF1", value: player.AffinityOne },
-    { label: "AF2", value: player.AffinityTwo },
   ];
+  if (!isMobile && category === Attributes) {
+    list = list.concat([
+      { label: "Ht", value: `${heightObj.feet}' ${heightObj.inches}"` },
+      { label: "Wt (lbs)", value: player.Weight },
+      { label: "City", value: player.City },
+      { label: "HS", value: player.HighSchool },
+      { label: "St", value: annotateRegion(player.State) },
+      { label: "Ovr", value: player.OverallGrade },
+      { label: "Pot", value: player.PotentialGrade },
+    ]);
+  } else if (!isMobile && category === Preferences) {
+    list = list.concat([
+      { label: "ProgramPref", value: player.ProgramPref },
+      { label: "ProfDevPref", value: player.ProfDevPref },
+      { label: "TraditionsPref", value: player.TraditionsPref },
+      { label: "FacilitiesPref", value: player.FacilitiesPref },
+      { label: "AtmospherePref", value: player.AtmospherePref },
+      { label: "AcademicsPref", value: player.AcademicsPref },
+      { label: "CampusLifePref", value: player.CampusLifePref },
+      { label: "ConferencePref", value: player.ConferencePref },
+      { label: "CoachPref", value: player.CoachPref },
+      { label: "SeasonMomentumPref", value: player.SeasonMomentumPref },
+      { label: "MediaSpotlightPref", value: player.MediaSpotlightPref },
+      { label: "ReligionPref", value: player.ReligionPref },
+      { label: "ServiceAcademyPref", value: player.ServiceAcademyPref },
+      { label: "SmallTownPref", value: player.SmallTownPref },
+      { label: "BigCityPref", value: player.BigCityPref },
+    ]);
+  }
   return list;
 };
 

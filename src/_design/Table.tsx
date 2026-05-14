@@ -131,6 +131,14 @@ export const Table = <T,>({
         if (a.Contract[key] < b.Contract[key]) return order === "asc" ? 1 : -1;
       }
 
+      if ((league?.includes("SimC") || league === undefined) && key === "Experience") { // College league player year, league is undefined on simcfb for some reason
+        if (a["Year"] > b["Year"]) return order === "asc" ? 1 : -1;
+        if (a["Year"] < b["Year"]) return order === "asc" ? -1 : 1;
+        if (!a["IsRedshirt"] && b["IsRedshirt"]) return order === "asc" ? 1 : -1;
+        if (a["IsRedshirt"] && !b["IsRedshirt"]) return order === "asc" ? -1 : 1;
+        return 0;
+      }
+
       if (key.includes("Grade")) {
         // Clean and normalize the grade values
         let aGrade = (a[key] ?? "").toString().trim();

@@ -160,7 +160,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         resultsOverride,
       ).sort((a, b) => {
         if (a.Week !== b.Week) {
-          return a.Week < b.Week;
+          return a.Week - b.Week;
         }
         if (a.GameDay && b.GameDay) {
           return a.GameDay.localeCompare(b.GameDay);
@@ -169,7 +169,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
           return a.LeagueID - b.LeagueID;
         }
 
-        return true;
+        return 0;
       }),
     [teamSchedule, selectedTeam, ts, league, resultsOverride],
   );
@@ -237,7 +237,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
                   onClick={submitPollModal.handleOpenModal}
                 >
                   <Text variant="small">Submit Poll</Text>
@@ -245,10 +245,10 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
                   onClick={collegePollModal.handleOpenModal}
                 >
-                  <Text variant="small">College Poll</Text>
+                  <Text variant="small">Official Poll</Text>
                 </Button>
               </ButtonGroup>
             </div>

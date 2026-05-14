@@ -92,7 +92,7 @@ export const CHLRecruiting = () => {
   const teamColors = useTeamColors(
     chlTeam?.ColorOne,
     chlTeam?.ColorTwo,
-    chlTeam?.ColorThree
+    chlTeam?.ColorThree,
   );
   const { isMobile } = useResponsive();
   const helpModal = useModal();
@@ -360,7 +360,7 @@ export const CHLRecruiting = () => {
               </Border>
               <Border
                 direction="col"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
+                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[70vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,

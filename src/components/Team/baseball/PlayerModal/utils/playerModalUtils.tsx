@@ -62,7 +62,7 @@ export const faPhaseBadge = (phase: AuctionPhase) => {
   const color = PHASE_COLORS[phase] ?? "gray";
   return (
     <span
-      className={`px-2 py-0.5 rounded text-xs font-semibold capitalize ${FA_PHASE_COLOR_MAP[color]}`}
+      className={`px-2 py-0.5 rounded-sm text-xs font-semibold capitalize ${FA_PHASE_COLOR_MAP[color]}`}
     >
       {phase}
     </span>
@@ -88,7 +88,7 @@ export const ifaPhaseBadge = (phase: IFAAuctionPhase) => {
   const color = IFA_PHASE_COLORS[phase] ?? "gray";
   return (
     <span
-      className={`px-2 py-0.5 rounded text-[10px] font-semibold capitalize ${IFA_PHASE_CLASS_MAP[color]}`}
+      className={`px-2 py-0.5 rounded-sm text-[10px] font-semibold capitalize ${IFA_PHASE_CLASS_MAP[color]}`}
     >
       {phase}
     </span>

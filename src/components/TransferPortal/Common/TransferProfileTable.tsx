@@ -470,7 +470,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <div className="w-[1rem]">
+        <div className="w-4">
           <Input
             type="number"
             key={profile.ID}
@@ -747,7 +747,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <div className="w-[1rem]">
+        <div className="w-4">
           <Input
             type="number"
             key={profile.ID}
@@ -1011,10 +1011,10 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
       )}
       <TableCell>
         <div className="flex flex-row gap-x-2 text-xs">
-          {player.TeamID > 0 && player.TeamID < 75 ? (
+          {player.TeamID > 0 ? (
             <div key={player.TeamID}>
               <Logo
-                url={getLogo(SimCBB, player.TeamID, false)}
+                url={getLogo(SimCFB, player.TeamID, false)}
                 variant="small"
               />
             </div>
@@ -1024,7 +1024,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <div className="w-[1rem]">
+        <div className="w-4">
           <Input
             type="number"
             key={profile.ID}

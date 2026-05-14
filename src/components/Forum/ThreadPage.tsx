@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
@@ -7,12 +7,14 @@ import { ForumBorder } from "../../_design/Borders";
 import { ForumBreadcrumbs } from "./components/ForumBreadcrumbs";
 import { PostList } from "./components/PostList";
 import { ForumEditor } from "./components/ForumEditor";
+import type { ForumEditorHandle } from "./components/ForumEditor";
 import { PollBlock } from "./components/PollBlock";
 import { GameReferenceCard } from "./components/GameReferenceCard";
 import { ModerationControls } from "./components/ModerationControls";
 import { useThread } from "../../_hooks/useForumHooks";
 import { useForumStore } from "../../context/ForumContext";
 import { useAuthStore } from "../../context/AuthContext";
+import { useForumDraft } from "../../_hooks/useForumDraft";
 import { ForumService } from "../../_services/forumService";
 import {
   Post,
@@ -22,7 +24,7 @@ import {
   CreatePostDTO,
 } from "../../models/forumModels";
 import { plaintextToDoc } from "./components/ForumEditor";
-import { parseForumBody } from "./forumUtils";
+import { parseForumBody, analyzeContentQuality } from "./forumUtils";
 import routes from "../../_constants/routes";
 import { MEDIA_TAG_MAP, MediaTag } from "../../_constants/mediaTags";
 import { ThreadSEOMeta } from "./components/ThreadSEOMeta";
@@ -106,10 +108,32 @@ export const ThreadPage: React.FC = () => {
   const [league, setLeague] = useState<any>("");
   const gameModal = useModal();
 
+  // Record a view once per page visit when the thread has loaded
+  useEffect(() => {
+    if (!threadId) return;
+    ForumService.RecordThreadView(threadId).catch(() => {
+      /* non-critical */
+    });
+  }, [threadId]);
+
   const [replyingTo, setReplyingTo] = useState<Post | null>(null);
   const [quotingPost, setQuotingPost] = useState<Post | null>(null);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // ── Draft persistence ──────────────────────────────────────────────────────
+  const replyDraftKey = currentUser
+    ? `forum_draft_reply_${threadId}_${currentUser.id}`
+    : null;
+  const {
+    draft: replyDraft,
+    saveDraft: saveReplyDraft,
+    clearDraft: clearReplyDraft,
+    hasDraft: hasReplyDraft,
+  } = useForumDraft<RichTextDocument>(replyDraftKey);
+  const replyEditorRef = useRef<ForumEditorHandle>(null);
+  const [draftBannerDismissed, setDraftBannerDismissed] = useState(false);
+  const showDraftBanner = hasReplyDraft && !draftBannerDismissed;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
     null,
   );
@@ -118,6 +142,8 @@ export const ThreadPage: React.FC = () => {
   const [moveTargetForumId, setMoveTargetForumId] = useState("");
   const [moveReason, setMoveReason] = useState("");
   const [isMoving, setIsMoving] = useState(false);
+  const [isAwardingPoint, setIsAwardingPoint] = useState(false);
+  const [pointAwardedLocally, setPointAwardedLocally] = useState(false);
 
   // Load game reference if applicable
   useEffect(() => {
@@ -202,6 +228,8 @@ export const ThreadPage: React.FC = () => {
       };
 
       await createPost(dto);
+      clearReplyDraft();
+      setDraftBannerDismissed(false);
       setReplyingTo(null);
       setQuotingPost(null);
     } finally {
@@ -258,6 +286,26 @@ export const ThreadPage: React.FC = () => {
       setMoveReason("");
     } finally {
       setIsMoving(false);
+    }
+  };
+
+  const handleAwardMediaPoint = async () => {
+    if (!activeThread || !currentUser) return;
+    setIsAwardingPoint(true);
+    try {
+      await ForumService.AwardMediaPoint(
+        activeThread.id,
+        activeThread.author.uid,
+        activeThread.forumId,
+        activeThread.title,
+        currentUser.id,
+        currentUser.username,
+      );
+      setPointAwardedLocally(true);
+    } catch (err) {
+      console.error("Failed to award media point:", err);
+    } finally {
+      setIsAwardingPoint(false);
     }
   };
 
@@ -438,6 +486,18 @@ export const ThreadPage: React.FC = () => {
   const isLocked = activeThread?.isLocked ?? false;
   const isAdmin = permissions.canLockThread;
   const canReply = permissions.canReply && (!isLocked || isAdmin);
+  const isMediaSubforum = activeThread?.forumId.startsWith("media-") ?? false;
+  const isPointAwarded =
+    pointAwardedLocally || (activeThread?.mediaPointAwarded ?? false);
+
+  const firstPost = useMemo(
+    () => posts.find((p) => p.id === activeThread?.firstPostId) ?? null,
+    [posts, activeThread?.firstPostId],
+  );
+  const contentQuality = useMemo(
+    () => (firstPost ? analyzeContentQuality(firstPost.bodyText) : null),
+    [firstPost],
+  );
   const threadHeroImageUrl = useMemo(() => {
     if (!activeThread) return null;
     if (activeThread.featureImageUrl) return activeThread.featureImageUrl;
@@ -459,7 +519,7 @@ export const ThreadPage: React.FC = () => {
         {activeThread && (
           <ForumBorder
             classes={`relative overflow-hidden p-0 mb-3 ${
-              threadHeroImageUrl ? "min-h-[20rem] sm:min-h-[24rem]" : ""
+              threadHeroImageUrl ? "min-h-80 sm:min-h-96" : ""
             }`}
           >
             {threadHeroImageUrl && (
@@ -476,7 +536,7 @@ export const ThreadPage: React.FC = () => {
             <div
               className={`relative ${
                 threadHeroImageUrl
-                  ? "flex min-h-[20rem] flex-col justify-end p-5 sm:min-h-[38rem] sm:p-6 lg:p-6"
+                  ? "flex min-h-80 flex-col justify-end p-5 sm:min-h-152 sm:p-6 lg:p-6"
                   : "p-3 sm:p-4 lg:p-5"
               }`}
             >
@@ -508,17 +568,17 @@ export const ThreadPage: React.FC = () => {
               <div className="flex min-w-0 flex-col items-center text-center">
                 <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
                   {activeThread.isPinned && (
-                    <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded">
+                    <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded-sm">
                       Pinned
                     </span>
                   )}
                   {activeThread.isAnnouncement && (
-                    <span className="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded">
+                    <span className="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded-sm">
                       Announcement
                     </span>
                   )}
                   {isLocked && (
-                    <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded">
+                    <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded-sm">
                       🔒 Locked
                     </span>
                   )}
@@ -528,7 +588,7 @@ export const ThreadPage: React.FC = () => {
                     return (
                       <span
                         key={tag}
-                        className={`text-xs ${def.color} text-white px-1.5 py-0.5 rounded`}
+                        className={`text-xs ${def.color} text-white px-1.5 py-0.5 rounded-sm`}
                       >
                         {def.label}
                       </span>
@@ -556,6 +616,95 @@ export const ThreadPage: React.FC = () => {
               </div>
             </div>
           </ForumBorder>
+        )}
+
+        {/* Award Media Point — visible only to admins/commissioners on media subforums */}
+        {activeThread && isAdmin && isMediaSubforum && (
+          <div className="mb-3 rounded-sm border border-amber-700/50 bg-amber-900/20 overflow-hidden">
+            {/* Award row */}
+            <div className="flex items-center justify-between px-3 py-2">
+              <div>
+                <Text variant="small" classes="text-amber-300 font-medium">
+                  Media Point Award
+                </Text>
+                <Text variant="xs" classes="text-amber-400/70">
+                  {isPointAwarded
+                    ? "A media point has been awarded to the original poster."
+                    : "Award a media point to the original poster for quality content."}
+                </Text>
+              </div>
+              {contentQuality && (
+                <div className="">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-1 px-3 pt-2 pb-2">
+                    {/* Word count */}
+                    <span
+                      className={`text-xs font-mono ${
+                        contentQuality.wordCount < 20
+                          ? "text-red-400"
+                          : contentQuality.wordCount < 75
+                            ? "text-yellow-400"
+                            : "text-green-400"
+                      }`}
+                    >
+                      {contentQuality.wordCount} words
+                    </span>
+                    {/* Unique word ratio */}
+                    <span
+                      className={`text-xs font-mono ${
+                        contentQuality.uniqueWordRatio < 0.4
+                          ? "text-red-400"
+                          : contentQuality.uniqueWordRatio < 0.6
+                            ? "text-yellow-400"
+                            : "text-green-400"
+                      }`}
+                    >
+                      {Math.round(contentQuality.uniqueWordRatio * 100)}% unique
+                      words
+                    </span>
+                    {/* Quality badge */}
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded-sm font-semibold ${
+                        contentQuality.level === "good"
+                          ? "bg-green-800 text-green-200"
+                          : contentQuality.level === "moderate"
+                            ? "bg-yellow-800 text-yellow-200"
+                            : "bg-red-800 text-red-200"
+                      }`}
+                    >
+                      {contentQuality.level === "good"
+                        ? "Good quality"
+                        : contentQuality.level === "moderate"
+                          ? "Moderate quality"
+                          : "Low quality"}
+                    </span>
+                  </div>
+                  {contentQuality.flags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {contentQuality.flags.map((flag) => (
+                        <span
+                          key={flag}
+                          className="text-xs bg-red-900/50 text-red-300 border border-red-700/40 px-1.5 py-0.5 rounded-sm"
+                        >
+                          ⚠ {flag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <Button
+                variant="warning"
+                onClick={handleAwardMediaPoint}
+                disabled={isPointAwarded || isAwardingPoint}
+              >
+                {isPointAwarded
+                  ? "🏆 Awarded"
+                  : isAwardingPoint
+                    ? "Awarding…"
+                    : "Award Point"}
+              </Button>
+            </div>
+          </div>
         )}
 
         {/* Game reference card */}
@@ -602,14 +751,14 @@ export const ThreadPage: React.FC = () => {
 
         {/* Locked banner */}
         {isLocked && (
-          <div className="mb-3 p-2 bg-yellow-900/40 border border-yellow-700 rounded text-sm text-yellow-300">
+          <div className="mb-3 p-2 bg-yellow-900/40 border border-yellow-700 rounded-sm text-sm text-yellow-300">
             🔒 This thread has been locked by a moderator.
           </div>
         )}
 
         {/* Mute banner */}
         {isMuted && muteExpiresAt && (
-          <div className="mb-3 p-2 bg-red-900/40 border border-red-700 rounded text-sm text-red-300">
+          <div className="mb-3 p-2 bg-red-900/40 border border-red-700 rounded-sm text-sm text-red-300">
             🔇 You have been muted from posting until{" "}
             <span className="font-semibold">
               {muteExpiresAt.toLocaleDateString(undefined, {
@@ -688,9 +837,30 @@ export const ThreadPage: React.FC = () => {
                 </button>
               </div>
             )}
+
+            {/* Draft restore banner */}
+            {showDraftBanner && (
+              <div className="flex items-center justify-between mb-2 px-3 py-2 rounded-sm text-sm bg-blue-950/60 border border-blue-700/50 text-blue-300">
+                <span>Draft restored from your last session.</span>
+                <button
+                  onClick={() => {
+                    clearReplyDraft();
+                    replyEditorRef.current?.clear();
+                    setDraftBannerDismissed(true);
+                  }}
+                  className="ml-4 text-xs text-blue-400 hover:text-blue-200 underline underline-offset-2"
+                >
+                  Discard draft
+                </button>
+              </div>
+            )}
+
             <ForumEditor
+              ref={replyEditorRef}
               placeholder="Write a reply…"
+              initialDoc={replyDraft ?? undefined}
               onSubmit={handleReply}
+              onDocChange={saveReplyDraft}
               isSubmitting={isSubmitting}
             />
           </div>
@@ -720,7 +890,7 @@ export const ThreadPage: React.FC = () => {
                 onChange={(e) => setModReason(e.target.value)}
                 placeholder="Reason (optional)"
                 rows={2}
-                className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:border-blue-500 mb-3"
+                className="w-full bg-gray-800 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-hidden focus:border-blue-500 mb-3"
               />
               <div className="flex justify-end gap-2">
                 <Button
@@ -765,7 +935,7 @@ export const ThreadPage: React.FC = () => {
                 <select
                   value={moveTargetForumId}
                   onChange={(e) => setMoveTargetForumId(e.target.value)}
-                  className="bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  className="bg-gray-800 border border-gray-600 rounded-sm p-2 text-sm text-white focus:outline-hidden focus:border-blue-500"
                   disabled={isMoving}
                 >
                   <option value="">-- Select destination --</option>
@@ -812,7 +982,7 @@ export const ThreadPage: React.FC = () => {
                   onChange={(e) => setMoveReason(e.target.value)}
                   placeholder="Reason (optional)"
                   rows={2}
-                  className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:border-blue-500"
+                  className="w-full bg-gray-800 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-hidden focus:border-blue-500"
                   disabled={isMoving}
                 />
               </div>

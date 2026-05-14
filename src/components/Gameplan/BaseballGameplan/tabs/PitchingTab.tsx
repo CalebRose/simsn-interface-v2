@@ -462,7 +462,7 @@ const RotationSection = ({
                   <button
                     onClick={() => moveSlot(idx, -1)}
                     disabled={idx === 0}
-                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Move up"
                     title="Move this pitcher earlier in the rotation"
                   >
@@ -471,7 +471,7 @@ const RotationSection = ({
                   <button
                     onClick={() => moveSlot(idx, 1)}
                     disabled={idx === rotation.slots.length - 1}
-                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Move down"
                     title="Move this pitcher later in the rotation"
                   >
@@ -747,7 +747,7 @@ const BullpenSection = ({
                   <button
                     onClick={() => moveEntry(idx, -1)}
                     disabled={idx === 0}
-                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Move up"
                     title="Move this reliever up in priority"
                   >
@@ -756,7 +756,7 @@ const BullpenSection = ({
                   <button
                     onClick={() => moveEntry(idx, 1)}
                     disabled={idx === bullpen.pitchers.length - 1}
-                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm bg-gray-700 text-white border border-gray-500 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Move down"
                     title="Move this reliever down in priority"
                   >
@@ -764,7 +764,7 @@ const BullpenSection = ({
                   </button>
                   <button
                     onClick={() => removePitcher(idx)}
-                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded bg-red-700 text-white border border-red-500 hover:bg-red-600"
+                    className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-sm bg-red-700 text-white border border-red-500 hover:bg-red-600"
                     title="Remove this pitcher from the bullpen"
                     aria-label="Remove pitcher"
                   >
@@ -971,7 +971,7 @@ const TeamStrategySection = ({ teamId }: { teamId: number }) => {
               max={150}
               value={strategy.bullpen_cutoff}
               onChange={(e) => update({ bullpen_cutoff: Number(e.target.value) || 100 })}
-              className="w-full sm:w-24 px-3 py-2 text-sm border rounded bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full sm:w-24 px-3 py-2 text-sm border rounded-sm bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
         </Tooltip>
@@ -1010,7 +1010,7 @@ const TeamStrategySection = ({ teamId }: { teamId: number }) => {
                   .filter((n) => !isNaN(n));
                 update({ intentional_walk_list: ids });
               }}
-              className="w-full px-3 py-2 text-sm border rounded bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 text-sm border rounded-sm bg-black text-white border-gray-500 focus:ring-blue-500 focus:border-blue-500"
               placeholder="e.g. 42, 55, 101"
             />
           </div>

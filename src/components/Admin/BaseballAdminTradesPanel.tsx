@@ -462,7 +462,7 @@ const PendingTradeCard: React.FC<PendingTradeCardProps> = ({
         <div className="mt-3">
           <label className="text-sm text-gray-400">Admin Note (optional)</label>
           <textarea
-            className="w-full mt-1 p-2 rounded bg-gray-700 text-white text-sm border border-gray-600"
+            className="w-full mt-1 p-2 rounded-sm bg-gray-700 text-white text-sm border border-gray-600"
             rows={2}
             maxLength={500}
             value={adminNote}
@@ -505,7 +505,7 @@ const PendingTradeCard: React.FC<PendingTradeCardProps> = ({
             Rejection Reason (optional)
           </label>
           <textarea
-            className="w-full mt-1 p-2 rounded bg-gray-700 text-white text-sm border border-gray-600"
+            className="w-full mt-1 p-2 rounded-sm bg-gray-700 text-white text-sm border border-gray-600"
             rows={2}
             maxLength={500}
             value={adminNote}
@@ -580,7 +580,11 @@ const AllProposalsTable: React.FC<AllProposalsTableProps> = ({
                 {formatDate(p.created_at)}
               </td>
               <td className="px-3 py-2">
-                <Button size="xs" variant="primary" onClick={() => onViewDetail(p)}>
+                <Button
+                  size="xs"
+                  variant="primary"
+                  onClick={() => onViewDetail(p)}
+                >
                   Details
                 </Button>
               </td>
@@ -592,7 +596,9 @@ const AllProposalsTable: React.FC<AllProposalsTableProps> = ({
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-3 px-1">
           <Text variant="xs" className="text-gray-400">
-            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, proposals.length)} of {proposals.length}
+            Showing {page * PAGE_SIZE + 1}–
+            {Math.min((page + 1) * PAGE_SIZE, proposals.length)} of{" "}
+            {proposals.length}
           </Text>
           <div className="flex gap-1">
             <Button
@@ -676,7 +682,17 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
     const ids = proposal.proposal?.players_to_b || [];
     return ids.map((id) => {
       const p = rosterA.find((r) => r.player_id === id);
-      return p || { player_id: id, player_name: `Player #${id}`, position: "?", current_level: 0, salary: 0, contract_id: 0, onIR: 0 };
+      return (
+        p || {
+          player_id: id,
+          player_name: `Player #${id}`,
+          position: "?",
+          current_level: 0,
+          salary: 0,
+          contract_id: 0,
+          onIR: 0,
+        }
+      );
     });
   }, [proposal, rosterA]);
 
@@ -684,7 +700,17 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
     const ids = proposal.proposal?.players_to_a || [];
     return ids.map((id) => {
       const p = rosterB.find((r) => r.player_id === id);
-      return p || { player_id: id, player_name: `Player #${id}`, position: "?", current_level: 0, salary: 0, contract_id: 0, onIR: 0 };
+      return (
+        p || {
+          player_id: id,
+          player_name: `Player #${id}`,
+          position: "?",
+          current_level: 0,
+          salary: 0,
+          contract_id: 0,
+          onIR: 0,
+        }
+      );
     });
   }, [proposal, rosterB]);
 
@@ -703,10 +729,14 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
         executed_by: "admin",
       };
       await BaseballService.AdminApproveTrade(proposal.id, dto);
-      enqueueSnackbar(`Trade #${proposal.id} approved and executed`, { variant: "success" });
+      enqueueSnackbar(`Trade #${proposal.id} approved and executed`, {
+        variant: "success",
+      });
       await onActionComplete();
     } catch (e: any) {
-      enqueueSnackbar(e?.message || "Failed to approve trade", { variant: "error" });
+      enqueueSnackbar(e?.message || "Failed to approve trade", {
+        variant: "error",
+      });
     }
     setLoading(false);
   };
@@ -714,11 +744,15 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
   const handleReject = async () => {
     setLoading(true);
     try {
-      await BaseballService.AdminRejectTrade(proposal.id, { note: adminNote || undefined });
+      await BaseballService.AdminRejectTrade(proposal.id, {
+        note: adminNote || undefined,
+      });
       enqueueSnackbar(`Trade #${proposal.id} rejected`, { variant: "info" });
       await onActionComplete();
     } catch (e: any) {
-      enqueueSnackbar(e?.message || "Failed to reject trade", { variant: "error" });
+      enqueueSnackbar(e?.message || "Failed to reject trade", {
+        variant: "error",
+      });
     }
     setLoading(false);
   };
@@ -740,14 +774,24 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Trade #${proposal.id}`}
-      maxWidth="max-w-[52rem]"
+      maxWidth="max-w-208"
       actions={
         isPending ? (
           <>
-            <Button variant="danger" size="sm" onClick={handleReject} disabled={loading}>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleReject}
+              disabled={loading}
+            >
               {loading ? "Processing..." : "Reject Trade"}
             </Button>
-            <Button variant="success" size="sm" onClick={handleApprove} disabled={loading}>
+            <Button
+              variant="success"
+              size="sm"
+              onClick={handleApprove}
+              disabled={loading}
+            >
               {loading ? "Processing..." : "Approve Trade"}
             </Button>
           </>
@@ -769,18 +813,27 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
             </Text>
             <div className="space-y-1">
               {playersGoingToB.length === 0 ? (
-                <Text variant="xs" className="text-gray-500">No players</Text>
+                <Text variant="xs" className="text-gray-500">
+                  No players
+                </Text>
               ) : (
                 playersGoingToB.map((p) => {
-                  const ret = (retention as Record<string, any>)[String(p.player_id)];
+                  const ret = (retention as Record<string, any>)[
+                    String(p.player_id)
+                  ];
                   return (
-                    <div key={p.player_id} className="bg-gray-700 rounded p-2">
+                    <div
+                      key={p.player_id}
+                      className="bg-gray-700 rounded-sm p-2"
+                    >
                       <Text variant="small" className="font-semibold">
                         {p.player_name} ({p.position})
                       </Text>
                       <Text variant="xs" className="text-gray-400">
-                        {getLevelLabel(p.current_level)} · {formatCurrency(p.salary)}/yr
-                        {ret && ` · Retention: ${Math.round((ret as any).retention_pct * 100)}%`}
+                        {getLevelLabel(p.current_level)} ·{" "}
+                        {formatCurrency(p.salary)}/yr
+                        {ret &&
+                          ` · Retention: ${Math.round((ret as any).retention_pct * 100)}%`}
                       </Text>
                     </div>
                   );
@@ -796,18 +849,27 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
             </Text>
             <div className="space-y-1">
               {playersGoingToA.length === 0 ? (
-                <Text variant="xs" className="text-gray-500">No players</Text>
+                <Text variant="xs" className="text-gray-500">
+                  No players
+                </Text>
               ) : (
                 playersGoingToA.map((p) => {
-                  const ret = (retention as Record<string, any>)[String(p.player_id)];
+                  const ret = (retention as Record<string, any>)[
+                    String(p.player_id)
+                  ];
                   return (
-                    <div key={p.player_id} className="bg-gray-700 rounded p-2">
+                    <div
+                      key={p.player_id}
+                      className="bg-gray-700 rounded-sm p-2"
+                    >
                       <Text variant="small" className="font-semibold">
                         {p.player_name} ({p.position})
                       </Text>
                       <Text variant="xs" className="text-gray-400">
-                        {getLevelLabel(p.current_level)} · {formatCurrency(p.salary)}/yr
-                        {ret && ` · Retention: ${Math.round((ret as any).retention_pct * 100)}%`}
+                        {getLevelLabel(p.current_level)} ·{" "}
+                        {formatCurrency(p.salary)}/yr
+                        {ret &&
+                          ` · Retention: ${Math.round((ret as any).retention_pct * 100)}%`}
                       </Text>
                     </div>
                   );
@@ -837,14 +899,18 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
               {mlbStatusA && (
                 <div>
                   {orgAName}: {mlbStatusA.count} →{" "}
-                  {mlbStatusA.count - (proposal.proposal?.players_to_b?.length || 0) + (proposal.proposal?.players_to_a?.length || 0)}{" "}
+                  {mlbStatusA.count -
+                    (proposal.proposal?.players_to_b?.length || 0) +
+                    (proposal.proposal?.players_to_a?.length || 0)}{" "}
                   (limits: {mlbStatusA.min_roster}-{mlbStatusA.max_roster})
                 </div>
               )}
               {mlbStatusB && (
                 <div>
                   {orgBName}: {mlbStatusB.count} →{" "}
-                  {mlbStatusB.count + (proposal.proposal?.players_to_b?.length || 0) - (proposal.proposal?.players_to_a?.length || 0)}{" "}
+                  {mlbStatusB.count +
+                    (proposal.proposal?.players_to_b?.length || 0) -
+                    (proposal.proposal?.players_to_a?.length || 0)}{" "}
                   (limits: {mlbStatusB.min_roster}-{mlbStatusB.max_roster})
                 </div>
               )}
@@ -854,7 +920,9 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
 
         {/* Timeline */}
         <div>
-          <Text variant="small" className="font-bold mb-1">Timeline</Text>
+          <Text variant="small" className="font-bold mb-1">
+            Timeline
+          </Text>
           <div className="text-xs text-gray-400 space-y-0.5">
             <div>Proposed: {formatDate(proposal.created_at)}</div>
             <div>Last Updated: {formatDate(proposal.updated_at)}</div>
@@ -867,9 +935,11 @@ const TradeDetailModal: React.FC<TradeDetailModalProps> = ({
         {/* Admin Note */}
         {isPending && (
           <div>
-            <label className="text-sm text-gray-400">Admin Note (optional)</label>
+            <label className="text-sm text-gray-400">
+              Admin Note (optional)
+            </label>
             <textarea
-              className="w-full mt-1 p-2 rounded bg-gray-700 text-white text-sm border border-gray-600"
+              className="w-full mt-1 p-2 rounded-sm bg-gray-700 text-white text-sm border border-gray-600"
               rows={2}
               maxLength={500}
               value={adminNote}
@@ -904,8 +974,12 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
   const [orgB, setOrgB] = useState<SelectOption | null>(null);
   const [rosterA, setRosterA] = useState<TradeRosterPlayer[]>([]);
   const [rosterB, setRosterB] = useState<TradeRosterPlayer[]>([]);
-  const [selectedPlayersToB, setSelectedPlayersToB] = useState<Set<number>>(new Set());
-  const [selectedPlayersToA, setSelectedPlayersToA] = useState<Set<number>>(new Set());
+  const [selectedPlayersToB, setSelectedPlayersToB] = useState<Set<number>>(
+    new Set(),
+  );
+  const [selectedPlayersToA, setSelectedPlayersToA] = useState<Set<number>>(
+    new Set(),
+  );
   const [cashAmount, setCashAmount] = useState<string>("0");
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -919,7 +993,10 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
   }, [organizations]);
 
   useEffect(() => {
-    if (!orgA) { setRosterA([]); return; }
+    if (!orgA) {
+      setRosterA([]);
+      return;
+    }
     BaseballService.GetTradeRoster(Number(orgA.value))
       .then((r) => setRosterA(Array.isArray(r) ? r : []))
       .catch(() => setRosterA([]));
@@ -927,7 +1004,10 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
   }, [orgA]);
 
   useEffect(() => {
-    if (!orgB) { setRosterB([]); return; }
+    if (!orgB) {
+      setRosterB([]);
+      return;
+    }
     BaseballService.GetTradeRoster(Number(orgB.value))
       .then((r) => setRosterB(Array.isArray(r) ? r : []))
       .catch(() => setRosterB([]));
@@ -973,10 +1053,9 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
         executed_by: "admin",
       };
       const result = await BaseballService.ExecuteDirectTrade(dto);
-      enqueueSnackbar(
-        `Trade executed! Transaction #${result.transaction_id}`,
-        { variant: "success" },
-      );
+      enqueueSnackbar(`Trade executed! Transaction #${result.transaction_id}`, {
+        variant: "success",
+      });
       setSelectedPlayersToB(new Set());
       setSelectedPlayersToA(new Set());
       setCashAmount("0");
@@ -1002,7 +1081,9 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
       {/* Org Selection */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Text variant="small" className="font-bold mb-1">Org A</Text>
+          <Text variant="small" className="font-bold mb-1">
+            Org A
+          </Text>
           <SelectDropdown
             options={orgOptions}
             value={orgA}
@@ -1012,7 +1093,9 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
           />
         </div>
         <div>
-          <Text variant="small" className="font-bold mb-1">Org B</Text>
+          <Text variant="small" className="font-bold mb-1">
+            Org B
+          </Text>
           <SelectDropdown
             options={orgOptions}
             value={orgB}
@@ -1037,9 +1120,9 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
                   <div
                     key={p.player_id}
                     onClick={() => togglePlayerToB(p.player_id)}
-                    className={`flex items-center gap-2 p-1.5 rounded cursor-pointer text-sm ${
+                    className={`flex items-center gap-2 p-1.5 rounded-sm cursor-pointer text-sm ${
                       selectedPlayersToB.has(p.player_id)
-                        ? "bg-blue-700 bg-opacity-40 border border-blue-500"
+                        ? "bg-blue-700 bg-black/40 border border-blue-500"
                         : "bg-gray-700 hover:bg-gray-600"
                     }`}
                   >
@@ -1053,7 +1136,8 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
                       {p.player_name} ({p.position})
                     </span>
                     <span className="text-xs text-gray-400">
-                      {getLevelLabel(p.current_level)} · {formatCurrency(p.salary)}
+                      {getLevelLabel(p.current_level)} ·{" "}
+                      {formatCurrency(p.salary)}
                     </span>
                   </div>
                 ))}
@@ -1079,9 +1163,9 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
                   <div
                     key={p.player_id}
                     onClick={() => togglePlayerToA(p.player_id)}
-                    className={`flex items-center gap-2 p-1.5 rounded cursor-pointer text-sm ${
+                    className={`flex items-center gap-2 p-1.5 rounded-sm cursor-pointer text-sm ${
                       selectedPlayersToA.has(p.player_id)
-                        ? "bg-blue-700 bg-opacity-40 border border-blue-500"
+                        ? "bg-blue-700 bg-black/40 border border-blue-500"
                         : "bg-gray-700 hover:bg-gray-600"
                     }`}
                   >
@@ -1095,7 +1179,8 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
                       {p.player_name} ({p.position})
                     </span>
                     <span className="text-xs text-gray-400">
-                      {getLevelLabel(p.current_level)} · {formatCurrency(p.salary)}
+                      {getLevelLabel(p.current_level)} ·{" "}
+                      {formatCurrency(p.salary)}
                     </span>
                   </div>
                 ))}
@@ -1115,7 +1200,7 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
         <Text variant="small">Cash (A → B):</Text>
         <input
           type="number"
-          className="w-32 p-1.5 rounded bg-gray-700 text-white text-sm border border-gray-600"
+          className="w-32 p-1.5 rounded-sm bg-gray-700 text-white text-sm border border-gray-600"
           value={cashAmount}
           onChange={(e) => setCashAmount(e.target.value)}
         />
@@ -1140,10 +1225,19 @@ const DirectTradeBuilder: React.FC<DirectTradeBuilderProps> = ({
         title="Execute Direct Trade?"
         actions={
           <>
-            <Button variant="secondary" size="sm" onClick={() => setShowConfirm(false)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowConfirm(false)}
+            >
               Cancel
             </Button>
-            <Button variant="success" size="sm" onClick={handleExecute} disabled={loading}>
+            <Button
+              variant="success"
+              size="sm"
+              onClick={handleExecute}
+              disabled={loading}
+            >
               {loading ? "Executing..." : "Execute Trade"}
             </Button>
           </>
@@ -1174,7 +1268,9 @@ const TransactionLogView: React.FC<TransactionLogViewProps> = ({
   const [entries, setEntries] = useState<TransactionLogEntry[]>([]);
   const [loadingLog, setLoadingLog] = useState(true);
   const [rollingBack, setRollingBack] = useState<number | null>(null);
-  const [showRollbackConfirm, setShowRollbackConfirm] = useState<number | null>(null);
+  const [showRollbackConfirm, setShowRollbackConfirm] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
     loadLog();
@@ -1194,8 +1290,12 @@ const TransactionLogView: React.FC<TransactionLogViewProps> = ({
   const handleRollback = async (transactionId: number) => {
     setRollingBack(transactionId);
     try {
-      await BaseballService.RollbackTransaction({ transaction_id: transactionId });
-      enqueueSnackbar(`Transaction #${transactionId} rolled back`, { variant: "success" });
+      await BaseballService.RollbackTransaction({
+        transaction_id: transactionId,
+      });
+      enqueueSnackbar(`Transaction #${transactionId} rolled back`, {
+        variant: "success",
+      });
       setShowRollbackConfirm(null);
       await loadLog();
     } catch (e: any) {
@@ -1268,13 +1368,19 @@ const TransactionLogView: React.FC<TransactionLogViewProps> = ({
         title={`Rollback Transaction #${showRollbackConfirm}?`}
         actions={
           <>
-            <Button variant="secondary" size="sm" onClick={() => setShowRollbackConfirm(null)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowRollbackConfirm(null)}
+            >
               Cancel
             </Button>
             <Button
               variant="danger"
               size="sm"
-              onClick={() => showRollbackConfirm && handleRollback(showRollbackConfirm)}
+              onClick={() =>
+                showRollbackConfirm && handleRollback(showRollbackConfirm)
+              }
               disabled={rollingBack !== null}
             >
               {rollingBack ? "Rolling back..." : "Confirm Rollback"}

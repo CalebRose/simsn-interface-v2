@@ -49,7 +49,7 @@ const BaseballDraftTicker: React.FC<BaseballDraftTickerProps> = ({
 
             {/* Auto pick indicator */}
             {pick.is_auto_pick && (
-              <span className="rounded bg-orange-600/30 text-orange-400 px-1 text-[9px] font-mono">
+              <span className="rounded-sm bg-orange-600/30 text-orange-400 px-1 text-[9px] font-mono">
                 A
               </span>
             )}

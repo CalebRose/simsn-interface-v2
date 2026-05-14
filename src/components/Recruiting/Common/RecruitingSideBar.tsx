@@ -52,6 +52,7 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
   let coach = 0;
   let season = 0;
   let campusLife = 0;
+  let mediaSpotlight = 0;
   let affinities: any[] = [];
   let res = 0;
   let region = "";
@@ -97,6 +98,18 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
       teamLabel = cfbt.TeamName;
       classRank = cfbtp.RecruitingClassRank;
       affinities = getAffinityList(cfbtp);
+      programDevelopment = cfbtp.ProgramPrestige;
+      profDev = cfbtp.ProfessionalPrestige;
+      trad = cfbtp.Traditions;
+      fac = cfbtp.Facilities;
+      atm = cfbtp.Atmosphere;
+      aca = cfbtp.Academics;
+      conf = cfbtp.ConferencePrestige;
+      coach = cfbtp.CoachRating;
+      season = cfbtp.SeasonMomentum;
+      campusLife = cfbtp.CampusLife;
+      mediaSpotlight = cfbtp.MediaSpotlight;
+
       res = cfbtp.RecruitingEfficiencyScore * 100;
       break;
     default:
@@ -184,6 +197,7 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
           <Text variant="xs">Coach Rating: {coach}</Text>
           <Text variant="xs">Season Momentum: {season}</Text>
           <Text variant="xs">Campus Life: {campusLife}</Text>
+          <Text variant="xs">Media Spotlight: {mediaSpotlight}</Text>
         </div>
       </Border>
     </div>

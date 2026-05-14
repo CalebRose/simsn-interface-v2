@@ -169,7 +169,7 @@ const ForumMuteControls: React.FC<ForumMuteControlsProps> = ({
           placeholder="Days"
           value={muteDays}
           onChange={(e) => setMuteDays(e.target.value)}
-          className="w-20 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+          className="w-20 bg-gray-800 border border-gray-600 rounded-sm px-2 py-1 text-sm text-white placeholder-gray-500 focus:outline-hidden focus:border-blue-500"
         />
         <Button
           variant="warning"
@@ -526,7 +526,7 @@ export const ManageUserModal: FC<ManageUserModalProps> = ({
           <Text variant="small">Delete User</Text>
         </Button>
       ) : (
-        <div className="border border-red-500 rounded p-3 flex flex-col gap-y-2">
+        <div className="border border-red-500 rounded-sm p-3 flex flex-col gap-y-2">
           <Text variant="body-small" classes="text-red-500 font-semibold">
             This action is permanent and cannot be undone. Are you sure?
           </Text>

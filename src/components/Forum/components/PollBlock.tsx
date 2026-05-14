@@ -176,9 +176,9 @@ export const PollBlock: React.FC<PollBlockProps> = ({
                     {pct}%)
                   </span>
                 </div>
-                <div className="w-full bg-gray-700 rounded h-2 overflow-hidden">
+                <div className="w-full bg-gray-700 rounded-sm h-2 overflow-hidden">
                   <div
-                    className="bg-blue-500 h-2 rounded transition-all duration-300"
+                    className="bg-blue-500 h-2 rounded-sm transition-all duration-300"
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -190,7 +190,7 @@ export const PollBlock: React.FC<PollBlockProps> = ({
           return (
             <label
               key={option.id}
-              className={`flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors ${
+              className={`flex items-center gap-2 p-2 rounded-sm border cursor-pointer transition-colors ${
                 selected.has(option.id)
                   ? "border-blue-500 bg-blue-900/30"
                   : "border-gray-600 hover:border-gray-400"

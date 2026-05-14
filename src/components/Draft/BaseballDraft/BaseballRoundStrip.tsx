@@ -28,7 +28,7 @@ const BaseballRoundStrip: React.FC<BaseballRoundStripProps> = ({
             key={roundNum}
             onClick={() => onRoundClick?.(roundNum)}
             className={`
-              flex-shrink-0 flex items-center justify-center rounded
+              shrink-0 flex items-center justify-center rounded
               w-8 h-8 text-xs font-bold transition-all
               ${isLive ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-400"}
               ${isCurrent ? "ring-2 ring-yellow-400 scale-110" : ""}

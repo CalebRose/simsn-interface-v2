@@ -6,8 +6,10 @@ import { Button } from "../../_design/Buttons";
 import { Border, ForumBorder } from "../../_design/Borders";
 import { ForumBreadcrumbs } from "./components/ForumBreadcrumbs";
 import { ForumEditor } from "./components/ForumEditor";
+import type { ForumEditorHandle } from "./components/ForumEditor";
 import { useForumStore } from "../../context/ForumContext";
 import { useAuthStore } from "../../context/AuthContext";
+import { useForumDraft } from "../../_hooks/useForumDraft";
 import {
   Forum,
   RichTextDocument,
@@ -18,6 +20,12 @@ import {
 } from "../../models/forumModels";
 import routes from "../../_constants/routes";
 import { MEDIA_TAGS, MediaTag, isMediaForum } from "../../_constants/mediaTags";
+
+interface ThreadCreationDraft {
+  title: string;
+  threadType: ThreadType;
+  doc: RichTextDocument | null;
+}
 
 const MAX_TITLE = 100;
 const MAX_POLL_OPTIONS = 10;
@@ -30,11 +38,28 @@ export const CreateThreadPage: React.FC = () => {
   const { currentUser } = useAuthStore();
   const { createThread, permissions, forums, loadForums } = useForumStore();
 
-  const [title, setTitle] = useState("");
   const [selectedForumId, setSelectedForumId] = useState(
     preselectedForumId ?? "",
   );
-  const [threadType, setThreadType] = useState<ThreadType>("standard");
+
+  // ── Draft persistence (scoped per user + forum) ───────────────────────────────
+  // Key is null until both user and a forum are selected so nothing is persisted
+  // until the user has actually chosen where to post.
+  const threadDraftKey =
+    currentUser && selectedForumId
+      ? `forum_draft_new_thread_${currentUser.id}_${selectedForumId}`
+      : null;
+  const {
+    draft: threadDraft,
+    saveDraft: saveThreadDraft,
+    clearDraft: clearThreadDraft,
+    hasDraft: hasThreadDraft,
+  } = useForumDraft<ThreadCreationDraft>(threadDraftKey);
+
+  const [title, setTitle] = useState(threadDraft?.title ?? "");
+  const [threadType, setThreadType] = useState<ThreadType>(
+    threadDraft?.threadType ?? "standard",
+  );
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
   const [pollAllowResultsPreview, setPollAllowResultsPreview] = useState(false);
@@ -42,7 +67,35 @@ export const CreateThreadPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMediaTags, setSelectedMediaTags] = useState<MediaTag[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const bodyEditorRef = useRef<{ focus: () => void }>(null);
+  const [draftBannerDismissed, setDraftBannerDismissed] = useState(false);
+  const showDraftBanner = hasThreadDraft && !draftBannerDismissed;
+  const bodyEditorRef = useRef<ForumEditorHandle>(null);
+  // Holds the latest body doc so it can be included in draft snapshots triggered
+  // by non-body field changes (e.g. title edits).
+  const bodyDocRef = useRef<RichTextDocument | null>(threadDraft?.doc ?? null);
+
+  // Sync form fields and editor content whenever the forum changes and a draft
+  // for that forum is (or isn't) found in storage.
+  const prevDraftKeyRef = useRef(threadDraftKey);
+  useEffect(() => {
+    if (prevDraftKeyRef.current === threadDraftKey) return;
+    prevDraftKeyRef.current = threadDraftKey;
+    setTitle(threadDraft?.title ?? "");
+    setThreadType(threadDraft?.threadType ?? "standard");
+    bodyDocRef.current = threadDraft?.doc ?? null;
+    bodyEditorRef.current?.setContent(threadDraft?.doc ?? null);
+    setDraftBannerDismissed(false);
+  }, [threadDraftKey, threadDraft]);
+
+  // Helper: snapshot the full form state and persist it.
+  const saveDraftSnapshot = (overrides: Partial<ThreadCreationDraft> = {}) => {
+    saveThreadDraft({
+      title,
+      threadType,
+      doc: bodyDocRef.current,
+      ...overrides,
+    });
+  };
 
   useEffect(() => {
     if (forums.length === 0) loadForums();
@@ -187,6 +240,7 @@ export const CreateThreadPage: React.FC = () => {
 
       const threadId = await createThread(dto);
       if (threadId) {
+        clearThreadDraft();
         navigate(`${routes.FORUM_THREAD}/${threadId}`);
       } else {
         setError("Failed to create thread. Please try again.");
@@ -230,6 +284,25 @@ export const CreateThreadPage: React.FC = () => {
         </Text>
 
         <ForumBorder classes="p-4 flex flex-col gap-4">
+          {/* Draft restore banner */}
+          {showDraftBanner && (
+            <div className="flex items-center justify-between px-3 py-2 rounded-sm text-sm bg-blue-950/60 border border-blue-700/50 text-blue-300">
+              <span>Draft restored — pick up where you left off.</span>
+              <button
+                onClick={() => {
+                  clearThreadDraft();
+                  bodyEditorRef.current?.setContent(null);
+                  setTitle("");
+                  setThreadType("standard");
+                  setDraftBannerDismissed(true);
+                }}
+                className="ml-4 text-xs text-blue-400 hover:text-blue-200 underline underline-offset-2"
+              >
+                Discard draft
+              </button>
+            </div>
+          )}
+
           {/* Forum selector */}
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">
@@ -238,10 +311,11 @@ export const CreateThreadPage: React.FC = () => {
             <select
               value={selectedForumId}
               onChange={(e) => {
-                setSelectedForumId(e.target.value);
-                setSelectedMediaTags([]); // reset tags when forum changes
+                const newForumId = e.target.value;
+                setSelectedForumId(newForumId);
+                setSelectedMediaTags([]);
               }}
-              className="bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500"
+              className="bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white focus:outline-hidden focus:border-blue-500"
               disabled={isSubmitting}
             >
               <option value="">-- Select a forum --</option>
@@ -276,7 +350,10 @@ export const CreateThreadPage: React.FC = () => {
                     name="threadType"
                     value={type}
                     checked={threadType === type}
-                    onChange={() => setThreadType(type)}
+                    onChange={() => {
+                      setThreadType(type);
+                      saveDraftSnapshot({ threadType: type });
+                    }}
                     className="accent-blue-500"
                   />
                   {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -323,10 +400,14 @@ export const CreateThreadPage: React.FC = () => {
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                const newTitle = e.target.value;
+                setTitle(newTitle);
+                saveDraftSnapshot({ title: newTitle });
+              }}
               placeholder="Thread title…"
               maxLength={MAX_TITLE}
-              className="bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 focus:outline-hidden focus:border-blue-500"
               disabled={isSubmitting}
               onKeyDown={(e) => {
                 if (e.key === "Tab") {
@@ -352,7 +433,7 @@ export const CreateThreadPage: React.FC = () => {
                   value={pollQuestion}
                   onChange={(e) => setPollQuestion(e.target.value)}
                   placeholder="Poll question…"
-                  className="bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 focus:outline-hidden focus:border-blue-500"
                 />
                 {pollOptions.map((opt, idx) => (
                   <div key={idx} className="flex gap-2 items-center">
@@ -363,7 +444,7 @@ export const CreateThreadPage: React.FC = () => {
                         handlePollOptionChange(idx, e.target.value)
                       }
                       placeholder={`Option ${idx + 1}`}
-                      className="flex-1 bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                      className="flex-1 bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 focus:outline-hidden focus:border-blue-500"
                     />
                     {pollOptions.length > 2 && (
                       <button
@@ -418,8 +499,16 @@ export const CreateThreadPage: React.FC = () => {
             <ForumEditor
               ref={bodyEditorRef}
               placeholder="Write the opening post…"
+              initialDoc={threadDraft?.doc ?? undefined}
               onSubmit={handleSubmit}
-              onCancel={() => navigate(-1)}
+              onCancel={() => {
+                clearThreadDraft();
+                navigate(-1);
+              }}
+              onDocChange={(doc) => {
+                bodyDocRef.current = doc;
+                saveDraftSnapshot({ doc });
+              }}
               submitLabel="Post Thread"
               isSubmitting={isSubmitting}
             />

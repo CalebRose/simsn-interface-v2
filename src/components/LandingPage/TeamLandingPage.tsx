@@ -66,6 +66,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     allCFBStandings,
     allProStandings,
     cfbRosterMap,
+    cfbTeamMap,
     proRosterMap,
     allCollegeGames,
     allProGames,
@@ -73,6 +74,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     proNews,
     cfbTeams,
     nflTeams,
+    proTeamMap: nflTeamMap,
     topNFLPassers,
     topNFLRushers,
     topNFLReceivers,
@@ -96,7 +98,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     collegeNews: cbbNews,
     proNews: nbaNews,
     cbbTeams,
+    cbbTeamMap,
     nbaTeams,
+    nbaTeamMap,
     topCBBPoints,
     topCBBAssists,
     topCBBRebounds,
@@ -118,7 +122,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     collegeNews: chlNews,
     proNews: phlNews,
     chlTeams,
+    chlTeamMap,
     phlTeams,
+    phlTeamMap,
     topCHLGoals,
     topCHLAssists,
     topCHLSaves,
@@ -270,6 +276,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     teamNews = [],
     gameWeek = 0,
     teamInjuries = {},
+    teamMap = {},
   } = useMemo((): Record<string, any> => {
     switch (league) {
       case SimCFB:
@@ -287,6 +294,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           topCFBReceivers,
           collegeNews,
           cfbRosterMap,
+          cfbTeamMap,
         );
 
       case SimNFL:
@@ -304,6 +312,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           topNFLReceivers,
           proNews,
           proRosterMap,
+          nflTeamMap,
         );
 
       case SimCBB:
@@ -323,6 +332,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           topCBBRebounds,
           cbbNews,
           cbbRosterMap,
+          cbbTeamMap,
         );
 
       case SimNBA:
@@ -342,6 +352,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           topNBARebounds,
           nbaNews,
           nbaRosterMap,
+          nbaTeamMap,
         );
 
       case SimCHL:
@@ -361,6 +372,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           topCHLAssists,
           topCHLSaves,
           chlRosterMap,
+          chlTeamMap,
         );
 
       case SimPHL:
@@ -380,6 +392,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           topPHLAssists,
           topPHLSaves,
           phlRosterMap,
+          phlTeamMap,
         );
 
       default:
@@ -513,6 +526,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                 darkerBackgroundColor={darkerBackgroundColor}
                 isLoading={isLoading}
                 playerMap={playerMap}
+                teamMap={teamMap}
               />
             </Border>
             <Border
