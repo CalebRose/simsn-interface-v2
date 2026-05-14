@@ -21,9 +21,9 @@ const hckApiURL = "https://simhck-hqd2bme9gse5d7g9.westus-01.azurewebsites.net/a
 const localHckWSUrl = "ws://localhost:8080/ws";
 const HCKWSURL = "wss://simhck-hqd2bme9gse5d7g9.westus-01.azurewebsites.net/ws";
 
-// TEMPORARILY SWAPPED TO LOCAL FOR TESTING:
-export const hckUrl = hckLocal;
-export const hck_ws = localHckWSUrl;
+// SWAPPED TO PRODUCTION FOR REAL WORLD TEST:
+export const hckUrl = hckApiURL;
+export const hck_ws = HCKWSURL;
 
 const localBASEBALL = "https://localhost:6001/api/";
 const baseballApiURL =

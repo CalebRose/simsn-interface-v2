@@ -137,9 +137,8 @@ const LiveRink = () => {
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
   const [goalFlash, setGoalFlash] = useState<Record<number, 'home' | 'away' | null>>({});
   const [isSpoofing, setIsSpoofing] = useState(false);
-  const [spoofLoading, setSpoofLoading] = useState(false);
+  const [broadcastState, setBroadcastState] = useState<'IDLE' | 'GENERATING' | 'BROADCASTING'>('IDLE');
   const [selectedTimeslot, setSelectedTimeslot] = useState<string>("B");
-
   const [liveBoxScores, setLiveBoxScores] = useState<Record<number, any>>({});
 
   const bulkPlaysRef = useRef<Record<number, any[]>>({}); 
@@ -159,17 +158,19 @@ const LiveRink = () => {
     return selectedLeague === SimCHL ? currentUser?.CHLTeamID : currentUser?.PHLTeamID;
   }, [selectedLeague, currentUser]);
 
+  // Adjust this check based on how your app defines an Admin. 
+  // FIX: Converted 3 to "3" to match the string type requirement.
+  const isAdmin = currentUser?.roleID === "3" 
+
   const getStatsForGame = (gameId: number) => {
     if (liveBoxScores[gameId]) return liveBoxScores[gameId];
     return gameDetails;
   };
 
-  // --- SMART STAT PARSER ---
   const updateLocalStats = (game: any, play: any, homeScored: boolean, awayScored: boolean, recentPlays: any[]) => {
     const playText = play.PlayText;
     const textLower = playText.toLowerCase();
     
-    // Fallback: If DB score didn't change but text explicitly says point, force a tally
     let isGoal = homeScored || awayScored;
     if (!isGoal && textLower.includes("point")) {
         isGoal = true;
@@ -196,7 +197,6 @@ const LiveRink = () => {
                 ...newStats.AwayStats.Forwards, ...newStats.AwayStats.Defenders
             ];
 
-            // 1. AWARD GOAL: Scan current text for any player's last name
             const playersInGoalText = allSkaters.filter(p => {
                 const ln = getLastName(p.Name);
                 return new RegExp(`\\b${ln}\\b`, 'i').test(playText);
@@ -206,7 +206,6 @@ const LiveRink = () => {
                 playersInGoalText[0].Goals++;
             }
 
-            // 2. AWARD ASSISTS: Look back at the last 2 lines of play-by-play for a pass
             const assistPlays = recentPlays.slice(0, 2); 
             let assistsAwarded = 0;
             for (const rp of assistPlays) {
@@ -219,7 +218,6 @@ const LiveRink = () => {
                         return new RegExp(`\\b${ln}\\b`, 'i').test(rp.PlayText);
                     });
                     
-                    // Don't give an assist to the guy who scored
                     const assisters = playersInPass.filter(p => !playersInGoalText.some(scorer => scorer.Name === p.Name));
                     if (assisters.length > 0) {
                         assisters[0].Assists++;
@@ -228,7 +226,6 @@ const LiveRink = () => {
                 }
             }
 
-            // 3. PENALIZE GOALIE: Increment Shots Against
             if (homeScored && newStats.AwayStats.Goalies.length > 0) {
                 const g = newStats.AwayStats.Goalies[0];
                 g.ShotsAgainst++;
@@ -296,11 +293,15 @@ const LiveRink = () => {
     setTimeout(() => setGoalFlash(prev => ({ ...prev, [gameId]: null })), 4000);
   };
 
-  const startSpoofLive = async () => {
+  const triggerEngineAndBroadcast = async () => {
     if (Object.keys(games).length === 0) return;
-    setSpoofLoading(true);
+    setBroadcastState('GENERATING');
     const isCollege = selectedLeague === SimCHL;
+
     try {
+        // Uncomment this once your Go route is running:
+        await fetch(`${hckUrl}admin/run-games`, { method: 'POST' });
+
         const res = await fetch(`${hckUrl}games/plays/bulk/chl?isCollege=${isCollege}&season=${rawSeasonID}&week=${currentWeek}&timeslot=${selectedTimeslot}`);
         const bulkData = await res.json();
         
@@ -322,11 +323,12 @@ const LiveRink = () => {
             gameCooldowns.current[g.GameID] = 0;
         });
         setGames(resetGames);
+        
+        setBroadcastState('BROADCASTING');
         setIsSpoofing(true);
     } catch (e) {
-        console.error(e);
-    } finally {
-        setSpoofLoading(false);
+        console.error("Failed to run broadcast:", e);
+        setBroadcastState('IDLE');
     }
   };
 
@@ -366,7 +368,6 @@ const LiveRink = () => {
                 const homeScored = play.HomeScore > g.HomeTeamScore;
                 const awayScored = play.AwayScore > g.AwayTeamScore;
                 
-                // CRITICAL: Call parser with the history passed in for Assist tracking
                 updateLocalStats(g, play, homeScored, awayScored, currentPlaysRef.current[g.GameID] || []);
                 
                 if (homeScored) triggerGoal(g.GameID, 'home');
@@ -377,7 +378,6 @@ const LiveRink = () => {
                     HomeTeamScore: play.HomeScore, AwayTeamScore: play.AwayScore, 
                     Zone: play.Zone || 11 
                 });
-                // Unshift happens AFTER the update, so recentPlays.slice(0, 2) in the parser accurately grabs the previous passes
                 currentPlaysRef.current[g.GameID].unshift(play);
                 gameCooldowns.current[g.GameID] = now + (homeScored || awayScored ? 10000 : 3000);
                 
@@ -386,11 +386,15 @@ const LiveRink = () => {
                 }
             });
 
-            if (!anyRunning && upcomingList.length === 0) setIsSpoofing(false);
+            if (!anyRunning && upcomingList.length === 0) {
+                setIsSpoofing(false);
+                setBroadcastState('IDLE');
+            }
             return { ...newGames };
         });
     }, 250);
-  }, [isSpoofing, selectedGameId]);
+    return () => clearInterval(interval);
+  }, [isSpoofing, selectedGameId, liveBoxScores]);
 
   const allGames = Object.values(games);
   const upcomingGames = allGames.filter(g => !g.GameComplete && g.Period === 0);
@@ -399,12 +403,27 @@ const LiveRink = () => {
 
   if (selectedGameId === null) {
     return (
-      <div className="h-screen w-full bg-[var(--bg-primary)] pt-[calc(8vh+10px)] flex flex-col overflow-hidden relative text-left">
-        <button onClick={startSpoofLive} disabled={isSpoofing || spoofLoading} className="absolute top-4 right-8 bg-purple-600 text-white font-bold py-2 px-4 rounded z-50 text-[1.2vh] uppercase">{spoofLoading ? 'Loading...' : '🧪 Spoof Live Run'}</button>
+      <div className="h-screen w-full bg-[var(--bg-primary)] flex flex-col overflow-hidden relative text-left">
+        
+        {isAdmin && (
+            <div className="w-full bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] shadow-md flex items-center justify-between px-8 py-3 shrink-0 relative z-20">
+                <div className="flex items-center gap-4">
+                    <div className={`w-3 h-3 rounded-full ${broadcastState === 'BROADCASTING' ? 'bg-green-500 animate-pulse' : broadcastState === 'GENERATING' ? 'bg-yellow-500 animate-spin' : 'bg-red-500'}`} />
+                    <span className="text-[1.4vh] font-bold text-[var(--text-muted)] uppercase tracking-widest">Control Room</span>
+                </div>
+                <button 
+                    onClick={triggerEngineAndBroadcast} 
+                    disabled={broadcastState !== 'IDLE'} 
+                    className="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-6 rounded shadow-lg disabled:opacity-50 text-[1.2vh] uppercase tracking-wider transition-all"
+                >
+                    {broadcastState === 'GENERATING' ? '⚙️ ENGINE RUNNING...' : broadcastState === 'BROADCASTING' ? '📡 LIVE ON AIR' : '🟢 START LIVE BROADCAST'}
+                </button>
+            </div>
+        )}
+
         <div className="flex-1 px-4 lg:px-8 pb-6 flex flex-col min-h-0 mt-8">
           <div className="flex justify-between items-center mb-6 shrink-0">
             <h1 className="text-[2.5vh] font-black text-white uppercase tracking-[0.4em] flex items-center gap-3">
-              <span className={`w-2 h-2 rounded-full ${isSpoofing ? 'bg-purple-500 animate-bounce' : 'bg-red-600 animate-ping'}`}></span> 
               Live Hockey Hub <span className="text-[var(--text-muted)] text-[1.5vh] tracking-widest ml-4">{currentSeason} - Week {currentWeek}</span>
             </h1>
             <div className="flex gap-4">
