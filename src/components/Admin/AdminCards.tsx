@@ -54,7 +54,7 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
           classes="items-center justify-center"
           styles={{ backgroundColor, borderColor }}
         >
-          <div className="flex flex-col w-full h-[5rem] lg:w-[6rem] lg:h-[6rem] items-center justify-center">
+          <div className="flex flex-col w-full h-20 lg:w-24 lg:h-24 items-center justify-center">
             <Logo
               url={logo}
               variant="normal"
@@ -65,7 +65,7 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
         </Border>
 
         {/* Team info */}
-        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:mx-auto lg:flex-grow">
+        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:mx-auto lg:grow">
           <Text variant="small" classes="mb-1 lg:mb-2">
             {teamLabel}
           </Text>
@@ -172,7 +172,7 @@ export const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 }) => {
   return (
     <Border classes={`${!oneItem ? "w-full" : "w-auto"} px-3`}>
-      <div className="flex flex-row flex-grow items-center h-[12rem] w-full">
+      <div className="flex flex-row grow items-center h-48 w-full">
         <Border
           classes="items-center justify-center mt-1"
           styles={{ backgroundColor, borderColor }}
@@ -245,7 +245,7 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
       <div className="grid grid-cols-2 gap-2 py-2 lg:grid-cols-5 lg:items-center">
         {/* Sending team logo — mobile: row 1 col 1 | desktop: col 1 */}
         <Border
-          classes="items-center justify-center order-1 lg:order-none"
+          classes="items-center justify-center order-1 lg:order-0"
           styles={{ backgroundColor, borderColor }}
         >
           <div className="flex flex-col w-full items-center justify-center p-2 lg:p-4">
@@ -260,7 +260,7 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
         </Border>
 
         {/* Sending trade options — mobile: row 2 col 1 | desktop: col 2 */}
-        <div className="flex flex-col justify-center p-2 order-3 lg:order-none">
+        <div className="flex flex-col justify-center p-2 order-3 lg:order-0">
           {sendingTradeOptions &&
             sendingTradeOptions.map((item) => {
               let playerID = 0;
@@ -285,7 +285,7 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
         </div>
 
         {/* Receiving trade options — mobile: row 2 col 2 | desktop: col 3 */}
-        <div className="flex flex-col justify-center p-2 order-4 lg:order-none">
+        <div className="flex flex-col justify-center p-2 order-4 lg:order-0">
           {receivingTradeOptions &&
             receivingTradeOptions.map((item) => {
               let playerID = 0;
@@ -311,7 +311,7 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
 
         {/* Receiving team logo — mobile: row 1 col 2 | desktop: col 4 */}
         <Border
-          classes="items-center justify-center order-2 lg:order-none"
+          classes="items-center justify-center order-2 lg:order-0"
           styles={{ backgroundColor, borderColor }}
         >
           <div className="flex flex-col w-full items-center justify-center p-2 lg:p-4">
@@ -326,7 +326,7 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
         </Border>
 
         {/* Buttons — mobile: row 3 spanning both cols | desktop: col 5 */}
-        <div className="flex flex-row lg:flex-col justify-center gap-2 order-5 col-span-2 lg:col-span-1 lg:order-none">
+        <div className="flex flex-row lg:flex-col justify-center gap-2 order-5 col-span-2 lg:col-span-1 lg:order-0">
           <Button variant="success" size="sm" onClick={accept}>
             Accept
           </Button>

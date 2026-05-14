@@ -53,7 +53,7 @@ const RosterTable = ({ players }: { players: AllStarPlayer[] }) => {
         <thead>
           <tr className="text-left text-xs font-semibold uppercase border-b-2 border-gray-300 dark:border-gray-600">
             <th className="px-2 py-2 w-10">#</th>
-            <th className="px-2 py-2 min-w-[10rem]">Player</th>
+            <th className="px-2 py-2 min-w-40">Player</th>
             <th className="px-2 py-2 text-center w-16">Pos</th>
             <th className="px-2 py-2 text-center w-16">Team</th>
             <th className="px-2 py-2 text-center w-20">Role</th>

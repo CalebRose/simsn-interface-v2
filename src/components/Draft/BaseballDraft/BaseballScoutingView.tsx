@@ -111,14 +111,14 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
           placeholder="Search players..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="bg-gray-800 text-white border border-gray-700 rounded px-3 py-2 w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="bg-gray-800 text-white border border-gray-700 rounded-sm px-3 py-2 w-full sm:w-64 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
         />
         <div className="flex flex-wrap gap-2">
           {BASEBALL_DRAFT_POSITIONS.map((pos) => (
             <button
               key={pos.value}
               onClick={() => handlePositionToggle(pos.value)}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              className={`px-3 py-1 rounded-sm text-sm font-medium transition-colors ${
                 selectedPosition === pos.value
                   ? "bg-blue-600 text-white"
                   : "bg-gray-800 text-gray-300 hover:bg-gray-700"
@@ -145,7 +145,7 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
                 <span className="text-white font-medium text-sm">
                   {player.first_name} {player.last_name}
                 </span>
-                <span className="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded">
+                <span className="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded-sm">
                   {player.position}
                 </span>
               </div>
@@ -163,7 +163,7 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
                 <button
                   onClick={() => onOpenScoutModal(player.player_id)}
                   disabled={isDrafted}
-                  className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Scout
                 </button>
@@ -184,7 +184,7 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
           <button
             disabled={currentPage <= 1}
             onClick={() => handlePageChange(currentPage - 1)}
-            className="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1 rounded-sm bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Prev
           </button>
@@ -194,7 +194,7 @@ const BaseballScoutingView: FC<BaseballScoutingViewProps> = ({
           <button
             disabled={currentPage >= totalPages}
             onClick={() => handlePageChange(currentPage + 1)}
-            className="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="px-3 py-1 rounded-sm bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Next
           </button>

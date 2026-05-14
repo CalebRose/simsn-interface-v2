@@ -102,9 +102,15 @@ export const BaseballLandingPage = ({
     }
     let cancelled = false;
     BaseballService.GetDepartmentStatus(orgId, leagueYearId)
-      .then((d) => { if (!cancelled) setDeptEligible(d?.eligible ?? false); })
-      .catch(() => { if (!cancelled) setDeptEligible(false); });
-    return () => { cancelled = true; };
+      .then((d) => {
+        if (!cancelled) setDeptEligible(d?.eligible ?? false);
+      })
+      .catch(() => {
+        if (!cancelled) setDeptEligible(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [orgId, leagueYearId, league]);
 
   const refreshBudget = useCallback(() => {
@@ -128,7 +134,8 @@ export const BaseballLandingPage = ({
   );
 
   // --- Financial summary ---
-  const [financialSummary, setFinancialSummary] = useState<OrgFinancialSummaryResponse | null>(null);
+  const [financialSummary, setFinancialSummary] =
+    useState<OrgFinancialSummaryResponse | null>(null);
   const leagueYear = seasonContext?.league_year ?? 0;
 
   useEffect(() => {
@@ -138,9 +145,15 @@ export const BaseballLandingPage = ({
     }
     let cancelled = false;
     BaseballService.GetOrgFinancialSummary(userOrg.org_abbrev, leagueYear)
-      .then((res) => { if (!cancelled) setFinancialSummary(res); })
-      .catch(() => { if (!cancelled) setFinancialSummary(null); });
-    return () => { cancelled = true; };
+      .then((res) => {
+        if (!cancelled) setFinancialSummary(res);
+      })
+      .catch(() => {
+        if (!cancelled) setFinancialSummary(null);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [userOrg.org_abbrev, leagueYear, league]);
 
   // --- Org selector: view any org ---
@@ -409,7 +422,8 @@ export const BaseballLandingPage = ({
 
   const teamInjuries = useMemo(() => {
     if (!injuryReport || injuryReport.length === 0) return [];
-    const numericLevel = activeTeam?.team_level ?? LEVEL_TO_NUMERIC[activeLevel] ?? null;
+    const numericLevel =
+      activeTeam?.team_level ?? LEVEL_TO_NUMERIC[activeLevel] ?? null;
     if (numericLevel == null) return injuryReport;
     return injuryReport.filter((inj) => inj.current_level === numericLevel);
   }, [injuryReport, activeLevel, activeTeam]);
@@ -669,7 +683,7 @@ export const BaseballLandingPage = ({
         <div className="flex md:gap-[2vw] lg:gap-4 flex-col-reverse md:flex-row">
           {/* Standings */}
           <Border
-            classes="border-4 py-0 px-0 h-[90vw] max-h-[90vh] w-full md:max-w-[45vw] lg:max-w-[30rem] md:h-auto"
+            classes="border-4 py-0 px-0 h-[90vw] max-h-[90vh] w-full md:max-w-[45vw] lg:max-w-120 md:h-auto"
             styles={{
               backgroundColor: borderColor,
               borderColor: backgroundColor,
@@ -677,8 +691,12 @@ export const BaseballLandingPage = ({
           >
             <SectionCards
               team={activeTeam}
-              header={isCollege ? "Standings" : `${displayLevel(activeLevel)} Standings`}
-              classes={`${textColorClass} h-full max-w-[30rem]`}
+              header={
+                isCollege
+                  ? "Standings"
+                  : `${displayLevel(activeLevel)} Standings`
+              }
+              classes={`${textColorClass} h-full max-w-120`}
               backgroundColor={backgroundColor}
               headerColor={headerColor}
               borderColor={borderColor}
@@ -686,17 +704,11 @@ export const BaseballLandingPage = ({
               textColorClass={textColorClass}
             >
               {isDataStale ? (
-                <Text
-                  variant="body-small"
-                  classes={textColorClass}
-                >
+                <Text variant="body-small" classes={textColorClass}>
                   Loading...
                 </Text>
               ) : teamStandings.length === 0 ? (
-                <Text
-                  variant="body-small"
-                  classes={textColorClass}
-                >
+                <Text variant="body-small" classes={textColorClass}>
                   No standings available.
                 </Text>
               ) : (
@@ -815,10 +827,7 @@ export const BaseballLandingPage = ({
                 textColorClass={textColorClass}
               >
                 {isDataStale ? (
-                  <Text
-                    variant="body-small"
-                    classes={textColorClass}
-                  >
+                  <Text variant="body-small" classes={textColorClass}>
                     Loading...
                   </Text>
                 ) : nextGame ? (
@@ -899,7 +908,10 @@ export const BaseballLandingPage = ({
                   darkerBackgroundColor={darkerBackgroundColor}
                   textColorClass={textColorClass}
                 >
-                  <BaseballInjuriesContent injuries={teamInjuries} textColorClass={textColorClass} />
+                  <BaseballInjuriesContent
+                    injuries={teamInjuries}
+                    textColorClass={textColorClass}
+                  />
                 </SectionCards>
               </Border>
             )}
@@ -927,33 +939,38 @@ export const BaseballLandingPage = ({
             )}
 
             {/* Scouting Department (mobile, MLB only) */}
-            {isMobile && !isCollege && isOwnOrg && deptEligible && orgId > 0 && leagueYearId > 0 && (
-              <Border
-                classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <SectionCards
-                  team={activeTeam}
-                  header="Scouting Department"
-                  classes={`${textColorClass} h-full`}
-                  backgroundColor={backgroundColor}
-                  headerColor={headerColor}
-                  borderColor={borderColor}
-                  darkerBackgroundColor={darkerBackgroundColor}
-                  textColorClass={textColorClass}
+            {isMobile &&
+              !isCollege &&
+              isOwnOrg &&
+              deptEligible &&
+              orgId > 0 &&
+              leagueYearId > 0 && (
+                <Border
+                  classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full"
+                  styles={{
+                    backgroundColor: borderColor,
+                    borderColor: backgroundColor,
+                  }}
                 >
-                  <ScoutingDepartmentPanel
-                    orgId={orgId}
-                    leagueYearId={leagueYearId}
-                    budget={scoutingBudget}
-                    onPurchased={refreshBudget}
-                  />
-                </SectionCards>
-              </Border>
-            )}
+                  <SectionCards
+                    team={activeTeam}
+                    header="Scouting Department"
+                    classes={`${textColorClass} h-full`}
+                    backgroundColor={backgroundColor}
+                    headerColor={headerColor}
+                    borderColor={borderColor}
+                    darkerBackgroundColor={darkerBackgroundColor}
+                    textColorClass={textColorClass}
+                  >
+                    <ScoutingDepartmentPanel
+                      orgId={orgId}
+                      leagueYearId={leagueYearId}
+                      budget={scoutingBudget}
+                      onPurchased={refreshBudget}
+                    />
+                  </SectionCards>
+                </Border>
+              )}
 
             {/* Financial Summary (mobile, MLB only, own org only) */}
             {isMobile && !isCollege && isOwnOrg && financialSummary && (
@@ -1012,7 +1029,7 @@ export const BaseballLandingPage = ({
                         {teamNotifications.map((n: BaseballNotification) => (
                           <div
                             key={n.id}
-                            className={`flex items-start justify-between gap-2 p-2 rounded text-sm ${
+                            className={`flex items-start justify-between gap-2 p-2 rounded-sm text-sm ${
                               n.is_read
                                 ? "bg-gray-50 dark:bg-gray-800 opacity-70"
                                 : "bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-500"
@@ -1133,34 +1150,39 @@ export const BaseballLandingPage = ({
           )}
 
           {/* Scouting Department (desktop, MLB only) */}
-          {!isMobile && !isCollege && isOwnOrg && deptEligible && orgId > 0 && leagueYearId > 0 && (
-            <Border
-              classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em]"
-              styles={{
-                backgroundColor: borderColor,
-                borderColor: backgroundColor,
-              }}
-            >
-              <SectionCards
-                team={activeTeam}
-                header="Scouting Department"
-                classes={`${textColorClass} h-full`}
-                backgroundColor={backgroundColor}
-                headerColor={headerColor}
-                borderColor={borderColor}
-                darkerBackgroundColor={darkerBackgroundColor}
-                textColorClass={textColorClass}
+          {!isMobile &&
+            !isCollege &&
+            isOwnOrg &&
+            deptEligible &&
+            orgId > 0 &&
+            leagueYearId > 0 && (
+              <Border
+                classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em]"
+                styles={{
+                  backgroundColor: borderColor,
+                  borderColor: backgroundColor,
+                }}
               >
-                <ScoutingDepartmentPanel
-                  orgId={orgId}
-                  leagueYearId={leagueYearId}
-                  budget={scoutingBudget}
-                  onPurchased={refreshBudget}
-                  accentColor={borderColor}
-                />
-              </SectionCards>
-            </Border>
-          )}
+                <SectionCards
+                  team={activeTeam}
+                  header="Scouting Department"
+                  classes={`${textColorClass} h-full`}
+                  backgroundColor={backgroundColor}
+                  headerColor={headerColor}
+                  borderColor={borderColor}
+                  darkerBackgroundColor={darkerBackgroundColor}
+                  textColorClass={textColorClass}
+                >
+                  <ScoutingDepartmentPanel
+                    orgId={orgId}
+                    leagueYearId={leagueYearId}
+                    budget={scoutingBudget}
+                    onPurchased={refreshBudget}
+                    accentColor={borderColor}
+                  />
+                </SectionCards>
+              </Border>
+            )}
 
           {/* Financial Summary (desktop, MLB only, own org only) */}
           {!isMobile && !isCollege && isOwnOrg && financialSummary && (
@@ -1205,7 +1227,10 @@ export const BaseballLandingPage = ({
                 darkerBackgroundColor={darkerBackgroundColor}
                 textColorClass={textColorClass}
               >
-                <BaseballInjuriesContent injuries={teamInjuries} textColorClass={textColorClass} />
+                <BaseballInjuriesContent
+                  injuries={teamInjuries}
+                  textColorClass={textColorClass}
+                />
               </SectionCards>
             </Border>
           )}
@@ -1230,10 +1255,7 @@ export const BaseballLandingPage = ({
                 textColorClass={textColorClass}
               >
                 {leadersLoading ? (
-                  <Text
-                    variant="body-small"
-                    classes={textColorClass}
-                  >
+                  <Text variant="body-small" classes={textColorClass}>
                     Loading leaders...
                   </Text>
                 ) : (
@@ -1251,18 +1273,19 @@ export const BaseballLandingPage = ({
                       />
                     )}
 
-                    {hrLeader && hrLeader.player_id !== avgLeader?.player_id && (
-                      <LeaderCard
-                        label="Power Leader"
-                        labelColor="text-purple-600 dark:text-purple-400"
-                        playerId={hrLeader.player_id}
-                        name={hrLeader.name}
-                        team={activeTeam}
-                        league={league}
-                        statLine={`${hrLeader.avg}/${hrLeader.obp}/${hrLeader.slg} (${hrLeader.ops} OPS)`}
-                        details={`${hrLeader.hr} HR | ${hrLeader.rbi} RBI | ${hrLeader.h} H | ${hrLeader.ab} AB`}
-                      />
-                    )}
+                    {hrLeader &&
+                      hrLeader.player_id !== avgLeader?.player_id && (
+                        <LeaderCard
+                          label="Power Leader"
+                          labelColor="text-purple-600 dark:text-purple-400"
+                          playerId={hrLeader.player_id}
+                          name={hrLeader.name}
+                          team={activeTeam}
+                          league={league}
+                          statLine={`${hrLeader.avg}/${hrLeader.obp}/${hrLeader.slg} (${hrLeader.ops} OPS)`}
+                          details={`${hrLeader.hr} HR | ${hrLeader.rbi} RBI | ${hrLeader.h} H | ${hrLeader.ab} AB`}
+                        />
+                      )}
 
                     {spLeader && (
                       <LeaderCard
@@ -1413,20 +1436,13 @@ const BaseballQuickLinks = ({
         <Button
           size="xs"
           onClick={() =>
-            navigate(
-              isCollege
-                ? routes.COLLEGE_BASEBALL_TEAM
-                : routes.MLB_TEAM,
-            )
+            navigate(isCollege ? routes.COLLEGE_BASEBALL_TEAM : routes.MLB_TEAM)
           }
         >
           Roster
         </Button>
         {!isCollege && (
-          <Button
-            size="xs"
-            onClick={() => navigate(routes.MLB_FINANCIALS)}
-          >
+          <Button size="xs" onClick={() => navigate(routes.MLB_FINANCIALS)}>
             Finances
           </Button>
         )}
@@ -1434,9 +1450,7 @@ const BaseballQuickLinks = ({
           size="xs"
           onClick={() =>
             navigate(
-              isCollege
-                ? routes.COLLEGE_BASEBALL_STATS
-                : routes.MLB_STATS,
+              isCollege ? routes.COLLEGE_BASEBALL_STATS : routes.MLB_STATS,
             )
           }
         >
@@ -1649,7 +1663,7 @@ const BaseballGamesBar = ({
                         {teamScore} - {oppScore}
                       </span>
                       <span
-                        className={`text-[0.55rem] font-bold uppercase tracking-wider px-1.5 py-px rounded mt-0.5 ${
+                        className={`text-[0.55rem] font-bold uppercase tracking-wider px-1.5 py-px rounded-sm mt-0.5 ${
                           won
                             ? "bg-green-600 text-white"
                             : lost
@@ -1773,7 +1787,11 @@ const StandingsTable = ({
 
 // ─── Financial Summary Panel ────────────────────────────────────────────────
 
-const FinancialSummaryPanel = ({ data }: { data: OrgFinancialSummaryResponse }) => {
+const FinancialSummaryPanel = ({
+  data,
+}: {
+  data: OrgFinancialSummaryResponse;
+}) => {
   const navigate = useNavigate();
   const netChange = data.ending_balance - data.starting_balance;
 
@@ -1798,13 +1816,16 @@ const FinancialSummaryPanel = ({ data }: { data: OrgFinancialSummaryResponse }) 
       totalSalary += w.salary_out;
       totalPerformance += w.performance_in;
     }
-    if (totalPerformance > 0) rev.push({ label: "Performance", amount: totalPerformance });
+    if (totalPerformance > 0)
+      rev.push({ label: "Performance", amount: totalPerformance });
     if (totalSalary > 0) exp.push({ label: "Salary", amount: totalSalary });
 
     // Interest
     if (data.interest_events) {
       for (const [key, val] of Object.entries(data.interest_events)) {
-        const label = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+        const label = key
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
         if (val >= 0) rev.push({ label, amount: val });
         else exp.push({ label, amount: Math.abs(val) });
       }
@@ -1821,28 +1842,41 @@ const FinancialSummaryPanel = ({ data }: { data: OrgFinancialSummaryResponse }) 
     <div className="space-y-3 p-1">
       {/* Balance */}
       <div className="flex justify-between items-baseline">
-        <span className="text-xs text-gray-500 dark:text-gray-400">Current Balance</span>
-        <span className="text-lg font-bold">{formatMoney(data.ending_balance)}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          Current Balance
+        </span>
+        <span className="text-lg font-bold">
+          {formatMoney(data.ending_balance)}
+        </span>
       </div>
 
       {/* Revenue / Expenses / Net */}
       <div className="grid grid-cols-3 gap-2 text-sm">
         <div>
-          <span className="text-xs text-gray-500 dark:text-gray-400 block">Revenue</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 block">
+            Revenue
+          </span>
           <span className="font-semibold text-green-600 dark:text-green-400">
             {formatMoney(data.season_revenue)}
           </span>
         </div>
         <div>
-          <span className="text-xs text-gray-500 dark:text-gray-400 block">Expenses</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 block">
+            Expenses
+          </span>
           <span className="font-semibold text-red-600 dark:text-red-400">
             {formatMoney(data.season_expenses)}
           </span>
         </div>
         <div>
-          <span className="text-xs text-gray-500 dark:text-gray-400 block">Net Change</span>
-          <span className={`font-semibold ${netChange >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-            {netChange >= 0 ? "+" : "-"}{formatMoney(Math.abs(netChange))}
+          <span className="text-xs text-gray-500 dark:text-gray-400 block">
+            Net Change
+          </span>
+          <span
+            className={`font-semibold ${netChange >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+          >
+            {netChange >= 0 ? "+" : "-"}
+            {formatMoney(Math.abs(netChange))}
           </span>
         </div>
       </div>
@@ -1852,21 +1886,33 @@ const FinancialSummaryPanel = ({ data }: { data: OrgFinancialSummaryResponse }) 
         <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs border-t dark:border-gray-600 pt-2">
           {/* Revenue categories */}
           <div>
-            <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Revenue</span>
+            <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Revenue
+            </span>
             {categories.rev.map((c) => (
               <div key={c.label} className="flex justify-between py-0.5">
-                <span className="text-gray-500 dark:text-gray-400">{c.label}</span>
-                <span className="text-green-600 dark:text-green-400 font-medium">{formatMoney(c.amount)}</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  {c.label}
+                </span>
+                <span className="text-green-600 dark:text-green-400 font-medium">
+                  {formatMoney(c.amount)}
+                </span>
               </div>
             ))}
           </div>
           {/* Expense categories */}
           <div>
-            <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Expenses</span>
+            <span className="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Expenses
+            </span>
             {categories.exp.map((c) => (
               <div key={c.label} className="flex justify-between py-0.5">
-                <span className="text-gray-500 dark:text-gray-400">{c.label}</span>
-                <span className="text-red-600 dark:text-red-400 font-medium">{formatMoney(c.amount)}</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  {c.label}
+                </span>
+                <span className="text-red-600 dark:text-red-400 font-medium">
+                  {formatMoney(c.amount)}
+                </span>
               </div>
             ))}
           </div>

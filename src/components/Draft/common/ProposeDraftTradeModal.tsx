@@ -390,7 +390,7 @@ export const ProposeDraftTradeModal: FC<ProposeDraftTradeModalProps> = ({
               styles={dropdownStyles}
             />
           </div>
-          <div className="overflow-y-auto max-h-[25rem] w-full flex flex-col gap-y-2">
+          <div className="overflow-y-auto max-h-100 w-full flex flex-col gap-y-2">
             {selectedUserItems.length === 0 && (
               <Border classes="p-4">
                 <Text variant="xs" classes="text-gray-400">
@@ -424,7 +424,7 @@ export const ProposeDraftTradeModal: FC<ProposeDraftTradeModalProps> = ({
                   styles={dropdownStyles}
                 />
               </div>
-              <div className="overflow-y-auto max-h-[25rem] w-full flex flex-col gap-y-2">
+              <div className="overflow-y-auto max-h-100 w-full flex flex-col gap-y-2">
                 {selectedPartnerItems.length === 0 && (
                   <Border classes="p-4">
                     <Text variant="xs" classes="text-gray-400">

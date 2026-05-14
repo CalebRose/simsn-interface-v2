@@ -28,7 +28,9 @@ const BaseballBigBoard: FC<BaseballBigBoardProps> = ({
   showSignStatus = false,
   onPickClick,
 }) => {
-  const [expandedRounds, setExpandedRounds] = useState<Set<number>>(new Set([currentRound]));
+  const [expandedRounds, setExpandedRounds] = useState<Set<number>>(
+    new Set([currentRound]),
+  );
 
   const modeMap = new Map(roundModes.map((r) => [r.round, r.mode]));
 
@@ -62,7 +64,9 @@ const BaseballBigBoard: FC<BaseballBigBoardProps> = ({
   }, [currentRound]);
 
   const expandAll = useCallback(() => {
-    setExpandedRounds(new Set(Array.from({ length: totalRounds }, (_, i) => i + 1)));
+    setExpandedRounds(
+      new Set(Array.from({ length: totalRounds }, (_, i) => i + 1)),
+    );
   }, [totalRounds]);
 
   const collapseAll = useCallback(() => {
@@ -75,19 +79,19 @@ const BaseballBigBoard: FC<BaseballBigBoardProps> = ({
       <div className="flex items-center gap-2 mb-3">
         <button
           onClick={jumpToCurrentRound}
-          className="rounded bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
+          className="rounded-sm bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
         >
           Jump to Current Round
         </button>
         <button
           onClick={expandAll}
-          className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 hover:bg-gray-600"
+          className="rounded-sm bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 hover:bg-gray-600"
         >
           Expand All
         </button>
         <button
           onClick={collapseAll}
-          className="rounded bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 hover:bg-gray-600"
+          className="rounded-sm bg-gray-700 px-3 py-1.5 text-xs font-medium text-gray-300 hover:bg-gray-600"
         >
           Collapse All
         </button>
@@ -100,7 +104,9 @@ const BaseballBigBoard: FC<BaseballBigBoardProps> = ({
         const isCurrent = roundNum === currentRound;
         const mode = modeMap.get(roundNum) ?? "auto";
         const isLive = mode === "live";
-        const filledCount = roundPicks.filter((p) => p.player_id != null).length;
+        const filledCount = roundPicks.filter(
+          (p) => p.player_id != null,
+        ).length;
 
         return (
           <div key={roundNum} id={`draft-round-${roundNum}`}>
@@ -108,24 +114,28 @@ const BaseballBigBoard: FC<BaseballBigBoardProps> = ({
             <button
               onClick={() => toggleRound(roundNum)}
               className={`
-                w-full flex items-center justify-between gap-3 p-2.5 rounded font-semibold text-white transition-colors
+                w-full flex items-center justify-between gap-3 p-2.5 rounded-sm font-semibold text-white transition-colors
                 ${isCurrent ? "bg-blue-700" : "bg-gray-800 hover:bg-gray-700"}
               `}
             >
               <div className="flex items-center gap-2">
-                <span className={`text-xs ${isExpanded ? "rotate-90" : ""} transition-transform`}>
+                <span
+                  className={`text-xs ${isExpanded ? "rotate-90" : ""} transition-transform`}
+                >
                   ▶
                 </span>
                 <span>Round {roundNum}</span>
                 <span
                   className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${
-                    isLive ? "bg-blue-500/30 text-blue-300" : "bg-gray-600/50 text-gray-400"
+                    isLive
+                      ? "bg-blue-500/30 text-blue-300"
+                      : "bg-gray-600/50 text-gray-400"
                   }`}
                 >
                   {isLive ? "Live" : "Auto"}
                 </span>
                 {isCurrent && (
-                  <span className="rounded bg-yellow-500/30 px-2 py-0.5 text-[10px] font-bold text-yellow-300">
+                  <span className="rounded-sm bg-yellow-500/30 px-2 py-0.5 text-[10px] font-bold text-yellow-300">
                     Current
                   </span>
                 )}

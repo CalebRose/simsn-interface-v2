@@ -7,7 +7,7 @@ import type { ScoutingPlayerResponse } from "../../../../../models/baseball/base
 import type { PlayerStatsResponse } from "../../../../../models/baseball/baseballStatsModels";
 
 const ReportCard: FC<{ title: string; text: string }> = ({ title, text }) => (
-  <div className="bg-gray-50 dark:bg-gray-700/50 rounded p-2">
+  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-sm p-2">
     <Text variant="xs" classes="font-semibold mb-1">
       {title}
     </Text>

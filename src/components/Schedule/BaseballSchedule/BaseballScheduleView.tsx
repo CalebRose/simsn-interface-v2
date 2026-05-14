@@ -73,7 +73,7 @@ const GameTypeBadge = ({ gameType }: { gameType?: string }) => {
   if (!badge) return null;
   return (
     <span
-      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${badge.color}`}
+      className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-sm ${badge.color}`}
     >
       {badge.label}
     </span>
@@ -170,7 +170,7 @@ const SeriesCard = ({
           </Text>
         </div>
         <span
-          className="text-xs font-bold px-2 py-0.5 rounded dark:!text-white"
+          className="text-xs font-bold px-2 py-0.5 rounded-sm dark:text-white!"
           style={
             accentColor && record.label !== "—"
               ? { backgroundColor: `${accentColor}15`, color: accentColor }
@@ -612,7 +612,7 @@ export const BaseballScheduleView = ({
               Schedule · {seasonLabel}
             </Text>
           </div>
-          <div className="ml-auto min-w-[14rem]">
+          <div className="ml-auto min-w-56">
             <SelectDropdown
               options={teamOptions}
               value={selectedTeamOption}
@@ -684,11 +684,11 @@ export const BaseballScheduleView = ({
                     <button
                       onClick={() => navigateDay(-1)}
                       disabled={selectedWeek <= 1 && selectedSubweek === "a"}
-                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                      className="px-2 py-1 rounded-sm border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
                     >
                       ←
                     </button>
-                    <span className="text-sm font-semibold min-w-[8rem] text-center">
+                    <span className="text-sm font-semibold min-w-32 text-center">
                       Week {selectedWeek} · {SUBWEEK_LABELS[selectedSubweek]}
                     </span>
                     <button
@@ -696,7 +696,7 @@ export const BaseballScheduleView = ({
                       disabled={
                         selectedWeek >= TOTAL_WEEKS && selectedSubweek === "d"
                       }
-                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                      className="px-2 py-1 rounded-sm border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
                     >
                       →
                     </button>
@@ -709,11 +709,11 @@ export const BaseballScheduleView = ({
                     <button
                       onClick={() => setSelectedWeek((w) => Math.max(1, w - 1))}
                       disabled={selectedWeek <= 1}
-                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                      className="px-2 py-1 rounded-sm border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
                     >
                       ←
                     </button>
-                    <span className="text-sm font-semibold min-w-[3rem] text-center">
+                    <span className="text-sm font-semibold min-w-12 text-center">
                       {selectedWeek}
                     </span>
                     <button
@@ -721,7 +721,7 @@ export const BaseballScheduleView = ({
                         setSelectedWeek((w) => Math.min(TOTAL_WEEKS, w + 1))
                       }
                       disabled={selectedWeek >= TOTAL_WEEKS}
-                      className="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
+                      className="px-2 py-1 rounded-sm border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-30 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer disabled:cursor-default"
                     >
                       →
                     </button>
@@ -873,7 +873,7 @@ export const BaseballScheduleView = ({
                             </Text>
                             {selectedTeamId && (monthW > 0 || monthL > 0) && (
                               <span
-                                className="text-sm font-semibold dark:!text-white"
+                                className="text-sm font-semibold dark:text-white!"
                                 style={{ color: headerColor }}
                               >
                                 {monthW}-{monthL}
@@ -889,7 +889,7 @@ export const BaseballScheduleView = ({
                                 {SUBWEEK_ORDER.map((sw) => (
                                   <th
                                     key={sw}
-                                    className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center min-w-[5rem]"
+                                    className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase text-center min-w-20"
                                   >
                                     {SUBWEEK_LABELS[sw]}
                                   </th>
@@ -997,7 +997,7 @@ export const BaseballScheduleView = ({
                         Season Total
                       </Text>
                       <span
-                        className="text-base font-bold dark:!text-white"
+                        className="text-base font-bold dark:text-white!"
                         style={{ color: headerColor }}
                       >
                         {(() => {

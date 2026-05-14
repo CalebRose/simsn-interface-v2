@@ -168,7 +168,7 @@ const LedgerRow = ({ entry }: { entry: LedgerEntry }) => {
         {entry.week_index != null ? `Week ${entry.week_index}` : "Year-level"}
       </td>
       <td className="px-3 py-1.5">
-        <span className={`px-1.5 py-0.5 text-xs rounded whitespace-nowrap ${badgeColor}`}>
+        <span className={`px-1.5 py-0.5 text-xs rounded-sm whitespace-nowrap ${badgeColor}`}>
           {typeLabel}
         </span>
       </td>

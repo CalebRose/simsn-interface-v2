@@ -84,7 +84,7 @@ export const DraftClock: FC<DraftClockProps> = ({
 
   return (
     <Border
-      classes={`p-4 bg-gradient-to-br from-gray-900 to-gray-800 relative overflow-hidden border-4 h-full ${isUrgent ? "animate-pulse" : ""}`}
+      classes={`p-4 bg-linear-to-br from-gray-900 to-gray-800 relative overflow-hidden border-4 h-full ${isUrgent ? "animate-pulse" : ""}`}
       styles={{
         borderColor: teamColors.primary,
         contain: "layout style",
@@ -99,7 +99,7 @@ export const DraftClock: FC<DraftClockProps> = ({
       />
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
         <div
-          className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-1000"
+          className="h-full bg-linear-to-r from-blue-500 to-blue-600 transition-all duration-1000"
           style={{ width: `${getProgressPercentage()}%` }}
         />
       </div>

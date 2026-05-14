@@ -2274,7 +2274,7 @@ export const BasketBallGameModal = ({
                 </div>
                 <div className="grid">
                   <div
-                    className={`grid grid-cols-${scoreColumnCount} gap-4 border-b`}
+                    className={`grid ${scoreColumnCount === 9 ? "grid-cols-9" : scoreColumnCount === 8 ? "grid-cols-8" : scoreColumnCount === 7 ? "grid-cols-7" : "grid-cols-6"} gap-4 border-b`}
                   >
                     <div className="text-center col-span-2"></div>
                     <div className="text-center col-span-1">
@@ -2303,7 +2303,9 @@ export const BasketBallGameModal = ({
                       <Text variant="body-small">T</Text>
                     </div>
                   </div>
-                  <div className={`grid grid-cols-${scoreColumnCount} gap-3`}>
+                  <div
+                    className={`grid ${scoreColumnCount === 9 ? "grid-cols-9" : scoreColumnCount === 8 ? "grid-cols-8" : scoreColumnCount === 7 ? "grid-cols-7" : "grid-cols-6"} gap-3`}
+                  >
                     <div className="text-left col-span-2">
                       <Text variant="body-small">{game.HomeTeamAbbr}</Text>
                     </div>
@@ -2344,7 +2346,9 @@ export const BasketBallGameModal = ({
                     </div>
                   </div>
 
-                  <div className={`grid grid-cols-${scoreColumnCount} gap-3`}>
+                  <div
+                    className={`grid ${scoreColumnCount === 9 ? "grid-cols-9" : scoreColumnCount === 8 ? "grid-cols-8" : scoreColumnCount === 7 ? "grid-cols-7" : "grid-cols-6"} gap-3`}
+                  >
                     <div className="text-left col-span-2">
                       <Text variant="body-small">{game.AwayTeamAbbr}</Text>
                     </div>

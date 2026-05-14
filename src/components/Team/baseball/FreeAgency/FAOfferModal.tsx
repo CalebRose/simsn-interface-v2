@@ -253,7 +253,7 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
         <div>
           <label className="block text-xs text-gray-400 mb-1">Years</label>
           <select
-            className="w-full text-sm border rounded px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             value={years}
             onChange={(e) => setYears(Number(e.target.value))}
           >
@@ -270,7 +270,7 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
         <div>
           <label className="block text-xs text-gray-400 mb-1">Level</label>
           <select
-            className="w-full text-sm border rounded px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+            className="w-full text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             value={levelId}
             onChange={(e) => setLevelId(Number(e.target.value))}
           >

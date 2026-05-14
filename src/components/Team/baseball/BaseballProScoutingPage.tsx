@@ -164,9 +164,9 @@ export const BaseballProScoutingPage = (_props: BaseballProScoutingPageProps) =>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => pool.setFilter("level", undefined)}
-                  className={`flex flex-col items-center px-4 py-2 rounded-lg border-2 transition-all cursor-pointer min-w-[6rem]
+                  className={`flex flex-col items-center px-4 py-2 rounded-lg border-2 transition-all cursor-pointer min-w-24
                     ${!pool.filters.level
-                      ? "border-blue-500 bg-blue-500/10 shadow-sm"
+                      ? "border-blue-500 bg-blue-500/10 shadow-xs"
                       : "border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400 bg-white dark:bg-gray-800"
                     }`}
                 >
@@ -181,9 +181,9 @@ export const BaseballProScoutingPage = (_props: BaseballProScoutingPageProps) =>
                       <button
                         key={level}
                         onClick={() => pool.setFilter("level", Number(level))}
-                        className={`flex flex-col items-center px-4 py-2 rounded-lg border-2 transition-all cursor-pointer min-w-[6rem]
+                        className={`flex flex-col items-center px-4 py-2 rounded-lg border-2 transition-all cursor-pointer min-w-24
                           ${isSelected
-                            ? "border-blue-500 bg-blue-500/10 shadow-sm"
+                            ? "border-blue-500 bg-blue-500/10 shadow-xs"
                             : "border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400 bg-white dark:bg-gray-800"
                           }`}
                       >
@@ -232,7 +232,7 @@ export const BaseballProScoutingPage = (_props: BaseballProScoutingPageProps) =>
               value={pool.search}
               onChange={(e) => pool.setSearch(e.target.value)}
               placeholder="Search player..."
-              className="text-sm border rounded px-2 py-1 w-48 dark:bg-gray-700 dark:border-gray-600"
+              className="text-sm border rounded-sm px-2 py-1 w-48 dark:bg-gray-700 dark:border-gray-600"
             />
             <Text variant="small" classes="text-gray-500 dark:text-gray-400">
               {pool.totalCount} players

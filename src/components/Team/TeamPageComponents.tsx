@@ -94,7 +94,7 @@ export const TeamInfo: FC<TeamInfoProps> = ({
       <div className="w-full grid grid-cols-1 min-[769px]:grid-cols-2 min-[1025px]:grid-cols-4 lg:gap-y-0 md:gap-y-4 gap-x-4">
         <div className="flex flex-row justify-center items-center p-2 pt-6 gap-x-4">
           <div
-            className="max-w-[10rem] 5xl:max-w-[12rem] h-[7.5rem] items-center justify-center rounded-lg border-2"
+            className="max-w-40 5xl:max-w-48 h-30 items-center justify-center rounded-lg border-2"
             style={{ backgroundColor: sectionBg, borderColor: headerColor }}
           >
             <Logo
@@ -236,7 +236,7 @@ export const CapsheetInfo = ({
 
   return (
     <div
-      className="flex w-full h-[100%] border-2 rounded-lg py-5 flex-row"
+      className="flex w-full h-full border-2 rounded-lg py-5 flex-row"
       style={{ borderColor, backgroundColor }}
     >
       {capsheet && (
@@ -318,7 +318,7 @@ export const TeamBreakdown = ({
   const notHockey = league !== SimCHL && league !== SimPHL;
   return (
     <div
-      className="flex flex-col w-full h-[100%] border-2 rounded-lg py-5"
+      className="flex flex-col w-full h-full border-2 rounded-lg py-5"
       style={{ borderColor, backgroundColor }}
     >
       {TeamProfile && notHockey && (
@@ -748,7 +748,7 @@ export const TeamGrades = ({
 }: any) => {
   return (
     <div
-      className="flex items-center w-full justify-center gap-5 p-2 mx-2 sm:p-0 sm:pt-1 flex-shrink-1 rounded-lg border-2"
+      className="flex items-center w-full justify-center gap-5 p-2 mx-2 sm:p-0 sm:pt-1 shrink rounded-lg border-2"
       style={{ backgroundColor, borderColor }}
     >
       {Team && (

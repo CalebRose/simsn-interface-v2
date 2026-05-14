@@ -108,14 +108,14 @@ export const SignUpPage = () => {
         onClose={handleAvailableTeamsModal.handleCloseModal}
       />
       <div className="lg:grid lg:grid-cols-12 lg:w-full xl:grid xl:min-h-screen">
-        <section className="relative flex items-end bg-gray-900 col-span-12 h-[100vh]">
+        <section className="relative flex items-end bg-gray-900 col-span-12 h-screen">
           <img
             alt="Night"
             src={fieldImg}
             className="absolute inset-0 h-full w-full object-cover opacity-90"
           />
 
-          <div className="hidden md:flex flex-col items-center my-auto md:relative lg:p-12 bg-black bg-opacity-75 align-middle rounded-md min-w-full">
+          <div className="hidden md:flex flex-col items-center my-auto md:relative lg:p-12 bg-black/75 align-middle rounded-md min-w-full">
             <img src={`${simLogos.SimSN}`} className="h-40" alt="SimSNLogo" />
             <div className="flex flex-wrap gap-4 mt-4">
               {Object.entries(simLogos)
@@ -149,7 +149,7 @@ export const SignUpPage = () => {
                   type="text"
                   id="Username"
                   name="username"
-                  className="mt-1 w-[25em] rounded-md border-gray-200  text-sm  shadow-sm"
+                  className="mt-1 w-[25em] rounded-md border-gray-200  text-sm  shadow-xs"
                   onChange={handleChange}
                 />
               </div>
@@ -161,7 +161,7 @@ export const SignUpPage = () => {
                   type="email"
                   id="Email"
                   name="email"
-                  className="mt-1 w-[25em] rounded-md border-gray-200 text-sm shadow-sm dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
+                  className="mt-1 w-[25em] rounded-md border-gray-200 text-sm shadow-xs dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                   onChange={handleChange}
                 />
               </div>
@@ -173,7 +173,7 @@ export const SignUpPage = () => {
                   type={passwordVisibility ? "text" : "password"}
                   id="Password"
                   name="password"
-                  className="mt-1 w-[25em] rounded-md border-gray-200 text-sm shadow-sm dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
+                  className="mt-1 w-[25em] rounded-md border-gray-200 text-sm shadow-xs dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                   onChange={handleChange}
                 />
               </div>
@@ -181,7 +181,7 @@ export const SignUpPage = () => {
               <div className="col-span-6 sm:flex-col sm:items-center sm:gap-4">
                 <button
                   type="submit"
-                  className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500"
+                  className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-hidden focus:ring-3 active:text-blue-500"
                 >
                   {processing ? "Processing..." : "Create an account"}
                 </button>
@@ -209,7 +209,7 @@ export const SignUpPage = () => {
 
           <main className="md:hidden flex items-center justify-center px-4 sm:px-8 sm:py-8 my-auto">
             <div className="max-w-xl lg:max-w-3xl">
-              <div className="relative flex flex-col items-center py-6 px-10 rounded-lg bg-black bg-opacity-75 align-middle min-w-full">
+              <div className="relative flex flex-col items-center py-6 px-10 rounded-lg bg-black/75 align-middle min-w-full">
                 <img
                   src={`${simLogos.SimSN}`}
                   className="h-20"
@@ -237,7 +237,7 @@ export const SignUpPage = () => {
                       type="text"
                       id="username"
                       name="username"
-                      className="mt-1 w-full rounded-md border-gray-200 text-sm shadow-sm dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
+                      className="mt-1 w-full rounded-md border-gray-200 text-sm shadow-xs dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                       onChange={handleChange}
                     />
                   </div>
@@ -249,7 +249,7 @@ export const SignUpPage = () => {
                       type="email"
                       id="Email"
                       name="email"
-                      className="mt-1 w-full rounded-md border-gray-200 text-sm shadow-sm dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
+                      className="mt-1 w-full rounded-md border-gray-200 text-sm shadow-xs dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                       onChange={handleChange}
                     />
                   </div>
@@ -263,7 +263,7 @@ export const SignUpPage = () => {
                       type={passwordVisibility ? "text" : "password"}
                       id="Password"
                       name="password"
-                      className="mt-1 w-full rounded-md border-gray-200 text-sm shadow-sm dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
+                      className="mt-1 w-full rounded-md border-gray-200 text-sm shadow-xs dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                       onChange={handleChange}
                     />
                   </div>
@@ -271,7 +271,7 @@ export const SignUpPage = () => {
                   <div className="col-span-6 sm:flex sm:items-center sm:gap-4">
                     <button
                       type="submit"
-                      className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500"
+                      className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-hidden focus:ring-3 active:text-blue-500"
                     >
                       {processing ? "Processing..." : "Create an account"}
                     </button>

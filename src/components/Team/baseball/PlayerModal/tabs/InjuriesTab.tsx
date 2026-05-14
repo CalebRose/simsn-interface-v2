@@ -55,7 +55,7 @@ export const InjuriesTab: FC<InjuriesTabProps> = memo(
                   <td className="px-2 py-1.5">{evt.injury_name}</td>
                   <td className="px-2 py-1.5 text-center">
                     <span
-                      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      className={`inline-block px-1.5 py-0.5 rounded-sm text-[10px] font-medium ${
                         evt.source === "pregame"
                           ? "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
                           : "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200"

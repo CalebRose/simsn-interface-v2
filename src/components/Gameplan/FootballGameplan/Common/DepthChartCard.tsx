@@ -90,7 +90,7 @@ export const DepthChartCard: React.FC<DepthChartCardProps> = ({
       <div
         className={`
           relative cursor-pointer select-none transition-all duration-200 
-          ${classes?.includes("!w-full !h-full") ? "w-full h-full" : `${sizeClasses} w-full h-full`}
+          ${classes?.includes("w-full! h-full!") ? "w-full h-full" : `${sizeClasses} w-full h-full`}
           ${classes}
           ${depthChartManager ? "" : ``}
         `}
@@ -223,7 +223,7 @@ export const DepthChartCard: React.FC<DepthChartCardProps> = ({
               </div>
             </div>
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-white opacity-0 hover:opacity-10 transition-opacity duration-200 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-t from-transparent via-transparent to-white opacity-0 hover:opacity-10 transition-opacity duration-200 pointer-events-none" />
         </Border>
       </div>
     </>

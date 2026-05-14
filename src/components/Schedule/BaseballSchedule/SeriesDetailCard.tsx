@@ -77,7 +77,7 @@ const TeamLineupColumn = ({
       {LINEUP_POSITION_ORDER.map((pos) => (
         <div key={pos} className="flex items-baseline gap-1 py-[2px] text-xs leading-4">
           <span
-            className="font-mono w-7 shrink-0 text-right text-[12px] [paint-order:stroke_fill] [-webkit-text-stroke:.4px_rgba(0,0,0,0)] dark:[-webkit-text-stroke:.3px_rgba(155,155,155,0)] [color:var(--pos-light)] dark:[color:var(--pos-dark)]"
+            className="font-mono w-7 shrink-0 text-right text-[12px] [paint-order:stroke_fill] [-webkit-text-stroke:.4px_rgba(0,0,0,0)] dark:[-webkit-text-stroke:.3px_rgba(155,155,155,0)] text-(--pos-light) dark:text-(--pos-dark)"
             style={{ "--pos-light": lightModePos, "--pos-dark": darkModePos } as React.CSSProperties}
           >
             {pos}
@@ -289,7 +289,7 @@ export const SeriesDetailCard = ({
           </p>
         </div>
         <span
-          className="text-xs font-bold px-2 py-0.5 rounded shrink-0 dark:!text-white"
+          className="text-xs font-bold px-2 py-0.5 rounded-sm shrink-0 dark:text-white!"
           style={
             accentColor && record.label !== "—"
               ? { backgroundColor: `${accentColor}15`, color: accentColor }

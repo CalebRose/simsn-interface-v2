@@ -261,7 +261,7 @@ export const FASignModal: FC<FASignModalProps> = ({
             <select
               value={years}
               onChange={(e) => setYears(Number(e.target.value))}
-              className="w-full text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
+              className="w-full text-sm border rounded-sm px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
             >
               {Array.from(
                 { length: demandMaxYears - demandMinYears + 1 },
@@ -285,7 +285,7 @@ export const FASignModal: FC<FASignModalProps> = ({
             <select
               value={levelId}
               onChange={(e) => setLevelId(Number(e.target.value))}
-              className="w-full text-sm border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
+              className="w-full text-sm border rounded-sm px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
             >
               {LEVEL_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>

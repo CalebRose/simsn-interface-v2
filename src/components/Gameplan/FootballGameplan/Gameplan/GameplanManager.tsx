@@ -110,7 +110,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
       return {
         text: `${errorCount} error${errorCount > 1 ? 's' : ''}`,
         color: 'text-red-400',
-        bgColor: 'bg-red-900 bg-opacity-50 border-red-500'
+        bgColor: 'bg-red-900 bg-black/50 border-red-500'
       };
     }
     
@@ -118,14 +118,14 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
       return {
         text: `${warningCount} warning${warningCount > 1 ? 's' : ''}`,
         color: 'text-yellow-400',
-        bgColor: 'bg-yellow-900 bg-opacity-50 border-yellow-500'
+        bgColor: 'bg-yellow-900 bg-black/50 border-yellow-500'
       };
     }
     
     return {
       text: 'Valid gameplan',
       color: 'text-green-400',
-      bgColor: 'bg-green-900 bg-opacity-50 border-green-500'
+      bgColor: 'bg-green-900 bg-black/50 border-green-500'
     };
   };
 
@@ -165,7 +165,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
                 size="md"
                 onClick={onSave}
                 disabled={!isValid || isSaving || !hasUnsavedChanges}
-                className={`w-full ${(!isValid || isSaving) ? 'cursor-not-allowed' : 'cursor-pointer'} ${(!isValid) ? 'bg-red-900 bg-opacity-50 border-red-500' : 'cursor-pointer'}`}
+                className={`w-full ${(!isValid || isSaving) ? 'cursor-not-allowed' : 'cursor-pointer'} ${(!isValid) ? 'bg-red-900 bg-black/50 border-red-500' : 'cursor-pointer'}`}
               >
                 {isSaving ? 'Saving...' : 'Save'}
               </Button>
@@ -215,7 +215,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
           Current Schemes
         </Text>
         <div className="flex items-center px-2 gap-2">
-          <div className="bg-gray-700 bg-opacity-50 rounded-lg p-3 w-1/2 h-full">
+          <div className="bg-gray-700 bg-black/50 rounded-lg p-3 w-1/2 h-full">
             <div className="flex items-center justify-between mb-2">
               <Text variant="small" classes="text-blue-400 font-semibold">
                 Offensive Scheme
@@ -241,7 +241,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               </Text>
             )}
           </div>
-          <div className="bg-gray-700 bg-opacity-50 rounded-lg p-3 w-1/2 h-full">
+          <div className="bg-gray-700 bg-black/50 rounded-lg p-3 w-1/2 h-full">
             <div className="flex items-center justify-between mb-2">
               <Text variant="small" classes="text-red-400 font-semibold">
                 Defensive Scheme
@@ -305,7 +305,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               </Text>
               <div className="space-y-2">
                 {validation.errors.map((error, index) => (
-                  <div key={index} className="bg-red-900 bg-opacity-30 border border-red-500 rounded p-3">
+                  <div key={index} className="bg-red-900 bg-black/30 border border-red-500 rounded-sm p-3">
                     <Text variant="small" classes="text-red-300 font-medium">
                       {error.field}
                     </Text>
@@ -324,7 +324,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               </Text>
               <div className="space-y-2">
                 {validation.warnings.map((warning, index) => (
-                  <div key={index} className="bg-yellow-900 bg-opacity-30 border border-yellow-500 rounded p-3">
+                  <div key={index} className="bg-yellow-900 bg-black/30 border border-yellow-500 rounded-sm p-3">
                     <Text variant="small" classes="text-yellow-300 font-medium">
                       {warning.field}
                     </Text>

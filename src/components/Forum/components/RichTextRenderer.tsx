@@ -42,7 +42,7 @@ function applyMarks(
         node = (
           <code
             key={key}
-            className="bg-gray-800 text-green-400 px-1 rounded text-sm"
+            className="bg-gray-800 text-green-400 px-1 rounded-sm text-sm"
           >
             {node}
           </code>
@@ -57,7 +57,7 @@ function applyMarks(
               key={key}
               src={href}
               alt=""
-              className="max-w-full max-h-[480px] object-contain rounded my-2 block"
+              className="max-w-full max-h-[480px] object-contain rounded-sm my-2 block"
               loading="lazy"
             />
           );
@@ -173,7 +173,7 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
       return (
         <pre
           key={key}
-          className="bg-gray-900 text-green-400 p-3 rounded overflow-x-auto text-sm my-2"
+          className="bg-gray-900 text-green-400 p-3 rounded-sm overflow-x-auto text-sm my-2"
         >
           <code>{children}</code>
         </pre>
@@ -196,7 +196,7 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
             key={key}
             src={txt}
             alt=""
-            className="max-w-full max-h-[480px] object-contain rounded my-2 block"
+            className="max-w-full max-h-[480px] object-contain rounded-sm my-2 block"
             loading="lazy"
           />
         );
@@ -219,7 +219,7 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
       return (
         <div
           key={key}
-          className="border-l-4 border-gray-500 pl-3 my-2 bg-white/5 rounded text-sm"
+          className="border-l-4 border-gray-500 pl-3 my-2 bg-white/5 rounded-sm text-sm"
         >
           <span className="text-gray-400 text-xs font-medium block mb-1">
             Quote — {node.attrs?.authorUsername as string}
@@ -238,7 +238,7 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
             title="YouTube video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
-            className="w-full h-full rounded"
+            className="w-full h-full rounded-sm"
             sandbox="allow-scripts allow-same-origin allow-presentation"
           />
         </div>
@@ -254,7 +254,7 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
           key={key}
           src={src}
           alt={(node.attrs?.alt as string) || ""}
-          className="max-h-[600px] object-contain rounded my-2 block mx-auto"
+          className="max-h-[600px] object-contain rounded-sm my-2 block mx-auto"
           style={
             w ? { width: `${w}px`, maxWidth: "100%" } : { maxWidth: "100%" }
           }
@@ -309,7 +309,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   if (!renderedDocument) {
     if (fallback) {
       return (
-        <p className="leading-relaxed whitespace-pre-wrap break-words">
+        <p className="leading-relaxed whitespace-pre-wrap wrap-break-word">
           {fallback}
         </p>
       );
@@ -318,7 +318,7 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
   }
 
   return (
-    <div className="rich-text-content prose prose-invert max-w-none break-words text-left">
+    <div className="rich-text-content prose prose-invert max-w-none wrap-break-word text-left">
       {renderNode(renderedDocument, "root")}
     </div>
   );

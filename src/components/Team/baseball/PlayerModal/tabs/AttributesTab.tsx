@@ -70,7 +70,7 @@ const PitchCard: FC<{
   const subKeys = ["pacc", "pcntrl", "pbrk", "consist"];
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-700/50 rounded p-2">
+    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-sm p-2">
       <div className="flex items-center gap-2 mb-1">
         <Text variant="xs" classes="font-semibold">
           {pitchName}

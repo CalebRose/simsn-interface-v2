@@ -163,8 +163,8 @@ const DepthChartManager: React.FC<DepthChartManagerProps> = ({
             }
             
             return (
-              <div key={`${selectedPosition}-${positionLevel}`} className="flex items-center gap-3 p-3 bg-gray-700 bg-opacity-30 rounded-lg max-h-[3em]">
-                <Text variant="body-small" classes="text-gray-300 font-semibold min-w-[3rem]">
+              <div key={`${selectedPosition}-${positionLevel}`} className="flex items-center gap-3 p-3 bg-gray-700 bg-black/30 rounded-lg max-h-[3em]">
+                <Text variant="body-small" classes="text-gray-300 font-semibold min-w-12">
                   {selectedPosition}{positionLevel}
                 </Text>
                 
@@ -269,7 +269,7 @@ const DepthChartManager: React.FC<DepthChartManagerProps> = ({
   return (
     <div className="space-y-6">
       {!canModify && (
-        <div className="text-center mb-4 p-3 bg-yellow-900 bg-opacity-30 border border-yellow-600 rounded-lg">
+        <div className="text-center mb-4 p-3 bg-yellow-900 bg-black/30 border border-yellow-600 rounded-lg">
           <Text variant="body" classes="text-yellow-400">
             Viewing {team?.TeamName || 'Team'} Depth Chart (Read-Only)
           </Text>
@@ -277,7 +277,7 @@ const DepthChartManager: React.FC<DepthChartManagerProps> = ({
       )}
       {canModify && (
         <div className="flex gap-2 justify-center">
-          <div className={`border rounded-lg p-4 ${isValid ? 'bg-green-900 bg-opacity-50 border-green-500' : 'bg-red-900 bg-opacity-50 border-red-500'}`}>
+          <div className={`border rounded-lg p-4 ${isValid ? 'bg-green-900 bg-black/50 border-green-500' : 'bg-red-900 bg-black/50 border-red-500'}`}>
             <div className="flex flex-col items-center justify-between">
               <div>
                 <Text variant="body" classes={`font-semibold ${isValid ? 'text-green-400' : 'text-red-400'}`}>
@@ -296,7 +296,7 @@ const DepthChartManager: React.FC<DepthChartManagerProps> = ({
                 size="md"
                 onClick={onSave}
                 disabled={!isValid || isSaving || !hasUnsavedChanges}
-                className={`w-full ${(!isValid || isSaving) ? 'cursor-not-allowed' : 'cursor-pointer'} ${(!isValid) ? 'bg-red-900 bg-opacity-50 border-red-500' : 'cursor-pointer'}`}
+                className={`w-full ${(!isValid || isSaving) ? 'cursor-not-allowed' : 'cursor-pointer'} ${(!isValid) ? 'bg-red-900 bg-black/50 border-red-500' : 'cursor-pointer'}`}
               >
                 {isSaving ? 'Saving...' : 'Save'}
               </Button>

@@ -64,8 +64,14 @@ import {
   FootballPlayerStatsModalView,
   HockeyPlayerStatsModalView,
 } from "./PlayerStatsModalView";
-import { Player as BaseballPlayer, PlayerContract as BaseballPlayerContract } from "../../models/baseball/baseballModels";
-import { injuryEffects, affectedAttributeKeys } from "../../_utility/injuryUtils";
+import {
+  Player as BaseballPlayer,
+  PlayerContract as BaseballPlayerContract,
+} from "../../models/baseball/baseballModels";
+import {
+  injuryEffects,
+  affectedAttributeKeys,
+} from "../../_utility/injuryUtils";
 import { getClassYear } from "../../_utility/baseballHelpers";
 import { ratingColor as ovrRatingColor } from "../Team/baseball/baseballColorConfig";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
@@ -144,14 +150,14 @@ export const CHLPlayerInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
-        <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
           <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
         </div>
         {team && (
           <Logo
             url={teamLogo}
             label={team.Abbreviation}
-            classes="h-[5rem] max-h-[5rem]"
+            classes="h-20 max-h-20"
             containerClass="p-4"
             textClass="text-small"
           />
@@ -474,14 +480,14 @@ export const PHLPlayerInfoModalBody: FC<PHLPlayerInfoModalBodyProps> = ({
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
-        <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
           <PlayerPicture playerID={player.ID} league={SimPHL} team={team} />
         </div>
         {team && (
           <Logo
             url={teamLogo}
             label={team.Abbreviation}
-            classes="h-[5rem] max-h-[5rem]"
+            classes="h-20 max-h-20"
             containerClass="p-4"
             textClass="text-small"
           />
@@ -819,14 +825,14 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
     <div className="flex flex-col w-full">
       <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
-          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture playerID={player.ID} league={SimCFB} team={team} />
           </div>
           {team && (
             <Logo
               url={teamLogo}
               label={team.TeamAbbr}
-              classes="h-[5rem] max-h-[5rem]"
+              classes="h-20 max-h-20"
               containerClass="p-4"
               textClass="text-small"
             />
@@ -983,14 +989,14 @@ export const NFLPlayerInfoModalBody: FC<NFLPlayerInfoModalBodyProps> = ({
     <div className="flex flex-col w-full">
       <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
-          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture playerID={player.ID} league={SimNFL} team={team} />
           </div>
           {team && (
             <Logo
               url={teamLogo}
               label={team.TeamAbbr}
-              classes="h-[5rem] max-h-[5rem]"
+              classes="h-20 max-h-20"
               containerClass="p-4"
               textClass="text-small"
             />
@@ -1186,14 +1192,14 @@ export const NFLDepthChartInfoModalBody: FC<
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
-        <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
           <PlayerPicture playerID={player.ID} league={SimNFL} team={team} />
         </div>
         {team && (
           <Logo
             url={teamLogo}
             label={team.TeamAbbr}
-            classes="h-[5rem] max-h-[5rem]"
+            classes="h-20 max-h-20"
             containerClass="p-4"
             textClass="text-small"
           />
@@ -1341,7 +1347,7 @@ export const CHLCrootInfoModalBody: FC<CHLCrootInfoModalBodyProps> = ({
         <div className="flex flex-col items-center px-1">
           <div
             className={`flex my-1 items-center justify-center 
-                         px-3 h-[3rem] min-h-[3rem] sm:w-[5rem] sm:max-w-[5rem] sm:h-[5rem] rounded-lg border-2`}
+                         px-3 h-12 min-h-12 sm:w-20 sm:max-w-20 sm:h-20 rounded-lg border-2`}
             style={{ backgroundColor: "white" }}
           >
             <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
@@ -1350,7 +1356,7 @@ export const CHLCrootInfoModalBody: FC<CHLCrootInfoModalBodyProps> = ({
             <Logo
               url={teamLogo}
               label={team.Abbreviation}
-              classes="h-[5rem] max-h-[5rem]"
+              classes="h-20 max-h-20"
               containerClass="p-4"
               textClass="text-small"
             />
@@ -1445,7 +1451,7 @@ export const CHLCrootInfoModalBody: FC<CHLCrootInfoModalBodyProps> = ({
             <Text variant="h6">Leading Teams</Text>
           </div>
           <div
-            className={`w-full grid grid-cols-${hasSigned ? "4" : "3"} mb-1`}
+            className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"} mb-1`}
           >
             <Text variant="body-small" classes="font-semibold">
               Team
@@ -1463,9 +1469,7 @@ export const CHLCrootInfoModalBody: FC<CHLCrootInfoModalBodyProps> = ({
             )}
           </div>
           <div
-            className={`w-full max-h-[8rem] overflow-y-auto grid grid-cols-${
-              hasSigned ? "4" : "3"
-            } gap-y-2 mb-2`}
+            className={`w-full max-h-32 overflow-y-auto grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"} gap-y-2 mb-2`}
           >
             {player.LeadingTeams.map((contender) => {
               const logo = getLogo(SimCHL, contender.TeamID, false);
@@ -1698,7 +1702,7 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
         <div className="flex flex-col items-center px-1">
           <div
             className={`flex my-1 items-center justify-center 
-          px-3 h-[3rem] min-h-[3rem] sm:w-[5rem] sm:max-w-[5rem] sm:h-[5rem] rounded-lg border-2`}
+          px-3 h-12 min-h-12 sm:w-20 sm:max-w-20 sm:h-20 rounded-lg border-2`}
             style={{ backgroundColor: "white" }}
           >
             <PlayerPicture playerID={player.ID} league={SimCFB} team={team} />
@@ -1707,7 +1711,7 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
             <Logo
               url={teamLogo}
               label={team.TeamAbbr}
-              classes="h-[5rem] max-h-[5rem]"
+              classes="h-20 max-h-20"
               containerClass="p-4"
               textClass="text-small"
             />
@@ -1827,7 +1831,7 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
           <div className="w-full mt-2 justify-center border-t-[0.1em]">
             <Text variant="h6">Leading Teams</Text>
           </div>
-          <div className={`w-full grid grid-cols-${hasSigned ? "4" : "3"}`}>
+          <div className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}>
             <Text variant="body" classes="font-semibold">
               Team
             </Text>
@@ -1844,9 +1848,7 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
             )}
           </div>
           <div
-            className={`w-full max-h-[6rem] overflow-y-auto grid grid-cols-${
-              hasSigned ? "4" : "3"
-            } gap-y-2`}
+            className={`w-full max-h-24 overflow-y-auto grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"} gap-y-2`}
           >
             {player.LeadingTeams &&
               player.LeadingTeams.map((team) => {
@@ -1969,14 +1971,14 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
     <>
       <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full mb-2">
         <div className="row-span-3 flex flex-col items-center">
-          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
           </div>
           {team && (
             <Logo
               url={teamLogo}
               label={team.Team}
-              classes="h-[5rem] max-h-[5rem]"
+              classes="h-20 max-h-20"
               containerClass="p-4"
               textClass="text-small"
             />
@@ -2084,7 +2086,7 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
           <div className="w-full mt-2 justify-center border-t-[0.1em]">
             <Text variant="h6">Leading Teams</Text>
           </div>
-          <div className={`w-full grid grid-cols-${hasSigned ? "4" : "3"}`}>
+          <div className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}>
             <Text variant="body" classes="font-semibold">
               Team
             </Text>
@@ -2101,9 +2103,7 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
             )}
           </div>
           <div
-            className={`w-full grid grid-cols-${
-              hasSigned ? "4" : "3"
-            } gap-y-2 overflow-y-auto max-h-[10rem] lg:max-h-[15rem]`}
+            className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"} gap-y-2 overflow-y-auto max-h-40 lg:max-h-60`}
           >
             {player.LeadingTeams &&
               player.LeadingTeams.map((team) => {
@@ -2158,14 +2158,14 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
-        <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
           <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
         </div>
         {team && (
           <Logo
             url={teamLogo}
             label={team.Team}
-            classes="h-[5rem] max-h-[5rem]"
+            classes="h-20 max-h-20"
             containerClass="p-4"
             textClass="text-small"
           />
@@ -2321,14 +2321,14 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
-        <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
           <PlayerPicture playerID={player.ID} league={SimNBA} team={team} />
         </div>
         {team && (
           <Logo
             url={teamLogo}
             label={team.Abbr}
-            classes="h-[5rem] max-h-[5rem]"
+            classes="h-20 max-h-20"
             containerClass="p-4"
             textClass="text-small"
           />
@@ -2537,14 +2537,14 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
     <>
       <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
-          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
           </div>
           {team && (
             <Logo
               url={teamLogo}
               label={team.Abbreviation}
-              classes="h-[5rem] max-h-[5rem]"
+              classes="h-20 max-h-20"
               containerClass="p-4"
               textClass="text-small"
             />
@@ -2852,7 +2852,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
             </Text>
           </div>
           <div
-            className={`w-full max-h-[6rem] overflow-y-auto grid grid-cols-3 gap-y-2 mb-2`}
+            className={`w-full max-h-24 overflow-y-auto grid grid-cols-3 gap-y-2 mb-2`}
           >
             {leadingTeamsList.map((contender) => {
               const logo = getLogo(SimCHL, contender.TeamID, false);
@@ -2948,14 +2948,14 @@ export const CBBPortalInfoModalBody: FC<CBBPortalInfoModalBodyProps> = ({
     <>
       <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
-          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
           </div>
           {team && (
             <Logo
               url={teamLogo}
               label={team.Abbr}
-              classes="h-[5rem] max-h-[5rem]"
+              classes="h-20 max-h-20"
               containerClass="p-4"
               textClass="text-small"
             />
@@ -3070,7 +3070,7 @@ export const CBBPortalInfoModalBody: FC<CBBPortalInfoModalBodyProps> = ({
             </Text>
           </div>
           <div
-            className={`w-full max-h-[6rem] overflow-y-auto grid grid-cols-3 gap-y-2 mb-2`}
+            className={`w-full max-h-24 overflow-y-auto grid grid-cols-3 gap-y-2 mb-2`}
           >
             {leadingTeamsList.map((contender) => {
               const logo = getLogo(SimCBB, contender.TeamID, false);
@@ -3168,14 +3168,14 @@ export const CFBPortalInfoModalBody: FC<CFBPortalInfoModalBodyProps> = ({
     <>
       <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
-          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture playerID={player.ID} league={SimCFB} team={team} />
           </div>
           {team && (
             <Logo
               url={teamLogo}
               label={team.TeamAbbr}
-              classes="h-[5rem] max-h-[5rem]"
+              classes="h-20 max-h-20"
               containerClass="p-4"
               textClass="text-small"
             />
@@ -3267,7 +3267,7 @@ export const CFBPortalInfoModalBody: FC<CFBPortalInfoModalBodyProps> = ({
             </Text>
           </div>
           <div
-            className={`w-full max-h-[6rem] overflow-y-auto grid grid-cols-3 gap-y-2 mb-2`}
+            className={`w-full max-h-24 overflow-y-auto grid grid-cols-3 gap-y-2 mb-2`}
           >
             {leadingTeamsList.map((contender) => {
               const logo = getLogo(SimCFB, contender.TeamID, false);
@@ -3390,8 +3390,11 @@ const BaseballStatCell = ({
         {label}
       </Text>
       <Text variant="small" classes={`whitespace-nowrap ${color}`}>
-        {isFuzzed && <span className="text-gray-400">~</span>}{typeof value === "number" ? Math.round(value) : value}
-        {isAffected && <span className="ml-0.5 text-red-500 text-[10px]">↓</span>}
+        {isFuzzed && <span className="text-gray-400">~</span>}
+        {typeof value === "number" ? Math.round(value) : value}
+        {isAffected && (
+          <span className="ml-0.5 text-red-500 text-[10px]">↓</span>
+        )}
         {pot && pot !== "?" && (
           <span className="ml-0.5 text-xs text-gray-500 dark:text-gray-400">
             ({pot})
@@ -3503,7 +3506,9 @@ export const BaseballPlayerInfoModalBody: FC<
     useSimBaseballStore();
 
   // Injury history
-  const [injuryHistory, setInjuryHistory] = useState<PlayerInjuryHistoryEvent[]>([]);
+  const [injuryHistory, setInjuryHistory] = useState<
+    PlayerInjuryHistoryEvent[]
+  >([]);
   const [injuryLoading, setInjuryLoading] = useState(false);
 
   // Position usage
@@ -3617,8 +3622,15 @@ export const BaseballPlayerInfoModalBody: FC<
       if (!cancelled) setGamelogLoading(false);
     };
     load();
-    return () => { cancelled = true; };
-  }, [selectedTab, statsSubTab, player.id, seasonContext?.current_league_year_id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    selectedTab,
+    statsSubTab,
+    player.id,
+    seasonContext?.current_league_year_id,
+  ]);
 
   // Career fetch
   useEffect(() => {
@@ -3635,7 +3647,9 @@ export const BaseballPlayerInfoModalBody: FC<
       if (!cancelled) setCareerLoading(false);
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [selectedTab, statsSubTab, player.id]);
 
   // Splits fetch
@@ -3657,8 +3671,15 @@ export const BaseballPlayerInfoModalBody: FC<
       if (!cancelled) setSplitsLoading(false);
     };
     load();
-    return () => { cancelled = true; };
-  }, [selectedTab, statsSubTab, player.id, seasonContext?.current_league_year_id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    selectedTab,
+    statsSubTab,
+    player.id,
+    seasonContext?.current_league_year_id,
+  ]);
 
   const heightObj = HeightToFeetAndInches(player.height);
   // Look up the player's team from allTeams (works for ANY org, not just the user's)
@@ -3690,7 +3711,7 @@ export const BaseballPlayerInfoModalBody: FC<
       <div className="grid grid-cols-4 gap-4 w-full">
         {/* Face + Team Logo */}
         <div className="row-span-3 flex flex-col items-center">
-          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture
               playerID={player.id}
               league={league as League}
@@ -3701,7 +3722,7 @@ export const BaseballPlayerInfoModalBody: FC<
             <Logo
               url={teamLogo}
               label={team.team_abbrev}
-              classes="h-[5rem] max-h-[5rem]"
+              classes="h-20 max-h-20"
               containerClass="p-4"
               textClass="text-small"
             />
@@ -3727,7 +3748,12 @@ export const BaseballPlayerInfoModalBody: FC<
           <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
             Overall
           </Text>
-          <Text variant="small" classes={`font-semibold ${player.displayovr != null ? ovrRatingColor(Number(player.displayovr)) : "text-gray-400"}`}>{player.displayovr ?? "—"}</Text>
+          <Text
+            variant="small"
+            classes={`font-semibold ${player.displayovr != null ? ovrRatingColor(Number(player.displayovr)) : "text-gray-400"}`}
+          >
+            {player.displayovr ?? "—"}
+          </Text>
         </div>
 
         <div className="flex flex-col">
@@ -3781,34 +3807,51 @@ export const BaseballPlayerInfoModalBody: FC<
       {/* Active Injuries */}
       {player.is_injured && (player.injury_details ?? []).length > 0 && (
         <div className="mt-4 p-3 rounded-lg border border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20">
-          <Text variant="small" classes="font-bold text-orange-600 dark:text-orange-400 mb-2">
+          <Text
+            variant="small"
+            classes="font-bold text-orange-600 dark:text-orange-400 mb-2"
+          >
             Active Injuries
           </Text>
           {(player.injury_details ?? []).map((inj) => {
-            const progress = inj.weeks_assigned > 0
-              ? Math.round(((inj.weeks_assigned - inj.weeks_remaining) / inj.weeks_assigned) * 100)
-              : 100;
+            const progress =
+              inj.weeks_assigned > 0
+                ? Math.round(
+                    ((inj.weeks_assigned - inj.weeks_remaining) /
+                      inj.weeks_assigned) *
+                      100,
+                  )
+                : 100;
             const effects = injuryEffects({ ...player, injury_details: [inj] });
             return (
               <div key={inj.event_id} className="mb-2 last:mb-0">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold">⚠ {inj.injury_name}</span>
-                  <span className="text-xs text-gray-500">{inj.weeks_remaining}w remaining</span>
+                  <span className="text-sm font-semibold">
+                    ⚠ {inj.injury_name}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {inj.weeks_remaining}w remaining
+                  </span>
                 </div>
                 <div className="h-1.5 rounded-full bg-gray-200 dark:bg-gray-700 mb-1.5">
-                  <div className="h-full rounded-full bg-orange-400" style={{ width: `${progress}%` }} />
+                  <div
+                    className="h-full rounded-full bg-orange-400"
+                    style={{ width: `${progress}%` }}
+                  />
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {effects.map((e) => (
                     <span
                       key={e.attr}
-                      className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                      className={`text-[10px] px-1.5 py-0.5 rounded-sm font-semibold ${
                         e.attr === "stamina_pct"
                           ? "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400"
                           : "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300"
                       }`}
                     >
-                      {e.attr === "stamina_pct" ? "BENCHED" : `${e.displayName} −${e.pct}%`}
+                      {e.attr === "stamina_pct"
+                        ? "BENCHED"
+                        : `${e.displayName} −${e.pct}%`}
                     </span>
                   ))}
                 </div>
@@ -3857,36 +3900,131 @@ export const BaseballPlayerInfoModalBody: FC<
 
         {selectedTab === "Batting" && (
           <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
-            <BaseballStatCell label="Contact" value={r.contact_display} pot={pot.contact_pot} isAffected={affected.has("contact")} />
-            <BaseballStatCell label="Power" value={r.power_display} pot={pot.power_pot} isAffected={affected.has("power")} />
-            <BaseballStatCell label="Eye" value={r.eye_display} pot={pot.eye_pot} isAffected={affected.has("eye")} />
-            <BaseballStatCell label="Discipline" value={r.discipline_display} pot={pot.discipline_pot} isAffected={affected.has("discipline")} />
-            <BaseballStatCell label="Speed" value={r.speed_display} pot={pot.speed_pot} isAffected={affected.has("speed")} />
-            <BaseballStatCell label="Base Reaction" value={r.basereaction_display} pot={pot.basereaction_pot} isAffected={affected.has("basereaction")} />
-            <BaseballStatCell label="Baserunning" value={r.baserunning_display} pot={pot.baserunning_pot} isAffected={affected.has("baserunning")} />
+            <BaseballStatCell
+              label="Contact"
+              value={r.contact_display}
+              pot={pot.contact_pot}
+              isAffected={affected.has("contact")}
+            />
+            <BaseballStatCell
+              label="Power"
+              value={r.power_display}
+              pot={pot.power_pot}
+              isAffected={affected.has("power")}
+            />
+            <BaseballStatCell
+              label="Eye"
+              value={r.eye_display}
+              pot={pot.eye_pot}
+              isAffected={affected.has("eye")}
+            />
+            <BaseballStatCell
+              label="Discipline"
+              value={r.discipline_display}
+              pot={pot.discipline_pot}
+              isAffected={affected.has("discipline")}
+            />
+            <BaseballStatCell
+              label="Speed"
+              value={r.speed_display}
+              pot={pot.speed_pot}
+              isAffected={affected.has("speed")}
+            />
+            <BaseballStatCell
+              label="Base Reaction"
+              value={r.basereaction_display}
+              pot={pot.basereaction_pot}
+              isAffected={affected.has("basereaction")}
+            />
+            <BaseballStatCell
+              label="Baserunning"
+              value={r.baserunning_display}
+              pot={pot.baserunning_pot}
+              isAffected={affected.has("baserunning")}
+            />
           </div>
         )}
 
         {selectedTab === "Fielding" && (
           <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
-            <BaseballStatCell label="Field Catch" value={r.fieldcatch_display} pot={pot.fieldcatch_pot} isAffected={affected.has("fieldcatch")} />
-            <BaseballStatCell label="Field React" value={r.fieldreact_display} pot={pot.fieldreact_pot} isAffected={affected.has("fieldreact")} />
-            <BaseballStatCell label="Field Spot" value={r.fieldspot_display} pot={pot.fieldspot_pot} isAffected={affected.has("fieldspot")} />
-            <BaseballStatCell label="Throw Acc" value={r.throwacc_display} pot={pot.throwacc_pot} isAffected={affected.has("throwacc")} />
-            <BaseballStatCell label="Throw Pow" value={r.throwpower_display} pot={pot.throwpower_pot} isAffected={affected.has("throwpower")} />
-            <BaseballStatCell label="Catch Frame" value={r.catchframe_display} pot={pot.catchframe_pot} isAffected={affected.has("catchframe")} />
-            <BaseballStatCell label="Catch Seq" value={r.catchsequence_display} pot={pot.catchsequence_pot} isAffected={affected.has("catchsequence")} />
+            <BaseballStatCell
+              label="Field Catch"
+              value={r.fieldcatch_display}
+              pot={pot.fieldcatch_pot}
+              isAffected={affected.has("fieldcatch")}
+            />
+            <BaseballStatCell
+              label="Field React"
+              value={r.fieldreact_display}
+              pot={pot.fieldreact_pot}
+              isAffected={affected.has("fieldreact")}
+            />
+            <BaseballStatCell
+              label="Field Spot"
+              value={r.fieldspot_display}
+              pot={pot.fieldspot_pot}
+              isAffected={affected.has("fieldspot")}
+            />
+            <BaseballStatCell
+              label="Throw Acc"
+              value={r.throwacc_display}
+              pot={pot.throwacc_pot}
+              isAffected={affected.has("throwacc")}
+            />
+            <BaseballStatCell
+              label="Throw Pow"
+              value={r.throwpower_display}
+              pot={pot.throwpower_pot}
+              isAffected={affected.has("throwpower")}
+            />
+            <BaseballStatCell
+              label="Catch Frame"
+              value={r.catchframe_display}
+              pot={pot.catchframe_pot}
+              isAffected={affected.has("catchframe")}
+            />
+            <BaseballStatCell
+              label="Catch Seq"
+              value={r.catchsequence_display}
+              pot={pot.catchsequence_pot}
+              isAffected={affected.has("catchsequence")}
+            />
           </div>
         )}
 
         {selectedTab === "Pitching" && isPitcher && (
           <div className="space-y-3">
             <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">
-              <BaseballStatCell label="Endurance" value={r.pendurance_display} pot={pot.pendurance_pot} isAffected={affected.has("pendurance")} />
-              <BaseballStatCell label="Control" value={r.pgencontrol_display} pot={pot.pgencontrol_pot} isAffected={affected.has("pgencontrol")} />
-              <BaseballStatCell label="Velocity" value={r.pthrowpower_display} pot={pot.pthrowpower_pot} isAffected={affected.has("pthrowpower")} />
-              <BaseballStatCell label="Sequencing" value={r.psequencing_display} pot={pot.psequencing_pot} isAffected={affected.has("psequencing")} />
-              <BaseballStatCell label="Pickoff" value={r.pickoff_display} pot={pot.pickoff_pot} isAffected={affected.has("pickoff")} />
+              <BaseballStatCell
+                label="Endurance"
+                value={r.pendurance_display}
+                pot={pot.pendurance_pot}
+                isAffected={affected.has("pendurance")}
+              />
+              <BaseballStatCell
+                label="Control"
+                value={r.pgencontrol_display}
+                pot={pot.pgencontrol_pot}
+                isAffected={affected.has("pgencontrol")}
+              />
+              <BaseballStatCell
+                label="Velocity"
+                value={r.pthrowpower_display}
+                pot={pot.pthrowpower_pot}
+                isAffected={affected.has("pthrowpower")}
+              />
+              <BaseballStatCell
+                label="Sequencing"
+                value={r.psequencing_display}
+                pot={pot.psequencing_pot}
+                isAffected={affected.has("psequencing")}
+              />
+              <BaseballStatCell
+                label="Pickoff"
+                value={r.pickoff_display}
+                pot={pot.pickoff_pot}
+                isAffected={affected.has("pickoff")}
+              />
             </div>
             <div className="border-t dark:border-gray-600 pt-3">
               <Text variant="small" classes="font-semibold mb-2">
@@ -4111,7 +4249,7 @@ export const BaseballPlayerInfoModalBody: FC<
                       <td className="px-2 py-1.5">{evt.injury_name}</td>
                       <td className="px-2 py-1.5 text-center">
                         <span
-                          className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                          className={`inline-block px-1.5 py-0.5 rounded-sm text-[10px] font-medium ${
                             evt.source === "pregame"
                               ? "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
                               : "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
@@ -4121,7 +4259,8 @@ export const BaseballPlayerInfoModalBody: FC<
                         </span>
                       </td>
                       <td className="px-2 py-1.5 text-center text-gray-500">
-                        {evt.season_week}{evt.season_subweek ?? ""}
+                        {evt.season_week}
+                        {evt.season_subweek ?? ""}
                       </td>
                       <td className="px-2 py-1.5 text-center">
                         {evt.weeks_remaining > 0
@@ -4154,33 +4293,47 @@ export const BaseballPlayerInfoModalBody: FC<
           <div className="w-full space-y-3">
             {/* Statistics sub-tabs */}
             <div className="flex gap-1 border-b border-gray-200 dark:border-gray-600 pb-1">
-              {(["Season", "Game Log", "Career", "Splits"] as const).map((st) => (
-                <button
-                  key={st}
-                  onClick={() => setStatsSubTab(st)}
-                  className={`px-3 py-1 text-xs rounded-t font-medium transition-colors ${
-                    statsSubTab === st
-                      ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                  }`}
-                >
-                  {st}
-                </button>
-              ))}
+              {(["Season", "Game Log", "Career", "Splits"] as const).map(
+                (st) => (
+                  <button
+                    key={st}
+                    onClick={() => setStatsSubTab(st)}
+                    className={`px-3 py-1 text-xs rounded-t font-medium transition-colors ${
+                      statsSubTab === st
+                        ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ),
+              )}
             </div>
 
             {/* ── Season sub-tab ── */}
             {statsSubTab === "Season" && (
               <div className="space-y-4">
                 {statsLoading ? (
-                  <Text variant="small" classes="text-gray-400 py-4 text-center">Loading statistics...</Text>
+                  <Text
+                    variant="small"
+                    classes="text-gray-400 py-4 text-center"
+                  >
+                    Loading statistics...
+                  </Text>
                 ) : !playerStats ? (
-                  <Text variant="small" classes="text-gray-400 py-4 text-center">No statistics available.</Text>
+                  <Text
+                    variant="small"
+                    classes="text-gray-400 py-4 text-center"
+                  >
+                    No statistics available.
+                  </Text>
                 ) : (
                   <>
                     {playerStats.batting && playerStats.batting.length > 0 && (
                       <div>
-                        <Text variant="small" classes="font-semibold mb-2">Batting</Text>
+                        <Text variant="small" classes="font-semibold mb-2">
+                          Batting
+                        </Text>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse text-xs">
                             <thead>
@@ -4205,23 +4358,58 @@ export const BaseballPlayerInfoModalBody: FC<
                             </thead>
                             <tbody>
                               {playerStats.batting.map((s, i) => (
-                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                                  <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.g}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.pa}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.ab}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.r}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.h}</td>
-                                  <td className="px-1.5 py-1 text-center">{s["2b"]}</td>
-                                  <td className="px-1.5 py-1 text-center">{s["3b"]}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.hr}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.rbi}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.bb}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.hbp}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.so}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.sb}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{s.avg}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{s.obp}</td>
+                                <tr
+                                  key={i}
+                                  className="border-b border-gray-100 dark:border-gray-700"
+                                >
+                                  <td className="px-1.5 py-1 font-medium">
+                                    {s.team_abbrev}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.g}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.pa}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.ab}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.r}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.h}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s["2b"]}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s["3b"]}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.hr}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.rbi}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.bb}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.hbp}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.so}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {s.sb}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">
+                                    {s.avg}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">
+                                    {s.obp}
+                                  </td>
                                 </tr>
                               ))}
                             </tbody>
@@ -4230,102 +4418,219 @@ export const BaseballPlayerInfoModalBody: FC<
                       </div>
                     )}
 
-                    {playerStats.pitching && playerStats.pitching.length > 0 && (
-                      <div>
-                        <Text variant="small" classes="font-semibold mb-2">Pitching</Text>
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse text-xs">
-                            <thead>
-                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-                                <th className="px-1.5 py-1 text-left">Team</th>
-                                <th className="px-1.5 py-1 text-center">G</th>
-                                <th className="px-1.5 py-1 text-center">GS</th>
-                                <th className="px-1.5 py-1 text-center">W</th>
-                                <th className="px-1.5 py-1 text-center">L</th>
-                                <th className="px-1.5 py-1 text-center">SV</th>
-                                <th className="px-1.5 py-1 text-center">HLD</th>
-                                <th className="px-1.5 py-1 text-center">IP</th>
-                                <th className="px-1.5 py-1 text-center">H</th>
-                                <th className="px-1.5 py-1 text-center">ER</th>
-                                <th className="px-1.5 py-1 text-center">BB</th>
-                                <th className="px-1.5 py-1 text-center">SO</th>
-                                <th className="px-1.5 py-1 text-center">HBP</th>
-                                <th className="px-1.5 py-1 text-center">ERA</th>
-                                <th className="px-1.5 py-1 text-center">WHIP</th>
-                                <th className="px-1.5 py-1 text-center" title="Wild Pitches">WP</th>
-                                <th className="px-1.5 py-1 text-center" title="Total Pitches">Pit</th>
-                                <th className="px-1.5 py-1 text-center" title="Strike Percentage">Str%</th>
-                                <th className="px-1.5 py-1 text-center" title="Pitches per Inning">P/IP</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {playerStats.pitching.map((s, i) => (
-                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                                  <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.g}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.gs}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.w}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.l}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.sv}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.hld}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.ip}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.h}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.er}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.bb}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.so}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.hbp}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{s.era}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{s.whip}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.wp}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.pitches}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.str_pct}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.p_ip}</td>
+                    {playerStats.pitching &&
+                      playerStats.pitching.length > 0 && (
+                        <div>
+                          <Text variant="small" classes="font-semibold mb-2">
+                            Pitching
+                          </Text>
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse text-xs">
+                              <thead>
+                                <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                  <th className="px-1.5 py-1 text-left">
+                                    Team
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">G</th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    GS
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">W</th>
+                                  <th className="px-1.5 py-1 text-center">L</th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    SV
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    HLD
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    IP
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">H</th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    ER
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    BB
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    SO
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    HBP
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    ERA
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    WHIP
+                                  </th>
+                                  <th
+                                    className="px-1.5 py-1 text-center"
+                                    title="Wild Pitches"
+                                  >
+                                    WP
+                                  </th>
+                                  <th
+                                    className="px-1.5 py-1 text-center"
+                                    title="Total Pitches"
+                                  >
+                                    Pit
+                                  </th>
+                                  <th
+                                    className="px-1.5 py-1 text-center"
+                                    title="Strike Percentage"
+                                  >
+                                    Str%
+                                  </th>
+                                  <th
+                                    className="px-1.5 py-1 text-center"
+                                    title="Pitches per Inning"
+                                  >
+                                    P/IP
+                                  </th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {playerStats.pitching.map((s, i) => (
+                                  <tr
+                                    key={i}
+                                    className="border-b border-gray-100 dark:border-gray-700"
+                                  >
+                                    <td className="px-1.5 py-1 font-medium">
+                                      {s.team_abbrev}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.g}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.gs}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.w}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.l}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.sv}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.hld}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.ip}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.h}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.er}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.bb}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.so}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.hbp}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">
+                                      {s.era}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">
+                                      {s.whip}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.wp}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.pitches}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.str_pct}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.p_ip}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {playerStats.fielding && playerStats.fielding.length > 0 && (
-                      <div>
-                        <Text variant="small" classes="font-semibold mb-2">Fielding</Text>
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse text-xs">
-                            <thead>
-                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-                                <th className="px-1.5 py-1 text-left">Team</th>
-                                <th className="px-1.5 py-1 text-center">Pos</th>
-                                <th className="px-1.5 py-1 text-center">G</th>
-                                <th className="px-1.5 py-1 text-center">INN</th>
-                                <th className="px-1.5 py-1 text-center">PO</th>
-                                <th className="px-1.5 py-1 text-center">A</th>
-                                <th className="px-1.5 py-1 text-center">E</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {playerStats.fielding.map((s, i) => (
-                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                                  <td className="px-1.5 py-1 font-medium">{s.team_abbrev}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.pos}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.g}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.inn}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.po}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.a}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.e}</td>
+                    {playerStats.fielding &&
+                      playerStats.fielding.length > 0 && (
+                        <div>
+                          <Text variant="small" classes="font-semibold mb-2">
+                            Fielding
+                          </Text>
+                          <div className="overflow-x-auto">
+                            <table className="w-full border-collapse text-xs">
+                              <thead>
+                                <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                  <th className="px-1.5 py-1 text-left">
+                                    Team
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    Pos
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">G</th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    INN
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    PO
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">A</th>
+                                  <th className="px-1.5 py-1 text-center">E</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {playerStats.fielding.map((s, i) => (
+                                  <tr
+                                    key={i}
+                                    className="border-b border-gray-100 dark:border-gray-700"
+                                  >
+                                    <td className="px-1.5 py-1 font-medium">
+                                      {s.team_abbrev}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.pos}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.g}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.inn}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.po}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.a}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.e}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {playerStats.batting?.length === 0 &&
                       playerStats.pitching?.length === 0 &&
                       playerStats.fielding?.length === 0 && (
-                        <Text variant="small" classes="text-gray-400 py-4 text-center">
+                        <Text
+                          variant="small"
+                          classes="text-gray-400 py-4 text-center"
+                        >
                           No statistics recorded this season.
                         </Text>
                       )}
@@ -4338,21 +4643,35 @@ export const BaseballPlayerInfoModalBody: FC<
             {statsSubTab === "Game Log" && (
               <div className="space-y-4">
                 {gamelogLoading ? (
-                  <Text variant="small" classes="text-gray-400 py-4 text-center">Loading game log...</Text>
+                  <Text
+                    variant="small"
+                    classes="text-gray-400 py-4 text-center"
+                  >
+                    Loading game log...
+                  </Text>
                 ) : !gamelog ? (
-                  <Text variant="small" classes="text-gray-400 py-4 text-center">No game log available.</Text>
+                  <Text
+                    variant="small"
+                    classes="text-gray-400 py-4 text-center"
+                  >
+                    No game log available.
+                  </Text>
                 ) : (
                   <>
                     {gamelog.batting && gamelog.batting.length > 0 && (
                       <div>
-                        <Text variant="small" classes="font-semibold mb-2">Batting Game Log</Text>
-                        <div className="overflow-x-auto max-h-[20rem] overflow-y-auto">
+                        <Text variant="small" classes="font-semibold mb-2">
+                          Batting Game Log
+                        </Text>
+                        <div className="overflow-x-auto max-h-80 overflow-y-auto">
                           <table className="w-full border-collapse text-xs">
                             <thead className="sticky top-0 bg-white dark:bg-gray-900">
                               <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
                                 <th className="px-1.5 py-1 text-left">Wk</th>
                                 <th className="px-1.5 py-1 text-left">Opp</th>
-                                <th className="px-1.5 py-1 text-center">Result</th>
+                                <th className="px-1.5 py-1 text-center">
+                                  Result
+                                </th>
                                 <th className="px-1.5 py-1 text-center">Pos</th>
                                 <th className="px-1.5 py-1 text-center">AB</th>
                                 <th className="px-1.5 py-1 text-center">R</th>
@@ -4364,35 +4683,83 @@ export const BaseballPlayerInfoModalBody: FC<
                                 <th className="px-1.5 py-1 text-center">BB</th>
                                 <th className="px-1.5 py-1 text-center">SO</th>
                                 <th className="px-1.5 py-1 text-center">HBP</th>
-                                <th className="px-1.5 py-1 text-center font-semibold">AVG</th>
-                                <th className="px-1.5 py-1 text-center font-semibold">OBP</th>
-                                <th className="px-1.5 py-1 text-center font-semibold">OPS</th>
+                                <th className="px-1.5 py-1 text-center font-semibold">
+                                  AVG
+                                </th>
+                                <th className="px-1.5 py-1 text-center font-semibold">
+                                  OBP
+                                </th>
+                                <th className="px-1.5 py-1 text-center font-semibold">
+                                  OPS
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
                               {gamelog.batting.map((g, i) => (
-                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                                  <td className="px-1.5 py-1 whitespace-nowrap">{g.week}{g.subweek}</td>
-                                  <td className="px-1.5 py-1 whitespace-nowrap">{g.opponent}</td>
-                                  <td className="px-1.5 py-1 text-center">
-                                    <span className={`inline-block px-1 rounded text-[10px] font-medium ${
-                                      g.result.startsWith("W") ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400" : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
-                                    }`}>{g.result}</span>
+                                <tr
+                                  key={i}
+                                  className="border-b border-gray-100 dark:border-gray-700"
+                                >
+                                  <td className="px-1.5 py-1 whitespace-nowrap">
+                                    {g.week}
+                                    {g.subweek}
                                   </td>
-                                  <td className="px-1.5 py-1 text-center uppercase">{g.pos}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.ab}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.r}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.h}</td>
-                                  <td className="px-1.5 py-1 text-center">{g["2b"]}</td>
-                                  <td className="px-1.5 py-1 text-center">{g["3b"]}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.hr}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.rbi}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.bb}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.so}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.hbp}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{g.avg}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{g.obp}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{g.ops}</td>
+                                  <td className="px-1.5 py-1 whitespace-nowrap">
+                                    {g.opponent}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    <span
+                                      className={`inline-block px-1 rounded-sm text-[10px] font-medium ${
+                                        g.result.startsWith("W")
+                                          ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                                          : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                                      }`}
+                                    >
+                                      {g.result}
+                                    </span>
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center uppercase">
+                                    {g.pos}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.ab}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.r}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.h}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g["2b"]}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g["3b"]}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.hr}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.rbi}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.bb}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.so}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.hbp}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">
+                                    {g.avg}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">
+                                    {g.obp}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">
+                                    {g.ops}
+                                  </td>
                                 </tr>
                               ))}
                             </tbody>
@@ -4403,8 +4770,10 @@ export const BaseballPlayerInfoModalBody: FC<
 
                     {gamelog.pitching && gamelog.pitching.length > 0 && (
                       <div>
-                        <Text variant="small" classes="font-semibold mb-2">Pitching Game Log</Text>
-                        <div className="overflow-x-auto max-h-[20rem] overflow-y-auto">
+                        <Text variant="small" classes="font-semibold mb-2">
+                          Pitching Game Log
+                        </Text>
+                        <div className="overflow-x-auto max-h-80 overflow-y-auto">
                           <table className="w-full border-collapse text-xs">
                             <thead className="sticky top-0 bg-white dark:bg-gray-900">
                               <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
@@ -4420,34 +4789,73 @@ export const BaseballPlayerInfoModalBody: FC<
                                 <th className="px-1.5 py-1 text-center">HR</th>
                                 <th className="px-1.5 py-1 text-center">HBP</th>
                                 <th className="px-1.5 py-1 text-center">Pit</th>
-                                <th className="px-1.5 py-1 text-center font-semibold">ERA</th>
+                                <th className="px-1.5 py-1 text-center font-semibold">
+                                  ERA
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
                               {gamelog.pitching.map((g, i) => (
-                                <tr key={i} className="border-b border-gray-100 dark:border-gray-700">
-                                  <td className="px-1.5 py-1 whitespace-nowrap">{g.week}{g.subweek}</td>
-                                  <td className="px-1.5 py-1 whitespace-nowrap">{g.opponent}</td>
+                                <tr
+                                  key={i}
+                                  className="border-b border-gray-100 dark:border-gray-700"
+                                >
+                                  <td className="px-1.5 py-1 whitespace-nowrap">
+                                    {g.week}
+                                    {g.subweek}
+                                  </td>
+                                  <td className="px-1.5 py-1 whitespace-nowrap">
+                                    {g.opponent}
+                                  </td>
                                   <td className="px-1.5 py-1 text-center">
                                     {g.dec ? (
-                                      <span className={`inline-block px-1 rounded text-[10px] font-bold ${
-                                        g.dec === "W" ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
-                                          : g.dec === "L" ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
-                                          : g.dec === "S" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
-                                          : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-                                      }`}>{g.dec}</span>
-                                    ) : "—"}
+                                      <span
+                                        className={`inline-block px-1 rounded-sm text-[10px] font-bold ${
+                                          g.dec === "W"
+                                            ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400"
+                                            : g.dec === "L"
+                                              ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                                              : g.dec === "S"
+                                                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
+                                                : "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                        }`}
+                                      >
+                                        {g.dec}
+                                      </span>
+                                    ) : (
+                                      "—"
+                                    )}
                                   </td>
-                                  <td className="px-1.5 py-1 text-center">{g.ip}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.h}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.r}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.er}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.bb}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.so}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.hr}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.hbp}</td>
-                                  <td className="px-1.5 py-1 text-center">{g.pitches}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{g.era}</td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.ip}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.h}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.r}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.er}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.bb}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.so}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.hr}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.hbp}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center">
+                                    {g.pitches}
+                                  </td>
+                                  <td className="px-1.5 py-1 text-center font-semibold">
+                                    {g.era}
+                                  </td>
                                 </tr>
                               ))}
                             </tbody>
@@ -4458,7 +4866,10 @@ export const BaseballPlayerInfoModalBody: FC<
 
                     {(!gamelog.batting || gamelog.batting.length === 0) &&
                       (!gamelog.pitching || gamelog.pitching.length === 0) && (
-                        <Text variant="small" classes="text-gray-400 py-4 text-center">
+                        <Text
+                          variant="small"
+                          classes="text-gray-400 py-4 text-center"
+                        >
                           No game log entries this season.
                         </Text>
                       )}
@@ -4471,14 +4882,26 @@ export const BaseballPlayerInfoModalBody: FC<
             {statsSubTab === "Career" && (
               <div className="space-y-4">
                 {careerLoading ? (
-                  <Text variant="small" classes="text-gray-400 py-4 text-center">Loading career stats...</Text>
+                  <Text
+                    variant="small"
+                    classes="text-gray-400 py-4 text-center"
+                  >
+                    Loading career stats...
+                  </Text>
                 ) : !career ? (
-                  <Text variant="small" classes="text-gray-400 py-4 text-center">No career data available.</Text>
+                  <Text
+                    variant="small"
+                    classes="text-gray-400 py-4 text-center"
+                  >
+                    No career data available.
+                  </Text>
                 ) : (
                   <>
                     {career.batting && career.batting.length > 0 && (
                       <div>
-                        <Text variant="small" classes="font-semibold mb-2">Batting Career</Text>
+                        <Text variant="small" classes="font-semibold mb-2">
+                          Batting Career
+                        </Text>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse text-xs">
                             <thead>
@@ -4504,22 +4927,53 @@ export const BaseballPlayerInfoModalBody: FC<
                               {career.batting.map((s, i) => {
                                 const isCareer = s.season === "Career";
                                 return (
-                                  <tr key={i} className={`border-b border-gray-100 dark:border-gray-700 ${isCareer ? "font-bold bg-gray-100 dark:bg-gray-800" : ""}`}>
+                                  <tr
+                                    key={i}
+                                    className={`border-b border-gray-100 dark:border-gray-700 ${isCareer ? "font-bold bg-gray-100 dark:bg-gray-800" : ""}`}
+                                  >
                                     <td className="px-1.5 py-1">{s.season}</td>
-                                    <td className="px-1.5 py-1">{s.team ?? "—"}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.g}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.pa}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.ab}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.h}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.hr}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.rbi}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.bb}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.so}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.sb}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.avg}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.obp}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.slg}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.ops}</td>
+                                    <td className="px-1.5 py-1">
+                                      {s.team ?? "—"}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.g}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.pa}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.ab}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.h}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.hr}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.rbi}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.bb}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.so}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.sb}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.avg}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.obp}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.slg}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.ops}
+                                    </td>
                                   </tr>
                                 );
                               })}
@@ -4531,7 +4985,9 @@ export const BaseballPlayerInfoModalBody: FC<
 
                     {career.pitching && career.pitching.length > 0 && (
                       <div>
-                        <Text variant="small" classes="font-semibold mb-2">Pitching Career</Text>
+                        <Text variant="small" classes="font-semibold mb-2">
+                          Pitching Career
+                        </Text>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse text-xs">
                             <thead>
@@ -4549,28 +5005,59 @@ export const BaseballPlayerInfoModalBody: FC<
                                 <th className="px-1.5 py-1 text-center">BB</th>
                                 <th className="px-1.5 py-1 text-center">SO</th>
                                 <th className="px-1.5 py-1 text-center">ERA</th>
-                                <th className="px-1.5 py-1 text-center">WHIP</th>
+                                <th className="px-1.5 py-1 text-center">
+                                  WHIP
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
                               {career.pitching.map((s, i) => {
                                 const isCareer = s.season === "Career";
                                 return (
-                                  <tr key={i} className={`border-b border-gray-100 dark:border-gray-700 ${isCareer ? "font-bold bg-gray-100 dark:bg-gray-800" : ""}`}>
+                                  <tr
+                                    key={i}
+                                    className={`border-b border-gray-100 dark:border-gray-700 ${isCareer ? "font-bold bg-gray-100 dark:bg-gray-800" : ""}`}
+                                  >
                                     <td className="px-1.5 py-1">{s.season}</td>
-                                    <td className="px-1.5 py-1">{s.team ?? "—"}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.g}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.gs}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.w}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.l}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.sv}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.ip}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.h}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.er}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.bb}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.so}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.era}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.whip}</td>
+                                    <td className="px-1.5 py-1">
+                                      {s.team ?? "—"}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.g}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.gs}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.w}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.l}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.sv}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.ip}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.h}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.er}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.bb}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.so}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.era}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.whip}
+                                    </td>
                                   </tr>
                                 );
                               })}
@@ -4582,7 +5069,10 @@ export const BaseballPlayerInfoModalBody: FC<
 
                     {(!career.batting || career.batting.length === 0) &&
                       (!career.pitching || career.pitching.length === 0) && (
-                        <Text variant="small" classes="text-gray-400 py-4 text-center">
+                        <Text
+                          variant="small"
+                          classes="text-gray-400 py-4 text-center"
+                        >
                           No career data available.
                         </Text>
                       )}
@@ -4595,15 +5085,27 @@ export const BaseballPlayerInfoModalBody: FC<
             {statsSubTab === "Splits" && (
               <div className="space-y-4">
                 {splitsLoading ? (
-                  <Text variant="small" classes="text-gray-400 py-4 text-center">Loading splits...</Text>
+                  <Text
+                    variant="small"
+                    classes="text-gray-400 py-4 text-center"
+                  >
+                    Loading splits...
+                  </Text>
                 ) : !splits ? (
-                  <Text variant="small" classes="text-gray-400 py-4 text-center">No splits data available.</Text>
+                  <Text
+                    variant="small"
+                    classes="text-gray-400 py-4 text-center"
+                  >
+                    No splits data available.
+                  </Text>
                 ) : (
                   <>
                     {/* Batting Home/Away */}
                     {splits.batting_home_away && (
                       <div>
-                        <Text variant="small" classes="font-semibold mb-2">Batting — Home / Away</Text>
+                        <Text variant="small" classes="font-semibold mb-2">
+                          Batting — Home / Away
+                        </Text>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse text-xs">
                             <thead>
@@ -4627,19 +5129,46 @@ export const BaseballPlayerInfoModalBody: FC<
                                 const s = splits.batting_home_away[loc];
                                 if (!s) return null;
                                 return (
-                                  <tr key={loc} className="border-b border-gray-100 dark:border-gray-700">
-                                    <td className="px-1.5 py-1 font-medium capitalize">{loc}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.g}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.ab}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.h}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.hr}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.rbi}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.bb}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.so}</td>
-                                    <td className="px-1.5 py-1 text-center font-semibold">{s.avg}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.obp}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.slg}</td>
-                                    <td className="px-1.5 py-1 text-center font-semibold">{s.ops}</td>
+                                  <tr
+                                    key={loc}
+                                    className="border-b border-gray-100 dark:border-gray-700"
+                                  >
+                                    <td className="px-1.5 py-1 font-medium capitalize">
+                                      {loc}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.g}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.ab}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.h}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.hr}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.rbi}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.bb}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.so}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">
+                                      {s.avg}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.obp}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.slg}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">
+                                      {s.ops}
+                                    </td>
                                   </tr>
                                 );
                               })}
@@ -4650,48 +5179,86 @@ export const BaseballPlayerInfoModalBody: FC<
                     )}
 
                     {/* Batting vs Opponent */}
-                    {splits.batting_vs_opponent && splits.batting_vs_opponent.length > 0 && (
-                      <div>
-                        <Text variant="small" classes="font-semibold mb-2">Batting — vs Opponent</Text>
-                        <div className="overflow-x-auto max-h-[15rem] overflow-y-auto">
-                          <table className="w-full border-collapse text-xs">
-                            <thead className="sticky top-0 bg-white dark:bg-gray-900">
-                              <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
-                                <th className="px-1.5 py-1 text-left">Opp</th>
-                                <th className="px-1.5 py-1 text-center">G</th>
-                                <th className="px-1.5 py-1 text-center">AB</th>
-                                <th className="px-1.5 py-1 text-center">H</th>
-                                <th className="px-1.5 py-1 text-center">HR</th>
-                                <th className="px-1.5 py-1 text-center">AVG</th>
-                                <th className="px-1.5 py-1 text-center">OBP</th>
-                                <th className="px-1.5 py-1 text-center">SLG</th>
-                                <th className="px-1.5 py-1 text-center">OPS</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {splits.batting_vs_opponent.map((s) => (
-                                <tr key={s.opponent} className="border-b border-gray-100 dark:border-gray-700">
-                                  <td className="px-1.5 py-1 font-medium">{s.opponent}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.g}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.ab}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.h}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.hr}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{s.avg}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.obp}</td>
-                                  <td className="px-1.5 py-1 text-center">{s.slg}</td>
-                                  <td className="px-1.5 py-1 text-center font-semibold">{s.ops}</td>
+                    {splits.batting_vs_opponent &&
+                      splits.batting_vs_opponent.length > 0 && (
+                        <div>
+                          <Text variant="small" classes="font-semibold mb-2">
+                            Batting — vs Opponent
+                          </Text>
+                          <div className="overflow-x-auto max-h-60 overflow-y-auto">
+                            <table className="w-full border-collapse text-xs">
+                              <thead className="sticky top-0 bg-white dark:bg-gray-900">
+                                <tr className="text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+                                  <th className="px-1.5 py-1 text-left">Opp</th>
+                                  <th className="px-1.5 py-1 text-center">G</th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    AB
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">H</th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    HR
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    AVG
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    OBP
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    SLG
+                                  </th>
+                                  <th className="px-1.5 py-1 text-center">
+                                    OPS
+                                  </th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {splits.batting_vs_opponent.map((s) => (
+                                  <tr
+                                    key={s.opponent}
+                                    className="border-b border-gray-100 dark:border-gray-700"
+                                  >
+                                    <td className="px-1.5 py-1 font-medium">
+                                      {s.opponent}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.g}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.ab}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.h}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.hr}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">
+                                      {s.avg}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.obp}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.slg}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">
+                                      {s.ops}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* Pitching Home/Away */}
                     {splits.pitching_home_away && (
                       <div>
-                        <Text variant="small" classes="font-semibold mb-2">Pitching — Home / Away</Text>
+                        <Text variant="small" classes="font-semibold mb-2">
+                          Pitching — Home / Away
+                        </Text>
                         <div className="overflow-x-auto">
                           <table className="w-full border-collapse text-xs">
                             <thead>
@@ -4705,7 +5272,9 @@ export const BaseballPlayerInfoModalBody: FC<
                                 <th className="px-1.5 py-1 text-center">BB</th>
                                 <th className="px-1.5 py-1 text-center">SO</th>
                                 <th className="px-1.5 py-1 text-center">ERA</th>
-                                <th className="px-1.5 py-1 text-center">WHIP</th>
+                                <th className="px-1.5 py-1 text-center">
+                                  WHIP
+                                </th>
                               </tr>
                             </thead>
                             <tbody>
@@ -4713,17 +5282,40 @@ export const BaseballPlayerInfoModalBody: FC<
                                 const s = splits.pitching_home_away[loc];
                                 if (!s) return null;
                                 return (
-                                  <tr key={loc} className="border-b border-gray-100 dark:border-gray-700">
-                                    <td className="px-1.5 py-1 font-medium capitalize">{loc}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.g}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.gs}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.ip}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.h}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.er}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.bb}</td>
-                                    <td className="px-1.5 py-1 text-center">{s.so}</td>
-                                    <td className="px-1.5 py-1 text-center font-semibold">{s.era}</td>
-                                    <td className="px-1.5 py-1 text-center font-semibold">{s.whip}</td>
+                                  <tr
+                                    key={loc}
+                                    className="border-b border-gray-100 dark:border-gray-700"
+                                  >
+                                    <td className="px-1.5 py-1 font-medium capitalize">
+                                      {loc}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.g}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.gs}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.ip}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.h}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.er}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.bb}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center">
+                                      {s.so}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">
+                                      {s.era}
+                                    </td>
+                                    <td className="px-1.5 py-1 text-center font-semibold">
+                                      {s.whip}
+                                    </td>
                                   </tr>
                                 );
                               })}

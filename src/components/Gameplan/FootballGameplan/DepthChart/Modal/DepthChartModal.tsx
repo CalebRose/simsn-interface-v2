@@ -163,7 +163,7 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
       maxWidth="max-w-6xl"
     >
       <div className="space-y-4">
-        <div className="flex items-center justify-center gap-4 bg-gray-800 bg-opacity-50 rounded-lg p-3">
+        <div className="flex items-center justify-center gap-4 bg-gray-800 bg-black/50 rounded-lg p-3">
           <Text variant="body" classes="text-white font-semibold">
             View:
           </Text>
@@ -210,7 +210,7 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
                     <ArrowsUpDown />
                   </div>
                 </div>
-                <div className="mb-4 p-3 bg-blue-900 bg-opacity-50 rounded-lg">
+                <div className="mb-4 p-3 bg-blue-900 bg-black/50 rounded-lg">
                   {swapTargetLevel && selectedAvailablePlayer ? (
                     <Text variant="body" classes="text-green-300">
                       Ready to swap! {selectedAvailablePlayer.FirstName}{" "}
@@ -295,7 +295,7 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
                             />
                           )
                         ) : (
-                          <div className="w-full h-32 sm:h-full bg-gray-700 bg-opacity-50 rounded-lg border-2 border-dashed border-gray-500 flex items-center justify-center">
+                          <div className="w-full h-32 sm:h-full bg-gray-700 bg-black/50 rounded-lg border-2 border-dashed border-gray-500 flex items-center justify-center">
                             <Text variant="small" classes="text-gray-400">
                               Empty
                             </Text>
@@ -311,7 +311,7 @@ const DepthChartModal: React.FC<DepthChartModalProps> = ({
                           {modalPosition}
                           {assignedPlayer.PositionLevel}
                         </div>
-                        <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-semibold">
+                        <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-2 py-1 rounded-sm text-xs font-semibold">
                           {swapTargetLevel === assignedPlayer.PositionLevel
                             ? "SELECTED"
                             : "SWAP"}

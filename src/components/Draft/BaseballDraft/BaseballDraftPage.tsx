@@ -160,7 +160,7 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
             </div>
 
             <div className="flex gap-3 items-stretch">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <BaseballDraftClock
                   currentPick={currentPick}
                   currentRound={currentRound}

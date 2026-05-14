@@ -90,9 +90,9 @@ const PositionSlot: React.FC<PositionSlotProps> = ({
   };
 
   const minHeights = {
-    sm: 'min-h-[6rem]',
-    md: 'min-h-[9rem]',
-    lg: 'min-h-[9rem]'
+    sm: 'min-h-24',
+    md: 'min-h-36',
+    lg: 'min-h-36'
   };
 
   return (
@@ -103,7 +103,7 @@ const PositionSlot: React.FC<PositionSlotProps> = ({
             relative ${minHeights[size]} rounded-lg overflow-hidden
             ${sortedAssignedPlayers.length > 0 
               ? '' 
-              : 'bg-gray-900 bg-opacity-50 border-2 border-gray-500 border-dashed'
+              : 'bg-gray-900 bg-black/50 border-2 border-gray-500 border-dashed'
             }
             ${onPlayerAssign ? 'cursor-pointer hover:border-blue-400' : ''}
             transition-all duration-200
@@ -185,7 +185,7 @@ const PositionSlot: React.FC<PositionSlotProps> = ({
       {showPlayerSelection && onPlayerAssign && (
         <>
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black/50 z-40"
             onClick={() => setShowPlayerSelection(false)}
           />
           <div className="fixed inset-0 flex items-center justify-center z-50 p-4">

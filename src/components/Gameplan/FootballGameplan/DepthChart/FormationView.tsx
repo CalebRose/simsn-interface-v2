@@ -114,7 +114,7 @@ const FormationView: React.FC<FormationViewProps> = ({
         </div>
       )}
       
-      <div className="relative w-[75rem] h-[40rem] bg-gradient-to-b from-green-600 via-green-500 to-green-600 rounded-lg overflow-hidden border-2" style={{ borderColor }}>
+      <div className="relative w-300 h-160 bg-linear-to-b from-green-600 via-green-500 to-green-600 rounded-lg overflow-hidden border-2" style={{ borderColor }}>
         <div className="absolute inset-0">
           {[...Array(12)].map((_, i) => (
             <div
@@ -177,7 +177,7 @@ const FormationView: React.FC<FormationViewProps> = ({
               );
             })}
           </div>
-          <div className="row-start-11 row-span-2 rounded-lg bg-opacity-75 col-[1_/_span_14] w-full border-2" style={{ backgroundColor: borderColor, borderColor: accentColor }}>
+          <div className="row-start-11 row-span-2 rounded-lg bg-black/75 col-[1/span_14] w-full border-2" style={{ backgroundColor: borderColor, borderColor: accentColor }}>
             <div className="flex items-center justify-between w-full h-full px-4">
               <Logo url={logo} />
               <Text variant="h1" classes={`uppercase ${borderTextColor}`}                 
@@ -228,7 +228,7 @@ const FormationView: React.FC<FormationViewProps> = ({
         </div>
       )}
       
-      <div className="relative w-[75rem] h-[40rem] bg-gradient-to-b from-green-600 via-green-500 to-green-600 rounded-lg overflow-hidden border-2" style={{ borderColor }}>
+      <div className="relative w-300 h-160 bg-linear-to-b from-green-600 via-green-500 to-green-600 rounded-lg overflow-hidden border-2" style={{ borderColor }}>
         <div className="absolute inset-0">
           {[...Array(12)].map((_, i) => (
             <div
@@ -292,7 +292,7 @@ const FormationView: React.FC<FormationViewProps> = ({
               })}
             </div>
           )}
-          <div className="row-start-1 row-span-2 rounded-lg bg-opacity-75 col-[1_/_span_14] w-full border-2" style={{ backgroundColor: borderColor, borderColor: accentColor }}>
+          <div className="row-start-1 row-span-2 rounded-lg bg-black/75 col-[1/span_14] w-full border-2" style={{ backgroundColor: borderColor, borderColor: accentColor }}>
             <div className="flex items-center justify-between w-full h-full px-4">
               <Logo url={logo} />
               <Text variant="h1" classes={`uppercase ${borderTextColor}`}                 
@@ -311,7 +311,7 @@ const FormationView: React.FC<FormationViewProps> = ({
   );
 
   const getSpecialTeamsFormation = () => (
-    <div className="relative w-[75rem] h-[40rem] bg-gradient-to-b from-green-600 via-green-500 to-green-600 rounded-lg overflow-hidden border-2" style={{ borderColor }}>
+    <div className="relative w-300 h-160 bg-linear-to-b from-green-600 via-green-500 to-green-600 rounded-lg overflow-hidden border-2" style={{ borderColor }}>
       <div className="absolute inset-0">
         {[...Array(12)].map((_, i) => (
           <div

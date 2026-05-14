@@ -301,7 +301,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             key={idx}
             className={`table-cell 
         align-middle 
-        min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
           category === Overview && idx === 7
             ? "text-left"
@@ -558,7 +558,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
           </>
         )}
 
-        <div className="table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
+        <div className="table-cell align-middle w-[5em] 430px:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
             options={[
@@ -962,7 +962,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
               </Text>
             </TableCell>
             <div
-              className={`table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
+              className={`table-cell align-middle w-[5em] 430px:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
             >
               <SelectDropdown
                 placeholder={!isDesktop ? "Action" : "Select an action"}
@@ -1109,7 +1109,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             key={idx}
             className={`table-cell 
         align-middle 
-        min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
           category === Overview && idx === 6
             ? "text-left"
@@ -1248,7 +1248,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
           </>
         )}
         <div
-          className={`table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
+          className={`table-cell align-middle w-[5em] 430px:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
         >
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
@@ -1480,7 +1480,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
             key={idx}
             className={`table-cell 
         align-middle 
-        min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
           category === Overview && idx === 8
             ? "text-left"
@@ -1580,7 +1580,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
             </TableCell>
           </>
         )}
-        <div className="table-cell align-middle w-[4em] min-[430px]:w-[5em] flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
+        <div className="table-cell align-middle w-[4em] 430px:w-[5em] flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
             options={[
@@ -1843,7 +1843,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
             key={idx}
             className={`table-cell 
           align-middle 
-          min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+          360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
           text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
             category === Overview && idx === 7
               ? "text-left"
@@ -1927,7 +1927,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
             )}
           </div>
         ))}
-        <div className="table-cell align-middle w-[4em] min-[430px]:w-[5.5em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
+        <div className="table-cell align-middle w-[4em] 430px:w-[5.5em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
             options={[
@@ -2138,7 +2138,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
             key={idx}
             className={`table-cell 
         align-middle 
-        min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
           category === Overview && idx === 8
             ? "text-left"
@@ -2195,7 +2195,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
             )}
           </div>
         ))}
-        <div className="table-cell align-middle w-[4em] min-[430px]:w-[5em] flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
+        <div className="table-cell align-middle w-[4em] 430px:w-[5em] flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
             options={[
@@ -2403,7 +2403,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
             key={idx}
             className={`table-cell 
         align-middle 
-        min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
           category === Overview && idx === 8
             ? "text-left"
@@ -2460,7 +2460,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
             )}
           </div>
         ))}
-        <div className="table-cell align-middle w-[4em] min-[430px]:w-[5em] flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
+        <div className="table-cell align-middle w-[4em] 430px:w-[5em] flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
             options={[
@@ -2642,7 +2642,7 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
             key={idx}
             className={`table-cell 
         align-middle 
-        min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
           category === Overview && idx === 6
             ? "text-left"
@@ -2671,7 +2671,7 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
             )}
           </div>
         ))}
-        <div className="table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
+        <div className="table-cell align-middle w-[5em] 430px:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
             options={
@@ -2796,7 +2796,7 @@ export const NFLTradeBlockTable: FC<NFLTradeBlockTableProps> = ({
             key={idx}
             className={`table-cell 
         align-middle 
-        min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+        360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
           category === Overview && idx === 6
             ? "text-left"
@@ -2825,7 +2825,7 @@ export const NFLTradeBlockTable: FC<NFLTradeBlockTableProps> = ({
             )}
           </div>
         ))}
-        <div className="table-cell align-middle w-[5em] min-[430px]:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
+        <div className="table-cell align-middle w-[5em] 430px:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
             placeholder={!isDesktop ? "Action" : "Select an action"}
             options={

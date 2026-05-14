@@ -519,7 +519,7 @@ export const ThreadPage: React.FC = () => {
         {activeThread && (
           <ForumBorder
             classes={`relative overflow-hidden p-0 mb-3 ${
-              threadHeroImageUrl ? "min-h-[20rem] sm:min-h-[24rem]" : ""
+              threadHeroImageUrl ? "min-h-80 sm:min-h-96" : ""
             }`}
           >
             {threadHeroImageUrl && (
@@ -536,7 +536,7 @@ export const ThreadPage: React.FC = () => {
             <div
               className={`relative ${
                 threadHeroImageUrl
-                  ? "flex min-h-[20rem] flex-col justify-end p-5 sm:min-h-[38rem] sm:p-6 lg:p-6"
+                  ? "flex min-h-80 flex-col justify-end p-5 sm:min-h-152 sm:p-6 lg:p-6"
                   : "p-3 sm:p-4 lg:p-5"
               }`}
             >
@@ -568,17 +568,17 @@ export const ThreadPage: React.FC = () => {
               <div className="flex min-w-0 flex-col items-center text-center">
                 <div className="mb-2 flex flex-wrap items-center justify-center gap-2">
                   {activeThread.isPinned && (
-                    <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded">
+                    <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded-sm">
                       Pinned
                     </span>
                   )}
                   {activeThread.isAnnouncement && (
-                    <span className="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded">
+                    <span className="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded-sm">
                       Announcement
                     </span>
                   )}
                   {isLocked && (
-                    <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded">
+                    <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded-sm">
                       🔒 Locked
                     </span>
                   )}
@@ -588,7 +588,7 @@ export const ThreadPage: React.FC = () => {
                     return (
                       <span
                         key={tag}
-                        className={`text-xs ${def.color} text-white px-1.5 py-0.5 rounded`}
+                        className={`text-xs ${def.color} text-white px-1.5 py-0.5 rounded-sm`}
                       >
                         {def.label}
                       </span>
@@ -620,7 +620,7 @@ export const ThreadPage: React.FC = () => {
 
         {/* Award Media Point — visible only to admins/commissioners on media subforums */}
         {activeThread && isAdmin && isMediaSubforum && (
-          <div className="mb-3 rounded border border-amber-700/50 bg-amber-900/20 overflow-hidden">
+          <div className="mb-3 rounded-sm border border-amber-700/50 bg-amber-900/20 overflow-hidden">
             {/* Award row */}
             <div className="flex items-center justify-between px-3 py-2">
               <div>
@@ -663,7 +663,7 @@ export const ThreadPage: React.FC = () => {
                     </span>
                     {/* Quality badge */}
                     <span
-                      className={`text-xs px-1.5 py-0.5 rounded font-semibold ${
+                      className={`text-xs px-1.5 py-0.5 rounded-sm font-semibold ${
                         contentQuality.level === "good"
                           ? "bg-green-800 text-green-200"
                           : contentQuality.level === "moderate"
@@ -683,7 +683,7 @@ export const ThreadPage: React.FC = () => {
                       {contentQuality.flags.map((flag) => (
                         <span
                           key={flag}
-                          className="text-xs bg-red-900/50 text-red-300 border border-red-700/40 px-1.5 py-0.5 rounded"
+                          className="text-xs bg-red-900/50 text-red-300 border border-red-700/40 px-1.5 py-0.5 rounded-sm"
                         >
                           ⚠ {flag}
                         </span>
@@ -751,14 +751,14 @@ export const ThreadPage: React.FC = () => {
 
         {/* Locked banner */}
         {isLocked && (
-          <div className="mb-3 p-2 bg-yellow-900/40 border border-yellow-700 rounded text-sm text-yellow-300">
+          <div className="mb-3 p-2 bg-yellow-900/40 border border-yellow-700 rounded-sm text-sm text-yellow-300">
             🔒 This thread has been locked by a moderator.
           </div>
         )}
 
         {/* Mute banner */}
         {isMuted && muteExpiresAt && (
-          <div className="mb-3 p-2 bg-red-900/40 border border-red-700 rounded text-sm text-red-300">
+          <div className="mb-3 p-2 bg-red-900/40 border border-red-700 rounded-sm text-sm text-red-300">
             🔇 You have been muted from posting until{" "}
             <span className="font-semibold">
               {muteExpiresAt.toLocaleDateString(undefined, {
@@ -840,7 +840,7 @@ export const ThreadPage: React.FC = () => {
 
             {/* Draft restore banner */}
             {showDraftBanner && (
-              <div className="flex items-center justify-between mb-2 px-3 py-2 rounded text-sm bg-blue-950/60 border border-blue-700/50 text-blue-300">
+              <div className="flex items-center justify-between mb-2 px-3 py-2 rounded-sm text-sm bg-blue-950/60 border border-blue-700/50 text-blue-300">
                 <span>Draft restored from your last session.</span>
                 <button
                   onClick={() => {
@@ -890,7 +890,7 @@ export const ThreadPage: React.FC = () => {
                 onChange={(e) => setModReason(e.target.value)}
                 placeholder="Reason (optional)"
                 rows={2}
-                className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:border-blue-500 mb-3"
+                className="w-full bg-gray-800 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-hidden focus:border-blue-500 mb-3"
               />
               <div className="flex justify-end gap-2">
                 <Button
@@ -935,7 +935,7 @@ export const ThreadPage: React.FC = () => {
                 <select
                   value={moveTargetForumId}
                   onChange={(e) => setMoveTargetForumId(e.target.value)}
-                  className="bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500"
+                  className="bg-gray-800 border border-gray-600 rounded-sm p-2 text-sm text-white focus:outline-hidden focus:border-blue-500"
                   disabled={isMoving}
                 >
                   <option value="">-- Select destination --</option>
@@ -982,7 +982,7 @@ export const ThreadPage: React.FC = () => {
                   onChange={(e) => setMoveReason(e.target.value)}
                   placeholder="Reason (optional)"
                   rows={2}
-                  className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:border-blue-500"
+                  className="w-full bg-gray-800 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-hidden focus:border-blue-500"
                   disabled={isMoving}
                 />
               </div>

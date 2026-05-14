@@ -211,7 +211,7 @@ export const GamesBar = ({
         <div className="relative flex items-center w-[92vw] md:w-[85vw] lg:w-[72.6em] 3xl:w-full pb-1">
           <button
             onClick={scrollLeft}
-            className="absolute left-0 z-10 p-[0.5vw] md:p-2 rounded-full border-1"
+            className="absolute left-0 z-10 p-[0.5vw] md:p-2 rounded-full border"
             style={{
               backgroundColor: backgroundColor,
               color: borderColor,
@@ -235,7 +235,7 @@ export const GamesBar = ({
           </div>
           <button
             onClick={scrollRight}
-            className="absolute right-0 z-10 p-[0.5vw] md:p-2 rounded-full border-1"
+            className="absolute right-0 z-10 p-[0.5vw] md:p-2 rounded-full border"
             style={{
               backgroundColor: backgroundColor,
               color: borderColor,
@@ -279,7 +279,7 @@ export const TeamStandings = ({
     <SectionCards
       team={team}
       header={`${team.Conference} Standings`}
-      classes={`${textColorClass}, h-full max-w-[30rem]`}
+      classes={`${textColorClass}, h-full max-w-120`}
       backgroundColor={backgroundColor}
       headerColor={headerColor}
       borderColor={borderColor}
@@ -1009,7 +1009,7 @@ const TopPlayer: FC<TopPlayerProps> = ({
       <div className="flex">
         <div
           className={`flex my-1 items-center justify-center 
-      px-3 h-[3rem] min-h-[3rem] max-w-[3rem] md:h-[7rem] md:max-h-[8rem] md:max-w-[8rem] rounded-lg border-2`}
+      px-3 h-12 min-h-12 max-w-12 md:h-28 md:max-h-32 md:max-w-32 rounded-lg border-2`}
           style={{ borderColor: borderColor, backgroundColor: "white" }}
         >
           <PlayerPicture team={team} playerID={box.id} league={league} />
@@ -1470,7 +1470,7 @@ export const DraftListModal: React.FC<DraftListModalProps> = ({
               <div className="grid grid-cols-8">
                 <div
                   className={`flex my-1 items-center justify-center 
-                         px-3 h-[3rem] min-h-[3rem] sm:w-[5rem] sm:max-w-[5rem] sm:h-[5rem] rounded-lg border-2`}
+                         px-3 h-12 min-h-12 sm:w-20 sm:max-w-20 sm:h-20 rounded-lg border-2`}
                   style={{ backgroundColor: "white" }}
                 >
                   <PlayerPicture
@@ -1574,7 +1574,7 @@ const ThreadPortal: FC<ThreadPortalProps> = ({
 
   return (
     <div
-      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-3 border-b last:border-b-0 cursor-pointer transition-opacity rounded hover:opacity-75"
+      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-3 border-b last:border-b-0 cursor-pointer transition-opacity rounded-sm hover:opacity-75"
       style={{ borderColor }}
       onClick={handleClick}
       role="button"
@@ -1584,17 +1584,17 @@ const ThreadPortal: FC<ThreadPortalProps> = ({
       <div className="flex flex-col flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
           {thread.isPinned && (
-            <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded-sm font-medium">
               Pinned
             </span>
           )}
           {thread.isLocked && (
-            <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded-sm font-medium">
               Locked
             </span>
           )}
           {thread.threadType === "poll" && (
-            <span className="text-xs bg-green-700 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-green-700 text-white px-1.5 py-0.5 rounded-sm font-medium">
               Poll
             </span>
           )}

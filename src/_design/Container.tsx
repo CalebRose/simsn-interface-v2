@@ -21,7 +21,7 @@ export const PageContainer: React.FC<PageContainerProps> = ({
 }) => {
   return (
     <div
-      className={`w-full max-w-full min-h-screen p-3 pt-20 overflow-x-hidden${direction ? ` flex flex-${direction}` : ""} ${classes}`}
+      className={`w-full max-w-full min-h-screen p-3 pt-20 overflow-x-hidden${direction ? ` flex ${direction === "row" ? "flex-row" : "flex-col"}` : ""} ${classes}`}
     >
       {title.length > 0 && (
         <div className="flex flex-row mb-1">

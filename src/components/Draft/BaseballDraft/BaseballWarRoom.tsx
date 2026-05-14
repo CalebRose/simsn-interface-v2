@@ -125,7 +125,7 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
       <h2 className="text-xl font-bold">{userOrgAbbrev} War Room</h2>
 
       {error && (
-        <div className="rounded bg-red-900/50 px-4 py-2 text-sm text-red-300">
+        <div className="rounded-sm bg-red-900/50 px-4 py-2 text-sm text-red-300">
           {error}
         </div>
       )}
@@ -154,13 +154,13 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
           <div className="flex gap-2">
             <button
               onClick={onRefreshTrades}
-              className="rounded bg-gray-700 px-3 py-1.5 text-sm hover:bg-gray-600"
+              className="rounded-sm bg-gray-700 px-3 py-1.5 text-sm hover:bg-gray-600"
             >
               Refresh
             </button>
             <button
               onClick={() => setShowTradeModal(true)}
-              className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium hover:bg-blue-500"
+              className="rounded-sm bg-blue-600 px-3 py-1.5 text-sm font-medium hover:bg-blue-500"
             >
               Propose Trade
             </button>
@@ -175,7 +175,7 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
               {incomingProposals.map((proposal) => (
                 <div
                   key={proposal.id}
-                  className="flex items-center justify-between rounded border border-green-800 bg-gray-800 p-3"
+                  className="flex items-center justify-between rounded-sm border border-green-800 bg-gray-800 p-3"
                 >
                   <div className="flex flex-col gap-1 text-sm">
                     <span className="font-medium">
@@ -192,14 +192,14 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
                     <button
                       onClick={() => handleAccept(proposal.id)}
                       disabled={accepting === proposal.id}
-                      className="rounded bg-green-600 px-3 py-1.5 text-sm font-medium hover:bg-green-500 disabled:opacity-50"
+                      className="rounded-sm bg-green-600 px-3 py-1.5 text-sm font-medium hover:bg-green-500 disabled:opacity-50"
                     >
                       {accepting === proposal.id ? "..." : "Accept"}
                     </button>
                     <button
                       onClick={() => handleReject(proposal.id)}
                       disabled={rejecting === proposal.id}
-                      className="rounded bg-red-600 px-3 py-1.5 text-sm font-medium hover:bg-red-500 disabled:opacity-50"
+                      className="rounded-sm bg-red-600 px-3 py-1.5 text-sm font-medium hover:bg-red-500 disabled:opacity-50"
                     >
                       {rejecting === proposal.id ? "..." : "Reject"}
                     </button>
@@ -218,7 +218,7 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
               {outgoingProposals.map((proposal) => (
                 <div
                   key={proposal.id}
-                  className="flex items-center justify-between rounded border border-yellow-800 bg-gray-800 p-3"
+                  className="flex items-center justify-between rounded-sm border border-yellow-800 bg-gray-800 p-3"
                 >
                   <div className="flex flex-col gap-1 text-sm">
                     <span className="font-medium">
@@ -231,7 +231,7 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
                       Requesting: {proposal.picks_requested.map(getPickLabel).join(", ")}
                     </span>
                   </div>
-                  <span className="rounded bg-yellow-900 px-2 py-1 text-xs text-yellow-300">
+                  <span className="rounded-sm bg-yellow-900 px-2 py-1 text-xs text-yellow-300">
                     Pending
                   </span>
                 </div>
@@ -260,7 +260,7 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
                   setPartnerOrgId(e.target.value ? Number(e.target.value) : "");
                   setPicksRequested([]);
                 }}
-                className="w-full rounded border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-white"
+                className="w-full rounded-sm border border-gray-600 bg-gray-800 px-3 py-2 text-sm text-white"
               >
                 <option value="">Select organization...</option>
                 {organizations
@@ -327,7 +327,7 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
                   setPicksRequested([]);
                   setError(null);
                 }}
-                className="rounded bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600"
+                className="rounded-sm bg-gray-700 px-4 py-2 text-sm hover:bg-gray-600"
               >
                 Cancel
               </button>
@@ -339,7 +339,7 @@ const BaseballWarRoom: React.FC<BaseballWarRoomProps> = ({
                   picksOffered.length === 0 ||
                   picksRequested.length === 0
                 }
-                className="rounded bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-500 disabled:opacity-50"
+                className="rounded-sm bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-500 disabled:opacity-50"
               >
                 {sending ? "Sending..." : "Send Proposal"}
               </button>

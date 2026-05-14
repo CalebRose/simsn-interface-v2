@@ -72,7 +72,7 @@ const SortHeader = ({
   const active = sortConfig?.key === sortKey;
   return (
     <th
-      className={`${th} cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none text-${align}`}
+      className={`${th} cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 select-none ${align === "center" ? "text-center" : "text-left"}`}
       onClick={() => onSort(sortKey)}
     >
       {label} {active ? (sortConfig.dir === "asc" ? "▲" : "▼") : ""}
@@ -98,9 +98,18 @@ const PlayerRow = ({
 
   return (
     <tr className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-      <td className={`${td} font-medium cursor-pointer`} onClick={() => onPlayerClick?.(p)}>{p.firstname} {p.lastname}</td>
-      <td className={`${td} text-center`}>{p.ptype === "Pitcher" ? "P" : "Pos"}</td>
-      <td className={`${td} text-center font-semibold ${gradeColor(ovr)}`}>{ovr}</td>
+      <td
+        className={`${td} font-medium cursor-pointer`}
+        onClick={() => onPlayerClick?.(p)}
+      >
+        {p.firstname} {p.lastname}
+      </td>
+      <td className={`${td} text-center`}>
+        {p.ptype === "Pitcher" ? "P" : "Pos"}
+      </td>
+      <td className={`${td} text-center font-semibold ${gradeColor(ovr)}`}>
+        {ovr}
+      </td>
       <td className={`${td} text-center`}>{p.age}</td>
       <td className={`${td} text-center`}>
         {p.bat_hand ?? "—"}/{p.pitch_hand ?? "—"}
@@ -112,14 +121,14 @@ const PlayerRow = ({
       </td>
       <td className={`${td} text-center`}>
         {p.contract?.is_extension && (
-          <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+          <span className="inline-block px-1.5 py-0.5 rounded-sm text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
             RS
           </span>
         )}
       </td>
       <td className={`${td} text-center`}>
         {eligible && (
-          <span className="inline-block px-1.5 py-0.5 rounded text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-medium">
+          <span className="inline-block px-1.5 py-0.5 rounded-sm text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 font-medium">
             Eligible
           </span>
         )}

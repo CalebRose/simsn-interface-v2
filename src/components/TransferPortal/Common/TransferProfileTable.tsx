@@ -470,7 +470,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <div className="w-[1rem]">
+        <div className="w-4">
           <Input
             type="number"
             key={profile.ID}
@@ -747,7 +747,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <div className="w-[1rem]">
+        <div className="w-4">
           <Input
             type="number"
             key={profile.ID}
@@ -1024,7 +1024,7 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
-        <div className="w-[1rem]">
+        <div className="w-4">
           <Input
             type="number"
             key={profile.ID}

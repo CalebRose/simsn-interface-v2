@@ -109,7 +109,7 @@ export const PlayerModalHeader: FC<PlayerModalHeaderProps> = memo(
       <div className="flex gap-4">
         {/* Player Face + Team Logo */}
         <div className="flex flex-col items-center shrink-0">
-          <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture
               playerID={playerId}
               league={league as League}
@@ -124,7 +124,7 @@ export const PlayerModalHeader: FC<PlayerModalHeaderProps> = memo(
             <Logo
               url={teamLogo}
               label={team.team_abbrev ?? ""}
-              classes="h-[3rem] max-h-[3rem]"
+              classes="h-12 max-h-12"
               containerClass="p-1"
               textClass="text-small"
             />

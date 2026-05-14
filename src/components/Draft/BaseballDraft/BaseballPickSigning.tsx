@@ -61,31 +61,31 @@ const BaseballPickSigning: React.FC<BaseballPickSigningProps> = ({
         <h2 className="text-xl font-bold">Pick Signing — {userOrgAbbrev}</h2>
         <button
           onClick={onRefresh}
-          className="rounded bg-gray-700 px-3 py-1.5 text-sm hover:bg-gray-600"
+          className="rounded-sm bg-gray-700 px-3 py-1.5 text-sm hover:bg-gray-600"
         >
           Refresh
         </button>
       </div>
 
       {error && (
-        <div className="rounded bg-red-900/50 px-4 py-2 text-sm text-red-300">{error}</div>
+        <div className="rounded-sm bg-red-900/50 px-4 py-2 text-sm text-red-300">{error}</div>
       )}
 
       {/* Budget Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="rounded border border-gray-700 bg-gray-800 p-4 text-center">
+        <div className="rounded-sm border border-gray-700 bg-gray-800 p-4 text-center">
           <p className="text-xs text-gray-400">Total Pool</p>
           <p className="text-lg font-bold text-white">
             {formatSlotValue(totalPool)}
           </p>
         </div>
-        <div className="rounded border border-gray-700 bg-gray-800 p-4 text-center">
+        <div className="rounded-sm border border-gray-700 bg-gray-800 p-4 text-center">
           <p className="text-xs text-gray-400">Signed</p>
           <p className="text-lg font-bold text-green-400">
             {formatSlotValue(spent)}
           </p>
         </div>
-        <div className="rounded border border-gray-700 bg-gray-800 p-4 text-center">
+        <div className="rounded-sm border border-gray-700 bg-gray-800 p-4 text-center">
           <p className="text-xs text-gray-400">Remaining</p>
           <p className="text-lg font-bold text-blue-400">
             {formatSlotValue(remaining)}
@@ -131,14 +131,14 @@ const BaseballPickSigning: React.FC<BaseballPickSigningProps> = ({
                       <button
                         onClick={() => runAction(p.pick_id, () => onSignPick(p.pick_id))}
                         disabled={actionLoading === p.pick_id}
-                        className="rounded bg-green-600 px-3 py-1 text-xs font-medium hover:bg-green-500 disabled:opacity-50"
+                        className="rounded-sm bg-green-600 px-3 py-1 text-xs font-medium hover:bg-green-500 disabled:opacity-50"
                       >
                         {actionLoading === p.pick_id ? "..." : "Sign"}
                       </button>
                       <button
                         onClick={() => runAction(p.pick_id, () => onPassPick(p.pick_id))}
                         disabled={actionLoading === p.pick_id}
-                        className="rounded bg-gray-600 px-3 py-1 text-xs font-medium hover:bg-gray-500 disabled:opacity-50"
+                        className="rounded-sm bg-gray-600 px-3 py-1 text-xs font-medium hover:bg-gray-500 disabled:opacity-50"
                       >
                         Pass
                       </button>

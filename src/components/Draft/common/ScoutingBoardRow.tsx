@@ -329,7 +329,7 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
     >
       <div className="flex flex-col space-y-4 md:grid md:grid-cols-4 md:gap-3 md:space-y-0">
         <div className="flex flex-row md:flex-col items-center md:items-center space-x-4 md:space-x-0 md:space-y-2">
-          <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center shrink-0">
             <PlayerPicture
               playerID={picturePlayerId}
               team={pictureTeamId}
@@ -407,7 +407,7 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
                 <Text variant="xs" classes="text-gray-300 text-[10px]">
                   Overall
                 </Text>
-                <div className="min-w-[50px] min-h-[50px] max-w-[80px] max-h-[80px] bg-gray-700 border border-gray-600 rounded flex items-center justify-center">
+                <div className="min-w-[50px] min-h-[50px] max-w-[80px] max-h-[80px] bg-gray-700 border border-gray-600 rounded-sm flex items-center justify-center">
                   <Text variant="xs" classes="text-green-400 font-bold text-sm">
                     {getOverallGrade(player)}
                   </Text>

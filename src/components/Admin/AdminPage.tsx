@@ -63,7 +63,7 @@ interface UnAuthPageProps {
 const UnAuthAdminPage: React.FC<UnAuthPageProps> = ({ navigate }) => {
   return (
     <PageContainer isLoading={false}>
-      <div className="flex flex-col justify-center relative h-[100%] mt-[10rem]">
+      <div className="flex flex-col justify-center relative h-full mt-40">
         <Text variant="h3">Warning! Please return to Dashboard</Text>
         <Text variant="body" classes="mb-4">
           You are not an admin.
@@ -138,7 +138,7 @@ export const AdminPage = () => {
               {(isAdmin || isCFBCommissioner) && (
                 <PillButton
                   isSelected={selectedLeague === SimCFB}
-                  classes="w-[8rem]"
+                  classes="w-32"
                   onClick={() => setSelectedLeague(SimCFB)}
                 >
                   {SimCFB}
@@ -147,7 +147,7 @@ export const AdminPage = () => {
               {(isAdmin || isNFLCommissioner) && (
                 <PillButton
                   isSelected={selectedLeague === SimNFL}
-                  classes="w-[8rem]"
+                  classes="w-32"
                   onClick={() => setSelectedLeague(SimNFL)}
                 >
                   {SimNFL}
@@ -157,7 +157,7 @@ export const AdminPage = () => {
                 <PillButton
                   isSelected={selectedLeague === SimNBA}
                   variant="basketball"
-                  classes="w-[8rem]"
+                  classes="w-32"
                   onClick={() => setSelectedLeague(SimCBB)}
                 >
                   {SimCBB}
@@ -167,7 +167,7 @@ export const AdminPage = () => {
                 <PillButton
                   isSelected={selectedLeague === SimCBB}
                   variant="basketball"
-                  classes="w-[8rem]"
+                  classes="w-32"
                   onClick={() => setSelectedLeague(SimNBA)}
                 >
                   {SimNBA}
@@ -177,7 +177,7 @@ export const AdminPage = () => {
                 <PillButton
                   isSelected={selectedLeague === SimCHL}
                   variant="hockey"
-                  classes="w-[8rem]"
+                  classes="w-32"
                   onClick={() => setSelectedLeague(SimCHL)}
                 >
                   {SimCHL}
@@ -187,7 +187,7 @@ export const AdminPage = () => {
                 <PillButton
                   isSelected={selectedLeague === SimPHL}
                   variant="hockey"
-                  classes="w-[8rem]"
+                  classes="w-32"
                   onClick={() => setSelectedLeague(SimPHL)}
                 >
                   {SimPHL}
@@ -196,7 +196,7 @@ export const AdminPage = () => {
               {isAdmin && (
                 <PillButton
                   isSelected={selectedLeague === SimCollegeBaseball}
-                  classes="w-[8rem]"
+                  classes="w-32"
                   onClick={() => setSelectedLeague(SimCollegeBaseball)}
                 >
                   SimCBL
@@ -205,7 +205,7 @@ export const AdminPage = () => {
               {isAdmin && (
                 <PillButton
                   isSelected={selectedLeague === SimMLB}
-                  classes="w-[8rem]"
+                  classes="w-32"
                   onClick={() => setSelectedLeague(SimMLB)}
                 >
                   {SimMLB}
@@ -249,7 +249,7 @@ export const AdminPage = () => {
         )}
         <Border classes="w-full">
           <div className="flex flex-row flex-wrap justify-between pt-1 pb-2 mb-2">
-            <TabGroup classes="flex flex-grow justify-between">
+            <TabGroup classes="flex grow justify-between">
               <Tab
                 label={Requests}
                 selected={selectedTab === Requests}

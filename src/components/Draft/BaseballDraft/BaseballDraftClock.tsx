@@ -75,7 +75,7 @@ const BaseballDraftClock: React.FC<BaseballDraftClockProps> = ({
 
       {/* Timer or Auto indicator */}
       {isAutoRound ? (
-        <div className="rounded bg-gray-600 px-4 py-2 text-lg font-bold uppercase tracking-wide text-gray-300">
+        <div className="rounded-sm bg-gray-600 px-4 py-2 text-lg font-bold uppercase tracking-wide text-gray-300">
           Auto Round
         </div>
       ) : (
@@ -88,7 +88,7 @@ const BaseballDraftClock: React.FC<BaseballDraftClockProps> = ({
 
       {/* YOUR PICK indicator */}
       {isUserTurn && (
-        <div className="rounded bg-green-600 px-3 py-1 text-xs font-bold uppercase tracking-wide">
+        <div className="rounded-sm bg-green-600 px-3 py-1 text-xs font-bold uppercase tracking-wide">
           Your Pick!
         </div>
       )}

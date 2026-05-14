@@ -393,16 +393,16 @@ const TradeSection: FC<TradeSectionProps> = ({
         </div>
         {isSentTrade ? (
           <div className="flex flex-col items-end gap-y-2">
-            <Button size="sm" classes="w-[5rem]" onClick={() => cancel(trade)}>
+            <Button size="sm" classes="w-20" onClick={() => cancel(trade)}>
               Cancel
             </Button>
           </div>
         ) : (
           <div className="flex flex-col items-end gap-y-2">
-            <Button size="sm" classes="w-[5rem]" onClick={() => accept(trade)}>
+            <Button size="sm" classes="w-20" onClick={() => accept(trade)}>
               Accept
             </Button>
-            <Button size="sm" classes="w-[5rem]" onClick={() => reject(trade)}>
+            <Button size="sm" classes="w-20" onClick={() => reject(trade)}>
               Reject
             </Button>
           </div>
@@ -773,7 +773,7 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
                 }}
               />
             </div>
-            <div className="overflow-y-auto max-h-[25rem] w-full">
+            <div className="overflow-y-auto max-h-100 w-full">
               {selectedUserItems.map((x, idx) => {
                 const itemKey = x.isPlayer ? x.player!.ID : 0;
                 return (
@@ -849,7 +849,7 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
                 }}
               />
             </div>
-            <div className="overflow-y-auto max-h-[25rem] w-full">
+            <div className="overflow-y-auto max-h-100 w-full">
               {selectedRecipientItems.map((x, idx) => {
                 const itemKey = x.isPlayer ? x.player!.ID : 0;
                 return (

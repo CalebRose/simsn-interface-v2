@@ -138,7 +138,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             <Logo
               url={logo}
               variant="normal"
-              classes="h-[8rem] w-[8rem]"
+              classes="h-32 w-32"
               containerClass="p-4"
             />
           </div>

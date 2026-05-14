@@ -94,8 +94,8 @@ export const getNotificationThemeStyles = (
 
   return `${base} notification-unread ${
     isDark
-      ? "bg-blue-900 bg-opacity-20 border-blue-400"
-      : "bg-blue-50 bg-opacity-30 border-blue-500"
+      ? "bg-blue-900 bg-black/20 border-blue-400"
+      : "bg-blue-50 bg-black/30 border-blue-500"
   }`;
 };
 
@@ -113,7 +113,7 @@ export const getButtonThemeStyles = (
   size: "xs" | "sm" | "md" | "lg" = "md"
 ) => {
   const baseClasses =
-    "font-medium rounded transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "font-medium rounded-sm transition-colors duration-150 focus:outline-hidden focus:ring-2 focus:ring-offset-2";
 
   const sizeClasses = {
     xs: "px-2 py-1 text-xs",
@@ -151,7 +151,7 @@ export const getInputThemeStyles = (
   hasError: boolean = false
 ) => {
   const baseClasses =
-    "block w-full rounded-md shadow-sm focus:outline-none focus:ring-1";
+    "block w-full rounded-md shadow-xs focus:outline-hidden focus:ring-1";
 
   if (hasError) {
     return `${baseClasses} border-red-500 focus:border-red-500 focus:ring-red-500 ${

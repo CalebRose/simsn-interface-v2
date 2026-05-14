@@ -218,7 +218,7 @@ const DraftTradeSection: FC<DraftTradeSectionProps> = ({
           <div className="flex flex-col items-end gap-y-2">
             <Button
               size="sm"
-              classes="w-[5rem]"
+              classes="w-20"
               onClick={() => cancelTrade(trade)}
             >
               Cancel
@@ -228,14 +228,14 @@ const DraftTradeSection: FC<DraftTradeSectionProps> = ({
           <div className="flex flex-col items-end gap-y-2">
             <Button
               size="sm"
-              classes="w-[5rem]"
+              classes="w-20"
               onClick={() => acceptTrade(trade)}
             >
               Accept
             </Button>
             <Button
               size="sm"
-              classes="w-[5rem]"
+              classes="w-20"
               onClick={() => rejectTrade(trade)}
             >
               Reject
