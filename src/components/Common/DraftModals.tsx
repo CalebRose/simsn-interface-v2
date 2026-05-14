@@ -69,14 +69,14 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
-        <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
           <PlayerPicture playerID={player.ID} league={SimPHL} team={proTeam} />
         </div>
         {chlTeam && (
           <Logo
             url={teamLogo}
             label={chlTeam.Abbreviation}
-            classes="h-[5rem] max-h-[5rem]"
+            classes="h-20 max-h-20"
             containerClass="p-4"
             textClass="text-small"
           />
@@ -358,14 +358,14 @@ export const NFLDrafteeInfoModalBody: FC<NFLDrafteeInfoModalBodyProps> = ({
   return (
     <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
-        <div className="flex items-center justify-center h-[6rem] w-[6rem] sm:h-[8rem] sm:w-[8rem] px-5 rounded-lg border-2 bg-white">
+        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
           <PlayerPicture playerID={player.ID} league={SimNFL} team={proTeam} />
         </div>
         {cfbTeam && (
           <Logo
             url={teamLogo}
             label={cfbTeam.TeamAbbr}
-            classes="h-[5rem] max-h-[5rem]"
+            classes="h-20 max-h-20"
             containerClass="p-4"
             textClass="text-small"
           />

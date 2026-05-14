@@ -45,6 +45,7 @@ import { getFBAWeekID } from "../../../_helper/statsPageHelper";
 import FBAScheduleService from "../../../_services/scheduleService";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import GameRequestModal from "../Common/GameRequestModal";
+import { Refresh } from "../../../_design/Icons";
 
 interface SchedulePageProps {
   league: League;
@@ -53,7 +54,6 @@ interface SchedulePageProps {
 
 export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const { currentUser } = useAuthStore();
-  const fbStore = useSimFBAStore();
   const currentWeek = GetCurrentWeek(league, ts);
   const currentSeason = ts.Season;
   const {
@@ -68,7 +68,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     submitCollegePoll,
     getBootstrapScheduleData,
     ExportFootballSchedule,
-  } = fbStore;
+  } = useSimFBAStore();
 
   const [selectedTeam, setSelectedTeam] = useState(cfbTeam);
   const [category, setCategory] = useState(Overview);
@@ -236,7 +236,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
                   onClick={submitPollModal.handleOpenModal}
                 >
                   <Text variant="small">Submit Poll</Text>
@@ -244,15 +244,30 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
                   onClick={collegePollModal.handleOpenModal}
                 >
-                  <Text variant="small">College Poll</Text>
+                  <Text variant="small">Official Poll</Text>
                 </Button>
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  classes="px-5 py-2 sm:w-[13%] sm:max-w-[100px]"
+                  onClick={getBootstrapScheduleData}
+                >
+                  <div className="flex text-center items-center justify-center">
+                    <Text
+                      variant="small"
+                      classes="text-center items-center justify-center"
+                    >
+                      <Refresh />
+                    </Text>
+                  </div>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2 sm:w-[75%] sm:max-w-[250px]"
                   onClick={gameRequestModal.handleOpenModal}
                   disabled={ts.CollegeWeek > 0}
                 >
@@ -430,6 +445,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     allProGames: allNFLGames,
     isLoading,
     ExportFootballSchedule,
+    getBootstrapScheduleData,
   } = fbStore;
 
   const gameRequestModal = useModal();
@@ -460,6 +476,10 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const darkerBackgroundColor = darkenColor(backgroundColor, -5);
+
+  useEffect(() => {
+    getBootstrapScheduleData();
+  }, [getBootstrapScheduleData]);
 
   useEffect(() => {
     const seasonID = (selectedSeason ?? 0) - 2020;
@@ -585,7 +605,22 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  classes="px-5 py-2 sm:w-[13%] sm:max-w-[100px]"
+                  onClick={getBootstrapScheduleData}
+                >
+                  <div className="flex text-center items-center justify-center">
+                    <Text
+                      variant="small"
+                      classes="text-center items-center justify-center"
+                    >
+                      <Refresh />
+                    </Text>
+                  </div>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2 sm:w-[75%] sm:max-w-[250px]"
                   onClick={gameRequestModal.handleOpenModal}
                   disabled={ts.NFLWeek > 0}
                 >

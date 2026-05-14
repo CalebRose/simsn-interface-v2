@@ -31,7 +31,7 @@ export const GameReferenceCard: React.FC<GameReferenceCardProps> = ({
       <div className="flex items-center gap-3">
         <div className="flex flex-col flex-1">
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-xs bg-orange-700 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-orange-700 text-white px-1.5 py-0.5 rounded-sm font-medium">
               {LEAGUE_LABELS[gameRef.league] ?? gameRef.league.toUpperCase()}
             </span>
             {gameRef.gameDateLabel && (

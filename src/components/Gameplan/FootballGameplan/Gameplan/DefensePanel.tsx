@@ -118,7 +118,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
         className="flex border-b pb-4 pt-2"
         style={{ borderColor: accentColor }}
       >
-        <div className="bg-opacity-50 rounded-lg p-3 sm:w-1/3">
+        <div className="bg-black/50 rounded-lg p-3 sm:w-1/3">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex flex-col sm:flex-row justify-center gap-4 items-center">
@@ -153,7 +153,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
               onClick={() => setActiveTab(Formations)}
               className={`px-3 py-1 ${
                 activeTab === Formations
-                  ? "bg-orange-900 bg-opacity-50 hover:bg-orange-700 text-white border-orange-500"
+                  ? "bg-orange-900 bg-black/50 hover:bg-orange-700 text-white border-orange-500"
                   : ""
               }`}
             >
@@ -165,7 +165,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
               onClick={() => setActiveTab(Player)}
               className={`px-3 py-1 ${
                 activeTab === Player
-                  ? "bg-orange-900 bg-opacity-50 hover:bg-orange-700 text-white border-orange-500"
+                  ? "bg-orange-900 bg-black/50 hover:bg-orange-700 text-white border-orange-500"
                   : ""
               }`}
             >
@@ -177,7 +177,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
               onClick={() => setActiveTab(Focus)}
               className={`px-3 py-1 ${
                 activeTab === Focus
-                  ? "bg-orange-900 bg-opacity-50 hover:bg-orange-700 text-white border-orange-500"
+                  ? "bg-orange-900 bg-black/50 hover:bg-orange-700 text-white border-orange-500"
                   : ""
               }`}
             >
@@ -204,7 +204,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                 return (
                   <div
                     key={`${opposingFormation.name}-${index}`}
-                    className="bg-gray-700 bg-opacity-50 rounded-lg p-2 border border-gray-600"
+                    className="bg-gray-700 bg-black/50 rounded-lg p-2 border border-gray-600"
                   >
                     <Text
                       variant="small"
@@ -313,7 +313,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
               })}
             </div>
             {getFieldError(validation, "defense") && (
-              <div className="mt-4 p-3 bg-red-900 bg-opacity-50 border border-red-500 rounded-lg">
+              <div className="mt-4 p-3 bg-red-900 bg-black/50 border border-red-500 rounded-lg">
                 <Text variant="small" classes="text-red-400">
                   {getFieldError(validation, "defense")}
                 </Text>
@@ -323,7 +323,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
         )}
         {activeTab === Player && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-4 bg-gray-700 bg-opacity-50 rounded-lg p-3 border border-gray-600">
+            <div className="space-y-4 bg-gray-700 bg-black/50 rounded-lg p-3 border border-gray-600">
               <Text variant="body" classes="text-white font-medium">
                 Blitz Options
               </Text>
@@ -346,7 +346,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                 />
               </div>
             </div>
-            <div className="space-y-4 bg-gray-700 bg-opacity-50 rounded-lg p-3 border border-gray-600">
+            <div className="space-y-4 bg-gray-700 bg-black/50 rounded-lg p-3 border border-gray-600">
               <Text variant="body" classes="text-white font-medium">
                 Coverage Settings
               </Text>
@@ -369,7 +369,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                 disabled={disabled || gameplan.DefaultDefense}
               />
             </div>
-            <div className="space-y-4 bg-gray-700 bg-opacity-50 rounded-lg p-3 border border-gray-600">
+            <div className="space-y-4 bg-gray-700 bg-black/50 rounded-lg p-3 border border-gray-600">
               <Text variant="body" classes="text-white font-medium">
                 Special Options
               </Text>
@@ -395,7 +395,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
         )}
         {activeTab === Focus && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div className="bg-gray-700 bg-opacity-50 rounded-lg p-3 border border-gray-600">
+            <div className="bg-gray-700 bg-black/50 rounded-lg p-3 border border-gray-600">
               <Text variant="h6" classes="text-white font-semibold mb-4">
                 Option Defense Focus
               </Text>
@@ -411,7 +411,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                 disabled={disabled || gameplan.DefaultDefense}
               />
             </div>
-            <div className="flex flex-col items-center bg-gray-700 bg-opacity-50 rounded-lg p-3 border border-gray-600">
+            <div className="flex flex-col items-center bg-gray-700 bg-black/50 rounded-lg p-3 border border-gray-600">
               <Text variant="h6" classes="text-white font-semibold mb-4">
                 Focus Plays (Select up to 3)
               </Text>
@@ -435,7 +435,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                 </div>
               )}
               {getFieldError(validation, "focusPlays") && (
-                <div className="mt-3 p-2 bg-red-900 bg-opacity-50 border border-red-500 rounded">
+                <div className="mt-3 p-2 bg-red-900 bg-black/50 border border-red-500 rounded-sm">
                   <Text variant="small" classes="text-red-400">
                     {getFieldError(validation, "focusPlays")}
                   </Text>
@@ -460,7 +460,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
               if (!formationData) return null;
 
               return (
-                <div className="bg-gray-800 bg-opacity-50 rounded-lg p-4">
+                <div className="bg-gray-800 bg-black/50 rounded-lg p-4">
                   <Text variant="body" classes="text-white font-semibold mb-2">
                     Personnel Formation:
                   </Text>

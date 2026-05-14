@@ -50,7 +50,7 @@ export const OffensiveFormationsPanel: React.FC<OffensiveFormationsPanelProps> =
   return (
     <div className={`sm:space-y-6 ${className} p-1 sm:p-4 rounded-lg border-2`} style={{ borderColor, backgroundColor }}>
       <div className="flex justify-center gap-4 border-b" style={{ borderColor: accentColor }}>
-        <div className="bg-gray-800 bg-opacity-50 rounded-lg p-4 w-1/3">
+        <div className="bg-gray-800 bg-black/50 rounded-lg p-4 w-1/3">
           <div className="flex items-center justify-between">
             <div>
               <div className="flex flex-col sm:flex-row justify-center gap-4 items-center">
@@ -68,11 +68,11 @@ export const OffensiveFormationsPanel: React.FC<OffensiveFormationsPanelProps> =
             </div>
           </div>
         </div>
-        <div className="bg-gray-800 bg-opacity-50 rounded-lg p-4 w-full">
+        <div className="bg-gray-800 bg-black/50 rounded-lg p-4 w-full">
           <Text variant="h5" classes="text-white font-semibold mb-3">
             Play Type Summary
           </Text>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg p-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-700 bg-black/50 border border-gray-600 rounded-lg p-2">
             <div className="text-center">
               <Text variant="small" classes="">
                 Traditional Run
@@ -116,7 +116,7 @@ export const OffensiveFormationsPanel: React.FC<OffensiveFormationsPanelProps> =
           </div>
         </div>
       </div>
-      <div className="bg-gray-800 bg-opacity-50 rounded-lg p-4">
+      <div className="bg-gray-800 bg-black/50 rounded-lg p-4">
         <div className="flex items-center justify-between mb-4">
           <Text variant="h5" classes="text-white font-semibold">
             Formation Weights
@@ -134,7 +134,7 @@ export const OffensiveFormationsPanel: React.FC<OffensiveFormationsPanelProps> =
             return (
               <div 
                 key={formation.name}
-                className="bg-gray-700 bg-opacity-50 rounded-lg p-1 border border-gray-600"
+                className="bg-gray-700 bg-black/50 rounded-lg p-1 border border-gray-600"
               >
                 <div className="flex items-center justify-between mb-2">
                   <Text variant="small" classes="text-white font-medium px-2">
@@ -204,7 +204,7 @@ export const OffensiveFormationsPanel: React.FC<OffensiveFormationsPanelProps> =
         </div>
 
         {getFieldError(validation, 'formations') && (
-          <div className="mt-4 p-3 bg-red-900 bg-opacity-50 border border-red-500 rounded-lg">
+          <div className="mt-4 p-3 bg-red-900 bg-black/50 border border-red-500 rounded-lg">
             <Text variant="small" classes="text-red-400">
               {getFieldError(validation, 'formations')}
             </Text>
@@ -222,7 +222,7 @@ export const OffensiveFormationsPanel: React.FC<OffensiveFormationsPanelProps> =
             <Text variant="body" classes="text-gray-300">
               Formation personnel and positioning information:
             </Text>
-            <div className="bg-gray-800 bg-opacity-50 rounded-lg p-4">
+            <div className="bg-gray-800 bg-black/50 rounded-lg p-4">
               <Text variant="body" classes="text-white font-semibold mb-2">
                 Personnel:
               </Text>

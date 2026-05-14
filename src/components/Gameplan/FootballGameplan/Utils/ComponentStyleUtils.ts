@@ -19,9 +19,9 @@ export const POSITION_SLOT_SIZE_CLASSES = {
 } as const;
 
 export const POSITION_SLOT_MIN_HEIGHTS = {
-  sm: 'min-h-[6rem]',
-  md: 'min-h-[8rem]',
-  lg: 'min-h-[9rem]'
+  sm: 'min-h-24',
+  md: 'min-h-32',
+  lg: 'min-h-36'
 } as const;
 
 export const TEXT_SIZE_CLASSES = {

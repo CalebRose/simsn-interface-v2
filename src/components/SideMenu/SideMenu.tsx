@@ -243,7 +243,7 @@ export const SideMenu = ({}) => {
             <button
               onClick={toggleMenu}
               disabled={isBanned}
-              className="inline-flex items-center p-2 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
+              className="inline-flex items-center p-2 rounded-lg text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-hidden"
             >
               <span className="sr-only">Open sidebar</span>
               <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -280,7 +280,7 @@ export const SideMenu = ({}) => {
                       markAllNotificationsRead(currentUser.id);
                     }
                   }}
-                  className="relative p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
+                  className="relative p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-hidden"
                 >
                   {/* Bell SVG */}
                   <svg

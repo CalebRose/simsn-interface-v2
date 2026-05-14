@@ -107,7 +107,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
           </div>
         </TableCell>
         <TableCell
-          classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+          classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
                 text-wrap sm:max-w-full`}
         >
           <span
@@ -229,7 +229,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
           </div>
         </TableCell>
         <TableCell
-          classes={`min-[360px]:max-w-[6em] min-[380px]:max-w-[8em] min-[430px]:max-w-[10em] 
+          classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
             text-wrap sm:max-w-full`}
         >
           <span

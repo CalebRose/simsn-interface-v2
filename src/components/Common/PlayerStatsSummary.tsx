@@ -66,7 +66,7 @@ export const PlayerStatsSummary: React.FC<PlayerStatsSummaryProps> = ({
   const summary = getSummaryStats();
 
   return (
-    <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded">
+    <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-sm">
       <Text variant="h4" className="mb-2">
         Career Stats Summary
       </Text>

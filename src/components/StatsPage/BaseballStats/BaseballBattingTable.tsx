@@ -76,7 +76,7 @@ interface Column {
 const ALL_COLUMNS: Column[] = [
   // Always-visible identity columns
   { label: "#", key: "rank", width: "w-10", group: "standard", isIdentity: true },
-  { label: "Player", key: "name", width: "min-w-[6rem] max-w-[10rem]", group: "standard", isIdentity: true },
+  { label: "Player", key: "name", width: "min-w-24 max-w-40", group: "standard", isIdentity: true },
   { label: "Team", key: "team_abbrev", width: "w-16", group: "standard", isIdentity: true },
   { label: "Pos", key: "position", width: "w-12", group: "standard", isIdentity: true, clientSort: true },
 

@@ -73,7 +73,7 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
   return (
     <div
       className={`
-        relative p-2 rounded border text-center cursor-pointer
+        relative p-2 rounded-sm border text-center cursor-pointer
         ${isPotentialGrade || isOverallGrade ? "min-w-[50px] min-h-[50px] sm:min-w-[60px] sm:min-h-[60px] max-w-[80px] max-h-[80px]" : "min-w-[60px] min-h-[60px] sm:min-w-[70px] sm:min-h-[70px] max-w-[80px] max-h-[80px]"}
         flex flex-col justify-center items-center
         ${

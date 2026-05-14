@@ -219,13 +219,13 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
       <div className="flex max-[768px]:gap-2 gap-3">
         {/* Team Logo - Avatar Style */}
         {teamLogo && team ? (
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="max-[768px]:w-8 max-[768px]:h-8 w-12 h-12 rounded-full overflow-hidden bg-gray-800 border border-gray-600 flex items-center justify-center">
               <Logo url={teamLogo} classes="w-full h-full object-cover" />
             </div>
           </div>
         ) : (
-          <div className="flex-shrink-0 max-[768px]:w-8 max-[768px]:h-8 w-12 h-12 rounded-full bg-gray-800 border border-gray-600 flex items-center justify-center">
+          <div className="shrink-0 max-[768px]:w-8 max-[768px]:h-8 w-12 h-12 rounded-full bg-gray-800 border border-gray-600 flex items-center justify-center">
             <span className="text-gray-400 max-[768px]:text-xs text-sm font-bold">
               {newsItem.MessageType?.charAt(0) || "N"}
             </span>

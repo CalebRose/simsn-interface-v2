@@ -45,7 +45,7 @@ const PoolStandingsTable = ({
   );
 
   return (
-    <div className="min-w-[12rem]">
+    <div className="min-w-48">
       <Text variant="small" classes="font-bold mb-2 uppercase">
         Pool {poolGroup}
       </Text>
@@ -114,7 +114,7 @@ const CountryRosterTable = ({
           <thead>
             <tr className="text-left text-xs font-semibold border-b border-gray-300 dark:border-gray-600">
               <th className="px-2 py-1 w-10">#</th>
-              <th className="px-2 py-1 min-w-[10rem]">Player</th>
+              <th className="px-2 py-1 min-w-40">Player</th>
               <th className="px-2 py-1 text-center w-16">Pos</th>
             </tr>
           </thead>
@@ -207,7 +207,7 @@ const WBCSeriesCard = ({ series }: { series: PlayoffSeries }) => {
 
   return (
     <div
-      className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-[14rem]`}
+      className={`border-2 rounded-lg p-3 ${statusColor} bg-white dark:bg-gray-800 min-w-56`}
     >
       <div
         className={`flex items-center justify-between gap-2 py-1 ${isWinnerA ? "font-bold" : isWinnerB ? "opacity-50" : ""}`}

@@ -257,7 +257,7 @@ export const BaseballTeamStatsTable = ({ batting, pitching, fielding, standings,
             className="text-left text-xs font-semibold uppercase"
             style={headerStyle}
           >
-            <th className="px-2 py-2 text-left min-w-[8rem]">Team</th>
+            <th className="px-2 py-2 text-left min-w-32">Team</th>
             <th className="px-2 py-2 text-center" colSpan={BATTING_COLS.length}>
               <span className="border-b-2 border-current pb-0.5">Batting</span>
             </th>

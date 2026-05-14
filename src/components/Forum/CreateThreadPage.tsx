@@ -286,7 +286,7 @@ export const CreateThreadPage: React.FC = () => {
         <ForumBorder classes="p-4 flex flex-col gap-4">
           {/* Draft restore banner */}
           {showDraftBanner && (
-            <div className="flex items-center justify-between px-3 py-2 rounded text-sm bg-blue-950/60 border border-blue-700/50 text-blue-300">
+            <div className="flex items-center justify-between px-3 py-2 rounded-sm text-sm bg-blue-950/60 border border-blue-700/50 text-blue-300">
               <span>Draft restored — pick up where you left off.</span>
               <button
                 onClick={() => {
@@ -315,7 +315,7 @@ export const CreateThreadPage: React.FC = () => {
                 setSelectedForumId(newForumId);
                 setSelectedMediaTags([]);
               }}
-              className="bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-blue-500"
+              className="bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white focus:outline-hidden focus:border-blue-500"
               disabled={isSubmitting}
             >
               <option value="">-- Select a forum --</option>
@@ -407,7 +407,7 @@ export const CreateThreadPage: React.FC = () => {
               }}
               placeholder="Thread title…"
               maxLength={MAX_TITLE}
-              className="bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 focus:outline-hidden focus:border-blue-500"
               disabled={isSubmitting}
               onKeyDown={(e) => {
                 if (e.key === "Tab") {
@@ -433,7 +433,7 @@ export const CreateThreadPage: React.FC = () => {
                   value={pollQuestion}
                   onChange={(e) => setPollQuestion(e.target.value)}
                   placeholder="Poll question…"
-                  className="bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 focus:outline-hidden focus:border-blue-500"
                 />
                 {pollOptions.map((opt, idx) => (
                   <div key={idx} className="flex gap-2 items-center">
@@ -444,7 +444,7 @@ export const CreateThreadPage: React.FC = () => {
                         handlePollOptionChange(idx, e.target.value)
                       }
                       placeholder={`Option ${idx + 1}`}
-                      className="flex-1 bg-gray-900 border border-gray-600 rounded p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                      className="flex-1 bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 focus:outline-hidden focus:border-blue-500"
                     />
                     {pollOptions.length > 2 && (
                       <button

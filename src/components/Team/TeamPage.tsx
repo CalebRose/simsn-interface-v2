@@ -854,7 +854,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
                 disabled={selectedTeam?.ID !== phlTeam?.ID}
                 isSelected={category === TradeBlock}
                 onClick={() => setCategory(TradeBlock)}
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 <Text variant="small">Trade Block</Text>
               </Button>

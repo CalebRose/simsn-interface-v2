@@ -75,172 +75,198 @@ export const GamesBar = ({
     return {} as Record<number, any>;
   }, [proStandingsMap, allProStandings]);
 
+  const PAST_GAMES_VISIBLE = 3;
+  const firstUpcomingIdx = games.findIndex((game) => !game.GameComplete);
+
   useEffect(() => {
-    if (scrollContainerRef.current && games.length > 0) {
-      const lastCompletedGameIndex = games.findIndex(
-        (game) => !game.GameComplete,
-      );
-      const gameWidth = scrollContainerRef.current.scrollWidth / games.length;
-      const scrollPosition =
-        gameWidth * (lastCompletedGameIndex - 1) -
-        scrollContainerRef.current.clientWidth / 2 +
-        gameWidth / 2;
-      scrollContainerRef.current.scrollTo({
-        left: scrollPosition,
-        behavior: "smooth",
-      });
-    }
-  }, [games]);
+    const el = scrollContainerRef.current;
+    if (!el || games.length === 0) return;
+    requestAnimationFrame(() => {
+      const firstCard = el.firstElementChild as HTMLElement | null;
+      if (!firstCard) return;
+      const cardWidth = firstCard.offsetWidth;
+      const gap = parseFloat(getComputedStyle(el).gap) || 8;
+      const step = cardWidth + gap;
+      const targetIdx = Math.max(0, firstUpcomingIdx - PAST_GAMES_VISIBLE);
+      el.scrollTo({ left: targetIdx * step, behavior: "auto" });
+    });
+  }, [games, firstUpcomingIdx]);
 
   if (!games || games.length === 0) {
     return <div></div>;
   }
 
   const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -200, behavior: "smooth" });
-    }
+    scrollContainerRef.current?.scrollBy({ left: -240, behavior: "smooth" });
   };
 
   const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 200, behavior: "smooth" });
-    }
-  };
-
-  const rowRenderer = (item: any, index: number) => {
-    const isHomeGame = item.HomeTeamID === team.ID;
-    const opponentAbbr = isHomeGame ? item.AwayTeamAbbr : item.HomeTeamAbbr;
-    const opponentLogoUrl = getLogo(
-      league,
-      isHomeGame ? item.AwayTeamID : item.HomeTeamID,
-      currentUser.IsRetro,
-    );
-    const gameDetails = item.isNeutral
-      ? `vs ${opponentAbbr}`
-      : isHomeGame
-        ? `vs ${opponentAbbr}`
-        : `at ${opponentAbbr}`;
-    let resultColor = "";
-
-    // Opponent record (football only)
-    let opponentRecord = "";
-    if (league === SimCFB || league === SimNFL) {
-      const opponentID = isHomeGame ? item.AwayTeamID : item.HomeTeamID;
-      const standings =
-        league === SimCFB
-          ? cfbStandingsMap && (cfbStandingsMap as any)[opponentID]
-          : proStandingsLookup[opponentID];
-      if (standings) {
-        const wins = standings.TotalWins ?? 0;
-        const losses = standings.TotalLosses ?? 0;
-        const ties = standings.TotalTies ?? 0; // NFL only
-        opponentRecord =
-          ties && ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
-      }
-    }
-
-    let revealResult = false;
-    if (league === SimCHL || league === SimPHL) {
-      revealResult = RevealHCKResults(item, ts, false);
-    } else if (league === SimCBB || league === SimNBA) {
-      revealResult = RevealBBAResults(item, ts, false);
-    } else {
-      revealResult = RevealResults(item, ts, league, false);
-    }
-
-    if (revealResult) {
-      if (isHomeGame) {
-        resultColor = item.HomeTeamWin ? "bg-[#189E5B]" : "bg-red-500";
-      } else {
-        resultColor = item.AwayTeamWin ? "bg-[#189E5B]" : "bg-red-500";
-      }
-      if (!item.HomeTeamWin && !item.AwayTeamWin) {
-        resultColor = "";
-      }
-    }
-
-    const gameScore = revealResult
-      ? isHomeGame
-        ? `${item.HomeTeamScore}-${item.AwayTeamScore}`
-        : `${item.AwayTeamScore}-${item.HomeTeamScore}`
-      : "-";
-
-    return (
-      <div
-        key={index}
-        className={`flex flex-col rounded-lg items-center border pb-1 px-2 w-28 md:w-32 lg:w-36 3xl:w-48 ${resultColor}`}
-        style={{ borderColor: headerColor }}
-      >
-        <div className="flex-col px-2 overflow-auto">
-          <div className="flex-col w-full items-center justify-center">
-            <Logo
-              variant="xs"
-              containerClass="pb-1 max-w-[4em] p-2 justify-self-center"
-              url={opponentLogoUrl}
-            />
-            <Text variant="xs">{gameScore}</Text>
-            <div className="flex items-center justify-center gap-1">
-              <Text variant="xs" classes="">
-                {gameDetails}
-              </Text>
-              {opponentRecord && (
-                <Text variant="xs" classes="opacity-70">
-                  ({opponentRecord})
-                </Text>
-              )}
-            </div>
-          </div>
-          <Text variant="xs" classes="pt-1 border-t">
-            Week {item.Week}
-            {item.GameDay}
-          </Text>
-          {item.TimeSlot && (
-            <Text variant="xs" classes="">
-              {item.TimeSlot.split(" ").slice(0, 2).join(" ")}
-            </Text>
-          )}
-        </div>
-      </div>
-    );
+    scrollContainerRef.current?.scrollBy({ left: 240, behavior: "smooth" });
   };
 
   return (
-    <div className="flex pb-1">
-      <div className="flex w-[95vw] sm:w-[90vw] md:w-full max-w-[1600px] justify-center">
-        <div className="relative flex items-center w-[92vw] md:w-[85vw] lg:w-[72.6em] 3xl:w-full pb-1">
+    <div className="flex pb-1 mb-2">
+      <div className="flex w-[95vw] sm:w-[90vw] md:w-full max-w-400 justify-center">
+        <div className="relative flex items-center w-[92vw] md:w-[85vw] lg:w-[80vw] 3xl:w-full pb-1">
           <button
             onClick={scrollLeft}
-            className="absolute left-0 z-10 p-[0.5vw] md:p-2 rounded-full border-1"
-            style={{
-              backgroundColor: backgroundColor,
-              color: borderColor,
-              borderColor: headerColor,
-            }}
+            className="absolute left-0 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-gray-800 text-white border border-gray-600 hover:bg-gray-700 transition-colors"
           >
             &lt;
           </button>
           <div
             ref={scrollContainerRef}
-            className="flex flex-row overflow-hidden w-full"
+            className="flex flex-row gap-2 overflow-x-auto w-full px-8 py-1"
           >
-            {games.map((game, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center mx-[1vw] md:mx-2"
-              >
-                {rowRenderer(game, index)}
-              </div>
-            ))}
+            {games.map((game, index) => {
+              const isHomeGame = game.HomeTeamID === team.ID;
+              const opponentAbbr = isHomeGame
+                ? game.AwayTeamAbbr
+                : game.HomeTeamAbbr;
+              const opponentLogoUrl = getLogo(
+                league,
+                isHomeGame ? game.AwayTeamID : game.HomeTeamID,
+                currentUser.IsRetro,
+              );
+              const prefix = game.isNeutral ? "vs" : isHomeGame ? "vs" : "@";
+
+              // Opponent record (football only)
+              let opponentRecord = "";
+              if (league === SimCFB || league === SimNFL) {
+                const opponentID = isHomeGame
+                  ? game.AwayTeamID
+                  : game.HomeTeamID;
+                const standings =
+                  league === SimCFB
+                    ? cfbStandingsMap && (cfbStandingsMap as any)[opponentID]
+                    : proStandingsLookup[opponentID];
+                if (standings) {
+                  const wins = standings.TotalWins ?? 0;
+                  const losses = standings.TotalLosses ?? 0;
+                  const ties = standings.TotalTies ?? 0;
+                  opponentRecord =
+                    ties > 0
+                      ? `${wins}-${losses}-${ties}`
+                      : `${wins}-${losses}`;
+                }
+              }
+
+              let revealResult = false;
+              if (league === SimCHL || league === SimPHL) {
+                revealResult = RevealHCKResults(game, ts, false);
+              } else if (league === SimCBB || league === SimNBA) {
+                revealResult = RevealBBAResults(game, ts, false);
+              } else {
+                revealResult = RevealResults(game, ts, league, false);
+              }
+
+              const isComplete = revealResult || game.GameComplete;
+              const userWon = isComplete
+                ? isHomeGame
+                  ? game.HomeTeamWin
+                  : game.AwayTeamWin
+                : false;
+              const userLost =
+                isComplete &&
+                !userWon &&
+                (game.HomeTeamWin || game.AwayTeamWin);
+              const isTie =
+                isComplete && !game.HomeTeamWin && !game.AwayTeamWin;
+
+              const teamScore = isHomeGame
+                ? game.HomeTeamScore
+                : game.AwayTeamScore;
+              const oppScore = isHomeGame
+                ? game.AwayTeamScore
+                : game.HomeTeamScore;
+
+              let cardBg = isHomeGame
+                ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600"
+                : "bg-white dark:bg-gray-800/60 border-gray-200 dark:border-gray-600/60";
+              if (isComplete) {
+                if (userWon)
+                  cardBg = "bg-green-50 dark:bg-green-900/20 border-green-500";
+                else if (userLost)
+                  cardBg = "bg-red-50 dark:bg-red-900/20 border-red-500";
+                else cardBg = "bg-gray-100 dark:bg-gray-700 border-gray-400";
+              }
+
+              const isNextGame = index === firstUpcomingIdx;
+
+              return (
+                <div
+                  key={index}
+                  className={`flex flex-col items-center shrink-0 w-28 md:w-32 lg:w-36 rounded-lg border-2 px-2 py-1.5 ${cardBg}`}
+                  style={
+                    isNextGame
+                      ? {
+                          boxShadow: `0 0 0 2px ${headerColor}`,
+                          outline: "1px solid transparent",
+                          outlineOffset: "1px",
+                        }
+                      : undefined
+                  }
+                >
+                  {/* Week */}
+                  <span className="text-[0.6rem] text-gray-500 dark:text-gray-400">
+                    Wk {game.Week}
+                    {game.GameDay ? ` ${game.GameDay.toUpperCase()}` : ""}
+                  </span>
+
+                  {/* Opponent logo */}
+                  <img
+                    src={opponentLogoUrl}
+                    className="w-7 h-7 md:w-8 md:h-8 object-contain my-0.5"
+                    alt={opponentAbbr}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+
+                  {/* Matchup */}
+                  <span className="text-xs font-semibold">
+                    {prefix} {opponentAbbr}
+                  </span>
+                  {opponentRecord && (
+                    <span className="text-[0.6rem] text-gray-500 dark:text-gray-400">
+                      ({opponentRecord})
+                    </span>
+                  )}
+
+                  {/* Result */}
+                  {isComplete ? (
+                    <div className="flex flex-col items-center mt-0.5">
+                      <span
+                        className={`text-sm font-bold ${userWon ? "text-green-600 dark:text-green-400" : userLost ? "text-red-600 dark:text-red-400" : ""}`}
+                      >
+                        {teamScore} - {oppScore}
+                      </span>
+                      <span
+                        className={`text-[0.55rem] font-bold uppercase tracking-wider px-1.5 py-px rounded-sm mt-0.5 ${
+                          userWon
+                            ? "bg-green-600 text-white"
+                            : userLost
+                              ? "bg-red-600 text-white"
+                              : "bg-gray-500 text-white"
+                        }`}
+                      >
+                        {isTie ? "T" : userWon ? "W" : "L"}
+                      </span>
+                    </div>
+                  ) : (
+                    <span
+                      className={`text-[0.65rem] mt-1 ${isNextGame ? "font-bold text-blue-500" : "text-gray-400 dark:text-gray-500"}`}
+                    >
+                      {isNextGame ? "NEXT" : "—"}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <button
             onClick={scrollRight}
-            className="absolute right-0 z-10 p-[0.5vw] md:p-2 rounded-full border-1"
-            style={{
-              backgroundColor: backgroundColor,
-              color: borderColor,
-              borderColor: headerColor,
-            }}
+            className="absolute right-0 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-gray-800 text-white border border-gray-600 hover:bg-gray-700 transition-colors"
           >
             &gt;
           </button>
@@ -279,7 +305,7 @@ export const TeamStandings = ({
     <SectionCards
       team={team}
       header={`${team.Conference} Standings`}
-      classes={`${textColorClass}, h-full max-w-[30rem]`}
+      classes={`${textColorClass}, h-full max-w-120`}
       backgroundColor={backgroundColor}
       headerColor={headerColor}
       borderColor={borderColor}
@@ -1009,7 +1035,7 @@ const TopPlayer: FC<TopPlayerProps> = ({
       <div className="flex">
         <div
           className={`flex my-1 items-center justify-center 
-      px-3 h-[3rem] min-h-[3rem] max-w-[3rem] md:h-[7rem] md:max-h-[8rem] md:max-w-[8rem] rounded-lg border-2`}
+      px-3 h-12 min-h-12 max-w-12 md:h-28 md:max-h-32 md:max-w-32 rounded-lg border-2`}
           style={{ borderColor: borderColor, backgroundColor: "white" }}
         >
           <PlayerPicture team={team} playerID={box.id} league={league} />
@@ -1470,7 +1496,7 @@ export const DraftListModal: React.FC<DraftListModalProps> = ({
               <div className="grid grid-cols-8">
                 <div
                   className={`flex my-1 items-center justify-center 
-                         px-3 h-[3rem] min-h-[3rem] sm:w-[5rem] sm:max-w-[5rem] sm:h-[5rem] rounded-lg border-2`}
+                         px-3 h-12 min-h-12 sm:w-20 sm:max-w-20 sm:h-20 rounded-lg border-2`}
                   style={{ backgroundColor: "white" }}
                 >
                   <PlayerPicture
@@ -1574,7 +1600,7 @@ const ThreadPortal: FC<ThreadPortalProps> = ({
 
   return (
     <div
-      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-3 border-b last:border-b-0 cursor-pointer transition-opacity rounded hover:opacity-75"
+      className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 px-3 border-b last:border-b-0 cursor-pointer transition-opacity rounded-sm hover:opacity-75"
       style={{ borderColor }}
       onClick={handleClick}
       role="button"
@@ -1584,17 +1610,17 @@ const ThreadPortal: FC<ThreadPortalProps> = ({
       <div className="flex flex-col flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
           {thread.isPinned && (
-            <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-blue-600 text-white px-1.5 py-0.5 rounded-sm font-medium">
               Pinned
             </span>
           )}
           {thread.isLocked && (
-            <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-yellow-600 text-white px-1.5 py-0.5 rounded-sm font-medium">
               Locked
             </span>
           )}
           {thread.threadType === "poll" && (
-            <span className="text-xs bg-green-700 text-white px-1.5 py-0.5 rounded font-medium">
+            <span className="text-xs bg-green-700 text-white px-1.5 py-0.5 rounded-sm font-medium">
               Poll
             </span>
           )}

@@ -472,7 +472,7 @@ const NFLGameRequestModal = () => {
                   <strong>Top Players</strong>
                 </Text>
                 {sortedHomeRoster.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-[12rem]">
+                  <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-48">
                     {sortedHomeRoster.map((player) => (
                       <>
                         <Text key={player.ID} variant="small">
@@ -568,7 +568,7 @@ const NFLGameRequestModal = () => {
                   <strong>Top Players</strong>
                 </Text>
                 {sortedAwayRoster.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-[12rem]">
+                  <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-48">
                     {sortedAwayRoster.map((player) => (
                       <>
                         <Text key={player.ID} variant="small">
@@ -676,7 +676,7 @@ const NFLIncomingRequestCard: React.FC<NFLIncomingRequestCardProps> = ({
 
   return (
     <div className="border border-gray-600 border-l-4 border-l-blue-500 rounded-lg p-3 flex items-center gap-4">
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <Logo url={getLogo(SimNFL, request.SendingTeamID, false)} />
       </div>
       <div className="flex flex-1 items-start gap-6 min-w-0 flex-wrap sm:flex-nowrap">
@@ -775,7 +775,7 @@ const NFLSentRequestCard: React.FC<NFLSentRequestCardProps> = ({
     <div
       className={`border border-gray-600 border-l-4 ${statusBorderAccent} rounded-lg p-3 flex items-center gap-4`}
     >
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <Logo url={getLogo(SimNFL, request.RequestingTeamID, false)} />
       </div>
       <div className="flex flex-1 items-start gap-6 min-w-0 flex-wrap sm:flex-nowrap">
@@ -843,7 +843,7 @@ const NFLAcceptedRequestCard: React.FC<NFLAcceptedRequestCardProps> = ({
 
   return (
     <div className="border border-gray-600 border-l-4 border-l-yellow-500 rounded-lg p-3 flex items-center gap-4">
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <Logo url={getLogo(SimNFL, request.SendingTeamID, false)} />
       </div>
       <div className="flex flex-1 items-start gap-6 min-w-0 flex-wrap sm:flex-nowrap">
@@ -1414,7 +1414,7 @@ const CFBGameRequestModal = () => {
                     <strong>Top Players</strong>
                   </Text>
                   {sortedHomeRoster.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-[12rem]">
+                    <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-48">
                       {sortedHomeRoster.map((player) => (
                         <>
                           <Text key={player.ID} variant="small">
@@ -1546,7 +1546,7 @@ const CFBGameRequestModal = () => {
                     <strong>Top Players</strong>
                   </Text>
                   {sortedAwayRoster.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-[12rem]">
+                    <div className="grid grid-cols-3 gap-2 overflow-y-auto max-h-48">
                       {sortedAwayRoster.map((player) => (
                         <>
                           <Text key={player.ID} variant="small">
@@ -1657,7 +1657,7 @@ const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
   return (
     <div className="border border-gray-600 border-l-4 border-l-blue-500 rounded-lg p-3 flex items-center gap-4">
       {/* Logo */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <Logo url={getLogo(SimCFB, request.SendingTeamID, false)} />
       </div>
 
@@ -1760,7 +1760,7 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
   return (
     <div className="border border-gray-600 border-l-4 border-l-yellow-500 rounded-lg p-3 flex items-center gap-4">
       {/* Logo */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <Logo url={getLogo(SimCFB, request.SendingTeamID, false)} />
       </div>
 
@@ -1878,7 +1878,7 @@ const SentRequestCard: React.FC<SentRequestCardProps> = ({
       className={`border border-gray-600 border-l-4 ${statusBorderAccent} rounded-lg p-3 flex items-center gap-4`}
     >
       {/* Logo */}
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <Logo url={getLogo(SimCFB, request.RequestingTeamID, false)} />
       </div>
 

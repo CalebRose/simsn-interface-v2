@@ -103,7 +103,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
         <div
           ref={dropdownRef}
           style={dropdownStyle}
-          className="p-1 bg-gray-700 border border-gray-600 rounded shadow-xl z-[9999] py-1"
+          className="p-1 bg-gray-700 border border-gray-600 rounded-sm shadow-xl z-9999 py-1"
         >
           {canEdit && onEdit && (
             <button

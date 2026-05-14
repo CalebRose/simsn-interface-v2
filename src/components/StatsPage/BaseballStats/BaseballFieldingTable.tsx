@@ -244,7 +244,7 @@ export const BaseballFieldingTable = ({
               return (
                 <th
                   key={col.key}
-                  className={`px-2 py-2 ${col.key === "name" ? "text-left min-w-[6rem]" : "text-center"} ${stickyOffset ? `sticky ${stickyOffset} z-20` : ""} ${isLastSticky ? "shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.3)]" : ""} ${isSortable ? "cursor-pointer select-none hover:opacity-80" : ""} ${isActive ? "underline decoration-2 underline-offset-2" : ""}`}
+                  className={`px-2 py-2 ${col.key === "name" ? "text-left min-w-24" : "text-center"} ${stickyOffset ? `sticky ${stickyOffset} z-20` : ""} ${isLastSticky ? "shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] dark:shadow-[2px_0_4px_-2px_rgba(0,0,0,0.3)]" : ""} ${isSortable ? "cursor-pointer select-none hover:opacity-80" : ""} ${isActive ? "underline decoration-2 underline-offset-2" : ""}`}
                   style={stickyOffset ? { backgroundColor: headerStyle?.backgroundColor as string } : undefined}
                   title={col.tooltip}
                   onClick={isSortable ? handleClick : undefined}

@@ -1,6 +1,14 @@
 import { FC } from "react";
-import { Player, PlayerRatings, DisplayValue } from "../../../models/baseball/baseballModels";
-import { ratingColor, gradeColor, staminaColor } from "../../Team/baseball/baseballColorConfig";
+import {
+  Player,
+  PlayerRatings,
+  DisplayValue,
+} from "../../../models/baseball/baseballModels";
+import {
+  ratingColor,
+  gradeColor,
+  staminaColor,
+} from "../../Team/baseball/baseballColorConfig";
 
 export { ratingColor, staminaColor };
 
@@ -28,9 +36,16 @@ export const RatingChip: FC<RatingChipProps> = ({ value, label, isFuzzed }) => {
   }
   const text = String(value);
   return (
-    <span className="inline-flex items-center gap-0.5 text-xs" title={isFuzzed ? "Estimated" : undefined}>
+    <span
+      className="inline-flex items-center gap-0.5 text-xs"
+      title={isFuzzed ? "Estimated" : undefined}
+    >
       {label && <span className="text-gray-400">{label}:</span>}
-      <span className={typeof value === "string" ? gradeColor(value) : ratingColor(value)}>
+      <span
+        className={
+          typeof value === "string" ? gradeColor(value) : ratingColor(value)
+        }
+      >
         {text}
       </span>
     </span>
@@ -75,7 +90,9 @@ export const PlayerAttributeRow: FC<PlayerAttributeRowProps> = ({
 export const StaminaChip: FC<{ player: Player }> = ({ player }) => {
   const stam = player.stamina ?? 100;
   return (
-    <span className={`text-xs px-1.5 py-0.5 rounded font-semibold bg-gray-700/50 ${staminaColor(stam)}`}>
+    <span
+      className={`text-xs px-1.5 py-0.5 rounded-sm font-semibold bg-gray-700/50 ${staminaColor(stam)}`}
+    >
       Stam: {stam}
     </span>
   );
@@ -91,7 +108,10 @@ const staminaBarColor = (v: number): string => {
   return "bg-red-500";
 };
 
-export const StaminaBar: FC<{ player: Player; label?: string }> = ({ player, label }) => {
+export const StaminaBar: FC<{ player: Player; label?: string }> = ({
+  player,
+  label,
+}) => {
   const stam = player.stamina ?? 100;
   return (
     <div className="flex items-center gap-2">
@@ -102,7 +122,11 @@ export const StaminaBar: FC<{ player: Player; label?: string }> = ({ player, lab
           style={{ width: `${stam}%` }}
         />
       </div>
-      <span className={`text-xs font-semibold w-6 text-right ${staminaColor(stam)}`}>{stam}</span>
+      <span
+        className={`text-xs font-semibold w-6 text-right ${staminaColor(stam)}`}
+      >
+        {stam}
+      </span>
     </div>
   );
 };
@@ -124,7 +148,7 @@ export const PitchOverallChips: FC<{ player: Player }> = ({ player }) => {
       {pitches.map((p, i) => (
         <span
           key={i}
-          className={`text-xs px-1 py-0.5 rounded bg-gray-700/50 ${
+          className={`text-xs px-1 py-0.5 rounded-sm bg-gray-700/50 ${
             p.ovr != null ? displayValueColor(p.ovr) : "text-gray-400"
           }`}
           title={p.name ?? undefined}

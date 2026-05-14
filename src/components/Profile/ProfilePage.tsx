@@ -93,7 +93,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimCFB}
                 onClick={() => setDefaultLeague(SimCFB)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimCFB}
               </PillButton>
@@ -101,7 +101,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimNFL}
                 onClick={() => setDefaultLeague(SimNFL)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimNFL}
               </PillButton>
@@ -109,7 +109,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimCBB}
                 onClick={() => setDefaultLeague(SimCBB)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimCBB}
               </PillButton>
@@ -117,7 +117,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimNBA}
                 onClick={() => setDefaultLeague(SimNBA)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimNBA}
               </PillButton>
@@ -125,7 +125,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimCHL}
                 onClick={() => setDefaultLeague(SimCHL)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimCHL}
               </PillButton>
@@ -133,7 +133,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimPHL}
                 onClick={() => setDefaultLeague(SimPHL)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimPHL}
               </PillButton>
@@ -141,7 +141,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimCollegeBaseball}
                 onClick={() => setDefaultLeague(SimCollegeBaseball)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 SimCBL
               </PillButton>
@@ -149,7 +149,7 @@ export const ProfilePage = () => {
                 isSelected={currentUser?.DefaultLeague === SimMLB}
                 onClick={() => setDefaultLeague(SimMLB)}
                 variant="secondary"
-                classes="w-[8rem]"
+                classes="w-32"
               >
                 {SimMLB}
               </PillButton>
@@ -203,7 +203,7 @@ export const ProfilePage = () => {
             ).map(({ label, key }) => (
               <div
                 key={key as string}
-                className="flex flex-col items-center rounded p-2 bg-black/20 border border-white/10"
+                className="flex flex-col items-center rounded-sm p-2 bg-black/20 border border-white/10"
               >
                 <Text variant="body-small" classes="font-semibold">
                   {label}

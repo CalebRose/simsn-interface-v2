@@ -200,7 +200,7 @@ export const TargetInput: React.FC<TargetInputProps> = ({
             value={targetDepth}
             onChange={(e) => onTargetDepthChange(e.target.value)}
             disabled={disabled}
-            className="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="bg-gray-700 border border-gray-600 text-white text-sm rounded-sm px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             {targetDepthOptions.map((option) => (
               <option key={option} value={option}>

@@ -164,7 +164,7 @@ const AcceptedTradeCard: FC<AcceptedTradeCardProps> = ({
         {/* VS divider */}
         <Text
           variant="small"
-          classes="text-gray-400 font-semibold flex-shrink-0"
+          classes="text-gray-400 font-semibold shrink-0"
         >
           vs
         </Text>
@@ -192,11 +192,11 @@ const AcceptedTradeCard: FC<AcceptedTradeCardProps> = ({
         />
 
         {/* Actions */}
-        <div className="flex flex-row gap-x-2 items-center flex-shrink-0 ml-2">
+        <div className="flex flex-row gap-x-2 items-center shrink-0 ml-2">
           <Button
             size="sm"
             variant="success"
-            classes="w-[6rem]"
+            classes="w-24"
             onClick={() => processTrade(trade)}
           >
             Process
@@ -204,7 +204,7 @@ const AcceptedTradeCard: FC<AcceptedTradeCardProps> = ({
           <Button
             size="sm"
             variant="danger"
-            classes="w-[6rem]"
+            classes="w-24"
             onClick={() => vetoTrade(trade)}
           >
             Veto

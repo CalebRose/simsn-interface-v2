@@ -198,7 +198,7 @@ export const getHoverEffectClasses = (
     | "scale"
     | "scaleSmall"
     | "opacity"
-    | "shadow"
+    | "shadow-sm"
     | "borderBlue"
     | "bgGray" = "scale",
 ): string => {

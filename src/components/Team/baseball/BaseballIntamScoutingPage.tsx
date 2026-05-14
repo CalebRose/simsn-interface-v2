@@ -291,7 +291,13 @@ export const BaseballIntamScoutingPage = (
     BaseballService.GetIntamBoard(orgId, leagueYearId)
       .then((r) => {
         setBoardPlayers(r.players ?? []);
-        setBoardPlayerIds(new Set((r.players ?? []).filter(bp => bp.on_board).map(bp => bp.player_id)));
+        setBoardPlayerIds(
+          new Set(
+            (r.players ?? [])
+              .filter((bp) => bp.on_board)
+              .map((bp) => bp.player_id),
+          ),
+        );
       })
       .catch((err) => {
         console.error("[IntamBoard] fetch failed:", err);
@@ -479,7 +485,7 @@ export const BaseballIntamScoutingPage = (
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            className={`w-6 h-6 rounded text-xs font-bold transition-colors ${
+            className={`w-6 h-6 rounded-sm text-xs font-bold transition-colors ${
               onBoard
                 ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400"
@@ -493,7 +499,7 @@ export const BaseballIntamScoutingPage = (
           </button>
         </td>
         <td
-          className={`${cell} font-medium whitespace-nowrap sticky left-[2.5rem] bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
+          className={`${cell} font-medium whitespace-nowrap sticky left-10 bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
         >
           {pp.firstname} {pp.lastname}
         </td>
@@ -577,7 +583,7 @@ export const BaseballIntamScoutingPage = (
           onClick={(e) => e.stopPropagation()}
         >
           <button
-            className={`w-6 h-6 rounded text-xs font-bold transition-colors ${
+            className={`w-6 h-6 rounded-sm text-xs font-bold transition-colors ${
               onBoard
                 ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-400"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 hover:text-blue-600 dark:hover:text-blue-400"
@@ -591,7 +597,7 @@ export const BaseballIntamScoutingPage = (
           </button>
         </td>
         <td
-          className={`${cell} font-medium whitespace-nowrap sticky left-[2.5rem] bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
+          className={`${cell} font-medium whitespace-nowrap sticky left-10 bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}
         >
           {pp.firstname} {pp.lastname}
         </td>
@@ -748,7 +754,7 @@ export const BaseballIntamScoutingPage = (
                   value={pool.search}
                   onChange={(e) => pool.setSearch(e.target.value)}
                   placeholder="Search player..."
-                  className="text-sm border rounded px-2 py-1 w-48 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-sm border rounded-sm px-2 py-1 w-48 dark:bg-gray-700 dark:border-gray-600"
                 />
                 <input
                   type="text"
@@ -757,7 +763,7 @@ export const BaseballIntamScoutingPage = (
                     pool.setFilter("area", e.target.value || undefined)
                   }
                   placeholder="Filter by area..."
-                  className="text-sm border rounded px-2 py-1 w-40 dark:bg-gray-700 dark:border-gray-600"
+                  className="text-sm border rounded-sm px-2 py-1 w-40 dark:bg-gray-700 dark:border-gray-600"
                 />
                 <Text
                   variant="small"
@@ -873,7 +879,7 @@ export const BaseballIntamScoutingPage = (
                             onClick={(e) => e.stopPropagation()}
                           >
                             <button
-                              className="w-6 h-6 rounded text-xs font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors"
+                              className="w-6 h-6 rounded-sm text-xs font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/40 transition-colors"
                               title="Remove from board"
                               onClick={() =>
                                 handleRemoveFromBoard(bp.player_id)

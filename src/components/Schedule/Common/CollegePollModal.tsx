@@ -62,7 +62,7 @@ export const CollegePollModal: FC<CollegePollModalProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         title={`Official ${league} Poll`}
-        maxWidth="max-w-[60rem]"
+        maxWidth="max-w-240"
         actions={
           <>
             <ButtonGroup>
@@ -170,7 +170,7 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
 
   return (
     <div
-      className="grid grid-cols-10 border-b border-b-[#34455d] h-[3rem]"
+      className="grid grid-cols-10 border-b border-b-[#34455d] h-12"
       style={{
         backgroundColor:
           idx % 2 === 0 ? darkerBackgroundColor : backgroundColor,
@@ -321,7 +321,7 @@ export const HCKCollegePollModal: FC<CollegePollModalProps> = ({
           </Text>
         </div>
       </div>
-      <div className="overflow-y-auto max-h-[30rem]">
+      <div className="overflow-y-auto max-h-120">
         {CurrentCollegePoll.length === 0 && (
           <Text variant="h4" classes="my-4">
             The official poll has yet to be curated for the designated week.
@@ -463,7 +463,7 @@ export const BBACollegePollModal: FC<CollegePollModalProps> = ({
           </Text>
         </div>
       </div>
-      <div className="overflow-y-auto max-h-[30rem]">
+      <div className="overflow-y-auto max-h-120">
         {CurrentCollegePoll.length === 0 && (
           <Text variant="h4" classes="my-4">
             The official poll has yet to be curated for the designated week.
@@ -610,7 +610,7 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
           </Text>
         </div>
       </div>
-      <div className="overflow-y-auto max-h-[30rem]">
+      <div className="overflow-y-auto max-h-120">
         {CurrentCollegePoll.length === 0 && (
           <Text variant="h4" classes="my-4">
             The official poll has yet to be curated for the designated week.

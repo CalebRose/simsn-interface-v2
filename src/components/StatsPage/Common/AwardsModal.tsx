@@ -188,7 +188,7 @@ export const AwardsRow: FC<AwardsRowProps> = ({
   return (
     <>
       <div
-        className="grid grid-cols-10 border-b border-b-[#34455d] h-[3rem]"
+        className="grid grid-cols-10 border-b border-b-[#34455d] h-12"
         style={{
           backgroundColor:
             idx % 2 === 0 ? darkerBackgroundColor : backgroundColor,

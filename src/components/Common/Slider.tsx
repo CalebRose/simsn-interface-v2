@@ -127,7 +127,7 @@ export const Slider: React.FC<GameplanSliderProps> = ({
                 onBlur={() => setIsEditing(false)}
                 onFocus={() => setIsEditing(true)}
                 disabled={disabled}
-                className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded-sm focus:border-blue-500 focus:outline-hidden disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <Text variant="small" classes="text-gray-400">
                 %
@@ -147,7 +147,7 @@ export const Slider: React.FC<GameplanSliderProps> = ({
                 onFocus={handleInputFocus}
                 onKeyDown={handleInputKeyDown}
                 disabled={disabled}
-                className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded-sm focus:border-blue-500 focus:outline-hidden disabled:opacity-50 disabled:cursor-not-allowed"
               />
               <Text variant="small" classes="text-gray-400">
                 %
@@ -182,7 +182,7 @@ export const Slider: React.FC<GameplanSliderProps> = ({
               onFocus={() => setIsEditing(true)}
               onKeyDown={handleInputKeyDown}
               disabled={disabled}
-              className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded-sm focus:border-blue-500 focus:outline-hidden disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <Text variant="small" classes="text-gray-400">
               %
@@ -199,7 +199,7 @@ export const Slider: React.FC<GameplanSliderProps> = ({
               onBlur={() => setIsEditing(false)}
               onFocus={() => setIsEditing(true)}
               disabled={disabled}
-              className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-12 px-1 py-0.5 text-sm text-gray-400 bg-gray-800 border border-gray-600 rounded-sm focus:border-blue-500 focus:outline-hidden disabled:opacity-50 disabled:cursor-not-allowed"
             />
             <Text variant="small" classes="text-gray-400">
               %
@@ -225,7 +225,7 @@ export const Slider: React.FC<GameplanSliderProps> = ({
                 onFocus={handleInputFocus}
                 onKeyDown={handleInputKeyDown}
                 disabled={disabled}
-                className="w-14 px-1 py-0.5 text-sm text-blue-400 font-semibold bg-gray-800 border border-gray-600 rounded focus:border-blue-500 focus:outline-none text-right disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-14 px-1 py-0.5 text-sm text-blue-400 font-semibold bg-gray-800 border border-gray-600 rounded-sm focus:border-blue-500 focus:outline-hidden text-right disabled:opacity-50 disabled:cursor-not-allowed"
               />
               {valueLabel && valueLabel.includes("%") && (
                 <Text variant="small" classes="text-blue-400 font-semibold">
@@ -251,7 +251,7 @@ export const Slider: React.FC<GameplanSliderProps> = ({
             slider-thumb:appearance-none slider-thumb:h-4 slider-thumb:w-4 
             slider-thumb:rounded-full slider-thumb:bg-blue-500 slider-thumb:cursor-pointer
             slider-thumb:hover:bg-blue-400 slider-thumb:transition-colors
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+            focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
             disabled:opacity-50 disabled:cursor-not-allowed
             ${error ? "ring-2 ring-red-500 ring-opacity-50" : ""}
             ${warning ? "ring-2 ring-yellow-500 ring-opacity-50" : ""}

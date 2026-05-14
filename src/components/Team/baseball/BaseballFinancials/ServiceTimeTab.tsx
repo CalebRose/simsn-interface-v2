@@ -3,11 +3,7 @@ import { Border } from "../../../../_design/Borders";
 import { Text } from "../../../../_design/Typography";
 import { BaseballService } from "../../../../_services/baseballService";
 import { ContractOverviewPlayer } from "../../../../models/baseball/baseballModels";
-import {
-  formatMoney,
-  PHASE_CONFIG,
-  LEVEL_NAMES,
-} from "./financialConstants";
+import { formatMoney, PHASE_CONFIG, LEVEL_NAMES } from "./financialConstants";
 import "../baseballMobile.css";
 
 interface ServiceTimeTabProps {
@@ -16,7 +12,14 @@ interface ServiceTimeTabProps {
 
 type SortKey = "salary" | "service" | "phase" | "level" | "name";
 type FilterLevel = "all" | "mlb" | "minor";
-type FilterPhase = "all" | "minor" | "pre_arb" | "arb_eligible" | "fa_eligible" | "expiring" | "under_contract";
+type FilterPhase =
+  | "all"
+  | "minor"
+  | "pre_arb"
+  | "arb_eligible"
+  | "fa_eligible"
+  | "expiring"
+  | "under_contract";
 
 const PHASE_ORDER: Record<string, number> = {
   minor: 0,
@@ -45,7 +48,9 @@ export const ServiceTimeTab = ({ orgId }: ServiceTimeTabProps) => {
       }
     };
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [orgId]);
 
   if (isLoading) {
@@ -71,7 +76,11 @@ export const ServiceTimeTab = ({ orgId }: ServiceTimeTabProps) => {
 
 // --- Main View ---
 
-const ServiceTimeView = ({ players }: { players: ContractOverviewPlayer[] }) => {
+const ServiceTimeView = ({
+  players,
+}: {
+  players: ContractOverviewPlayer[];
+}) => {
   const [sortKey, setSortKey] = useState<SortKey>("level");
   const [sortAsc, setSortAsc] = useState(false);
   const [filterLevel, setFilterLevel] = useState<FilterLevel>("all");
@@ -95,12 +104,16 @@ const ServiceTimeView = ({ players }: { players: ContractOverviewPlayer[] }) => 
   // Filter
   const filtered = useMemo(() => {
     let result = [...players];
-    if (filterLevel === "mlb") result = result.filter((p) => p.current_level >= 9);
-    if (filterLevel === "minor") result = result.filter((p) => p.current_level < 9);
+    if (filterLevel === "mlb")
+      result = result.filter((p) => p.current_level >= 9);
+    if (filterLevel === "minor")
+      result = result.filter((p) => p.current_level < 9);
     if (filterPhase === "expiring") {
       result = result.filter((p) => p.is_expiring);
     } else if (filterPhase === "under_contract") {
-      result = result.filter((p) => p.contract_phase === "fa_eligible" && !p.is_expiring);
+      result = result.filter(
+        (p) => p.contract_phase === "fa_eligible" && !p.is_expiring,
+      );
     } else if (filterPhase !== "all") {
       result = result.filter((p) => p.contract_phase === filterPhase);
     }
@@ -113,12 +126,22 @@ const ServiceTimeView = ({ players }: { players: ContractOverviewPlayer[] }) => 
     const dir = sortAsc ? 1 : -1;
     arr.sort((a, b) => {
       switch (sortKey) {
-        case "salary": return (a.salary - b.salary) * dir;
-        case "service": return (a.mlb_service_years - b.mlb_service_years) * dir;
-        case "phase": return ((PHASE_ORDER[a.contract_phase] ?? 0) - (PHASE_ORDER[b.contract_phase] ?? 0)) * dir;
-        case "level": return (a.current_level - b.current_level) * dir;
-        case "name": return a.player_name.localeCompare(b.player_name) * dir;
-        default: return 0;
+        case "salary":
+          return (a.salary - b.salary) * dir;
+        case "service":
+          return (a.mlb_service_years - b.mlb_service_years) * dir;
+        case "phase":
+          return (
+            ((PHASE_ORDER[a.contract_phase] ?? 0) -
+              (PHASE_ORDER[b.contract_phase] ?? 0)) *
+            dir
+          );
+        case "level":
+          return (a.current_level - b.current_level) * dir;
+        case "name":
+          return a.player_name.localeCompare(b.player_name) * dir;
+        default:
+          return 0;
       }
     });
     return arr;
@@ -136,7 +159,10 @@ const ServiceTimeView = ({ players }: { players: ContractOverviewPlayer[] }) => 
 
   const handleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
-    else { setSortKey(key); setSortAsc(false); }
+    else {
+      setSortKey(key);
+      setSortAsc(false);
+    }
   };
 
   const sortIcon = (key: SortKey) => {
@@ -148,35 +174,51 @@ const ServiceTimeView = ({ players }: { players: ContractOverviewPlayer[] }) => 
     <div className="space-y-4">
       {/* Phase Summary Bar */}
       <div className="flex flex-wrap gap-2">
-        {(["minor", "pre_arb", "arb_eligible", "fa_eligible"] as const).map((phase) => {
-          const config = PHASE_CONFIG[phase];
-          const count = phaseCounts[phase] ?? 0;
-          if (!config) return null;
-          return (
-            <button
-              key={phase}
-              onClick={() => setFilterPhase(filterPhase === phase ? "all" : phase)}
-              className={`px-2.5 py-1 text-xs rounded-full transition-opacity ${config.classes} ${
-                filterPhase !== "all" && filterPhase !== phase ? "opacity-40" : ""
-              }`}
-            >
-              {count} {config.label}
-            </button>
-          );
-        })}
+        {(["minor", "pre_arb", "arb_eligible", "fa_eligible"] as const).map(
+          (phase) => {
+            const config = PHASE_CONFIG[phase];
+            const count = phaseCounts[phase] ?? 0;
+            if (!config) return null;
+            return (
+              <button
+                key={phase}
+                onClick={() =>
+                  setFilterPhase(filterPhase === phase ? "all" : phase)
+                }
+                className={`px-2.5 py-1 text-xs rounded-full transition-opacity ${config.classes} ${
+                  filterPhase !== "all" && filterPhase !== phase
+                    ? "opacity-40"
+                    : ""
+                }`}
+              >
+                {count} {config.label}
+              </button>
+            );
+          },
+        )}
         <button
-          onClick={() => setFilterPhase(filterPhase === "expiring" ? "all" : "expiring")}
+          onClick={() =>
+            setFilterPhase(filterPhase === "expiring" ? "all" : "expiring")
+          }
           className={`px-2.5 py-1 text-xs rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 transition-opacity ${
-            filterPhase !== "all" && filterPhase !== "expiring" ? "opacity-40" : ""
+            filterPhase !== "all" && filterPhase !== "expiring"
+              ? "opacity-40"
+              : ""
           }`}
         >
           {phaseCounts.expiring ?? 0} Expiring
         </button>
         {(phaseCounts.under_contract ?? 0) > 0 && (
           <button
-            onClick={() => setFilterPhase(filterPhase === "under_contract" ? "all" : "under_contract")}
+            onClick={() =>
+              setFilterPhase(
+                filterPhase === "under_contract" ? "all" : "under_contract",
+              )
+            }
             className={`px-2.5 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 transition-opacity ${
-              filterPhase !== "all" && filterPhase !== "under_contract" ? "opacity-40" : ""
+              filterPhase !== "all" && filterPhase !== "under_contract"
+                ? "opacity-40"
+                : ""
             }`}
           >
             {phaseCounts.under_contract} Under Contract
@@ -186,12 +228,14 @@ const ServiceTimeView = ({ players }: { players: ContractOverviewPlayer[] }) => 
 
       {/* Filters */}
       <div className="flex items-center gap-3">
-        <Text variant="small" classes="text-gray-500 dark:text-gray-400">Level:</Text>
+        <Text variant="small" classes="text-gray-500 dark:text-gray-400">
+          Level:
+        </Text>
         {(["all", "mlb", "minor"] as const).map((opt) => (
           <button
             key={opt}
             onClick={() => setFilterLevel(opt)}
-            className={`px-2 py-0.5 text-xs rounded ${
+            className={`px-2 py-0.5 text-xs rounded-sm ${
               filterLevel === opt
                 ? "bg-blue-600 text-white"
                 : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
@@ -211,14 +255,48 @@ const ServiceTimeView = ({ players }: { players: ContractOverviewPlayer[] }) => 
           <table className="w-full text-sm border-collapse">
             <thead>
               <tr className="bg-gray-100 dark:bg-gray-700 text-xs font-semibold text-gray-600 dark:text-gray-300">
-                <SortHeader label="Player" sortKey="name" currentKey={sortKey} icon={sortIcon("name")} onClick={handleSort} />
+                <SortHeader
+                  label="Player"
+                  sortKey="name"
+                  currentKey={sortKey}
+                  icon={sortIcon("name")}
+                  onClick={handleSort}
+                />
                 <th className="px-2 py-2 text-center w-14">Pos</th>
-                <SortHeader label="Level" sortKey="level" currentKey={sortKey} icon={sortIcon("level")} onClick={handleSort} center />
-                <SortHeader label="Phase" sortKey="phase" currentKey={sortKey} icon={sortIcon("phase")} onClick={handleSort} center />
-                <SortHeader label="SVC Yrs" sortKey="service" currentKey={sortKey} icon={sortIcon("service")} onClick={handleSort} center />
+                <SortHeader
+                  label="Level"
+                  sortKey="level"
+                  currentKey={sortKey}
+                  icon={sortIcon("level")}
+                  onClick={handleSort}
+                  center
+                />
+                <SortHeader
+                  label="Phase"
+                  sortKey="phase"
+                  currentKey={sortKey}
+                  icon={sortIcon("phase")}
+                  onClick={handleSort}
+                  center
+                />
+                <SortHeader
+                  label="SVC Yrs"
+                  sortKey="service"
+                  currentKey={sortKey}
+                  icon={sortIcon("service")}
+                  onClick={handleSort}
+                  center
+                />
                 <th className="px-2 py-2 text-center w-16">To Arb</th>
                 <th className="px-2 py-2 text-center w-16">To FA</th>
-                <SortHeader label="Salary" sortKey="salary" currentKey={sortKey} icon={sortIcon("salary")} onClick={handleSort} right />
+                <SortHeader
+                  label="Salary"
+                  sortKey="salary"
+                  currentKey={sortKey}
+                  icon={sortIcon("salary")}
+                  onClick={handleSort}
+                  right
+                />
                 <th className="px-2 py-2 text-center w-20">Contract</th>
                 <th className="px-2 py-2 text-left w-32">Status</th>
               </tr>
@@ -233,7 +311,10 @@ const ServiceTimeView = ({ players }: { players: ContractOverviewPlayer[] }) => 
               ))}
               {sorted.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
+                  <td
+                    colSpan={10}
+                    className="px-3 py-4 text-center text-gray-500 dark:text-gray-400"
+                  >
                     No players match the current filters.
                   </td>
                 </tr>
@@ -271,7 +352,8 @@ const SortHeader = ({
     } ${currentKey === sortKey ? "text-blue-600 dark:text-blue-400" : ""}`}
     onClick={() => onClick(sortKey)}
   >
-    {label}{icon}
+    {label}
+    {icon}
   </th>
 );
 
@@ -309,9 +391,11 @@ const PlayerRow = ({ player }: { player: ContractOverviewPlayer }) => {
       {/* Name */}
       <td className="px-3 py-1.5">
         <div className="flex items-center gap-1.5">
-          <span className="font-medium whitespace-nowrap">{player.player_name}</span>
+          <span className="font-medium whitespace-nowrap">
+            {player.player_name}
+          </span>
           {player.on_ir && (
-            <span className="px-1 py-0.5 text-[10px] rounded bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-medium">
+            <span className="px-1 py-0.5 text-[10px] rounded-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-medium">
               IR
             </span>
           )}
@@ -328,15 +412,15 @@ const PlayerRow = ({ player }: { player: ContractOverviewPlayer }) => {
       {/* Phase badge */}
       <td className="px-2 py-1.5 text-center">
         {phase && (
-          <span className={`px-1.5 py-0.5 text-xs rounded whitespace-nowrap ${phase.classes}`}>
+          <span
+            className={`px-1.5 py-0.5 text-xs rounded-sm whitespace-nowrap ${phase.classes}`}
+          >
             {phase.label}
           </span>
         )}
       </td>
       {/* Service years */}
-      <td className="px-2 py-1.5 text-center">
-        {player.mlb_service_years}
-      </td>
+      <td className="px-2 py-1.5 text-center">{player.mlb_service_years}</td>
       {/* To Arb */}
       <td className="px-2 py-1.5 text-center text-gray-500 dark:text-gray-400">
         {player.years_to_arb != null ? player.years_to_arb : "—"}
@@ -368,23 +452,26 @@ const PlayerRow = ({ player }: { player: ContractOverviewPlayer }) => {
 
 const ExpiringStatus = ({ player }: { player: ContractOverviewPlayer }) => {
   if (player.is_expiring) {
-    if (player.contract_phase === "minor" || player.contract_phase === "pre_arb") {
+    if (
+      player.contract_phase === "minor" ||
+      player.contract_phase === "pre_arb"
+    ) {
       return (
-        <span className="px-1.5 py-0.5 text-[10px] rounded bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+        <span className="px-1.5 py-0.5 text-[10px] rounded-sm bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
           Auto-renew
         </span>
       );
     }
     if (player.contract_phase === "arb_eligible") {
       return (
-        <span className="px-1.5 py-0.5 text-[10px] rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+        <span className="px-1.5 py-0.5 text-[10px] rounded-sm bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
           Arb eligible
         </span>
       );
     }
     if (player.contract_phase === "fa_eligible") {
       return (
-        <span className="px-1.5 py-0.5 text-[10px] rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
+        <span className="px-1.5 py-0.5 text-[10px] rounded-sm bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
           Will become FA
         </span>
       );
@@ -394,7 +481,7 @@ const ExpiringStatus = ({ player }: { player: ContractOverviewPlayer }) => {
   // Non-expiring FA-eligible player — still under contract
   if (player.contract_phase === "fa_eligible") {
     return (
-      <span className="px-1.5 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+      <span className="px-1.5 py-0.5 text-[10px] rounded-sm bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
         Under contract
       </span>
     );

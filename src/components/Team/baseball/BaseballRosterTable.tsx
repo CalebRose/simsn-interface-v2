@@ -446,11 +446,11 @@ export const NameCell = ({ p }: { p: Player }) => (
   <td data-label="Name" className={`${td} bb-cell-name font-medium whitespace-nowrap sticky left-0 bg-white dark:bg-gray-800 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]`}>
     {p.firstname} {p.lastname}
     {p.contract?.on_ir && (
-      <span className="ml-1 px-1 py-0.5 text-[10px] font-bold rounded bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400">IR</span>
+      <span className="ml-1 px-1 py-0.5 text-[10px] font-bold rounded-sm bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400">IR</span>
     )}
     {p.is_injured && (
       <span
-        className="ml-1 px-1 py-0.5 text-[10px] font-bold rounded bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400"
+        className="ml-1 px-1 py-0.5 text-[10px] font-bold rounded-sm bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400"
         title={injuryTooltip(p) ?? undefined}
       >
         INJ
@@ -492,7 +492,7 @@ export const PositionCell = ({ p, onOverride }: {
         {pos ?? "—"}
       </span>
       {isOpen && canEdit && (
-        <div ref={ref} className="absolute z-30 top-full left-1/2 -translate-x-1/2 mt-1 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded shadow-lg py-1 min-w-[4rem]">
+        <div ref={ref} className="absolute z-30 top-full left-1/2 -translate-x-1/2 mt-1 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-sm shadow-lg py-1 min-w-16">
           {POS_OPTIONS.map((opt) => (
             <button key={opt.code}
               className={`block w-full text-left px-3 py-1 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 ${pos === opt.display ? "font-bold text-blue-600 dark:text-blue-400" : ""}`}
@@ -612,7 +612,7 @@ export const AllAttrCells = ({ p, isFuzzed, isCollege }: { p: Player; isFuzzed?:
   return (
     <>
       <td data-label="Type" className={`${td} text-center`}>
-        <span className={`px-1.5 py-0.5 text-xs rounded ${p.ptype === "Pitcher" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300" : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"}`}>
+        <span className={`px-1.5 py-0.5 text-xs rounded-sm ${p.ptype === "Pitcher" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300" : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"}`}>
           {p.ptype === "Pitcher" ? "P" : "Pos"}
         </span>
       </td>
@@ -648,7 +648,7 @@ export const AllPotCells = ({ p }: { p: Player }) => {
   return (
     <>
       <td data-label="Type" className={`${td} text-center`}>
-        <span className={`px-1.5 py-0.5 text-xs rounded ${p.ptype === "Pitcher" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300" : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"}`}>
+        <span className={`px-1.5 py-0.5 text-xs rounded-sm ${p.ptype === "Pitcher" ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300" : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"}`}>
           {p.ptype === "Pitcher" ? "P" : "Pos"}
         </span>
       </td>

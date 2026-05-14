@@ -34,7 +34,7 @@ export const FreeAgencyInfo: FC<FreeAgencyInfoProps> = memo(
               <Text variant="h6">Attributes ({attrLabel})</Text>
               {canScoutAttrs && (
                 <button
-                  className="text-xs bg-blue-600/20 text-blue-400 hover:bg-blue-600/40 px-2 py-0.5 rounded disabled:opacity-40"
+                  className="text-xs bg-blue-600/20 text-blue-400 hover:bg-blue-600/40 px-2 py-0.5 rounded-sm disabled:opacity-40"
                   onClick={() => onScoutFA("pro_attrs_precise")}
                   disabled={scoutingAction != null}
                 >
@@ -60,7 +60,7 @@ export const FreeAgencyInfo: FC<FreeAgencyInfoProps> = memo(
               <Text variant="h6">Potentials ({potsLabel})</Text>
               {canScoutPots && (
                 <button
-                  className="text-xs bg-blue-600/20 text-blue-400 hover:bg-blue-600/40 px-2 py-0.5 rounded disabled:opacity-40"
+                  className="text-xs bg-blue-600/20 text-blue-400 hover:bg-blue-600/40 px-2 py-0.5 rounded-sm disabled:opacity-40"
                   onClick={() => onScoutFA("pro_potential_precise")}
                   disabled={scoutingAction != null}
                 >

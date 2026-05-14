@@ -82,7 +82,7 @@ const ForumImageNodeView: React.FC<NodeViewProps> = ({
       <div
         ref={containerRef}
         className={`relative block my-2 mx-auto ${
-          selected ? "ring-2 ring-blue-500 rounded" : ""
+          selected ? "ring-2 ring-blue-500 rounded-sm" : ""
         }`}
         style={{ width: width ? `${width}px` : "auto", maxWidth: "100%" }}
         contentEditable={false}
@@ -90,7 +90,7 @@ const ForumImageNodeView: React.FC<NodeViewProps> = ({
         <img
           src={node.attrs.src as string}
           alt={(node.attrs.alt as string) || ""}
-          className="block w-full h-auto rounded object-contain max-h-[600px]"
+          className="block w-full h-auto rounded-sm object-contain max-h-[600px]"
           loading="lazy"
           draggable={false}
         />
@@ -289,7 +289,7 @@ const YoutubeEmbedNodeView = ({
 }) => (
   <NodeViewWrapper>
     <div
-      className="relative my-2 mx-auto overflow-hidden rounded"
+      className="relative my-2 mx-auto overflow-hidden rounded-sm"
       style={{ maxWidth: 640, aspectRatio: "16/9" }}
       contentEditable={false}
     >
@@ -546,7 +546,7 @@ const TBtn: React.FC<TBtnProps> = ({
     title={title}
     onClick={onClick}
     disabled={disabled}
-    className={`px-2 py-1 rounded text-sm font-medium transition-colors select-none
+    className={`px-2 py-1 rounded-sm text-sm font-medium transition-colors select-none
       ${
         active
           ? "bg-blue-600 text-white"

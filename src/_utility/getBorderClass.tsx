@@ -8,7 +8,7 @@ type Theme = "light" | "dark";
 export const GetGradientBorderClass = (
   bool: boolean,
   variant: Variant,
-  theme: Theme
+  theme: Theme,
 ): string => {
   const baseColor = theme === "light" ? "gray-200" : "gray-700";
   const variantColors: Record<Variant, string> = {
@@ -18,7 +18,18 @@ export const GetGradientBorderClass = (
   };
 
   const color = bool ? variantColors[variant] : baseColor;
-  return `bg-gradient-to-b from-${color} to-${baseColor} bg-clip-padding`;
+  const gradientMap: Record<string, string> = {
+    "green-500": "bg-linear-to-b from-green-500",
+    "red-500": "bg-linear-to-b from-red-500",
+    "yellow-500": "bg-linear-to-b from-yellow-500",
+    "gray-200": "bg-linear-to-b from-gray-200",
+    "gray-700": "bg-linear-to-b from-gray-700",
+  };
+  const toMap: Record<string, string> = {
+    "gray-200": "to-gray-200",
+    "gray-700": "to-gray-700",
+  };
+  return `${gradientMap[color] ?? "bg-linear-to-b from-gray-500"} ${toMap[baseColor] ?? "to-gray-500"} bg-clip-padding`;
 };
 
 /**
@@ -33,7 +44,14 @@ export const GetBorderClass = (variant: Variant | "", theme: Theme): string => {
   };
 
   const color = variant ? variantColors[variant] : baseColor;
-  return `border-2 border-${color}`;
+  const borderColorMap: Record<string, string> = {
+    "green-500": "border-green-500",
+    "red-500": "border-red-500",
+    "yellow-500": "border-yellow-500",
+    "gray-200": "border-gray-200",
+    "gray-700": "border-gray-700",
+  };
+  return `border-2 ${borderColorMap[color] ?? "border-gray-500"}`;
 };
 
 /**
@@ -56,6 +74,6 @@ export const getTextColorBasedOnBg = (bgColor: string = ""): string => {
   return luminance > 0.83
     ? "text-black"
     : luminance > 0.5
-    ? "text-gray-800"
-    : "text-white";
+      ? "text-gray-800"
+      : "text-white";
 };
