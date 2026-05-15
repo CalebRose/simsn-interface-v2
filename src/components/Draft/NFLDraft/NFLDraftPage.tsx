@@ -102,6 +102,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
     rejectTrade,
     vetoTrade,
     handleProcessTrade,
+    nflDraftPicks,
   } = useNFLDraft();
   const proposeTradeModal = useModal();
   const receiveTradeModal = useModal();
