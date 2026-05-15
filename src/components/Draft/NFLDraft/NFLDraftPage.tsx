@@ -36,6 +36,7 @@ import { useModal } from "../../../_hooks/useModal";
 import { ProposeDraftTradeModal } from "../common/ProposeDraftTradeModal";
 import { ManageDraftTradesModal } from "../common/ManageDraftTradesModal";
 import { ProcessAcceptedTradesModal } from "../common/ProcessAcceptedTradesModal";
+import { getSecondsByRound } from "../PHLDraft/utils/draftHelpers";
 
 interface NFLDraftPageProps {
   league: League;
@@ -151,7 +152,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
     const picksInRound = draftPickMap[roundKey] || [];
     if (picksInRound.length === 0) return; // No picks in this round
     const currentPickIndex = picksInRound.findIndex(
-      (pick) => pick.ID === draftState.currentPick,
+      (pick) => pick.DraftNumber === draftState.currentPick,
     );
     if (currentPickIndex === -1) return; // Pick not found
     draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
@@ -163,6 +164,9 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
     const next = newDraftState.nextPick;
     const draftComplete = newDraftState.isDraftComplete?.() || false;
 
+    const newSeconds = getSecondsByRound(round);
+    const newEndTime = new Date(Date.now() + newSeconds * 1000);
+
     await handleManualDraftStateUpdate({
       currentPick: curr,
       currentRound: round,
@@ -170,6 +174,8 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
       draftComplete,
       recentlyDraftedPlayerID: player.ID,
       allDraftPicks: draftPickMap,
+      endTime: newEndTime,
+      seconds: newSeconds,
     });
   };
 
