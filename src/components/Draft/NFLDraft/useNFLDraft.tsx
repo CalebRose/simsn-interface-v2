@@ -241,7 +241,9 @@ export const useNFLDraft = () => {
       .filter((pick) => {
         const pickOverall =
           (pick.DraftRound - 1) * NFL_PICKS_PER_ROUND + pick.DraftNumber;
-        return pickOverall < draftCurrentPick && pick.SelectedPlayerID > 0;
+        const draftPickOverall =
+          (draftCurrentRound - 1) * NFL_PICKS_PER_ROUND + draftCurrentPick;
+        return pickOverall < draftPickOverall && pick.DrafteeID > 0;
       })
       .sort((a, b) => {
         const aOverall =
