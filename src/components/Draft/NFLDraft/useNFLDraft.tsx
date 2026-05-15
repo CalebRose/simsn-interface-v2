@@ -26,7 +26,7 @@ import { FormationMap } from "../../../_utility/getFormationMap";
 import { useDraftTradeState } from "../hooks/useDraftTradeState";
 import { TradeService } from "../../../_services/tradeService";
 
-export const NFL_PICKS_PER_ROUND = 24;
+export const NFL_PICKS_PER_ROUND = 32;
 
 export const getTimeForPick = (pickNumber: number): number => {
   if (pickNumber <= NFL_PICKS_PER_ROUND) return 300;
@@ -46,6 +46,7 @@ export const useNFLDraft = () => {
     nflScoutingProfileMap,
     currentSeasonDraftPicks,
     proRosterMap,
+    nflDraftPicks,
     getBootstrapDraftData,
     addPlayerToScoutBoard,
     revealScoutingAttribute,

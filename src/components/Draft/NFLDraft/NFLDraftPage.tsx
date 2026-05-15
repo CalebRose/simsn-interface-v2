@@ -152,7 +152,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
     const picksInRound = draftPickMap[roundKey] || [];
     if (picksInRound.length === 0) return; // No picks in this round
     const currentPickIndex = picksInRound.findIndex(
-      (pick) => pick.ID === draftState.currentPick,
+      (pick) => pick.DraftNumber === draftState.currentPick,
     );
     if (currentPickIndex === -1) return; // Pick not found
     draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
