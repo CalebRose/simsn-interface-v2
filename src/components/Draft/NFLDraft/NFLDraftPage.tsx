@@ -226,7 +226,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
         teamOptions={nflTeamOptions}
         selectTradePartner={selectTradePartner}
         userTradablePlayers={userTradablePlayers as NFLPlayer[]}
-        userTradablePicks={teamDraftPicks}
+        userTradablePicks={userTradablePicks as NFLDraftPick[]}
         partnerTradablePlayers={partnerTradablePlayers as NFLPlayer[]}
         partnerTradablePicks={partnerTradablePicks as NFLDraftPick[]}
         proposeTrade={proposeTrade}

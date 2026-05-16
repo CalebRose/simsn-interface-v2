@@ -850,6 +850,10 @@ export const useNFLDraft = () => {
         (x) => (x as any).ID !== proposal.ID,
       );
       await updateApprovedTrades({ approvedRequests: filteredQueue as any });
+
+      // 4. Refresh REST context so nflDraftPickMap reflects any future-pick
+      //    ownership changes (REST data is not a Firestore subscription).
+      await refreshDraftData();
     },
     [
       approvedRequests,
@@ -859,6 +863,7 @@ export const useNFLDraft = () => {
       handleManualDraftStateUpdate,
       isPaused,
       seconds,
+      refreshDraftData,
     ],
   );
 
