@@ -262,8 +262,8 @@ export const useNFLDraft = () => {
   const draftedPlayerIds = useMemo(() => {
     return new Set(
       draftPicksFromState
-        .filter((pick) => pick.SelectedPlayerID > 0)
-        .map((pick) => pick.SelectedPlayerID),
+        .filter((pick) => pick.DrafteeID > 0)
+        .map((pick) => pick.DrafteeID),
     );
   }, [draftPicksFromState]);
 
