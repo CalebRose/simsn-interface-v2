@@ -1173,6 +1173,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     SaveExtensionOffer,
     CancelExtensionOffer,
     ExportFBRoster,
+    getBootstrapPlayerData,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1215,6 +1216,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   };
 
   useEffect(() => {
+    getBootstrapPlayerData();
     getBootstrapRosterData();
   }, []);
 
