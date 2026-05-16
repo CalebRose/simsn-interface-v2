@@ -396,6 +396,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
             {activeTab === BigBoard && (
               <>
                 <BigDraftBoard
+                  handlePlayerModal={handlePlayerModal}
                   draftPicks={draftPicksFromState as NFLDraftPick[]}
                   selectedTeam={selectedTeam as NFLTeam | null}
                   draftablePlayerMap={draftablePlayerMap}
