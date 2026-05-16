@@ -107,8 +107,14 @@ const CFBTeamProfilePage = ({ league }: TeamProfilePageProps) => {
   const { teamId } = useParams<{ teamId?: string }>();
   const { currentUser } = useAuthStore();
   const fbStore = useSimFBAStore();
-  const { cfbTeam, cfbTeamMap, cfbTeamOptions, allCFBTeamHistory, isLoading } =
-    fbStore;
+  const {
+    cfbTeam,
+    cfbTeamMap,
+    cfbTeamOptions,
+    allCFBTeamHistory,
+    isLoading,
+    fetchAllHistory,
+  } = fbStore;
   const [careerStats, setCareerStats] = useState<CFBPlayerSeasonStats[]>([]);
   const [collegeStandings, setCollegeStandings] = useState<CFBStandings[]>([]);
   const [totalWins, setTotalWins] = useState<number>(0);
@@ -141,6 +147,10 @@ const CFBTeamProfilePage = ({ league }: TeamProfilePageProps) => {
   let textColorClass = getTextColorBasedOnBg(backgroundColor);
 
   const { isDesktop } = useResponsive();
+
+  useEffect(() => {
+    fetchAllHistory();
+  }, [fetchAllHistory]);
 
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);

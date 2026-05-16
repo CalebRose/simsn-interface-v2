@@ -187,6 +187,7 @@ interface SimFBAContextProps {
   getBootstrapRecruitingData: () => void;
   getBootstrapFreeAgencyData: () => void;
   getBootstrapScheduleData: () => void;
+  getBootstrapPlayerData: () => void;
   getBootstrapDraftData: () => void;
   getBootstrapPortalData: () => void;
   getBootstrapGameplanData: () => void;
@@ -242,6 +243,7 @@ interface SimFBAContextProps {
   ) => Promise<void>;
   ExportCFBRecruits: () => Promise<void>;
   SearchFootballStats: (dto: any) => Promise<void>;
+  fetchAllHistory: () => Promise<void>;
   ExportFootballStats: (dto: any) => Promise<void>;
   SaveFreeAgencyOffer: (dto: any) => Promise<void>;
   CancelFreeAgencyOffer: (dto: any) => Promise<void>;
@@ -389,6 +391,7 @@ const defaultContext: SimFBAContextProps = {
   tradePreferencesMap: {},
   tradeProposalsMap: {},
   cfbPostSeasonAwards: {} as AwardsList,
+  fetchAllHistory: async () => {},
   removeUserfromCFBTeamCall: async () => {},
   removeUserfromNFLTeamCall: async () => {},
   addUserToCFBTeam: async () => {},
@@ -397,6 +400,7 @@ const defaultContext: SimFBAContextProps = {
   getBootstrapRecruitingData: async () => {},
   getBootstrapFreeAgencyData: async () => {},
   getBootstrapScheduleData: async () => {},
+  getBootstrapPlayerData: async () => {},
   getBootstrapDraftData: async () => {},
   getBootstrapNewsData: async () => {},
   getBootstrapPortalData: async () => {},
@@ -499,6 +503,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const isFetching = useRef(false);
   const isScheduleDataFetching = useRef(false);
   const isStatsDataFetching = useRef(false);
+  const isPlayerDataLoaded = useRef(false);
   const [transferPortalLoading, setTransferPortalLoading] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -647,14 +652,14 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [nflDraftees, setNFLDraftees] = useState<NFLDraftee[]>([]);
   const [nflUDFABoard, setNflUDFABoard] = useState<NFLUDFABoard | null>(null);
 
-const getUDFABoard = async (teamID: number) => {
+  const getUDFABoard = async (teamID: number) => {
     try {
-        const res = await DraftService.GetUDFABoard(teamID);
-        setNflUDFABoard(new NFLUDFABoard(res));
+      const res = await DraftService.GetUDFABoard(teamID);
+      setNflUDFABoard(new NFLUDFABoard(res));
     } catch (e) {
-        console.error("Could not fetch UDFA Board", e);
-        // Fallback: Set an empty board so the loading spinner stops!
-        setNflUDFABoard(new NFLUDFABoard({ TeamID: teamID, Profiles: [] }));
+      console.error("Could not fetch UDFA Board", e);
+      // Fallback: Set an empty board so the loading spinner stops!
+      setNflUDFABoard(new NFLUDFABoard({ TeamID: teamID, Profiles: [] }));
     }
   };
 
@@ -666,7 +671,7 @@ const getUDFABoard = async (teamID: number) => {
       Position: player.Position,
       TeamID: nflTeam.ID,
       TeamAbbr: nflTeam.TeamAbbr,
-      Points: 1
+      Points: 1,
     };
     await DraftService.AddPlayerToUDFABoard(dto);
     await getUDFABoard(nflTeam.ID);
@@ -1007,7 +1012,7 @@ const getUDFABoard = async (teamID: number) => {
 
   const bootstrapAllData = async () => {
     await getLandingBootstrapData();
-    await fetchAllHistory();
+    // await fetchAllHistory();
     isFetching.current = false;
   };
 
@@ -1029,7 +1034,6 @@ const getUDFABoard = async (teamID: number) => {
 
     if (cfbID > 0) {
       setCFBTeam(res.CollegeTeam);
-      setCollegeInjuryReport(res.CollegeInjuryReport);
       setCollegeNotifications(res.CollegeNotifications);
       setTopCFBPassers(res.TopCFBPassers);
       setTopCFBRushers(res.TopCFBRushers);
@@ -1050,9 +1054,6 @@ const getUDFABoard = async (teamID: number) => {
       setTopNFLPassers(res.TopNFLPassers);
       setTopNFLRushers(res.TopNFLRushers);
       setTopNFLReceivers(res.TopNFLReceivers);
-      setProRosterMap(res.ProRosterMap);
-      setPracticeSquadPlayers(res.PracticeSquadPlayers);
-      setProInjuryReport(res.ProInjuryReport);
       setAllProGames(res.AllProGames);
       setAllProStandings(res.ProStandings);
       setCapsheetMap(res.CapsheetMap);
@@ -1196,6 +1197,41 @@ const getUDFABoard = async (teamID: number) => {
     cfb_Timestamp?.CollegeSeasonID,
     currentUser?.username,
   ]);
+
+  const getBootstrapPlayerData = useCallback(async () => {
+    if (isPlayerDataLoaded.current) return;
+    isPlayerDataLoaded.current = true;
+
+    let cfbID = 0;
+    let nflID = 0;
+    if (currentUser && currentUser.teamId) {
+      cfbID = currentUser.teamId;
+    }
+    if (currentUser && currentUser.NFLTeamID) {
+      nflID = currentUser.NFLTeamID;
+    }
+    if (cfbID === 0 && nflID === 0) {
+      return;
+    }
+
+    try {
+      const res = await BootstrapService.GetFBAPlayerBootstrapData(
+        cfbID,
+        nflID,
+      );
+      if (cfbID > 0) {
+        setCFBRosterMap(res.CollegeRosterMap);
+        setCollegeInjuryReport(res.CollegeInjuryReport);
+      }
+      if (nflID > 0) {
+        setProRosterMap(res.ProRosterMap);
+        setPracticeSquadPlayers(res.PracticeSquadPlayers);
+        setProInjuryReport(res.ProInjuryReport);
+      }
+    } catch (e) {
+      isPlayerDataLoaded.current = false;
+    }
+  }, [currentUser?.teamId, currentUser?.NFLTeamID]);
 
   // Use this once the draft page is finished
   const getBootstrapDraftData = async () => {
@@ -2833,10 +2869,12 @@ const getUDFABoard = async (teamID: number) => {
         cancelTrade,
         syncAcceptedTrade,
         vetoTrade,
+        fetchAllHistory,
         getBootstrapRosterData,
         getBootstrapRecruitingData,
         getBootstrapFreeAgencyData,
         getBootstrapScheduleData,
+        getBootstrapPlayerData,
         getBootstrapDraftData,
         getBootstrapPortalData,
         getBootstrapGameplanData,
