@@ -62,6 +62,7 @@ export const useFootballStats = () => {
     getBootstrapStatsData,
     collegeInjuryReport,
     proInjuryReport,
+    getBootstrapPlayerData,
   } = useSimFBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(InfoType);
@@ -89,6 +90,7 @@ export const useFootballStats = () => {
   const [selectedConferences, setSelectedConferences] = useState<string[]>([]);
 
   useEffect(() => {
+    getBootstrapPlayerData();
     getBootstrapStatsData();
   }, []);
 

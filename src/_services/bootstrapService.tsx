@@ -1,7 +1,7 @@
 import { bbaUrl, fbaUrl, hckUrl } from "../_constants/urls";
 import { GetCall } from "../_helper/fetchHelper";
 import { BootstrapData as BBBootstrap } from "../models/basketballModels";
-import { BootstrapData as FBBootstrap } from "../models/footballModels";
+import { BootstrapData as FBBootstrap, BootstrapPlayerData as FBPlayerBootstrap } from "../models/footballModels";
 import { BootstrapData as HockeyBootstrap } from "../models/hockeyModels";
 
 export const BootstrapService = {
@@ -100,6 +100,15 @@ export const BootstrapService = {
   ): Promise<FBBootstrap> => {
     return await GetCall<FBBootstrap>(
       `${fbaUrl}bootstrap/news/${collegeID}/${proID}`,
+    );
+  },
+
+  GetFBAPlayerBootstrapData: async (
+    collegeID: number,
+    proID: number,
+  ): Promise<FBPlayerBootstrap> => {
+    return await GetCall<FBPlayerBootstrap>(
+      `${fbaUrl}bootstrap/players/${collegeID}/${proID}`,
     );
   },
 
