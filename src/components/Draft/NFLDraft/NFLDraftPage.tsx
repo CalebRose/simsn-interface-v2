@@ -159,7 +159,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
     draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
 
     const newDraftState = draftState;
-    newDraftState.advanceToNextPick();
+    newDraftState.advanceToNextPick(SimNFL);
     const curr = newDraftState.currentPick;
     const round = newDraftState.currentRound;
     const next = newDraftState.nextPick;
