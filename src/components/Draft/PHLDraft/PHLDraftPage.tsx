@@ -163,7 +163,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     if (currentPickIndex === -1) return; // Pick not found
     draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
     const newDraftState = draftState;
-    newDraftState.advanceToNextPick();
+    newDraftState.advanceToNextPick(SimPHL);
     const curr = newDraftState.currentPick;
     const round = newDraftState.currentRound;
     const next = newDraftState.nextPick;

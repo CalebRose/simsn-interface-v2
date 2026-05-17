@@ -2,6 +2,7 @@ import { useMemo, useRef, useCallback } from "react";
 import { useFirestore } from "../../../firebase/firebase";
 import { DraftPick } from "../common";
 import { getSecondsByRound } from "../PHLDraft/utils/draftHelpers";
+import { League, SimPHL } from "../../../_constants/constants";
 
 interface DraftStateProps {
   CollectionName: string;
@@ -55,8 +56,13 @@ export class DraftStateObj {
   }
 
   // Helper method to update to next pick
-  advanceToNextPick(): void {
-    if (this.currentPick >= 24) {
+  advanceToNextPick(league: League): void {
+    const defaultPicksPerRound = league === SimPHL ? 24 : 32;
+    // Use the actual pick count for this round when available so that
+    // compensatory picks (rounds with >32 picks) are handled correctly.
+    const picksInCurrentRound =
+      this.allDraftPicks[this.currentRound]?.length ?? defaultPicksPerRound;
+    if (this.currentPick >= picksInCurrentRound) {
       // End of round — advance to round N+1, pick 1
       this.currentRound += 1;
       this.currentPick = 1;

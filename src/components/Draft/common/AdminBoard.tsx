@@ -46,7 +46,7 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
   handleOpenAdminProposalsModal,
   approvedRequestsCount,
 }) => {
-  const draftPickOptions = getDraftPickOptions();
+  const draftPickOptions = getDraftPickOptions(league);
   const draftRoundOptions = getDraftRoundOptions();
 
   const selectDraftPickOption = async (opt: SingleValue<SelectOption>) => {

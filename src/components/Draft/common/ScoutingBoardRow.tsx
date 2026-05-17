@@ -407,7 +407,7 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
                 <Text variant="xs" classes="text-gray-300 text-[10px]">
                   Overall
                 </Text>
-                <div className="min-w-[50px] min-h-[50px] max-w-[80px] max-h-[80px] bg-gray-700 border border-gray-600 rounded-sm flex items-center justify-center">
+                <div className="min-w-12.5 min-h-12.5 max-w-20 max-h-20 bg-gray-700 border border-gray-600 rounded-sm flex items-center justify-center">
                   <Text variant="xs" classes="text-green-400 font-bold text-sm">
                     {getOverallGrade(player)}
                   </Text>
