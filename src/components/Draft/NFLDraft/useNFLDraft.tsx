@@ -228,7 +228,7 @@ export const useNFLDraft = () => {
           (pick.DraftRound - 1) * NFL_PICKS_PER_ROUND + pick.DraftNumber;
         const draftPickOverall =
           (draftCurrentRound - 1) * NFL_PICKS_PER_ROUND + draftCurrentPick;
-        return pickOverall >= draftPickOverall;
+        return pickOverall >= draftPickOverall && pick.DrafteeID === 0;
       })
       .sort((a, b) => {
         if (a.DraftRound !== b.DraftRound) {
@@ -239,6 +239,8 @@ export const useNFLDraft = () => {
       .slice(0, 15);
     return result;
   }, [draftPicksFromState, draftCurrentRound, draftCurrentPick]);
+
+  console.log({ upcomingPicks });
 
   const recentPicks = useMemo(() => {
     return draftPicksFromState
