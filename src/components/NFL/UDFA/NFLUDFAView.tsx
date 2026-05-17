@@ -19,20 +19,16 @@ import {
     SimNFL, 
     DrafteeInfoType, 
     FootballPositionOptions, 
-    FootballArchetypeOptions,
-    AdminRole
+    FootballArchetypeOptions
+    // Removed AdminRole import
 } from '../../../_constants/constants';
 
 export const NFLUDFAView = () => {
-    const { currentUser } = useAuthStore(); 
-    
-    // Admin button logic matched to your account
-    const isAdmin = currentUser?.roleID === AdminRole || currentUser?.roleID?.includes("Commissioner");
+    // Removed the currentUser and isAdmin checks from here
     
     const { nflTeam, nflDraftees, addPlayerToUDFABoard, nflUDFABoard, cfb_Timestamp } = useSimFBAStore();
     const { board, handlePointChange, saveBids, removePlayer } = useNFLUDFA();
     
-    // Natural stylesheet background
     const { backgroundColor } = useBackgroundColor();
     const teamColors = useTeamColors(nflTeam?.ColorOne || "#1f2937", nflTeam?.ColorTwo || "#111827");
     
@@ -65,7 +61,6 @@ export const NFLUDFAView = () => {
         if (fullPlayer) { setModalPlayer(fullPlayer); handleOpenModal(); }
     };
 
-    // Removed the full-page "shit loading page". The shell loads instantly.
     return (
         <div className="w-full min-h-screen p-4 flex flex-col" style={{ backgroundColor }}>
             {modalPlayer && (
@@ -83,7 +78,6 @@ export const NFLUDFAView = () => {
 
             <div className="flex flex-col lg:grid lg:grid-cols-[2fr_10fr] gap-4 w-full h-full">
                 <div className="w-full">
-                    {/* PERFECT SALARY CAP BOX RESTORED: Shows skeleton while loading, renders box when ready */}
                     {nflTeam && nflTeam.Capsheet ? (
                         <FreeAgencySidebar 
                             Capsheet={nflTeam.Capsheet} 
@@ -109,7 +103,7 @@ export const NFLUDFAView = () => {
                         </ButtonGroup>
                         <div className="flex gap-x-2">
                             <Button variant="primary" onClick={saveBids}>Save All Bids</Button>
-                            {isAdmin && <Button variant="warning" onClick={() => window.confirm("Run Live Simulation?")}>RUN LIVE SIMULATION</Button>}
+                            {/* REMOVED: The Run Live Simulation button is gone from here */}
                         </div>
                     </div>
 
