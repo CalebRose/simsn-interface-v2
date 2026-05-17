@@ -26,7 +26,7 @@ import { FormationMap } from "../../../_utility/getFormationMap";
 import { useDraftTradeState } from "../hooks/useDraftTradeState";
 import { TradeService } from "../../../_services/tradeService";
 
-export const NFL_PICKS_PER_ROUND = 24;
+export const NFL_PICKS_PER_ROUND = 32;
 
 export const getTimeForPick = (pickNumber: number): number => {
   if (pickNumber <= NFL_PICKS_PER_ROUND) return 300;
@@ -46,6 +46,7 @@ export const useNFLDraft = () => {
     nflScoutingProfileMap,
     currentSeasonDraftPicks,
     proRosterMap,
+    nflDraftPicks,
     getBootstrapDraftData,
     addPlayerToScoutBoard,
     revealScoutingAttribute,
@@ -79,6 +80,7 @@ export const useNFLDraft = () => {
     userTradablePlayers,
     userTradablePicks,
     partnerTradablePlayers,
+    partnerTradablePicks,
     userTradeProposals,
     userWarRoomData,
     approvedRequests,
@@ -94,6 +96,8 @@ export const useNFLDraft = () => {
     WarRoomCollectionName: "nflwarrooms",
     UserWarRoomDocName: `${nflTeam?.TeamName} ${nflTeam?.Mascot}`,
     league: SimNFL,
+    currentSeasonID: cfb_Timestamp?.NFLSeasonID,
+    firestoreDraftPicksMap: allDraftPicks,
   });
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -224,7 +228,7 @@ export const useNFLDraft = () => {
           (pick.DraftRound - 1) * NFL_PICKS_PER_ROUND + pick.DraftNumber;
         const draftPickOverall =
           (draftCurrentRound - 1) * NFL_PICKS_PER_ROUND + draftCurrentPick;
-        return pickOverall >= draftPickOverall;
+        return pickOverall >= draftPickOverall && pick.DrafteeID === 0;
       })
       .sort((a, b) => {
         if (a.DraftRound !== b.DraftRound) {
@@ -236,12 +240,16 @@ export const useNFLDraft = () => {
     return result;
   }, [draftPicksFromState, draftCurrentRound, draftCurrentPick]);
 
+  console.log({ upcomingPicks });
+
   const recentPicks = useMemo(() => {
     return draftPicksFromState
       .filter((pick) => {
         const pickOverall =
           (pick.DraftRound - 1) * NFL_PICKS_PER_ROUND + pick.DraftNumber;
-        return pickOverall < draftCurrentPick && pick.SelectedPlayerID > 0;
+        const draftPickOverall =
+          (draftCurrentRound - 1) * NFL_PICKS_PER_ROUND + draftCurrentPick;
+        return pickOverall < draftPickOverall && pick.DrafteeID > 0;
       })
       .sort((a, b) => {
         const aOverall =
@@ -256,8 +264,8 @@ export const useNFLDraft = () => {
   const draftedPlayerIds = useMemo(() => {
     return new Set(
       draftPicksFromState
-        .filter((pick) => pick.SelectedPlayerID > 0)
-        .map((pick) => pick.SelectedPlayerID),
+        .filter((pick) => pick.DrafteeID > 0)
+        .map((pick) => pick.DrafteeID),
     );
   }, [draftPicksFromState]);
 
@@ -730,11 +738,6 @@ export const useNFLDraft = () => {
     return needs;
   }, [teamRoster, nflGameplan, selectedTeam, offensiveSystem, defensiveSystem]);
 
-  const partnerTradablePicks = useMemo(() => {
-    if (!tradePartnerTeam) return [];
-    return draftPicksFromState.filter((x) => x.TeamID === tradePartnerTeam.ID);
-  }, [draftPicksFromState, tradePartnerTeam]);
-
   const handleProcessTrade = useCallback(
     async (trade: AnyTradeProposal) => {
       const proposal = trade as any;
@@ -806,8 +809,15 @@ export const useNFLDraft = () => {
           .map((o) => o.NFLDraftPickID),
       );
 
+      // Build the updated Firestore state only for current-season picks.
+      // Future-season picks are not stored in allDraftPicks (Firestore draft
+      // state), so their swap is handled entirely by the API call above.
+      // We skip the Firestore write altogether when no traded pick IDs appear
+      // in the current-season state, avoiding a redundant no-op write.
       if (senderPickIDs.size > 0 || recipientPickIDs.size > 0) {
         const allDPs: Record<number, NFLDraftPick[]> = {};
+        let hasCurrentSeasonSwap = false;
+
         for (const round in allDraftPicks) {
           allDPs[round] = (allDraftPicks[round] as NFLDraftPick[]).map(
             (pick) => {
@@ -818,19 +828,23 @@ export const useNFLDraft = () => {
                 p.PreviousTeam = p.Team;
                 p.TeamID = recipientTeamID;
                 p.Team = recipientTeamObj?.TeamName ?? p.Team;
+                hasCurrentSeasonSwap = true;
               } else if (recipientPickIDs.has(p.ID)) {
                 // Recipient's pick → goes to sender
                 p.PreviousTeamID = p.TeamID;
                 p.PreviousTeam = p.Team;
                 p.TeamID = senderTeamID;
                 p.Team = senderTeamObj?.TeamName ?? p.Team;
+                hasCurrentSeasonSwap = true;
               }
               return p;
             },
           );
         }
 
-        await handleManualDraftStateUpdate({ allDraftPicks: allDPs });
+        if (hasCurrentSeasonSwap) {
+          await handleManualDraftStateUpdate({ allDraftPicks: allDPs });
+        }
       }
 
       // 3. Remove the trade from the admin approved queue.
@@ -838,6 +852,10 @@ export const useNFLDraft = () => {
         (x) => (x as any).ID !== proposal.ID,
       );
       await updateApprovedTrades({ approvedRequests: filteredQueue as any });
+
+      // 4. Refresh REST context so nflDraftPickMap reflects any future-pick
+      //    ownership changes (REST data is not a Firestore subscription).
+      await refreshDraftData();
     },
     [
       approvedRequests,
@@ -847,6 +865,7 @@ export const useNFLDraft = () => {
       handleManualDraftStateUpdate,
       isPaused,
       seconds,
+      refreshDraftData,
     ],
   );
 
@@ -922,5 +941,6 @@ export const useNFLDraft = () => {
     updateUserWarRoom,
     updateApprovedTrades,
     handleProcessTrade,
+    nflDraftPicks,
   };
 };

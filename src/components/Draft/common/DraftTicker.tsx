@@ -70,7 +70,7 @@ const PickCard: FC<PickCardProps> = ({
     if (league === SimPHL) {
       return draftablePlayerMap[pick.DrafteeID];
     }
-    return draftablePlayerMap[pick.SelectedPlayerID];
+    return draftablePlayerMap[pick.DrafteeID];
   }, [pick, draftablePlayerMap, league]);
 
   const drafteeName = useMemo(

@@ -922,6 +922,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     promisePlayer,
     placeCFBPlayerOnInjuryReserve,
     getBootstrapRosterData,
+    getBootstrapPlayerData,
     ExportFBRoster,
   } = useSimFBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -1014,6 +1015,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
   };
 
   useEffect(() => {
+    getBootstrapPlayerData();
     getBootstrapRosterData();
   }, []);
 
@@ -1171,6 +1173,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     SaveExtensionOffer,
     CancelExtensionOffer,
     ExportFBRoster,
+    getBootstrapPlayerData,
   } = fbStore;
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1213,6 +1216,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   };
 
   useEffect(() => {
+    getBootstrapPlayerData();
     getBootstrapRosterData();
   }, []);
 

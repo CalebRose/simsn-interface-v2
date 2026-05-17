@@ -36,6 +36,7 @@ import { useModal } from "../../../_hooks/useModal";
 import { ProposeDraftTradeModal } from "../common/ProposeDraftTradeModal";
 import { ManageDraftTradesModal } from "../common/ManageDraftTradesModal";
 import { ProcessAcceptedTradesModal } from "../common/ProcessAcceptedTradesModal";
+import { getSecondsByRound } from "../PHLDraft/utils/draftHelpers";
 
 interface NFLDraftPageProps {
   league: League;
@@ -101,6 +102,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
     rejectTrade,
     vetoTrade,
     handleProcessTrade,
+    nflDraftPicks,
   } = useNFLDraft();
   const proposeTradeModal = useModal();
   const receiveTradeModal = useModal();
@@ -151,17 +153,20 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
     const picksInRound = draftPickMap[roundKey] || [];
     if (picksInRound.length === 0) return; // No picks in this round
     const currentPickIndex = picksInRound.findIndex(
-      (pick) => pick.ID === draftState.currentPick,
+      (pick) => pick.DraftNumber === draftState.currentPick,
     );
     if (currentPickIndex === -1) return; // Pick not found
     draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
 
     const newDraftState = draftState;
-    newDraftState.advanceToNextPick();
+    newDraftState.advanceToNextPick(SimNFL);
     const curr = newDraftState.currentPick;
     const round = newDraftState.currentRound;
     const next = newDraftState.nextPick;
     const draftComplete = newDraftState.isDraftComplete?.() || false;
+
+    const newSeconds = getSecondsByRound(round);
+    const newEndTime = new Date(Date.now() + newSeconds * 1000);
 
     await handleManualDraftStateUpdate({
       currentPick: curr,
@@ -170,6 +175,8 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
       draftComplete,
       recentlyDraftedPlayerID: player.ID,
       allDraftPicks: draftPickMap,
+      endTime: newEndTime,
+      seconds: newSeconds,
     });
   };
 
@@ -219,7 +226,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
         teamOptions={nflTeamOptions}
         selectTradePartner={selectTradePartner}
         userTradablePlayers={userTradablePlayers as NFLPlayer[]}
-        userTradablePicks={teamDraftPicks}
+        userTradablePicks={userTradablePicks as NFLDraftPick[]}
         partnerTradablePlayers={partnerTradablePlayers as NFLPlayer[]}
         partnerTradablePicks={partnerTradablePicks as NFLDraftPick[]}
         proposeTrade={proposeTrade}
@@ -389,6 +396,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
             {activeTab === BigBoard && (
               <>
                 <BigDraftBoard
+                  handlePlayerModal={handlePlayerModal}
                   draftPicks={draftPicksFromState as NFLDraftPick[]}
                   selectedTeam={selectedTeam as NFLTeam | null}
                   draftablePlayerMap={draftablePlayerMap}

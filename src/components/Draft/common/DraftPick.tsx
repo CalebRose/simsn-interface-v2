@@ -21,7 +21,12 @@ export const WarRoomDraftPick: React.FC<WarRoomDraftPickProps> = ({
   league,
   draftablePlayerMap,
 }) => {
-  const pickNumber = (pick.DraftRound - 1) * 24 + pick.DraftNumber;
+  const pickNumber = useMemo(() => {
+    if (league === SimPHL) {
+      return (pick.DraftRound - 1) * 24 + pick.DraftNumber;
+    }
+    return (pick.DraftRound - 1) * 32 + pick.DraftNumber;
+  }, [league, pick]);
   const teamLogo = getLogo(league, pick.TeamID, false);
   const draftee = draftablePlayerMap[pick.DrafteeID];
 
@@ -102,9 +107,10 @@ export const DraftPickCard: React.FC<{
   draftablePlayerMap,
   handlePlayerModal,
 }) => {
-  const pickNumber = (pick.DraftRound - 1) * 24 + pick.DraftNumber;
+  const picksInRound = league === SimPHL ? 24 : 32;
+  const pickNumber = (pick.DraftRound - 1) * picksInRound + pick.DraftNumber;
   const currentPickNumber = currentPick
-    ? (currentPick.DraftRound - 1) * 24 + currentPick.DraftNumber
+    ? (currentPick.DraftRound - 1) * picksInRound + currentPick.DraftNumber
     : 0;
 
   const getPickStatus = (pick: DraftPickType, index: number) => {
@@ -145,8 +151,12 @@ export const DraftPickCard: React.FC<{
     if (league === SimPHL) {
       return draftablePlayerMap[pick.DrafteeID];
     }
-    return draftablePlayerMap[pick.SelectedPlayerID];
+    return draftablePlayerMap[pick.DrafteeID];
   }, [pick, draftablePlayerMap, league]);
+
+  if (draftee) {
+    console.log({ draftee });
+  }
 
   const viewPlayer = useCallback(
     (draftee: Draftee) => {
@@ -162,6 +172,11 @@ export const DraftPickCard: React.FC<{
     return `${draftee.Position} ${draftee.FirstName} ${draftee.LastName}`;
   }, [draftee]);
 
+  const drafteeSchool = useMemo(() => {
+    if (!draftee) return "";
+    return `${draftee.College}`;
+  }, [draftee]);
+
   const status = getPickStatus(pick, index);
   const statusLabel = getStatusLabel(status);
   const teamLogo = getLogo(league, pick.TeamID, false);
@@ -169,19 +184,19 @@ export const DraftPickCard: React.FC<{
   const draftNumber = useMemo(() => {
     if (view === "") return pick.DraftNumber;
     if (league === SimPHL) {
-      return (pick.DraftRound - 1) * 24 + pick.DraftNumber;
+      return (pick.DraftRound - 1) * picksInRound + pick.DraftNumber;
     }
     if (league === SimNBA) {
-      return (pick.DraftRound - 1) * 32 + pick.DraftNumber;
+      return (pick.DraftRound - 1) * picksInRound + pick.DraftNumber;
     }
-    return pick.OverallPickNumber;
+    return (pick.DraftRound - 1) * picksInRound + pick.DraftNumber;
   }, [view, pick, league]);
 
   return (
     <div
       key={pick.ID}
       className={`
-        relative rounded-lg border p-1 ${view !== "bigboard" ? "transition-colors duration-300" : ""}
+        relative rounded-lg border ps-2 p-1 ${view !== "bigboard" ? "transition-colors duration-300" : ""}
         ${getStatusStyles(status)}
         ${drafteeLabel.length > 0 ? "cursor-pointer" : ""}
       `}
@@ -218,10 +233,10 @@ export const DraftPickCard: React.FC<{
             w-8 h-8 object-contain ${view !== "bigboard" ? "transition-all duration-300" : ""}
           `}
         />
-        <div className="flex-1">
-          <div className="flex items-center justify-start space-x-2 text-xs">
+        <div className="flex-1 space-y-1 py-1">
+          <div className="flex items-center justify-start space-x-1 text-xs">
             <Text
-              variant="body-small"
+              variant="small"
               classes={`
               font-semibold text-left
               ${status === "current" || status === "user" ? "text-white" : "text-gray-200"}
@@ -240,12 +255,14 @@ export const DraftPickCard: React.FC<{
             <Text variant="small" className="text-gray-400">
               Round {pick.DraftRound}
             </Text>
-            {((league === SimPHL && pick.DrafteeID > 0) ||
-              (league !== SimPHL && pick.SelectedPlayerID > 0)) && (
-              <>
+          </div>
+          <div className="flex items-center justify-start space-x-2 text-xs">
+            {pick.DrafteeID > 0 && (
+              <div className="flex space-x-2">
+                <span className="text-green-500 text-xs">{drafteeLabel}</span>
                 <span className="text-gray-500">•</span>
-                <span className="text-green-500">{drafteeLabel}</span>
-              </>
+                <span className="text-orange-500 text-xs">{drafteeSchool}</span>
+              </div>
             )}
           </div>
         </div>
