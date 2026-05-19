@@ -5464,6 +5464,7 @@ export class BootstrapData {
   CapsheetMap: { [key: number]: NFLCapsheet } | null;
   PracticeSquadPlayers: NFLPlayer[];
   FreeAgents: NFLPlayer[];
+  UDFAs: NFLPlayer[];
   WaiverPlayers: NFLPlayer[];
   RetiredPlayers: NFLRetiredPlayer[];
   HistoricCollegePlayers: HistoricCollegePlayer[];
@@ -5577,6 +5578,7 @@ export class BootstrapData {
       NFLPlayer,
     );
     this.FreeAgents = this.convertValues(source["FreeAgents"], NFLPlayer);
+    this.UDFAs = this.convertValues(source["UDFAs"], NFLPlayer);
     this.WaiverPlayers = this.convertValues(source["WaiverPlayers"], NFLPlayer);
     this.FreeAgentOffers = this.convertValues(
       source["FreeAgentOffers"],
@@ -9615,7 +9617,6 @@ export class NFLRetiredPlayer {
     }
     return a;
   }
-  
 }
 export class NFLGameRequest {
   ID: number;

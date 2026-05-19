@@ -154,6 +154,7 @@ interface SimFBAContextProps {
   proInjuryReport: NFLPlayer[];
   practiceSquadPlayers: NFLPlayer[];
   freeAgents: NFLPlayer[];
+  udfas: NFLPlayer[];
   waiverPlayers: NFLPlayer[];
   proNews: NewsLog[];
   allProGames: NFLGame[];
@@ -376,6 +377,7 @@ const defaultContext: SimFBAContextProps = {
   topNFLRushers: [],
   topNFLReceivers: [],
   freeAgents: [],
+  udfas: [],
   waiverPlayers: [],
   nflDraftees: [],
   collegePolls: [],
@@ -648,6 +650,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     null,
   );
   const [freeAgents, setFreeAgents] = useState<NFLPlayer[]>([]);
+  const [udfas, setUDFAs] = useState<NFLPlayer[]>([]);
   const [waiverPlayers, setWaiverPlayers] = useState<NFLPlayer[]>([]);
   const [nflDraftees, setNFLDraftees] = useState<NFLDraftee[]>([]);
   const [nflUDFABoard, setNflUDFABoard] = useState<NFLUDFABoard | null>(null);
@@ -1115,6 +1118,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setWaiverOffers(res.WaiverWireOffers);
     setFreeAgents(res.FreeAgents);
     setWaiverPlayers(res.WaiverPlayers);
+    setUDFAs(res.UDFAs);
   };
 
   const getBootstrapScheduleData = useCallback(async () => {
@@ -2834,6 +2838,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         freeAgentOffers,
         waiverOffers,
         practiceSquadPlayers,
+        udfas,
         capsheetMap,
         proInjuryReport,
         proNews,

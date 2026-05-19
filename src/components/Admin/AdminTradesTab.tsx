@@ -1,5 +1,11 @@
 import { useMemo } from "react";
-import { League, SimCollegeBaseball, SimMLB, SimNFL, SimPHL } from "../../_constants/constants";
+import {
+  League,
+  SimCollegeBaseball,
+  SimMLB,
+  SimNFL,
+  SimPHL,
+} from "../../_constants/constants";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { getLogo } from "../../_utility/getLogo";
 import { useAdminPage } from "../../context/AdminPageContext";
@@ -84,18 +90,18 @@ export const PHLTradeCard: React.FC<PHLTradeCardProps> = ({
   const { currentUser } = authStore;
   const sendingTeamLogo = getLogo(
     SimPHL as League,
-    sendingTeam.ID,
+    sendingTeam?.ID,
     currentUser?.IsRetro,
   );
   const receivingTeamLogo = getLogo(
     SimPHL as League,
-    receivingTeam.ID,
+    receivingTeam?.ID,
     currentUser?.IsRetro,
   );
   const teamColors = useTeamColors(
-    sendingTeam.ColorOne,
-    sendingTeam.ColorTwo,
-    sendingTeam.ColorThree,
+    sendingTeam?.ColorOne || "#1f2937",
+    sendingTeam?.ColorTwo || "#111827",
+    sendingTeam?.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -115,6 +121,8 @@ export const PHLTradeCard: React.FC<PHLTradeCardProps> = ({
   const recepientTradeOptions = useMemo(() => {
     return mapTradeOptions(trade.TeamTradeOptions, trade.RecepientTeamID);
   }, [trade]);
+
+  if (!sendingTeam || !receivingTeam) return null;
 
   return (
     <AdminTradeCard
