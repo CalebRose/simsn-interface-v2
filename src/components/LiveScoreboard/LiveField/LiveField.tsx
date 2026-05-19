@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useLeagueStore } from '../../context/LeagueContext';
-import { useAuthStore } from '../../context/AuthContext';
-import { SimCFB, SimNFL, League } from '../../_constants/constants'; 
-import { PillButton, ButtonGroup } from '../../_design/Buttons';
-import { fbaUrl } from '../../_constants/urls';
+import { useLeagueStore } from '../../../context/LeagueContext';
+import { useAuthStore } from '../../../context/AuthContext';
+import { SimCFB, SimNFL, League } from '../../../_constants/constants';
+import { PillButton, ButtonGroup } from '../../../_design/Buttons';
+import { fbaUrl } from '../../../_constants/urls';
 
 // --- CONSTANTS & CONFIG ---
 const TIMESLOT_ORDER = [
@@ -624,4 +624,4 @@ const LiveField = () => {
   );
 };
 
-export { LiveField };
+export default LiveField;

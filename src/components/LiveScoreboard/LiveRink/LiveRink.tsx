@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useLeagueStore } from '../../context/LeagueContext';
-import { useAuthStore } from '../../context/AuthContext';
+import { useLeagueStore } from '../../../context/LeagueContext';
+import { useAuthStore } from '../../../context/AuthContext';
 import { SimCHL, SimPHL, League } from '../../_constants/constants';
 import { PillButton, ButtonGroup } from '../../_design/Buttons';
 import { hckUrl } from '../../_constants/urls';
