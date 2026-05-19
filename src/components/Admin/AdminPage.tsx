@@ -79,18 +79,8 @@ const UnAuthAdminPage: React.FC<UnAuthPageProps> = ({ navigate }) => {
 export const AdminPage = () => {
   const authStore = useAuthStore();
   const { currentUser } = authStore;
-  const { RefreshRequests } = useAdminPage();
+  const { RefreshRequests, selectedTab, setSelectedTab } = useAdminPage();
   const navigate = useNavigate();
-
-  // Role gating logic
-  if (
-    currentUser &&
-    currentUser.roleID &&
-    currentUser.roleID !== AdminRole &&
-    !currentUser.roleID.includes("Commissioner")
-  ) {
-    return <UnAuthAdminPage navigate={navigate} />;
-  }
 
   const isAdmin = useMemo(() => {
     if (!currentUser) return false;
@@ -129,7 +119,16 @@ export const AdminPage = () => {
 
   const leagueStore = useLeagueStore();
   const { ts, selectedLeague, setSelectedLeague } = leagueStore;
-  const { selectedTab, setSelectedTab } = useAdminPage();
+
+  // Role gating logic
+  if (
+    currentUser &&
+    currentUser.roleID &&
+    currentUser.roleID !== AdminRole &&
+    !currentUser.roleID.includes("Commissioner")
+  ) {
+    return <UnAuthAdminPage navigate={navigate} />;
+  }
 
   return (
     <>
@@ -160,7 +159,7 @@ export const AdminPage = () => {
               )}
               {(isAdmin || isCBBCommissioner) && (
                 <PillButton
-                  isSelected={selectedLeague === SimNBA}
+                  isSelected={selectedLeague === SimCBB}
                   variant="basketball"
                   classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimCBB)}
@@ -170,7 +169,7 @@ export const AdminPage = () => {
               )}
               {(isAdmin || isNBACommissioner) && (
                 <PillButton
-                  isSelected={selectedLeague === SimCBB}
+                  isSelected={selectedLeague === SimNBA}
                   variant="basketball"
                   classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimNBA)}
@@ -301,7 +300,8 @@ export const AdminPage = () => {
         )}
 
         {selectedLeague === SimMLB && <IFAAdminSection />}
-        {(selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball) && (
+        {(selectedLeague === SimMLB ||
+          selectedLeague === SimCollegeBaseball) && (
           <SimulationControlSection />
         )}
         {selectedLeague === SimCollegeBaseball && <RecruitingAdminSection />}

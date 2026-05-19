@@ -243,9 +243,9 @@ export const PHLRequestCard: React.FC<PHLRequestCardProps> = ({
     currentUser?.IsRetro,
   );
   const teamColors = useTeamColors(
-    phlTeam.ColorOne,
-    phlTeam.ColorTwo,
-    phlTeam.ColorThree,
+    phlTeam?.ColorOne || "#1f2937",
+    phlTeam?.ColorTwo || "#111827",
+    phlTeam?.ColorThree,
   );
   const backgroundColor = teamColors.One;
   const borderColor = teamColors.Two;
@@ -261,6 +261,8 @@ export const PHLRequestCard: React.FC<PHLRequestCardProps> = ({
   const reject = async () => {
     await rejectPHLRequest(request);
   };
+
+  if (!phlTeam) return null;
 
   return (
     <AdminRequestCard
