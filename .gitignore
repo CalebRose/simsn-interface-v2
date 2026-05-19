@@ -28,3 +28,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vs/ProjectSettings.json
+.vs/simsn-interface-v2/CopilotIndices/17.14.1147.5054/CodeChunks.db
+.vs/simsn-interface-v2/CopilotIndices/17.14.1147.5054/SemanticSymbols.db
+.vs/simsn-interface-v2/FileContentIndex/fbec0fda-6c8f-4cf2-ba4e-7a2f52697019.vsidx
+.vs/simsn-interface-v2/v17/.wsuo
+.vs/simsn-interface-v2/v17/DocumentLayout.json
+.vs/slnx.sqlite
+.vs/VSWorkspaceState.json
