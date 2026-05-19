@@ -45,13 +45,14 @@ export const NFLUDFAView = () => {
         'C+': 7, 'C': 6, 'C-': 5, 'D+': 4, 'D': 3, 'D-': 2, 'F': 1, '': 0
     };
 
-    const filteredUDFAs = useMemo(() => {
-        if (!nflDraftees) return [];
-        let filtered = nflDraftees.filter((p: any) => p.DraftPickID === 0 || p.DraftedTeamID === 0);
-        if (positions.length > 0) filtered = filtered.filter(p => positions.includes(p.Position));
-        if (archetypes.length > 0) filtered = filtered.filter(p => archetypes.includes(p.Archetype));
-        return filtered.sort((a, b) => (gradeWeight[b.OverallGrade] || 0) - (gradeWeight[a.OverallGrade] || 0));
-    }, [nflDraftees, positions, archetypes]);
+const filteredUDFAs = useMemo(() => {
+    if (!nflDraftees) return [];
+    // Matching the new backend logic:
+    let filtered = nflDraftees.filter((p: any) => p.Experience === 1 && p.IsFreeAgent === true);
+    if (positions.length > 0) filtered = filtered.filter(p => positions.includes(p.Position));
+    if (archetypes.length > 0) filtered = filtered.filter(p => archetypes.includes(p.Archetype));
+    return filtered.sort((a, b) => (gradeWeight[b.OverallGrade] || 0) - (gradeWeight[a.OverallGrade] || 0));
+}, [nflDraftees, positions, archetypes]);
 
     const { currentPage, totalPages, goToPreviousPage, goToNextPage, setCurrentPage } = usePagination(filteredUDFAs.length, pageSize);
     const pagedUDFAs = useMemo(() => filteredUDFAs.slice(currentPage * pageSize, (currentPage + 1) * pageSize), [filteredUDFAs, currentPage]);
