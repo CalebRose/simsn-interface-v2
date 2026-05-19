@@ -19,20 +19,16 @@ import {
     SimNFL, 
     DrafteeInfoType, 
     FootballPositionOptions, 
-    FootballArchetypeOptions,
-    AdminRole
+    FootballArchetypeOptions
+    // Removed AdminRole import
 } from '../../../_constants/constants';
 
 export const NFLUDFAView = () => {
-    const { currentUser } = useAuthStore(); 
-    
-    // Admin button logic matched to your account
-    const isAdmin = currentUser?.roleID === AdminRole || currentUser?.roleID?.includes("Commissioner");
+    // Removed the currentUser and isAdmin checks from here
     
     const { nflTeam, nflDraftees, addPlayerToUDFABoard, nflUDFABoard, cfb_Timestamp } = useSimFBAStore();
     const { board, handlePointChange, saveBids, removePlayer } = useNFLUDFA();
     
-    // Natural stylesheet background
     const { backgroundColor } = useBackgroundColor();
     const teamColors = useTeamColors(nflTeam?.ColorOne || "#1f2937", nflTeam?.ColorTwo || "#111827");
     
@@ -49,13 +45,14 @@ export const NFLUDFAView = () => {
         'C+': 7, 'C': 6, 'C-': 5, 'D+': 4, 'D': 3, 'D-': 2, 'F': 1, '': 0
     };
 
-    const filteredUDFAs = useMemo(() => {
-        if (!nflDraftees) return [];
-        let filtered = nflDraftees.filter((p: any) => p.DraftPickID === 0 || p.DraftedTeamID === 0);
-        if (positions.length > 0) filtered = filtered.filter(p => positions.includes(p.Position));
-        if (archetypes.length > 0) filtered = filtered.filter(p => archetypes.includes(p.Archetype));
-        return filtered.sort((a, b) => (gradeWeight[b.OverallGrade] || 0) - (gradeWeight[a.OverallGrade] || 0));
-    }, [nflDraftees, positions, archetypes]);
+const filteredUDFAs = useMemo(() => {
+    if (!nflDraftees) return [];
+    // Matching the new backend logic:
+    let filtered = nflDraftees.filter((p: any) => p.Experience === 1 && p.IsFreeAgent === true);
+    if (positions.length > 0) filtered = filtered.filter(p => positions.includes(p.Position));
+    if (archetypes.length > 0) filtered = filtered.filter(p => archetypes.includes(p.Archetype));
+    return filtered.sort((a, b) => (gradeWeight[b.OverallGrade] || 0) - (gradeWeight[a.OverallGrade] || 0));
+}, [nflDraftees, positions, archetypes]);
 
     const { currentPage, totalPages, goToPreviousPage, goToNextPage, setCurrentPage } = usePagination(filteredUDFAs.length, pageSize);
     const pagedUDFAs = useMemo(() => filteredUDFAs.slice(currentPage * pageSize, (currentPage + 1) * pageSize), [filteredUDFAs, currentPage]);
@@ -65,7 +62,6 @@ export const NFLUDFAView = () => {
         if (fullPlayer) { setModalPlayer(fullPlayer); handleOpenModal(); }
     };
 
-    // Removed the full-page "shit loading page". The shell loads instantly.
     return (
         <div className="w-full min-h-screen p-4 flex flex-col" style={{ backgroundColor }}>
             {modalPlayer && (
@@ -83,7 +79,6 @@ export const NFLUDFAView = () => {
 
             <div className="flex flex-col lg:grid lg:grid-cols-[2fr_10fr] gap-4 w-full h-full">
                 <div className="w-full">
-                    {/* PERFECT SALARY CAP BOX RESTORED: Shows skeleton while loading, renders box when ready */}
                     {nflTeam && nflTeam.Capsheet ? (
                         <FreeAgencySidebar 
                             Capsheet={nflTeam.Capsheet} 
@@ -109,7 +104,7 @@ export const NFLUDFAView = () => {
                         </ButtonGroup>
                         <div className="flex gap-x-2">
                             <Button variant="primary" onClick={saveBids}>Save All Bids</Button>
-                            {isAdmin && <Button variant="warning" onClick={() => window.confirm("Run Live Simulation?")}>RUN LIVE SIMULATION</Button>}
+                            {/* REMOVED: The Run Live Simulation button is gone from here */}
                         </div>
                     </div>
 

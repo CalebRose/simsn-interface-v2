@@ -33,8 +33,7 @@ import { SimulationControlPanel } from "./SimulationControlPanel";
 import { RecruitingAdminPanel } from "./RecruitingAdminPanel";
 import { useMemo } from "react";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
-// FIXED: Corrected sibling path and component name
-import { AdminUDFAControls } from "./NFLUDFAAdminPanel";
+import { NFLUDFAAdminPanel } from '../Admin/NFLUDFAAdminPanel';
 
 const IFAAdminSection = () => {
   const { seasonContext } = useSimBaseballStore();
@@ -296,9 +295,7 @@ export const AdminPage = () => {
               </div>
               <CommissionerHub league={selectedLeague} />
             </Border>
-
-            {/* FIXED: Using the correctly imported component name */}
-            <AdminUDFAControls />
+            <NFLUDFAAdminPanel />
           </div>
         )}
 
