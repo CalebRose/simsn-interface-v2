@@ -360,7 +360,7 @@ export const CHLRecruiting = () => {
               </Border>
               <Border
                 direction="col"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[70vh] overflow-y-auto"
+                classes="max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[70vh] overflow-y-auto max-w-400"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,
@@ -408,7 +408,7 @@ export const CHLRecruiting = () => {
             <>
               <Border
                 direction="col"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
+                classes="max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto max-w-400"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,
@@ -438,7 +438,7 @@ export const CHLRecruiting = () => {
             <>
               <Border
                 direction="row"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center"
+                classes="max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center max-w-400"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,
@@ -463,7 +463,7 @@ export const CHLRecruiting = () => {
               </Border>
               <Border
                 direction="col"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
+                classes="max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto max-w-400"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,
