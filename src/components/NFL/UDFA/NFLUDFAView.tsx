@@ -87,11 +87,10 @@ export const NFLUDFAView = () => {
       filtered = filtered.filter((p) => archetypes.includes(p.Archetype));
     
     return filtered.sort((a, b) => {
-      // Clean the inputs just in case there is whitespace
+
       const overallB = GetNFLOverall(b.Overall, b.ShowLetterGrade);
       const overallA = GetNFLOverall(a.Overall, a.ShowLetterGrade);
       
-      // 1. If the league is using the Letter Grade system ("A+" vs "B-")
       if (typeof overallB === "string" && typeof overallA === "string") {
         const valB = gradeWeight[overallB.trim()] || 0;
         const valA = gradeWeight[overallA.trim()] || 0;
