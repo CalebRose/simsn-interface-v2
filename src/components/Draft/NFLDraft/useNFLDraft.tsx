@@ -12,6 +12,7 @@ import { useDraftState } from "../hooks/useDraftState";
 import { AnyTradeProposal } from "../hooks/useDraftTradeState";
 import { useModal } from "../../../_hooks/useModal";
 import {
+  Draft,
   DraftBoardStr,
   DraftBoardType,
   DrafteeInfoType,
@@ -377,12 +378,12 @@ export const useNFLDraft = () => {
 
   const handleExportDraftPicks = useCallback(async () => {
     if (!selectedTeam) return;
-    const dto = { TeamID: selectedTeam.ID };
+    const dto = { TeamID: selectedTeam.ID, DraftPicks: draftPicksFromState };
     await exportDraftPicks(dto);
     updateDraftState({
       exportComplete: true,
     });
-  }, [selectedTeam, exportDraftPicks, updateDraftState]);
+  }, [selectedTeam, exportDraftPicks, updateDraftState, draftPicksFromState]);
 
   const refreshDraftData = useCallback(async () => {
     try {
