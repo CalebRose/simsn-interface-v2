@@ -98,16 +98,7 @@ export const NFLUDFAView = () => {
         return valB - valA; // Descending order
       }
       
-      // 2. If the league is using the raw Number system (99 vs 85)
-      if (typeof overallB === "number" && typeof overallA === "number") {
-        return overallB - overallA; // Descending order
-      }
-
-      // 3. Fallbacks just in case data types get mixed
-      if (typeof overallB === "number" && typeof overallA !== "number") return -1;
-      if (typeof overallA === "number" && typeof overallB !== "number") return 1;
-
-      return 0; // Keep original order if we can't figure it out
+      return 0; 
     });
   }, [udfas, positions, archetypes]);
 
