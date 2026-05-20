@@ -310,6 +310,56 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                         options={cfbTeamOptions}
                         placeholder="Select Team..."
                         onChange={selectTeamOption}
+                        styles={{
+                          control: (provided, state) => ({
+                            ...provided,
+                            backgroundColor: state.isFocused
+                              ? "#2d3748"
+                              : "#1a202c",
+                            borderColor: state.isFocused
+                              ? "#4A90E2"
+                              : "#4A5568",
+                            color: "#ffffff",
+                            minWidth: isMobile ? "10rem" : "15rem",
+                            maxWidth: "100%",
+                            padding: "0.3rem",
+                            fontSize: isMobile ? "0.9rem" : "1rem",
+                            flexGrow: 1,
+                            boxShadow: state.isFocused
+                              ? "0 0 0 1px #4A90E2"
+                              : "none",
+                            borderRadius: "8px",
+                            transition: "all 0.2s ease",
+                          }),
+                          menu: (provided) => ({
+                            ...provided,
+                            backgroundColor: "#1a202c",
+                            borderRadius: "8px",
+                          }),
+                          menuList: (provided) => ({
+                            ...provided,
+                            backgroundColor: "#1a202c",
+                            padding: "0",
+                          }),
+                          option: (provided, state) => ({
+                            ...provided,
+                            backgroundColor: state.isFocused
+                              ? "#2d3748"
+                              : "#1a202c",
+                            color: "#ffffff",
+                            padding: "10px",
+                            fontSize: isMobile ? "0.9rem" : "1rem",
+                            cursor: "pointer",
+                          }),
+                          singleValue: (provided) => ({
+                            ...provided,
+                            color: "#ffffff",
+                          }),
+                          placeholder: (provided) => ({
+                            ...provided,
+                            color: "#ffffff",
+                          }),
+                        }}
                       />
                     </>
                   ) : (
@@ -321,6 +371,56 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                         onChange={(selectedOption) => {
                           const selectedWeek = Number(selectedOption?.value);
                           setSelectedWeek(selectedWeek);
+                        }}
+                        styles={{
+                          control: (provided, state) => ({
+                            ...provided,
+                            backgroundColor: state.isFocused
+                              ? "#2d3748"
+                              : "#1a202c",
+                            borderColor: state.isFocused
+                              ? "#4A90E2"
+                              : "#4A5568",
+                            color: "#ffffff",
+                            minWidth: isMobile ? "10rem" : "15rem",
+                            maxWidth: "100%",
+                            padding: "0.3rem",
+                            fontSize: isMobile ? "0.9rem" : "1rem",
+                            flexGrow: 1,
+                            boxShadow: state.isFocused
+                              ? "0 0 0 1px #4A90E2"
+                              : "none",
+                            borderRadius: "8px",
+                            transition: "all 0.2s ease",
+                          }),
+                          menu: (provided) => ({
+                            ...provided,
+                            backgroundColor: "#1a202c",
+                            borderRadius: "8px",
+                          }),
+                          menuList: (provided) => ({
+                            ...provided,
+                            backgroundColor: "#1a202c",
+                            padding: "0",
+                          }),
+                          option: (provided, state) => ({
+                            ...provided,
+                            backgroundColor: state.isFocused
+                              ? "#2d3748"
+                              : "#1a202c",
+                            color: "#ffffff",
+                            padding: "10px",
+                            fontSize: isMobile ? "0.9rem" : "1rem",
+                            cursor: "pointer",
+                          }),
+                          singleValue: (provided) => ({
+                            ...provided,
+                            color: "#ffffff",
+                          }),
+                          placeholder: (provided) => ({
+                            ...provided,
+                            color: "#ffffff",
+                          }),
                         }}
                       />
                     </>
@@ -674,6 +774,54 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                       options={nflTeamOptions}
                       placeholder="Select Team..."
                       onChange={selectTeamOption}
+                      styles={{
+                        control: (provided, state) => ({
+                          ...provided,
+                          backgroundColor: state.isFocused
+                            ? "#2d3748"
+                            : "#1a202c",
+                          borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                          color: "#ffffff",
+                          minWidth: isMobile ? "10rem" : "15rem",
+                          maxWidth: "100%",
+                          padding: "0.3rem",
+                          fontSize: isMobile ? "0.9rem" : "1rem",
+                          flexGrow: 1,
+                          boxShadow: state.isFocused
+                            ? "0 0 0 1px #4A90E2"
+                            : "none",
+                          borderRadius: "8px",
+                          transition: "all 0.2s ease",
+                        }),
+                        menu: (provided) => ({
+                          ...provided,
+                          backgroundColor: "#1a202c",
+                          borderRadius: "8px",
+                        }),
+                        menuList: (provided) => ({
+                          ...provided,
+                          backgroundColor: "#1a202c",
+                          padding: "0",
+                        }),
+                        option: (provided, state) => ({
+                          ...provided,
+                          backgroundColor: state.isFocused
+                            ? "#2d3748"
+                            : "#1a202c",
+                          color: "#ffffff",
+                          padding: "10px",
+                          fontSize: isMobile ? "0.9rem" : "1rem",
+                          cursor: "pointer",
+                        }),
+                        singleValue: (provided) => ({
+                          ...provided,
+                          color: "#ffffff",
+                        }),
+                        placeholder: (provided) => ({
+                          ...provided,
+                          color: "#ffffff",
+                        }),
+                      }}
                     />
                   </>
                 ) : (
@@ -685,6 +833,54 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                       onChange={(selectedOption) => {
                         const selectedWeek = Number(selectedOption?.value);
                         setSelectedWeek(selectedWeek);
+                      }}
+                      styles={{
+                        control: (provided, state) => ({
+                          ...provided,
+                          backgroundColor: state.isFocused
+                            ? "#2d3748"
+                            : "#1a202c",
+                          borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                          color: "#ffffff",
+                          minWidth: isMobile ? "10rem" : "15rem",
+                          maxWidth: "100%",
+                          padding: "0.3rem",
+                          fontSize: isMobile ? "0.9rem" : "1rem",
+                          flexGrow: 1,
+                          boxShadow: state.isFocused
+                            ? "0 0 0 1px #4A90E2"
+                            : "none",
+                          borderRadius: "8px",
+                          transition: "all 0.2s ease",
+                        }),
+                        menu: (provided) => ({
+                          ...provided,
+                          backgroundColor: "#1a202c",
+                          borderRadius: "8px",
+                        }),
+                        menuList: (provided) => ({
+                          ...provided,
+                          backgroundColor: "#1a202c",
+                          padding: "0",
+                        }),
+                        option: (provided, state) => ({
+                          ...provided,
+                          backgroundColor: state.isFocused
+                            ? "#2d3748"
+                            : "#1a202c",
+                          color: "#ffffff",
+                          padding: "10px",
+                          fontSize: isMobile ? "0.9rem" : "1rem",
+                          cursor: "pointer",
+                        }),
+                        singleValue: (provided) => ({
+                          ...provided,
+                          color: "#ffffff",
+                        }),
+                        placeholder: (provided) => ({
+                          ...provided,
+                          color: "#ffffff",
+                        }),
                       }}
                     />
                   </>

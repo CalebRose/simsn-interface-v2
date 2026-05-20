@@ -42,7 +42,7 @@ export const GameRequestModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      classes={`h-[80vh] sm:min-w-[1650px] overflow-auto`}
+      classes={`h-[80vh] sm:min-w-400 overflow-auto`}
     >
       {selectedLeague === SimCFB && <CFBGameRequestModal />}
       {selectedLeague === SimNFL && <NFLGameRequestModal />}
