@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNFLUDFA } from "./useNFLUDFA";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import { useAuthStore } from "../../../context/AuthContext";
@@ -27,7 +27,7 @@ import { GetNFLOverall } from "../../Team/TeamPageUtils";
 
 export const NFLUDFAView = () => {
   // Removed the currentUser and isAdmin checks from here
-
+  const fetchingUDFAs = useRef(false);
   const {
     nflTeam,
     addPlayerToUDFABoard,
@@ -54,6 +54,8 @@ export const NFLUDFAView = () => {
   const [modalPlayer, setModalPlayer] = useState<any>(null);
 
   useEffect(() => {
+    if (fetchingUDFAs.current) return;
+    fetchingUDFAs.current = true;
     getBootstrapFreeAgencyData();
   }, [getBootstrapFreeAgencyData]);
 
