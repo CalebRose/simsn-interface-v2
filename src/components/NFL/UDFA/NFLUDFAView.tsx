@@ -78,27 +78,36 @@ export const NFLUDFAView = () => {
 
   const filteredUDFAs = useMemo(() => {
     if (!udfas) return [];
-    // Matching the new backend logic:
-    let filtered = udfas;
+    
+    let filtered = [...udfas];
+    
     if (positions.length > 0)
       filtered = filtered.filter((p) => positions.includes(p.Position));
     if (archetypes.length > 0)
       filtered = filtered.filter((p) => archetypes.includes(p.Archetype));
+    
     return filtered.sort((a, b) => {
+      // Clean the inputs just in case there is whitespace
       const overallB = GetNFLOverall(b.Overall, b.ShowLetterGrade);
       const overallA = GetNFLOverall(a.Overall, a.ShowLetterGrade);
-      if (typeof overallB === "number" && typeof overallA !== "number") {
-        return -1;
-      } else if (typeof overallA === "number" && typeof overallB !== "number") {
-        return 1;
+      
+      // 1. If the league is using the Letter Grade system ("A+" vs "B-")
+      if (typeof overallB === "string" && typeof overallA === "string") {
+        const valB = gradeWeight[overallB.trim()] || 0;
+        const valA = gradeWeight[overallA.trim()] || 0;
+        return valB - valA; // Descending order
       }
-      if (
-        typeof overallB === "number" &&
-        typeof overallA === "number" &&
-        overallB !== overallA
-      )
-        return overallB - overallA;
-      return 0;
+      
+      // 2. If the league is using the raw Number system (99 vs 85)
+      if (typeof overallB === "number" && typeof overallA === "number") {
+        return overallB - overallA; // Descending order
+      }
+
+      // 3. Fallbacks just in case data types get mixed
+      if (typeof overallB === "number" && typeof overallA !== "number") return -1;
+      if (typeof overallA === "number" && typeof overallB !== "number") return 1;
+
+      return 0; // Keep original order if we can't figure it out
     });
   }, [udfas, positions, archetypes]);
 
@@ -329,16 +338,39 @@ export const NFLUDFAView = () => {
                       </div>
                     );
                   }}
-                />
-                {(!pagedUDFAs || pagedUDFAs.length === 0) && (
-                  <div className="w-full p-20 text-center text-gray-500 italic font-bold uppercase tracking-widest animate-pulse">
-                    Data is syncing... Please wait.
-                  </div>
-                )}
-              </>
-            ) : (
-              <Table
-                team={(nflTeam || {}) as any}
+              />
+              {(!pagedUDFAs || pagedUDFAs.length === 0) && (
+                <div className="w-full p-20 text-center text-gray-500 italic font-bold uppercase tracking-widest animate-pulse">
+                  Data is syncing... Please wait.
+                </div>
+              )}
+
+              {/* Page Controls Here */}
+              {totalPages > 1 && (
+                <div className="flex justify-between items-center w-full mt-4 p-4 bg-gray-800 rounded-b-xl border-t border-gray-700">
+                  <Button
+                    variant="secondary"
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 0}
+                  >
+                    Previous
+                  </Button>
+                  <Text variant="small" classes="text-white font-bold tracking-widest">
+                    PAGE {currentPage + 1} OF {totalPages}
+                  </Text>
+                  <Button
+                    variant="secondary"
+                    onClick={goToNextPage}
+                    disabled={currentPage >= totalPages - 1}
+                  >
+                    Next
+                  </Button>
+                </div>
+              )}
+            </>
+          ) : (
+            <Table
+              team={(nflTeam || {}) as any}
                 columns={[
                   { header: "Player", accessor: "PlayerName" },
                   { header: "Pos", accessor: "Position" },
