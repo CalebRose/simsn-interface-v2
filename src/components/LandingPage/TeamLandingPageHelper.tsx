@@ -64,6 +64,7 @@ export const getLandingCFBData = (
   collegeNews: NewsLog[],
   cfbRosterMap: Record<number, CollegePlayer[]> | null,
   cfbTeamMap: Record<number, CollegeTeam> | null,
+  ts: any,
 ) => {
   // Team Standings
   const teamStandings = allCFBStandings
@@ -131,7 +132,9 @@ export const getLandingCFBData = (
   // Team Schedule
   const teamSchedule = allCollegeGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.IsSpringGame === ts.CFBSpringGames,
     )
     .map((game) => ({
       ...game,
@@ -196,6 +199,7 @@ export const getLandingNFLData = (
   proNews: NewsLog[],
   proRosterMap: Record<number, NFLPlayer[]> | null,
   nflTeamMap: Record<number, NFLTeam> | null,
+  ts: any,
 ) => {
   // Team Standings
   const teamStandings = allProStandings
@@ -263,7 +267,9 @@ export const getLandingNFLData = (
   // Team Schedule
   const teamSchedule = allProGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.IsPreseasonGame === ts.NFLPreseasonGames,
     )
     .map((game) => ({
       ...game,
