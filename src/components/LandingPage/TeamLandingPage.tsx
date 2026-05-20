@@ -295,6 +295,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           collegeNews,
           cfbRosterMap,
           cfbTeamMap,
+          ts,
         );
 
       case SimNFL:
@@ -313,6 +314,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           proNews,
           proRosterMap,
           nflTeamMap,
+          ts,
         );
 
       case SimCBB:

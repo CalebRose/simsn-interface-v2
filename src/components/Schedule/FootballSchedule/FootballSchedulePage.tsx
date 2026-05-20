@@ -77,6 +77,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [selectedWeek, setSelectedWeek] = useState(currentWeek ?? 1);
   const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
+  const [isSpringGames, setIsSpringGames] = useState<boolean>(false);
   const [seasonCFBGames, setSeasonCFBGames] = useState<any[]>([]);
   const submitPollModal = useModal();
   const collegePollModal = useModal();
@@ -145,6 +146,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       allCFBStandings,
       seasonCFBGames.length > 0 ? seasonCFBGames : allCFBGames,
       cfbTeams,
+      isSpringGames,
     );
   }, [
     selectedTeam,
@@ -156,6 +158,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     allCFBGames,
     seasonCFBGames,
     cfbTeams,
+    isSpringGames,
   ]);
 
   const processedSchedule = useMemo(
@@ -299,6 +302,16 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                       <Text variant="small">Show Results</Text>
                     </div>
                   )}
+
+                  <div className="flex justify-center items-center gap-2">
+                    <ToggleSwitch
+                      onChange={() => {
+                        setIsSpringGames((res) => !res);
+                      }}
+                      checked={isSpringGames}
+                    />
+                    <Text variant="small">Spring Games</Text>
+                  </div>
                 </>
               )}
               <div className="flex w-[95vw] items-center gap-2 justify-around sm:flex-col">
@@ -559,6 +572,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [standingsView, setStandingsView] = useState(Conferences);
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
   const [seasonNFLGames, setSeasonNFLGames] = useState<any[]>([]);
+  const [isPreseason, setIsPreseason] = useState<boolean>(false);
 
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -625,6 +639,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         allNFLStandings,
         seasonNFLGames.length > 0 ? seasonNFLGames : allNFLGames,
         nflTeams,
+        isPreseason,
       );
     }, [
       selectedTeam,
@@ -636,6 +651,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       allNFLGames,
       seasonNFLGames,
       nflTeams,
+      isPreseason,
     ]);
 
   const processedSchedule = useMemo(
@@ -765,6 +781,15 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Text variant="small">Divisions</Text>
               </div>
             )}
+            <div className="flex justify-center items-center gap-2">
+              <ToggleSwitch
+                onChange={() => {
+                  setIsPreseason((res) => !res);
+                }}
+                checked={isPreseason}
+              />
+              <Text variant="small">Preseason</Text>
+            </div>
             <div className="flex w-[95vw] items-center gap-2 justify-around sm:flex-col">
               <div className="flex flex-col items-center gap-2 justify-center">
                 {scheduleView === TeamGames ? (
