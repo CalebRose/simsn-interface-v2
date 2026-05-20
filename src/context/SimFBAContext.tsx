@@ -311,6 +311,7 @@ interface SimFBAContextProps {
   exportNFLFreeAgents: () => Promise<void>;
   nflUDFABoard: NFLUDFABoard | null;
   getUDFABoard: (teamID: number) => Promise<void>;
+  processUDFAs: () => Promise<void>;
   addPlayerToUDFABoard: (player: any) => Promise<void>;
   saveUDFABoard: (board: any) => Promise<void>;
   removePlayerFromUDFABoard: (profileID: number) => Promise<void>;
@@ -489,6 +490,7 @@ const defaultContext: SimFBAContextProps = {
   addPlayerToUDFABoard: async () => {},
   saveUDFABoard: async () => {},
   removePlayerFromUDFABoard: async () => {},
+  processUDFAs: async () => {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -684,7 +686,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const saveUDFABoard = async (board: any) => {
     await DraftService.SaveUDFABoard(board);
     setNflUDFABoard(board);
-    enqueueSnackbar("Bids Saved", { variant: "success" });
+    enqueueSnackbar("Bids Saved", {
+      variant: "success",
+      autoHideDuration: 2000,
+    });
   };
 
   const removePlayerFromUDFABoard = async (profileID: number) => {
@@ -2797,6 +2802,16 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     [nflTeam],
   );
 
+  const processUDFAs = useCallback(async () => {
+    const res = await DraftService.ProcessUDFAs(false);
+    if (res) {
+      enqueueSnackbar("UDFAs Processed!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
+    }
+  }, []);
+
   return (
     <SimFBAContext.Provider
       value={{
@@ -2971,6 +2986,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         addPlayerToUDFABoard,
         saveUDFABoard,
         removePlayerFromUDFABoard,
+        processUDFAs,
       }}
     >
       {children}
