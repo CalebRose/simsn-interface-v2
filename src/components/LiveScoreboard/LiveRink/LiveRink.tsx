@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useLeagueStore } from '../../../context/LeagueContext';
 import { useAuthStore } from '../../../context/AuthContext';
-import { SimCHL, SimPHL, League } from '../../_constants/constants';
-import { PillButton, ButtonGroup } from '../../_design/Buttons';
-import { hckUrl } from '../../_constants/urls';
+import { SimCHL, SimPHL, League } from '../../../_constants/constants';
+import { PillButton, ButtonGroup } from '../../../_design/Buttons';
+import { hckUrl } from '../../../_constants/urls';
 
 // --- HELPER FUNCTIONS ---
 const getPeriodName = (p: number, isSO: boolean = false) => {
@@ -184,12 +184,14 @@ const LiveRink = () => {
   };
 
   // FETCH REAL HOCKEY DATA
+
   useEffect(() => {
     if (!currentWeek || !rawSeasonID) return;
     const isCHL = selectedLeague === SimCHL;
     
-    // Correct query-parameter endpoint for your Go backend
-    const fetchUrl = `${hckUrl}games/live/chl?isCollege=${isCHL}&season=${rawSeasonID}&week=${currentWeek}`;
+    // Dynamic endpoint based on the selected league
+    const leagueEndpoint = isCHL ? "chl" : "phl";
+    const fetchUrl = `${hckUrl}games/live/${leagueEndpoint}?isCollege=${isCHL}&season=${rawSeasonID}&week=${currentWeek}`;
 
     fetch(fetchUrl)
       .then(res => {

@@ -51,8 +51,8 @@ import { CreateThreadPage } from "../components/Forum/CreateThreadPage";
 import { EditPostPage } from "../components/Forum/EditPostPage";
 import { NFLUDFAView } from "../components/NFL/UDFA/NFLUDFAView";
 import { NFLUDFA_LocalTest } from "../components/NFL/UDFA/NFLUDFA_LocalTest";
-import LiveRink from '../components/LiveScoreboard/LiveRink';
-import { LiveField } from '../components/LiveScoreboard/LiveField';
+import LiveRink from '../components/LiveScoreboard/LiveRink/LiveRink';
+import LiveField from '../components/LiveScoreboard/LiveField/LiveField';
 
 
 // Will Add More Pages here for authorized users (Logged in)
@@ -701,7 +701,7 @@ export const AuthRoutes = [
   //LiveScoreboard Routes
 <Route
     key="Live Rink"
-    path="/live-rink"
+    path={routes.LIVERINK} // Use the constant
     element={
       <AuthGuard>
         <LiveRink />
@@ -710,7 +710,7 @@ export const AuthRoutes = [
   />,
   <Route
     key="Live Field"
-    path="/live-field"
+    path={routes.LIVEFIELD} // Use the constant
     element={
       <AuthGuard>
         <LiveField />
