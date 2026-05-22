@@ -371,6 +371,8 @@ interface ForumEditorProps {
   onCancel?: () => void;
   submitLabel?: string;
   isSubmitting?: boolean;
+  /** Extra condition from the parent to disable the submit button (e.g. required fields not yet filled). */
+  submitDisabled?: boolean;
   maxLength?: number;
   /** Called on every editor content change (debounce externally if needed). */
   onDocChange?: (doc: RichTextDocument) => void;
@@ -573,6 +575,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
       onCancel,
       submitLabel = "Post",
       isSubmitting = false,
+      submitDisabled = false,
       maxLength = MAX_DEFAULT,
       onDocChange,
     },
@@ -1043,7 +1046,9 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
               variant="primary"
               size="sm"
               onClick={handleSubmit}
-              disabled={isSubmitting || isEmpty || isOverLimit}
+              disabled={
+                isSubmitting || isEmpty || isOverLimit || submitDisabled
+              }
             >
               {isSubmitting ? "Posting…" : submitLabel}
             </Button>

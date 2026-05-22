@@ -511,6 +511,7 @@ export const CreateThreadPage: React.FC = () => {
               }}
               submitLabel="Post Thread"
               isSubmitting={isSubmitting}
+              submitDisabled={!title.trim() || !selectedForumId}
             />
           </div>
 

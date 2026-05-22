@@ -777,7 +777,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         a.TeamName.localeCompare(b.TeamName),
       );
       const teamOptionsList = sortedTeams.map((x) => {
-        return { label: x.TeamName, value: x.ID.toString() };
+        return { label: `${x.TeamName} ${x.Mascot}`, value: x.ID.toString() };
       });
       const confs = sortedTeams.map((x) => {
         return { label: x.Conference, value: x.ConferenceID.toString() };
@@ -2261,13 +2261,13 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const bringUpCollegePlayer = useCallback(
     async (draftPickID: number) => {
       try {
-        const res = await DraftService.BringUpCollegePlayer(draftPickID);
-        if (res) {
-          enqueueSnackbar("Player brought up to pro roster!", {
-            variant: "success",
-            autoHideDuration: 3000,
-          });
-        }
+        // const res = await DraftService.BringUpCollegePlayer(draftPickID);
+        // if (res) {
+        //   enqueueSnackbar("Player brought up to pro roster!", {
+        //     variant: "success",
+        //     autoHideDuration: 3000,
+        //   });
+        // }
       } catch (error) {
         console.error("Failed to bring up player:", error);
         enqueueSnackbar("Failed to bring up player", {
@@ -2331,7 +2331,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   );
 
   const exportPHLDraftees = useCallback(async () => {
-    await DraftService.ExportPHLDraftees();
+    // await DraftService.ExportPHLDraftees();
     enqueueSnackbar("Exporting PHL Draftees...", {
       variant: "warning",
       autoHideDuration: 3000,

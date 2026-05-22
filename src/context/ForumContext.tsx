@@ -705,16 +705,24 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
 
         await ForumService.AddReaction(postId, reaction, currentUserState.id);
 
-        if (isAdding && post && post.author.uid !== currentUserState.id) {
-          await ForumService.SendReactionNotification(
-            post.author.uid,
-            currentUserState.id,
-            currentUserState.username,
-            activeThread?.id ?? "",
-            postId,
-            activeThread?.title ?? "",
-            reaction,
-          );
+        if (post && post.author.uid !== currentUserState.id) {
+          if (isAdding) {
+            await ForumService.SendReactionNotification(
+              post.author.uid,
+              currentUserState.id,
+              currentUserState.username,
+              activeThread?.id ?? "",
+              postId,
+              activeThread?.title ?? "",
+              reaction,
+            );
+          } else {
+            await ForumService.DeleteReactionNotification(
+              currentUserState.id,
+              postId,
+              reaction,
+            );
+          }
         }
       } catch (err) {
         console.error("ForumContext.reactToPost:", err);
