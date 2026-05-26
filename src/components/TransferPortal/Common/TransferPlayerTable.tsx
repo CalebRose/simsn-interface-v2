@@ -44,7 +44,7 @@ const getTableColumns = (
 ) => {
   if (league === SimCFB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Prev. Team", accessor: "PreviousTeamID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
@@ -65,7 +65,7 @@ const getTableColumns = (
   }
   if (league === SimCBB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Prev. Team", accessor: "PreviousTeamID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
@@ -95,7 +95,7 @@ const getTableColumns = (
   }
   if (league === SimCHL) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Prev. Team", accessor: "PreviousTeamID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },

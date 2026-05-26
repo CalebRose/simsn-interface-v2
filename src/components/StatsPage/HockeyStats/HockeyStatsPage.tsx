@@ -4,7 +4,7 @@ import { useHockeyStats } from "./useHockeyStatsPage";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { ActionModal } from "../../Common/ActionModal";
 import { Border } from "../../../_design/Borders";
-import { Help1 } from "../../../_constants/constants";
+import { Help1, SimCHL } from "../../../_constants/constants";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { StatsSidebar } from "../Common/StatsSidebar";
 import { useModal } from "../../../_hooks/useModal";
@@ -54,6 +54,8 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
     SelectSeasonOption,
     Search,
     Export,
+    viewCanadianLeagueStats,
+    setViewCanadianLeagueStats,
   } = useHockeyStats();
   const { backgroundColor } = useBackgroundColor();
   const { isMobile, isDesktop } = useResponsive();
@@ -133,6 +135,15 @@ export const HockeyStatsPage: FC<StatsPageProps> = ({ league }) => {
                   onChange={ChangeGoalieView}
                 />
               </div>
+              {league === SimCHL && (
+                <div className="flex flex-col">
+                  <Text variant="h4">Canadian League</Text>
+                  <ToggleSwitch
+                    checked={viewCanadianLeagueStats}
+                    onChange={() => setViewCanadianLeagueStats((prev) => !prev)}
+                  />
+                </div>
+              )}
               {!isDesktop && (
                 <div className="flex flex-row gap-x-2">
                   <CategoryDropdown

@@ -56,7 +56,7 @@ import { Timestamp as BBATimestamp } from "../models/basketballModels";
 
 export const MakeCHLPlayerMapFromRosterMap = (
   chlTeams: CHLTeam[],
-  rosterMap: Record<number, CHLPlayer[]>
+  rosterMap: Record<number, CHLPlayer[]>,
 ): Record<number, CHLPlayer> => {
   const playerMap: Record<number, CHLPlayer> = {};
 
@@ -81,7 +81,7 @@ export const MakeCHLPlayerMapFromRosterMap = (
 
 export const MakePHLPlayerMapFromRosterMap = (
   phlTeams: PHLTeam[],
-  rosterMap: Record<number, PHLPlayer[]>
+  rosterMap: Record<number, PHLPlayer[]>,
 ): Record<number, PHLPlayer> => {
   const playerMap: Record<number, PHLPlayer> = {};
 
@@ -148,7 +148,9 @@ export const GetHCKCollegeStats = (
   chlPlayerSeasonStatsMap: Record<number, CHLPlayerSeasonStats[]>,
   chlTeamGameStatsMap: Record<number, CHLTeamGameStats[]>,
   chlTeamSeasonStatsMap: Record<number, CHLTeamSeasonStats[]>,
-  gameDay: GameDay
+  gameDay: GameDay,
+  viewCanadianLeagueStats: boolean,
+  teamMap: Record<number, CHLTeam>,
 ) => {
   if (statsView === WEEK_VIEW) {
     if (statsType === PLAYER_VIEW) {
@@ -164,10 +166,24 @@ export const GetHCKCollegeStats = (
     }
     return [];
   }
+
+  let seasonStats = [];
   if (statsType === PLAYER_VIEW) {
-    return chlPlayerSeasonStatsMap[season] || [];
+    seasonStats = chlPlayerSeasonStatsMap[season] || [];
+  } else {
+    seasonStats = chlTeamSeasonStatsMap[season] || [];
   }
-  return chlTeamSeasonStatsMap[season] || [];
+  if (viewCanadianLeagueStats) {
+    seasonStats = seasonStats.filter(
+      (stat) => teamMap[stat.TeamID].LeagueID === 2,
+    );
+  } else {
+    seasonStats = seasonStats.filter(
+      (stat) => teamMap[stat.TeamID].LeagueID !== 2,
+    );
+  }
+
+  return seasonStats;
 };
 
 export const GetHCKProStats = (
@@ -179,7 +195,7 @@ export const GetHCKProStats = (
   phlPlayerSeasonStatsMap: Record<number, ProfessionalPlayerSeasonStats[]>,
   phlTeamGameStatsMap: Record<number, ProfessionalTeamGameStats[]>,
   phlTeamSeasonStatsMap: Record<number, ProfessionalTeamSeasonStats[]>,
-  gameDay: GameDay
+  gameDay: GameDay,
 ) => {
   if (statsView === WEEK_VIEW) {
     if (statsType === PLAYER_VIEW) {
@@ -222,7 +238,7 @@ export const useFilteredHockeyStats = ({
   const teamSet = useMemo(() => new Set(selectedTeams), [selectedTeams]);
   const confSet = useMemo(
     () => new Set(selectedConferences),
-    [selectedConferences]
+    [selectedConferences],
   );
 
   const filtered = useMemo(() => {
@@ -338,7 +354,7 @@ export const getFBADisplayWeek = (weekID: number, season: number) => {
 
 export const MakeCFBPlayerMapFromRosterMap = (
   cfbTeams: CFBTeam[],
-  rosterMap: Record<number, CFBPlayer[]>
+  rosterMap: Record<number, CFBPlayer[]>,
 ): Record<number, CFBPlayer> => {
   const playerMap: Record<number, CFBPlayer> = {};
 
@@ -365,7 +381,7 @@ export const MakeCFBPlayerMapFromRosterMap = (
 
 export const MakeNFLPlayerMapFromRosterMap = (
   nflTeams: NFLTeam[],
-  rosterMap: Record<number, NFLPlayer[]>
+  rosterMap: Record<number, NFLPlayer[]>,
 ): Record<number, NFLPlayer> => {
   const playerMap: Record<number, NFLPlayer> = {};
 
@@ -398,7 +414,7 @@ export const GetFBACollegeStats = (
   cfbPlayerGameStatsMap: Record<number, CFBPlayerStats[]>,
   cfbPlayerSeasonStatsMap: Record<number, CFBPlayerSeasonStats[]>,
   cfbTeamGameStatsMap: Record<number, CollegeTeamStats[]>,
-  cfbTeamSeasonStatsMap: Record<number, CollegeTeamSeasonStats[]>
+  cfbTeamSeasonStatsMap: Record<number, CollegeTeamSeasonStats[]>,
 ) => {
   if (statsView === WEEK_VIEW) {
     if (statsType === PLAYER_VIEW) {
@@ -428,7 +444,7 @@ export const GetFBAProStats = (
   nflPlayerGameStatsMap: Record<number, NFLPlayerStats[]>,
   nflPlayerSeasonStatsMap: Record<number, NFLPlayerSeasonStats[]>,
   nflTeamGameStatsMap: Record<number, NFLTeamStats[]>,
-  nflTeamSeasonStatsMap: Record<number, NFLTeamSeasonStats[]>
+  nflTeamSeasonStatsMap: Record<number, NFLTeamSeasonStats[]>,
 ) => {
   if (statsView === WEEK_VIEW) {
     if (statsType === PLAYER_VIEW) {
@@ -475,7 +491,7 @@ export const useFilteredFootballStats = ({
   const teamSet = useMemo(() => new Set(selectedTeams), [selectedTeams]);
   const confSet = useMemo(
     () => new Set(selectedConferences),
-    [selectedConferences]
+    [selectedConferences],
   );
 
   const filtered = useMemo(() => {
@@ -534,7 +550,7 @@ export const useFilteredFootballStats = ({
         if (footballStatsType === DEFENSE) {
           return (
             ["DT", "DE", "OLB", "ILB", "CB", "FS", "SS", "ATH"].includes(
-              player.Position
+              player.Position,
             ) && stat.Snaps > 0
           );
         }
@@ -594,7 +610,7 @@ export const isFBASeasonStats = (s: any): s is FBASeasonStats => {
 export const GetFilteredCFBTeamOptions = (
   selectedLeagueOption: number,
   cfbTeamOptions: { label: string; value: string }[],
-  teamMap: Record<number, CollegeTeam>
+  teamMap: Record<number, CollegeTeam>,
 ) => {
   const optionsList = [];
   for (let i = 0; i < cfbTeamOptions.length; i++) {
@@ -614,7 +630,7 @@ export const GetFilteredCFBTeamOptions = (
 export const GetFilteredCFBConferenceOptions = (
   selectedLeagueOption: number,
   cfbConferenceOptions: { label: string; value: string }[],
-  cfbTeams: CollegeTeam[]
+  cfbTeams: CollegeTeam[],
 ) => {
   const optionsMap: any = {};
   const selectedMap: any = {};

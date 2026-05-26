@@ -656,47 +656,6 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const [waiverPlayers, setWaiverPlayers] = useState<NFLPlayer[]>([]);
   const [nflDraftees, setNFLDraftees] = useState<NFLDraftee[]>([]);
   const [nflUDFABoard, setNflUDFABoard] = useState<NFLUDFABoard | null>(null);
-
-  const getUDFABoard = async (teamID: number) => {
-    try {
-      const res = await DraftService.GetUDFABoard(teamID);
-      setNflUDFABoard(new NFLUDFABoard(res));
-    } catch (e) {
-      console.error("Could not fetch UDFA Board", e);
-      // Fallback: Set an empty board so the loading spinner stops!
-      setNflUDFABoard(new NFLUDFABoard({ TeamID: teamID, Profiles: [] }));
-    }
-  };
-
-  const addPlayerToUDFABoard = async (player: any) => {
-    if (!nflTeam) return;
-    const dto = {
-      PlayerID: player.ID,
-      PlayerName: `${player.FirstName} ${player.LastName}`,
-      Position: player.Position,
-      TeamID: nflTeam.ID,
-      TeamAbbr: nflTeam.TeamAbbr,
-      Points: 1,
-    };
-    await DraftService.AddPlayerToUDFABoard(dto);
-    await getUDFABoard(nflTeam.ID);
-    enqueueSnackbar("Added to UDFA Board", { variant: "success" });
-  };
-
-  const saveUDFABoard = async (board: any) => {
-    await DraftService.SaveUDFABoard(board);
-    setNflUDFABoard(board);
-    enqueueSnackbar("Bids Saved", {
-      variant: "success",
-      autoHideDuration: 2000,
-    });
-  };
-
-  const removePlayerFromUDFABoard = async (profileID: number) => {
-    await DraftService.RemovePlayerFromUDFABoard(profileID);
-    if (nflTeam) await getUDFABoard(nflTeam.ID);
-    enqueueSnackbar("Removed from Board", { variant: "info" });
-  };
   const [collegePolls, setCollegePolls] = useState<CollegePollOfficial[]>([]);
   const [collegePollSubmission, setCollegePollSubmission] =
     useState<CollegePollSubmission>({} as CollegePollSubmission);
@@ -1325,6 +1284,47 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       setProNews(res.ProNews);
     }
   }, [currentUser?.teamId, currentUser?.NFLTeamID]);
+
+  const getUDFABoard = async (teamID: number) => {
+    try {
+      const res = await DraftService.GetUDFABoard(teamID);
+      setNflUDFABoard(new NFLUDFABoard(res));
+    } catch (e) {
+      console.error("Could not fetch UDFA Board", e);
+      // Fallback: Set an empty board so the loading spinner stops!
+      setNflUDFABoard(new NFLUDFABoard({ TeamID: teamID, Profiles: [] }));
+    }
+  };
+
+  const addPlayerToUDFABoard = async (player: any) => {
+    if (!nflTeam) return;
+    const dto = {
+      PlayerID: player.ID,
+      PlayerName: `${player.FirstName} ${player.LastName}`,
+      Position: player.Position,
+      TeamID: nflTeam.ID,
+      TeamAbbr: nflTeam.TeamAbbr,
+      Points: 1,
+    };
+    await DraftService.AddPlayerToUDFABoard(dto);
+    await getUDFABoard(nflTeam.ID);
+    enqueueSnackbar("Added to UDFA Board", { variant: "success" });
+  };
+
+  const saveUDFABoard = async (board: any) => {
+    await DraftService.SaveUDFABoard(board);
+    setNflUDFABoard(board);
+    enqueueSnackbar("Bids Saved", {
+      variant: "success",
+      autoHideDuration: 2000,
+    });
+  };
+
+  const removePlayerFromUDFABoard = async (profileID: number) => {
+    await DraftService.RemovePlayerFromUDFABoard(profileID);
+    if (nflTeam) await getUDFABoard(nflTeam.ID);
+    enqueueSnackbar("Removed from Board", { variant: "info" });
+  };
 
   const cutCFBPlayer = useCallback(
     async (playerID: number, teamID: number) => {

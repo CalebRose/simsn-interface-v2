@@ -17,6 +17,7 @@ import {
   writeBatch,
   increment,
   setDoc,
+  deleteDoc,
   Timestamp,
 } from "firebase/firestore";
 import type { PostMention } from "../models/forumModels";
@@ -1066,7 +1067,12 @@ export const ForumService = {
   ): Promise<void> => {
     if (postAuthorUid === actorUid) return;
     const label = REACTION_LABELS[reactionType];
-    await addDoc(collection(firestore, "notifications"), {
+    // Use a deterministic doc ID so repeated like→unlike→like cycles
+    // only ever upsert a single notification rather than flooding the
+    // recipient's notification bar with duplicates.
+    const notifId = `reaction_${actorUid}_${postId}_${reactionType}`;
+    const notifRef = doc(firestore, "notifications", notifId);
+    await setDoc(notifRef, {
       uid: postAuthorUid,
       type: "reaction",
       domain: "forum",
@@ -1079,6 +1085,16 @@ export const ForumService = {
       isRead: false,
       createdAt: serverTimestamp(),
     });
+  },
+
+  DeleteReactionNotification: async (
+    actorUid: string,
+    postId: string,
+    reactionType: ReactionType,
+  ): Promise<void> => {
+    const notifId = `reaction_${actorUid}_${postId}_${reactionType}`;
+    const notifRef = doc(firestore, "notifications", notifId);
+    await deleteDoc(notifRef);
   },
 
   // ─────────────────────────────────────────────

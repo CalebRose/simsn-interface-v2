@@ -225,6 +225,14 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     const attributes = getCHLAttributes(item, !isDesktop, isTablet, category!);
     const collegePromise = collegePromiseMap[item.ID];
     const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
+    if (hasPromise) {
+      item.PromiseType = collegePromise.PromiseType;
+      item.PromiseWeight = collegePromise.PromiseWeight;
+      item.Benchmark = collegePromise.Benchmark;
+      item.BenchmarkStr = collegePromise.BenchmarkStr;
+      item.PromiseMade = collegePromise.PromiseMade;
+      item.IsActive = collegePromise.IsActive;
+    }
 
     const isGoodOffensiveFit = (() => {
       if (!item || !offensiveSystemsInformation) return false;
@@ -1469,6 +1477,14 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
 
     const collegePromise = collegePromiseMap[item.ID];
     const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
+    if (hasPromise) {
+      item.PromiseType = collegePromise.PromiseType;
+      item.PromiseWeight = collegePromise.PromiseWeight;
+      item.Benchmark = collegePromise.Benchmark;
+      item.BenchmarkStr = collegePromise.BenchmarkStr;
+      item.PromiseMade = collegePromise.PromiseMade;
+      item.IsActive = collegePromise.IsActive;
+    }
     return (
       <div
         key={item.ID}
