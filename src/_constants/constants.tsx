@@ -893,7 +893,7 @@ export const FootballArchetypeOptions = [
   { label: "Vertical Threat", value: "Vertical Threat" },
   { label: "Possession", value: "Possession" },
   { label: "Red Zone Threat", value: "Red Zone Threat" },
-  { label: "Route Runner", value: "Router Runner" },
+  { label: "Route Runner", value: "Route Runner" },
   { label: "Pass Blocking", value: "Pass Blocking" },
   { label: "Run Blocking", value: "Run Blocking" },
   { label: "Line Captain", value: "Line Captain" },
