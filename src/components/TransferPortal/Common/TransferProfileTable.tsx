@@ -132,7 +132,7 @@ const getTransferProfileTableColumns = (
       { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "CurrentWeeksPoints" },
-      { header: "Mod.", accessor: "ModifiedPoints" },
+      { header: "Mod.", accessor: "ComputedModifier" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
     ]);
@@ -184,7 +184,7 @@ const getTransferProfileTableColumns = (
     columns = columns.concat([
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "CurrentWeeksPoints" },
-      { header: "Mod.", accessor: "ModifiedPoints" },
+      { header: "Mod.", accessor: "ComputedModifier" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
     ]);
@@ -224,7 +224,7 @@ const getTransferProfileTableColumns = (
     columns = columns.concat([
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "CurrentWeeksPoints" },
-      { header: "Mod.", accessor: "ModifiedPoints" },
+      { header: "Mod.", accessor: "ComputedModifier" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
     ]);
@@ -1121,6 +1121,69 @@ export const TransferPortalProfileTable: FC<
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const columns = getTransferProfileTableColumns(league, category, isMobile);
 
+  const { collegePromiseMap: hckPromiseMap } = useSimHCKStore();
+
+  const processedProfiles = useMemo(() => {
+    if (!transferPortalProfiles) return [];
+    return (transferPortalProfiles as any[]).map((p: any) => {
+      const player = p.CollegePlayer || playerMap[p.CollegePlayerID];
+      if (player) {
+        p.LastName = player.LastName;
+        p.Position = player.Position;
+        p.Archetype = player.Archetype;
+        p.Year = player.Year;
+        p.Age = player.Age;
+        p.Stars = player.Stars ?? 0;
+        p.State = player.State || "";
+        p.Country = player.Country || "";
+        const prefFields = [
+          "ProgramPref",
+          "ProfDevPref",
+          "TraditionsPref",
+          "FacilitiesPref",
+          "AtmospherePref",
+          "AcademicsPref",
+          "CampusLifePref",
+          "ConferencePref",
+          "CoachPref",
+          "SeasonMomentumPref",
+        ];
+        prefFields.forEach((f: string) => {
+          if (player[f] !== undefined) p[f] = player[f];
+        });
+        if (league === SimCFB) {
+          p.OverallGrade = getPlayerOverall(player, SimCFB).toString();
+        } else if (league === SimCHL) {
+          p.OverallGrade = getHockeyLetterGrade(
+            player.Overall ?? 0,
+            player.Year ?? 1,
+          );
+        } else {
+          p.OverallGrade = player.OverallGrade || "";
+        }
+      }
+      const hckPromise =
+        league === SimCHL ? hckPromiseMap[p.CollegePlayerID] : null;
+      const promise = p.Promise || hckPromise;
+      if (promise) {
+        p.PromiseType = promise.PromiseType || "";
+        p.PromiseWeight = promise.PromiseWeight || "";
+        p.Benchmark = promise.Benchmark;
+        p.BenchmarkStr = promise.BenchmarkStr || "";
+      }
+      if (league === SimCFB) {
+        p.ComputedModifier = getCFBModifierValue(p, p.Promise || {});
+      } else if (league === SimCHL) {
+        p.ComputedModifier = hckPromise
+          ? getHCKModifierValue(p, hckPromise)
+          : 1;
+      } else {
+        p.ComputedModifier = getBBAModifierValue(p, p.Promise || {});
+      }
+      return p;
+    });
+  }, [transferPortalProfiles, playerMap, league, hckPromiseMap]);
+
   const rowRenderer = (
     league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
@@ -1186,9 +1249,8 @@ export const TransferPortalProfileTable: FC<
   return (
     <Table
       columns={columns}
-      data={transferPortalProfiles!!}
+      data={processedProfiles}
       team={team}
-      page={league === SimCFB ? "SimCFBPortal" : undefined}
       rowRenderer={rowRenderer(league)}
     />
   );

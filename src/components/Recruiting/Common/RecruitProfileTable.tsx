@@ -134,7 +134,7 @@ const getRecruitProfileColumns = (
       { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "CurrentWeeksPoints" },
-      { header: "Mod.", accessor: "ModifiedPoints" },
+      { header: "Mod.", accessor: "Modifier" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
     ]);
@@ -181,7 +181,7 @@ const getRecruitProfileColumns = (
     columns = columns.concat([
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "CurrentWeeksPoints" },
-      { header: "Mod.", accessor: "ModifiedPoints" },
+      { header: "Mod.", accessor: "PreferenceModifier" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
     ]);
@@ -229,7 +229,7 @@ const getRecruitProfileColumns = (
       { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "CurrentWeeksPoints" },
-      { header: "Mod.", accessor: "ModifiedPoints" },
+      { header: "Mod.", accessor: "CurrentWeeksPoints" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
     ]);

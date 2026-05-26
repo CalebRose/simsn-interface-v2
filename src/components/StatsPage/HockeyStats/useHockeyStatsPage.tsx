@@ -30,6 +30,7 @@ import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { useModal } from "../../../_hooks/useModal";
 import {
   CollegePlayer as CHLPlayer,
+  CollegeTeam,
   CollegeTeamGameStats,
   CollegeTeamSeasonStats,
   ProfessionalPlayer as PHLPlayer,
@@ -79,6 +80,8 @@ export const useHockeyStats = () => {
   const [gameDay, setGameDay] = useState<GameDay>(ADay);
   const [gameType, setGameType] = useState<GameType>(REGULAR_SEASON);
   const [viewGoalieStats, setViewGoalieStats] = useState<boolean>(false);
+  const [viewCanadianLeagueStats, setViewCanadianLeagueStats] =
+    useState<boolean>(false);
   const [selectedWeek, setSelectedWeek] = useState<number>(2501);
   const [selectedSeason, setSelectedSeason] = useState<number>(1); // SEASON ID
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
@@ -163,6 +166,8 @@ export const useHockeyStats = () => {
         chlTeamGameStatsMap,
         chlTeamSeasonStatsMap,
         gameDay,
+        viewCanadianLeagueStats,
+        teamMap as Record<number, CollegeTeam>,
       );
     }
     if (selectedLeague === SimPHL) {
@@ -194,6 +199,7 @@ export const useHockeyStats = () => {
     phlTeamGameStatsMap,
     phlTeamSeasonStatsMap,
     gameDay,
+    viewCanadianLeagueStats,
   ]);
   // Make a Hockey Award title Modal. Heisman, but for hockey
   // Fighter award title?
@@ -333,5 +339,7 @@ export const useHockeyStats = () => {
     Search,
     Export,
     injuryReport,
+    viewCanadianLeagueStats,
+    setViewCanadianLeagueStats,
   };
 };

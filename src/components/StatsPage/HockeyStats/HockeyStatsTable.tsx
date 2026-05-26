@@ -175,6 +175,11 @@ export const HockeyStatsTable: FC<HockeyStatsTableProps> = ({
             <Text variant="xs">{item.Team.TeamName}</Text>
           </div>
         </TableCell>
+        <TableCell>
+          <div className="flex flex-row items-start">
+            <Text variant="xs">{item.Team.Conference}</Text>
+          </div>
+        </TableCell>
         {values.map((stat: any, idx) => {
           return (
             <TableCell key={stat.label + idx}>
