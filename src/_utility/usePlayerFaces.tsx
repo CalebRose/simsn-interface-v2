@@ -116,11 +116,12 @@ const getPlayerFace = (
       : "rgba(0,0,0,0)";
 
   let hair = playerFaceData.Hair;
+  let age = player && player.Age ? player.Age : 25;
   let recedingAge = player && player.PrimeAge ? player.PrimeAge - 3 : 28; // Default receding age if PrimeAge is missing
   if (
     (hair === "bald" || hair === "short-bald") &&
     player &&
-    player.Age < recedingAge
+    age < recedingAge
   ) {
     hair = "short"; // Assign a default hairstyle for younger bald players
   }

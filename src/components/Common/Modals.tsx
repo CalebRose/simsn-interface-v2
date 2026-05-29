@@ -1726,15 +1726,16 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
   const tendency = GetRecruitingTendency(player.RecruitModifier);
   const hasSigned = player.TeamID > 0;
 
+  /*
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
+        <div className="row-span-3 flex flex-col items-center">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
+  */
   return (
     <div className="overflow-y-auto">
-      <div className="w-full grid grid-cols-[1fr__3fr] gap-2">
-        <div className="flex flex-col items-center px-1">
-          <div
-            className={`flex my-1 items-center justify-center 
-          px-3 h-12 min-h-12 sm:w-20 sm:max-w-20 sm:h-20 rounded-lg border-2`}
-            style={{ backgroundColor: "white" }}
-          >
+      <div className="w-full grid grid-cols-4 grid-rows-[auto auto auto auto] space-4">
+        <div className="row-span-3 flex flex-col items-center">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture
               playerID={player.ID}
               player={player}
@@ -1752,114 +1753,108 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
             />
           )}
         </div>
-        <div className="flex flex-col px-1">
-          <div className="grid grid-cols-3 gap-y-4">
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Youth
-              </Text>
-              <Text variant="body-small" classes="">
-                {player.HighSchool && player.HighSchool.trim() !== ""
-                  ? player.HighSchool
-                  : "Unknown"}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                City
-              </Text>
-              <Text variant="body-small" classes="">
-                {player.City && player.HighSchool.trim() !== ""
-                  ? player.City
-                  : "Unknown"}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="whitespace-nowrap">
-                State
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.State}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Height
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {heightObj.feet}'{heightObj.inches}"
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Weight
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.Weight} lbs
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text classes="font-semibold mb-1 whitespace-nowrap">
-                Expectation
-              </Text>
-              <Text variant="xs" classes="whitespace-nowrap pt-0.5">
-                {tendency}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Overall
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.OverallGrade}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Potential
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.PotentialGrade}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Stars
-              </Text>
-              <Text variant="xs" classes="whitespace-nowrap pt-0.5">
-                {player.Stars > 0
-                  ? Array(player.Stars).fill("⭐").join("")
-                  : player.Stars}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Personality
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.Personality}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Bias
-              </Text>
-              <Text variant="xs" classes="mt-1 whitespace">
-                {player.RecruitingBias}
-              </Text>
-            </div>
-            {player.IsCustomCroot && (
-              <div className="flex flex-col">
-                <Text classes="font-semibold mb-1 whitespace-nowrap">
-                  Croot By
-                </Text>
-                <Text variant="xs" classes="whitespace-nowrap pt-0.5">
-                  {player.CustomCrootFor}
-                </Text>
-              </div>
-            )}
-          </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Youth
+          </Text>
+          <Text variant="body-small" classes="">
+            {player.HighSchool && player.HighSchool.trim() !== ""
+              ? player.HighSchool
+              : "Unknown"}
+          </Text>
         </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            City
+          </Text>
+          <Text variant="body-small" classes="">
+            {player.City && player.HighSchool.trim() !== ""
+              ? player.City
+              : "Unknown"}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="whitespace-nowrap">
+            State
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.State}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Height
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {heightObj.feet}'{heightObj.inches}"
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Weight
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.Weight} lbs
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text classes="font-semibold mb-1 whitespace-nowrap">
+            Expectation
+          </Text>
+          <Text variant="xs" classes="whitespace-nowrap pt-0.5">
+            {tendency}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Overall
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.OverallGrade}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Potential
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.PotentialGrade}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Stars
+          </Text>
+          <Text variant="xs" classes="whitespace-nowrap pt-0.5">
+            {player.Stars > 0
+              ? Array(player.Stars).fill("⭐").join("")
+              : player.Stars}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Personality
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.Personality}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Bias
+          </Text>
+          <Text variant="xs" classes="mt-1 whitespace">
+            {player.RecruitingBias}
+          </Text>
+        </div>
+        {player.IsCustomCroot && (
+          <div className="flex flex-col">
+            <Text classes="font-semibold mb-1 whitespace-nowrap">Croot By</Text>
+            <Text variant="xs" classes="whitespace-nowrap pt-0.5">
+              {player.CustomCrootFor}
+            </Text>
+          </div>
+        )}
       </div>
       {player.LeadingTeams && (
         <>
