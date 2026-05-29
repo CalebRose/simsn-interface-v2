@@ -331,6 +331,7 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
         <div className="flex flex-row md:flex-col items-center md:items-center space-x-4 md:space-x-0 md:space-y-2">
           <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center shrink-0">
             <PlayerPicture
+              player={player}
               playerID={picturePlayerId}
               team={pictureTeamId}
               league={collegeLeague}
