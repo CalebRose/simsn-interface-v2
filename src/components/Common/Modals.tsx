@@ -148,10 +148,15 @@ export const CHLPlayerInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
   const heightObj = HeightToFeetAndInches(player.Height);
 
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimCHL}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -478,10 +483,15 @@ export const PHLPlayerInfoModalBody: FC<PHLPlayerInfoModalBodyProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimPHL} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimPHL}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -823,10 +833,15 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCFB} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCFB}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -987,10 +1002,15 @@ export const NFLPlayerInfoModalBody: FC<NFLPlayerInfoModalBodyProps> = ({
   const totalValue = `${rawValue.toFixed(2)}`;
   return (
     <div className="flex flex-col w-full">
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimNFL} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimNFL}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -1190,10 +1210,15 @@ export const NFLDepthChartInfoModalBody: FC<
   );
 
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimNFL} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimNFL}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -1350,7 +1375,12 @@ export const CHLCrootInfoModalBody: FC<CHLCrootInfoModalBodyProps> = ({
                          px-3 h-12 min-h-12 sm:w-20 sm:max-w-20 sm:h-20 rounded-lg border-2`}
             style={{ backgroundColor: "white" }}
           >
-            <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCHL}
+              team={team}
+            />
           </div>
           {team && player.IsSigned && (
             <Logo
@@ -1705,7 +1735,12 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
           px-3 h-12 min-h-12 sm:w-20 sm:max-w-20 sm:h-20 rounded-lg border-2`}
             style={{ backgroundColor: "white" }}
           >
-            <PlayerPicture playerID={player.ID} league={SimCFB} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCFB}
+              team={team}
+            />
           </div>
           {team && player.IsSigned && (
             <Logo
@@ -1831,7 +1866,9 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
           <div className="w-full mt-2 justify-center border-t-[0.1em]">
             <Text variant="h6">Leading Teams</Text>
           </div>
-          <div className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}>
+          <div
+            className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}
+          >
             <Text variant="body" classes="font-semibold">
               Team
             </Text>
@@ -1969,10 +2006,15 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
   const hasSigned = player.TeamID > 0;
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full mb-2">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full mb-2">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCBB}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -2086,7 +2128,9 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
           <div className="w-full mt-2 justify-center border-t-[0.1em]">
             <Text variant="h6">Leading Teams</Text>
           </div>
-          <div className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}>
+          <div
+            className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}
+          >
             <Text variant="body" classes="font-semibold">
               Team
             </Text>
@@ -2156,10 +2200,15 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
   const priorityAttributes = getPriorityCBBAttributes(player);
   const heightObj = HeightToFeetAndInches(player.Height);
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimCBB}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -2319,10 +2368,15 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
     player.Contract = contract;
   }
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimNBA} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimNBA}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -2535,10 +2589,15 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCHL}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -2946,10 +3005,15 @@ export const CBBPortalInfoModalBody: FC<CBBPortalInfoModalBodyProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCBB}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -3166,10 +3230,15 @@ export const CFBPortalInfoModalBody: FC<CFBPortalInfoModalBodyProps> = ({
   const priorityAttributes = setPriorityCFBAttributes(player);
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCFB} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCFB}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -3714,6 +3783,7 @@ export const BaseballPlayerInfoModalBody: FC<
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture
               playerID={player.id}
+              player={player}
               league={league as League}
               team={team}
             />

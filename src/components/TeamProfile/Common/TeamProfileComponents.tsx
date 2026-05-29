@@ -319,6 +319,7 @@ export const TeamPlayerCareerStats = ({
                   {idx === 0 ? "1st" : idx === 1 ? "2nd" : "3rd"}
                 </Text>
                 <PlayerPicture
+                  player={player}
                   playerID={player.CollegePlayerID}
                   team={team}
                   league={league}

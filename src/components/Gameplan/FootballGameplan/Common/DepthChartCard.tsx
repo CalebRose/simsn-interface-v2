@@ -164,6 +164,7 @@ export const DepthChartCard: React.FC<DepthChartCardProps> = ({
               className={`bg-white mx-auto mt-2 rounded-full overflow-hidden ${depthChartManager ? "max-w-[2.5em] sm:max-w-[3em]" : `${pictureSize}`}`}
             >
               <PlayerPicture
+                player={player}
                 playerID={player?.PlayerID || player?.ID}
                 team={team}
                 league={league}

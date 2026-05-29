@@ -111,6 +111,7 @@ export const PlayerModalHeader: FC<PlayerModalHeaderProps> = memo(
         <div className="flex flex-col items-center shrink-0">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture
+              player={player}
               playerID={playerId}
               league={league as League}
               team={team}
