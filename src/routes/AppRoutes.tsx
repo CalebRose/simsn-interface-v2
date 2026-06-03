@@ -4,10 +4,9 @@ import { UnAuthRoutes } from "./UnAuthRoutes";
 import { SideMenu } from "../components/SideMenu/SideMenu";
 import { DeepLinkProvider } from "../context/DeepLinkContext";
 
-
 function AppRoutes() {
   return (
-    <Router basename="/simsn-interface-v2">
+    <Router>
       <DeepLinkProvider>
         <SideMenu />
         <Routes>
