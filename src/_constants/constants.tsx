@@ -9,6 +9,7 @@ export const SimBBA = "SimBBA";
 export const SimHCK = "SimHCK";
 export const SimCollegeBaseball = "SimCollegeBaseball";
 export const SimMLB = "SimMLB";
+export const SimCBL = "SimCBL";
 export const AdminRole = "Admin";
 export type League =
   | typeof SimCFB
