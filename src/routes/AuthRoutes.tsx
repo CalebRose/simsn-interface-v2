@@ -1,6 +1,6 @@
 import { Route } from "react-router-dom";
 import { AuthGuard } from "../guards/AuthGuards";
-import { Home } from "../components/Home/Home";
+import { RootRoute } from "../components/Home/RootRoute";
 import routes from "../_constants/routes";
 import { NotFoundPage } from "../components/NotFound/NotFound";
 import { AvailableTeams } from "../components/AvailableTeams/AvailableTeams";
@@ -54,11 +54,7 @@ export const AuthRoutes = [
   <Route
     key="Home"
     path={routes.HOME}
-    element={
-      <AuthGuard>
-        <Home />
-      </AuthGuard>
-    }
+    element={<RootRoute />}
   />,
   <Route
     key="Available"

@@ -131,7 +131,7 @@ export const SignUpPage = () => {
             </div>
 
             <h2 className="mt-6 text-2xl font-bold sm:text-3xl md:text-4xl">
-              Welcome to Sim Sports Network
+              Sign Up
             </h2>
 
             <p className="mt-4 leading-relaxed ">
