@@ -53,11 +53,7 @@ import { NFLUDFAView } from "../components/NFL/UDFA/NFLUDFAView";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
-  <Route
-    key="Home"
-    path={routes.HOME}
-    element={<RootRoute />}
-  />,
+  <Route key="Home" path={routes.HOME} element={<RootRoute />} />,
   <Route
     key="Available"
     path={routes.AVAILABLE_TEAMS}
@@ -140,11 +136,29 @@ export const AuthRoutes = [
     }
   />,
   <Route
+    key="CBB Gameplan"
+    path={routes.CBB_GAMEPLAN}
+    element={
+      <AuthGuard>
+        <GameplanPage league={SimCBB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
     key="NBA Team"
     path={routes.NBA_TEAM}
     element={
       <AuthGuard>
         <TeamPage league={SimNBA} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="NBA Gameplan"
+    path={routes.NBA_GAMEPLAN}
+    element={
+      <AuthGuard>
+        <GameplanPage league={SimNBA} />
       </AuthGuard>
     }
   />,

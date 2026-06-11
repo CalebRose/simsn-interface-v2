@@ -50,6 +50,8 @@ import {
   ScoutingProfile,
   NBAWarRoom,
   TransferPortalProfile,
+  CollegeLineup,
+  NBALineup,
 } from "../models/basketballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { BootstrapService } from "../_services/bootstrapService";
@@ -196,6 +198,8 @@ interface SimBBAContextProps {
   teamCollegePromises: CollegePromise[];
   collegePromiseMap: Record<number, CollegePromise>;
   transferProfileMapByPlayerID: Record<number, TransferPortalProfile[]>;
+  cbbLineupMap: Record<number, CollegeLineup[]>;
+  nbaLineupMap: Record<number, NBALineup[]>;
   getLandingBootstrapData: () => void;
   getBootstrapRosterData: () => void;
   getBootstrapRecruitingData: () => void;
@@ -343,6 +347,8 @@ const defaultContext: SimBBAContextProps = {
   teamCollegePromises: [],
   collegePromiseMap: {},
   transferProfileMapByPlayerID: {},
+  cbbLineupMap: {},
+  nbaLineupMap: {},
   getLandingBootstrapData: async () => {},
   getBootstrapRosterData: async () => {},
   getBootstrapRecruitingData: async () => {},
@@ -378,6 +384,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const { cbb_Timestamp, setCBB_Timestamp } = useWebSockets(bba_ws, SimBBA);
   const isFetching = useRef(false);
   const isScheduleDataFetching = useRef(false);
+  const isGameplanDataFetching = useRef(false);
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isLoadingTwo, setIsLoadingTwo] = useState<boolean>(true);
   const [isLoadingThree, setIsLoadingThree] = useState<boolean>(true);
@@ -517,6 +525,12 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [nbaGameplanMap, setNBAGameplanMap] = useState<
     Record<number, NBAGameplan | null>
   >({});
+  const [cbbLineupMap, setCBBLineupMap] = useState<
+    Record<number, CollegeLineup[]>
+  >([]);
+  const [nbaLineupMap, setNBALineupMap] = useState<Record<number, NBALineup[]>>(
+    {},
+  );
   const [nbaWarRoomMap, setNBAWarRoomMap] = useState<
     Record<number, NBAWarRoom | null>
   >({});
@@ -873,7 +887,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     } finally {
       isScheduleDataFetching.current = false;
     }
-  }, [cbb_Timestamp?.SeasonID, currentUser?.username, currentUser?.teamId]);
+  }, [cbb_Timestamp?.SeasonID, currentUser?.username, currentUser?.cbb_id]);
 
   // Use this once the draft page is finished
   const getBootstrapDraftData = async () => {
@@ -905,25 +919,34 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     setCollegePromises(res.CollegePromises);
   };
 
-  const getBootstrapGameplanData = async () => {
-    let cfbID = 0;
+  const getBootstrapGameplanData = useCallback(async () => {
+    if (isGameplanDataFetching.current) return;
+
+    let cbbID = 0;
     let nbaID = 0;
-    if (currentUser && currentUser.teamId) {
-      cfbID = currentUser.teamId;
+    if (currentUser && currentUser.cbb_id) {
+      cbbID = currentUser.cbb_id;
     }
     if (currentUser && currentUser.NBATeamID) {
       nbaID = currentUser.NBATeamID;
     }
-    if (cfbID === 0 && nbaID === 0) {
+    if (cbbID === 0 && nbaID === 0) {
       return;
     }
-    const res = await BootstrapService.GetBBAGameplanBootstrapData(
-      cfbID,
-      nbaID,
-    );
-    setCollegeGameplanMap(res.CollegeGameplanMap);
-    setNBAGameplanMap(res.ProGameplanMap);
-  };
+    isGameplanDataFetching.current = true;
+    try {
+      const res = await BootstrapService.GetBBAGameplanBootstrapData(
+        cbbID,
+        nbaID,
+      );
+      setCollegeGameplanMap(res.CollegeGameplanMap);
+      setNBAGameplanMap(res.NBAGameplanMap);
+      setCBBLineupMap(res.CollegeLineupMap);
+      setNBALineupMap(res.ProLineupMap);
+    } finally {
+      // isGameplanDataFetching.current = false;
+    }
+  }, [currentUser?.cbb_id, currentUser?.NBATeamID]);
 
   const removeUserfromCBBTeamCall = useCallback(
     async (teamID: number) => {
@@ -1848,6 +1871,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         teamCollegePromises,
         collegePromiseMap,
         transferProfileMapByPlayerID,
+        cbbLineupMap,
+        nbaLineupMap,
         getLandingBootstrapData,
         getBootstrapRosterData,
         getBootstrapRecruitingData,
