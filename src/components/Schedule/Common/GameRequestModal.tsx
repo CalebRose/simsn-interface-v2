@@ -42,7 +42,7 @@ export const GameRequestModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      classes={`h-[80vh] sm:min-w-[1650px] overflow-auto`}
+      classes={`h-[80vh] sm:min-w-400 overflow-auto`}
     >
       {selectedLeague === SimCFB && <CFBGameRequestModal />}
       {selectedLeague === SimNFL && <NFLGameRequestModal />}
@@ -160,6 +160,17 @@ const NFLGameRequestModal = () => {
     }
     return map;
   }, [allProGames]);
+
+  /** Checks whether either team in an accepted request already has a preseason game that week. */
+  const getNFLWeekConflict = useCallback(
+    (req: NFLGameRequest): boolean => {
+      return (
+        (busyWeeksByTeam[req.HomeTeamID]?.has(req.Week) ?? false) ||
+        (busyWeeksByTeam[req.AwayTeamID]?.has(req.Week) ?? false)
+      );
+    },
+    [busyWeeksByTeam],
+  );
 
   /** Preseason weeks 1–3 where my team has no game. */
   const availableWeeks = useMemo<SelectOption[]>(() => {
@@ -644,6 +655,7 @@ const NFLGameRequestModal = () => {
                 key={req.ID}
                 request={req}
                 proTeamMap={proTeamMap}
+                hasWeekConflict={getNFLWeekConflict(req)}
                 onProcess={handleProcessRequest}
                 onVeto={handleVetoRequest}
               />
@@ -826,6 +838,7 @@ const NFLSentRequestCard: React.FC<NFLSentRequestCardProps> = ({
 interface NFLAcceptedRequestCardProps {
   request: NFLGameRequest;
   proTeamMap: Record<number, any> | null;
+  hasWeekConflict: boolean;
   onProcess: (id: number) => void;
   onVeto: (id: number) => void;
 }
@@ -833,6 +846,7 @@ interface NFLAcceptedRequestCardProps {
 const NFLAcceptedRequestCard: React.FC<NFLAcceptedRequestCardProps> = ({
   request,
   proTeamMap,
+  hasWeekConflict,
   onProcess,
   onVeto,
 }) => {
@@ -842,7 +856,9 @@ const NFLAcceptedRequestCard: React.FC<NFLAcceptedRequestCardProps> = ({
   const awayTeam = proTeamMap?.[request.AwayTeamID];
 
   return (
-    <div className="border border-gray-600 border-l-4 border-l-yellow-500 rounded-lg p-3 flex items-center gap-4">
+    <div
+      className={`border border-gray-600 border-l-4 ${hasWeekConflict ? "border-l-red-500" : "border-l-yellow-500"} rounded-lg p-3 flex items-center gap-4`}
+    >
       <div className="shrink-0">
         <Logo url={getLogo(SimNFL, request.SendingTeamID, false)} />
       </div>
@@ -889,12 +905,14 @@ const NFLAcceptedRequestCard: React.FC<NFLAcceptedRequestCardProps> = ({
             Week {request.Week}
           </Text>
           <Tag variant="indigo">Preseason</Tag>
+          {hasWeekConflict && <Tag variant="red">⚠ Week Conflict</Tag>}
         </div>
         <div className="flex flex-col gap-2 shrink-0 justify-center">
           <Button
             variant="success"
             size="sm"
             onClick={() => onProcess(request.ID)}
+            disabled={hasWeekConflict}
           >
             Process
           </Button>
@@ -1034,6 +1052,47 @@ const CFBGameRequestModal = () => {
     }
     return map;
   }, [allCollegeGames, isSpringGame]);
+
+  /** Busy weeks maps for accepted-request conflict checking (not scoped to isSpringGame toggle). */
+  const busyWeeksByTeamRegular = useMemo<Record<number, Set<number>>>(() => {
+    if (!allCollegeGames) return {};
+    const map: Record<number, Set<number>> = {};
+    for (const game of allCollegeGames) {
+      if (game.IsSpringGame) continue;
+      if (!map[game.HomeTeamID]) map[game.HomeTeamID] = new Set();
+      if (!map[game.AwayTeamID]) map[game.AwayTeamID] = new Set();
+      map[game.HomeTeamID].add(game.Week);
+      map[game.AwayTeamID].add(game.Week);
+    }
+    return map;
+  }, [allCollegeGames]);
+
+  const busyWeeksByTeamSpring = useMemo<Record<number, Set<number>>>(() => {
+    if (!allCollegeGames) return {};
+    const map: Record<number, Set<number>> = {};
+    for (const game of allCollegeGames) {
+      if (!game.IsSpringGame) continue;
+      if (!map[game.HomeTeamID]) map[game.HomeTeamID] = new Set();
+      if (!map[game.AwayTeamID]) map[game.AwayTeamID] = new Set();
+      map[game.HomeTeamID].add(game.Week);
+      map[game.AwayTeamID].add(game.Week);
+    }
+    return map;
+  }, [allCollegeGames]);
+
+  /** Checks whether either team in an accepted request already has a game that week (same game type). */
+  const getCFBWeekConflict = useCallback(
+    (req: CFBGameRequest): boolean => {
+      const map = req.IsSpringGame
+        ? busyWeeksByTeamSpring
+        : busyWeeksByTeamRegular;
+      return (
+        (map[req.HomeTeamID]?.has(req.Week) ?? false) ||
+        (map[req.AwayTeamID]?.has(req.Week) ?? false)
+      );
+    },
+    [busyWeeksByTeamRegular, busyWeeksByTeamSpring],
+  );
 
   /** Weeks 1–REGULAR_SEASON_WEEKS where my team has no game. */
   const availableWeeks = useMemo<SelectOption[]>(() => {
@@ -1624,6 +1683,7 @@ const CFBGameRequestModal = () => {
                 key={req.ID}
                 request={req}
                 teamMap={cfbTeamMap}
+                hasWeekConflict={getCFBWeekConflict(req)}
                 onProcess={handleProcessRequest}
                 onVeto={handleVetoRequest}
               />
@@ -1742,6 +1802,7 @@ const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
 interface AcceptedRequestCardProps {
   request: CFBGameRequest;
   teamMap: Record<number, any> | null;
+  hasWeekConflict: boolean;
   onProcess: (id: number) => void;
   onVeto: (id: number) => void;
 }
@@ -1749,6 +1810,7 @@ interface AcceptedRequestCardProps {
 const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
   request,
   teamMap,
+  hasWeekConflict,
   onProcess,
   onVeto,
 }) => {
@@ -1758,7 +1820,9 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
   const awayTeam = teamMap?.[request.AwayTeamID];
 
   return (
-    <div className="border border-gray-600 border-l-4 border-l-yellow-500 rounded-lg p-3 flex items-center gap-4">
+    <div
+      className={`border border-gray-600 border-l-4 ${hasWeekConflict ? "border-l-red-500" : "border-l-yellow-500"} rounded-lg p-3 flex items-center gap-4`}
+    >
       {/* Logo */}
       <div className="shrink-0">
         <Logo url={getLogo(SimCFB, request.SendingTeamID, false)} />
@@ -1821,6 +1885,7 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
           <div className="flex gap-1 flex-wrap justify-end">
             {request.IsSpringGame && <Tag variant="indigo">Spring</Tag>}
             {request.IsNeutralSite && <Tag variant="purple">Neutral</Tag>}
+            {hasWeekConflict && <Tag variant="red">⚠ Week Conflict</Tag>}
           </div>
         </div>
 
@@ -1830,6 +1895,7 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
             variant="success"
             size="sm"
             onClick={() => onProcess(request.ID)}
+            disabled={hasWeekConflict}
           >
             Process
           </Button>

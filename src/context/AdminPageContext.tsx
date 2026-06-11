@@ -184,26 +184,34 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   }, [selectedLeague]);
 
   const getHockeyRequests = async () => {
-    const res = await RequestService.GetLeagueRequests(
-      selectedLeague as League,
-    );
-    const model = res as HCKRequestResponse;
-    setHCKCHLRequests(model.CollegeRequests);
-    setHCKPHLRequests(model.ProRequest);
-    setHCKTradePropsals(model.AcceptedTrades);
+    try {
+      const res = await RequestService.GetLeagueRequests(
+        selectedLeague as League,
+      );
+      const model = res as HCKRequestResponse;
+      setHCKCHLRequests(model.CollegeRequests ?? []);
+      setHCKPHLRequests(model.ProRequest ?? []);
+      setHCKTradePropsals(model.AcceptedTrades ?? []);
+    } catch (e) {
+      console.error("Failed to load hockey requests", e);
+    }
   };
   const getFootballRequests = async () => {
-    const res = await RequestService.GetLeagueRequests(
-      selectedLeague as League,
-    );
-    const model = res as FBARequestResponse;
-    const filteredCFBRequests = model.CollegeRequests.filter(
-      (req) => req.TeamID > 0,
-    );
-    setFBACFBRequests(filteredCFBRequests);
-    setFBANFLRequests(model.ProRequests);
-    setFBATradePropsals(model.AcceptedTrades);
-    setNFLDraftPicks(model.DraftPicks);
+    try {
+      const res = await RequestService.GetLeagueRequests(
+        selectedLeague as League,
+      );
+      const model = res as FBARequestResponse;
+      const filteredCFBRequests = (model.CollegeRequests ?? []).filter(
+        (req) => req.TeamID > 0,
+      );
+      setFBACFBRequests(filteredCFBRequests);
+      setFBANFLRequests(model.ProRequests ?? []);
+      setFBATradePropsals(model.AcceptedTrades ?? []);
+      setNFLDraftPicks(model.DraftPicks ?? []);
+    } catch (e) {
+      console.error("Failed to load football requests", e);
+    }
   };
   const getBasketballRequests = async () => {
     const res = await RequestService.GetCBBTeamRequests();

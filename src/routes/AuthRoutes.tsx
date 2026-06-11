@@ -1,6 +1,6 @@
 import { Route } from "react-router-dom";
 import { AuthGuard } from "../guards/AuthGuards";
-import { Home } from "../components/Home/Home";
+import { RootRoute } from "../components/Home/RootRoute";
 import routes from "../_constants/routes";
 import { NotFoundPage } from "../components/NotFound/NotFound";
 import { AvailableTeams } from "../components/AvailableTeams/AvailableTeams";
@@ -50,22 +50,13 @@ import { ThreadPage } from "../components/Forum/ThreadPage";
 import { CreateThreadPage } from "../components/Forum/CreateThreadPage";
 import { EditPostPage } from "../components/Forum/EditPostPage";
 import { NFLUDFAView } from "../components/NFL/UDFA/NFLUDFAView";
-import { NFLUDFA_LocalTest } from "../components/NFL/UDFA/NFLUDFA_LocalTest";
-import LiveRink from '../components/LiveScoreboard/LiveRink/LiveRink';
-import LiveField from '../components/LiveScoreboard/LiveField/LiveField';
-
+// import { NFLUDFA_LocalTest } from "../components/NFL/UDFA/NFLUDFA_LocalTest";
+import LiveRink from "../components/LiveScoreboard/LiveRink/LiveRink";
+import LiveField from "../components/LiveScoreboard/LiveField/LiveField";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
-  <Route
-    key="Home"
-    path={routes.HOME}
-    element={
-      <AuthGuard>
-        <Home />
-      </AuthGuard>
-    }
-  />,
+  <Route key="Home" path={routes.HOME} element={<RootRoute />} />,
   <Route
     key="Available"
     path={routes.AVAILABLE_TEAMS}
@@ -327,25 +318,16 @@ export const AuthRoutes = [
       </AuthGuard>
     }
   />,
-<Route 
+  <Route
     key="NFL UDFA RECRUITING"
-    path="/nfl/udfa" // HARDCODED TO ENSURE IT MATCHES THE URL
+    path={routes.NFL_UDFA_RECRUITING}
     element={
       <AuthGuard>
         <NFLUDFAView />
       </AuthGuard>
-    }  
+    }
   />,
-  <Route 
-    key="NFL UDFA TEST"
-    path="/nfl/udfa-test" // Matches the dash in your working URL
-    element={
-      <AuthGuard>
-        <NFLUDFA_LocalTest />
-      </AuthGuard>
-    }  
-  />,
-  
+
   <Route
     key="CFB STATS"
     path={routes.CFB_STATS}
@@ -699,7 +681,7 @@ export const AuthRoutes = [
     }
   />,
   //LiveScoreboard Routes
-<Route
+  <Route
     key="Live Rink"
     path={routes.LIVERINK} // Use the constant
     element={
@@ -716,6 +698,5 @@ export const AuthRoutes = [
         <LiveField />
       </AuthGuard>
     }
-  />
-
+  />,
 ];

@@ -113,6 +113,13 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
       {
+        label: "UDFAs",
+        isRoute: true,
+        route: routes.NFL_UDFA_RECRUITING,
+        league: SimNFL,
+        toggle: () => toggleMenu(),
+      },
+      {
         label: "Statistics",
         isRoute: true,
         route: routes.NFL_STATS,
@@ -397,7 +404,11 @@ export const useSideMenu = () => {
         isRoute: false,
         route: "",
         league: SimCollegeBaseball,
-        click: () => window.open("https://docs.google.com/document/d/1znXTXKPYpIkd1cWTk7kg00pm7mY3N13Qenl9fNVIals/edit?usp=sharing", "_blank"),
+        click: () =>
+          window.open(
+            "https://docs.google.com/document/d/1znXTXKPYpIkd1cWTk7kg00pm7mY3N13Qenl9fNVIals/edit?usp=sharing",
+            "_blank",
+          ),
         toggle: () => toggleMenu(),
       },
     ],
@@ -518,7 +529,11 @@ export const useSideMenu = () => {
         isRoute: false,
         route: "",
         league: SimMLB,
-        click: () => window.open("https://docs.google.com/document/d/1znXTXKPYpIkd1cWTk7kg00pm7mY3N13Qenl9fNVIals/edit?usp=sharing", "_blank"),
+        click: () =>
+          window.open(
+            "https://docs.google.com/document/d/1znXTXKPYpIkd1cWTk7kg00pm7mY3N13Qenl9fNVIals/edit?usp=sharing",
+            "_blank",
+          ),
         toggle: () => toggleMenu(),
       },
     ],

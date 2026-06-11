@@ -1500,6 +1500,7 @@ export const DraftListModal: React.FC<DraftListModalProps> = ({
                   style={{ backgroundColor: "white" }}
                 >
                   <PlayerPicture
+                    player={draftee}
                     playerID={draftee.ID}
                     league={SimNFL}
                     team={collegeTeam}

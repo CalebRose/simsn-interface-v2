@@ -131,11 +131,17 @@ export const Table = <T,>({
         if (a.Contract[key] < b.Contract[key]) return order === "asc" ? 1 : -1;
       }
 
-      if ((league?.includes("SimC") || league === undefined) && key === "Experience") { // College league player year, league is undefined on simcfb for some reason
+      if (
+        (league?.includes("SimC") || league === undefined) &&
+        key === "Experience"
+      ) {
+        // College league player year, league is undefined on simcfb for some reason
         if (a["Year"] > b["Year"]) return order === "asc" ? 1 : -1;
         if (a["Year"] < b["Year"]) return order === "asc" ? -1 : 1;
-        if (!a["IsRedshirt"] && b["IsRedshirt"]) return order === "asc" ? 1 : -1;
-        if (a["IsRedshirt"] && !b["IsRedshirt"]) return order === "asc" ? -1 : 1;
+        if (!a["IsRedshirt"] && b["IsRedshirt"])
+          return order === "asc" ? 1 : -1;
+        if (a["IsRedshirt"] && !b["IsRedshirt"])
+          return order === "asc" ? -1 : 1;
         return 0;
       }
 
@@ -211,6 +217,7 @@ export const Table = <T,>({
           (key.includes("OverallGrade") &&
             page !== "SimCBBRecruitingProfileTable") ||
           key.includes("PotentialGrade") ||
+          key.includes("Pref") ||
           key.includes("AffinityOne") ||
           key.includes("AffinityTwo") ||
           key.includes("RecruitingStatus") ||

@@ -12,6 +12,7 @@ import { useDraftState } from "../hooks/useDraftState";
 import { AnyTradeProposal } from "../hooks/useDraftTradeState";
 import { useModal } from "../../../_hooks/useModal";
 import {
+  Draft,
   DraftBoardStr,
   DraftBoardType,
   DrafteeInfoType,
@@ -183,10 +184,18 @@ export const useNFLDraft = () => {
   // Sync Firestore → local state when the draft state meaningfully changes
   // (another admin action, auto-advance, etc.). endTimeMs is a primitive so
   // this only fires when the timestamp value changes, not on every snapshot.
+  //
+  // setSeconds is intentionally guarded to only run when paused. While the
+  // timer is actively counting down the interval computes the accurate
+  // remaining time from endTimeMs — calling setSeconds(draftSeconds) here
+  // would jump the clock back to the stale initial-round value stored in
+  // Firestore and cause the visible up-and-down oscillation.
   useEffect(() => {
     if (!endTimeMs) return;
     setIsPaused(draftIsPaused);
-    setSeconds(draftSeconds);
+    if (draftIsPaused) {
+      setSeconds(draftSeconds);
+    }
   }, [endTimeMs, draftIsPaused, draftSeconds]);
 
   // Wall-clock countdown.
@@ -228,7 +237,7 @@ export const useNFLDraft = () => {
           (pick.DraftRound - 1) * NFL_PICKS_PER_ROUND + pick.DraftNumber;
         const draftPickOverall =
           (draftCurrentRound - 1) * NFL_PICKS_PER_ROUND + draftCurrentPick;
-        return pickOverall >= draftPickOverall && pick.DrafteeID === 0;
+        return pickOverall >= draftPickOverall;
       })
       .sort((a, b) => {
         if (a.DraftRound !== b.DraftRound) {
@@ -239,8 +248,6 @@ export const useNFLDraft = () => {
       .slice(0, 15);
     return result;
   }, [draftPicksFromState, draftCurrentRound, draftCurrentPick]);
-
-  console.log({ upcomingPicks });
 
   const recentPicks = useMemo(() => {
     return draftPicksFromState
@@ -371,12 +378,12 @@ export const useNFLDraft = () => {
 
   const handleExportDraftPicks = useCallback(async () => {
     if (!selectedTeam) return;
-    const dto = { TeamID: selectedTeam.ID };
+    const dto = { TeamID: selectedTeam.ID, DraftPicks: draftPicksFromState };
     await exportDraftPicks(dto);
     updateDraftState({
       exportComplete: true,
     });
-  }, [selectedTeam, exportDraftPicks, updateDraftState]);
+  }, [selectedTeam, exportDraftPicks, updateDraftState, draftPicksFromState]);
 
   const refreshDraftData = useCallback(async () => {
     try {

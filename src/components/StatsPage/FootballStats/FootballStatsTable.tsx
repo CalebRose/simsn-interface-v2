@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useMemo } from "react";
 import {
   FootballStatsType,
   InfoType,
@@ -71,14 +71,14 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     statsType,
     footballStatsType,
     statsView,
-    isMobile!!
+    isMobile!!,
   );
 
   // Get Row Renderer
   const CFBPlayerRowRenderer = (
     item: CollegePlayerStats | CollegePlayerSeasonStats,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const player = playerMap[item.CollegePlayerID] as CollegePlayer;
     if (!player) return <></>;
@@ -88,7 +88,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     const values = GetFootballPlayerStatsValues(
       item,
       statsView,
-      footballStatsType
+      footballStatsType,
     );
     return (
       <div
@@ -153,7 +153,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
   const CFBTeamRowRenderer = (
     item: CollegeTeamStats | CollegeTeamSeasonStats,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const team = teamMap[item.TeamID] as CollegeTeam;
     if (!team) return <></>;
@@ -162,7 +162,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     const values = GetFootballTeamStatsValues(
       item,
       statsView,
-      footballStatsType
+      footballStatsType,
     );
 
     return (
@@ -200,7 +200,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
   const NFLPlayerRowRenderer = (
     item: NFLPlayerStats | NFLPlayerSeasonStats,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const player = playerMap[item.NFLPlayerID] as NFLPlayer;
     if (!player) return <></>;
@@ -209,7 +209,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     const values = GetFootballPlayerStatsValues(
       item,
       statsView,
-      footballStatsType
+      footballStatsType,
     );
 
     return (
@@ -275,7 +275,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
   const NFLTeamRowRenderer = (
     item: NFLTeamStats | NFLTeamSeasonStats,
     index: number,
-    backgroundColor: string
+    backgroundColor: string,
   ) => {
     const team = teamMap[item.TeamID] as NFLTeam;
     if (!team) return <></>;
@@ -284,7 +284,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     const values = GetFootballTeamStatsValues(
       item,
       statsView,
-      footballStatsType
+      footballStatsType,
     );
     return (
       <div
@@ -313,8 +313,27 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     );
   };
 
+  const augmentedStats = useMemo(() => {
+    return stats.map((item: any) => {
+      if (statsType === PLAYER_VIEW) {
+        if (!item.Player) {
+          const playerKey =
+            league === SimNFL ? item.NFLPlayerID : item.CollegePlayerID;
+          const player = playerMap[playerKey];
+          if (player) item.Player = player;
+        }
+      } else {
+        if (!item.Team) {
+          const team = teamMap[item.TeamID];
+          if (team) item.Team = team;
+        }
+      }
+      return item;
+    });
+  }, [stats, statsType, playerMap, teamMap, league]);
+
   const rowRenderer = (
-    league: League
+    league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimNFL) {
       if (statsType === PLAYER_VIEW) {
@@ -330,7 +349,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
   return (
     <Table
       columns={columns}
-      data={stats}
+      data={augmentedStats}
       rowRenderer={rowRenderer(league)}
       backgroundColor={backgroundColor}
       team={team}

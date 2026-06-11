@@ -148,10 +148,15 @@ export const CHLPlayerInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
   const heightObj = HeightToFeetAndInches(player.Height);
 
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimCHL}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -478,10 +483,15 @@ export const PHLPlayerInfoModalBody: FC<PHLPlayerInfoModalBodyProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimPHL} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimPHL}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -823,10 +833,15 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCFB} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCFB}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -987,10 +1002,15 @@ export const NFLPlayerInfoModalBody: FC<NFLPlayerInfoModalBodyProps> = ({
   const totalValue = `${rawValue.toFixed(2)}`;
   return (
     <div className="flex flex-col w-full">
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimNFL} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimNFL}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -1190,10 +1210,15 @@ export const NFLDepthChartInfoModalBody: FC<
   );
 
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimNFL} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimNFL}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -1350,7 +1375,12 @@ export const CHLCrootInfoModalBody: FC<CHLCrootInfoModalBodyProps> = ({
                          px-3 h-12 min-h-12 sm:w-20 sm:max-w-20 sm:h-20 rounded-lg border-2`}
             style={{ backgroundColor: "white" }}
           >
-            <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCHL}
+              team={team}
+            />
           </div>
           {team && player.IsSigned && (
             <Logo
@@ -1696,16 +1726,22 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
   const tendency = GetRecruitingTendency(player.RecruitModifier);
   const hasSigned = player.TeamID > 0;
 
+  /*
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
+        <div className="row-span-3 flex flex-col items-center">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
+  */
   return (
     <div className="overflow-y-auto">
-      <div className="w-full grid grid-cols-[1fr__3fr] gap-2">
-        <div className="flex flex-col items-center px-1">
-          <div
-            className={`flex my-1 items-center justify-center 
-          px-3 h-12 min-h-12 sm:w-20 sm:max-w-20 sm:h-20 rounded-lg border-2`}
-            style={{ backgroundColor: "white" }}
-          >
-            <PlayerPicture playerID={player.ID} league={SimCFB} team={team} />
+      <div className="w-full grid grid-cols-4 grid-rows-[auto auto auto auto] space-4">
+        <div className="row-span-3 flex flex-col items-center">
+          <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCFB}
+              team={team}
+            />
           </div>
           {team && player.IsSigned && (
             <Logo
@@ -1717,121 +1753,117 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
             />
           )}
         </div>
-        <div className="flex flex-col px-1">
-          <div className="grid grid-cols-3 gap-y-4">
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Youth
-              </Text>
-              <Text variant="body-small" classes="">
-                {player.HighSchool && player.HighSchool.trim() !== ""
-                  ? player.HighSchool
-                  : "Unknown"}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                City
-              </Text>
-              <Text variant="body-small" classes="">
-                {player.City && player.HighSchool.trim() !== ""
-                  ? player.City
-                  : "Unknown"}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="whitespace-nowrap">
-                State
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.State}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Height
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {heightObj.feet}'{heightObj.inches}"
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Weight
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.Weight} lbs
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text classes="font-semibold mb-1 whitespace-nowrap">
-                Expectation
-              </Text>
-              <Text variant="xs" classes="whitespace-nowrap pt-0.5">
-                {tendency}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Overall
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.OverallGrade}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Potential
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.PotentialGrade}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Stars
-              </Text>
-              <Text variant="xs" classes="whitespace-nowrap pt-0.5">
-                {player.Stars > 0
-                  ? Array(player.Stars).fill("⭐").join("")
-                  : player.Stars}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Personality
-              </Text>
-              <Text variant="body-small" classes="whitespace-nowrap">
-                {player.Personality}
-              </Text>
-            </div>
-            <div className="flex flex-col">
-              <Text variant="h6" classes="mb-1 whitespace-nowrap">
-                Bias
-              </Text>
-              <Text variant="xs" classes="mt-1 whitespace">
-                {player.RecruitingBias}
-              </Text>
-            </div>
-            {player.IsCustomCroot && (
-              <div className="flex flex-col">
-                <Text classes="font-semibold mb-1 whitespace-nowrap">
-                  Croot By
-                </Text>
-                <Text variant="xs" classes="whitespace-nowrap pt-0.5">
-                  {player.CustomCrootFor}
-                </Text>
-              </div>
-            )}
-          </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Youth
+          </Text>
+          <Text variant="body-small" classes="">
+            {player.HighSchool && player.HighSchool.trim() !== ""
+              ? player.HighSchool
+              : "Unknown"}
+          </Text>
         </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            City
+          </Text>
+          <Text variant="body-small" classes="">
+            {player.City && player.HighSchool.trim() !== ""
+              ? player.City
+              : "Unknown"}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="whitespace-nowrap">
+            State
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.State}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Height
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {heightObj.feet}'{heightObj.inches}"
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Weight
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.Weight} lbs
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text classes="font-semibold mb-1 whitespace-nowrap">
+            Expectation
+          </Text>
+          <Text variant="xs" classes="whitespace-nowrap pt-0.5">
+            {tendency}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Overall
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.OverallGrade}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Potential
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.PotentialGrade}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Stars
+          </Text>
+          <Text variant="xs" classes="whitespace-nowrap pt-0.5">
+            {player.Stars > 0
+              ? Array(player.Stars).fill("⭐").join("")
+              : player.Stars}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Personality
+          </Text>
+          <Text variant="body-small" classes="whitespace-nowrap">
+            {player.Personality}
+          </Text>
+        </div>
+        <div className="flex flex-col">
+          <Text variant="h6" classes="mb-1 whitespace-nowrap">
+            Bias
+          </Text>
+          <Text variant="xs" classes="mt-1 whitespace">
+            {player.RecruitingBias}
+          </Text>
+        </div>
+        {player.IsCustomCroot && (
+          <div className="flex flex-col">
+            <Text classes="font-semibold mb-1 whitespace-nowrap">Croot By</Text>
+            <Text variant="xs" classes="whitespace-nowrap pt-0.5">
+              {player.CustomCrootFor}
+            </Text>
+          </div>
+        )}
       </div>
       {player.LeadingTeams && (
         <>
           <div className="w-full mt-2 justify-center border-t-[0.1em]">
             <Text variant="h6">Leading Teams</Text>
           </div>
-          <div className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}>
+          <div
+            className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}
+          >
             <Text variant="body" classes="font-semibold">
               Team
             </Text>
@@ -1969,10 +2001,15 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
   const hasSigned = player.TeamID > 0;
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full mb-2">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full mb-2">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCBB}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -2086,7 +2123,9 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
           <div className="w-full mt-2 justify-center border-t-[0.1em]">
             <Text variant="h6">Leading Teams</Text>
           </div>
-          <div className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}>
+          <div
+            className={`w-full grid ${hasSigned ? "grid-cols-4" : "grid-cols-3"}`}
+          >
             <Text variant="body" classes="font-semibold">
               Team
             </Text>
@@ -2156,10 +2195,15 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
   const priorityAttributes = getPriorityCBBAttributes(player);
   const heightObj = HeightToFeetAndInches(player.Height);
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimCBB}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -2319,10 +2363,15 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
     player.Contract = contract;
   }
   return (
-    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
       <div className="row-span-3 flex flex-col items-center">
         <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture playerID={player.ID} league={SimNBA} team={team} />
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimNBA}
+            team={team}
+          />
         </div>
         {team && (
           <Logo
@@ -2535,10 +2584,15 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCHL} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCHL}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -2946,10 +3000,15 @@ export const CBBPortalInfoModalBody: FC<CBBPortalInfoModalBodyProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCBB} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCBB}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -3166,10 +3225,15 @@ export const CFBPortalInfoModalBody: FC<CFBPortalInfoModalBodyProps> = ({
   const priorityAttributes = setPriorityCFBAttributes(player);
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] gap-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-            <PlayerPicture playerID={player.ID} league={SimCFB} team={team} />
+            <PlayerPicture
+              playerID={player.ID}
+              player={player}
+              league={SimCFB}
+              team={team}
+            />
           </div>
           {team && (
             <Logo
@@ -3714,6 +3778,7 @@ export const BaseballPlayerInfoModalBody: FC<
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture
               playerID={player.id}
+              player={player}
               league={league as League}
               team={team}
             />

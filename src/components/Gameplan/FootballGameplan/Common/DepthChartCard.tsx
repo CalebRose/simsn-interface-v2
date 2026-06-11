@@ -141,7 +141,7 @@ export const DepthChartCard: React.FC<DepthChartCardProps> = ({
           </div>
           {league === SimCFB && (
             <div
-              className="absolute top-4 right-0 px-1 py-0.5 rounded-bl-lg rounded-tl-lg z-10"
+              className="absolute top-5 right-0 px-1 py-0.5 rounded-bl-lg rounded-tl-lg z-10"
               style={{ backgroundColor: "rgba(0,0,0,0.8)" }}
             >
               <Text variant={getTextSize(size)} classes={`font-semibold`}>
@@ -164,6 +164,7 @@ export const DepthChartCard: React.FC<DepthChartCardProps> = ({
               className={`bg-white mx-auto mt-2 rounded-full overflow-hidden ${depthChartManager ? "max-w-[2.5em] sm:max-w-[3em]" : `${pictureSize}`}`}
             >
               <PlayerPicture
+                player={player}
                 playerID={player?.PlayerID || player?.ID}
                 team={team}
                 league={league}

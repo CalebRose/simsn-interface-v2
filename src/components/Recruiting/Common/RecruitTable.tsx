@@ -418,6 +418,7 @@ const CFBRow: React.FC<CFBRowProps> = ({
   }, [item]);
 
   const isCrootGoodFit = useMemo(() => {
+    if (!teamProfile) return false;
     return isGoodFit(
       teamProfile.OffensiveScheme,
       teamProfile.DefensiveScheme,
@@ -427,6 +428,7 @@ const CFBRow: React.FC<CFBRowProps> = ({
   }, [teamProfile]);
 
   const isCrootBadFit = useMemo(() => {
+    if (!teamProfile) return false;
     return isBadFit(
       teamProfile.OffensiveScheme,
       teamProfile.DefensiveScheme,
@@ -446,6 +448,7 @@ const CFBRow: React.FC<CFBRowProps> = ({
   }, [item, isCrootGoodFit, isCrootBadFit]);
 
   const isCloseToHome = useMemo(() => {
+    if (!teamProfile) return false;
     return ValidateCloseToHome(item, teamProfile.TeamAbbreviation);
   }, [item, teamProfile]);
 

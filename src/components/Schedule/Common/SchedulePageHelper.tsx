@@ -101,6 +101,7 @@ export const getScheduleCFBData = (
   allCFBStandings: CFBStandings[],
   allCollegeGames: CollegeGame[],
   allCollegeTeams: CollegeTeam[],
+  isSpringGames: boolean,
 ) => {
   const seasonYear = Number(selectedSeason);
   const seasonID = seasonYear - 2020; // backend SeasonID mapping
@@ -132,7 +133,9 @@ export const getScheduleCFBData = (
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = seasonGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.IsSpringGame === isSpringGames,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability
@@ -157,6 +160,9 @@ export const getScheduleCFBData = (
     }));
 
   const groupedWeeklyGames = seasonGames.reduce((acc: any, game) => {
+    if (game.IsSpringGame !== isSpringGames) {
+      return acc;
+    }
     if (!acc[game.Week]) {
       acc[game.Week] = [];
     }
@@ -190,6 +196,7 @@ export const getScheduleNFLData = (
   allNFLStandings: NFLStandings[],
   allNFLGames: NFLGame[],
   allNFLTeams: NFLTeam[],
+  isPreseason: boolean,
 ) => {
   const seasonYear = Number(selectedSeason);
   const seasonID = seasonYear - 2020; // backend SeasonID mapping
@@ -219,7 +226,9 @@ export const getScheduleNFLData = (
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = seasonGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.IsPreseasonGame === isPreseason,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability
@@ -244,6 +253,9 @@ export const getScheduleNFLData = (
     }));
 
   const groupedWeeklyGames = seasonGames.reduce((acc: any, game) => {
+    if (game.IsPreseasonGame !== isPreseason) {
+      return acc;
+    }
     if (!acc[game.Week]) {
       acc[game.Week] = [];
     }

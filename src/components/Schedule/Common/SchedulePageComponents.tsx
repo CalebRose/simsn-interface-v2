@@ -876,6 +876,7 @@ export const LeagueStats = ({
                 style={{ borderColor: borderColor, backgroundColor: "white" }}
               >
                 <PlayerPicture
+                  player={player}
                   playerID={player.id}
                   league={league}
                   team={player.team}
