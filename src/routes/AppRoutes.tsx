@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"; // Added Route here
 import { AuthRoutes } from "./AuthRoutes";
 import { UnAuthRoutes } from "./UnAuthRoutes";
 import { SideMenu } from "../components/SideMenu/SideMenu";

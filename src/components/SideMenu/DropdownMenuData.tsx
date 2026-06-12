@@ -264,6 +264,13 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
       {
+        label: "Live Rink",
+        isRoute: true,
+        route: routes.LIVERINK,
+        league: SimCHL,
+        toggle: () => toggleMenu(),
+      },
+      {
         label: "Schedule",
         isRoute: true,
         route: routes.CHL_SCHEDULE,
@@ -310,6 +317,13 @@ export const useSideMenu = () => {
         route: routes.PHL_FREE_AGENCY,
         league: SimPHL,
         click: () => navigate(routes.PHL_FREE_AGENCY),
+        toggle: () => toggleMenu(),
+      },
+      {
+        label: "Live Rink",
+        isRoute: true,
+        route: routes.LIVERINK,
+        league: SimPHL,
         toggle: () => toggleMenu(),
       },
       {

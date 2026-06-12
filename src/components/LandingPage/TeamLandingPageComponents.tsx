@@ -153,14 +153,15 @@ export const GamesBar = ({
 
               let revealResult = false;
               if (league === SimCHL || league === SimPHL) {
-                revealResult = RevealHCKResults(game, ts, false);
+                revealResult = RevealHCKResults(game, ts, false, league);
               } else if (league === SimCBB || league === SimNBA) {
                 revealResult = RevealBBAResults(game, ts, false);
               } else {
                 revealResult = RevealResults(game, ts, league, false);
               }
 
-              const isComplete = revealResult || game.GameComplete;
+              const isComplete = revealResult;
+              // console.log({ game, revealResult, isComplete });
               const userWon = isComplete
                 ? isHomeGame
                   ? game.HomeTeamWin
@@ -392,7 +393,7 @@ export const TeamMatchUp = ({
     } else if (league === SimCBB || league === SimNBA) {
       revealResult = RevealBBAResults(matchUp[0], ts, false);
     } else if (league === SimCHL || league === SimPHL) {
-      revealResult = RevealHCKResults(matchUp[0], ts, false);
+      revealResult = RevealHCKResults(matchUp[0], ts, false, league);
     }
   }
   let resultColor = "";
@@ -589,7 +590,7 @@ export const TeamMatchUp = ({
                 : "Non-Conference Game"}
             </Text>
             {(league === SimCFB || league === SimNFL) && (
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2 py-2">
                 <Button
                   variant="primary"
                   size="sm"
@@ -600,7 +601,7 @@ export const TeamMatchUp = ({
               </div>
             )}
             {(league === SimCHL || league === SimPHL) && (
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2 py-2">
                 <Button
                   variant="primary"
                   size="sm"
@@ -1317,14 +1318,16 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.CHL_STATS)}>
                 Stats
               </Button>
+              {ts && !ts.IsOffSeason && (
+                <Button size="xs" onClick={() => navigate(routes.LIVERINK)}>
+                  Live Rink
+                </Button>
+              )}
               {ts && ts.IsOffSeason && (
                 <Button size="xs" onClick={() => navigate(routes.CHL_TRANSFER)}>
                   Portal
                 </Button>
               )}
-              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
-                News
-              </Button>
             </>
           )}
           {league === SimPHL && (
@@ -1349,6 +1352,11 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.PHL_STATS)}>
                 Stats
               </Button>
+              {ts && !ts.IsOffSeason && (
+                <Button size="xs" onClick={() => navigate(routes.LIVERINK)}>
+                  Live Rink
+                </Button>
+              )}
               {ts && ts.IsDraftTime && (
                 <Button
                   size="xs"
@@ -1357,10 +1365,6 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
                   Draft
                 </Button>
               )}
-
-              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
-                News
-              </Button>
             </>
           )}
         </ButtonGrid>
