@@ -8,7 +8,7 @@ import React, {
 import { useLeagueStore } from "../../../context/LeagueContext";
 import { useAuthStore } from "../../../context/AuthContext";
 import { SimCHL, SimPHL, League } from "../../../_constants/constants";
-import { PillButton, ButtonGroup } from "../../../_design/Buttons";
+import { PillButton, ButtonGroup, ButtonGrid } from "../../../_design/Buttons";
 import { hckUrl } from "../../../_constants/urls";
 import { Timestamp } from "../../../models/hockeyModels";
 import {
@@ -18,6 +18,7 @@ import {
 } from "../../../_hooks/useLiveRinkState";
 import { Logo } from "../../../_design/Logo";
 import { getLogo } from "../../../_utility/getLogo";
+import { useResponsive } from "../../../_hooks/useMobile";
 
 // --- HELPER FUNCTIONS ---
 const getPeriodName = (p: number, isSO: boolean = false) => {
@@ -278,6 +279,7 @@ const LiveRink = () => {
   const currentPlaysRef = useRef<Record<number, any[]>>({});
   const gameCooldowns = useRef<Record<number, number>>({});
   const MAX_CONCURRENT_GAMES = 8;
+  const { isMobile } = useResponsive();
 
   // ── Firebase live stream ─────────────────────────────────────────────────
   const {
@@ -666,14 +668,14 @@ const LiveRink = () => {
 
         <div className="flex-1 px-4 lg:px-8 pb-6 flex flex-col min-h-0 mt-8">
           <div className="flex justify-between items-center mb-6 shrink-0">
-            <h1 className="text-[2.5vh] font-black text-white uppercase tracking-[0.4em] flex items-center gap-3">
+            <h1 className="text-[1vh] sm:text-[2.5vh] font-black text-white uppercase tracking-[0.4em] flex items-center gap-3">
               Live Rink Hub{" "}
-              <span className="text-(--text-muted) text-[1.5vh] tracking-widest ml-4">
+              <span className="text-(--text-muted) text-[1vh] sm:text-[1.5vh] tracking-widest ml-4">
                 {currentSeason} - Week {currentWeek}
               </span>
             </h1>
             <div className="flex gap-4">
-              <ButtonGroup>
+              <ButtonGrid>
                 <PillButton
                   isSelected={selectedLeague === SimCHL}
                   onClick={() => setSelectedLeague(SimCHL)}
@@ -686,22 +688,24 @@ const LiveRink = () => {
                 >
                   PHL
                 </PillButton>
-              </ButtonGroup>
+              </ButtonGrid>
             </div>
           </div>
           <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-4 h-full min-h-0">
-            <div className="lg:col-span-2 h-full min-h-0 border-r border-white/10 pr-2">
-              <GameMiniList
-                title="Upcoming"
-                games={upcomingGames}
-                color="border-blue-500"
-                onSelect={setSelectedGameId}
-                userTeamID={userTeamID}
-                broadcastState={effectiveBroadcastState}
-              />
-            </div>
+            {!isMobile && (
+              <div className="lg:col-span-2 h-full min-h-0 border-r border-white/10 pr-2">
+                <GameMiniList
+                  title="Upcoming"
+                  games={upcomingGames}
+                  color="border-blue-500"
+                  onSelect={setSelectedGameId}
+                  userTeamID={userTeamID}
+                  broadcastState={effectiveBroadcastState}
+                />
+              </div>
+            )}
             <div className="lg:col-span-8 flex flex-col h-full min-h-0 px-2 overflow-y-auto">
-              <div className="grid grid-cols-2 gap-6 pb-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-10">
                 {liveGames.map((game) => (
                   <div
                     key={game.GameID}
@@ -771,14 +775,16 @@ const LiveRink = () => {
     <div className="h-screen w-full bg-(--bg-primary) pt-[calc(8vh+10px)] flex flex-col overflow-hidden">
       <div className="flex-1 px-8 pb-4 flex flex-col min-h-0">
         <div className="grid grid-cols-12 gap-4 h-full">
-          <div className="col-span-2 h-full">
-            <TeamStatsSidebar
-              title="Home Stats"
-              teamName={activeGame.HomeTeam}
-              stats={statsSource?.HomeStats}
-            />
-          </div>
-          <div className="col-span-8 flex flex-col h-full">
+          {!isMobile && (
+            <div className="col-span-2 h-full">
+              <TeamStatsSidebar
+                title="Home Stats"
+                teamName={activeGame.HomeTeam}
+                stats={statsSource?.HomeStats}
+              />
+            </div>
+          )}
+          <div className="col-span-12 sm:col-span-8 flex flex-col h-full">
             <button
               onClick={() => setSelectedGameId(null)}
               className="text-(--text-muted) hover:text-white uppercase font-bold mb-2 text-left"
@@ -799,24 +805,26 @@ const LiveRink = () => {
                     label={`${activeGame.HomeTeamRank > 0 ? `#${activeGame.HomeTeamRank} ` : ""}${activeGame.HomeTeam}`}
                   />
                 </div>
-                <p className="text-[5.5vh] font-black text-white">
+                <p className="text-[3vh] sm:text-[5.5vh] font-black text-white">
                   {activeGame.HomeTeamScore}
                 </p>
               </div>
-              <div className="text-center border-x px-8 border-white/10 w-1/3 flex flex-col">
+              <div className="text-center border-x px-2 sm:px-8 border-white/10 w-1/3 flex flex-col">
                 <span className="text-[1vh] uppercase block text-white">
-                  {activeGame.Arena}, {activeGame.City}, {activeGame.State},{" "}
-                  {activeGame.Country}
+                  {activeGame.Arena}
+                  {!isMobile
+                    ? `, ${activeGame.City}, ${activeGame.State}, ${activeGame.Country}`
+                    : ""}
                 </span>
-                <span className="text-[1.2vh] font-bold uppercase block text-white">
+                <span className="text-[1vh] sm:text-[1.2vh] font-bold uppercase block text-white">
                   {getPeriodName(activeGame.Period)}
                 </span>
-                <span className="text-[4.5vh] font-mono font-bold text-white leading-none">
+                <span className="text-[2vh] sm:text-[4.5vh] font-mono font-bold text-white leading-none">
                   {formatClock(activeGame.TimeOnClock)}
                 </span>
               </div>
               <div className="text-center w-1/3 flex justify-around items-center">
-                <p className="text-[5.5vh] font-black text-white">
+                <p className="text-[3vh] sm:text-[5.5vh] font-black text-white">
                   {activeGame.AwayTeamScore}
                 </p>
                 <div>
@@ -853,13 +861,15 @@ const LiveRink = () => {
               ))}
             </div>
           </div>
-          <div className="col-span-2 h-full">
-            <TeamStatsSidebar
-              title="Away Stats"
-              teamName={activeGame.AwayTeam}
-              stats={statsSource?.AwayStats}
-            />
-          </div>
+          {!isMobile && (
+            <div className="col-span-2 h-full">
+              <TeamStatsSidebar
+                title="Away Stats"
+                teamName={activeGame.AwayTeam}
+                stats={statsSource?.AwayStats}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
