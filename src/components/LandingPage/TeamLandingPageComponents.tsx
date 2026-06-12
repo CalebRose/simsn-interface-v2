@@ -590,7 +590,7 @@ export const TeamMatchUp = ({
                 : "Non-Conference Game"}
             </Text>
             {(league === SimCFB || league === SimNFL) && (
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2 py-2">
                 <Button
                   variant="primary"
                   size="sm"
@@ -601,7 +601,7 @@ export const TeamMatchUp = ({
               </div>
             )}
             {(league === SimCHL || league === SimPHL) && (
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2 py-2">
                 <Button
                   variant="primary"
                   size="sm"
@@ -1318,14 +1318,16 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.CHL_STATS)}>
                 Stats
               </Button>
+              {ts && !ts.IsOffSeason && (
+                <Button size="xs" onClick={() => navigate(routes.LIVERINK)}>
+                  Live Rink
+                </Button>
+              )}
               {ts && ts.IsOffSeason && (
                 <Button size="xs" onClick={() => navigate(routes.CHL_TRANSFER)}>
                   Portal
                 </Button>
               )}
-              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
-                News
-              </Button>
             </>
           )}
           {league === SimPHL && (
@@ -1350,6 +1352,11 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.PHL_STATS)}>
                 Stats
               </Button>
+              {ts && !ts.IsOffSeason && (
+                <Button size="xs" onClick={() => navigate(routes.LIVERINK)}>
+                  Live Rink
+                </Button>
+              )}
               {ts && ts.IsDraftTime && (
                 <Button
                   size="xs"
@@ -1358,10 +1365,6 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
                   Draft
                 </Button>
               )}
-
-              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
-                News
-              </Button>
             </>
           )}
         </ButtonGrid>
