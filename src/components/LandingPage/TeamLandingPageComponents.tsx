@@ -153,14 +153,15 @@ export const GamesBar = ({
 
               let revealResult = false;
               if (league === SimCHL || league === SimPHL) {
-                revealResult = RevealHCKResults(game, ts, false);
+                revealResult = RevealHCKResults(game, ts, false, league);
               } else if (league === SimCBB || league === SimNBA) {
                 revealResult = RevealBBAResults(game, ts, false);
               } else {
                 revealResult = RevealResults(game, ts, league, false);
               }
 
-              const isComplete = revealResult || game.GameComplete;
+              const isComplete = revealResult;
+              // console.log({ game, revealResult, isComplete });
               const userWon = isComplete
                 ? isHomeGame
                   ? game.HomeTeamWin
@@ -392,7 +393,7 @@ export const TeamMatchUp = ({
     } else if (league === SimCBB || league === SimNBA) {
       revealResult = RevealBBAResults(matchUp[0], ts, false);
     } else if (league === SimCHL || league === SimPHL) {
-      revealResult = RevealHCKResults(matchUp[0], ts, false);
+      revealResult = RevealHCKResults(matchUp[0], ts, false, league);
     }
   }
   let resultColor = "";
