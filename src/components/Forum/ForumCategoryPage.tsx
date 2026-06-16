@@ -104,13 +104,15 @@ export const ForumCategoryPage: React.FC = () => {
               </Text>
             )}
           </div>
-          {permissions.canCreateThread && forum && !forum.isLocked && (
-            <div className="text-end">
-              <Button variant="primary" size="sm" onClick={handleNewThread}>
-                + New Thread
-              </Button>
-            </div>
-          )}
+          {forum &&
+            !forum.isLocked &&
+            (permissions.canCreateThread || forum.id.includes("welcome")) && (
+              <div className="text-end">
+                <Button variant="primary" size="sm" onClick={handleNewThread}>
+                  + New Thread
+                </Button>
+              </div>
+            )}
         </div>
 
         {forum?.isLocked && (
