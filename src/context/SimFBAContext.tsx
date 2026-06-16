@@ -920,9 +920,11 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const cfbPlayerMap = useMemo(() => {
     if (!cfbRosterMap || !cfbTeams) return {};
     const initialMap = MakeCFBPlayerMapFromRosterMap(cfbTeams, cfbRosterMap);
-    for (let i = 0; i < historicCollegePlayers.length; i++) {
-      const player = new CollegePlayer(historicCollegePlayers[i]);
-      initialMap[player.ID] = player;
+    if (historicCollegePlayers && historicCollegePlayers.length > 0) {
+      for (let i = 0; i < historicCollegePlayers.length; i++) {
+        const player = new CollegePlayer(historicCollegePlayers[i]);
+        initialMap[player.ID] = player;
+      }
     }
     return initialMap;
   }, [cfbTeams, cfbRosterMap, historicCollegePlayers]);

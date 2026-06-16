@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Forum } from "../../../models/forumModels";
 import { ForumBorder } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import routes from "../../../_constants/routes";
+import { useAuthStore } from "../../../context/AuthContext";
 
 interface ForumCardProps {
   forum: Forum;
@@ -20,11 +21,31 @@ export const ForumCard: React.FC<ForumCardProps> = ({
   forum,
   subforums = [],
 }) => {
+  const { currentUser } = useAuthStore();
   const navigate = useNavigate();
-
   const handleNavigate = () => {
+    if (!canNavigateToForum) return;
     navigate(`${routes.FORUMS}/${forum.slug}`);
   };
+
+  const canNavigateToForum = useMemo(() => {
+    if (!currentUser) return false;
+    if (
+      forum.name !== "welcome" &&
+      forum.name !== "admin" &&
+      currentUser.teamId === 0 &&
+      currentUser.NFLTeamID === 0 &&
+      currentUser.cbb_id === 0 &&
+      currentUser.NBATeamID === 0 &&
+      currentUser.CHLTeamID === 0 &&
+      currentUser.PHLTeamID === 0 &&
+      currentUser.CollegeBaseballOrgID === 0 &&
+      currentUser.MLBOrgID === 0
+    ) {
+      return false;
+    }
+    return true;
+  }, [currentUser]);
 
   return (
     <ForumBorder classes="p-4 cursor-pointer hover:opacity-90 transition-opacity flex flex-col h-full">

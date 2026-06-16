@@ -59,9 +59,10 @@ export function derivePermissions(role: ForumRole): ForumPermissions {
   const isAdmin = role === "admin";
   const isCommish = role === "commissioner" || isAdmin;
   const isMember = role === "member" || isCommish;
+  const isGuest = role === "guest" || isMember;
 
   return {
-    canRead: true,
+    canRead: isGuest,
     canCreateThread: isMember,
     canReply: isMember,
     canEditOwnPost: isMember,

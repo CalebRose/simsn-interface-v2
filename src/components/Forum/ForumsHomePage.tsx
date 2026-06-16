@@ -37,18 +37,6 @@ export const ForumsHomePage: React.FC = () => {
   // All users that have at least one team can view the forums.
   const canViewForums = useMemo(() => {
     if (!currentUser) return false;
-    if (
-      currentUser.teamId === 0 &&
-      currentUser.NFLTeamID === 0 &&
-      currentUser.cbb_id === 0 &&
-      currentUser.NBATeamID === 0 &&
-      currentUser.CHLTeamID === 0 &&
-      currentUser.PHLTeamID === 0 &&
-      currentUser.CollegeBaseballOrgID === 0 &&
-      currentUser.MLBOrgID === 0
-    ) {
-      return false;
-    }
     return true;
   }, [currentUser]);
 
@@ -65,7 +53,11 @@ export const ForumsHomePage: React.FC = () => {
           <Text variant="h4" classes="mb-4">
             Community Forums
           </Text>
-          <Text variant="secondary">This isn't ready for you yet.</Text>
+          <Text variant="secondary">
+            Please register for a team on the Available Teams page to access the
+            forums. To submit a full application, please navigate to our
+            Discord.
+          </Text>
         </div>
       </PageContainer>
     );

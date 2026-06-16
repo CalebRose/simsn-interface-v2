@@ -632,10 +632,12 @@ const LiveRink = () => {
     () => Object.values(liveGameStates),
     [liveGameStates],
   );
-  const resultsGames = useMemo(
-    () => allGames.filter((g) => g.GameComplete),
-    [allGames],
-  );
+  const resultsGames = useMemo(() => {
+    console.log({ allGames, effectiveGames });
+    return allGames.filter(
+      (g) => g.GameComplete && effectiveGames[g.GameID] === undefined,
+    );
+  }, [allGames, effectiveGames]);
 
   if (selectedGameId === null) {
     return (
