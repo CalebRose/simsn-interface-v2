@@ -21,6 +21,7 @@ import { SelectOption } from "../../../_hooks/useSelectStyles";
 export type TransactionAction =
   | "promote"
   | "demote"
+  | "redshirt"
   | "ir_place"
   | "ir_activate"
   | "release"
@@ -92,6 +93,8 @@ export const BaseballTransactionModal: FC<BaseballTransactionModalProps> = (prop
     case "promote":
     case "demote":
       return <MoveToLevelModal {...props} />;
+    case "redshirt":
+      return <RedshirtModal {...props} />;
     case "ir_place":
     case "ir_activate":
     case "release":
@@ -114,6 +117,7 @@ const MoveToLevelModal: FC<
 > = ({ isOpen, onClose, player, orgId, seasonContext, onSuccess }) => {
   const [targetLevel, setTargetLevel] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const name = `${player.firstname} ${player.lastname}`;
   const currentIndex = LEVEL_ORDER.indexOf(player.league_level);
@@ -127,6 +131,7 @@ const MoveToLevelModal: FC<
   const handleConfirm = useCallback(async () => {
     if (!targetLevel || !player.contract) return;
     setIsSubmitting(true);
+    setError(null);
     try {
       const targetIndex = LEVEL_ORDER.indexOf(targetLevel);
       const isPromotion = targetIndex < currentIndex;
@@ -152,10 +157,11 @@ const MoveToLevelModal: FC<
       onSuccess(player.id, patch);
       onClose();
     } catch (err: any) {
-      enqueueSnackbar(err?.message || "Failed to move player", {
-        variant: "error",
-        autoHideDuration: 4000,
-      });
+      // Surface the backend validation message (e.g. "Invalid roster level …")
+      // inline and keep the modal open so the user can pick a valid level.
+      const message = err?.message || "Failed to move player";
+      setError(message);
+      enqueueSnackbar(message, { variant: "error", autoHideDuration: 4000 });
     }
     setIsSubmitting(false);
   }, [targetLevel, player, currentIndex, seasonContext, onSuccess, onClose, name]);
@@ -187,9 +193,17 @@ const MoveToLevelModal: FC<
       <Text classes="mb-3">Select target level:</Text>
       <SelectDropdown
         options={levelOptions}
-        onChange={(opt) => setTargetLevel(opt ? (opt as SelectOption).value : null)}
+        onChange={(opt) => {
+          setTargetLevel(opt ? (opt as SelectOption).value : null);
+          setError(null);
+        }}
         placeholder="Select level..."
       />
+      {error && (
+        <Text variant="small" classes="mt-3 text-red-500">
+          {error}
+        </Text>
+      )}
     </Modal>
   );
 };
@@ -287,6 +301,79 @@ const ConfirmationModal: FC<
       }
     >
       <Text classes={`mb-3 ${type === "release" ? "text-red-500" : ""}`}>{warning}</Text>
+    </Modal>
+  );
+};
+
+// ═══════════════════════════════════════════════
+// Redshirt (college only) — adds a year of eligibility/contract
+// ═══════════════════════════════════════════════
+
+const RedshirtModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
+  isOpen,
+  onClose,
+  player,
+  seasonContext,
+  onSuccess,
+}) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const name = `${player.firstname} ${player.lastname}`;
+
+  const handleConfirm = useCallback(async () => {
+    if (!player.contract) return;
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const res = await BaseballService.RedshirtPlayer({
+        contract_id: player.contract.id,
+        league_year_id: seasonContext.current_league_year_id,
+      });
+      enqueueSnackbar(
+        `${name} redshirted (${res.years}-year contract)`,
+        { variant: "success", autoHideDuration: 3000 },
+      );
+      onSuccess(player.id, res.player);
+      onClose();
+    } catch (err: any) {
+      // Surface the backend validation message inline (e.g. "Player is already
+      // redshirted", "Cannot redshirt a finished contract").
+      const message = err?.message || "Failed to redshirt player";
+      setError(message);
+      enqueueSnackbar(message, { variant: "error", autoHideDuration: 4000 });
+    }
+    setIsSubmitting(false);
+  }, [player, seasonContext, onSuccess, onClose, name]);
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Redshirt ${name}?`}
+      actions={
+        <ButtonGroup>
+          <Button size="sm" variant="danger" onClick={onClose}>
+            <Text variant="small">Cancel</Text>
+          </Button>
+          <Button
+            size="sm"
+            variant="success"
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+          >
+            <Text variant="small">{isSubmitting ? "Processing..." : "Confirm"}</Text>
+          </Button>
+        </ButtonGroup>
+      }
+    >
+      <Text classes="mb-3">
+        Redshirt this player? Adds a year to their eligibility/contract.
+      </Text>
+      {error && (
+        <Text variant="small" classes="mt-1 text-red-500">
+          {error}
+        </Text>
+      )}
     </Modal>
   );
 };

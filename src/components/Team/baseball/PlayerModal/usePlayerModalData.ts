@@ -8,7 +8,10 @@ import type {
 } from "../../../../models/baseball/baseballScoutingModels";
 import type { FAPlayerDetailResponse } from "../../../../models/baseball/baseballFreeAgencyModels";
 import type { IFAAuctionDetail } from "../../../../models/baseball/baseballIFAModels";
-import type { PlayerInjuryHistoryEvent } from "../../../../models/baseball/baseballStatsModels";
+import type {
+  PlayerInjuryHistoryEvent,
+  PlayerAwardsResponse,
+} from "../../../../models/baseball/baseballStatsModels";
 import { useSnackbar } from "notistack";
 
 export type PlayerModalContext = "scouting" | "freeAgency" | "ifa";
@@ -30,9 +33,11 @@ export interface PlayerModalData {
   faDetail: FAPlayerDetailResponse | null;
   ifaDetail: IFAAuctionDetail | null;
   injuryHistory: PlayerInjuryHistoryEvent[];
+  awards: PlayerAwardsResponse | null;
   isLoading: boolean;
   isUnlocking: boolean;
   injuryLoading: boolean;
+  awardsLoading: boolean;
   scoutingAction: string | null;
   selectedTab: string;
   setSelectedTab: Dispatch<SetStateAction<string>>;
@@ -68,6 +73,10 @@ export function usePlayerModalData({
     PlayerInjuryHistoryEvent[]
   >([]);
   const [injuryLoading, setInjuryLoading] = useState(false);
+
+  // Awards (lazy-loaded)
+  const [awards, setAwards] = useState<PlayerAwardsResponse | null>(null);
+  const [awardsLoading, setAwardsLoading] = useState(false);
 
   // Fetch player data on open
   useEffect(() => {
@@ -151,6 +160,7 @@ export function usePlayerModalData({
       setFaDetail(null);
       setIfaDetail(null);
       setInjuryHistory([]);
+      setAwards(null);
     }
   }, [isOpen]);
 
@@ -168,6 +178,26 @@ export function usePlayerModalData({
       })
       .finally(() => {
         if (!cancelled) setInjuryLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedTab, playerId]);
+
+  // Lazy-load awards
+  useEffect(() => {
+    if (selectedTab !== "Awards" || !playerId) return;
+    let cancelled = false;
+    setAwardsLoading(true);
+    BaseballService.GetPlayerAwards(playerId)
+      .then((data) => {
+        if (!cancelled) setAwards(data);
+      })
+      .catch(() => {
+        if (!cancelled) setAwards(null);
+      })
+      .finally(() => {
+        if (!cancelled) setAwardsLoading(false);
       });
     return () => {
       cancelled = true;
@@ -254,9 +284,11 @@ export function usePlayerModalData({
     faDetail,
     ifaDetail,
     injuryHistory,
+    awards,
     isLoading,
     isUnlocking,
     injuryLoading,
+    awardsLoading,
     scoutingAction,
     selectedTab,
     setSelectedTab,

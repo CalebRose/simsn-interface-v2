@@ -26,6 +26,7 @@ export interface ColumnGroup { groupLabel: string; columns: ColumnDef[] }
 export const INFO_COLS: ColumnDef[] = [
   { label: "Name", sortKey: "name" },
   { label: "Pos", sortKey: "pos" },
+  { label: "B/T", sortKey: "" },
   { label: "OVR", sortKey: "ovr" },
   { label: "Level", sortKey: "level" },
   { label: "Team", sortKey: "" },
@@ -77,7 +78,7 @@ export const ALL_ATTR_GROUPS_COLLEGE_NO_ACTIONS: ColumnGroup[] = ALL_ATTR_GROUPS
 
 // Used by trade page for All view potentials
 export const ALL_POT_GROUPS: ColumnGroup[] = [
-  { groupLabel: "", columns: [...INFO_COLS, { label: "Type", sortKey: "ptype" }, { label: "B/T", sortKey: "" }] },
+  { groupLabel: "", columns: [...INFO_COLS, { label: "Type", sortKey: "ptype" }] },
   { groupLabel: "Hitting", columns: [
     { label: "Contact", sortKey: "pot_contact" }, { label: "Power", sortKey: "pot_power" },
     { label: "Eye", sortKey: "pot_eye" }, { label: "Disc", sortKey: "pot_disc" },
@@ -136,7 +137,7 @@ export const POS_POT_GROUPS: ColumnGroup[] = [
 ];
 
 export const PITCH_ATTR_GROUPS: ColumnGroup[] = [
-  { groupLabel: "", columns: [...INFO_COLS, { label: "Throw", sortKey: "" }] },
+  { groupLabel: "", columns: INFO_COLS },
   { groupLabel: "Pitching", columns: [
     { label: "Endurance", sortKey: "endurance" }, { label: "Control", sortKey: "control" },
     { label: "Velocity", sortKey: "velocity" }, { label: "Sequence", sortKey: "sequence" },
@@ -153,7 +154,7 @@ export const PITCH_ATTR_GROUPS: ColumnGroup[] = [
 ];
 
 export const PITCH_POT_GROUPS: ColumnGroup[] = [
-  { groupLabel: "", columns: [...INFO_COLS, { label: "Throw", sortKey: "" }] },
+  { groupLabel: "", columns: INFO_COLS },
   { groupLabel: "Pitching", columns: [
     { label: "Endurance", sortKey: "pot_endurance" }, { label: "Control", sortKey: "pot_control" },
     { label: "Velocity", sortKey: "pot_velocity" }, { label: "Sequence", sortKey: "pot_sequence" },
@@ -577,6 +578,7 @@ export const InfoCells = ({ p, orgAbbrev, isCollege, ageOverride, onPositionOver
     <>
       <NameCell p={p} />
       <PositionCell p={p} onOverride={onPositionOverride} />
+      <td data-label="B/T" className={`${td} text-center`}>{p.bat_hand ?? "—"}/{p.pitch_hand ?? "—"}</td>
       <td data-label="OVR" className={`${td} bb-cell-ovr text-center font-semibold ${ovrResolved?.colorClass ?? ""}`}>
         {ovrResolved ? ovrResolved.text : "—"}
       </td>
@@ -652,7 +654,6 @@ export const AllPotCells = ({ p }: { p: Player }) => {
           {p.ptype === "Pitcher" ? "P" : "Pos"}
         </span>
       </td>
-      <td data-label="B/T" className={`${td} text-center`}>{p.bat_hand}/{p.pitch_hand}</td>
       <PotentialCell pot={p.potentials.contact_pot} isFuzzed={pf} label="Contact" />
       <PotentialCell pot={p.potentials.power_pot} isFuzzed={pf} label="Power" />
       <PotentialCell pot={p.potentials.eye_pot} isFuzzed={pf} label="Eye" />
@@ -726,7 +727,6 @@ export const PitchAttrCells = ({ p, isFuzzed }: { p: Player; isFuzzed?: boolean 
   const af = p.visibility_context ? !p.visibility_context.attributes_precise : isFuzzed;
   return (
     <>
-      <td data-label="Throw" className={`${td} text-center`}>{p.pitch_hand}</td>
       <StatCell value={p.ratings.pendurance_display} isFuzzed={af} label="Endurance" />
       <StatCell value={p.ratings.pgencontrol_display} isFuzzed={af} label="Control" />
       <StatCell value={p.ratings.pthrowpower_display} isFuzzed={af} label="Velocity" />
@@ -751,7 +751,6 @@ export const PitchPotCells = ({ p, isFuzzed, potFuzzed }: { p: Player; isFuzzed?
   const pf = p.visibility_context ? !p.visibility_context.potentials_precise : potFuzzed;
   return (
     <>
-      <td data-label="Throw" className={`${td} text-center`}>{p.pitch_hand}</td>
       <PotentialCell pot={p.potentials.pendurance_pot} isFuzzed={pf} label="Endurance" />
       <PotentialCell pot={p.potentials.pgencontrol_pot} isFuzzed={pf} label="Control" />
       <PotentialCell pot={p.potentials.pthrowpower_pot} isFuzzed={pf} label="Velocity" />

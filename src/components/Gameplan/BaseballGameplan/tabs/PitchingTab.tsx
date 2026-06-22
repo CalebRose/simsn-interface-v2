@@ -225,6 +225,7 @@ const RotationSection = ({
   const [rotation, setRotation] = useState<RotationConfig>({
     rotation_size: 5,
     current_slot: 0,
+    next_slot: null,
     last_game_id: null,
     slots: [],
   });
@@ -251,7 +252,7 @@ const RotationSection = ({
         }
       } catch {
         if (!cancelled) {
-          const defaultRot: RotationConfig = { rotation_size: 5, current_slot: 0, last_game_id: null, slots: [] };
+          const defaultRot: RotationConfig = { rotation_size: 5, current_slot: 0, next_slot: null, last_game_id: null, slots: [] };
           setRotation(defaultRot);
           baselineRef.current = JSON.stringify(defaultRot);
         }
@@ -386,9 +387,9 @@ const RotationSection = ({
               </div>
             </div>
           </Tooltip>
-          {rotation.current_slot != null && (
+          {rotation.next_slot != null && (
             <Text variant="small" classes="text-gray-500 dark:text-gray-400">
-              Next up: Slot {rotation.current_slot + 1}
+              Next up: Slot {rotation.next_slot}
             </Text>
           )}
         </div>
@@ -412,7 +413,7 @@ const RotationSection = ({
 
       <div className="space-y-2">
         {rotation.slots.map((slot, idx) => {
-          const isNext = idx === rotation.current_slot;
+          const isNext = slot.slot === rotation.next_slot;
           const assignedPlayer = slot.player_id ? playerMap[slot.player_id] : null;
           const currentValue = slot.player_id
             ? flatOptions.find((o) => o.value === String(slot.player_id))

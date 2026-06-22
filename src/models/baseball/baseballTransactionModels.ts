@@ -16,6 +16,12 @@ export interface DemoteRequest {
     executed_by?: string;
 }
 
+export interface RedshirtRequest {
+    contract_id: number;
+    league_year_id: number;
+    executed_by?: string;
+}
+
 export interface IRPlaceRequest {
     contract_id: number;
     league_year_id: number;
@@ -85,6 +91,15 @@ export interface DemoteResponse {
     player_id: number;
     from_level: string;
     to_level: string;
+    player?: TransactionPlayerPatch;
+}
+
+export interface RedshirtResponse {
+    transaction_id: number;
+    contract_id: number;
+    player_id: number;
+    is_redshirt: boolean;
+    years: number;
     player?: TransactionPlayerPatch;
 }
 

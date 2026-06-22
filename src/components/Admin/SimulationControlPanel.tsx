@@ -6,6 +6,7 @@ import { Modal } from "../../_design/Modal";
 import { BaseballService } from "../../_services/baseballService";
 import { useSnackbar } from "notistack";
 import { Timestamp } from "../../models/baseball/baseballModels";
+import { RunWeekResponse } from "../../models/baseball/baseballAdminModels";
 
 interface SimulationControlPanelProps {
   leagueYearId: number;
@@ -55,6 +56,9 @@ export const SimulationControlPanel: FC<SimulationControlPanelProps> = ({
     label: string;
     action: () => Promise<void>;
   } | null>(null);
+  const [runWeekResult, setRunWeekResult] = useState<RunWeekResponse | null>(
+    null,
+  );
 
   const loadTimestamp = useCallback(async () => {
     try {
@@ -92,6 +96,39 @@ export const SimulationControlPanel: FC<SimulationControlPanelProps> = ({
       setConfirmAction({ label, action: fn });
     },
     [],
+  );
+
+  // One-click: simulate the week, run weekly admin tasks, and advance. The
+  // endpoint returns HTTP 200 even on a partial failure (status: "error"), so
+  // we branch on the body rather than relying on a thrown error. Each step is
+  // idempotency-guarded server-side, so re-clicking after a failure is safe.
+  const runWeek = useCallback(
+    async (seasonWeek: number) => {
+      setIsBusy(true);
+      setRunWeekResult(null);
+      try {
+        const resp = await BaseballService.RunWeek({
+          league_year_id: leagueYearId,
+          season_week: seasonWeek,
+        });
+        setRunWeekResult(resp);
+        if (resp.status === "ok") {
+          enqueueSnackbar(`Week ${seasonWeek} run complete`, {
+            variant: "success",
+          });
+        } else {
+          enqueueSnackbar(
+            `Run Week failed at "${resp.failed_step}": ${resp.message ?? "unknown error"} — re-click to retry`,
+            { variant: "error", autoHideDuration: 6000 },
+          );
+        }
+      } catch (e: any) {
+        enqueueSnackbar(e?.message || "Run Week failed", { variant: "error" });
+      }
+      await loadTimestamp();
+      setIsBusy(false);
+    },
+    [leagueYearId, enqueueSnackbar, loadTimestamp],
   );
 
   if (isLoading || !ts) {
@@ -171,6 +208,46 @@ export const SimulationControlPanel: FC<SimulationControlPanelProps> = ({
               <Text variant="body-small" classes="font-semibold mb-2">
                 Week Actions
               </Text>
+
+              {/* One-click Run Week (simulate + weekly tasks + advance) */}
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <Button
+                  size="sm"
+                  variant="primary"
+                  disabled={isBusy || ts.RunGames}
+                  onClick={() => runWeek(ts.Week)}
+                >
+                  {isBusy ? "Running..." : `Run Week ${ts.Week}`}
+                </Button>
+                <Text variant="small" classes="text-gray-400">
+                  Simulates the week, runs weekly tasks, and advances. Safe to
+                  re-click after a failure.
+                </Text>
+              </div>
+              {runWeekResult && (
+                <div className="text-xs mb-2 flex flex-wrap gap-x-3 gap-y-0.5">
+                  {Object.entries(runWeekResult.steps).map(([name, step]) => (
+                    <span
+                      key={name}
+                      className={
+                        step.ran ? "text-green-500" : "text-gray-400"
+                      }
+                    >
+                      {step.ran ? "✓" : "•"} {name}
+                      {step.total_games != null
+                        ? ` (${step.total_games} games)`
+                        : ""}
+                    </span>
+                  ))}
+                  {runWeekResult.status === "error" && (
+                    <span className="text-red-500">
+                      ✕ {runWeekResult.failed_step}: {runWeekResult.message}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Manual / advanced controls */}
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
