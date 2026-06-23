@@ -2,6 +2,12 @@ import React, { useEffect, useRef, ReactNode } from "react";
 import { Button } from "./Buttons";
 import { Text } from "./Typography";
 
+// Stack of currently-open modal ids, in open order. Only the topmost modal
+// reacts to outside clicks, so an inner modal (e.g. a player card opened from a
+// box score) can be dismissed without also closing the modal beneath it.
+const modalStack: number[] = [];
+let modalSeq = 0;
+
 // 🔑 Define Props Interface for Modal
 export interface ModalProps {
   isOpen: boolean;
@@ -24,9 +30,26 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   // ✅ Strongly Typed Ref
   const modalRef = useRef<HTMLDivElement | null>(null);
+  // Stable per-instance id for the open-modal stack (lazy init, no render side effect)
+  const idRef = useRef(0);
+  if (idRef.current === 0) idRef.current = ++modalSeq;
+
+  // Register/unregister this modal in the open-modal stack while it's open.
+  useEffect(() => {
+    if (!isOpen) return;
+    const id = idRef.current;
+    modalStack.push(id);
+    return () => {
+      const i = modalStack.lastIndexOf(id);
+      if (i !== -1) modalStack.splice(i, 1);
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Only the topmost modal closes on an outside click; a modal stacked
+      // underneath must ignore clicks meant for the one above it.
+      if (modalStack[modalStack.length - 1] !== idRef.current) return;
       const target = event.target as HTMLElement;
       // If click was inside our modal, ignore
       if (modalRef.current?.contains(target)) return;

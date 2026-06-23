@@ -1450,6 +1450,16 @@ const BaseballQuickLinks = ({
           size="xs"
           onClick={() =>
             navigate(
+              isCollege ? routes.COLLEGE_BASEBALL_RECRUITING : routes.MLB_IFA,
+            )
+          }
+        >
+          {isCollege ? "Recruiting" : "IFA"}
+        </Button>
+        <Button
+          size="xs"
+          onClick={() =>
+            navigate(
               isCollege ? routes.COLLEGE_BASEBALL_STATS : routes.MLB_STATS,
             )
           }

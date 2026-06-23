@@ -16,6 +16,7 @@ import {
 import {
     PromoteRequest, PromoteResponse,
     DemoteRequest, DemoteResponse,
+    RedshirtRequest, RedshirtResponse,
     IRPlaceRequest, IRPlaceResponse,
     IRActivateRequest, IRActivateResponse,
     ReleaseRequest, ReleaseResponse,
@@ -60,6 +61,7 @@ import {
 } from "../models/baseball/baseballRecruitingModels";
 import {
     BoxScoreResponse, PlayByPlayResponse,
+    PbpV2Response, GetPlayByPlayV2Options,
     GameResultsParams, GameResultsResponse,
     BattingLeaderboardParams, BattingLeadersResponse,
     PitchingLeaderboardParams, PitchingLeadersResponse,
@@ -70,6 +72,7 @@ import {
     PlayerGamelogResponse,
     PlayerCareerResponse,
     PlayerSplitsResponse,
+    PlayerAwardsResponse,
     InjuryReportParams, InjuryReportResponse,
     InjuryHistoryParams, InjuryHistoryResponse,
     PlayerInjuryHistoryParams, PlayerInjuryHistoryResponse,
@@ -104,6 +107,7 @@ import {
 } from "../models/baseball/baseballDraftModels";
 import {
     SimulateWeekRequest, SimulateWeekResponse,
+    RunWeekRequest, RunWeekResponse,
     SimulateSubweekRequest, SimulateSubweekResponse,
     AdvanceWeekRequest, SimpleStatusResponse,
     RollbackToWeekRequest,
@@ -312,6 +316,9 @@ export const BaseballService = {
     DemotePlayer: async (dto: DemoteRequest): Promise<DemoteResponse> => {
         return await PostCall<DemoteRequest, DemoteResponse>(`${baseballUrl}transactions/demote`, dto);
     },
+    RedshirtPlayer: async (dto: RedshirtRequest): Promise<RedshirtResponse> => {
+        return await PostCall<RedshirtRequest, RedshirtResponse>(`${baseballUrl}transactions/redshirt`, dto);
+    },
     PlaceOnIR: async (dto: IRPlaceRequest): Promise<IRPlaceResponse> => {
         return await PostCall<IRPlaceRequest, IRPlaceResponse>(`${baseballUrl}transactions/ir/place`, dto);
     },
@@ -510,6 +517,20 @@ export const BaseballService = {
     GetPlayByPlay: async (gameId: number): Promise<PlayByPlayResponse> => {
         return await GetCall<PlayByPlayResponse>(`${baseballUrl}games/${gameId}/play-by-play`);
     },
+    /**
+     * Modernized v2 play-by-play (clean, narrative-ready shape).
+     * Defaults to the lean at-bat feed (no per-pitch events). Pass
+     * includeEvents to pull the pitch-by-pitch `events` stream.
+     */
+    GetPlayByPlayV2: async (gameId: number, opts?: GetPlayByPlayV2Options): Promise<PbpV2Response> => {
+        const qs = buildQueryString({
+            format: "v2",
+            include_events: opts?.includeEvents ? 1 : 0,
+            inning: opts?.inning,
+            half: opts?.half,
+        });
+        return await GetCall<PbpV2Response>(`${baseballUrl}games/${gameId}/play-by-play?${qs}`);
+    },
     GetGameResults: async (params: GameResultsParams): Promise<GameResultsResponse> => {
         const qs = new URLSearchParams();
         if (params.league_year_id != null) qs.set("league_year_id", String(params.league_year_id));
@@ -594,6 +615,11 @@ export const BaseballService = {
         const qs = new URLSearchParams();
         qs.set("league_year_id", String(leagueYearId));
         return await GetCall<PlayerSplitsResponse>(`${baseballUrl}stats/player/${playerId}/splits?${qs.toString()}`);
+    },
+    // --- Awards ---
+    // Career awards for a player (trophies + All-Star selections), newest season first.
+    GetPlayerAwards: async (playerId: number): Promise<PlayerAwardsResponse> => {
+        return await GetCall<PlayerAwardsResponse>(`${baseballUrl}awards/player/${playerId}`);
     },
     // --- Injuries ---
     GetInjuries: async (params: InjuryReportParams): Promise<InjuryReportResponse> => {
@@ -937,6 +963,9 @@ export const BaseballService = {
     },
     SimulateWeek: async (dto: SimulateWeekRequest): Promise<SimulateWeekResponse> => {
         return await PostCall<SimulateWeekRequest, SimulateWeekResponse>(`${baseballUrl}games/simulate-week`, dto);
+    },
+    RunWeek: async (dto: RunWeekRequest): Promise<RunWeekResponse> => {
+        return await PostCall<RunWeekRequest, RunWeekResponse>(`${baseballUrl}games/run-week`, dto);
     },
     SimulateSubweek: async (dto: SimulateSubweekRequest): Promise<SimulateSubweekResponse> => {
         return await PostCall<SimulateSubweekRequest, SimulateSubweekResponse>(`${baseballUrl}games/simulate-subweek`, dto);

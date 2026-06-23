@@ -158,9 +158,20 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
   const [selectedPlayerId, setSelectedPlayerId] = useState(0);
   const [faDetail, setFaDetail] = useState<FAPlayerDetailResponse | null>(null);
 
-  const openDetail = (playerId: number) => {
+  // Waiver players aren't in the FA auction pool, so open them in the scouting
+  // context (card renders the same, but we skip the FA-detail fetch that would
+  // 404 and toast a spurious error). Pool players keep the freeAgency context.
+  const [modalContext, setModalContext] = useState<"freeAgency" | "scouting">(
+    "freeAgency",
+  );
+
+  const openDetail = (
+    playerId: number,
+    context: "freeAgency" | "scouting" = "freeAgency",
+  ) => {
     setSelectedPlayerId(playerId);
     setFaDetail(null);
+    setModalContext(context);
     detailModal.handleOpenModal();
   };
 
@@ -527,7 +538,11 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
 
         {/* Waivers Tab */}
         {activeTab === "waivers" && (
-          <FAWaiverWire orgId={orgId} leagueYearId={leagueYearId} onPlayerClick={openDetail} />
+          <FAWaiverWire
+            orgId={orgId}
+            leagueYearId={leagueYearId}
+            onPlayerClick={(playerId) => openDetail(playerId, "scouting")}
+          />
         )}
 
         {/* Market Tab */}
@@ -549,7 +564,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
           league={SimMLB}
           faDetail={faDetail}
           onMakeOffer={openOfferFromDetail}
-          context="freeAgency"
+          context={modalContext}
         />
       )}
 

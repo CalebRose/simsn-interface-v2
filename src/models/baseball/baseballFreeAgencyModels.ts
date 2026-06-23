@@ -2,6 +2,13 @@
 // Free Agency & Auction Models
 // ═══════════════════════════════════════════════
 
+import type {
+    PlayerRatings,
+    PlayerPotentials,
+    VisibilityContext,
+} from "./baseballModels";
+import type { ScoutingPlayerBio } from "./baseballScoutingModels";
+
 // ── Auction Phase ─────────────────────────────────────────────
 
 export type AuctionPhase = "open" | "listening" | "finalize" | "completed" | "withdrawn";
@@ -382,6 +389,13 @@ export interface WaiverEntry {
     contract_current_year: number | null;
     contract_years_remaining: number | null;
     contract_salary: number | null;
+    // Standard display block (added API-side so a waiver entry can render the
+    // normal player card). The card UI still fetches by player_id, so these are
+    // optional and may be absent on older payloads.
+    bio?: ScoutingPlayerBio;
+    ratings?: PlayerRatings;
+    potentials?: PlayerPotentials;
+    visibility_context?: VisibilityContext;
 }
 
 export interface WaiverListResponse {

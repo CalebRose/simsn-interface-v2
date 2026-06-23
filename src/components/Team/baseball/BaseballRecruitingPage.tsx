@@ -66,6 +66,14 @@ interface ScoutedEntry {
   fuzzed: boolean;
 }
 
+// Precise scouted grades persist for the session, scoped by org + league year, so
+// they survive navigating away and back (CBL-02). Without this the component-state
+// cache is wiped on unmount and pool players you scouted revert to fuzzed grades
+// until you re-tap them. Keyed `${orgId}:${leagueYearId}:${playerId}`.
+const scoutedCacheStore = new Map<string, ScoutedEntry>();
+const scoutedCacheKey = (orgId: number, leagueYearId: number, playerId: number) =>
+  `${orgId}:${leagueYearId}:${playerId}`;
+
 // ═══════════════════════════════════════════════
 // Recruiting-specific column groups (use pool API sort keys directly)
 // ═══════════════════════════════════════════════
@@ -417,6 +425,20 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   );
   const cacheLoadedRef = useRef(false);
 
+  // Seed from the session-level store so previously-scouted precise grades show
+  // immediately on (re)mount instead of reverting to fuzzed (CBL-02).
+  useEffect(() => {
+    if (!orgId || !leagueYearId) return;
+    const prefix = `${orgId}:${leagueYearId}:`;
+    const seeded = new Map<number, ScoutedEntry>();
+    scoutedCacheStore.forEach((entry, key) => {
+      if (key.startsWith(prefix)) {
+        seeded.set(Number(key.slice(prefix.length)), entry);
+      }
+    });
+    if (seeded.size > 0) setScoutedCache(seeded);
+  }, [orgId, leagueYearId]);
+
   const cachePlayerScouting = useCallback(
     (playerId: number) => {
       if (!orgId || !leagueYearId) return;
@@ -433,9 +455,14 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
               ) ||
               data.visibility?.unlocked?.includes("college_potential_precise");
             const fuzzed = !preciseUnlocked;
+            const entry: ScoutedEntry = { potentials: data.potentials!, fuzzed };
+            scoutedCacheStore.set(
+              scoutedCacheKey(orgId, leagueYearId, playerId),
+              entry,
+            );
             setScoutedCache((prev) => {
               const next = new Map(prev);
-              next.set(playerId, { potentials: data.potentials!, fuzzed });
+              next.set(playerId, entry);
               return next;
             });
           }
@@ -581,6 +608,10 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   const [commitmentsPage, setCommitmentsPage] = useState(1);
   const [commitmentsTotalPages, setCommitmentsTotalPages] = useState(0);
   const [commitmentsLoading, setCommitmentsLoading] = useState(false);
+  // Client-side sort of the current commitments page. null = server order (Week Committed).
+  const [commitmentSort, setCommitmentSort] = useState<
+    { key: "name" | "stars" | "week" | "points"; dir: "asc" | "desc" } | null
+  >(null);
 
   const loadCommitments = useCallback(() => {
     if (!leagueYearId) return;
@@ -601,6 +632,41 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   useEffect(() => {
     if (activeTab === "commitments") loadCommitments();
   }, [activeTab, loadCommitments]);
+
+  // Sort the current commitments page client-side (backend has no sort param).
+  const sortedCommitments = useMemo(() => {
+    if (!commitmentSort) return commitments;
+    const { key, dir } = commitmentSort;
+    const mult = dir === "asc" ? 1 : -1;
+    const valueOf = (c: Commitment): number | string => {
+      switch (key) {
+        case "name": return c.player_name;
+        case "stars": return c.star_rating;
+        case "week": return c.week_committed;
+        case "points": return c.points_total;
+      }
+    };
+    return [...commitments].sort((a, b) => {
+      const av = valueOf(a);
+      const bv = valueOf(b);
+      if (typeof av === "string" || typeof bv === "string") {
+        return String(av).localeCompare(String(bv)) * mult;
+      }
+      return (av - bv) * mult;
+    });
+  }, [commitments, commitmentSort]);
+
+  const toggleCommitmentSort = useCallback(
+    (key: "name" | "stars" | "week" | "points") => {
+      setCommitmentSort((prev) =>
+        prev?.key === key
+          ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
+          // Stars/Week/Points are most useful high-to-low first; Name ascending.
+          : { key, dir: key === "name" ? "asc" : "desc" },
+      );
+    },
+    [],
+  );
 
   const orgAbbrev = collegeOrganization?.org_abbrev ?? "";
 
@@ -680,7 +746,8 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                   <img
                     key={tid}
                     src={getLogo(SimCollegeBaseball, tid, false)}
-                    alt=""
+                    alt={teamNameMap.get(tid) ?? ""}
+                    title={teamNameMap.get(tid) ?? ""}
                     className="w-4 h-4 object-contain"
                   />
                 ))}
@@ -1302,7 +1369,8 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                                             tid,
                                             false,
                                           )}
-                                          alt=""
+                                          alt={teamNameMap.get(tid) ?? ""}
+                                          title={teamNameMap.get(tid) ?? ""}
                                           className="w-5 h-5 object-contain"
                                         />
                                       ))}
@@ -1382,17 +1450,52 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-700 bg-gray-50 dark:bg-gray-700">
-                          <th className={th}>Player</th>
-                          <th className={th}>School</th>
-                          <th className={th}>Competitors</th>
-                          <th className={th}>Stars</th>
-                          <th className={th}>Type</th>
-                          <th className={th}>Week</th>
-                          <th className={th}>Points</th>
+                          {(() => {
+                            const sortArrow = (
+                              key: "name" | "stars" | "week" | "points",
+                            ) =>
+                              commitmentSort?.key === key
+                                ? commitmentSort.dir === "asc"
+                                  ? " ▲"
+                                  : " ▼"
+                                : "";
+                            const sortableTh = `${th} cursor-pointer select-none hover:bg-gray-100 dark:hover:bg-gray-600`;
+                            return (
+                              <>
+                                <th
+                                  className={sortableTh}
+                                  onClick={() => toggleCommitmentSort("name")}
+                                >
+                                  Player{sortArrow("name")}
+                                </th>
+                                <th className={th}>School</th>
+                                <th className={th}>Competitors</th>
+                                <th
+                                  className={sortableTh}
+                                  onClick={() => toggleCommitmentSort("stars")}
+                                >
+                                  Stars{sortArrow("stars")}
+                                </th>
+                                <th className={th}>Type</th>
+                                <th
+                                  className={sortableTh}
+                                  onClick={() => toggleCommitmentSort("week")}
+                                >
+                                  Week{sortArrow("week")}
+                                </th>
+                                <th
+                                  className={sortableTh}
+                                  onClick={() => toggleCommitmentSort("points")}
+                                >
+                                  Points{sortArrow("points")}
+                                </th>
+                              </>
+                            );
+                          })()}
                         </tr>
                       </thead>
                       <tbody>
-                        {commitments.map((c) => (
+                        {sortedCommitments.map((c) => (
                           <tr
                             key={c.player_id}
                             className="border-b border-gray-800 hover:bg-gray-700/30"
@@ -1409,6 +1512,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                                     false,
                                   )}
                                   alt={c.org_abbrev}
+                                  title={teamNameMap.get(c.org_id) ?? c.org_abbrev}
                                   className="w-5 h-5 object-contain"
                                 />
                                 {c.org_abbrev}
@@ -1433,7 +1537,8 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                                           tid,
                                           false,
                                         )}
-                                        alt=""
+                                        alt={teamNameMap.get(tid) ?? ""}
+                                        title={teamNameMap.get(tid) ?? ""}
                                         className="w-5 h-5 object-contain"
                                       />
                                     ))}

@@ -96,7 +96,10 @@ export interface RotationSlot {
 export interface RotationConfig {
   team_id?: number;
   rotation_size: number | null;
+  /** Slot that last pitched. */
   current_slot: number;
+  /** Slot that pitches next — already wrapped at rotation_size; null if no rotation configured. */
+  next_slot: number | null;
   last_game_id: number | null;
   slots: RotationSlot[];
 }

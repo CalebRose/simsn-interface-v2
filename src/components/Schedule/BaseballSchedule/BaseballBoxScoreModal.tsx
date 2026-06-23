@@ -8,7 +8,9 @@ import {
   BoxScoreBattingLine,
   BoxScorePitchingLine,
   BoxScoreSubstitution,
-  PlayByPlayEntry,
+  PbpV2AtBat,
+  PbpV2Event,
+  PbpV2Result,
 } from "../../../models/baseball/baseballStatsModels";
 import { getLogo } from "../../../_utility/getLogo";
 import {
@@ -50,19 +52,28 @@ export const BaseballBoxScoreModal = ({
   onPlayerClick,
 }: Props) => {
   const [boxScore, setBoxScore] = useState<BoxScoreResponse | null>(null);
-  const [pbpData, setPbpData] = useState<PlayByPlayEntry[] | null>(null);
+  const [atBats, setAtBats] = useState<PbpV2AtBat[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [pbpLoading, setPbpLoading] = useState(false);
+  // Pitch-by-pitch detail is fetched lazily (include_events=1) only when the
+  // user asks for it, then cached for the life of the modal.
+  const [eventsBySeq, setEventsBySeq] = useState<Map<number, PbpV2Event[]> | null>(
+    null,
+  );
+  const [eventsRequested, setEventsRequested] = useState(false);
+  const [eventsLoading, setEventsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("Box Score");
 
   const leagueType = league === SimMLB ? SimMLB : SimCollegeBaseball;
 
-  // Load boxscore (without PBP for speed)
+  // Load boxscore (without PBP for speed — PBP comes from the v2 endpoint)
   useEffect(() => {
     if (!isOpen || !gameId) {
       setBoxScore(null);
-      setPbpData(null);
+      setAtBats(null);
+      setEventsBySeq(null);
+      setEventsRequested(false);
       setError(null);
       setActiveTab("Box Score");
       return;
@@ -73,10 +84,6 @@ export const BaseballBoxScoreModal = ({
       try {
         const data = await BaseballService.GetBoxScore(gameId, false);
         setBoxScore(data);
-        // If PBP was included in boxscore response, use it
-        if (data.play_by_play && data.play_by_play.length > 0) {
-          setPbpData(data.play_by_play);
-        }
       } catch (e: any) {
         setError(e?.message ?? "Failed to load box score");
       }
@@ -85,22 +92,45 @@ export const BaseballBoxScoreModal = ({
     load();
   }, [isOpen, gameId]);
 
-  // Lazy-load PBP when tab selected
+  // Lazy-load the lean v2 at-bat feed when the tab is first selected
   useEffect(() => {
-    if (activeTab !== "Play-by-Play" || pbpData || !gameId || pbpLoading)
-      return;
+    if (activeTab !== "Play-by-Play" || atBats || !gameId || pbpLoading) return;
     const load = async () => {
       setPbpLoading(true);
       try {
-        const data = await BaseballService.GetPlayByPlay(gameId);
-        setPbpData(data.play_by_play ?? []);
+        const data = await BaseballService.GetPlayByPlayV2(gameId, {
+          includeEvents: false,
+        });
+        setAtBats(data.at_bats ?? []);
       } catch {
-        setPbpData([]);
+        setAtBats([]);
       }
       setPbpLoading(false);
     };
     load();
-  }, [activeTab, pbpData, gameId, pbpLoading]);
+  }, [activeTab, atBats, gameId, pbpLoading]);
+
+  // Lazy-load pitch-by-pitch events (one request, cached) when first requested
+  useEffect(() => {
+    if (!eventsRequested || eventsBySeq || !gameId || eventsLoading) return;
+    const load = async () => {
+      setEventsLoading(true);
+      try {
+        const data = await BaseballService.GetPlayByPlayV2(gameId, {
+          includeEvents: true,
+        });
+        const map = new Map<number, PbpV2Event[]>();
+        for (const ab of data.at_bats ?? []) {
+          map.set(ab.seq, ab.events ?? []);
+        }
+        setEventsBySeq(map);
+      } catch {
+        setEventsBySeq(new Map());
+      }
+      setEventsLoading(false);
+    };
+    load();
+  }, [eventsRequested, eventsBySeq, gameId, eventsLoading]);
 
   const title = boxScore
     ? `${boxScore.away_team.abbrev} @ ${boxScore.home_team.abbrev} — Week ${boxScore.season_week}`
@@ -154,10 +184,13 @@ export const BaseballBoxScoreModal = ({
           )}
           {activeTab === "Play-by-Play" && (
             <PlayByPlayTab
-              plays={pbpData}
+              atBats={atBats}
               isLoading={pbpLoading}
               homeAbbrev={boxScore.home_team.abbrev}
               awayAbbrev={boxScore.away_team.abbrev}
+              eventsBySeq={eventsBySeq}
+              eventsLoading={eventsLoading}
+              onRequestEvents={() => setEventsRequested(true)}
               onPlayerClick={onPlayerClick}
             />
           )}
@@ -904,104 +937,344 @@ const SubstitutionsList = ({
 };
 
 // ═══════════════════════════════════════════════
-// Play-by-Play Tab
+// Play-by-Play Tab (v2 narrative feed)
 // ═══════════════════════════════════════════════
 
-/** Get batter name from either format */
-const pbpName = (p: any): string => p?.name ?? p?.player_name ?? "Unknown";
+const ordinal = (n: number): string =>
+  n === 1 ? "1st" : n === 2 ? "2nd" : n === 3 ? "3rd" : `${n}th`;
 
-/** Group plays by inning + half */
-interface InningGroup {
-  label: string;
-  inning: number;
-  half: string;
-  plays: PlayByPlayEntry[];
+const HIT_RESULTS = new Set<string>([
+  "single",
+  "double",
+  "triple",
+  "home_run",
+  "inside_the_park_hr",
+]);
+
+/** Display-ready color/weight for a normalized at-bat result. */
+function resultColor(result: PbpV2Result, hasError: boolean): string {
+  switch (result) {
+    case "home_run":
+    case "inside_the_park_hr":
+      return "text-green-500 dark:text-green-400 font-bold";
+    case "double":
+    case "triple":
+      return "text-green-500 dark:text-green-400 font-semibold";
+    case "single":
+      return "text-green-600 dark:text-green-400";
+    case "walk":
+    case "hbp":
+      return "text-blue-500 dark:text-blue-400";
+    case "strikeout":
+      return "text-red-500 dark:text-red-400";
+    default:
+      return hasError ? "text-orange-500 dark:text-orange-400" : "text-gray-300";
+  }
 }
 
-function groupPlaysByInning(plays: PlayByPlayEntry[]): InningGroup[] {
-  const groups: InningGroup[] = [];
-  let current: InningGroup | null = null;
-  for (const play of plays) {
-    const half = play["Inning Half"];
-    const inn = play.Inning;
-    if (!current || current.inning !== inn || current.half !== half) {
-      const ordinal: string =
-        inn === 1 ? "1st" : inn === 2 ? "2nd" : inn === 3 ? "3rd" : `${inn}th`;
-      current = { label: `${half} ${ordinal}`, inning: inn, half, plays: [] };
-      groups.push(current);
+/** Turn a snake_case engine enum into display text ("caught_stealing" → "caught stealing"). */
+const humanize = (s: string): string => s.replace(/_/g, " ");
+
+type PbpFilter = "all" | "scoring" | "hits";
+
+interface AtBatGroup {
+  key: string;
+  label: string;
+  inning: number;
+  half: "top" | "bottom";
+  atBats: PbpV2AtBat[];
+}
+
+function groupAtBats(atBats: PbpV2AtBat[]): AtBatGroup[] {
+  const groups: AtBatGroup[] = [];
+  for (const ab of atBats) {
+    const key = `${ab.inning}|${ab.half}`;
+    if (!groups.length || groups[groups.length - 1].key !== key) {
+      const halfLabel = ab.half === "top" ? "Top" : "Bottom";
+      groups.push({
+        key,
+        label: `${halfLabel} ${ordinal(ab.inning)}`,
+        inning: ab.inning,
+        half: ab.half,
+        atBats: [],
+      });
     }
-    current.plays.push(play);
+    groups[groups.length - 1].atBats.push(ab);
   }
   return groups;
 }
 
-/** Color class for an outcome */
-function outcomeColor(play: PlayByPlayEntry): string {
-  if (play.Is_Homerun) return "text-green-500 dark:text-green-400 font-bold";
-  if (play.Is_Triple || play.Is_Double)
-    return "text-green-500 dark:text-green-400 font-semibold";
-  if (play.Is_Single || play.Is_Hit)
-    return "text-green-600 dark:text-green-400";
-  if (play.Is_Strikeout) return "text-red-500 dark:text-red-400";
-  if (play.Is_Walk || play.Is_HBP) return "text-blue-500 dark:text-blue-400";
-  if ((play.Error_Count ?? 0) > 0)
-    return "text-orange-500 dark:text-orange-400";
-  return "";
+/** Runs / hits / errors / left-on-base for a half-inning. */
+function halfInningSummary(atBats: PbpV2AtBat[]): {
+  runs: number;
+  hits: number;
+  errors: number;
+  lob: number;
+} {
+  let runs = 0;
+  let hits = 0;
+  let errors = 0;
+  for (const ab of atBats) {
+    runs += ab.runs_scored?.length ?? 0;
+    if (ab.result && HIT_RESULTS.has(ab.result)) hits += 1;
+    errors += ab.result_detail?.errors?.length ?? 0;
+  }
+  const last = atBats[atBats.length - 1]?.runners_after;
+  const lob = last
+    ? [last["1B"], last["2B"], last["3B"]].filter(Boolean).length
+    : 0;
+  return { runs, hits, errors, lob };
 }
 
-/** Baserunner dots */
-const BaseIndicator = ({ play }: { play: PlayByPlayEntry }) => {
-  const r1 = play["On First"] != null;
-  const r2 = play["On Second"] != null;
-  const r3 = play["On Third"] != null;
+/** Mini base-state indicator from runners_after (rendered only when occupied). */
+const BaseDiamond = ({ runners }: { runners: PbpV2AtBat["runners_after"] }) => {
+  const r1 = runners["1B"] != null;
+  const r2 = runners["2B"] != null;
+  const r3 = runners["3B"] != null;
   if (!r1 && !r2 && !r3) return null;
+  const dot = (on: boolean) =>
+    `w-1.5 h-1.5 rounded-full ${on ? "bg-yellow-400" : "bg-gray-600/50"}`;
   return (
     <span
-      className="inline-flex items-center gap-0.5 ml-1"
+      className="inline-flex items-center gap-0.5 ml-1.5 align-middle"
       title={[r3 ? "3B" : "", r2 ? "2B" : "", r1 ? "1B" : ""]
         .filter(Boolean)
         .join(", ")}
     >
-      <span
-        className={`w-1.5 h-1.5 rounded-full ${r3 ? "bg-yellow-400" : "bg-gray-600"}`}
-      />
-      <span
-        className={`w-1.5 h-1.5 rounded-full ${r2 ? "bg-yellow-400" : "bg-gray-600"}`}
-      />
-      <span
-        className={`w-1.5 h-1.5 rounded-full ${r1 ? "bg-yellow-400" : "bg-gray-600"}`}
-      />
+      <span className={dot(r3)} />
+      <span className={dot(r2)} />
+      <span className={dot(r1)} />
     </span>
   );
 };
 
+/** Outs-before pips (2 slots). */
+const OutsPips = ({ outs }: { outs: number }) => (
+  <span
+    className="inline-flex items-center gap-0.5 w-8 shrink-0 justify-center pt-0.5"
+    title={`${outs} out${outs !== 1 ? "s" : ""}`}
+  >
+    {[0, 1].map((i) => (
+      <span
+        key={i}
+        className={`w-1.5 h-1.5 rounded-full ${i < outs ? "bg-red-500/80" : "bg-gray-400/30"}`}
+      />
+    ))}
+  </span>
+);
+
+const ClickableName = ({
+  player,
+  fallback,
+  onPlayerClick,
+}: {
+  player?: { id: number; name?: string } | null;
+  fallback: string;
+  onPlayerClick?: (playerId: number) => void;
+}) => {
+  const name = player?.name ?? fallback;
+  if (player && onPlayerClick) {
+    return (
+      <span
+        className="cursor-pointer hover:underline hover:text-blue-500"
+        onClick={() => onPlayerClick(player.id)}
+      >
+        {name}
+      </span>
+    );
+  }
+  return <span>{name}</span>;
+};
+
+/** Coerce a possibly-object engine field to a display string. */
+const asLabel = (v: unknown): string => (typeof v === "string" ? v : "");
+
+/** A single pitch / steal / pickoff line inside an at-bat. */
+const EventLine = ({ ev }: { ev: PbpV2Event }) => {
+  const e = ev as Record<string, any>;
+  const isBaserunning = ev.kind === "steal" || ev.kind === "pickoff";
+
+  if (!isBaserunning) {
+    // Pitch detail may arrive flat (per the guide) or nested under `pitch`/`result`.
+    const detail =
+      [e.pitch, e.result].find((v) => v && typeof v === "object") ?? e;
+    const pitchType = asLabel(typeof e.pitch === "string" ? e.pitch : detail.pitch);
+    const result = asLabel(detail.result);
+    const swingRaw = asLabel(detail.swing ?? e.swing);
+    const swing =
+      swingRaw && swingRaw !== "None" ? ` (${swingRaw})` : "";
+    return (
+      <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+        <span className="font-mono w-7 shrink-0 text-center">
+          {e.balls ?? 0}-{e.strikes ?? 0}
+        </span>
+        <span className="truncate">
+          {[pitchType, result].filter(Boolean).join(" — ")}
+          {swing}
+        </span>
+      </div>
+    );
+  }
+  // steal / pickoff
+  const runnerName = ev.runner?.name ?? "Runner";
+  return (
+    <div className="flex items-center gap-2 text-[11px] text-cyan-600 dark:text-cyan-400">
+      <span className="font-mono w-7 shrink-0 text-center">↳</span>
+      <span className="truncate">
+        {runnerName}: {humanize(asLabel(ev.result))}
+      </span>
+    </div>
+  );
+};
+
+const AtBatRow = ({
+  ab,
+  awayAbbrev,
+  homeAbbrev,
+  expanded,
+  onToggle,
+  events,
+  eventsLoading,
+  onPlayerClick,
+}: {
+  ab: PbpV2AtBat;
+  awayAbbrev: string;
+  homeAbbrev: string;
+  expanded: boolean;
+  onToggle: () => void;
+  events?: PbpV2Event[];
+  eventsLoading: boolean;
+  onPlayerClick?: (playerId: number) => void;
+}) => {
+  const scored = (ab.runs_scored?.length ?? 0) > 0;
+  const hasError = (ab.result_detail?.errors?.length ?? 0) > 0;
+  const colorClass = resultColor(ab.result, hasError);
+
+  return (
+    <div className={scored ? "bg-green-900/10" : ""}>
+      <div
+        className="px-2 sm:px-3 py-1 text-xs flex items-start gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/40"
+        onClick={onToggle}
+      >
+        <OutsPips outs={ab.outs_before} />
+
+        <div className="flex-1 min-w-0">
+          <span className={colorClass}>{ab.description}</span>
+          <BaseDiamond runners={ab.runners_after} />
+          {ab.rbi > 0 && (
+            <span className="ml-1.5 text-[9px] font-bold px-1 py-px rounded-sm bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 align-middle">
+              {ab.rbi} RBI
+            </span>
+          )}
+          {scored && (
+            <span className="ml-1.5 text-green-500 dark:text-green-400 font-semibold">
+              ({awayAbbrev} {ab.score_after.away} - {homeAbbrev}{" "}
+              {ab.score_after.home})
+            </span>
+          )}
+          {ab.pitcher.name && (
+            <span className="ml-1.5 text-gray-400 dark:text-gray-500">
+              vs{" "}
+              <ClickableName
+                player={ab.pitcher}
+                fallback={ab.pitcher.name}
+                onPlayerClick={onPlayerClick}
+              />
+            </span>
+          )}
+        </div>
+
+        <span className="text-gray-400 text-[10px] shrink-0 pt-0.5">
+          {expanded ? "▼" : "▶"}
+        </span>
+      </div>
+
+      {expanded && (
+        <div className="pl-12 pr-3 pb-1.5 space-y-0.5">
+          {eventsLoading && !events && (
+            <Text variant="xs" classes="text-gray-400">
+              Loading pitches...
+            </Text>
+          )}
+          {events && events.length === 0 && (
+            <Text variant="xs" classes="text-gray-400">
+              No pitch detail available.
+            </Text>
+          )}
+          {events?.map((ev, i) => (
+            <EventLine key={i} ev={ev} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const FILTER_LABELS: Record<PbpFilter, string> = {
+  all: "All",
+  scoring: "Scoring",
+  hits: "Hits",
+};
+
 const PlayByPlayTab = ({
-  plays,
+  atBats,
   isLoading,
   homeAbbrev,
   awayAbbrev,
+  eventsBySeq,
+  eventsLoading,
+  onRequestEvents,
   onPlayerClick,
 }: {
-  plays: PlayByPlayEntry[] | null;
+  atBats: PbpV2AtBat[] | null;
   isLoading: boolean;
   homeAbbrev: string;
   awayAbbrev: string;
+  eventsBySeq: Map<number, PbpV2Event[]> | null;
+  eventsLoading: boolean;
+  onRequestEvents: () => void;
   onPlayerClick?: (playerId: number) => void;
 }) => {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [expandedSeqs, setExpandedSeqs] = useState<Set<number>>(new Set());
+  const [showAllPitches, setShowAllPitches] = useState(false);
+  const [filter, setFilter] = useState<PbpFilter>("all");
 
-  const groups = useMemo(
-    () => (plays ? groupPlaysByInning(plays) : []),
-    [plays],
-  );
+  const filteredAtBats = useMemo(() => {
+    if (!atBats) return [];
+    if (filter === "scoring")
+      return atBats.filter(
+        (ab) => ab.rbi > 0 || (ab.runs_scored?.length ?? 0) > 0,
+      );
+    if (filter === "hits")
+      return atBats.filter((ab) => ab.result && HIT_RESULTS.has(ab.result));
+    return atBats;
+  }, [atBats, filter]);
 
-  const toggleGroup = (label: string) => {
+  const groups = useMemo(() => groupAtBats(filteredAtBats), [filteredAtBats]);
+
+  const toggleGroup = (key: string) => {
     setCollapsed((prev) => {
       const next = new Set(prev);
-      if (next.has(label)) next.delete(label);
-      else next.add(label);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
+  };
+
+  const toggleAtBat = (seq: number) => {
+    onRequestEvents();
+    setExpandedSeqs((prev) => {
+      const next = new Set(prev);
+      if (next.has(seq)) next.delete(seq);
+      else next.add(seq);
+      return next;
+    });
+  };
+
+  const toggleAllPitches = () => {
+    if (!showAllPitches) onRequestEvents();
+    setShowAllPitches((v) => !v);
   };
 
   if (isLoading) {
@@ -1014,31 +1287,69 @@ const PlayByPlayTab = ({
     );
   }
 
-  if (!plays || plays.length === 0) {
+  if (!atBats || atBats.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <Text variant="body" classes="text-gray-400">
-          No play-by-play data available for this game.
+          Play-by-play not available for this game.
         </Text>
       </div>
     );
   }
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
+      {/* Controls */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-1">
+          {(Object.keys(FILTER_LABELS) as PbpFilter[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`text-[11px] font-semibold px-2 py-0.5 rounded-full transition-colors ${
+                filter === f
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+              }`}
+            >
+              {FILTER_LABELS[f]}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={toggleAllPitches}
+          className={`text-[11px] font-semibold px-2 py-0.5 rounded-full transition-colors ${
+            showAllPitches
+              ? "bg-cyan-500 text-white"
+              : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+          }`}
+        >
+          {showAllPitches ? "Hide pitches" : "Show pitches"}
+        </button>
+      </div>
+
+      {groups.length === 0 && (
+        <div className="flex items-center justify-center py-8">
+          <Text variant="small" classes="text-gray-400">
+            No plays match this filter.
+          </Text>
+        </div>
+      )}
+
       {groups.map((group) => {
-        const isCollapsed = collapsed.has(group.label);
-        const lastPlay = group.plays[group.plays.length - 1];
-        const score = `${awayAbbrev} ${lastPlay["Away Score"]} - ${homeAbbrev} ${lastPlay["Home Score"]}`;
+        const isCollapsed = collapsed.has(group.key);
+        const last = group.atBats[group.atBats.length - 1];
+        const score = `${awayAbbrev} ${last.score_after.away} - ${homeAbbrev} ${last.score_after.home}`;
+        const summary = halfInningSummary(group.atBats);
         return (
           <div
-            key={group.label}
+            key={group.key}
             className="rounded-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
           >
             {/* Inning header */}
             <button
-              onClick={() => toggleGroup(group.label)}
-              className="w-full flex items-center justify-between px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-650 cursor-pointer transition-colors"
+              onClick={() => toggleGroup(group.key)}
+              className="w-full flex items-center justify-between px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 cursor-pointer transition-colors"
             >
               <Text variant="small" classes="font-bold">
                 {group.label}
@@ -1056,49 +1367,38 @@ const PlayByPlayTab = ({
               </div>
             </button>
 
-            {/* Plays */}
+            {/* At-bats */}
             {!isCollapsed && (
-              <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
-                {group.plays.map((play) => {
-                  const colorClass = outcomeColor(play);
-                  const isAbOver = play.AB_Over === true;
-                  const scored = play.Runners_Scored > 0;
-                  return (
-                    <div
-                      key={play.ID}
-                      className={`px-3 py-1 text-xs flex items-start gap-2 ${
-                        scored ? "bg-green-900/10" : ""
-                      }`}
-                    >
-                      {/* Count + Outs */}
-                      <span className="font-mono text-gray-500 dark:text-gray-400 w-10 shrink-0 text-center">
-                        {play["Ball Count"]}-{play["Strike Count"]}
-                      </span>
-                      <span className="text-gray-500 dark:text-gray-400 w-12 shrink-0">
-                        {play["Out Count"]} out
-                        {play["Out Count"] !== 1 ? "s" : ""}
-                      </span>
-
-                      {/* Play content */}
-                      <div className="flex-1 min-w-0">
-                        <span className="text-gray-400">
-                          {pbpName(play.Batter)} vs {pbpName(play.Pitcher)}
-                        </span>
-                        <span className={`ml-1.5 ${colorClass}`}>
-                          — {play.Outcomes}
-                        </span>
-                        <BaseIndicator play={play} />
-                        {scored && (
-                          <span className="ml-1.5 text-green-500 dark:text-green-400 font-semibold">
-                            ({awayAbbrev} {play["Away Score"]} - {homeAbbrev}{" "}
-                            {play["Home Score"]})
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <>
+                <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                  {group.atBats.map((ab) => {
+                    const events = eventsBySeq?.get(ab.seq);
+                    const expanded = showAllPitches || expandedSeqs.has(ab.seq);
+                    return (
+                      <AtBatRow
+                        key={ab.seq}
+                        ab={ab}
+                        awayAbbrev={awayAbbrev}
+                        homeAbbrev={homeAbbrev}
+                        expanded={expanded}
+                        onToggle={() => toggleAtBat(ab.seq)}
+                        events={events}
+                        eventsLoading={eventsLoading}
+                        onPlayerClick={onPlayerClick}
+                      />
+                    );
+                  })}
+                </div>
+                {/* Half-inning footer */}
+                <div className="px-3 py-1 bg-gray-50 dark:bg-gray-800/40 border-t border-gray-100 dark:border-gray-700/50">
+                  <Text variant="xs" classes="text-gray-500 dark:text-gray-400">
+                    {summary.runs} run{summary.runs !== 1 ? "s" : ""},{" "}
+                    {summary.hits} hit{summary.hits !== 1 ? "s" : ""},{" "}
+                    {summary.errors} error{summary.errors !== 1 ? "s" : ""}
+                    {summary.lob > 0 ? ` — ${summary.lob} LOB` : ""}
+                  </Text>
+                </div>
+              </>
             )}
           </div>
         );
