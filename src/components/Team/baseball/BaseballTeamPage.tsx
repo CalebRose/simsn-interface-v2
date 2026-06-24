@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import routes from "../../../_constants/routes";
 import { exportToCsv } from "../../../_utility/csvExport";
 import {
   INFO_HEADERS, ALL_ATTR_HEADERS,
@@ -196,7 +198,7 @@ const QuickActionButtons = ({
           </button>
           <button
             className={`${actionBtn} ${isCollege ? "bg-orange-600/20 text-orange-400 hover:bg-orange-600/40" : "bg-gray-600/20 text-gray-500 cursor-not-allowed"}`}
-            onClick={isCollege ? () => onTransaction(player, "extend") : undefined}
+            onClick={isCollege ? () => onTransaction(player, "redshirt") : undefined}
             disabled={!isCollege}
             title={isCollege ? "Redshirt" : "Extend (coming soon)"}
             aria-label={isCollege ? "Redshirt player" : "Extend contract"}
@@ -294,6 +296,7 @@ interface BaseballTeamPageProps {
 }
 
 export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
+  const navigate = useNavigate();
   const { currentUser } = useAuthStore();
   const {
     organizations,
@@ -1247,6 +1250,67 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
               }}
             />
           </div>
+        </div>
+        {/* Quick links to the other pages for this team */}
+        <div className="flex flex-wrap gap-2 mb-2">
+          <ButtonGroup>
+            <PillButton
+              variant="primaryOutline"
+              onClick={() =>
+                navigate(
+                  isCollege
+                    ? routes.COLLEGE_BASEBALL_GAMEPLAN
+                    : routes.MLB_GAMEPLAN,
+                )
+              }
+            >
+              <Text variant="small">Gameplan</Text>
+            </PillButton>
+            <PillButton
+              variant="primaryOutline"
+              onClick={() =>
+                navigate(
+                  isCollege
+                    ? routes.COLLEGE_BASEBALL_RECRUITING
+                    : routes.MLB_IFA,
+                )
+              }
+            >
+              <Text variant="small">{isCollege ? "Recruiting" : "IFA"}</Text>
+            </PillButton>
+            <PillButton
+              variant="primaryOutline"
+              onClick={() =>
+                navigate(
+                  isCollege
+                    ? routes.COLLEGE_BASEBALL_STATS
+                    : routes.MLB_STATS,
+                )
+              }
+            >
+              <Text variant="small">Statistics</Text>
+            </PillButton>
+            <PillButton
+              variant="primaryOutline"
+              onClick={() =>
+                navigate(
+                  isCollege
+                    ? routes.COLLEGE_BASEBALL_SCHEDULE
+                    : routes.MLB_SCHEDULE,
+                )
+              }
+            >
+              <Text variant="small">Schedule</Text>
+            </PillButton>
+            {!isCollege && (
+              <PillButton
+                variant="primaryOutline"
+                onClick={() => navigate(routes.MLB_FINANCIALS)}
+              >
+                <Text variant="small">Finances</Text>
+              </PillButton>
+            )}
+          </ButtonGroup>
         </div>
         <Border
           classes="p-4 mb-2"

@@ -13,6 +13,28 @@ export interface SimulateWeekResponse {
     total_games: number;
 }
 
+// ── Run Week (one-click orchestrator: simulate + weekly tasks + advance) ──
+
+export interface RunWeekRequest {
+    league_year_id: number;
+    season_week: number;
+    league_level?: number; // omit = all levels
+}
+
+export interface RunWeekStep {
+    ran: boolean;
+    total_games?: number;
+}
+
+export interface RunWeekResponse {
+    status: "ok" | "error";
+    season_week: number;
+    steps: Record<string, RunWeekStep>;
+    // Present only when status === "error"
+    failed_step?: string;
+    message?: string;
+}
+
 export interface SimulateSubweekRequest {
     league_year_id: number;
     season_week: number;

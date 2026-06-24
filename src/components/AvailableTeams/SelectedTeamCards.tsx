@@ -109,13 +109,23 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   }
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const isBaseball = league === SimMLB || league === SimCollegeBaseball;
-  const primaryBaseballTeam = isBaseball ? getPrimaryBaseballTeam(selectedTeam) : undefined;
-  const teamID = isBaseball ? (primaryBaseballTeam?.team_id ?? selectedTeam?.id) : selectedTeam?.ID;
+  const primaryBaseballTeam = isBaseball
+    ? getPrimaryBaseballTeam(selectedTeam)
+    : undefined;
+  const teamID = isBaseball
+    ? (primaryBaseballTeam?.team_id ?? selectedTeam?.id)
+    : selectedTeam?.ID;
   const logo = getLogo(league as League, teamID, retro);
   const disable = isTeamDisabled(selectedTeam, league);
-  const colorOne = isBaseball ? (primaryBaseballTeam?.color_one || "") : (selectedTeam.ColorOne || "");
-  const colorTwo = isBaseball ? (primaryBaseballTeam?.color_two || "") : (selectedTeam.ColorTwo || "");
-  const colorThree = isBaseball ? (primaryBaseballTeam?.color_three || "") : (selectedTeam.ColorThree || "");
+  const colorOne = isBaseball
+    ? primaryBaseballTeam?.color_one || ""
+    : selectedTeam.ColorOne || "";
+  const colorTwo = isBaseball
+    ? primaryBaseballTeam?.color_two || ""
+    : selectedTeam.ColorTwo || "";
+  const colorThree = isBaseball
+    ? primaryBaseballTeam?.color_three || ""
+    : selectedTeam.ColorThree || "";
   const teamColors = useTeamColors(colorOne, colorTwo, colorThree);
   const backgroundColor = !disable ? teamColors.One : "#4B5563";
   const borderColor = !disable ? teamColors.Two : "#4B5563";
@@ -123,8 +133,8 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   const teamLabel =
     selectedTeam && GetTeamLabel(league as League, selectedTeam);
   const conferenceLabel = isBaseball
-    ? (primaryBaseballTeam?.conference || "")
-    : (selectedTeam.Conference || "");
+    ? primaryBaseballTeam?.conference || ""
+    : selectedTeam.Conference || "";
   return (
     <div
       className={`flex flex-col max-h-[80vh] w-full min-[1025px]:h-[70vh] min-[820px]:max-h-[48vh] min-[1025px]:max-h-[75vh] min-[1025px]:mx-4 min-[1025px]:mb-3 rounded-2xl shadow-lg border-2 p-6 ${
@@ -151,7 +161,8 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               </div>
               <div className="flex-col">
                 <Text variant="small" classes="font-semibold text-start">
-                  {conferenceLabel}{conferenceLabel ? " Conference" : ""}
+                  {conferenceLabel}
+                  {conferenceLabel ? " Conference" : ""}
                 </Text>
               </div>
               {(league === SimCFB || league === SimCBB || league === SimCHL) &&
@@ -586,34 +597,30 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             forums OR Discord server will be rejected.
           </Text>
           <Text classes="text-start mb-2">
-            If you haven't filled out an application, please make sure you've
-            registered into{" "}
-            <a
-              target="_blank"
-              href="https://www.simulationsports.net/index.php"
-            >
-              SimSN
-            </a>{" "}
-            and go to the{" "}
-            <a
-              target="_blank"
-              href="https://www.simulationsports.net/index.php?forums/job-applications-and-interviews.4/"
-            >
-              Job Apps Subforum
-            </a>{" "}
-            to fill out an application.{" "}
-          </Text>
-          <Text classes="text-start mb-2">
-            If you're not sure where to start, please join our{" "}
+            If you haven't filled out an application, please join our{" "}
             <a target="_blank" href="https://discord.gg/q46vwZ83RH">
               Discord server
             </a>{" "}
             and we shall help you there.
           </Text>
+          <Text classes="text-start mb-2">
+            Please navigate to our forums{" "}
+            <a target="_blank" href="https://simulationsports.net/forums">
+              forums
+            </a>{" "}
+            and we can also answer questions within the{" "}
+            <a
+              target="_blank"
+              href="https://simulationsports.net/forums/welcome/intro-help"
+            >
+              Intro / Help Subforum
+            </a>
+            .
+          </Text>
           {league === SimCFB && !selectedTeam.IsFBS && (
             <Text classes="text-start mb-2">
               FCS Teams are currently being displayed but are unavailable for
-              the 2025 Season.
+              the 2027 Season.
             </Text>
           )}
         </SelectedTeamModal>
@@ -675,7 +682,7 @@ export const SelectedCFBTeamCard = (data: any) => {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.ConferenceChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>
@@ -691,7 +698,7 @@ export const SelectedCFBTeamCard = (data: any) => {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.NationalChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>
@@ -761,7 +768,7 @@ function SelectedSimNFLTeamCard(data: any) {
               {data.DivisionTitles && data.DivisionTitles.length > 0
                 ? data.DivisionTitles.map(
                     (x: any, i: number) =>
-                      `${x}${i < data.DivisionTitles.length - 1 ? "," : ""}`
+                      `${x}${i < data.DivisionTitles.length - 1 ? "," : ""}`,
                   )
                 : "None"}
             </Text>
@@ -777,7 +784,7 @@ function SelectedSimNFLTeamCard(data: any) {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.ConferenceChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>
@@ -793,7 +800,7 @@ function SelectedSimNFLTeamCard(data: any) {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.NationalChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>
@@ -900,7 +907,7 @@ function SelectedSimCBBTeamCard(data: any) {
                           i < data.ConferenceChampionships.length - 1
                             ? ", "
                             : ""
-                        }`
+                        }`,
                     )}
                   </Text>
                 </div>
@@ -913,7 +920,7 @@ function SelectedSimCBBTeamCard(data: any) {
                 <Text variant="small">
                   {data.SweetSixteens.map(
                     (x: any, i: number) =>
-                      `${x}${i < data.SweetSixteens.length - 1 ? ", " : ""}`
+                      `${x}${i < data.SweetSixteens.length - 1 ? ", " : ""}`,
                   )}
                 </Text>
               </div>
@@ -926,7 +933,7 @@ function SelectedSimCBBTeamCard(data: any) {
                 <Text variant="small">
                   {data.EliteEights.map(
                     (x: any, i: number) =>
-                      `${x}${i < data.EliteEights.length - 1 ? ", " : ""}`
+                      `${x}${i < data.EliteEights.length - 1 ? ", " : ""}`,
                   )}
                 </Text>
               </div>
@@ -939,7 +946,7 @@ function SelectedSimCBBTeamCard(data: any) {
                 <Text variant="small">
                   {data.FinalFours.map(
                     (x: any, i: number) =>
-                      `${x}${i < data.FinalFours.length - 1 ? ", " : ""}`
+                      `${x}${i < data.FinalFours.length - 1 ? ", " : ""}`,
                   )}
                 </Text>
               </div>
@@ -952,7 +959,7 @@ function SelectedSimCBBTeamCard(data: any) {
                 <Text variant="small">
                   {data.RunnerUps.map(
                     (x: any, i: number) =>
-                      `${x}${i < data.RunnerUps.length - 1 ? ", " : ""}`
+                      `${x}${i < data.RunnerUps.length - 1 ? ", " : ""}`,
                   )}
                 </Text>
               </div>
@@ -968,7 +975,7 @@ function SelectedSimCBBTeamCard(data: any) {
                       (x: any, i: number) =>
                         `${x}${
                           i < data.NationalChampionships.length - 1 ? ", " : ""
-                        }`
+                        }`,
                     )}
                   </Text>
                 </div>
@@ -1055,7 +1062,7 @@ export const SelectedSimNBATeamCard = (data: any) => {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.ConferenceChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>
@@ -1071,7 +1078,7 @@ export const SelectedSimNBATeamCard = (data: any) => {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.NationalChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>
@@ -1143,7 +1150,7 @@ export const SelectedSimCHLTeamCard = (data: any) => {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.ConferenceChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>
@@ -1159,7 +1166,7 @@ export const SelectedSimCHLTeamCard = (data: any) => {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.NationalChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>
@@ -1236,7 +1243,7 @@ export const SelectedSimPHLTeamCard = (data: any) => {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.ConferenceChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>
@@ -1252,7 +1259,7 @@ export const SelectedSimPHLTeamCard = (data: any) => {
                     (x: any, i: number) =>
                       `${x}${
                         i < data.NationalChampionships.length - 1 ? "," : ""
-                      }`
+                      }`,
                   )
                 : "None"}
             </Text>

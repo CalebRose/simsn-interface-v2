@@ -391,7 +391,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
           order: battingOrder,
           position: battingPosition ?? undefined,
           min_pa: minPA ?? undefined,
-          page_size: 9999,
+          page_size: 0, // 0 = uncapped (full export); on-screen table keeps default paging
         });
         const headers = [
           "Player", "Team", "Pos",
@@ -422,7 +422,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
           order: pitchingOrder,
           role: pitchingRole ?? undefined,
           min_ip: minIP ?? undefined,
-          page_size: 9999,
+          page_size: 0, // 0 = uncapped (full export)
         });
         const headers = [
           "Player", "Team",
@@ -459,7 +459,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
           order: fieldingOrder,
           position_code: fieldingPosition ?? undefined,
           min_inn: minInn ?? undefined,
-          page_size: 9999,
+          page_size: 0, // 0 = uncapped (full export)
         });
         const headers = [
           "Player", "Team", "Pos",

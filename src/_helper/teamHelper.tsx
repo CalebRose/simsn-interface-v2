@@ -196,6 +196,7 @@ export const RevealHCKResults = (
   game: CHLGame | PHLGame,
   timestamp: HCKTimestamp,
   resultsOverride: boolean,
+  selectedLeague: League,
 ): boolean => {
   if (resultsOverride) return true;
   const currentWeek = timestamp.Week;
@@ -204,11 +205,11 @@ export const RevealHCKResults = (
   const { GameDay, GameComplete, IsRevealed } = game;
   if (IsRevealed) return true;
   const showResults = GameComplete || IsRevealed;
-  if (CHLGame) {
+  if (selectedLeague === SimCHL) {
     if (GameDay === "A" && timestamp.GamesARan) return showResults;
     if (GameDay === "B" && timestamp.GamesBRan) return showResults;
   }
-  if (PHLGame) {
+  if (selectedLeague === SimPHL) {
     if (GameDay === "A" && timestamp.GamesARan) return showResults;
     if (GameDay === "B" && timestamp.GamesBRan) return showResults;
     if (GameDay === "C" && timestamp.GamesCRan) return showResults;

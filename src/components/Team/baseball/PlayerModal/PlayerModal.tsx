@@ -18,6 +18,7 @@ import { PotentialsTab } from "./tabs/PotentialsTab";
 import { ContractTab } from "./tabs/ContractTab";
 import { InjuriesTab } from "./tabs/InjuriesTab";
 import { StatisticsTab } from "./tabs/StatisticsTab";
+import { AwardsTab } from "./tabs/AwardsTab";
 import { AuctionTab } from "./tabs/AuctionTab";
 import "../baseballMobile.css";
 
@@ -80,9 +81,11 @@ export const PlayerModal: FC<PlayerModalProps> = ({
     faDetail: faDetailFetched,
     ifaDetail,
     injuryHistory,
+    awards,
     isLoading,
     isUnlocking,
     injuryLoading,
+    awardsLoading,
     scoutingAction,
     selectedTab,
     setSelectedTab,
@@ -276,6 +279,13 @@ export const PlayerModal: FC<PlayerModalProps> = ({
               selected={selectedTab === "Statistics"}
               setSelected={setSelectedTab}
             />
+            {!isCollege && (
+              <Tab
+                label="Awards"
+                selected={selectedTab === "Awards"}
+                setSelected={setSelectedTab}
+              />
+            )}
           </TabGroup>
 
           {/* Tab Content */}
@@ -319,6 +329,10 @@ export const PlayerModal: FC<PlayerModalProps> = ({
 
           {selectedTab === "Statistics" && (
             <StatisticsTab player={player} />
+          )}
+
+          {selectedTab === "Awards" && !isCollege && (
+            <AwardsTab awards={awards} awardsLoading={awardsLoading} />
           )}
         </div>
       ) : null}

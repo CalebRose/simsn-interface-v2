@@ -182,6 +182,98 @@ export interface PlayByPlayResponse {
 }
 
 // ═══════════════════════════════════════════════
+// Play-by-Play v2 (format=v2) — clean, narrative-ready shape
+// See play_by_play_frontend_guide.md for the full contract.
+// ═══════════════════════════════════════════════
+
+export interface PbpV2Player {
+  id: number;
+  name?: string;
+}
+
+export interface PbpV2ResultDetail {
+  batted_ball?: string;
+  air_or_ground?: "air" | "ground" | string;
+  hit_depth?: string;
+  hit_direction?: string;
+  fielder?: PbpV2Player | null;
+  errors: string[];
+}
+
+/** Normalized, closed at-bat result vocabulary. `null` = no plate result. */
+export type PbpV2Result =
+  | "single"
+  | "double"
+  | "triple"
+  | "home_run"
+  | "inside_the_park_hr"
+  | "strikeout"
+  | "groundout"
+  | "flyout"
+  | "out"
+  | "walk"
+  | "hbp"
+  | null;
+
+/**
+ * One action inside an at-bat. `result`/`swing`/`pitch` (pitch kind) are raw
+ * engine display labels — open vocabulary. Baserunning `result` is normalized
+ * (`stolen_base`, `caught_stealing`, `unsuccessful_pickoff`, …).
+ *
+ * NOTE: the live API does not always match the documented flat shape — a pitch
+ * event's `pitch`/`result`/`swing` may arrive nested as an object rather than
+ * flat siblings. EventLine (BaseballBoxScoreModal) normalizes both at render
+ * time, so these fields are intentionally loose.
+ */
+export interface PbpV2Event {
+  kind: "pitch" | "steal" | "pickoff";
+  balls?: number;
+  strikes?: number;
+  pitch?: string | { pitch?: string; result?: string; swing?: string };
+  swing?: string;
+  result: string | { pitch?: string; result?: string; swing?: string };
+  runner?: PbpV2Player | null;
+}
+
+export interface PbpV2RunnersAfter {
+  "1B": PbpV2Player | null;
+  "2B": PbpV2Player | null;
+  "3B": PbpV2Player | null;
+}
+
+export interface PbpV2AtBat {
+  seq: number;
+  inning: number;
+  half: "top" | "bottom";
+  outs_before: number;
+  outs_after: number;
+  batter: PbpV2Player;
+  pitcher: PbpV2Player;
+  result: PbpV2Result;
+  result_detail: PbpV2ResultDetail | null;
+  rbi: number;
+  runs_scored: PbpV2Player[];
+  runners_after: PbpV2RunnersAfter;
+  score_after: { home: number; away: number };
+  /** Present only when fetched with include_events=1. */
+  events?: PbpV2Event[];
+  description: string;
+}
+
+export interface PbpV2Response {
+  schema_version: 2;
+  game_id: number;
+  teams: { home: string; away: string };
+  at_bats: PbpV2AtBat[];
+}
+
+export interface GetPlayByPlayV2Options {
+  includeEvents?: boolean;
+  inning?: number;
+  half?: "top" | "bottom";
+}
+
+// ═══════════════════════════════════════════════
 // Game Results Models
 // ═══════════════════════════════════════════════
 
@@ -653,6 +745,58 @@ export interface PlayerStatsResponse {
   fielding: PlayerFieldingSeason[];
   gamelog_batting?: PlayerGamelogBatting[];
   gamelog_pitching?: PlayerGamelogPitching[];
+  // Awards (additive — present on newer backends; see Awards Models below)
+  awards?: PlayerAward[];
+  award_summary?: Record<string, AwardSummaryEntry>;
+  total_awards?: number;
+}
+
+// ═══════════════════════════════════════════════
+// Awards Models
+// Trophies (MVP, Cy Young, Silver Slugger, …) plus All-Star selections.
+// Awards persist across seasons — one row per win, newest season first.
+// ═══════════════════════════════════════════════
+
+/** Award grouping. "selection" is All-Star; the rest are trophies. */
+export type AwardCategory =
+  | "major"
+  | "pitching"
+  | "batting"
+  | "fielding"
+  | "selection";
+
+export interface PlayerAward {
+  award_id: number;
+  award_code: string;
+  award_name: string;
+  category: AwardCategory | string;
+  league_year_id: number;
+  league_level: number;
+  sub_league: "AL" | "NL" | null;
+  /** Set only for per-position awards (Silver Slugger, Gold Glove); null otherwise. */
+  position_code: string | null;
+  team_id: number;
+  team_abbrev: string;
+  rank: number;
+  is_winner: boolean;
+  vote_points: number | null;
+  /** 0–1, may be null. */
+  vote_share: number | null;
+}
+
+/** One entry in award_summary, keyed by award_code. Career win count. */
+export interface AwardSummaryEntry {
+  name: string;
+  wins: number;
+}
+
+/** Standalone GET /awards/player/<id> — career awards for one player. */
+export interface PlayerAwardsResponse {
+  player_id: number;
+  /** Same award objects, newest season first. */
+  awards: PlayerAward[];
+  summary: Record<string, AwardSummaryEntry>;
+  total_wins: number;
 }
 
 // ═══════════════════════════════════════════════

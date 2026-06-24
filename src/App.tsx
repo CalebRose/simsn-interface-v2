@@ -9,6 +9,7 @@ import { SimHCKProvider } from "./context/SimHockeyContext";
 import { ForumProvider } from "./context/ForumContext";
 import AppRoutes from "./routes/AppRoutes";
 
+
 function App() {
   return (
     <AuthProvider>
