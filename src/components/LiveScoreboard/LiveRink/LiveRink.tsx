@@ -19,6 +19,7 @@ import {
 import { Logo } from "../../../_design/Logo";
 import { getLogo } from "../../../_utility/getLogo";
 import { useResponsive } from "../../../_hooks/useMobile";
+import { Text } from "../../../_design/Typography";
 
 // --- HELPER FUNCTIONS ---
 const getPeriodName = (p: number, isSO: boolean = false) => {
@@ -84,12 +85,16 @@ const GameMiniList = React.memo(
             const awayScore = game.AwayTeamScore ?? game.AwayScore ?? 0;
             const homeName = game.HomeTeam ?? game.HomeTeamName ?? "HOME";
             const awayName = game.AwayTeam ?? game.AwayTeamName ?? "AWAY";
-
+            const select = () => {
+              onSelect(game.GameID);
+            };
             return (
               <button
                 key={game.GameID}
-                disabled={broadcastState !== "BROADCASTING"}
-                onClick={() => onSelect(game.GameID)}
+                disabled={
+                  broadcastState !== "BROADCASTING" || title === "Results"
+                }
+                onClick={select}
                 className={`w-full bg-(--bg-secondary) border ${isMyTeam ? "border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.15)]" : "border-(--border-primary)"} rounded p-3 shadow-sm hover:border-(--text-muted) hover:bg-white/5 transition-all text-left cursor-pointer shrink-0`}
               >
                 <div>
@@ -304,7 +309,7 @@ const LiveRink = () => {
 
   const userTeamID = useMemo(() => {
     return selectedLeague === SimCHL
-      ? currentUser?.teamId
+      ? currentUser?.CHLTeamID
       : currentUser?.PHLTeamID;
   }, [selectedLeague, currentUser]);
 
@@ -377,8 +382,11 @@ const LiveRink = () => {
               };
             }
           });
+
+          console.log({ data });
           setGames(stitchedGames);
         } else {
+          console.log({ data });
           setGames(data || {});
         }
       })
@@ -621,23 +629,33 @@ const LiveRink = () => {
   const upcomingGames = useMemo(
     () =>
       allGames.filter(
-        (g) =>
-          !g.GameComplete &&
-          (g.Period === 0 || !g.Period) &&
-          effectiveGames[g.GameID] === undefined,
+        (g) => !g.GameComplete && effectiveGames[g.GameID] === undefined,
       ),
     [allGames, effectiveGames],
   );
   const liveGames = useMemo(
-    () => Object.values(liveGameStates),
+    () =>
+      Object.values(liveGameStates).filter(
+        (g) =>
+          g.IsRevealed === undefined ||
+          g.IsRevealed === false ||
+          (effectiveGames[g.GameID] !== undefined &&
+            effectiveGames[g.GameID].IsRevealed === false &&
+            effectiveGames[g.GameID].StreamEndTime.toMillis() <= Date.now()),
+      ),
     [liveGameStates],
   );
   const resultsGames = useMemo(() => {
-    console.log({ allGames, effectiveGames });
     return allGames.filter(
-      (g) => g.GameComplete && effectiveGames[g.GameID] === undefined,
+      (g) =>
+        g.GameComplete ||
+        g.IsRevealed === true ||
+        (effectiveGames[g.GameID] !== undefined &&
+          effectiveGames[g.GameID].IsRevealed === true),
     );
   }, [allGames, effectiveGames]);
+
+  console.log({ effectiveGames });
 
   if (selectedGameId === null) {
     return (
@@ -707,6 +725,13 @@ const LiveRink = () => {
               </div>
             )}
             <div className="lg:col-span-8 flex flex-col h-full min-h-0 px-2 overflow-y-auto">
+              {liveGames.length === 0 && (
+                <div className="flex justify-center items-center h-50 w-full">
+                  <Text variant="h3">
+                    No live games are scheduled at the current time.
+                  </Text>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-10">
                 {liveGames.map((game) => (
                   <div

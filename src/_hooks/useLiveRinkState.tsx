@@ -81,6 +81,7 @@ export interface LiveGameState {
   Period: number;
   TimeOnClock: string;
   Zone: string;
+  IsRevealed?: boolean;
   GameComplete: boolean;
   IsShootout: boolean;
   HomeTeamRank: number;
@@ -89,6 +90,7 @@ export interface LiveGameState {
   City: string;
   State: string;
   Country: string;
+  StreamEndTime: Timestamp;
 }
 
 // ── Helpers ──
@@ -230,6 +232,7 @@ export const useLiveRinkState = (league: League): UseLiveRinkStateReturn => {
             City: game.City,
             State: game.State,
             Country: game.Country,
+            StreamEndTime: game.StreamEndTime,
           };
           newShownPlays[gameID] = [];
           continue;
@@ -296,6 +299,7 @@ export const useLiveRinkState = (league: League): UseLiveRinkStateReturn => {
           City: game.City,
           State: game.State,
           Country: game.Country,
+          StreamEndTime: game.StreamEndTime,
         };
       }
 

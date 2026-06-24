@@ -170,7 +170,7 @@ export const TeamSchedule = ({
                         teamRecordMap && teamRecordMap[game.opponentID]
                           ? ` (${teamRecordMap[game.opponentID]})`
                           : ""
-                      }`}
+                      }${game.IsNeutralSite || game.IsNeutral ? " (N)" : ""}`}
                       teamID={game.opponentID}
                       textColorClass={textColorClass}
                       league={league}
@@ -396,7 +396,7 @@ export const WeeklySchedule = ({
                       setSelectedGame(game);
                       gameModal.handleOpenModal();
                     }}
-                    label={game.headerGameScore}
+                    label={`${game.headerGameScore}${game.IsNeutralSite || game.IsNeutral ? " (N)" : ""}`}
                   />
                 </div>
                 <div className="flex text-center justify-center col-span-1">
