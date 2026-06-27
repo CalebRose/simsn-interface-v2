@@ -401,7 +401,7 @@ export const CHLLineupPage = () => {
         player={modalPlayer}
       />
 
-      <div className="grid grid-cols-1 max-[1024px]:grid-cols-1 min-[1025px]:grid-cols-[1fr_3fr] gap-4 w-full">
+      <div className="grid grid-cols-1 max-[1024px]:grid-cols-1 min-[1025px]:grid-cols-[1fr_4fr] gap-4 w-full">
         <Border
           direction="col"
           classes="w-full px-4 py-3 min-h-full"
@@ -449,7 +449,7 @@ export const CHLLineupPage = () => {
               backgroundColor: themeBackgroundColor,
             }}
           >
-            <div className="flex flex-row w-full justify-start items-center gap-x-2 mb-6">
+            <div className="flex flex-row w-full justify-start items-center space-x-2 mb-6">
               <Text variant="h6" classes="flex">
                 {lineCategory} Players
               </Text>
@@ -465,7 +465,7 @@ export const CHLLineupPage = () => {
               </Button>
             </div>
             <div className="flex flex-col">
-              <div className="grid grid-cols-1 max-[541px]:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 px-4 w-full">
+              <div className="grid grid-cols-1 max-[541px]:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 space-4 px-4 w-full">
                 {lineCategory !== LineupSO && (
                   <>
                     {lineup.LineType === 1 && (
@@ -951,7 +951,7 @@ export const PHLLineupPage = () => {
         player={modalPlayer}
       />
 
-      <div className="grid grid-cols-1 max-[1024px]:grid-cols-1 min-[1025px]:grid-cols-[1fr_3fr] gap-4 w-full">
+      <div className="grid grid-cols-1 max-[1024px]:grid-cols-1 min-[1025px]:grid-cols-[1fr_4fr] gap-4 w-full">
         <Border
           direction="col"
           classes="w-full px-4 py-3 min-h-full"

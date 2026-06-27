@@ -153,7 +153,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
               onClick={() => setActiveTab(Formations)}
               className={`px-3 py-1 ${
                 activeTab === Formations
-                  ? "bg-orange-900 bg-black/50 hover:bg-orange-700 text-white border-orange-500"
+                  ? "bg-orange-900  hover:bg-orange-700 text-white border-orange-500"
                   : ""
               }`}
             >
@@ -165,7 +165,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
               onClick={() => setActiveTab(Player)}
               className={`px-3 py-1 ${
                 activeTab === Player
-                  ? "bg-orange-900 bg-black/50 hover:bg-orange-700 text-white border-orange-500"
+                  ? "bg-orange-900  hover:bg-orange-700 text-white border-orange-500"
                   : ""
               }`}
             >
@@ -177,7 +177,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
               onClick={() => setActiveTab(Focus)}
               className={`px-3 py-1 ${
                 activeTab === Focus
-                  ? "bg-orange-900 bg-black/50 hover:bg-orange-700 text-white border-orange-500"
+                  ? "bg-orange-900  hover:bg-orange-700 text-white border-orange-500"
                   : ""
               }`}
             >
@@ -198,7 +198,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                   defFormationField as keyof GameplanData
                 ] as string;
                 const defFormationData = defensiveFormations.find(
-                  (df) => df.name === selectedDefFormation
+                  (df) => df.name === selectedDefFormation,
                 );
 
                 return (
@@ -261,7 +261,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                             onChange={(e) =>
                               onChange(
                                 runToPassField,
-                                parseInt(e.target.value) || 0
+                                parseInt(e.target.value) || 0,
                               )
                             }
                             min={0}
@@ -281,7 +281,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                           onChange={(e) =>
                             onChange(
                               blitzWeightField,
-                              parseInt(e.target.value) || 0
+                              parseInt(e.target.value) || 0,
                             )
                           }
                           min={0}
@@ -383,7 +383,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                   onChange={(value) =>
                     onChange(
                       "DoubleTeam",
-                      value.toString() === "-1" ? "None" : value
+                      value.toString() === "-1" ? "None" : value,
                     )
                   }
                   disabled={disabled || gameplan.DefaultDefense}
@@ -455,7 +455,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
           <div className="space-y-4">
             {(() => {
               const formationData = defensiveFormations.find(
-                (df) => df.name === selectedFormation
+                (df) => df.name === selectedFormation,
               );
               if (!formationData) return null;
 
@@ -476,7 +476,7 @@ export const DefensePanel: React.FC<DefensePanelProps> = ({
                             line
                           )}
                         </div>
-                      )
+                      ),
                     )}
                   </div>
                 </div>

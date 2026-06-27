@@ -88,7 +88,8 @@ export const getLandingCFBData = (
     const nextMatch = allCollegeGames.filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
-        game.Week === testWeek,
+        game.Week === testWeek &&
+        game.IsSpringGame === ts.CFBSpringGames,
     );
 
     if (nextMatch.length > 0) {
@@ -223,7 +224,8 @@ export const getLandingNFLData = (
     const nextMatch = allProGames.filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
-        game.Week === testWeek,
+        game.Week === testWeek &&
+        game.IsPreseasonGame === ts.NFLPreseasonGames,
     );
 
     if (nextMatch.length > 0) {
@@ -269,13 +271,15 @@ export const getLandingNFLData = (
     .filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
-        game.IsPreseasonGame === ts.NFLPreseasonGames,
+        game.IsPreseasonGame === ts.NFLPreseason,
     )
     .map((game) => ({
       ...game,
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
       AwayTeamAbbr: teamAbbrMap.get(game.AwayTeamID),
     }));
+
+  console.log({ teamSchedule, allProGames, team });
 
   // Team Stats
   const userPassers = topNFLPassers.filter((p) => p.TeamID === team.ID);

@@ -200,6 +200,8 @@ interface SimBBAContextProps {
   transferProfileMapByPlayerID: Record<number, TransferPortalProfile[]>;
   cbbLineupMap: Record<number, CollegeLineup[]>;
   nbaLineupMap: Record<number, NBALineup[]>;
+  updateCBBLineupMap: (newMap: Record<number, CollegeLineup[]>) => void;
+  updateNBALineupMap: (newMap: Record<number, NBALineup[]>) => void;
   getLandingBootstrapData: () => void;
   getBootstrapRosterData: () => void;
   getBootstrapRecruitingData: () => void;
@@ -284,6 +286,8 @@ const defaultContext: SimBBAContextProps = {
   playerFaces: {},
   proContractMap: {},
   proExtensionMap: {},
+  updateCBBLineupMap: () => {},
+  updateNBALineupMap: () => {},
   removeUserfromCBBTeamCall: async () => {},
   removeUserfromNBATeamCall: async () => {},
   addUserToCBBTeam: () => {},
@@ -1791,6 +1795,13 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     });
   }, []);
 
+  const updateCBBLineupMap = (newMap: Record<number, CollegeLineup[]>) => {
+    setCBBLineupMap(newMap);
+  };
+  const updateNBALineupMap = (newMap: Record<number, NBALineup[]>) => {
+    setNBALineupMap(newMap);
+  };
+
   return (
     <SimBBAContext.Provider
       value={{
@@ -1931,6 +1942,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         scoutCrootAttribute,
         exportNBADraftees,
         exportNBAFreeAgents,
+        updateCBBLineupMap,
+        updateNBALineupMap,
       }}
     >
       {children}

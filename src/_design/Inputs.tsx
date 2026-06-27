@@ -54,6 +54,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   textColor?: string;
   classes?: string;
   gameplan?: boolean;
+  showLabel?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -61,24 +62,22 @@ export const Input: React.FC<InputProps> = ({
   error,
   classes,
   gameplan,
+  showLabel = true,
   ...props
 }) => {
   return (
-    <div className="w-full flex items-center gap-x-2">
-      {label && (
-        <label className="w-[20vw] sm:w-[15vw] md:w-[10vw] lg:w-[8vw] xl:w-[5vw] text-sm font-medium text-end text-white mb-1 whitespace-nowrap">
+    <div
+      className={`grid ${showLabel ? "grid-cols-2" : "grid-cols-1"} items-center gap-x-2`}
+    >
+      {label && showLabel && (
+        <label className="text-sm font-medium text-end text-white mb-1 whitespace-nowrap">
           {label}
         </label>
       )}
       <input
         {...props}
         className={`
-          grow ${
-            gameplan
-              ? "max-w-[80px]"
-              : "min-w-[20vw] sm:min-w-[15vw] md:min-w-[10vw] lg:min-w-[8vw] xl:min-w-[5vw]"
-          }
-          px-4 py-2 border rounded-lg focus:outline-hidden 
+          grow min-w-20 px-4 py-2 border rounded-lg focus:outline-hidden 
           focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
           text-base
           placeholder-gray-400 bg-black text-white border-gray-500

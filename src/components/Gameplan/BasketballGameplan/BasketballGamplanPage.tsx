@@ -27,6 +27,10 @@ export const BasketballGameplanPage = () => {
     SelectString,
     selectedString,
     selectedStringAbbr,
+    selectedGuardOptions,
+    selectedForwardOptions,
+    selectedCenterOptions,
+    ChangeLineupInput,
   } = useBasketballGameplan();
   const { isMobile } = useResponsive();
 
@@ -44,6 +48,7 @@ export const BasketballGameplanPage = () => {
     }
     return selectedTeam.Team || "";
   }, [selectedTeam, userTeam]);
+
   return (
     <div>
       <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[2fr_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
@@ -88,21 +93,23 @@ export const BasketballGameplanPage = () => {
               <ButtonGrid classes="sm:flex sm:flex-auto sm:flex-1">
                 <Button
                   type="button"
-                  variant={"secondary"}
+                  variant={selectedString === "First" ? "primary" : "secondary"}
                   onClick={() => SelectString("First")}
                 >
                   First
                 </Button>
                 <Button
                   type="button"
-                  variant={"secondary"}
+                  variant={
+                    selectedString === "Second" ? "primary" : "secondary"
+                  }
                   onClick={() => SelectString("Second")}
                 >
                   Second
                 </Button>
                 <Button
                   type="button"
-                  variant={"secondary"}
+                  variant={selectedString === "Third" ? "primary" : "secondary"}
                   onClick={() => SelectString("Third")}
                 >
                   Third
@@ -138,8 +145,14 @@ export const BasketballGameplanPage = () => {
               backgroundColor: backgroundColor,
             }}
           >
-            <div className="grid grid-cols-5 w-full">
+            <div className="grid grid-cols-5 w-full space-x-4">
               {lineupFormation.map((position, index) => {
+                const playerOptions = (() => {
+                  if (position === "G") return selectedGuardOptions;
+                  if (position === "F") return selectedForwardOptions;
+                  if (position === "C") return selectedCenterOptions;
+                  return [];
+                })();
                 return (
                   <BasketballLineup
                     selectedTeamLineups={selectedTeamLineups}
@@ -150,6 +163,8 @@ export const BasketballGameplanPage = () => {
                     selectedString={selectedString}
                     selectedStringAbbr={selectedStringAbbr}
                     selectedTeam={selectedTeam}
+                    ChangeLineupInput={ChangeLineupInput}
+                    playerOptions={playerOptions}
                   />
                 );
               })}

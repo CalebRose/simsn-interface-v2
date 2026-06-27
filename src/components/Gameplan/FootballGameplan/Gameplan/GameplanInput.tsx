@@ -1,6 +1,6 @@
-import React from 'react';
-import { Input } from '../../../../_design/Inputs';
-import { Text } from '../../../../_design/Typography';
+import React from "react";
+import { Input } from "../../../../_design/Inputs";
+import { Text } from "../../../../_design/Typography";
 
 export interface GameplanInputProps {
   name: string;
@@ -25,7 +25,7 @@ export const GameplanInput: React.FC<GameplanInputProps> = ({
   disabled = false,
   error,
   warning,
-  className = ''
+  className = "",
 }) => {
   return (
     <div className={`flex flex-col gap-1 ${className}`}>
@@ -41,7 +41,7 @@ export const GameplanInput: React.FC<GameplanInputProps> = ({
         min={min}
         max={max}
         disabled={disabled}
-        className={`w-full ${error ? 'border-red-500' : warning ? 'border-yellow-500' : ''}`}
+        className={`w-full ${error ? "border-red-500" : warning ? "border-yellow-500" : ""}`}
       />
       {error && (
         <Text variant="xs" classes="text-red-400">
@@ -58,7 +58,7 @@ export const GameplanInput: React.FC<GameplanInputProps> = ({
 };
 
 export interface GameplanInputSmallProps extends GameplanInputProps {
-  size?: 'xs' | 'sm' | 'md';
+  size?: "xs" | "sm" | "md";
 }
 
 export const GameplanInputSmall: React.FC<GameplanInputSmallProps> = ({
@@ -71,18 +71,23 @@ export const GameplanInputSmall: React.FC<GameplanInputSmallProps> = ({
   disabled = false,
   error,
   warning,
-  size = 'sm',
-  className = ''
+  size = "sm",
+  className = "",
 }) => {
   const sizeClasses = {
-    xs: 'text-xs',
-    sm: 'text-sm',
-    md: 'text-base'
+    xs: "text-xs",
+    sm: "text-sm",
+    md: "text-base",
   };
 
   return (
-    <div className={`flex items-center justify-between gap-2 ${className}`}>
-      <Text variant="small" classes={`w-full text-right text-gray-300 font-medium min-w-0 ${sizeClasses[size]}`}>
+    <div
+      className={`grid grid-cols-2 items-center justify-between space-x-2 w-full ${className}`}
+    >
+      <Text
+        variant="xs"
+        classes={`text-right text-gray-300 font-medium min-w-0 ${sizeClasses[size]}`}
+      >
         {label}:
       </Text>
       <div className="">
@@ -95,7 +100,8 @@ export const GameplanInputSmall: React.FC<GameplanInputSmallProps> = ({
           max={max}
           gameplan
           disabled={disabled}
-          className={`${sizeClasses[size]} ${error ? 'border-red-500' : warning ? 'border-yellow-500' : ''}`}
+          showLabel={false}
+          classes={`w-full ${sizeClasses[size]} ${error ? "border-red-500" : warning ? "border-yellow-500" : ""}`}
         />
         {error && (
           <Text variant="xs" classes="text-red-400 mt-1">
@@ -137,15 +143,18 @@ export const RunnerInput: React.FC<RunnerInputProps> = ({
   playerInfo,
   disabled = false,
   error,
-  className = ''
+  className = "",
 }) => {
-  const displayLabel = playerInfo 
+  const displayLabel = playerInfo
     ? `${playerInfo.archetype} ${playerInfo.position} ${playerInfo.firstName} ${playerInfo.lastName} | ${playerInfo.overall}`
     : label;
 
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
-      <Text variant="xs" classes="w-full xl:w-[22.7em] text-gray-300 font-medium text-left">
+      <Text
+        variant="xs"
+        classes="w-full xl:w-[22.7em] text-gray-300 font-medium text-left"
+      >
         {displayLabel}
       </Text>
       <div className="">
@@ -157,7 +166,7 @@ export const RunnerInput: React.FC<RunnerInputProps> = ({
           min={0}
           max={10}
           disabled={disabled}
-          className={`w-full text-sm ${error ? 'border-red-500' : ''}`}
+          className={`w-full text-sm ${error ? "border-red-500" : ""}`}
         />
       </div>
     </div>
@@ -177,21 +186,24 @@ export const TargetInput: React.FC<TargetInputProps> = ({
   value,
   onChange,
   playerInfo,
-  targetDepth = 'None',
+  targetDepth = "None",
   onTargetDepthChange,
-  targetDepthOptions = ['Quick', 'Short', 'Long', 'None'],
+  targetDepthOptions = ["Quick", "Short", "Long", "None"],
   disabled = false,
   error,
-  className = '',
+  className = "",
   targetWR,
 }) => {
-  const displayLabel = playerInfo 
+  const displayLabel = playerInfo
     ? `${playerInfo.archetype} ${playerInfo.position} ${playerInfo.firstName} ${playerInfo.lastName} | ${playerInfo.overall}`
     : label;
 
   return (
     <div className={`flex items-center justify-center gap-2 ${className}`}>
-      <Text variant="xs" classes={`text-left text-gray-300 font-medium ${targetWR ? 'w-full xl:w-[18em]' : 'w-3/5'}`}>
+      <Text
+        variant="xs"
+        classes={`text-left text-gray-300 font-medium ${targetWR ? "w-full xl:w-[18em]" : "w-3/5"}`}
+      >
         {displayLabel}
       </Text>
       {onTargetDepthChange && (
@@ -219,7 +231,7 @@ export const TargetInput: React.FC<TargetInputProps> = ({
           min={0}
           max={10}
           disabled={disabled}
-          className={`w-full text-sm ${error ? 'border-red-500' : ''}`}
+          className={`w-full text-sm ${error ? "border-red-500" : ""}`}
         />
       </div>
     </div>

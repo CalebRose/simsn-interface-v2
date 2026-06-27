@@ -3296,6 +3296,12 @@ export class NBAContractOffer {
     }
     return a;
   }
+  updateField(name: string, value: number): NBAContractOffer {
+    const copy = new NBAContractOffer();
+    Object.assign(copy, this);
+    (copy as any)[name] = value;
+    return copy;
+  }
 }
 export class RetiredPlayer {
   ID: number;

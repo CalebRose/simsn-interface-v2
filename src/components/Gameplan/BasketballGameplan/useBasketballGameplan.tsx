@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "../../../context/AuthContext";
 import { useLeagueStore } from "../../../context/LeagueContext";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
 import { SimCBB, SimNBA } from "../../../_constants/constants";
-import { CollegePlayer, NBAPlayer } from "../../../models/basketballModels";
+import {
+  CollegeLineup,
+  CollegePlayer,
+  NBALineup,
+  NBAPlayer,
+} from "../../../models/basketballModels";
 
 export const useBasketballGameplan = () => {
   const { currentUser } = useAuthStore();
@@ -20,6 +25,8 @@ export const useBasketballGameplan = () => {
     nbaTeam,
     cbbTeamMap,
     nbaTeamMap,
+    updateCBBLineupMap,
+    updateNBALineupMap,
   } = useSimBBAStore();
 
   const [selectedTeamID, setSelectedTeamID] = useState<number>(0);
@@ -103,8 +110,44 @@ export const useBasketballGameplan = () => {
   }, [selectedLeague, selectedTeamID, cbbLineupMap, nbaLineupMap]);
 
   const lineupFormation = useMemo(() => {
-    return ["G", "G", "F", "F", "C"];
+    return ["C", "F", "F", "G", "G"];
   }, []);
+
+  const selectedGuardOptions = useMemo(() => {
+    if (!selectedTeamRoster) return [];
+    const options = selectedTeamRoster
+      .filter((player) => player.Position === "G")
+      .map((player) => ({
+        value: player.ID.toString(),
+        label: `${player.ID} ${player.Position} ${player.FirstName} ${player.LastName}`,
+      }));
+    options.unshift({ value: "0", label: "None" });
+    return options;
+  }, [selectedTeamRoster]);
+
+  const selectedForwardOptions = useMemo(() => {
+    if (!selectedTeamRoster) return [];
+    const options = selectedTeamRoster
+      .filter((player) => player.Position === "F")
+      .map((player) => ({
+        value: player.ID.toString(),
+        label: `${player.ID} ${player.Position} ${player.FirstName} ${player.LastName}`,
+      }));
+    options.unshift({ value: "0", label: "None" });
+    return options;
+  }, [selectedTeamRoster]);
+
+  const selectedCenterOptions = useMemo(() => {
+    if (!selectedTeamRoster) return [];
+    const options = selectedTeamRoster
+      .filter((player) => player.Position === "C")
+      .map((player) => ({
+        value: player.ID.toString(),
+        label: `${player.ID} ${player.Position} ${player.FirstName} ${player.LastName}`,
+      }));
+    options.unshift({ value: "0", label: "None" });
+    return options;
+  }, [selectedTeamRoster]);
 
   useEffect(() => {
     getBootstrapGameplanData();
@@ -126,6 +169,38 @@ export const useBasketballGameplan = () => {
     setSelectedTeamID(() => opts);
   };
 
+  const ChangeLineupInput = useCallback(
+    (playerID: number, key: string, value: number, index: number) => {
+      if (selectedLeague === SimCBB) {
+        const updatedLineupMap = { ...cbbLineupMap };
+        updatedLineupMap[cbbTeam!.ID] = [...updatedLineupMap[cbbTeam!.ID]];
+        updatedLineupMap[cbbTeam!.ID][index] = new CollegeLineup({
+          ...updatedLineupMap[cbbTeam!.ID][index],
+          [key]: value,
+        });
+        updateCBBLineupMap(updatedLineupMap);
+      } else {
+        const updatedLineupMap = { ...nbaLineupMap };
+        updatedLineupMap[nbaTeam!.ID] = [...updatedLineupMap[nbaTeam!.ID]];
+        updatedLineupMap[nbaTeam!.ID][index] = new NBALineup({
+          ...updatedLineupMap[nbaTeam!.ID][index],
+          [key]: value,
+        });
+        updateNBALineupMap(updatedLineupMap);
+      }
+    },
+    [
+      cbbRosterMap,
+      updateCBBLineupMap,
+      cbbTeam,
+      selectedLeague,
+      nbaLineupMap,
+      nbaTeam,
+      updateNBALineupMap,
+      selectedString,
+    ],
+  );
+
   const viewingUserTeam = useMemo(() => {
     if (!userTeam || !currentUser) return false;
     if (selectedTeamID === userTeam.ID) return true;
@@ -134,6 +209,23 @@ export const useBasketballGameplan = () => {
       (selectedLeague === SimCBB ? currentUser.cbb_id : currentUser.NBATeamID)
     );
   }, [userTeam, currentUser, selectedTeamID, selectedLeague]);
+
+  const errors = useMemo(() => {
+    const errorList: string[] = [];
+    const playersInLineup = {};
+
+    // Check to ensure that first & second strings for each lineup are filled.
+
+    // Check for players in lineup. There shouldn't be any duplicate players or selections within first string or 2nd string.
+
+    // Check to ensure the shot allocations for each designated position (1st string Center, 2nd string center, 1st string Forward, etc.) adds up to 100
+
+    // Will probably need to check for minutes allocated per position.
+
+    //
+
+    return errorList;
+  }, [selectedRosterMap, selectedTeamLineups]);
 
   return {
     selectedTeamID,
@@ -152,5 +244,9 @@ export const useBasketballGameplan = () => {
     SelectString,
     selectedString,
     selectedStringAbbr,
+    ChangeLineupInput,
+    selectedGuardOptions,
+    selectedForwardOptions,
+    selectedCenterOptions,
   };
 };
