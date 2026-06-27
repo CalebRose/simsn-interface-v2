@@ -31,6 +31,7 @@ export const BasketballGameplanPage = () => {
     selectedForwardOptions,
     selectedCenterOptions,
     ChangeLineupInput,
+    errors,
   } = useBasketballGameplan();
   const { isMobile } = useResponsive();
 
@@ -128,10 +129,17 @@ export const BasketballGameplanPage = () => {
                 <Button type="button" variant={"secondary"} onClick={() => {}}>
                   AI
                 </Button>
-                <Button type="button" variant={"secondary"} onClick={() => {}}>
+                <Button type="button" variant={"primary"} onClick={() => {}}>
                   Help
                 </Button>
-                <Button type="button" variant={"secondary"} onClick={() => {}}>
+                <Button
+                  type="button"
+                  variant={
+                    errors.length > 0 || !viewingUserTeam ? "danger" : "success"
+                  }
+                  onClick={() => {}}
+                  disabled={errors.length > 0 || !viewingUserTeam}
+                >
                   Save
                 </Button>
               </ButtonGrid>
@@ -165,6 +173,7 @@ export const BasketballGameplanPage = () => {
                     selectedTeam={selectedTeam}
                     ChangeLineupInput={ChangeLineupInput}
                     playerOptions={playerOptions}
+                    canModify={viewingUserTeam}
                   />
                 );
               })}

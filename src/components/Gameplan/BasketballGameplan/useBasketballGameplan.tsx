@@ -35,10 +35,14 @@ export const useBasketballGameplan = () => {
 
   const selectedTeam = useMemo(() => {
     if (selectedLeague === SimCBB && cbbTeamMap) {
-      return cbbTeamMap[selectedTeamID] || null;
+      let t = cbbTeamMap[selectedTeamID] || null;
+      if (!t) return cbbTeam;
+      return t;
     }
     if (selectedLeague === SimNBA && nbaTeamMap) {
-      return nbaTeamMap[selectedTeamID] || null;
+      let t = nbaTeamMap[selectedTeamID] || null;
+      if (!t) return nbaTeam;
+      return t;
     }
     return null;
   }, [selectedLeague, selectedTeamID, cbbTeamMap, nbaTeamMap]);
@@ -202,10 +206,10 @@ export const useBasketballGameplan = () => {
   );
 
   const viewingUserTeam = useMemo(() => {
-    if (!userTeam || !currentUser) return false;
-    if (selectedTeamID === userTeam.ID) return true;
+    if (!userTeam || !currentUser || !selectedTeam) return false;
+    if (selectedTeam?.ID === userTeam.ID) return true;
     return (
-      selectedTeamID ===
+      selectedTeam?.ID ===
       (selectedLeague === SimCBB ? currentUser.cbb_id : currentUser.NBATeamID)
     );
   }, [userTeam, currentUser, selectedTeamID, selectedLeague]);
@@ -248,5 +252,6 @@ export const useBasketballGameplan = () => {
     selectedGuardOptions,
     selectedForwardOptions,
     selectedCenterOptions,
+    errors,
   };
 };

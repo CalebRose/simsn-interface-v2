@@ -33,6 +33,7 @@ interface BasketballLineupProps {
     idx: number,
   ) => void;
   playerOptions: { label: string; value: string }[];
+  canModify: boolean;
 }
 
 const allocationList = [
@@ -53,6 +54,7 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
   selectedTeam,
   ChangeLineupInput,
   playerOptions,
+  canModify,
 }) => {
   const lineup = useMemo(() => {
     if (!selectedTeamLineups || selectedTeamLineups.length <= index) {
@@ -91,6 +93,7 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
         ChangeLineupInput={ChangeLineupInput}
         lineupString={selectedString + "StringID"}
         idx={index}
+        canModify={canModify}
       />
       <div className="space-y-2">
         {allocationList.map((x) => {
@@ -110,6 +113,7 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
           })();
 
           const key = `${selectedStringAbbr}${x}`;
+          if (!canModify) return <></>;
           return (
             <Input
               type="number"
@@ -118,6 +122,7 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
               name={key}
               value={lineup[key] as number}
               onChange={ChangeInput}
+              disabled={!canModify}
               classes="text-center mr-2"
             />
           );
@@ -140,6 +145,7 @@ interface BasketballLineupPlayerCardProps {
     idx: number,
   ) => void;
   lineupString: string;
+  canModify: boolean;
 }
 
 const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({
@@ -150,6 +156,7 @@ const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({
   playerOptions,
   ChangeLineupInput,
   lineupString,
+  canModify,
 }) => {
   const player = rosterMap[id];
 
@@ -189,6 +196,7 @@ const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({
         value={selectedOption}
         onChange={GetValue}
         options={playerOptions}
+        isDisabled={!canModify}
         placeholder={placeholder}
         styles={{
           control: (base, state) => ({
