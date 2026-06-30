@@ -247,7 +247,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
         </div>
         {playerID > 0 && player && (
           <>
-            <div className="grid grid-cols-2 gap-y-2 text-start mb-2">
+            <div className="grid grid-cols-2 gap-y-2 text-center mb-2">
               <Text variant="xs">Archetype: {player.Archetype}</Text>
               <Text variant="xs">
                 Overall: {getHockeyLetterGrade(player.Overall, player.Year)}
@@ -400,7 +400,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
                 </>
               )}
             </div>
-            <div className="flex flex-col gap-y-2 flex-1">
+            <div className="flex flex-col gap-y-2 flex-1 w-full">
               {property !== "GoalieID" &&
                 zoneInputList.map((x) => (
                   <Input
@@ -410,6 +410,7 @@ export const LineupPlayer: FC<LineupPlayerProps> = ({
                     name={x.key}
                     value={player[x.key] as number}
                     onChange={ChangeInput}
+                    classes="w-full"
                   />
                 ))}
               {property === "GoalieID" && (

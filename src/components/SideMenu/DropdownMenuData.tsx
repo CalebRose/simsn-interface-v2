@@ -203,8 +203,9 @@ export const useSideMenu = () => {
       {
         label: "Gameplan",
         isRoute: true,
-        route: "",
+        route: routes.NBA_GAMEPLAN,
         league: SimNBA,
+        click: () => navigate(routes.NBA_GAMEPLAN),
         toggle: () => toggleMenu(),
       },
       {

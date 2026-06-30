@@ -1,17 +1,24 @@
 import { FC, useEffect, useMemo } from "react";
-import { 
-  League, 
-  SimCHL, 
+import {
+  League,
+  SimCHL,
   SimPHL,
   SimCFB,
-  SimNFL
+  SimNFL,
+  SimCBB,
+  SimNBA,
 } from "../../_constants/constants";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { PageContainer } from "../../_design/Container";
 import { CHLLineupPage, PHLLineupPage } from "./HockeyLineups/LineupPage";
-import { CFBGameplanPage, NFLGameplanPage } from "./FootballGameplan/FootballGameplanPage"
+import {
+  CFBGameplanPage,
+  NFLGameplanPage,
+} from "./FootballGameplan/FootballGameplanPage";
+import { BasketballGameplanPage } from "./BasketballGameplan/BasketballGamplanPage";
+import { useSimBBAStore } from "../../context/SimBBAContext";
 
 interface GameplanPageProps {
   league: League;
@@ -23,6 +30,7 @@ export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
   const { selectedLeague, setSelectedLeague } = leagueStore;
   const { chlTeam, phlTeam } = useSimHCKStore();
   const { cfbTeam, nflTeam } = useSimFBAStore();
+  const { cbbTeam, nbaTeam } = useSimBBAStore();
   const {
     collegeGameplanMap,
     collegeDepthChart,
@@ -31,7 +39,7 @@ export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
     nflDepthChart,
     nflDepthChartMap,
     getBootstrapGameplanData,
-  } = fbStore
+  } = fbStore;
 
   useEffect(() => {
     if (selectedLeague !== league) {
@@ -46,8 +54,19 @@ export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
     if (selectedLeague === SimPHL && phlTeam) {
       return false;
     }
+    if (selectedLeague === SimCBB && cbbTeam) {
+      return false;
+    }
+    if (selectedLeague === SimNBA && nbaTeam) {
+      return false;
+    }
     if (selectedLeague === SimCFB) {
-      if (cfbTeam && collegeGameplanMap && collegeDepthChart && cfbDepthChartMap) {
+      if (
+        cfbTeam &&
+        collegeGameplanMap &&
+        collegeDepthChart &&
+        cfbDepthChartMap
+      ) {
         return false;
       }
       getBootstrapGameplanData();
@@ -59,7 +78,21 @@ export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
       getBootstrapGameplanData();
     }
     return true;
-  }, [chlTeam, phlTeam, cfbTeam, nflTeam, selectedLeague, collegeGameplanMap, collegeDepthChart, cfbDepthChartMap, nflGameplanMap, nflDepthChart, nflDepthChartMap]);
+  }, [
+    chlTeam,
+    phlTeam,
+    cfbTeam,
+    nflTeam,
+    cbbTeam,
+    nbaTeam,
+    selectedLeague,
+    collegeGameplanMap,
+    collegeDepthChart,
+    cfbDepthChartMap,
+    nflGameplanMap,
+    nflDepthChart,
+    nflDepthChartMap,
+  ]);
 
   const title = useMemo(() => {
     if (selectedLeague === SimCHL && chlTeam) {
@@ -74,8 +107,14 @@ export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
     if (selectedLeague === SimNFL && nflTeam) {
       return `${nflTeam.TeamName} Gameplan`;
     }
+    if (selectedLeague === SimCBB && cbbTeam) {
+      return `${cbbTeam.Team} Gameplan`;
+    }
+    if (selectedLeague === SimNBA && nbaTeam) {
+      return `${nbaTeam.Team} Gameplan`;
+    }
     return "Gameplan";
-  }, [chlTeam, phlTeam, selectedLeague]);
+  }, [chlTeam, phlTeam, cfbTeam, nflTeam, cbbTeam, nbaTeam, selectedLeague]);
 
   return (
     <>
@@ -84,6 +123,8 @@ export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
         {selectedLeague === SimPHL && phlTeam && <PHLLineupPage />}
         {selectedLeague === SimCFB && cfbTeam && <CFBGameplanPage />}
         {selectedLeague === SimNFL && nflTeam && <NFLGameplanPage />}
+        {selectedLeague === SimCBB && cbbTeam && <BasketballGameplanPage />}
+        {selectedLeague === SimNBA && nbaTeam && <BasketballGameplanPage />}
       </PageContainer>
     </>
   );

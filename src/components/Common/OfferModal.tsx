@@ -150,53 +150,56 @@ export const OfferModal: FC<OfferModalProps> = ({
 
   const totalBonus = useMemo(() => {
     if (!offer || !isNFL) return 0;
+    const nflOffer = offer as NFLFreeAgencyOffer;
     let total = 0;
-    if (offer.Y1Bonus) {
-      total += offer.Y1Bonus;
+    if (nflOffer.Y1Bonus) {
+      total += nflOffer.Y1Bonus;
     }
-    if (offer.Y2Bonus) {
-      total += offer.Y2Bonus;
+    if (nflOffer.Y2Bonus) {
+      total += nflOffer.Y2Bonus;
     }
-    if (offer.Y3Bonus) {
-      total += offer.Y3Bonus;
+    if (nflOffer.Y3Bonus) {
+      total += nflOffer.Y3Bonus;
     }
-    if (offer.Y4Bonus) {
-      total += offer.Y4Bonus;
+    if (nflOffer.Y4Bonus) {
+      total += nflOffer.Y4Bonus;
     }
-    if (offer.Y5Bonus) {
-      total += offer.Y5Bonus;
+    if (nflOffer.Y5Bonus) {
+      total += nflOffer.Y5Bonus;
     }
     return total;
   }, [offer, isNFL]);
 
   const totalSalary = useMemo(() => {
     if (!offer) return 0;
+    let proOffer = offer as NFLFreeAgencyOffer;
     if (isNFL || isPHL) {
       let total = 0;
-      if (offer.Y1BaseSalary) {
-        total += offer.Y1BaseSalary;
+      if (proOffer.Y1BaseSalary) {
+        total += proOffer.Y1BaseSalary;
       }
-      if (offer.Y2BaseSalary) {
-        total += offer.Y2BaseSalary;
+      if (proOffer.Y2BaseSalary) {
+        total += proOffer.Y2BaseSalary;
       }
-      if (offer.Y3BaseSalary) {
-        total += offer.Y3BaseSalary;
+      if (proOffer.Y3BaseSalary) {
+        total += proOffer.Y3BaseSalary;
       }
-      if (offer.Y4BaseSalary) {
-        total += offer.Y4BaseSalary;
+      if (proOffer.Y4BaseSalary) {
+        total += proOffer.Y4BaseSalary;
       }
-      if (offer.Y5BaseSalary) {
-        total += offer.Y5BaseSalary;
+      if (proOffer.Y5BaseSalary) {
+        total += proOffer.Y5BaseSalary;
       }
       return total;
     }
     if (isNBA) {
+      let proOffer = offer as NBAContractOffer;
       return (
-        offer.Year1Total +
-        offer.Year2Total +
-        offer.Year3Total +
-        offer.Year4Total +
-        offer.Year5Total
+        proOffer.Year1Total +
+        proOffer.Year2Total +
+        proOffer.Year3Total +
+        proOffer.Year4Total +
+        proOffer.Year5Total
       );
     }
     return 0;
@@ -204,11 +207,12 @@ export const OfferModal: FC<OfferModalProps> = ({
 
   const offerValues = useMemo(() => {
     if (league !== SimNFL) return {};
-    const y1value = offer.Y1Bonus * 1 + offer.Y1BaseSalary * 0.8;
-    const y2value = offer.Y2Bonus * 0.9 + offer.Y2BaseSalary * 0.4;
-    const y3value = offer.Y3Bonus * 0.8 + offer.Y3BaseSalary * 0.2;
-    const y4value = offer.Y4Bonus * 0.7 + offer.Y4BaseSalary * 0.1;
-    const y5value = offer.Y5Bonus * 0.6 + offer.Y5BaseSalary * 0.05;
+    let nflOffer = offer as NFLFreeAgencyOffer;
+    const y1value = nflOffer.Y1Bonus * 1 + nflOffer.Y1BaseSalary * 0.8;
+    const y2value = nflOffer.Y2Bonus * 0.9 + nflOffer.Y2BaseSalary * 0.4;
+    const y3value = nflOffer.Y3Bonus * 0.8 + nflOffer.Y3BaseSalary * 0.2;
+    const y4value = nflOffer.Y4Bonus * 0.7 + nflOffer.Y4BaseSalary * 0.1;
+    const y5value = nflOffer.Y5Bonus * 0.6 + nflOffer.Y5BaseSalary * 0.05;
 
     return {
       Y1Value: y1value,
@@ -221,6 +225,7 @@ export const OfferModal: FC<OfferModalProps> = ({
 
   const contractValue = useMemo(() => {
     if (isPHL) {
+      let phlOffer = offer as PHLFreeAgencyOffer;
       const {
         ContractLength,
         Y1BaseSalary,
@@ -228,7 +233,7 @@ export const OfferModal: FC<OfferModalProps> = ({
         Y3BaseSalary,
         Y4BaseSalary,
         Y5BaseSalary,
-      } = offer;
+      } = phlOffer;
       if (!ContractLength || ContractLength === 0) return 0;
       let y1 = Y1BaseSalary ? Y1BaseSalary : 0;
       let y2 = Y2BaseSalary ? Y2BaseSalary : 0;
@@ -250,7 +255,8 @@ export const OfferModal: FC<OfferModalProps> = ({
 
   const aavValue = useMemo(() => {
     if (isNFL) {
-      return GetNFLAAVValue(totalBonus + totalSalary, offer.ContractLength);
+      let nflOffer = offer as NFLFreeAgencyOffer;
+      return GetNFLAAVValue(totalBonus + totalSalary, nflOffer.ContractLength);
     }
     return 0;
   }, [isNFL, totalBonus, totalSalary, offer]);
