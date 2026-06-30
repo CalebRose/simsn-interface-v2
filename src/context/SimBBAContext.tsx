@@ -704,7 +704,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
           a.Team.localeCompare(b.Team) && a.ConferenceID - b.ConferenceID,
       );
       const nbaTeamOptions = sortedNBATeams.map((team) => ({
-        label: `${team.Team} ${team.Nickname}}`,
+        label: `${team.Team} ${team.Nickname}`,
         value: team.ID.toString(),
       }));
       const nbaConferenceOptions = Array.from(

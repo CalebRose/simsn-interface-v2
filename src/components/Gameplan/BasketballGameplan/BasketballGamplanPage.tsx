@@ -18,8 +18,7 @@ export const BasketballGameplanPage = () => {
     selectedRosterMap,
     selectedTeamLineups,
     lineupFormation,
-    cbbTeamOptions,
-    nbaTeamOptions,
+    selectedLeagueTeamOptions,
     userTeam,
     selectedTeam,
     SelectTeam,
@@ -73,7 +72,7 @@ export const BasketballGameplanPage = () => {
 
               <CategoryDropdown
                 label="Team"
-                options={cbbTeamOptions}
+                options={selectedLeagueTeamOptions}
                 change={SelectTeam}
                 isMulti={false}
                 isMobile={isMobile}

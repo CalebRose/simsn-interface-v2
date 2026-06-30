@@ -7,7 +7,7 @@ import {
 } from "../../../models/basketballModels";
 import { Text } from "../../../_design/Typography";
 import PlayerPicture from "../../../_utility/usePlayerFaces";
-import { SimCBB } from "../../../_constants/constants";
+import { League, SimCBB } from "../../../_constants/constants";
 import {
   getCBBLetterGrade,
   getCBBOverall,
@@ -16,6 +16,7 @@ import { Input } from "../../../_design/Inputs";
 import { SelectDropdown } from "../../../_design/Select";
 import { CSSObjectWithLabel, SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
+import { useLeagueStore } from "../../../context/LeagueContext";
 
 interface BasketballLineupProps {
   selectedTeamLineups: CollegeLineup[] | NBALineup[];
@@ -158,6 +159,7 @@ const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({
   lineupString,
   canModify,
 }) => {
+  const { selectedLeague } = useLeagueStore();
   const player = rosterMap[id];
 
   const selectedOption = useMemo(() => {
@@ -189,7 +191,7 @@ const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({
           playerID={id}
           player={player}
           team={team}
-          league={SimCBB}
+          league={selectedLeague as League}
         />
       </div>
       <SelectDropdown
@@ -253,68 +255,90 @@ const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({
       <Text variant="body-small">
         Overall:{" "}
         <span className="text-xs">
-          {getCBBLetterGrade(player.Overall, player.Year)}
+          {selectedLeague === SimCBB
+            ? getCBBLetterGrade(player.Overall, player.Year)
+            : player.Overall}
         </span>
       </Text>
       <div className="grid grid-cols-2 space-x-4 space-y-2">
         <Text variant="body-small">
           Inside:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.InsideShooting, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.InsideShooting, player.Year)
+              : player.InsideShooting}
           </span>
         </Text>
         <Text variant="body-small">
           Middle:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.MidRangeShooting, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.MidRangeShooting, player.Year)
+              : player.MidRangeShooting}
           </span>
         </Text>
         <Text variant="body-small">
           3pt:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.ThreePointShooting, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.ThreePointShooting, player.Year)
+              : player.ThreePointShooting}
           </span>
         </Text>
         <Text variant="body-small">
           Ballwork:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.Ballwork, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.Ballwork, player.Year)
+              : player.Ballwork}
           </span>
         </Text>
         <Text variant="body-small">
           Agility:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.Agility, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.Agility, player.Year)
+              : player.Agility}
           </span>
         </Text>
         <Text variant="body-small">
           Free Throw:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.FreeThrow, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.FreeThrow, player.Year)
+              : player.FreeThrow}
           </span>
         </Text>
         <Text variant="body-small">
           Stealing:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.Stealing, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.Stealing, player.Year)
+              : player.Stealing}
           </span>
         </Text>
         <Text variant="body-small">
           Blocking:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.Blocking, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.Blocking, player.Year)
+              : player.Blocking}
           </span>
         </Text>
         <Text variant="body-small">
           Int. Defense:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.InteriorDefense, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.InteriorDefense, player.Year)
+              : player.InteriorDefense}
           </span>
         </Text>
         <Text variant="body-small">
           Per. Defense:{" "}
           <span className="text-xs">
-            {getCBBLetterGrade(player.PerimeterDefense, player.Year)}
+            {selectedLeague === SimCBB
+              ? getCBBLetterGrade(player.PerimeterDefense, player.Year)
+              : player.PerimeterDefense}
           </span>
         </Text>
       </div>

@@ -47,6 +47,16 @@ export const useBasketballGameplan = () => {
     return null;
   }, [selectedLeague, selectedTeamID, cbbTeamMap, nbaTeamMap]);
 
+  const selectedLeagueTeamOptions = useMemo(() => {
+    if (selectedLeague === SimCBB) {
+      return cbbTeamOptions || [];
+    }
+    if (selectedLeague === SimNBA) {
+      return nbaTeamOptions || [];
+    }
+    return [];
+  }, [selectedLeague, cbbTeamOptions, nbaTeamOptions]);
+
   const userTeam = useMemo(() => {
     if (selectedLeague === SimCBB) {
       return cbbTeam;
@@ -239,8 +249,7 @@ export const useBasketballGameplan = () => {
     selectedRosterMap,
     selectedTeamLineups,
     lineupFormation,
-    cbbTeamOptions,
-    nbaTeamOptions,
+    selectedLeagueTeamOptions,
     userTeam,
     selectedTeam,
     SelectTeam,
