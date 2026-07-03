@@ -58,8 +58,6 @@ export const CFBGameplanPage = () => {
     useState(false);
   const [adminModeEnabled, setAdminModeEnabled] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(cfbTeam);
-  const [selectedTeamDepthChart, setSelectedTeamDepthChart] =
-    useState<CFBDepthChart | null>(null);
 
   const teamPlayers = useMemo(() => {
     if (selectedTeam && cfbRosterMap) {
@@ -69,13 +67,6 @@ export const CFBGameplanPage = () => {
   }, [cfbRosterMap, selectedTeam]);
 
   const [isLoadingGameplan, setIsLoadingGameplan] = useState(false);
-
-  useEffect(() => {
-    if (selectedTeam && cfbDepthChartMap) {
-      const depthChart = cfbDepthChartMap[selectedTeam.ID];
-      setSelectedTeamDepthChart(depthChart || null);
-    }
-  }, [selectedTeam, cfbDepthChartMap]);
 
   const handleTeamSelection = useCallback(
     (selectedOption: SingleValue<SelectOption>) => {
@@ -173,8 +164,22 @@ export const CFBGameplanPage = () => {
   const borderTextColor = getTextColorBasedOnBg(borderColor);
   const backgroundTextColor = getTextColorBasedOnBg(backgroundColor);
 
+  const selectedTeamGameplan = useMemo(() => {
+    if (selectedTeam && collegeGameplanMap) {
+      return collegeGameplanMap[selectedTeam.ID] || null;
+    }
+    return null;
+  }, [selectedTeam, collegeGameplanMap]);
+
+  const selectedTeamDepthChart = useMemo(() => {
+    if (selectedTeam && cfbDepthChartMap) {
+      return cfbDepthChartMap[selectedTeam.ID] || null;
+    }
+    return null;
+  }, [selectedTeam, cfbDepthChartMap]);
+
   return (
-    <div className="sm:container w-full sm:mx-auto sm:px-4 py-8">
+    <div className="w-full sm:mx-auto sm:px-4 py-8">
       <div className="text-center mb-8">
         <div className="flex flex-col 2xl:flex-row justify-center items-center 2xl:space-x-4 space-y-4 2xl:space-y-0 mb-6">
           <ButtonGroup>
@@ -241,7 +246,7 @@ export const CFBGameplanPage = () => {
           depthChart={selectedTeamDepthChart || cfbDepthChart}
           team={selectedTeam}
           league={SimCFB}
-          gameplan={cfbGameplan}
+          gameplan={selectedTeamGameplan}
           onDepthChartUpdate={handleDepthChartUpdate}
           canModify={
             selectedTeam?.ID === cfbTeam?.ID ||
