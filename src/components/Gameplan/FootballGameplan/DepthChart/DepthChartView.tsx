@@ -401,20 +401,94 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
         isValid={validation.isValid}
         contextName="Depth Chart"
       />
-      <div className="grid grid-cols-1 2xl:grid-cols-[minmax(0,1fr)_20rem] gap-8 2xl:gap-6 items-start">
+      <div className="grid grid-cols-1 gap-8 2xl:gap-6 items-start">
         {isDesktop && (
-          <div className="relative min-w-0 z-0">
-            <div className="text-center pb-4">
-              <Text variant="h3" classes="text-white font-bold">
-                {selectedFormationType === "offense"
-                  ? "Offensive Depth Chart"
-                  : selectedFormationType === "defense"
-                    ? "Defensive Depth Chart"
-                    : "Special Teams Depth Chart"}
-              </Text>
-              <Text variant="body" classes="text-gray-400 mt-2">
-                Visual representation of the depth chart for {team.TeamName}
-              </Text>
+          <div className="relative min-w-0 z-0 w-full">
+            <div className="text-center pb-4 flex justify-between">
+              <div>
+                <Text variant="h3" classes="text-white font-bold">
+                  {selectedFormationType === "offense"
+                    ? "Offensive Depth Chart"
+                    : selectedFormationType === "defense"
+                      ? "Defensive Depth Chart"
+                      : "Special Teams Depth Chart"}
+                </Text>
+                <Text variant="body" classes="text-gray-400 mt-2">
+                  Visual representation of the depth chart for {team.TeamName}
+                </Text>
+              </div>
+              {!canModify && (
+                <div className="text-center mb-4 p-3 bg-yellow-900 border border-yellow-600 rounded-lg">
+                  <Text variant="body" classes="text-yellow-400">
+                    Viewing {team?.TeamName || "Team"} Depth Chart (Read-Only)
+                  </Text>
+                </div>
+              )}
+              {canModify && (
+                <div className="flex gap-2 justify-center mb-4">
+                  <div
+                    className={`border rounded-lg p-4 ${validation.isValid ? "bg-green-900 bg-black/50 border-green-500" : "bg-red-900 bg-black/50 border-red-500"}`}
+                  >
+                    <div className="flex flex-col items-center justify-between">
+                      <div>
+                        <Text
+                          variant="body"
+                          classes={`font-semibold ${validation.isValid ? "text-green-400" : "text-red-400"}`}
+                        >
+                          Depth Chart Status
+                        </Text>
+                        <Text
+                          variant="small"
+                          classes={
+                            validation.isValid
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }
+                        >
+                          {validation.isValid
+                            ? "Valid depth chart"
+                            : "Invalid depth chart"}
+                        </Text>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-lg p-4 border-2"
+                    style={{ borderColor, backgroundColor }}
+                  >
+                    <div className="flex gap-2">
+                      <Button
+                        variant={!validation.isValid ? "danger" : "primary"}
+                        size="md"
+                        onClick={handleSaveDepthChart}
+                        disabled={
+                          !validation.isValid || isSaving || !hasUnsavedChanges
+                        }
+                        className={`w-full ${!validation.isValid || isSaving ? "cursor-not-allowed" : "cursor-pointer"} ${!validation.isValid ? "bg-red-900 bg-black/50 border-red-500" : "cursor-pointer"}`}
+                      >
+                        {isSaving ? "Saving..." : "Save"}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={handleResetDepthChart}
+                        disabled={isSaving || !hasUnsavedChanges}
+                        className={`min-w-24 ${isSaving || !hasUnsavedChanges ? "cursor-not-allowed" : ""}`}
+                      >
+                        Reset
+                      </Button>
+                    </div>
+                    {hasUnsavedChanges && (
+                      <Text
+                        variant="xs"
+                        classes="text-yellow-400 mt-2 text-center"
+                      >
+                        You have unsaved changes
+                      </Text>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             <FormationView
               formationType={selectedFormationType}
@@ -432,6 +506,82 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
           </div>
         )}
         <div className="relative z-10 w-full max-w-[20rem] justify-self-center 2xl:max-w-none 2xl:justify-self-stretch">
+          {!isDesktop && (
+            <div className="space-y-2">
+              {!canModify && (
+                <div className="text-center mb-4 p-3 bg-yellow-900 border border-yellow-600 rounded-lg">
+                  <Text variant="body" classes="text-yellow-400">
+                    Viewing {team?.TeamName || "Team"} Depth Chart (Read-Only)
+                  </Text>
+                </div>
+              )}
+              {canModify && (
+                <div className="grid grid-cols-1 gap-2 justify-center mb-4">
+                  <div
+                    className={`border rounded-lg p-2 ${validation.isValid ? "bg-green-900  border-green-500" : "bg-red-900  border-red-500"}`}
+                  >
+                    <div className="flex flex-col items-center justify-between">
+                      <div>
+                        <Text
+                          variant="body-small"
+                          classes={`font-semibold ${validation.isValid ? "text-green-400" : "text-red-400"}`}
+                        >
+                          Depth Chart Status
+                        </Text>
+                        <Text
+                          variant="small"
+                          classes={
+                            validation.isValid
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }
+                        >
+                          {validation.isValid
+                            ? "Valid depth chart"
+                            : "Invalid depth chart"}
+                        </Text>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className="rounded-lg p-4 border-2"
+                    style={{ borderColor, backgroundColor }}
+                  >
+                    <div className="flex gap-2">
+                      <Button
+                        variant={!validation.isValid ? "danger" : "primary"}
+                        size="md"
+                        onClick={handleSaveDepthChart}
+                        disabled={
+                          !validation.isValid || isSaving || !hasUnsavedChanges
+                        }
+                        className={`w-full ${!validation.isValid || isSaving ? "cursor-not-allowed" : "cursor-pointer"} ${!validation.isValid ? "bg-red-900 bg-black/50 border-red-500" : "cursor-pointer"}`}
+                      >
+                        {isSaving ? "Saving..." : "Save"}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={handleResetDepthChart}
+                        disabled={isSaving || !hasUnsavedChanges}
+                        className={`min-w-24 ${isSaving || !hasUnsavedChanges ? "cursor-not-allowed" : ""}`}
+                      >
+                        Reset
+                      </Button>
+                    </div>
+                    {hasUnsavedChanges && (
+                      <Text
+                        variant="xs"
+                        classes="text-yellow-400 mt-2 text-center"
+                      >
+                        You have unsaved changes
+                      </Text>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <div className="text-center">
             <Text variant="h3" classes="text-white font-bold mb-2">
               Depth Chart Management

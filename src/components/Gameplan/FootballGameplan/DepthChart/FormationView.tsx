@@ -48,7 +48,7 @@ const FormationView: React.FC<FormationViewProps> = ({
 }) => {
   const [currentFormationIndex, setCurrentFormationIndex] = useState(0);
   const formationBoardClasses =
-    "relative mx-auto w-full max-w-[75rem] min-h-[36rem] aspect-[15/8] bg-linear-to-b from-green-600 via-green-500 to-green-600 rounded-lg overflow-hidden border-2";
+    "relative mx-auto w-full max-w-[80vw] min-h-160 bg-linear-to-b from-green-600 via-green-500 to-green-600 rounded-lg overflow-hidden border-2";
   const logo = getLogo(league, team.ID, false);
   const availableFormations = useMemo(() => {
     if (formationType === "offense") {
@@ -104,7 +104,7 @@ const FormationView: React.FC<FormationViewProps> = ({
   };
 
   const getOffenseFormation = () => (
-    <div className="space-y-4">
+    <div className="space-y-4 w-[80vw]">
       {availableFormations.length > 1 && currentFormation && (
         <div
           className="flex items-center space-x-4 p-1 rounded-lg border-2 justify-center"
@@ -140,119 +140,121 @@ const FormationView: React.FC<FormationViewProps> = ({
       )}
 
       <div className={formationBoardClasses} style={{ borderColor }}>
-        <div className="absolute inset-0">
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-full h-px bg-white opacity-30"
-              style={{ top: `${8 + i * 8}%` }}
-            />
-          ))}
-        </div>
-
-        <div
-          className="absolute inset-0 grid grid-rows-12 p-2"
-          style={{ gridTemplateColumns: "repeat(14, minmax(0.5, 1fr))" }}
-        >
-          {formationLayout?.positions.map((positionData) => {
-            if (
-              !positionData.shouldRender ||
-              !shouldRenderPosition(
-                positionData.position,
-                currentFormation,
-                formationType,
-              )
-            ) {
-              return null;
-            }
-
-            const positionType = positionData.position.replace(/\d+$/, "");
-            const positionLevel = parseInt(
-              positionData.position.match(/\d+$/)?.[0] || "1",
-            );
-
-            if (
-              ["LT1", "LG1", "C1", "RG1", "RT1"].includes(positionData.position)
-            ) {
-              return null;
-            }
-            return (
+        <div className="relative min-h-160 w-full">
+          <div className="absolute inset-0">
+            {[...Array(12)].map((_, i) => (
               <div
-                key={positionData.position}
-                className={`flex justify-center`}
-                style={{
-                  gridColumnStart: positionData.col,
-                  gridRowStart: positionData.row,
-                }}
-              >
-                <PositionSlot
-                  position={positionType}
-                  positionLevels={positionType === "WR" ? 4 : 1}
-                  players={players}
-                  depthChart={depthChart}
-                  team={team}
-                  league={league}
-                  size="md"
-                  label={positionData.position}
-                  startingLevel={positionLevel}
-                  showBackupBelow={positionData.showBackup}
-                  openModal={openModal}
-                  backgroundColor={backgroundColor}
-                />
-              </div>
-            );
-          })}
+                key={i}
+                className="absolute w-full h-px bg-white opacity-30"
+                style={{ top: `${8 + i * 8}%` }}
+              />
+            ))}
+          </div>
+
           <div
-            className="flex justify-center items-center gap-1"
-            style={{ gridColumnStart: 5, gridColumnEnd: 10, gridRowStart: 3 }}
+            className="absolute inset-0 grid grid-rows-12 p-2"
+            style={{ gridTemplateColumns: "repeat(14, minmax(0.5, 1fr))" }}
           >
-            {["LT1", "LG1", "C1", "RG1", "RT1"].map((position) => {
-              const positionType = position.replace(/\d+$/, "");
+            {formationLayout?.positions.map((positionData) => {
+              if (
+                !positionData.shouldRender ||
+                !shouldRenderPosition(
+                  positionData.position,
+                  currentFormation,
+                  formationType,
+                )
+              ) {
+                return null;
+              }
+
+              const positionType = positionData.position.replace(/\d+$/, "");
+              const positionLevel = parseInt(
+                positionData.position.match(/\d+$/)?.[0] || "1",
+              );
+
+              if (
+                ["LT1", "LG1", "C1", "RG1", "RT1"].includes(
+                  positionData.position,
+                )
+              ) {
+                return null;
+              }
               return (
-                <PositionSlot
-                  key={position}
-                  position={positionType}
-                  positionLevels={1}
-                  players={players}
-                  depthChart={depthChart}
-                  team={team}
-                  league={league}
-                  size="md"
-                  label={position}
-                  showBackupBelow={false}
-                  openModal={openModal}
-                  backgroundColor={backgroundColor}
-                />
+                <div
+                  key={positionData.position}
+                  className={`flex justify-center`}
+                  style={{
+                    gridColumnStart: positionData.col,
+                    gridRowStart: positionData.row,
+                  }}
+                >
+                  <PositionSlot
+                    position={positionType}
+                    positionLevels={positionType === "WR" ? 4 : 1}
+                    players={players}
+                    depthChart={depthChart}
+                    team={team}
+                    league={league}
+                    size="md"
+                    label={positionData.position}
+                    startingLevel={positionLevel}
+                    showBackupBelow={positionData.showBackup}
+                    openModal={openModal}
+                    backgroundColor={backgroundColor}
+                  />
+                </div>
               );
             })}
-          </div>
-          <div
-            className="row-start-11 row-span-2 rounded-lg bg-black/75 col-[1/span_14] w-full border-2"
-            style={{ backgroundColor: borderColor, borderColor: accentColor }}
-          >
-            <div className="flex items-center justify-between w-full h-full px-4">
-              <Logo url={logo} />
-              <Text
-                variant="h1"
-                classes={`uppercase ${borderTextColor}`}
-                style={{
-                  textShadow: borderTextColor?.includes("white")
-                    ? "1.5px 1.5px 0 black, -1.5px -1.5px 0 black, 1.5px -1.5px 0 black, -1.5px 1.5px 0 black"
-                    : "1.5px 1.5px 0 white, -1.5px -1.5px 0 white, 1.5px -1.5px 0 white, -1.5px 1.5px 0 white",
-                }}
-              >
-                {league === SimCFB ? team.TeamName : team.Mascot}
-              </Text>
-              <Logo url={logo} />
+            <div
+              className="flex justify-center items-center gap-1"
+              style={{ gridColumnStart: 5, gridColumnEnd: 10, gridRowStart: 3 }}
+            >
+              {["LT1", "LG1", "C1", "RG1", "RT1"].map((position) => {
+                const positionType = position.replace(/\d+$/, "");
+                return (
+                  <PositionSlot
+                    key={position}
+                    position={positionType}
+                    positionLevels={1}
+                    players={players}
+                    depthChart={depthChart}
+                    team={team}
+                    league={league}
+                    size="md"
+                    label={position}
+                    showBackupBelow={false}
+                    openModal={openModal}
+                    backgroundColor={backgroundColor}
+                  />
+                );
+              })}
             </div>
           </div>
+        </div>
+        <div
+          className="relative flex items-center justify-between w-full h-16 px-4 border-t-2"
+          style={{ backgroundColor: borderColor, borderColor: accentColor }}
+        >
+          <Logo url={logo} />
+          <Text
+            variant="h1"
+            classes={`uppercase ${borderTextColor}`}
+            style={{
+              textShadow: borderTextColor?.includes("white")
+                ? "1.5px 1.5px 0 black, -1.5px -1.5px 0 black, 1.5px -1.5px 0 black, -1.5px 1.5px 0 black"
+                : "1.5px 1.5px 0 white, -1.5px -1.5px 0 white, 1.5px -1.5px 0 white, -1.5px 1.5px 0 white",
+            }}
+          >
+            {league === SimCFB ? team.TeamName : team.Mascot}
+          </Text>
+          <Logo url={logo} />
         </div>
       </div>
     </div>
   );
 
   const getDefenseFormation = () => (
-    <div className="space-y-4">
+    <div className="space-y-4 w-[80vw]">
       {availableFormations.length > 1 && currentFormation && (
         <div
           className="flex items-center space-x-4 p-1 rounded-lg border-2 justify-center"
@@ -415,122 +417,124 @@ const FormationView: React.FC<FormationViewProps> = ({
   );
 
   const getSpecialTeamsFormation = () => (
-    <div className={formationBoardClasses} style={{ borderColor }}>
-      <div className="absolute inset-0">
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-full h-px bg-white opacity-30"
-            style={{ top: `${8 + i * 8}%` }}
-          />
-        ))}
-      </div>
-      <div
-        className="absolute inset-0 grid grid-rows-12 gap-1 p-4"
-        style={{ gridTemplateColumns: "repeat(14, minmax(0.5, 1fr))" }}
-      >
-        <div className="col-start-2 col-span-1 row-start-9 flex justify-center">
-          <PositionSlot
-            position="K"
-            positionLevels={1}
-            players={players}
-            depthChart={depthChart}
-            team={team}
-            league={league}
-            size="md"
-            label="K1"
-            startingLevel={1}
-            showBackupBelow={false}
-            openModal={openModal}
-            backgroundColor={backgroundColor}
-          />
-        </div>
-        <div className="col-start-3 col-span-1 row-start-9 flex justify-center">
-          <PositionSlot
-            position="P"
-            positionLevels={1}
-            players={players}
-            depthChart={depthChart}
-            team={team}
-            league={league}
-            size="md"
-            label="P1"
-            startingLevel={1}
-            showBackupBelow={false}
-            openModal={openModal}
-            backgroundColor={backgroundColor}
-          />
-        </div>
-        <div className="col-span-12 col-start-1 row-start-1 justify-center grid grid-cols-8 gap-2">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((level) => (
-            <div
-              key={level}
-              className="flex justify-center items-center w-full"
-            >
-              <PositionSlot
-                position="STU"
-                positionLevels={15}
-                players={players}
-                depthChart={depthChart}
-                team={team}
-                league={league}
-                size="md"
-                label={`STU${level}`}
-                startingLevel={level}
-                showBackupBelow={false}
-                openModal={openModal}
-                backgroundColor={backgroundColor}
+    <div className="space-y-4 w-[80vw]">
+      <div className={formationBoardClasses} style={{ borderColor }}>
+        <div className="relative min-h-160">
+          <div className="absolute inset-0">
+            {[...Array(12)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-full h-px bg-white opacity-30"
+                style={{ top: `${8 + i * 8}%` }}
               />
+            ))}
+          </div>
+
+          <div className="relative flex flex-col min-h-160 p-4 gap-6">
+            {/* STU section — cards wrap freely across the full board width */}
+            <div className="flex flex-wrap justify-center gap-2">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(
+                (level) => (
+                  <PositionSlot
+                    key={level}
+                    position="STU"
+                    positionLevels={15}
+                    players={players}
+                    depthChart={depthChart}
+                    team={team}
+                    league={league}
+                    size="md"
+                    label={`STU${level}`}
+                    startingLevel={level}
+                    showBackupBelow={false}
+                    openModal={openModal}
+                    backgroundColor={backgroundColor}
+                  />
+                ),
+              )}
             </div>
-          ))}
-        </div>
-        <div className="col-start-12 col-span-1 row-start-9 flex justify-center">
-          <PositionSlot
-            position="KR"
-            positionLevels={1}
-            players={players}
-            depthChart={depthChart}
-            team={team}
-            league={league}
-            size="md"
-            label="KR1"
-            startingLevel={1}
-            showBackupBelow={true}
-            openModal={openModal}
-            backgroundColor={backgroundColor}
-          />
-        </div>
-        <div className="col-start-13 col-span-1 row-start-9 flex justify-center">
-          <PositionSlot
-            position="PR"
-            positionLevels={1}
-            players={players}
-            depthChart={depthChart}
-            team={team}
-            league={league}
-            size="md"
-            label="PR1"
-            startingLevel={1}
-            showBackupBelow={true}
-            openModal={openModal}
-            backgroundColor={backgroundColor}
-          />
-        </div>
-        <div className="col-start-1 col-span-1 row-start-9 flex justify-center">
-          <PositionSlot
-            position="FG"
-            positionLevels={1}
-            players={players}
-            depthChart={depthChart}
-            team={team}
-            league={league}
-            size="md"
-            label="FG1"
-            startingLevel={1}
-            showBackupBelow={true}
-            openModal={openModal}
-            backgroundColor={backgroundColor}
-          />
+
+            {/* Spacer — pushes kickers/returners to the bottom of the field */}
+            <div className="flex-1" />
+
+            {/* Bottom row: kickers left, returners right */}
+            <div className="flex justify-between items-start px-4 pb-2">
+              <div className="flex gap-4">
+                <PositionSlot
+                  position="FG"
+                  positionLevels={1}
+                  players={players}
+                  depthChart={depthChart}
+                  team={team}
+                  league={league}
+                  size="md"
+                  label="FG1"
+                  startingLevel={1}
+                  showBackupBelow={true}
+                  openModal={openModal}
+                  backgroundColor={backgroundColor}
+                />
+                <PositionSlot
+                  position="K"
+                  positionLevels={1}
+                  players={players}
+                  depthChart={depthChart}
+                  team={team}
+                  league={league}
+                  size="md"
+                  label="K1"
+                  startingLevel={1}
+                  showBackupBelow={false}
+                  openModal={openModal}
+                  backgroundColor={backgroundColor}
+                />
+                <PositionSlot
+                  position="P"
+                  positionLevels={1}
+                  players={players}
+                  depthChart={depthChart}
+                  team={team}
+                  league={league}
+                  size="md"
+                  label="P1"
+                  startingLevel={1}
+                  showBackupBelow={false}
+                  openModal={openModal}
+                  backgroundColor={backgroundColor}
+                />
+              </div>
+              <div className="flex gap-4">
+                <PositionSlot
+                  position="KR"
+                  positionLevels={1}
+                  players={players}
+                  depthChart={depthChart}
+                  team={team}
+                  league={league}
+                  size="md"
+                  label="KR1"
+                  startingLevel={1}
+                  showBackupBelow={true}
+                  openModal={openModal}
+                  backgroundColor={backgroundColor}
+                />
+                <PositionSlot
+                  position="PR"
+                  positionLevels={1}
+                  players={players}
+                  depthChart={depthChart}
+                  team={team}
+                  league={league}
+                  size="md"
+                  label="PR1"
+                  startingLevel={1}
+                  showBackupBelow={true}
+                  openModal={openModal}
+                  backgroundColor={backgroundColor}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

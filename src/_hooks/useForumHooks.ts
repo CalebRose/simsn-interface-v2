@@ -321,3 +321,116 @@ export const useCreateThread = () => {
   const { createThread, permissions } = useForumStore();
   return { createThread, canCreate: permissions.canCreateThread };
 };
+
+// ─────────────────────────────────────────────
+// Last Viewed Threads (localStorage-backed, per user)
+// ─────────────────────────────────────────────
+
+const MAX_VIEWED_THREADS = 10;
+
+export interface ViewedThread {
+  threadId: string;
+  title: string;
+  forumPath: string[];
+  viewedAt: number; // epoch ms
+  replyCount: number;
+  latestActivityAt?: { seconds: number } | null;
+  latestActivityBy?: { username: string } | null;
+}
+
+function getViewedThreadsStorageKey(uid: string): string {
+  return `forum_viewed_threads_${uid}`;
+}
+
+export function recordThreadView(
+  uid: string,
+  thread: Pick<
+    Thread,
+    | "id"
+    | "title"
+    | "forumPath"
+    | "replyCount"
+    | "latestActivityAt"
+    | "latestActivityBy"
+  >,
+): void {
+  const key = getViewedThreadsStorageKey(uid);
+  let existing: ViewedThread[] = [];
+  try {
+    existing = JSON.parse(localStorage.getItem(key) ?? "[]");
+  } catch {
+    existing = [];
+  }
+
+  // Move or add the entry to the front
+  existing = existing.filter((t) => t.threadId !== thread.id);
+  existing.unshift({
+    threadId: thread.id,
+    title: thread.title,
+    forumPath: thread.forumPath,
+    viewedAt: Date.now(),
+    replyCount: thread.replyCount,
+    latestActivityAt: thread.latestActivityAt
+      ? { seconds: thread.latestActivityAt.seconds }
+      : null,
+    latestActivityBy: thread.latestActivityBy ?? null,
+  });
+
+  localStorage.setItem(
+    key,
+    JSON.stringify(existing.slice(0, MAX_VIEWED_THREADS)),
+  );
+}
+
+export function useLastViewedThreads(uid: string | undefined): ViewedThread[] {
+  const [threads, setThreads] = useState<ViewedThread[]>([]);
+
+  useEffect(() => {
+    if (!uid) {
+      setThreads([]);
+      return;
+    }
+    const key = getViewedThreadsStorageKey(uid);
+    try {
+      const stored: ViewedThread[] = JSON.parse(
+        localStorage.getItem(key) ?? "[]",
+      );
+      setThreads(stored);
+    } catch {
+      setThreads([]);
+    }
+  }, [uid]);
+
+  return threads;
+}
+
+// ─────────────────────────────────────────────
+// Latest Threads (global, ordered by latest activity)
+// ─────────────────────────────────────────────
+
+export function useLatestThreads(enabled: boolean): {
+  threads: Thread[];
+  loading: boolean;
+} {
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    setLoading(true);
+    ForumService.GetLatestThreads(10)
+      .then((result) => {
+        if (!cancelled) setThreads(result);
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+
+  return { threads, loading };
+}

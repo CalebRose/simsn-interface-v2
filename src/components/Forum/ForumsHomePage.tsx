@@ -5,7 +5,14 @@ import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
 import { ForumCard } from "./components/ForumCard";
 import { ForumEditorialSection } from "./components/ForumEditorialSection";
-import { useForumEditorialItems, useForums } from "../../_hooks/useForumHooks";
+import { LastViewedThreadsSidebar } from "./components/LastViewedThreadsSidebar";
+import { LatestThreadsSidebar } from "./components/LatestThreadsSidebar";
+import {
+  useForumEditorialItems,
+  useForums,
+  useLastViewedThreads,
+  useLatestThreads,
+} from "../../_hooks/useForumHooks";
 import { useForumStore } from "../../context/ForumContext";
 import { Forum } from "../../models/forumModels";
 import routes from "../../_constants/routes";
@@ -45,6 +52,10 @@ export const ForumsHomePage: React.FC = () => {
     forumsLoading,
     canViewForums,
   );
+
+  const lastViewedThreads = useLastViewedThreads(currentUser?.id);
+  const { threads: latestThreads, loading: latestThreadsLoading } =
+    useLatestThreads(canViewForums);
 
   if (!canViewForums)
     return (
@@ -90,30 +101,64 @@ export const ForumsHomePage: React.FC = () => {
             <Text variant="secondary">No forums available.</Text>
           </div>
         ) : (
-          <section className="flex w-full flex-col gap-3 text-left">
-            <div className="flex items-end justify-between gap-3 border-b border-white/10 pb-3">
-              <div>
-                <Text variant="h5">Forum Categories</Text>
+          <section className="flex w-full flex-col gap-0 text-left">
+            {/* Header row — all three column headers share the same row */}
+            <div className="grid grid-cols-12 gap-4 border-b border-white/10 pb-3">
+              <div className="col-span-2 flex flex-col justify-end">
+                <Text variant="h5">Last Viewed Threads</Text>
                 <Text variant="secondary" classes="mt-1">
-                  Browse every conference room, subforum, and discussion hub.
+                  Your last viewed threads
                 </Text>
               </div>
-              <Text
-                variant="body-small"
-                classes="hidden sm:block text-white/45 uppercase tracking-[0.2em]"
-              >
-                Directory
-              </Text>
+              <div className="col-span-8 flex items-end justify-between">
+                <div>
+                  <Text variant="h5">Forum Categories</Text>
+                  <Text variant="secondary" classes="mt-1">
+                    Browse every conference room, subforum, and discussion hub.
+                  </Text>
+                </div>
+                <Text
+                  variant="body-small"
+                  classes="hidden sm:block text-white/45 uppercase tracking-[0.2em]"
+                >
+                  Directory
+                </Text>
+              </div>
+              <div className="col-span-2 flex flex-col justify-end">
+                <Text variant="h5">Latest Threads</Text>
+                <Text variant="secondary" classes="mt-1">
+                  The most recent activity
+                </Text>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              {topLevel.map((forum) => (
-                <ForumCard
-                  key={forum.id}
-                  forum={forum}
-                  subforums={subforumMap.get(forum.id) ?? []}
+            {/* Content row */}
+            <div className="grid grid-cols-12 gap-4 items-start pt-4">
+              {/* Last Viewed sidebar */}
+              <div className="col-span-2">
+                <LastViewedThreadsSidebar threads={lastViewedThreads} />
+              </div>
+
+              {/* Forum category cards */}
+              <div className="col-span-8">
+                <div className="grid grid-cols-1 gap-4">
+                  {topLevel.map((forum) => (
+                    <ForumCard
+                      key={forum.id}
+                      forum={forum}
+                      subforums={subforumMap.get(forum.id) ?? []}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Latest Threads sidebar */}
+              <div className="col-span-2">
+                <LatestThreadsSidebar
+                  threads={latestThreads}
+                  isLoading={latestThreadsLoading}
                 />
-              ))}
+              </div>
             </div>
           </section>
         )}

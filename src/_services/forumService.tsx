@@ -173,6 +173,23 @@ export const ForumService = {
     await updateDoc(ref, { viewCount: increment(1) });
   },
 
+  GetLatestThreads: async (count = 10): Promise<Thread[]> => {
+    const q = query(
+      threadsCol(),
+      where("isDeleted", "==", false),
+      where("threadType", "==", "standard"),
+      orderBy("latestActivityAt", "desc"),
+      limit(count),
+    );
+    const snap = await getDocs(q);
+    const threads = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Thread);
+    return threads
+      .sort(
+        (a, b) => b.latestActivityAt.toMillis() - a.latestActivityAt.toMillis(),
+      )
+      .slice(0, count);
+  },
+
   CreateThread: async (
     dto: CreateThreadDTO,
     uid: string,

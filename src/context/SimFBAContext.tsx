@@ -1516,7 +1516,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         if (cfbTeam?.ID && cfbDepthChartMap) {
           setCFBDepthChartMap((prev) => ({
             ...prev,
-            [cfbTeam.ID]: updatedDepthChart,
+            [updatedDepthChart.TeamID]: updatedDepthChart,
           }));
         }
       }
@@ -1548,7 +1548,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         if (nflTeam?.ID && nflDepthChartMap) {
           setNFLDepthChartMap((prev) => ({
             ...prev,
-            [nflTeam.ID]: updatedDepthChart,
+            [updatedDepthChart.TeamID]: updatedDepthChart,
           }));
         }
       }
