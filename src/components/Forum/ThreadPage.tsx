@@ -11,7 +11,7 @@ import type { ForumEditorHandle } from "./components/ForumEditor";
 import { PollBlock } from "./components/PollBlock";
 import { GameReferenceCard } from "./components/GameReferenceCard";
 import { ModerationControls } from "./components/ModerationControls";
-import { useThread } from "../../_hooks/useForumHooks";
+import { useThread, recordThreadView } from "../../_hooks/useForumHooks";
 import { useForumStore } from "../../context/ForumContext";
 import { useAuthStore } from "../../context/AuthContext";
 import { useForumDraft } from "../../_hooks/useForumDraft";
@@ -115,6 +115,12 @@ export const ThreadPage: React.FC = () => {
       /* non-critical */
     });
   }, [threadId]);
+
+  // Record to the user's local viewed-threads history once thread metadata is available
+  useEffect(() => {
+    if (!currentUser?.id || !activeThread) return;
+    recordThreadView(currentUser.id, activeThread);
+  }, [currentUser?.id, activeThread?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [replyingTo, setReplyingTo] = useState<Post | null>(null);
   const [quotingPost, setQuotingPost] = useState<Post | null>(null);
