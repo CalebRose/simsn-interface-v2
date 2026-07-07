@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Text } from "../../../_design/Typography";
 import { ViewedThread } from "../../../_hooks/useForumHooks";
 import routes from "../../../_constants/routes";
+import { useResponsive } from "../../../_hooks/useMobile";
 
 interface LastViewedThreadsSidebarProps {
   threads: ViewedThread[];
@@ -24,6 +25,7 @@ export const LastViewedThreadsSidebar: React.FC<
   LastViewedThreadsSidebarProps
 > = ({ threads }) => {
   const navigate = useNavigate();
+  const { isMobile } = useResponsive();
 
   if (threads.length === 0) {
     return (
@@ -35,29 +37,36 @@ export const LastViewedThreadsSidebar: React.FC<
 
   return (
     <div className="flex flex-col gap-0.5 mt-3">
-      {threads.map((thread) => (
-        <div
-          key={thread.threadId}
-          className="cursor-pointer rounded px-2 py-1.5 hover:bg-white/5 transition-colors"
-          onClick={() => navigate(`${routes.FORUM_THREAD}/${thread.threadId}`)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) =>
-            e.key === "Enter" &&
-            navigate(`${routes.FORUM_THREAD}/${thread.threadId}`)
-          }
-        >
-          <Text
-            variant="body-small"
-            classes="font-medium line-clamp-2 text-start leading-tight"
+      {threads.map((thread, index) => {
+        if (isMobile && index >= 5) {
+          return <></>;
+        }
+        return (
+          <div
+            key={thread.threadId}
+            className="cursor-pointer rounded px-2 py-1.5 hover:bg-white/5 transition-colors"
+            onClick={() =>
+              navigate(`${routes.FORUM_THREAD}/${thread.threadId}`)
+            }
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              navigate(`${routes.FORUM_THREAD}/${thread.threadId}`)
+            }
           >
-            {thread.title}
-          </Text>
-          <Text variant="xs" classes="text-gray-500 mt-0.5 text-start">
-            {formatRelativeTime(thread.viewedAt)}
-          </Text>
-        </div>
-      ))}
+            <Text
+              variant="body-small"
+              classes="font-medium line-clamp-2 text-start leading-tight"
+            >
+              {thread.title}
+            </Text>
+            <Text variant="xs" classes="text-gray-500 mt-0.5 text-start">
+              {formatRelativeTime(thread.viewedAt)}
+            </Text>
+          </div>
+        );
+      })}
     </div>
   );
 };

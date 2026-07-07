@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Text } from "../../../_design/Typography";
 import { Thread } from "../../../models/forumModels";
 import routes from "../../../_constants/routes";
+import { useResponsive } from "../../../_hooks/useMobile";
 
 interface LatestThreadsSidebarProps {
   threads: Thread[];
@@ -29,6 +30,7 @@ export const LatestThreadsSidebar: React.FC<LatestThreadsSidebarProps> = ({
   isLoading,
 }) => {
   const navigate = useNavigate();
+  const { isMobile } = useResponsive();
 
   if (isLoading) {
     return (
@@ -50,42 +52,48 @@ export const LatestThreadsSidebar: React.FC<LatestThreadsSidebarProps> = ({
 
   return (
     <div className="flex flex-col gap-0.5 mt-3">
-      {threads.map((thread) => (
-        <div
-          key={thread.id}
-          className="cursor-pointer rounded px-2 py-1.5 hover:bg-white/5 transition-colors"
-          onClick={() => navigate(`${routes.FORUM_THREAD}/${thread.id}`)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) =>
-            e.key === "Enter" && navigate(`${routes.FORUM_THREAD}/${thread.id}`)
-          }
-        >
-          <Text
-            variant="body-small"
-            classes="font-medium line-clamp-2 text-start leading-tight"
+      {threads.map((thread, index) => {
+        if (isMobile && index >= 5) {
+          return <></>;
+        }
+        return (
+          <div
+            key={thread.id}
+            className="cursor-pointer rounded px-2 py-1.5 hover:bg-white/5 transition-colors"
+            onClick={() => navigate(`${routes.FORUM_THREAD}/${thread.id}`)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) =>
+              e.key === "Enter" &&
+              navigate(`${routes.FORUM_THREAD}/${thread.id}`)
+            }
           >
-            {thread.title}
-          </Text>
-          <div className="flex items-center gap-1 mt-0.5">
-            <Text variant="xs" classes="text-gray-500 text-start truncate">
-              {thread.latestActivityBy?.username ?? thread.author.username}
+            <Text
+              variant="body-small"
+              classes="font-medium line-clamp-2 text-start leading-tight"
+            >
+              {thread.title}
             </Text>
-            <Text variant="xs" classes="text-gray-600 shrink-0">
-              ·
-            </Text>
-            <Text variant="xs" classes="text-gray-500 shrink-0">
-              {formatRelativeTime(thread.latestActivityAt)}
-            </Text>
-            <Text variant="xs" classes="text-gray-600 shrink-0">
-              ·
-            </Text>
-            <Text variant="xs" classes="text-gray-600 shrink-0">
-              {thread.replyCount} replies
-            </Text>
+            <div className="flex items-center gap-1 mt-0.5">
+              <Text variant="xs" classes="text-gray-500 text-start truncate">
+                {thread.latestActivityBy?.username ?? thread.author.username}
+              </Text>
+              <Text variant="xs" classes="text-gray-600 shrink-0">
+                ·
+              </Text>
+              <Text variant="xs" classes="text-gray-500 shrink-0">
+                {formatRelativeTime(thread.latestActivityAt)}
+              </Text>
+              <Text variant="xs" classes="text-gray-600 shrink-0">
+                ·
+              </Text>
+              <Text variant="xs" classes="text-gray-600 shrink-0">
+                {thread.replyCount} replies
+              </Text>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

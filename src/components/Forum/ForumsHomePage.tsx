@@ -21,12 +21,15 @@ import {
 import { Forum } from "../../models/forumModels";
 import routes from "../../_constants/routes";
 import { useAuthStore } from "../../context/AuthContext";
+import { useResponsive } from "../../_hooks/useMobile";
 
 export const ForumsHomePage: React.FC = () => {
   const { currentUser } = useAuthStore();
   const { forums, forumsLoading } = useForums();
   const { permissions, forumRole } = useForumStore();
   const navigate = useNavigate();
+
+  const { isMobile } = useResponsive();
 
   const { topLevel, subforumMap } = useMemo(() => {
     const topLevel: Forum[] = [];
@@ -113,44 +116,89 @@ export const ForumsHomePage: React.FC = () => {
         ) : (
           <section className="flex w-full flex-col gap-0 text-left">
             {/* Header row — all three column headers share the same row */}
-            <div className="grid grid-cols-12 gap-4 border-b border-white/10 pb-3">
-              <div className="col-span-2 flex flex-col justify-end">
-                <Text variant="h5">Last Viewed Threads</Text>
-                <Text variant="secondary" classes="mt-1">
-                  Your last viewed threads
-                </Text>
-              </div>
-              <div className="col-span-8 flex items-end justify-between">
-                <div>
-                  <Text variant="h5">Forum Categories</Text>
+            {!isMobile && (
+              <div className="grid grid-cols-12 gap-4 border-b border-white/10 pb-3">
+                <div className="col-span-2 flex flex-col justify-end">
+                  <Text variant="h5">Last Viewed Threads</Text>
                   <Text variant="secondary" classes="mt-1">
-                    Browse every conference room, subforum, and discussion hub.
+                    Your last viewed threads
                   </Text>
                 </div>
-                <Text
-                  variant="body-small"
-                  classes="hidden sm:block text-white/45 uppercase tracking-[0.2em]"
-                >
-                  Directory
-                </Text>
+                <div className="col-span-8 flex items-end justify-between">
+                  <div>
+                    <Text variant="h5">Forum Categories</Text>
+                    <Text variant="secondary" classes="mt-1">
+                      Browse every conference room, subforum, and discussion
+                      hub.
+                    </Text>
+                  </div>
+                  <Text
+                    variant="body-small"
+                    classes="hidden sm:block text-white/45 uppercase tracking-[0.2em]"
+                  >
+                    Directory
+                  </Text>
+                </div>
+                <div className="col-span-2 flex flex-col justify-end">
+                  <Text variant="h5">Latest Threads</Text>
+                  <Text variant="secondary" classes="mt-1">
+                    The most recent activity
+                  </Text>
+                </div>
               </div>
-              <div className="col-span-2 flex flex-col justify-end">
-                <Text variant="h5">Latest Threads</Text>
-                <Text variant="secondary" classes="mt-1">
-                  The most recent activity
-                </Text>
-              </div>
-            </div>
+            )}
 
             {/* Content row */}
-            <div className="grid grid-cols-12 gap-4 items-start pt-4">
+            <div
+              className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-12"} ${isMobile ? "gap-2" : "gap-4"} items-start pt-4`}
+            >
               {/* Last Viewed sidebar */}
-              <div className="col-span-2">
+              {isMobile && (
+                <>
+                  <div className="col-span-1 flex flex-col justify-end">
+                    <Text variant="h6">Last Viewed Threads</Text>
+                    <Text variant="body-small" classes="mt-1 text-gray-500">
+                      Your last viewed threads
+                    </Text>
+                  </div>
+                </>
+              )}
+              <div className={`${isMobile ? "col-span-1" : "col-span-2"}`}>
                 <LastViewedThreadsSidebar threads={lastViewedThreads} />
               </div>
 
+              {isMobile && (
+                <>
+                  <div className="col-span-1 flex flex-col justify-end">
+                    <Text variant="h6">Latest Threads</Text>
+                    <Text variant="body-small" classes="mt-1 text-gray-500">
+                      The most recent activity
+                    </Text>
+                  </div>
+                  <div className="col-span-1">
+                    <LatestThreadsSidebar
+                      threads={latestThreads}
+                      isLoading={latestThreadsLoading}
+                    />
+                  </div>
+                </>
+              )}
+
               {/* Forum category cards */}
-              <div className="col-span-8">
+              {isMobile && (
+                <>
+                  <div className="col-span-1 flex items-end justify-between">
+                    <div>
+                      <Text variant="h6">Forum Categories</Text>
+                      <Text variant="body-small" classes="mt-1 text-gray-500">
+                        Browse every conference room, subforum, and discussion
+                        hub.
+                      </Text>
+                    </div>
+                  </div>
+                </>
+              )}
+              <div className={`${isMobile ? "col-span-1" : "col-span-8"}`}>
                 <div className="grid grid-cols-1 gap-4">
                   {topLevel.map((forum) => (
                     <ForumCard
@@ -163,12 +211,14 @@ export const ForumsHomePage: React.FC = () => {
               </div>
 
               {/* Latest Threads sidebar */}
-              <div className="col-span-2">
-                <LatestThreadsSidebar
-                  threads={latestThreads}
-                  isLoading={latestThreadsLoading}
-                />
-              </div>
+              {!isMobile && (
+                <div className="col-span-2">
+                  <LatestThreadsSidebar
+                    threads={latestThreads}
+                    isLoading={latestThreadsLoading}
+                  />
+                </div>
+              )}
             </div>
           </section>
         )}
