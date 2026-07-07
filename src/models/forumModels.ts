@@ -49,7 +49,12 @@ export interface RichTextDocument {
 // Forum
 // ─────────────────────────────────────────────
 
-export type ForumVisibility = "public" | "members" | "admin_only";
+export type ForumVisibility =
+  | "guest"
+  | "public"
+  | "subscriber"
+  | "members"
+  | "admin_only";
 export type ForumType = "top_level" | "subforum";
 
 export interface Forum {
@@ -61,6 +66,7 @@ export interface Forum {
   description?: string;
   sortOrder: number;
   visibility: ForumVisibility;
+  subscribersCanPost?: boolean;
   isLocked: boolean;
   threadCount: number;
   postCount: number;
@@ -392,7 +398,12 @@ export interface PostCursor {
 // User forum role helpers
 // ─────────────────────────────────────────────
 
-export type ForumRole = "guest" | "member" | "commissioner" | "admin";
+export type ForumRole =
+  | "guest"
+  | "subscriber"
+  | "member"
+  | "commissioner"
+  | "admin";
 
 export interface ForumPermissions {
   canRead: boolean;

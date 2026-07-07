@@ -14,6 +14,10 @@ import {
   useLatestThreads,
 } from "../../_hooks/useForumHooks";
 import { useForumStore } from "../../context/ForumContext";
+import {
+  canGuestPostInForum,
+  canSubscriberPostInForum,
+} from "../../context/ForumContext";
 import { Forum } from "../../models/forumModels";
 import routes from "../../_constants/routes";
 import { useAuthStore } from "../../context/AuthContext";
@@ -21,7 +25,7 @@ import { useAuthStore } from "../../context/AuthContext";
 export const ForumsHomePage: React.FC = () => {
   const { currentUser } = useAuthStore();
   const { forums, forumsLoading } = useForums();
-  const { permissions } = useForumStore();
+  const { permissions, forumRole } = useForumStore();
   const navigate = useNavigate();
 
   const { topLevel, subforumMap } = useMemo(() => {
@@ -65,13 +69,19 @@ export const ForumsHomePage: React.FC = () => {
             Community Forums
           </Text>
           <Text variant="secondary">
-            Please register for a team on the Available Teams page to access the
-            forums. To submit a full application, please navigate to our
-            Discord.
+            Please log in or register to access the forums. New users can post
+            in the Introductions &amp; Job Applications sections right away.
           </Text>
         </div>
       </PageContainer>
     );
+
+  const subscriberCanPost =
+    forumRole === "subscriber"
+      ? forums.some((f) => canSubscriberPostInForum(f))
+      : forumRole === "guest"
+        ? forums.some((f) => canGuestPostInForum(f))
+        : false;
 
   return (
     <PageContainer isLoading={forumsLoading} title="">
@@ -79,7 +89,7 @@ export const ForumsHomePage: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6 space-x-2">
           <Text variant="h4">Community Forums</Text>
-          {permissions.canCreateThread && (
+          {(permissions.canCreateThread || subscriberCanPost) && (
             <Button
               variant="primary"
               size="sm"

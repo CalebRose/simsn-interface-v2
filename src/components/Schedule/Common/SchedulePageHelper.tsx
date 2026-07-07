@@ -642,7 +642,7 @@ export const processSchedule = (
     .map((game) => {
       let revealResult = false;
       if (league === SimCHL || league === SimPHL) {
-        revealResult = RevealHCKResults(game, ts, resultsOverride);
+        revealResult = RevealHCKResults(game, ts, resultsOverride, league);
       } else if (league === SimCFB || league === SimNFL) {
         revealResult = RevealResults(game, ts, league, resultsOverride);
       } else {
@@ -764,7 +764,7 @@ export const processWeeklyGames = (
   const processedGames = schedule.map((game) => {
     let revealResult = false;
     if (league === SimCHL || league === SimPHL) {
-      revealResult = RevealHCKResults(game, ts, resultsOverride);
+      revealResult = RevealHCKResults(game, ts, resultsOverride, league);
     } else if (league === SimCFB || league === SimNFL) {
       revealResult = RevealResults(game, ts, league, resultsOverride);
     } else {

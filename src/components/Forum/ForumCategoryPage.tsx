@@ -8,6 +8,10 @@ import { ThreadList } from "./components/ThreadList";
 import { ForumBorder } from "../../_design/Borders";
 import { useForumThreads } from "../../_hooks/useForumHooks";
 import { useForumStore } from "../../context/ForumContext";
+import {
+  canGuestPostInForum,
+  canSubscriberPostInForum,
+} from "../../context/ForumContext";
 import { ForumService } from "../../_services/forumService";
 import { Forum } from "../../models/forumModels";
 import routes from "../../_constants/routes";
@@ -20,7 +24,7 @@ interface Params {
 export const ForumCategoryPage: React.FC = () => {
   const { forumSlug, subforumSlug } = useParams<keyof Params>() as Params;
   const navigate = useNavigate();
-  const { permissions } = useForumStore();
+  const { permissions, forumRole } = useForumStore();
 
   // `forum` = the forum whose threads we show (subforum if present, else top-level)
   // `parentForum` = the top-level forum (only set when viewing a subforum)
@@ -106,7 +110,10 @@ export const ForumCategoryPage: React.FC = () => {
           </div>
           {forum &&
             !forum.isLocked &&
-            (permissions.canCreateThread || forum.id.includes("welcome")) && (
+            (permissions.canCreateThread ||
+              (forumRole === "guest" && canGuestPostInForum(forum)) ||
+              (forumRole === "subscriber" &&
+                canSubscriberPostInForum(forum))) && (
               <div className="text-end">
                 <Button variant="primary" size="sm" onClick={handleNewThread}>
                   + New Thread

@@ -1012,6 +1012,10 @@ export const CHLConferenceNames = [
   { label: "ConferenceID", value: "5", name: "Hockey East" },
   { label: "ConferenceID", value: "6", name: "NCHC" },
   { label: "ConferenceID", value: "7", name: "Independent" },
+  { label: "ConferenceID", value: "8", name: "OHL" },
+  { label: "ConferenceID", value: "8", name: "OHL" },
+  { label: "ConferenceID", value: "9", name: "QMJHL" },
+  { label: "ConferenceID", value: "10", name: "WHL" },
 ];
 
 export const PHLConferenceNames = [
