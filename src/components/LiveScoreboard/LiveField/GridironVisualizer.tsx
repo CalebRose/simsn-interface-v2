@@ -2,48 +2,52 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface GridironVisualizerProps {
-  ballX: number; // 0 to 100 (Field Length)
-  ballY: number; // 0 to 100 (Field Width)
-  playType: 'IDLE' | 'PASS' | 'RUN' | 'TD' | 'INT' | 'FUMBLE' | 'PUNT';
+  ballX: number; // 0 to 100 (Where 0 is away endzone, 100 is home endzone)
+  ballY: number; // 0 to 100
+  playType: string;
   eventText: string;
 }
 
 export const GridironVisualizer: React.FC<GridironVisualizerProps> = ({ 
   ballX, ballY, playType, eventText 
 }) => {
+  // Clamp values to ensure they stay on screen
+  const x = Math.min(Math.max(ballX, 0), 100);
+  const y = Math.min(Math.max(ballY, 0), 100);
+
   return (
-    <div className="relative w-full h-[300px] bg-green-700 rounded-lg border-4 border-white shadow-2xl overflow-hidden">
-      {/* Field Markings */}
-      <div className="absolute inset-0 flex justify-between px-2">
-        {[...Array(10)].map((_, i) => (
-          <div key={i} className="w-px h-full bg-white/30" />
-        ))}
-      </div>
+    <div className="relative w-full h-[300px] bg-green-600 border-4 border-white shadow-2xl overflow-hidden rounded-md">
+      {/* End Zones */}
+      <div className="absolute left-0 top-0 bottom-0 w-[10%] bg-green-800 border-r-2 border-white/30" />
+      <div className="absolute right-0 top-0 bottom-0 w-[10%] bg-green-800 border-l-2 border-white/30" />
+
+      {/* Sidelines & Markings */}
+      <div className="absolute top-0 left-0 right-0 h-2 border-b-2 border-white/30" />
+      <div className="absolute bottom-0 left-0 right-0 h-2 border-t-2 border-white/30" />
+      
+      {/* Goal Posts (Simplified) */}
+      <div className="absolute left-0 top-1/2 -mt-10 w-2 h-20 bg-yellow-400 z-10" />
+      <div className="absolute right-0 top-1/2 -mt-10 w-2 h-20 bg-yellow-400 z-10" />
 
       {/* The Ball */}
       <motion.div
-        className="absolute w-6 h-6 bg-amber-900 rounded-full z-20 flex items-center justify-center border border-black"
+        className="absolute w-8 h-5 bg-amber-900 rounded-full z-20 flex items-center justify-center border-2 border-black font-bold text-white text-[10px]"
+        initial={{ left: `${x}%`, top: `${y}%` }} // Fixes the corner teleport issue
         animate={{ 
-          left: `${ballX}%`, 
-          top: `${ballY}%`,
-          scale: playType === 'PASS' ? [1, 1.4, 1] : 1, // Arc effect
-          rotate: playType === 'PASS' ? 360 : 0,
-          backgroundColor: playType === 'INT' ? '#ef4444' : '#78350f' // Red if INT
+          left: `${x}%`, 
+          top: `${y}%`,
+          scale: playType === 'PASS' ? [1, 1.5, 1] : 1,
+          rotate: playType === 'PASS' ? 45 : 0 
         }}
-        transition={{ duration: playType === 'PASS' ? 1.2 : 0.5, ease: "easeInOut" }}
-      />
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+      >
+        {" "}
+      </motion.div>
 
-      {/* Event Overlay */}
-      <AnimatePresence>
-        {playType !== 'IDLE' && (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute bottom-4 left-4 bg-black/60 text-white px-4 py-2 rounded font-bold uppercase tracking-widest"
-          >
-            {eventText}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Persistent Event Text Overlay */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-6 py-2 rounded-full font-bold uppercase tracking-widest text-sm border border-white/20 z-30">
+        {eventText || "Waiting for snap..."}
+      </div>
     </div>
   );
 };
