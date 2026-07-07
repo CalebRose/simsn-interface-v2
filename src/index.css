@@ -127,6 +127,33 @@
   background: rgba(99, 179, 237, 0.15);
   pointer-events: none;
 }
+/* Column resize handle (shown when Table resizable: true) */
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background-color: var(--accent-primary, #3b82f6);
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+.ProseMirror td:hover .column-resize-handle,
+.ProseMirror th:hover .column-resize-handle,
+.ProseMirror.resize-cursor .column-resize-handle {
+  opacity: 1;
+}
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+/* Borderless table mode — hide borders and header background in editor */
+.ProseMirror table[data-borderless="true"] td,
+.ProseMirror table[data-borderless="true"] th {
+  border: none;
+  background-color: transparent;
+}
 
 /* ── @mention chip (inside the TipTap editor) ─────────────────────── */
 .ProseMirror .mention-chip {

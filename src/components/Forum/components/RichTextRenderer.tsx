@@ -81,8 +81,14 @@ function applyMarks(
   return node;
 }
 
-function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
-  const children = node.content?.map((child, i) => renderNode(child, i)) ?? [];
+function renderNode(
+  node: RichTextNode,
+  key: React.Key,
+  tableBorderless = false,
+): React.ReactNode {
+  const children =
+    node.content?.map((child, i) => renderNode(child, i, tableBorderless)) ??
+    [];
 
   switch (node.type) {
     case "doc":
@@ -269,34 +275,66 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
       );
     }
 
-    case "table":
+    case "table": {
+      const isBorderless = !!node.attrs?.borderless;
+      const tableChildren =
+        node.content?.map((child, i) => renderNode(child, i, isBorderless)) ??
+        [];
       return (
         <div key={key} className="overflow-x-auto my-2">
           <table className="min-w-full text-sm border-collapse">
-            {children}
+            {tableChildren}
           </table>
         </div>
       );
+    }
 
     case "tableRow":
       return <tr key={key}>{children}</tr>;
 
-    case "tableHeader":
+    case "tableHeader": {
+      const thColwidth = node.attrs?.colwidth as number[] | null | undefined;
+      const thWidth = thColwidth?.[0];
       return (
         <th
           key={key}
-          className="border border-gray-600 px-2 py-1 bg-gray-800 font-semibold text-left"
+          className={
+            tableBorderless
+              ? "px-2 py-1 font-semibold text-left align-top"
+              : "border border-gray-600 px-2 py-1 bg-gray-800 font-semibold text-left"
+          }
+          style={
+            thWidth
+              ? { width: `${thWidth}px`, minWidth: `${thWidth}px` }
+              : undefined
+          }
         >
           {children}
         </th>
       );
+    }
 
-    case "tableCell":
+    case "tableCell": {
+      const tdColwidth = node.attrs?.colwidth as number[] | null | undefined;
+      const tdWidth = tdColwidth?.[0];
       return (
-        <td key={key} className="border border-gray-600 px-2 py-1">
+        <td
+          key={key}
+          className={
+            tableBorderless
+              ? "px-2 py-1 align-top"
+              : "border border-gray-600 px-2 py-1"
+          }
+          style={
+            tdWidth
+              ? { width: `${tdWidth}px`, minWidth: `${tdWidth}px` }
+              : undefined
+          }
+        >
           {children}
         </td>
       );
+    }
 
     default:
       return <React.Fragment key={key}>{children}</React.Fragment>;
