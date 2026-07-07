@@ -220,7 +220,6 @@ const RinkVisualizer = React.memo(
     currentZone: string;
     goalScored: boolean;
   }) => {
-    console.log({ currentZone, goalScored });
     let puckPosition = "50%";
     if (currentZone && currentZone.toLowerCase().includes("home") && goalScored)
       puckPosition = "98%";

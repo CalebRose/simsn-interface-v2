@@ -355,6 +355,25 @@ const YoutubeEmbedExtension = Node.create({
 });
 
 // ─────────────────────────────────────────────
+// Table extension with optional borderless mode
+// ─────────────────────────────────────────────
+
+const BorderlessTable = Table.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      borderless: {
+        default: false,
+        parseHTML: (el: Element) =>
+          el.getAttribute("data-borderless") === "true",
+        renderHTML: (attrs: Record<string, unknown>) =>
+          attrs.borderless ? { "data-borderless": "true" } : {},
+      },
+    };
+  },
+});
+
+// ─────────────────────────────────────────────
 // ForumEditor – TipTap rich text editor.
 // Outputs RichTextDocument (TipTap-compatible JSON).
 // ─────────────────────────────────────────────
@@ -586,6 +605,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
 
     const [isEmpty, setIsEmpty] = useState(!initialContent);
     const [isInTable, setIsInTable] = useState(false);
+    const [isTableBorderless, setIsTableBorderless] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
     // Keep a stable ref to the latest onDocChange so the editor closure never
@@ -605,7 +625,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
         Placeholder.configure({ placeholder }),
         CharacterCount.configure({ limit: maxLength }),
         TextAlign.configure({ types: ["heading", "paragraph"] }),
-        Table.configure({ resizable: false }),
+        BorderlessTable.configure({ resizable: true }),
         TableRow,
         TableCell,
         TableHeader,
@@ -617,14 +637,17 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
       onCreate: ({ editor }) => {
         setIsEmpty(editor.isEmpty);
         setIsInTable(editor.isActive("table"));
+        setIsTableBorderless(!!editor.getAttributes("table").borderless);
       },
       onUpdate: ({ editor }) => {
         setIsEmpty(editor.isEmpty);
         setIsInTable(editor.isActive("table"));
+        setIsTableBorderless(!!editor.getAttributes("table").borderless);
         onDocChangeRef.current?.(editor.getJSON() as RichTextDocument);
       },
       onSelectionUpdate: ({ editor }) => {
         setIsInTable(editor.isActive("table"));
+        setIsTableBorderless(!!editor.getAttributes("table").borderless);
       },
       editorProps: {
         handleKeyDown(_view, event) {
@@ -692,6 +715,15 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
       },
       [editor],
     );
+
+    const toggleTableBorderless = useCallback(() => {
+      if (!editor) return;
+      editor
+        .chain()
+        .focus()
+        .updateAttributes("table", { borderless: !isTableBorderless })
+        .run();
+    }, [editor, isTableBorderless]);
 
     const insertYouTube = () => {
       const url = window.prompt("Paste a YouTube URL:");
@@ -958,6 +990,13 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
                 onClick={() => editor?.chain().focus().deleteTable().run()}
               >
                 ✕tbl
+              </TBtn>
+              <TBtn
+                title="Toggle table borders (hide borders to fake image wrap)"
+                onClick={toggleTableBorderless}
+                active={isTableBorderless}
+              >
+                ⊟
               </TBtn>
             </>
           )}
