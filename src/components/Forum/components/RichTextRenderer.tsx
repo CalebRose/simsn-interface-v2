@@ -131,20 +131,21 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
 
     case "bulletList":
       return (
-        <ul key={key} className="list-disc list-inside mb-2 space-y-1">
+        <ul key={key} className="list-disc list-outside pl-5 mb-2 space-y-1">
           {children}
         </ul>
       );
 
     case "orderedList":
       return (
-        <ol key={key} className="list-decimal list-inside mb-2 space-y-1">
+        <ol key={key} className="list-decimal list-outside pl-5 mb-2 space-y-1">
           {children}
         </ol>
       );
 
     case "listItem": {
-      // Unwrap paragraph nodes so text sits inline with the bullet marker
+      // First child is the paragraph (inline text); any subsequent children are
+      // nested lists — render them below the inline text with proper indentation.
       const listChildren =
         node.content?.map((child, i) => {
           if (child.type === "paragraph") {
@@ -154,7 +155,12 @@ function renderNode(node: RichTextNode, key: React.Key): React.ReactNode {
               </React.Fragment>
             );
           }
-          return renderNode(child, i);
+          // Nested bulletList / orderedList
+          return (
+            <div key={i} className="mt-1">
+              {renderNode(child, i)}
+            </div>
+          );
         }) ?? [];
       return <li key={key}>{listChildren}</li>;
     }
