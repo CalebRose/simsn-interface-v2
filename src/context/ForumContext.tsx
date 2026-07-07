@@ -34,6 +34,34 @@ import { parseForumBody } from "../components/Forum/forumUtils";
 // Permission helpers
 // ─────────────────────────────────────────────
 
+/**
+ * Forums where subscribers (logged-in users without a team) may always create
+ * threads and reply, regardless of the Firestore `subscribersCanPost` flag.
+ */
+export const OPEN_FORUM_IDS: ReadonlySet<string> = new Set([
+  "welcome",
+  "welcome-intro-help",
+  "welcome-job-applications",
+]);
+
+/**
+ * Returns true when a guest (any logged-in user without a team) may post in
+ * this forum. Checks the hardcoded open-forum list AND the Firestore
+ * `visibility: "guest"` flag so either mechanism works.
+ */
+export function canGuestPostInForum(forum: Forum): boolean {
+  return OPEN_FORUM_IDS.has(forum.id) || forum.visibility === "guest";
+}
+
+/**
+ * Returns true if a subscriber (admin-granted role) may post in the given
+ * forum. Subscribers inherit guest access and additionally gain access to
+ * forums explicitly flagged with `subscribersCanPost`.
+ */
+export function canSubscriberPostInForum(forum: Forum): boolean {
+  return canGuestPostInForum(forum) || forum.subscribersCanPost === true;
+}
+
 function deriveForumRole(currentUser: CurrentUser | null): ForumRole {
   if (!currentUser) return "guest";
   if (currentUser.roleID === "Admin" || currentUser.roleID === "admin")
@@ -52,14 +80,22 @@ function deriveForumRole(currentUser: CurrentUser | null): ForumRole {
     (currentUser.PHLTeamID && currentUser.PHLTeamID > 0) ||
     (currentUser.MLBOrgID && currentUser.MLBOrgID > 0) ||
     (currentUser.CollegeBaseballOrgID && currentUser.CollegeBaseballOrgID > 0);
-  return hasMemberTeam ? "member" : "guest";
+  if (hasMemberTeam) return "member";
+  // Admin can explicitly grant subscriber status via roleID
+  if (currentUser.roleID && currentUser.roleID.toLowerCase() === "subscriber")
+    return "subscriber";
+  // Logged-in users without a team default to guest
+  return "guest";
 }
 
 export function derivePermissions(role: ForumRole): ForumPermissions {
   const isAdmin = role === "admin";
   const isCommish = role === "commissioner" || isAdmin;
   const isMember = role === "member" || isCommish;
-  const isGuest = role === "guest" || isMember;
+  const isSubscriber = role === "subscriber" || isMember;
+  // Both unauthenticated and logged-in-no-team users carry the "guest" role;
+  // all higher roles inherit guest read access.
+  const isGuest = role === "guest" || isSubscriber;
 
   return {
     canRead: isGuest,
@@ -67,7 +103,7 @@ export function derivePermissions(role: ForumRole): ForumPermissions {
     canReply: isMember,
     canEditOwnPost: isMember,
     canDeleteOwnPost: isCommish,
-    canVoteInPoll: isMember,
+    canVoteInPoll: isSubscriber,
     canLockThread: isCommish,
     canDeleteAnyPost: isCommish,
     canEditAnyPost: isCommish,

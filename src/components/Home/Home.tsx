@@ -164,13 +164,28 @@ export const Home = () => {
                 We are an online multiplayer sports simulation community. We
                 currently run sports management simulations for College Football
                 (SimCFB), Pro Football (SimNFL), College Basketball (SimCBB),
-                Pro Basketball (SimNBA), College Hockey (SimCHL), and Pro Hockey
-                (SimPHL).
+                Pro Basketball (SimNBA), College Hockey (SimCHL), Pro Hockey
+                (SimPHL), College Baseball (SimCBL), and Pro Baseball (SimMLB).
               </Text>
             </div>
-            <div className="flex flex-row mb-2 justify-center">
+
+            <div className="flex flex-row mb-4 justify-center">
+              <Text variant="body-small" classes="">
+                As a new user, we encourage you to join a league and start
+                participating in our sports simulation community. You can also
+                introduce yourself through the forums to connect with other
+                members.
+              </Text>
+            </div>
+
+            <div className="grid grid-cols-2 mb-2 space-x-4 justify-center">
               <Button onClick={() => navigate(routes.AVAILABLE_TEAMS)}>
-                Click here to join a league and start your SimSN Career
+                Navigate to Available Teams
+              </Button>
+              <Button
+                onClick={() => navigate(`${routes.FORUMS}/welcome/intro-help`)}
+              >
+                Navigate to Introduction Forums
               </Button>
             </div>
           </Border>

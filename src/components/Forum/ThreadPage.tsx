@@ -13,6 +13,10 @@ import { GameReferenceCard } from "./components/GameReferenceCard";
 import { ModerationControls } from "./components/ModerationControls";
 import { useThread, recordThreadView } from "../../_hooks/useForumHooks";
 import { useForumStore } from "../../context/ForumContext";
+import {
+  canGuestPostInForum,
+  canSubscriberPostInForum,
+} from "../../context/ForumContext";
 import { useAuthStore } from "../../context/AuthContext";
 import { useForumDraft } from "../../_hooks/useForumDraft";
 import { ForumService } from "../../_services/forumService";
@@ -58,6 +62,7 @@ export const ThreadPage: React.FC = () => {
   const { currentUser } = useAuthStore();
   const {
     permissions,
+    forumRole,
     createPost,
     updatePost,
     softDeletePost,
@@ -491,7 +496,17 @@ export const ThreadPage: React.FC = () => {
 
   const isLocked = activeThread?.isLocked ?? false;
   const isAdmin = permissions.canLockThread;
-  const canReply = permissions.canReply && (!isLocked || isAdmin);
+  const currentForum = useMemo(
+    () => forums.find((f) => f.id === activeThread?.forumId) ?? null,
+    [forums, activeThread?.forumId],
+  );
+  const subscriberCanPost =
+    !!currentUser &&
+    !!currentForum &&
+    ((forumRole === "guest" && canGuestPostInForum(currentForum)) ||
+      (forumRole === "subscriber" && canSubscriberPostInForum(currentForum)));
+  const canReply =
+    (permissions.canReply || subscriberCanPost) && (!isLocked || isAdmin);
   const isMediaSubforum = activeThread?.forumId.startsWith("media-") ?? false;
   const isPointAwarded =
     pointAwardedLocally || (activeThread?.mediaPointAwarded ?? false);

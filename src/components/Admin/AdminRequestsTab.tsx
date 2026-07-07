@@ -81,7 +81,7 @@ export const AdminRequestsTab = () => {
 
   return (
     <div
-      className={`grid grid-cols-1 sm:grid-cols-2 gap-4 w-full px-2 py-2 ${
+      className={`grid grid-cols-1 sm:grid-cols-2 gap-2 w-full p-2 ${
         hckCHLRequests.length === 1 ? "justify-center" : "justify-start"
       }`}
     >

@@ -66,7 +66,7 @@ export const SignUpPage = () => {
         const data: AuthResponse = await AuthService.register(
           form.username.value,
           form.email.value,
-          form.password.value
+          form.password.value,
         );
 
         if (data.status) {
@@ -149,7 +149,7 @@ export const SignUpPage = () => {
                   type="text"
                   id="Username"
                   name="username"
-                  className="mt-1 w-[25em] rounded-md border-gray-200  text-sm  shadow-xs"
+                  className="mt-1 w-[25em] rounded-md border-gray-200  text-sm  shadow-xs dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                   onChange={handleChange}
                 />
               </div>

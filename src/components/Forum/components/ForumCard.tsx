@@ -47,6 +47,14 @@ export const ForumCard: React.FC<ForumCardProps> = ({
     return true;
   }, [currentUser]);
 
+  if (
+    forum.visibility === "subscriber" &&
+    (currentUser?.IsSubscribed === undefined ||
+      currentUser?.IsSubscribed === false)
+  ) {
+    return <></>;
+  }
+
   return (
     <ForumBorder classes="p-4 cursor-pointer hover:opacity-90 transition-opacity flex flex-col h-full">
       {/* Top: name + description (clickable) */}

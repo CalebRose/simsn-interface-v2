@@ -33,7 +33,7 @@ import { SimulationControlPanel } from "./SimulationControlPanel";
 import { RecruitingAdminPanel } from "./RecruitingAdminPanel";
 import { useMemo } from "react";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
-import { NFLUDFAAdminPanel } from '../Admin/NFLUDFAAdminPanel';
+import { NFLUDFAAdminPanel } from "../Admin/NFLUDFAAdminPanel";
 
 const IFAAdminSection = () => {
   const { seasonContext } = useSimBaseballStore();
@@ -203,7 +203,7 @@ export const AdminPage = () => {
                   classes="w-[8rem]"
                   onClick={() => setSelectedLeague(SimCollegeBaseball)}
                 >
-                  SimCB
+                  SimCBL
                 </PillButton>
               )}
               {isAdmin && (
@@ -279,7 +279,7 @@ export const AdminPage = () => {
               )}
             </TabGroup>
           </div>
-          <div className="flex sm:flex-col md:flex-row md:justify-evenly flex-wrap md:gap-2 w-full max-h-[calc(55vh-12rem)] overflow-y-auto">
+          <div className="flex sm:flex-col md:flex-row md:justify-evenly flex-wrap md:gap-2 w-full max-h-[calc(65vh-10rem)] overflow-y-auto">
             {selectedTab === Requests && <AdminRequestsTab />}
             {selectedTab === Teams && <AdminTeamsTab />}
             {selectedTab === Trades && <AdminTradesTab />}

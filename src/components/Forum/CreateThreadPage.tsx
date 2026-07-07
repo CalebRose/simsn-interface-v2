@@ -8,6 +8,10 @@ import { ForumBreadcrumbs } from "./components/ForumBreadcrumbs";
 import { ForumEditor } from "./components/ForumEditor";
 import type { ForumEditorHandle } from "./components/ForumEditor";
 import { useForumStore } from "../../context/ForumContext";
+import {
+  canGuestPostInForum,
+  canSubscriberPostInForum,
+} from "../../context/ForumContext";
 import { useAuthStore } from "../../context/AuthContext";
 import { useForumDraft } from "../../_hooks/useForumDraft";
 import {
@@ -36,7 +40,8 @@ export const CreateThreadPage: React.FC = () => {
   const preselectedForumId = searchParams.get("forumId");
 
   const { currentUser } = useAuthStore();
-  const { createThread, permissions, forums, loadForums } = useForumStore();
+  const { createThread, permissions, forumRole, forums, loadForums } =
+    useForumStore();
 
   const [selectedForumId, setSelectedForumId] = useState(
     preselectedForumId ?? "",
@@ -105,7 +110,16 @@ export const CreateThreadPage: React.FC = () => {
     if (preselectedForumId) setSelectedForumId(preselectedForumId);
   }, [preselectedForumId]);
 
-  if (!permissions.canCreateThread) {
+  // Guests/subscribers can only create threads in forums that explicitly allow it.
+  const limitedUserCanPost =
+    !!currentUser &&
+    (forumRole === "subscriber"
+      ? forums.some((f) => canSubscriberPostInForum(f))
+      : forumRole === "guest"
+        ? forums.some((f) => canGuestPostInForum(f))
+        : false);
+
+  if (!permissions.canCreateThread && !limitedUserCanPost) {
     return (
       <PageContainer title="Create Thread">
         <div className="py-10 text-center">
@@ -117,10 +131,21 @@ export const CreateThreadPage: React.FC = () => {
     );
   }
 
-  const postableForums = forums.filter(
-    (f) =>
-      !f.isLocked && (f.visibility === "public" || f.visibility === "members"),
-  );
+  const postableForums = forums.filter((f) => {
+    if (f.isLocked) return false;
+    if (permissions.canCreateThread) {
+      return (
+        f.visibility === "public" ||
+        f.visibility === "guest" ||
+        f.visibility === "subscriber" ||
+        f.visibility === "members"
+      );
+    }
+    // Guests can post in guest-visibility / open forums; subscribers also get subscriber-flagged forums
+    if (forumRole === "guest") return canGuestPostInForum(f);
+    if (forumRole === "subscriber") return canSubscriberPostInForum(f);
+    return false;
+  });
 
   // Build grouped structure: standalone top-level forums + optgroups for those with subforums
   const subsByParent = new Map<string, Forum[]>();
