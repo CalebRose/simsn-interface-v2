@@ -94,7 +94,7 @@ const LiveField = () => {
         firebaseGames.forEach((fg: any) => {
             const id = Number(fg.GameID || fg.ID);
             
-            // Force state to Upcoming until broadcast runs to ensure simulation starts from clean slate
+            // Force state to Upcoming so we can initiate the broadcast
             stitched[id] = {
                 GameID: id,
                 HomeTeam: fg.HomeTeam,
@@ -113,15 +113,18 @@ const LiveField = () => {
     fetchAndStitch();
   }, [firebaseGames, selectedLeague, rawSeasonID]);
 
-  // Broadcast Engine
+  // Broadcast Engine - PHILOSOPHY MATCHING LIVERINK[cite: 4]
   const triggerEngine = async () => {
     setBroadcastState("GENERATING");
     try {
       await fetch(`${fbaUrl}admin/run/the/games/`);
       const endpoint = selectedLeague === SimCFB ? "college" : "nfl";
+      const isCFB = selectedLeague === SimCFB;
       
-      // Updated route: removed /bulk to match standard play-retrieval patterns
-      const playsRes = await fetch(`${fbaUrl}games/plays/${endpoint}?season=${rawSeasonID}&week=${currentWeek}`);
+      // Exact path/query pattern as LiveRink[cite: 4]
+      const playsRes = await fetch(
+        `${fbaUrl}games/plays/bulk/${endpoint}?isCollege=${isCFB}&season=${rawSeasonID}&week=${currentWeek}`
+      );
       
       if (playsRes.ok) {
         const playData = await playsRes.json();
