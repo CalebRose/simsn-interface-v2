@@ -1,70 +1,42 @@
-import { useState, useEffect } from "react";
-import { 
-  collection, 
-  onSnapshot, 
-  query, 
-  where, 
-  Timestamp 
-} from "firebase/firestore";
-import { firestore } from "../firebase/firebase"; 
-import { League, SimCFB } from "../_constants/constants";
+import { useState, useEffect } from 'react';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { firestore } from '../firebase/firebase'; 
+import { SimCFB } from '../_constants/constants'; // Ensure this path is correct
 
-// This interface mirrors your Go backend's LiveGameRecord struct 
-// found in StreamScheduler.go
-export interface LiveFieldGameDoc {
-  id: string;
-  GameID: number;
-  HomeTeamID: number;
-  AwayTeamID: number;
-  HomeTeam: string;
-  AwayTeam: string;
-  League: string;
-  StreamStartTime: Timestamp;
-  StreamEndTime: Timestamp;
-  TotalPlays: number;
-  IsRevealed: boolean;
-  HomeTeamRank: number;
-  AwayTeamRank: number;
-  Arena: string;
-  City: string;
-  State: string;
-  Country: string;
-}
-
-export const useLiveFieldState = (selectedLeague: League) => {
-  const [liveGames, setLiveGames] = useState<LiveFieldGameDoc[]>([]);
+export const useLiveFieldState = (league: string) => {
+  const [liveGames, setLiveGames] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Determine the correct collection based on the league selection
-    const collectionName = selectedLeague === SimCFB ? "live_cfb_games" : "live_nfl_games";
+    console.log("Hook: Effect triggered for league:", league);
     
-    // Query only games that are currently active/not yet revealed
-    const q = query(
-      collection(firestore, collectionName), 
-      where("IsRevealed", "==", false)
-    );
+    if (!league) {
+      setLiveGames([]);
+      setIsLoading(false);
+      return;
+    }
 
-    const unsubscribe = onSnapshot(
-      q, 
-      (snapshot) => {
-        const games: LiveFieldGameDoc[] = snapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          ...doc.data() 
-        } as LiveFieldGameDoc));
-        
-        setLiveGames(games);
-        setIsLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching live field games:", error);
-        setIsLoading(false);
-      }
-    );
+    // Fixed: Compare against the constant SimCFB
+    const collectionName = league === SimCFB ? 'live_cfb_games' : 'live_nfl_games';
+    console.log("Hook: Querying collection:", collectionName);
 
-    // Cleanup subscription when the component unmounts
+    const q = query(collection(firestore, collectionName));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const games = snapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data() 
+      }));
+      console.log("Hook: Firestore Data Loaded:", games);
+      setLiveGames(games);
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Hook: Firestore Error:", error);
+      setIsLoading(false);
+    });
+
     return () => unsubscribe();
-  }, [selectedLeague]);
+  }, [league]);
 
   return { liveGames, isLoading };
 };
