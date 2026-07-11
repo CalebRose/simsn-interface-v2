@@ -67,6 +67,13 @@ export interface PlayerStats {
   Snaps?: number;
   Pancakes?: number;
   SacksAllowed?: number;
+  PassBlockSnaps?: number;
+  PassBlockWins?: number;
+  PressuresAllowed?: number;
+  DefensivePressures?: number;
+  Hurries?: number;
+  PassRushSnaps?: number;
+  PassRushWins?: number;
   PlayedGame?: number;
   StartedGame?: number;
   WasInjured?: boolean;

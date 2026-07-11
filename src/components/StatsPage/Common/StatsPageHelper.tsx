@@ -147,6 +147,10 @@ export const GetFootballStatsColumns = (
         { header: "INT", accessor: "InterceptionsCaught" },
         { header: "Safeties", accessor: "Safeties" },
         { header: "Def. TDs", accessor: "DefensiveTDs" },
+        { header: "Prs", accessor: "DefensivePressures" },
+        { header: "Hur", accessor: "Hurries" },
+        { header: "PRSnp", accessor: "PassRushSnaps" },
+        { header: "PRWin", accessor: "PassRushWins" },
       ]);
     } else if (footballStatsType === SPECIAL_TEAMS) {
       // goalie stats
@@ -178,6 +182,9 @@ export const GetFootballStatsColumns = (
     } else if (footballStatsType === OLINE) {
       // goalie stats
       columns = columns.concat([
+        { header: "PBSnp", accessor: "PassBlockSnaps" },
+        { header: "PBWin", accessor: "PassBlockWins" },
+        { header: "PrsAll", accessor: "PressuresAllowed" },
         { header: "ScksAll", accessor: "SacksAllowed" },
         { header: "Pnck", accessor: "Pancakes" },
       ]);
@@ -257,6 +264,8 @@ export const GetFootballStatsColumns = (
         { header: "INT", accessor: "DefensiveInterceptions" },
         { header: "SFT", accessor: "Safeties" },
         { header: "DTDs", accessor: "DefensiveTDs" },
+        { header: "Prs", accessor: "DefensivePressures" },
+        { header: "xScks", accessor: "DefensiveExpectedSacks" },
       ]);
     }
   }
@@ -578,6 +587,10 @@ export const GetFootballPlayerStatsValues = (
         { label: "INT", value: stats.InterceptionsCaught },
         { label: "SFT", value: stats.Safeties },
         { label: "DTDs", value: stats.DefensiveTDs },
+        { label: "Prs", value: stats.DefensivePressures },
+        { label: "Hur", value: stats.Hurries },
+        { label: "PRSnp", value: stats.PassRushSnaps },
+        { label: "PRWin", value: stats.PassRushWins },
       );
       break;
 
@@ -615,6 +628,9 @@ export const GetFootballPlayerStatsValues = (
     case OLINE:
       values.push(
         { label: "Snaps", value: stats.Snaps },
+        { label: "PBSnp", value: stats.PassBlockSnaps },
+        { label: "PBWin", value: stats.PassBlockWins },
+        { label: "PrsAll", value: stats.PressuresAllowed },
         { label: "ScksAll", value: stats.SacksAllowed },
         { label: "Pnck", value: stats.Pancakes },
       );
@@ -715,6 +731,8 @@ export const GetFootballTeamStatsValues = (
         { label: "INT", value: stats.DefensiveInterceptions },
         { label: "SFT", value: stats.Safeties },
         { label: "DTDs", value: stats.DefensiveTDs },
+        { label: "Prs", value: stats.DefensivePressures },
+        { label: "xScks", value: stats.DefensiveExpectedSacks },
       );
       break;
   }

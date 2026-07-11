@@ -42,6 +42,7 @@ import {
   FBGameModalPassing,
   FBGameModalRushing,
   FBGameModalReceiving,
+  FBGameModalOffensiveLine,
   FBGameModalDefensive,
   FBGameModalKicking,
   FBGameModalReturning,
@@ -306,8 +307,19 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
         .sort((a, b) => b.TotalTackles - a.TotalTackles);
 
       obj.OLineStats = dataSet
-        .filter((x) => x.Pancakes && x.Pancakes > 0)
-        .sort((a, b) => b.Pancakes - a.Pancakes);
+        .filter(
+          (x) =>
+            (x.PassBlockSnaps ?? 0) > 0 ||
+            (x.PassBlockWins ?? 0) > 0 ||
+            (x.PressuresAllowed ?? 0) > 0 ||
+            (x.SacksAllowed ?? 0) > 0 ||
+            (x.Pancakes ?? 0) > 0,
+        )
+        .sort(
+          (a, b) =>
+            (b.PassBlockSnaps ?? 0) - (a.PassBlockSnaps ?? 0) ||
+            (b.Pancakes ?? 0) - (a.Pancakes ?? 0),
+        );
 
       obj.SpecialTeamStats = dataSet
         .filter((x) => ["P", "K"].includes(x.Position))
@@ -757,6 +769,50 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                           </Text>
                         </div>
                         <FBGameModalReceiving
+                          data={viewableAwayPlayers}
+                          league={league}
+                          isPro={isPro}
+                          backgroundColor={backgroundColor}
+                          borderColor={borderColor}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start">
+                    <div className="flex flex-col items-center justify-center w-full">
+                      <div className="flex flex-col p-2 sm:p-4 w-full">
+                        <div className="flex gap-2 items-center w-full pb-2">
+                          <Logo
+                            variant="tiny"
+                            classes="opacity-80"
+                            url={homeTeamLogo}
+                          />
+                          <Text variant="body-small" classes="font-semibold">
+                            {game.HomeTeamName} Offensive Line
+                          </Text>
+                        </div>
+                        <FBGameModalOffensiveLine
+                          data={viewableHomePlayers}
+                          league={league}
+                          isPro={isPro}
+                          backgroundColor={backgroundColor}
+                          borderColor={borderColor}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center justify-center w-full">
+                      <div className="flex flex-col p-2 sm:p-4 w-full">
+                        <div className="flex gap-2 items-center w-full pb-2">
+                          <Logo
+                            variant="tiny"
+                            classes="opacity-80"
+                            url={awayTeamLogo}
+                          />
+                          <Text variant="body-small" classes="font-semibold">
+                            {game.AwayTeamName} Offensive Line
+                          </Text>
+                        </div>
+                        <FBGameModalOffensiveLine
                           data={viewableAwayPlayers}
                           league={league}
                           isPro={isPro}

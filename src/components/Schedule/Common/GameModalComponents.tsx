@@ -405,6 +405,57 @@ export const FBGameModalReceiving = ({
   );
 };
 
+export const FBGameModalOffensiveLine = ({
+  data,
+  league,
+  isPro,
+  backgroundColor,
+  borderColor,
+}: GameStatsMappingProps) => {
+  return (
+    <div className="grid rounded-lg border-t px-1" style={{ backgroundColor }}>
+      <div className="grid grid-cols-8 gap-2 font-semibold py-1 border-b">
+        <Text variant="xs" classes="col-span-2 text-left">
+          Player
+        </Text>
+        <Text variant="xs">POS</Text>
+        <Text variant="xs">PB SNP</Text>
+        <Text variant="xs">PB WIN</Text>
+        <Text variant="xs">PRS ALL</Text>
+        <Text variant="xs">SK ALL</Text>
+        <Text variant="xs">PAN</Text>
+      </div>
+      {data?.OLineStats.map((player, index) => {
+        const passBlockSnaps = player.PassBlockSnaps ?? 0;
+        const passBlockWins = player.PassBlockWins ?? 0;
+        const pressuresAllowed = player.PressuresAllowed ?? 0;
+        const sacksAllowed = player.SacksAllowed ?? 0;
+        const pancakes = player.Pancakes ?? 0;
+
+        return (
+          <div
+            key={index}
+            className="grid grid-cols-8 gap-2 text-sm border-b py-1"
+            style={{
+              backgroundColor: index % 2 === 0 ? borderColor : "transparent",
+            }}
+          >
+            <Text variant="xs" classes="col-span-2 text-left">
+              {player.FirstName ?? ""} {player.LastName ?? ""}
+            </Text>
+            <Text variant="xs">{player.Position ?? "N/A"}</Text>
+            <Text variant="xs">{passBlockSnaps}</Text>
+            <Text variant="xs">{passBlockWins}</Text>
+            <Text variant="xs">{pressuresAllowed}</Text>
+            <Text variant="xs">{sacksAllowed}</Text>
+            <Text variant="xs">{pancakes}</Text>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 export const FBGameModalDefensive = ({
   data,
   league,
