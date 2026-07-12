@@ -382,10 +382,8 @@ const LiveRink = () => {
             }
           });
 
-          console.log({ data });
           setGames(stitchedGames);
         } else {
-          console.log({ data });
           setGames(data || {});
         }
       })
@@ -653,8 +651,6 @@ const LiveRink = () => {
           effectiveGames[g.GameID].IsRevealed === true),
     );
   }, [allGames, effectiveGames]);
-
-  console.log({ effectiveGames });
 
   if (selectedGameId === null) {
     return (

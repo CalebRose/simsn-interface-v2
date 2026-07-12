@@ -94,7 +94,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   useEffect(() => {
     getBootstrapScheduleData();
-  }, [getBootstrapScheduleData]);
+  }, []);
 
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];

@@ -19,7 +19,7 @@ import {
 } from "../../../models/hockeyModels";
 import { League, SimCBB, SimNBA } from "../../../_constants/constants";
 import {
-  RevealResults,
+  RevealFBResults,
   RevealHCKResults,
   RevealBBAResults,
 } from "../../../_helper/teamHelper";
@@ -644,7 +644,7 @@ export const processSchedule = (
       if (league === SimCHL || league === SimPHL) {
         revealResult = RevealHCKResults(game, ts, resultsOverride, league);
       } else if (league === SimCFB || league === SimNFL) {
-        revealResult = RevealResults(game, ts, league, resultsOverride);
+        revealResult = RevealFBResults(game, ts, league, resultsOverride);
       } else {
         revealResult = RevealBBAResults(game, ts, resultsOverride);
       }
@@ -766,7 +766,7 @@ export const processWeeklyGames = (
     if (league === SimCHL || league === SimPHL) {
       revealResult = RevealHCKResults(game, ts, resultsOverride, league);
     } else if (league === SimCFB || league === SimNFL) {
-      revealResult = RevealResults(game, ts, league, resultsOverride);
+      revealResult = RevealFBResults(game, ts, league, resultsOverride);
     } else {
       revealResult = RevealBBAResults(game, ts, resultsOverride);
     }

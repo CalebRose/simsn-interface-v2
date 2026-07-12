@@ -5,7 +5,7 @@ import React, { FC, useEffect, useMemo, useRef, useState } from "react";
 import {
   RevealBBAResults,
   RevealHCKResults,
-  RevealResults,
+  RevealFBResults,
 } from "../../_helper/teamHelper";
 import { StandingsTable } from "../Common/Tables";
 import { SectionCards } from "../../_design/SectionCards";
@@ -157,11 +157,10 @@ export const GamesBar = ({
               } else if (league === SimCBB || league === SimNBA) {
                 revealResult = RevealBBAResults(game, ts, false);
               } else {
-                revealResult = RevealResults(game, ts, league, false);
+                revealResult = RevealFBResults(game, ts, league, false);
               }
 
               const isComplete = revealResult;
-              // console.log({ game, revealResult, isComplete });
               const userWon = isComplete
                 ? isHomeGame
                   ? game.HomeTeamWin
@@ -389,7 +388,7 @@ export const TeamMatchUp = ({
   let revealResult = false;
   if (matchUp.length > 0) {
     if (league === SimCFB || league === SimNFL) {
-      revealResult = RevealResults(matchUp[0], ts, league, false);
+      revealResult = RevealFBResults(matchUp[0], ts, league, false);
     } else if (league === SimCBB || league === SimNBA) {
       revealResult = RevealBBAResults(matchUp[0], ts, false);
     } else if (league === SimCHL || league === SimPHL) {

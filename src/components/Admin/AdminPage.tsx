@@ -63,7 +63,7 @@ interface UnAuthPageProps {
 const UnAuthAdminPage: React.FC<UnAuthPageProps> = ({ navigate }) => {
   return (
     <PageContainer isLoading={false}>
-      <div className="flex flex-col justify-center relative h-[100%] mt-[10rem]">
+      <div className="flex flex-col justify-center relative h-full mt-40">
         <Text variant="h3">Warning! Please return to Dashboard</Text>
         <Text variant="body" classes="mb-4">
           You are not an admin.

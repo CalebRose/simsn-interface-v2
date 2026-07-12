@@ -154,10 +154,6 @@ export const DraftPickCard: React.FC<{
     return draftablePlayerMap[pick.DrafteeID];
   }, [pick, draftablePlayerMap, league]);
 
-  if (draftee) {
-    console.log({ draftee });
-  }
-
   const viewPlayer = useCallback(
     (draftee: Draftee) => {
       if (handlePlayerModal) {

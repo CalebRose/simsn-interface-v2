@@ -90,7 +90,7 @@ const ForumImageNodeView: React.FC<NodeViewProps> = ({
         <img
           src={node.attrs.src as string}
           alt={(node.attrs.alt as string) || ""}
-          className="block w-full h-auto rounded-sm object-contain max-h-[600px]"
+          className="block w-full h-auto rounded-sm object-contain max-h-150"
           loading="lazy"
           draggable={false}
         />
