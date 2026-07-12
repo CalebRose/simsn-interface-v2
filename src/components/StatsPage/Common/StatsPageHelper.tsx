@@ -551,11 +551,15 @@ export const GetFootballPlayerStatsValues = (
       break;
 
     case RUSHING:
+      let rushingAvg =
+        statsView === SEASON_VIEW
+          ? Number(stats.RushingAvg.toFixed(2))
+          : Number((stats.RushingYards / stats.RushAttempts).toFixed(2));
       values.push(
         { label: "Snaps", value: stats.Snaps },
         { label: "RY", value: stats.RushingYards },
         { label: "RA", value: stats.RushAttempts },
-        { label: "RAvg", value: stats.RushAvg },
+        { label: "RAvg", value: rushingAvg },
         { label: "RuTD", value: stats.RushingTDs },
         { label: "Fum", value: stats.Fumbles },
         { label: "LR", value: stats.LongestRush },
