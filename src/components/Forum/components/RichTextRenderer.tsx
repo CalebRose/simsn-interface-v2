@@ -57,7 +57,7 @@ function applyMarks(
               key={key}
               src={href}
               alt=""
-              className="max-w-full max-h-[480px] object-contain rounded-sm my-2 block"
+              className="max-w-full max-h-120 object-contain rounded-sm my-2 block"
               loading="lazy"
             />
           );
@@ -208,7 +208,7 @@ function renderNode(
             key={key}
             src={txt}
             alt=""
-            className="max-w-full max-h-[480px] object-contain rounded-sm my-2 block"
+            className="max-w-full max-h-120 object-contain rounded-sm my-2 block"
             loading="lazy"
           />
         );
@@ -266,7 +266,7 @@ function renderNode(
           key={key}
           src={src}
           alt={(node.attrs?.alt as string) || ""}
-          className="max-h-[600px] object-contain rounded-sm my-2 block mx-auto"
+          className="max-h-150 object-contain rounded-sm my-2 block mx-auto"
           style={
             w ? { width: `${w}px`, maxWidth: "100%" } : { maxWidth: "100%" }
           }

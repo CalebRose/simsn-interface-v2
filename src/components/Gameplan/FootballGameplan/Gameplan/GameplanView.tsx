@@ -93,7 +93,7 @@ const GameplanView: React.FC<GameplanViewProps> = ({
         onTeamChange(selectedTeam);
       }
     },
-    [league, cfbTeamMap, proTeamMap, onTeamChange]
+    [league, cfbTeamMap, proTeamMap, onTeamChange],
   );
 
   const handleGameplanChange = useCallback((field: string, value: any) => {
@@ -263,7 +263,7 @@ const GameplanView: React.FC<GameplanViewProps> = ({
               Configure your {selectedTab.toLowerCase()} settings
             </Text>
           </div>
-          <div className="bg-black/50 rounded-lg min-h-[600px]">
+          <div className="bg-black/50 rounded-lg min-h-150">
             {renderActivePanel()}
           </div>
           <div className="mt-4 text-center">

@@ -39,6 +39,7 @@ export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
     nflDepthChart,
     nflDepthChartMap,
     getBootstrapGameplanData,
+    getBootstrapPlayerData,
   } = fbStore;
 
   useEffect(() => {
@@ -70,12 +71,14 @@ export const GameplanPage: FC<GameplanPageProps> = ({ league }) => {
         return false;
       }
       getBootstrapGameplanData();
+      getBootstrapPlayerData();
     }
     if (selectedLeague === SimNFL) {
       if (nflTeam && nflGameplanMap && nflDepthChart && nflDepthChartMap) {
         return false;
       }
       getBootstrapGameplanData();
+      getBootstrapPlayerData();
     }
     return true;
   }, [

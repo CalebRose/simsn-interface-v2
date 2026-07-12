@@ -135,7 +135,9 @@ export const CFBGameplanPage = () => {
       if (nextUnplayedGameIdx < 0) {
         // Check the next week
         const nextWeekIdx = collegeTeamsGames.findIndex(
-          (game) => game.WeekID === (cfb_Timestamp?.CollegeWeekID || 0) + 1,
+          (game) =>
+            game.WeekID === (cfb_Timestamp?.CollegeWeekID || 0) + 1 &&
+            game.IsSpringGame === cfb_Timestamp?.CFBSpringGames,
         );
         if (nextWeekIdx < 0) return null;
         nextUnplayedGameIdx = nextWeekIdx;
@@ -420,7 +422,9 @@ export const NFLGameplanPage = () => {
       if (nextUnplayedGameIdx < 0) {
         // Check the next week
         const nextWeekIdx = proTeamsGames.findIndex(
-          (game) => game.WeekID === (cfb_Timestamp?.NFLWeekID || 0) + 1,
+          (game) =>
+            game.WeekID === (cfb_Timestamp?.NFLWeekID || 0) + 1 &&
+            game.IsPreseasonGame === cfb_Timestamp?.NFLPreseason,
         );
         if (nextWeekIdx < 0) return null;
         nextUnplayedGameIdx = nextWeekIdx;

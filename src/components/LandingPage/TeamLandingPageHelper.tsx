@@ -225,7 +225,7 @@ export const getLandingNFLData = (
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
         game.Week === testWeek &&
-        game.IsPreseasonGame === ts.NFLPreseasonGames,
+        game.IsPreseasonGame === ts.NFLPreseason,
     );
 
     if (nextMatch.length > 0) {
@@ -278,8 +278,6 @@ export const getLandingNFLData = (
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
       AwayTeamAbbr: teamAbbrMap.get(game.AwayTeamID),
     }));
-
-  console.log({ teamSchedule, allProGames, team });
 
   // Team Stats
   const userPassers = topNFLPassers.filter((p) => p.TeamID === team.ID);

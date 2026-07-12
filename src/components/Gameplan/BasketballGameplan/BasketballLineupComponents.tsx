@@ -68,7 +68,6 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
 
   const ChangeInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      console.log({ id, name: event.target.name, value: event.target.value });
       ChangeLineupInput(
         id,
         event.target.name,

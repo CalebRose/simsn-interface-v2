@@ -146,9 +146,11 @@ interface Game {
   RevealGame: boolean;
   Week: number;
   SeasonID: number;
+  ID: number;
+  IsRevealed?: boolean;
 }
 
-export const RevealResults = (
+export const RevealFBResults = (
   game: Game,
   ts: FBTimestamp | BKTimestamp | HCKTimestamp,
   league: League,
@@ -174,20 +176,64 @@ export const RevealResults = (
     return true;
   }
   timestamp = timestamp as FBTimestamp;
-  if (TimeSlot === "Thursday Night" && timestamp.ThursdayGames) return true;
-  if (TimeSlot === "Thursday Night Football" && timestamp.NFLThursday)
+  if (
+    TimeSlot === "Thursday Night" &&
+    timestamp.ThursdayGames &&
+    game.IsRevealed
+  ) {
     return true;
-  if (TimeSlot === "Friday Night" && timestamp.FridayGames) return true;
-  if (TimeSlot === "Saturday Morning" && timestamp.SaturdayMorning) return true;
-  if (TimeSlot === "Saturday Afternoon" && timestamp.SaturdayNoon) return true;
-  if (TimeSlot === "Saturday Evening" && timestamp.SaturdayEvening) return true;
-  if (TimeSlot === "Saturday Night" && timestamp.SaturdayNight) return true;
-  if (TimeSlot === "Sunday Noon" && timestamp.NFLSundayNoon) return true;
-  if (TimeSlot === "Sunday Afternoon" && timestamp.NFLSundayAfternoon)
+  }
+  if (
+    TimeSlot === "Thursday Night Football" &&
+    timestamp.NFLThursday &&
+    game.IsRevealed
+  )
     return true;
-  if (TimeSlot === "Sunday Night Football" && timestamp.NFLSundayEvening)
+  if (TimeSlot === "Friday Night" && timestamp.FridayGames && game.IsRevealed)
     return true;
-  if (TimeSlot === "Monday Night Football" && timestamp.NFLMondayEvening)
+  if (
+    TimeSlot === "Saturday Morning" &&
+    timestamp.SaturdayMorning &&
+    game.IsRevealed
+  )
+    return true;
+  if (
+    TimeSlot === "Saturday Afternoon" &&
+    timestamp.SaturdayNoon &&
+    game.IsRevealed
+  )
+    return true;
+  if (
+    TimeSlot === "Saturday Evening" &&
+    timestamp.SaturdayEvening &&
+    game.IsRevealed
+  )
+    return true;
+  if (
+    TimeSlot === "Saturday Night" &&
+    timestamp.SaturdayNight &&
+    game.IsRevealed
+  )
+    return true;
+  if (TimeSlot === "Sunday Noon" && timestamp.NFLSundayNoon && game.IsRevealed)
+    return true;
+  if (
+    TimeSlot === "Sunday Afternoon" &&
+    timestamp.NFLSundayAfternoon &&
+    game.IsRevealed
+  )
+    return true;
+  if (
+    TimeSlot === "Sunday Night Football" &&
+    timestamp.NFLSundayEvening &&
+    game.IsRevealed
+  )
+    return true;
+  if (
+    TimeSlot === "Monday Night Football" &&
+    timestamp.NFLMondayEvening &&
+    game.IsRevealed
+  )
     return true;
   return false;
 };

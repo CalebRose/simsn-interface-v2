@@ -1,37 +1,32 @@
-import React, { useState } from 'react';
-import { Text } from '../../../../_design/Typography';
-import { Button, ButtonGroup } from '../../../../_design/Buttons';
-import { Modal } from '../../../../_design/Modal';
-import { useModal } from '../../../../_hooks/useModal';
-import { GameplanData } from './GameplanHelper';
-import { 
-  GameplanTab, 
-  GameplanTabs, 
-  FormationMap, 
+import React, { useState } from "react";
+import { Text } from "../../../../_design/Typography";
+import { Button, ButtonGroup } from "../../../../_design/Buttons";
+import { Modal } from "../../../../_design/Modal";
+import { useModal } from "../../../../_hooks/useModal";
+import { GameplanData } from "./GameplanHelper";
+import {
+  GameplanTab,
+  GameplanTabs,
+  FormationMap,
   DefensiveSchemeOptions,
-  OffensiveSchemeOptions
-} from '../Constants/GameplanConstants';
-import { 
+  OffensiveSchemeOptions,
+} from "../Constants/GameplanConstants";
+import {
   OffensiveDistributions,
   OffensiveFormations,
   Defense,
   SpecialTeams,
-  Offensive,
-  Defensive,
-  ButtonGreen
- } from '../../../../_constants/constants';
-import { SchemeDropdown } from './SchemeDropdown';
-import { SchemeInfo } from './SchemeInfo';
-import { GameplanValidationResult } from './useGameplanValidation';
-import { 
-  ChalkBoard,
-  SortUp, 
+} from "../../../../_constants/constants";
+import { SchemeDropdown } from "./SchemeDropdown";
+import { SchemeInfo } from "./SchemeInfo";
+import { GameplanValidationResult } from "./useGameplanValidation";
+import {
   FootballPlayer,
   ShieldBash,
   TicTacToe,
   KickBall,
-  InformationCircle
-} from '../../../../_design/Icons';
+  InformationCircle,
+} from "../../../../_design/Icons";
 
 export interface GameplanManagerProps {
   gameplan: GameplanData;
@@ -62,19 +57,30 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
   isValid,
   hasUnsavedChanges,
   canModify = true,
-  className = '',
+  className = "",
   backgroundColor,
-  borderColor
+  borderColor,
 }) => {
-  const [selectedScheme, setSelectedScheme] = useState<string>('');
-  const { isModalOpen: isSchemeModalOpen, handleOpenModal: openSchemeModal, handleCloseModal: closeSchemeModal } = useModal();
-  const { isModalOpen: isValidationModalOpen, handleOpenModal: openValidationModal, handleCloseModal: closeValidationModal } = useModal();
+  const [selectedScheme, setSelectedScheme] = useState<string>("");
+  const {
+    isModalOpen: isSchemeModalOpen,
+    handleOpenModal: openSchemeModal,
+    handleCloseModal: closeSchemeModal,
+  } = useModal();
+  const {
+    isModalOpen: isValidationModalOpen,
+    handleOpenModal: openValidationModal,
+    handleCloseModal: closeValidationModal,
+  } = useModal();
 
   const handleTabSelect = (tab: GameplanTab) => {
     onTabChange(tab);
   };
 
-  const handleSchemeInfoClick = (scheme: string, schemeType: 'offensive' | 'defensive') => {
+  const handleSchemeInfoClick = (
+    scheme: string,
+    schemeType: "offensive" | "defensive",
+  ) => {
     setSelectedScheme(`${schemeType}:${scheme}`);
     openSchemeModal();
   };
@@ -82,21 +88,13 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
   const getTabIcon = (tab: GameplanTab) => {
     switch (tab) {
       case OffensiveFormations:
-        return (
-          <TicTacToe />
-        );
+        return <TicTacToe />;
       case OffensiveDistributions:
-        return (
-          <FootballPlayer />
-        );
+        return <FootballPlayer />;
       case Defense:
-        return (
-          <ShieldBash />
-        );
+        return <ShieldBash />;
       case SpecialTeams:
-        return (
-          <KickBall />
-        );
+        return <KickBall />;
       default:
         return null;
     }
@@ -105,27 +103,27 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
   const getValidationSummary = () => {
     const errorCount = validation.errors.length;
     const warningCount = validation.warnings.length;
-    
+
     if (errorCount > 0) {
       return {
-        text: `${errorCount} error${errorCount > 1 ? 's' : ''}`,
-        color: 'text-red-400',
-        bgColor: 'bg-red-900 bg-black/50 border-red-500'
+        text: `${errorCount} error${errorCount > 1 ? "s" : ""}`,
+        color: "text-red-400",
+        bgColor: "bg-red-900 bg-black/50 border-red-500",
       };
     }
-    
+
     if (warningCount > 0) {
       return {
-        text: `${warningCount} warning${warningCount > 1 ? 's' : ''}`,
-        color: 'text-yellow-400',
-        bgColor: 'bg-yellow-900 bg-black/50 border-yellow-500'
+        text: `${warningCount} warning${warningCount > 1 ? "s" : ""}`,
+        color: "text-yellow-400",
+        bgColor: "bg-yellow-900 bg-black/50 border-yellow-500",
       };
     }
-    
+
     return {
-      text: 'Valid gameplan',
-      color: 'text-green-400',
-      bgColor: 'bg-green-900 bg-black/50 border-green-500'
+      text: "Valid gameplan",
+      color: "text-green-400",
+      bgColor: "bg-green-900 bg-black/50 border-green-500",
     };
   };
 
@@ -137,14 +135,18 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
         <div className={`border rounded-lg p-4 ${validationSummary.bgColor}`}>
           <div className="flex flex-col items-center justify-between">
             <div>
-              <Text variant="body" classes={`font-semibold ${validationSummary.color}`}>
+              <Text
+                variant="body"
+                classes={`font-semibold ${validationSummary.color}`}
+              >
                 Gameplan Status
               </Text>
               <Text variant="small" classes={validationSummary.color}>
                 {validationSummary.text}
               </Text>
             </div>
-            {(validation.errors.length > 0 || validation.warnings.length > 0) && (
+            {(validation.errors.length > 0 ||
+              validation.warnings.length > 0) && (
               <Button
                 variant="secondaryOutline"
                 size="xs"
@@ -158,24 +160,27 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
           </div>
         </div>
         {canModify && (
-          <div className="rounded-lg p-4 border-2" style={{ borderColor, backgroundColor }}>
+          <div
+            className="rounded-lg p-4 border-2"
+            style={{ borderColor, backgroundColor }}
+          >
             <div className="flex gap-2">
               <Button
                 variant={!isValid ? "danger" : "primary"}
                 size="md"
                 onClick={onSave}
                 disabled={!isValid || isSaving || !hasUnsavedChanges}
-                className={`w-full ${(!isValid || isSaving) ? 'cursor-not-allowed' : 'cursor-pointer'} ${(!isValid) ? 'bg-red-900 bg-black/50 border-red-500' : 'cursor-pointer'}`}
+                className={`w-full ${!isValid || isSaving ? "cursor-not-allowed" : "cursor-pointer"} ${!isValid ? "bg-red-900  border-red-500" : "cursor-pointer"}`}
               >
-                {isSaving ? 'Saving...' : 'Save'}
+                {isSaving ? "Saving..." : "Save"}
               </Button>
-              
+
               <Button
                 variant="secondaryOutline"
                 size="md"
                 onClick={onReset}
                 disabled={isSaving || !hasUnsavedChanges}
-                className={`w-full ${(isSaving || !hasUnsavedChanges) ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`w-full ${isSaving || !hasUnsavedChanges ? "cursor-not-allowed" : "cursor-pointer"}`}
               >
                 Reset
               </Button>
@@ -189,7 +194,10 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
           </div>
         )}
       </div>
-      <div className="rounded-lg py-2 sm:p-2 border-2" style={{ borderColor, backgroundColor }}>
+      <div
+        className="rounded-lg py-2 sm:p-2 border-2"
+        style={{ borderColor, backgroundColor }}
+      >
         <Text variant="h5" classes="text-white font-semibold mb-4">
           Gameplan Sections
         </Text>
@@ -200,7 +208,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               variant="secondaryOutline"
               size="md"
               onClick={() => handleTabSelect(tab)}
-              className={`w-[16em] justify-start mx-1 ${selectedTab === tab ? 'hover:bg-[#189E5B] bg-green-900 text-white border-green-600' : ''}`}
+              className={`w-[16em] justify-start mx-1 ${selectedTab === tab ? "hover:bg-[#189E5B] bg-green-900 text-white border-green-600" : ""}`}
             >
               <div className="flex items-center gap-3">
                 {getTabIcon(tab)}
@@ -210,12 +218,15 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
           ))}
         </div>
       </div>
-      <div className="rounded-lg p-4 border-2" style={{ borderColor, backgroundColor }}>
+      <div
+        className="rounded-lg p-4 border-2"
+        style={{ borderColor, backgroundColor }}
+      >
         <Text variant="h5" classes="text-white font-semibold mb-4">
           Current Schemes
         </Text>
         <div className="flex items-center px-2 gap-2">
-          <div className="bg-gray-700 bg-black/50 rounded-lg p-3 w-1/2 h-full">
+          <div className="bg-gray-700 rounded-lg p-3 w-1/2 h-full">
             <div className="flex items-center justify-between mb-2">
               <Text variant="small" classes="text-blue-400 font-semibold">
                 Offensive Scheme
@@ -223,7 +234,9 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               <Button
                 variant="secondaryOutline"
                 size="xs"
-                onClick={() => handleSchemeInfoClick(gameplan.OffensiveScheme, 'offensive')}
+                onClick={() =>
+                  handleSchemeInfoClick(gameplan.OffensiveScheme, "offensive")
+                }
                 className="p-1 rounded-full"
               >
                 <InformationCircle />
@@ -232,7 +245,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
             <SchemeDropdown
               value={gameplan.OffensiveScheme}
               options={OffensiveSchemeOptions}
-              onChange={(value) => onChange('OffensiveScheme', value)}
+              onChange={(value) => onChange("OffensiveScheme", value)}
               disabled={!canModify}
             />
             {FormationMap[gameplan.OffensiveScheme] && (
@@ -241,7 +254,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               </Text>
             )}
           </div>
-          <div className="bg-gray-700 bg-black/50 rounded-lg p-3 w-1/2 h-full">
+          <div className="bg-gray-700  rounded-lg p-3 w-1/2 h-full">
             <div className="flex items-center justify-between mb-2">
               <Text variant="small" classes="text-red-400 font-semibold">
                 Defensive Scheme
@@ -249,7 +262,9 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               <Button
                 variant="secondaryOutline"
                 size="xs"
-                onClick={() => handleSchemeInfoClick(gameplan.DefensiveScheme, 'defensive')}
+                onClick={() =>
+                  handleSchemeInfoClick(gameplan.DefensiveScheme, "defensive")
+                }
                 className="p-1 rounded-full"
               >
                 <InformationCircle />
@@ -258,7 +273,7 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
             <SchemeDropdown
               value={gameplan.DefensiveScheme}
               options={DefensiveSchemeOptions}
-              onChange={(value) => onChange('DefensiveScheme', value)}
+              onChange={(value) => onChange("DefensiveScheme", value)}
               disabled={!canModify}
             />
             {FormationMap[gameplan.DefensiveScheme] && (
@@ -278,13 +293,17 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
         {selectedScheme && (
           <div className="space-y-4">
             {(() => {
-              const [schemeType, schemeName] = selectedScheme.split(':');
+              const [schemeType, schemeName] = selectedScheme.split(":");
               return (
                 <div>
                   <Text variant="body" classes="text-gray-300 mb-4">
-                    {schemeType === 'offensive' ? 'Offensive' : 'Defensive'} scheme details and information.
+                    {schemeType === "offensive" ? "Offensive" : "Defensive"}{" "}
+                    scheme details and information.
                   </Text>
-                  <SchemeInfo scheme={schemeName} showRanges={schemeType === 'offensive'} />
+                  <SchemeInfo
+                    scheme={schemeName}
+                    showRanges={schemeType === "offensive"}
+                  />
                 </div>
               );
             })()}
@@ -305,7 +324,10 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               </Text>
               <div className="space-y-2">
                 {validation.errors.map((error, index) => (
-                  <div key={index} className="bg-red-900 bg-black/30 border border-red-500 rounded-sm p-3">
+                  <div
+                    key={index}
+                    className="bg-red-900 border border-red-500 rounded-sm p-3"
+                  >
                     <Text variant="small" classes="text-red-300 font-medium">
                       {error.field}
                     </Text>
@@ -324,7 +346,10 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               </Text>
               <div className="space-y-2">
                 {validation.warnings.map((warning, index) => (
-                  <div key={index} className="bg-yellow-900 bg-black/30 border border-yellow-500 rounded-sm p-3">
+                  <div
+                    key={index}
+                    className="bg-yellow-900 border border-yellow-500 rounded-sm p-3"
+                  >
                     <Text variant="small" classes="text-yellow-300 font-medium">
                       {warning.field}
                     </Text>
@@ -336,13 +361,14 @@ export const GameplanManager: React.FC<GameplanManagerProps> = ({
               </div>
             </div>
           )}
-          {validation.errors.length === 0 && validation.warnings.length === 0 && (
-            <div className="text-center py-8">
-              <Text variant="body" classes="text-green-400">
-                No validation issues found. Your gameplan is ready to save!
-              </Text>
-            </div>
-          )}
+          {validation.errors.length === 0 &&
+            validation.warnings.length === 0 && (
+              <div className="text-center py-8">
+                <Text variant="body" classes="text-green-400">
+                  No validation issues found. Your gameplan is ready to save!
+                </Text>
+              </div>
+            )}
         </div>
       </Modal>
     </div>
