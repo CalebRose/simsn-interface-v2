@@ -36,6 +36,15 @@ export const SideMenu = ({}) => {
     isNBAUser,
     isNFLUser,
     isPHLUser,
+    defaultLogo: logo,
+    cfbLogo,
+    nflLogo,
+    cbbLogo,
+    nbaLogo,
+    chlLogo,
+    phlLogo,
+    collegeBaseballLogo,
+    mlbLogo,
   } = useAuthStore();
   const {
     isCollegeBaseballUser,
@@ -72,127 +81,6 @@ export const SideMenu = ({}) => {
   const textColor = getTextColorBasedOnBg(baseColor);
   const navigate = useNavigate();
   // ✅ Generate logos based on current user
-  const {
-    cfbLogo,
-    nflLogo,
-    cbbLogo,
-    nbaLogo,
-    chlLogo,
-    phlLogo,
-    collegeBaseballLogo,
-    mlbLogo,
-    logo,
-  } = useMemo(() => {
-    let cfbLogo = "";
-    let nflLogo = "";
-    let cbbLogo = "";
-    let nbaLogo = "";
-    let chlLogo = "";
-    let phlLogo = "";
-    let collegeBaseballLogo = "";
-    let mlbLogo = "";
-    let logo = "";
-
-    if (currentUser) {
-      const {
-        teamId,
-        NFLTeamID,
-        cbb_id,
-        NBATeamID,
-        CHLTeamID,
-        PHLTeamID,
-        IsRetro,
-        DefaultLeague,
-      } = currentUser;
-
-      if (teamId) {
-        cfbLogo = getLogo(SimCFB, teamId, IsRetro);
-      }
-      if (NFLTeamID) {
-        nflLogo = getLogo(SimNFL, NFLTeamID, IsRetro);
-      }
-      if (cbb_id) {
-        cbbLogo = getLogo(SimCBB, cbb_id, IsRetro);
-      }
-      if (NBATeamID) {
-        nbaLogo = getLogo(SimNBA, NBATeamID, IsRetro);
-      }
-      if (CHLTeamID) {
-        chlLogo = getLogo(SimCHL, CHLTeamID, IsRetro);
-      }
-      if (PHLTeamID) {
-        phlLogo = getLogo(SimPHL, PHLTeamID, IsRetro);
-      }
-      if (collegeOrganization && collegeOrganization.teams) {
-        const teamEntries = Object.values(collegeOrganization.teams);
-        if (teamEntries.length > 0) {
-          collegeBaseballLogo = getLogo(
-            SimCollegeBaseball,
-            teamEntries[0].team_id,
-            IsRetro,
-          );
-        }
-      }
-      if (mlbOrganization && mlbOrganization.teams) {
-        const mlbTeam = mlbOrganization.teams["mlb"];
-        if (mlbTeam) {
-          mlbLogo = getLogo(SimMLB, mlbTeam.team_id, IsRetro);
-        }
-      }
-
-      switch (DefaultLeague) {
-        case SimCFB:
-          logo = cfbLogo;
-          break;
-        case SimNFL:
-          logo = nflLogo;
-          break;
-        case SimCBB:
-          logo = cbbLogo;
-          break;
-        case SimNBA:
-          logo = nbaLogo;
-          break;
-        case SimCHL:
-          logo = chlLogo;
-          break;
-        case SimPHL:
-          logo = phlLogo;
-          break;
-        case SimCollegeBaseball:
-          logo = collegeBaseballLogo;
-          break;
-        case SimMLB:
-          logo = mlbLogo;
-          break;
-        default:
-          // Fallback priority if DefaultLeague is not defined
-          logo =
-            cfbLogo ||
-            nflLogo ||
-            cbbLogo ||
-            nbaLogo ||
-            chlLogo ||
-            phlLogo ||
-            mlbLogo ||
-            collegeBaseballLogo ||
-            "";
-          break;
-      }
-    }
-
-    return {
-      cfbLogo,
-      nflLogo,
-      cbbLogo,
-      nbaLogo,
-      chlLogo,
-      phlLogo,
-      collegeBaseballLogo,
-      mlbLogo,
-      logo,
-    };
-  }, [currentUser, collegeOrganization, mlbOrganization]);
 
   const isBanned = useMemo(() => {
     if (!currentUser) return false;
@@ -404,7 +292,10 @@ export const SideMenu = ({}) => {
                       <NavDropdownItem
                         label="Profile"
                         isRoute={true}
-                        route={routes.USER}
+                        route={routes.USER.replace(
+                          ":username",
+                          currentUser.username,
+                        )}
                       />
                       {isCommissioner && !isBanned && (
                         <NavDropdownItem

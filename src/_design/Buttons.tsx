@@ -55,7 +55,9 @@ export const Button: React.FC<ButtonProps> = ({
 
   // ✅ Combine styles based on props
   const buttonStyle = isSelected
-    ? variants.success
+    ? `${variants.success} ${sizes[size] || sizes.md} ${
+        disabled ? disabledStyles : ""
+      }`
     : `${variants[variant] || variants.primary} ${sizes[size] || sizes.md} ${
         disabled ? disabledStyles : ""
       }`;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, Timestamp } from "firebase/firestore";
 import { firestore, useFirestore } from "../firebase/firebase";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 
@@ -25,6 +25,7 @@ export interface CurrentUser {
   DefaultLeague: string | null;
   IsBanned?: boolean;
   Reports?: number;
+  createdAt: Timestamp;
   forumMutedUntil?: string | null;
   SimCFBMediaPoints?: number;
   SimNFLMediaPoints?: number;
@@ -34,6 +35,11 @@ export interface CurrentUser {
   SimPHLMediaPoints?: number;
   SimCBLMediaPoints?: number;
   SimMLBMediaPoints?: number;
+  top5UserIds?: string[];
+  selectedTitle?: string | null;
+  forumPostCount?: number;
+  forumReactionCount?: number;
+  status?: string;
 }
 type UseCurrentUserReturn = [
   CurrentUser | null,

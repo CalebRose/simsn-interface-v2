@@ -460,3 +460,18 @@ export interface CreateReportDTO {
   category: ReportCategory;
   reason: string;
 }
+
+// ─────────────────────────────────────────────
+// User Achievements
+// ─────────────────────────────────────────────
+
+export interface Achievement {
+  id: string;
+  userId: string;
+  createdAt: Timestamp;
+  title: string;
+  league: string;
+  teamId: number;
+  seasonId: number;
+  description: string;
+}

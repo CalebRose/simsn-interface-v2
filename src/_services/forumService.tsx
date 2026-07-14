@@ -42,7 +42,9 @@ import {
   ReactionType,
   REACTION_LABELS,
   RichTextDocument,
+  Achievement,
 } from "../models/forumModels";
+import { CurrentUser } from "../_hooks/useCurrentUser";
 
 // ─────────────────────────────────────────────
 // Collection references
@@ -302,6 +304,10 @@ export const ForumService = {
       latestThreadId: threadRef.id,
     });
 
+    // 6. Increment author's post count
+    const authorRef = doc(firestore, "users", uid);
+    await updateDoc(authorRef, { forumPostCount: increment(1) });
+
     return { threadId: threadRef.id, postId: postRef.id };
   },
 
@@ -418,6 +424,10 @@ export const ForumService = {
       latestActivityBy: { uid, username },
     });
 
+    // Increment author's post count
+    const authorRef = doc(firestore, "users", uid);
+    await updateDoc(authorRef, { forumPostCount: increment(1) });
+
     return postRef.id;
   },
 
@@ -489,8 +499,9 @@ export const ForumService = {
     const data = snap.data() as Post;
     const reactions = { ...(data.reactions ?? {}) };
     const existing = reactions[reactionType] ?? [];
+    const isRemoving = existing.includes(uid);
 
-    if (existing.includes(uid)) {
+    if (isRemoving) {
       // Remove reaction (toggle)
       reactions[reactionType] = existing.filter((u) => u !== uid);
     } else {
@@ -498,6 +509,15 @@ export const ForumService = {
     }
 
     await updateDoc(ref, { reactions, updatedAt: serverTimestamp() });
+
+    // Update the post author's reaction count (skip self-reactions)
+    const authorUid = data.author?.uid;
+    if (authorUid && authorUid !== uid) {
+      const authorRef = doc(firestore, "users", authorUid);
+      await updateDoc(authorRef, {
+        forumReactionCount: increment(isRemoving ? -1 : 1),
+      });
+    }
   },
 
   // ─────────────────────────────────────────────
@@ -1141,5 +1161,49 @@ export const ForumService = {
       );
       onUpdate(notifications);
     });
+  },
+
+  // ─────────────────────────────────────────────
+  // User Profiles
+  // ─────────────────────────────────────────────
+
+  GetThreadsByAuthor: async (uid: string, count = 5): Promise<Thread[]> => {
+    const q = query(
+      threadsCol(),
+      where("author.uid", "==", uid),
+      where("isDeleted", "==", false),
+      orderBy("createdAt", "desc"),
+      limit(count),
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Thread);
+  },
+
+  GetPostsByAuthor: async (uid: string, count = 5): Promise<Post[]> => {
+    const q = query(
+      postsCol(),
+      where("author.uid", "==", uid),
+      where("isDeleted", "==", false),
+      orderBy("createdAt", "desc"),
+      limit(count),
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Post);
+  },
+
+  GetAchievementsByUser: async (uid: string): Promise<Achievement[]> => {
+    const achievementsRef = collection(firestore, "users", uid, "achievements");
+    const q = query(achievementsRef, orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Achievement);
+  },
+
+  GetUserByUsername: async (username: string): Promise<CurrentUser | null> => {
+    const usersRef = collection(firestore, "users");
+    const q = query(usersRef, where("username", "==", username), limit(1));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const d = snap.docs[0];
+    return { id: d.id, ...d.data() } as CurrentUser;
   },
 };

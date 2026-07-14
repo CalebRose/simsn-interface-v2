@@ -29,6 +29,7 @@ import {
 import { CurrentUser } from "../_hooks/useCurrentUser";
 import { getUserLogoUrl } from "../_utility/getLogo";
 import { parseForumBody } from "../components/Forum/forumUtils";
+import { useFirestoreCollection } from "../firebase/firebase";
 
 // ─────────────────────────────────────────────
 // Permission helpers
@@ -137,6 +138,8 @@ interface ForumContextProps {
   muteExpiresAt: Date | null;
   threadsCursor: QueryDocumentSnapshot | null;
   hasMoreThreads: boolean;
+  userMap: Record<string, CurrentUser>;
+  userListOptions: { label: string; value: string }[];
 
   // Actions
   loadForums: () => Promise<void>;
@@ -201,6 +204,8 @@ const defaultForumContext: ForumContextProps = {
   muteExpiresAt: null,
   threadsCursor: null,
   hasMoreThreads: false,
+  userMap: {},
+  userListOptions: [],
   loadForums: async () => {},
   loadThreadsForForum: async () => {},
   loadMoreThreads: async () => {},
@@ -249,6 +254,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   const [currentUserState, setCurrentUserState] = useState<CurrentUser | null>(
     initialUser,
   );
+  const [users, { update, remove }, isLoading, error] =
+    useFirestoreCollection<CurrentUser>("users");
   const [forums, setForums] = useState<Forum[]>([]);
   const [forumsLoading, setForumsLoading] = useState(false);
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -330,6 +337,31 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     () => notifications.filter((n) => !n.isRead).length,
     [notifications],
   );
+
+  const userMap = useMemo(() => {
+    const map: Record<string, CurrentUser> = {};
+    if (!users) return map;
+    users.forEach((user) => {
+      if (!user) return;
+      map[user.id] = user;
+    });
+    return map;
+  }, [users]);
+
+  const userListOptions = useMemo(() => {
+    const options: { label: string; value: string }[] = [];
+    if (!users) return options;
+    const sortedUsers = [...users].sort((a, b) => {
+      const nameA = a.username?.toLowerCase() || "";
+      const nameB = b.username?.toLowerCase() || "";
+      return nameA.localeCompare(nameB);
+    });
+    sortedUsers.forEach((user) => {
+      if (!user) return;
+      options.push({ label: user.username, value: user.id });
+    });
+    return options;
+  }, [users]);
 
   // ─── Forums ───────────────────────────────────
 
@@ -848,6 +880,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         muteExpiresAt,
         threadsCursor,
         hasMoreThreads,
+        userMap,
+        userListOptions,
         loadForums,
         loadThreadsForForum,
         loadMoreThreads,
