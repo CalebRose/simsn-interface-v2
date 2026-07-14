@@ -1,7 +1,7 @@
 export default {
   HOME: "/",
   ADMIN: "/admin",
-  USER: "/user",
+  USER: "/user/:username",
   USERS: "/users",
   LOGIN: "/login",
   REGISTER: "/register",
@@ -80,6 +80,7 @@ export default {
   FORUM_THREAD_PARAM: "/forums/thread/:threadId",
   FORUM_CREATE_THREAD: "/forums/new",
   FORUM_EDIT_POST: "/forums/post/:postId/edit",
+  PROFILE: "/profile/:username",
   LIVERINK: "/liverink",
   LIVEFIELD: "/livefield",
 };

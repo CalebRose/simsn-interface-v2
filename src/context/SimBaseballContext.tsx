@@ -25,7 +25,10 @@ import {
 } from "../models/baseball/baseballModels";
 import { FaceDataResponse } from "../models/footballModels";
 import { useAuthStore } from "./AuthContext";
-import { BaseballService, normalizeFaceData } from "../_services/baseballService";
+import {
+  BaseballService,
+  normalizeFaceData,
+} from "../_services/baseballService";
 import { useEffect, useState } from "react";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { baseball_ws } from "../_constants/urls";
@@ -86,7 +89,10 @@ interface CachedEntry {
 const saveToSessionCache = (orgId: number, rawData: any) => {
   try {
     const entry: CachedEntry = { timestamp: Date.now(), data: rawData };
-    sessionStorage.setItem(`${CACHE_KEY_PREFIX}${orgId}`, JSON.stringify(entry));
+    sessionStorage.setItem(
+      `${CACHE_KEY_PREFIX}${orgId}`,
+      JSON.stringify(entry),
+    );
   } catch {
     // sessionStorage full or unavailable — silently skip
   }
@@ -122,6 +128,7 @@ export const invalidateBootstrapCache = (orgId: number) => {
 
 interface SimBaseballContextProps {
   organizations: BaseballOrganization[] | null;
+  organizationMap: Record<number, BaseballOrganization>;
   collegeOrganization?: BaseballOrganization | null;
   mlbOrganization?: BaseballOrganization | null;
   mlbRoster?: BaseballRosters | null;
@@ -152,13 +159,18 @@ interface SimBaseballContextProps {
   isBootstrapLoading: boolean;
   // Actions
   loadBootstrapForOrg: (orgId: number, forceRefresh?: boolean) => Promise<any>;
-  getAllCachedOrgPlayers: () => { players: Player[]; allTeams: BaseballTeam[]; cachedOrgCount: number } | null;
+  getAllCachedOrgPlayers: () => {
+    players: Player[];
+    allTeams: BaseballTeam[];
+    cachedOrgCount: number;
+  } | null;
   toggleNotificationAsRead: (notificationId: number) => void;
   deleteNotification: (notificationId: number) => void;
 }
 
 const defaultContext: SimBaseballContextProps = {
   organizations: null,
+  organizationMap: {},
   collegeOrganization: null,
   mlbOrganization: null,
   mlbRoster: null,
@@ -205,23 +217,28 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   const { currentUser } = useAuthStore();
   const isFetching = useRef(false);
   const [organizations, setOrganizations] = useState<BaseballOrganization[]>(
-    []
+    [],
   );
 
   const [rosters, setRosters] = useState<BaseballRosters[]>([]);
-  const [globalFaces, setGlobalFaces] = useState<{ [key: number]: FaceDataResponse }>({});
+  const [globalFaces, setGlobalFaces] = useState<{
+    [key: number]: FaceDataResponse;
+  }>({});
   const [isLoading, setIsLoading] = useState(true);
   const { baseball_Timestamp, setBaseball_Timestamp } = useWebSockets(
     baseball_ws,
-    SimMLB
+    SimMLB,
   );
 
   // Per-org bootstrap cache — survives re-renders, no network call on cache hit
   const bootstrapCache = useRef<Map<number, BootstrapData>>(new Map());
 
   // Active bootstrap data (what consumers see)
-  const [activeBootstrap, setActiveBootstrap] = useState<BootstrapData>(emptyBootstrap);
-  const [bootstrappedOrgId, setBootstrappedOrgId] = useState<number | null>(null);
+  const [activeBootstrap, setActiveBootstrap] =
+    useState<BootstrapData>(emptyBootstrap);
+  const [bootstrappedOrgId, setBootstrappedOrgId] = useState<number | null>(
+    null,
+  );
   const [isBootstrapLoading, setIsBootstrapLoading] = useState(false);
   // Tracks whether initial data load is complete (active org loaded)
   const [initialLoadDone, setInitialLoadDone] = useState(false);
@@ -229,7 +246,8 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   // Invalidate caches when websocket signals a sim advance / data change
   const prevTimestamp = useRef(baseball_Timestamp);
   useEffect(() => {
-    if (!baseball_Timestamp || baseball_Timestamp === prevTimestamp.current) return;
+    if (!baseball_Timestamp || baseball_Timestamp === prevTimestamp.current)
+      return;
     prevTimestamp.current = baseball_Timestamp;
     // Clear in-memory cache so next loadBootstrapForOrg fetches fresh data
     bootstrapCache.current.clear();
@@ -238,7 +256,9 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
       for (const key of Object.keys(sessionStorage)) {
         if (key.startsWith(CACHE_KEY_PREFIX)) sessionStorage.removeItem(key);
       }
-    } catch { /* sessionStorage unavailable */ }
+    } catch {
+      /* sessionStorage unavailable */
+    }
     // Re-fetch active org's data
     const activeOrg = mlbOrganization || collegeOrganization;
     if (activeOrg) {
@@ -247,26 +267,32 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   }, [baseball_Timestamp]);
 
   const mlbOrganization = useMemo(() => {
-    if (!currentUser || !organizations || organizations.length === 0) return null;
+    if (!currentUser || !organizations || organizations.length === 0)
+      return null;
     const username = currentUser.username;
     if (!username) return null;
-    return organizations.find(
-      (o) =>
-        o.league === "mlb" &&
-        (o.owner_name === username ||
-          o.gm_name === username ||
-          o.manager_name === username ||
-          o.scout_name === username)
-    ) || null;
+    return (
+      organizations.find(
+        (o) =>
+          o.league === "mlb" &&
+          (o.owner_name === username ||
+            o.gm_name === username ||
+            o.manager_name === username ||
+            o.scout_name === username),
+      ) || null
+    );
   }, [currentUser, organizations]);
 
   const collegeOrganization = useMemo(() => {
-    if (!currentUser || !organizations || organizations.length === 0) return null;
+    if (!currentUser || !organizations || organizations.length === 0)
+      return null;
     const username = currentUser.username;
     if (!username) return null;
-    return organizations.find(
-      (o) => o.league === "college" && o.coach === username
-    ) || null;
+    return (
+      organizations.find(
+        (o) => o.league === "college" && o.coach === username,
+      ) || null
+    );
   }, [currentUser, organizations]);
 
   const isMlbUser = !!mlbOrganization;
@@ -281,6 +307,15 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
     if (!collegeOrganization || !rosters || rosters.length === 0) return null;
     return rosters.find((r) => r.org_id === collegeOrganization.id) || null;
   }, [collegeOrganization, rosters]);
+
+  const organizationMap = useMemo(() => {
+    const organizationMap: Record<number, BaseballOrganization> = {};
+    if (!organizations) return organizationMap;
+    organizations.forEach((org) => {
+      organizationMap[org.id] = org;
+    });
+    return organizationMap;
+  }, [organizations]);
 
   // Load org list on mount
   useEffect(() => {
@@ -299,7 +334,12 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         setInitialLoadDone(true);
       }
     }
-  }, [currentUser, organizations, mlbOrganization?.id, collegeOrganization?.id]);
+  }, [
+    currentUser,
+    organizations,
+    mlbOrganization?.id,
+    collegeOrganization?.id,
+  ]);
 
   // Apply bootstrap for user's org once initial load + org detection are both ready
   useEffect(() => {
@@ -324,184 +364,204 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
    * Convert a raw per-org API response into a BootstrapData object
    * and store in cache + sessionStorage.
    */
-  const processAndCacheOrgData = useCallback((orgId: number, data: any): BootstrapData => {
-    // Merge bootstrap org into organizations state
-    if (data.Organization) {
-      setOrganizations((prev) =>
-        prev.map((o) => (o.id === orgId ? { ...o, ...data.Organization } : o))
-      );
-    }
-
-    const normalized: Record<string, Player[]> = {};
-    if (data.RosterMap) {
-      for (const [key, players] of Object.entries(data.RosterMap)) {
-        normalized[key] = (players as any[]).map(normalizePlayer);
+  const processAndCacheOrgData = useCallback(
+    (orgId: number, data: any): BootstrapData => {
+      // Merge bootstrap org into organizations state
+      if (data.Organization) {
+        setOrganizations((prev) =>
+          prev.map((o) =>
+            o.id === orgId ? { ...o, ...data.Organization } : o,
+          ),
+        );
       }
-    }
 
-    const faces: { [key: number]: FaceDataResponse } = {};
-    if (data.FaceData) {
-      for (const [id, f] of Object.entries(data.FaceData)) {
-        faces[Number(id)] = normalizeFaceData(f);
+      const normalized: Record<string, Player[]> = {};
+      if (data.RosterMap) {
+        for (const [key, players] of Object.entries(data.RosterMap)) {
+          normalized[key] = (players as any[]).map(normalizePlayer);
+        }
       }
-    }
 
-    const bootstrapData: BootstrapData = {
-      standings: data.Standings ?? [],
-      allGames: data.AllGames ?? [],
-      notifications: data.Notifications ?? [],
-      news: data.News ?? [],
-      topBatter: data.TopBatter || null,
-      topPitcher: data.TopPitcher || null,
-      topFielder: data.TopFielder || null,
-      injuryReport: data.InjuryReport ?? [],
-      allTeams: data.AllTeams ?? [],
-      seasonContext: data.SeasonContext ?? null,
-      rosterMap: normalized,
-      financials: data.Financials ?? null,
-      playerFaces: faces,
-      specialEvents: data.SpecialEvents ?? [],
-    };
+      const faces: { [key: number]: FaceDataResponse } = {};
+      if (data.FaceData) {
+        for (const [id, f] of Object.entries(data.FaceData)) {
+          faces[Number(id)] = normalizeFaceData(f);
+        }
+      }
 
-    bootstrapCache.current.set(orgId, bootstrapData);
-    saveToSessionCache(orgId, data);
+      const bootstrapData: BootstrapData = {
+        standings: data.Standings ?? [],
+        allGames: data.AllGames ?? [],
+        notifications: data.Notifications ?? [],
+        news: data.News ?? [],
+        topBatter: data.TopBatter || null,
+        topPitcher: data.TopPitcher || null,
+        topFielder: data.TopFielder || null,
+        injuryReport: data.InjuryReport ?? [],
+        allTeams: data.AllTeams ?? [],
+        seasonContext: data.SeasonContext ?? null,
+        rosterMap: normalized,
+        financials: data.Financials ?? null,
+        playerFaces: faces,
+        specialEvents: data.SpecialEvents ?? [],
+      };
 
-    return bootstrapData;
-  }, []);
+      bootstrapCache.current.set(orgId, bootstrapData);
+      saveToSessionCache(orgId, data);
+
+      return bootstrapData;
+    },
+    [],
+  );
 
   /**
    * Phase 1: Load the active org's bootstrap data ASAP (fast path).
    * Phase 2: After dashboard renders, backfill the all-orgs cache + load rosters/faces.
    */
-  const loadActiveOrgFirst = useCallback(async (activeOrgId: number) => {
-    setIsBootstrapLoading(true);
+  const loadActiveOrgFirst = useCallback(
+    async (activeOrgId: number) => {
+      setIsBootstrapLoading(true);
 
-    // ── Phase 1: Get the active org's data as fast as possible ──
+      // ── Phase 1: Get the active org's data as fast as possible ──
 
-    // Check sessionStorage first (stale-while-revalidate)
-    const sessionCached = loadFromSessionCache(activeOrgId);
-    let usedSessionCache = false;
+      // Check sessionStorage first (stale-while-revalidate)
+      const sessionCached = loadFromSessionCache(activeOrgId);
+      let usedSessionCache = false;
 
-    if (sessionCached) {
-      // Render immediately from session cache
-      const bootstrapData = processAndCacheOrgData(activeOrgId, sessionCached);
-      applyBootstrap(activeOrgId, bootstrapData);
-      setIsBootstrapLoading(false);
-      setInitialLoadDone(true);
-      usedSessionCache = true;
-    }
-
-    // Fetch fresh data for the active org (either as primary or revalidation)
-    try {
-      const data = await BaseballService.GetBootstrapLandingData(activeOrgId, activeOrgId);
-      const bootstrapData = processAndCacheOrgData(activeOrgId, data);
-
-      if (!usedSessionCache) {
-        // First load — apply and unblock dashboard
+      if (sessionCached) {
+        // Render immediately from session cache
+        const bootstrapData = processAndCacheOrgData(
+          activeOrgId,
+          sessionCached,
+        );
         applyBootstrap(activeOrgId, bootstrapData);
         setIsBootstrapLoading(false);
         setInitialLoadDone(true);
-      } else {
-        // Revalidation — silently update if data changed
-        applyBootstrap(activeOrgId, bootstrapData);
+        usedSessionCache = true;
       }
-    } catch (error) {
-      console.error("Active-org bootstrap failed:", error);
-      if (!usedSessionCache) {
-        // No session cache and network failed — unblock with empty state
-        setIsBootstrapLoading(false);
-        setInitialLoadDone(true);
-      }
-    }
 
-    // ── Phase 2: Background work (after dashboard is rendered) ──
+      // Fetch fresh data for the active org (either as primary or revalidation)
+      try {
+        const data = await BaseballService.GetBootstrapLandingData(
+          activeOrgId,
+          activeOrgId,
+        );
+        const bootstrapData = processAndCacheOrgData(activeOrgId, data);
 
-    // Backfill the all-orgs cache for instant org switching
-    BaseballService.GetAllBootstrapData(activeOrgId)
-      .then((allData) => {
-        const sharedStandings = allData.Standings ?? [];
-        const sharedAllGames = allData.AllGames ?? [];
-        const sharedAllTeams = allData.AllTeams ?? [];
-        const sharedSeasonContext = allData.SeasonContext ?? null;
-        const sharedSpecialEvents = allData.SpecialEvents ?? [];
-        const sharedFaces: { [key: number]: FaceDataResponse } = {};
-        if (allData.FaceData) {
-          for (const [id, f] of Object.entries(allData.FaceData)) {
-            sharedFaces[Number(id)] = normalizeFaceData(f);
-          }
+        if (!usedSessionCache) {
+          // First load — apply and unblock dashboard
+          applyBootstrap(activeOrgId, bootstrapData);
+          setIsBootstrapLoading(false);
+          setInitialLoadDone(true);
+        } else {
+          // Revalidation — silently update if data changed
+          applyBootstrap(activeOrgId, bootstrapData);
         }
+      } catch (error) {
+        console.error("Active-org bootstrap failed:", error);
+        if (!usedSessionCache) {
+          // No session cache and network failed — unblock with empty state
+          setIsBootstrapLoading(false);
+          setInitialLoadDone(true);
+        }
+      }
 
-        const orgUpdates: BaseballOrganization[] = [];
+      // ── Phase 2: Background work (after dashboard is rendered) ──
 
-        if (allData.Orgs) {
+      // Backfill the all-orgs cache for instant org switching
+      BaseballService.GetAllBootstrapData(activeOrgId)
+        .then((allData) => {
+          const sharedStandings = allData.Standings ?? [];
+          const sharedAllGames = allData.AllGames ?? [];
+          const sharedAllTeams = allData.AllTeams ?? [];
+          const sharedSeasonContext = allData.SeasonContext ?? null;
+          const sharedSpecialEvents = allData.SpecialEvents ?? [];
+          const sharedFaces: { [key: number]: FaceDataResponse } = {};
+          if (allData.FaceData) {
+            for (const [id, f] of Object.entries(allData.FaceData)) {
+              sharedFaces[Number(id)] = normalizeFaceData(f);
+            }
+          }
+
+          const orgUpdates: BaseballOrganization[] = [];
+
+          if (allData.Orgs) {
+            for (const [orgIdStr, orgEntry] of Object.entries(allData.Orgs)) {
+              const orgId = Number(orgIdStr);
+
+              // Don't overwrite the active org's fresh data with all-orgs data
+              if (orgId === activeOrgId) continue;
+
+              if (orgEntry.Organization) {
+                orgUpdates.push(orgEntry.Organization);
+              }
+
+              const normalized: Record<string, Player[]> = {};
+              if (orgEntry.RosterMap) {
+                for (const [key, players] of Object.entries(
+                  orgEntry.RosterMap,
+                )) {
+                  normalized[key] = players.map(normalizePlayer);
+                }
+              }
+
+              const bootstrapData: BootstrapData = {
+                standings: sharedStandings,
+                allGames: sharedAllGames,
+                notifications: orgEntry.Notifications ?? [],
+                news: orgEntry.News ?? [],
+                topBatter: orgEntry.TopBatter || null,
+                topPitcher: orgEntry.TopPitcher || null,
+                topFielder: orgEntry.TopFielder || null,
+                injuryReport: orgEntry.InjuryReport ?? [],
+                allTeams: sharedAllTeams,
+                seasonContext: sharedSeasonContext,
+                rosterMap: normalized,
+                financials: orgEntry.Financials ?? null,
+                playerFaces: sharedFaces,
+                specialEvents: sharedSpecialEvents,
+              };
+
+              bootstrapCache.current.set(orgId, bootstrapData);
+            }
+          }
+
+          if (orgUpdates.length > 0) {
+            setOrganizations((prev) => {
+              const updated = [...prev];
+              for (const orgUpdate of orgUpdates) {
+                const idx = updated.findIndex((o) => o.id === orgUpdate.id);
+                if (idx >= 0) {
+                  updated[idx] = { ...updated[idx], ...orgUpdate };
+                }
+              }
+              return updated;
+            });
+          }
+
+          // Build rosters from the all-orgs bootstrap data (no separate API call needed)
+          const builtRosters: BaseballRosters[] = [];
           for (const [orgIdStr, orgEntry] of Object.entries(allData.Orgs)) {
-            const orgId = Number(orgIdStr);
-
-            // Don't overwrite the active org's fresh data with all-orgs data
-            if (orgId === activeOrgId) continue;
-
-            if (orgEntry.Organization) {
-              orgUpdates.push(orgEntry.Organization);
-            }
-
-            const normalized: Record<string, Player[]> = {};
             if (orgEntry.RosterMap) {
-              for (const [key, players] of Object.entries(orgEntry.RosterMap)) {
-                normalized[key] = players.map(normalizePlayer);
-              }
+              builtRosters.push({
+                org_id: Number(orgIdStr),
+                players: Object.values(orgEntry.RosterMap)
+                  .flat()
+                  .map(normalizePlayer),
+              } as BaseballRosters);
             }
-
-            const bootstrapData: BootstrapData = {
-              standings: sharedStandings,
-              allGames: sharedAllGames,
-              notifications: orgEntry.Notifications ?? [],
-              news: orgEntry.News ?? [],
-              topBatter: orgEntry.TopBatter || null,
-              topPitcher: orgEntry.TopPitcher || null,
-              topFielder: orgEntry.TopFielder || null,
-              injuryReport: orgEntry.InjuryReport ?? [],
-              allTeams: sharedAllTeams,
-              seasonContext: sharedSeasonContext,
-              rosterMap: normalized,
-              financials: orgEntry.Financials ?? null,
-              playerFaces: sharedFaces,
-              specialEvents: sharedSpecialEvents,
-            };
-
-            bootstrapCache.current.set(orgId, bootstrapData);
           }
-        }
+          if (builtRosters.length > 0) setRosters(builtRosters);
 
-        if (orgUpdates.length > 0) {
-          setOrganizations((prev) => {
-            const updated = [...prev];
-            for (const orgUpdate of orgUpdates) {
-              const idx = updated.findIndex((o) => o.id === orgUpdate.id);
-              if (idx >= 0) {
-                updated[idx] = { ...updated[idx], ...orgUpdate };
-              }
-            }
-            return updated;
-          });
-        }
-
-        // Build rosters from the all-orgs bootstrap data (no separate API call needed)
-        const builtRosters: BaseballRosters[] = [];
-        for (const [orgIdStr, orgEntry] of Object.entries(allData.Orgs)) {
-          if (orgEntry.RosterMap) {
-            builtRosters.push({
-              org_id: Number(orgIdStr),
-              players: Object.values(orgEntry.RosterMap).flat().map(normalizePlayer),
-            } as BaseballRosters);
-          }
-        }
-        if (builtRosters.length > 0) setRosters(builtRosters);
-
-        // Face data is already in the all-orgs response — use it directly
-        if (Object.keys(sharedFaces).length > 0) setGlobalFaces(sharedFaces);
-      })
-      .catch((e) => console.error("Background all-orgs cache fill failed:", e));
-  }, [processAndCacheOrgData]);
+          // Face data is already in the all-orgs response — use it directly
+          if (Object.keys(sharedFaces).length > 0) setGlobalFaces(sharedFaces);
+        })
+        .catch((e) =>
+          console.error("Background all-orgs cache fill failed:", e),
+        );
+    },
+    [processAndCacheOrgData],
+  );
 
   /** Apply cached bootstrap data to active state (no network call). */
   const applyBootstrap = useCallback((orgId: number, data: BootstrapData) => {
@@ -513,64 +573,74 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
    * Load bootstrap for an org. Uses cache when available (instant swap).
    * Pass forceRefresh=true to bypass cache (e.g. after a trade or sim advance).
    */
-  const loadBootstrapForOrg = useCallback(async (orgId: number, forceRefresh?: boolean) => {
-    // Detect cross-league cache staleness: if the cached data was backfilled from
-    // GetAllBootstrapData(), its allTeams/seasonContext belong to the active org's
-    // league and are wrong for the other league. Force a fresh fetch in that case.
-    if (!forceRefresh && bootstrapCache.current.has(orgId)) {
-      const org = organizations.find((o) => o.id === orgId);
-      const cached = bootstrapCache.current.get(orgId)!;
-      if (org) {
-        const isCollegeOrg = org.league === "college";
-        const cachedTeams = cached.allTeams ?? [];
-        // If the org is college but cached teams are all non-college (or vice versa),
-        // the cache was backfilled with the wrong league's shared data.
-        const hasCollegeTeams = cachedTeams.some((t) => t.team_level === 3);
-        const hasProTeams = cachedTeams.some((t) => t.team_level >= 4 && t.team_level <= 9);
-        const leagueMismatch = isCollegeOrg ? !hasCollegeTeams && hasProTeams : !hasProTeams && hasCollegeTeams;
-        if (leagueMismatch) {
-          // Evict stale cache entry and fall through to fresh fetch
-          bootstrapCache.current.delete(orgId);
+  const loadBootstrapForOrg = useCallback(
+    async (orgId: number, forceRefresh?: boolean) => {
+      // Detect cross-league cache staleness: if the cached data was backfilled from
+      // GetAllBootstrapData(), its allTeams/seasonContext belong to the active org's
+      // league and are wrong for the other league. Force a fresh fetch in that case.
+      if (!forceRefresh && bootstrapCache.current.has(orgId)) {
+        const org = organizations.find((o) => o.id === orgId);
+        const cached = bootstrapCache.current.get(orgId)!;
+        if (org) {
+          const isCollegeOrg = org.league === "college";
+          const cachedTeams = cached.allTeams ?? [];
+          // If the org is college but cached teams are all non-college (or vice versa),
+          // the cache was backfilled with the wrong league's shared data.
+          const hasCollegeTeams = cachedTeams.some((t) => t.team_level === 3);
+          const hasProTeams = cachedTeams.some(
+            (t) => t.team_level >= 4 && t.team_level <= 9,
+          );
+          const leagueMismatch = isCollegeOrg
+            ? !hasCollegeTeams && hasProTeams
+            : !hasProTeams && hasCollegeTeams;
+          if (leagueMismatch) {
+            // Evict stale cache entry and fall through to fresh fetch
+            bootstrapCache.current.delete(orgId);
+          }
         }
       }
-    }
 
-    // Cache hit — swap instantly, no network call
-    if (!forceRefresh && bootstrapCache.current.has(orgId)) {
-      const cached = bootstrapCache.current.get(orgId)!;
-      applyBootstrap(orgId, cached);
-      // Return PascalCase shape to match raw API response (consumed by processBootstrapResult in team pages)
-      return {
-        RosterMap: cached.rosterMap,
-        AllTeams: cached.allTeams,
-        Standings: cached.standings,
-        AllGames: cached.allGames,
-        Notifications: cached.notifications,
-        News: cached.news,
-        TopBatter: cached.topBatter,
-        TopPitcher: cached.topPitcher,
-        TopFielder: cached.topFielder,
-        InjuryReport: cached.injuryReport,
-        SeasonContext: cached.seasonContext,
-        Financials: cached.financials,
-        FaceData: cached.playerFaces,
-      };
-    }
+      // Cache hit — swap instantly, no network call
+      if (!forceRefresh && bootstrapCache.current.has(orgId)) {
+        const cached = bootstrapCache.current.get(orgId)!;
+        applyBootstrap(orgId, cached);
+        // Return PascalCase shape to match raw API response (consumed by processBootstrapResult in team pages)
+        return {
+          RosterMap: cached.rosterMap,
+          AllTeams: cached.allTeams,
+          Standings: cached.standings,
+          AllGames: cached.allGames,
+          Notifications: cached.notifications,
+          News: cached.news,
+          TopBatter: cached.topBatter,
+          TopPitcher: cached.topPitcher,
+          TopFielder: cached.topFielder,
+          InjuryReport: cached.injuryReport,
+          SeasonContext: cached.seasonContext,
+          Financials: cached.financials,
+          FaceData: cached.playerFaces,
+        };
+      }
 
-    // Cache miss — fetch single org, cache, then apply
-    try {
-      setIsBootstrapLoading(true);
-      const data = await BaseballService.GetBootstrapLandingData(orgId, orgId);
-      const bootstrapData = processAndCacheOrgData(orgId, data);
-      applyBootstrap(orgId, bootstrapData);
-      setIsBootstrapLoading(false);
-      return data;
-    } catch (error) {
-      console.error("Failed to load baseball bootstrap data", error);
-      setIsBootstrapLoading(false);
-      return null;
-    }
-  }, [applyBootstrap, processAndCacheOrgData, organizations]);
+      // Cache miss — fetch single org, cache, then apply
+      try {
+        setIsBootstrapLoading(true);
+        const data = await BaseballService.GetBootstrapLandingData(
+          orgId,
+          orgId,
+        );
+        const bootstrapData = processAndCacheOrgData(orgId, data);
+        applyBootstrap(orgId, bootstrapData);
+        setIsBootstrapLoading(false);
+        return data;
+      } catch (error) {
+        console.error("Failed to load baseball bootstrap data", error);
+        setIsBootstrapLoading(false);
+        return null;
+      }
+    },
+    [applyBootstrap, processAndCacheOrgData, organizations],
+  );
 
   const toggleNotificationAsRead = useCallback(
     async (notificationId: number) => {
@@ -580,15 +650,18 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         setActiveBootstrap((prev) => ({
           ...prev,
           notifications: prev.notifications.map((n) =>
-            n.id === notificationId ? { ...n, is_read: true } : n
+            n.id === notificationId ? { ...n, is_read: true } : n,
           ),
         }));
-        if (bootstrappedOrgId != null && bootstrapCache.current.has(bootstrappedOrgId)) {
+        if (
+          bootstrappedOrgId != null &&
+          bootstrapCache.current.has(bootstrappedOrgId)
+        ) {
           const cached = bootstrapCache.current.get(bootstrappedOrgId)!;
           bootstrapCache.current.set(bootstrappedOrgId, {
             ...cached,
             notifications: cached.notifications.map((n) =>
-              n.id === notificationId ? { ...n, is_read: true } : n
+              n.id === notificationId ? { ...n, is_read: true } : n,
             ),
           });
         }
@@ -596,7 +669,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         console.error("Failed to mark notification as read", error);
       }
     },
-    [bootstrappedOrgId]
+    [bootstrappedOrgId],
   );
 
   const deleteNotification = useCallback(
@@ -606,27 +679,38 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         // Update both active state and cache
         setActiveBootstrap((prev) => ({
           ...prev,
-          notifications: prev.notifications.filter((n) => n.id !== notificationId),
+          notifications: prev.notifications.filter(
+            (n) => n.id !== notificationId,
+          ),
         }));
-        if (bootstrappedOrgId != null && bootstrapCache.current.has(bootstrappedOrgId)) {
+        if (
+          bootstrappedOrgId != null &&
+          bootstrapCache.current.has(bootstrappedOrgId)
+        ) {
           const cached = bootstrapCache.current.get(bootstrappedOrgId)!;
           bootstrapCache.current.set(bootstrappedOrgId, {
             ...cached,
-            notifications: cached.notifications.filter((n) => n.id !== notificationId),
+            notifications: cached.notifications.filter(
+              (n) => n.id !== notificationId,
+            ),
           });
         }
       } catch (error) {
         console.error("Failed to delete notification", error);
       }
     },
-    [bootstrappedOrgId]
+    [bootstrappedOrgId],
   );
 
   /**
    * Return all players from the in-memory bootstrap cache (no network call).
    * Returns null if the cache hasn't been populated yet.
    */
-  const getAllCachedOrgPlayers = useCallback((): { players: Player[]; allTeams: BaseballTeam[]; cachedOrgCount: number } | null => {
+  const getAllCachedOrgPlayers = useCallback((): {
+    players: Player[];
+    allTeams: BaseballTeam[];
+    cachedOrgCount: number;
+  } | null => {
     if (bootstrapCache.current.size === 0) return null;
     const players: Player[] = [];
     let allTeams: BaseballTeam[] = [];
@@ -642,15 +726,19 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
   }, []);
 
   // Merge global faces with any bootstrap-specific faces (global takes priority for coverage)
-  const mergedFaces = useMemo(() => ({
-    ...activeBootstrap.playerFaces,
-    ...globalFaces,
-  }), [activeBootstrap.playerFaces, globalFaces]);
+  const mergedFaces = useMemo(
+    () => ({
+      ...activeBootstrap.playerFaces,
+      ...globalFaces,
+    }),
+    [activeBootstrap.playerFaces, globalFaces],
+  );
 
   return (
     <SimBaseballContext.Provider
       value={{
         organizations,
+        organizationMap,
         collegeOrganization,
         mlbOrganization,
         mlbRoster,
@@ -693,7 +781,7 @@ export const useSimBaseballStore = (): SimBaseballContextProps => {
   const context = useContext(SimBaseballContext);
   if (!context) {
     throw new Error(
-      "useSimBaseballStore must be used within a SimBaseballProvider"
+      "useSimBaseballStore must be used within a SimBaseballProvider",
     );
   }
   return context;

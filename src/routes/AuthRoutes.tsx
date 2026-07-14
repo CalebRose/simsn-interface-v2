@@ -94,6 +94,15 @@ export const AuthRoutes = [
     }
   />,
   <Route
+    key="Public Profile"
+    path={routes.PROFILE}
+    element={
+      <AuthGuard>
+        <ProfilePage />
+      </AuthGuard>
+    }
+  />,
+  <Route
     key="CFB Team"
     path={routes.CFB_TEAM}
     element={

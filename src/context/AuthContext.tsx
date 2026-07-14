@@ -7,6 +7,17 @@ import {
   useEffect,
 } from "react";
 import { CurrentUser, useCurrentUser } from "../_hooks/useCurrentUser";
+import {
+  SimCBB,
+  SimCFB,
+  SimCHL,
+  SimCollegeBaseball,
+  SimMLB,
+  SimNBA,
+  SimNFL,
+  SimPHL,
+} from "../_constants/constants";
+import { getLogo } from "../_utility/getLogo";
 
 // ✅ Define Auth Context Props
 interface AuthContextProps {
@@ -25,6 +36,16 @@ interface AuthContextProps {
   isPHLUser: boolean;
   isDarkMode: boolean;
   isModerator: boolean;
+  isSubscriber: boolean;
+  defaultLogo: string;
+  cfbLogo: string;
+  nflLogo: string;
+  cbbLogo: string;
+  nbaLogo: string;
+  chlLogo: string;
+  phlLogo: string;
+  collegeBaseballLogo: string;
+  mlbLogo: string;
 }
 
 // ✅ Initial Context Values
@@ -44,6 +65,16 @@ const defaultAuthContext: AuthContextProps = {
   isPHLUser: false,
   isDarkMode: true,
   isModerator: false,
+  isSubscriber: false,
+  defaultLogo: "",
+  cfbLogo: "",
+  nflLogo: "",
+  cbbLogo: "",
+  nbaLogo: "",
+  chlLogo: "",
+  phlLogo: "",
+  collegeBaseballLogo: "",
+  mlbLogo: "",
 };
 
 // ✅ Create Auth Context
@@ -203,6 +234,128 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return false;
   }, [currentUser]);
 
+  const isSubscriber = useMemo(() => {
+    return currentUser?.IsSubscribed || false;
+  }, [currentUser]);
+
+  const {
+    cfbLogo,
+    nflLogo,
+    cbbLogo,
+    nbaLogo,
+    chlLogo,
+    phlLogo,
+    collegeBaseballLogo,
+    mlbLogo,
+    defaultLogo,
+  } = useMemo(() => {
+    let cfbLogo = "";
+    let nflLogo = "";
+    let cbbLogo = "";
+    let nbaLogo = "";
+    let chlLogo = "";
+    let phlLogo = "";
+    let collegeBaseballLogo = "";
+    let mlbLogo = "";
+    let defaultLogo = "";
+
+    if (currentUser) {
+      const {
+        teamId,
+        NFLTeamID,
+        cbb_id,
+        NBATeamID,
+        CHLTeamID,
+        PHLTeamID,
+        CollegeBaseballOrgID,
+        MLBOrgID,
+        IsRetro,
+        DefaultLeague,
+      } = currentUser;
+
+      if (teamId) {
+        cfbLogo = getLogo(SimCFB, teamId, IsRetro);
+      }
+      if (NFLTeamID) {
+        nflLogo = getLogo(SimNFL, NFLTeamID, IsRetro);
+      }
+      if (cbb_id) {
+        cbbLogo = getLogo(SimCBB, cbb_id, IsRetro);
+      }
+      if (NBATeamID) {
+        nbaLogo = getLogo(SimNBA, NBATeamID, IsRetro);
+      }
+      if (CHLTeamID) {
+        chlLogo = getLogo(SimCHL, CHLTeamID, IsRetro);
+      }
+      if (PHLTeamID) {
+        phlLogo = getLogo(SimPHL, PHLTeamID, IsRetro);
+      }
+      if (CollegeBaseballOrgID) {
+        collegeBaseballLogo = getLogo(
+          SimCollegeBaseball,
+          CollegeBaseballOrgID,
+          IsRetro,
+        );
+      }
+      if (MLBOrgID) {
+        mlbLogo = getLogo(SimMLB, MLBOrgID, IsRetro);
+      }
+
+      switch (DefaultLeague) {
+        case SimCFB:
+          defaultLogo = cfbLogo;
+          break;
+        case SimNFL:
+          defaultLogo = nflLogo;
+          break;
+        case SimCBB:
+          defaultLogo = cbbLogo;
+          break;
+        case SimNBA:
+          defaultLogo = nbaLogo;
+          break;
+        case SimCHL:
+          defaultLogo = chlLogo;
+          break;
+        case SimPHL:
+          defaultLogo = phlLogo;
+          break;
+        case SimCollegeBaseball:
+          defaultLogo = collegeBaseballLogo;
+          break;
+        case SimMLB:
+          defaultLogo = mlbLogo;
+          break;
+        default:
+          // Fallback priority if DefaultLeague is not defined
+          defaultLogo =
+            cfbLogo ||
+            nflLogo ||
+            cbbLogo ||
+            nbaLogo ||
+            chlLogo ||
+            phlLogo ||
+            mlbLogo ||
+            collegeBaseballLogo ||
+            "";
+          break;
+      }
+    }
+
+    return {
+      cfbLogo,
+      nflLogo,
+      cbbLogo,
+      nbaLogo,
+      chlLogo,
+      phlLogo,
+      collegeBaseballLogo,
+      mlbLogo,
+      defaultLogo,
+    };
+  }, [currentUser]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -221,6 +374,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isPHLUser,
         isDarkMode,
         isModerator,
+        isSubscriber,
+        defaultLogo,
+        cfbLogo,
+        nflLogo,
+        cbbLogo,
+        nbaLogo,
+        chlLogo,
+        phlLogo,
+        collegeBaseballLogo,
+        mlbLogo,
       }}
     >
       {children}
