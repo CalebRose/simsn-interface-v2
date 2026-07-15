@@ -8,6 +8,7 @@ import {
 import { Text } from "../../../_design/Typography";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { useMemo } from "react";
+import { ClickableUserLabel } from "../../Common/Labels";
 
 interface GameStatsMappingProps {
   data: FilteredStats;
@@ -212,9 +213,12 @@ export const FBGameModalStrategy = ({
         <Text variant="xs" classes="col-span-3 text-left">
           {isHome ? score.HomeDefensiveScheme : score.AwayDefensiveScheme}
         </Text>
-        <Text variant="xs" classes="col-span-3 text-left">
-          {coach ? coach : "N/A"}
-        </Text>
+        <ClickableUserLabel
+          label={coach ? coach : "N/A"}
+          coach={coach ? coach : ""}
+          textVariant="xs"
+          additionalClasses="col-span-3 text-left"
+        />
       </div>
     </div>
   );

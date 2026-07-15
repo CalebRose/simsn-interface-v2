@@ -67,6 +67,7 @@ import {
 } from "./GameModalHelper";
 import { Table, TableCell } from "../../../_design/Table";
 import { getLogo } from "../../../_utility/getLogo";
+import { ClickableUserLabel } from "../../Common/Labels";
 
 export interface SchedulePageGameModalProps {
   isOpen: boolean;
@@ -1536,6 +1537,90 @@ export const HockeyGameModal = ({
                               </div>
                             );
                           })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-start gap-1 sm:gap-4">
+                    <div className="flex flex-row items-center justify-start w-full">
+                      <div className="flex flex-col p-2 sm:p-4 w-full">
+                        <div className="flex gap-2 w-full pb-2">
+                          <Logo
+                            variant="tiny"
+                            classes="opacity-80"
+                            url={homeTeamLogo}
+                          />
+                          <Text variant="body-small" classes="font-semibold">
+                            {game.HomeTeamName} Personnel
+                          </Text>
+                        </div>
+                        <div
+                          className="grid rounded-lg border-t px-1"
+                          style={{ backgroundColor }}
+                        >
+                          <div className="grid grid-cols-12 gap-2 font-semibold py-1 border-b">
+                            <Text variant="xs" classes="col-span-3 text-left">
+                              Coach
+                            </Text>
+                          </div>
+                          <div
+                            className="grid grid-cols-12 gap-2 text-sm border-b py-1"
+                            style={{
+                              backgroundColor: borderColor,
+                            }}
+                          >
+                            <ClickableUserLabel
+                              label={
+                                game.HomeTeamCoach ? game.HomeTeamCoach : "N/A"
+                              }
+                              coach={
+                                game.HomeTeamCoach ? game.HomeTeamCoach : ""
+                              }
+                              textVariant="xs"
+                              additionalClasses="col-span-3 text-left"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-row items-center justify-start w-full">
+                      <div className="flex flex-col p-2 sm:p-4 w-full">
+                        <div className="flex gap-2 w-full pb-2">
+                          <Logo
+                            variant="tiny"
+                            classes="opacity-80"
+                            url={awayTeamLogo}
+                          />
+                          <Text variant="body-small" classes="font-semibold">
+                            {game.AwayTeamName} Personnel
+                          </Text>
+                        </div>
+                        <div
+                          className="grid rounded-lg border-t px-1"
+                          style={{ backgroundColor }}
+                        >
+                          <div className="grid grid-cols-12 gap-2 font-semibold py-1 border-b">
+                            <Text variant="xs" classes="col-span-3 text-left">
+                              Coach
+                            </Text>
+                          </div>
+                          <div
+                            className="grid grid-cols-12 gap-2 text-sm border-b py-1"
+                            style={{
+                              backgroundColor: borderColor,
+                            }}
+                          >
+                            <ClickableUserLabel
+                              label={
+                                game.AwayTeamCoach ? game.AwayTeamCoach : "N/A"
+                              }
+                              coach={
+                                game.AwayTeamCoach ? game.AwayTeamCoach : ""
+                              }
+                              textVariant="xs"
+                              additionalClasses="col-span-3 text-left"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
