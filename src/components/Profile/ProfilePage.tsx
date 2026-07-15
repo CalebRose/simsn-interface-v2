@@ -46,6 +46,7 @@ import {
   ProfessionalTeam,
 } from "../../models/hockeyModels";
 import { BaseballOrganization } from "../../models/baseball/baseballModels";
+import { ClickableUserLabel } from "../Common/Labels";
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -386,9 +387,13 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
                 <span className="text-gray-500 text-xs font-bold">
                   #{i + 1}
                 </span>
-                <span className="text-white font-semibold text-sm">
-                  {u.username}
-                </span>
+                <ClickableUserLabel
+                  label={u.username || "-"}
+                  coach={u.username ? u.username : ""}
+                  textColorClass="text-white"
+                  additionalClasses="font-semibold"
+                  textVariant="small"
+                />
               </div>
             ))}
         </div>
@@ -1110,9 +1115,13 @@ export const ProfilePage = () => {
                             </span>
                             {uid ? (
                               <div className="flex items-center gap-2 bg-gray-800 rounded px-3 py-1.5 flex-1">
-                                <span className="text-white text-sm font-semibold flex-1">
-                                  {displayName}
-                                </span>
+                                <ClickableUserLabel
+                                  label={displayName || "-"}
+                                  coach={displayName ? displayName : ""}
+                                  textColorClass="text-white"
+                                  additionalClasses="font-semibold flex-1"
+                                  textVariant="small"
+                                />
                                 <button
                                   onClick={() => clearTop5Slot(i)}
                                   className="text-gray-500 hover:text-red-400 text-xs transition-colors"
