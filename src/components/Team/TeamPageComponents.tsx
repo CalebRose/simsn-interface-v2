@@ -19,6 +19,7 @@ import { useResponsive } from "../../_hooks/useMobile";
 import { Button } from "../../_design/Buttons";
 import { Bell, ChatBubble } from "../../_design/Icons";
 import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
+import { ClickableUserLabel } from "../Common/Labels";
 
 interface TeamInfoProps {
   id?: number;
@@ -472,9 +473,12 @@ export const FrontOfficeInfo = ({
             </div>
             {filledPersonnel.map(({ value }, idx) => (
               <div key={`user-${idx}`} className="table-cell text-left w-[6em]">
-                <Text variant="xs" classes={`${textColorClass}`}>
-                  {value || "-"}
-                </Text>
+                <ClickableUserLabel
+                  textVariant="xs"
+                  label={value || "-"}
+                  textColorClass={textColorClass}
+                  coach={value || ""}
+                />
               </div>
             ))}
           </div>

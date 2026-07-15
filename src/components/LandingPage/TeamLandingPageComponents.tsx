@@ -23,7 +23,11 @@ import { SimCFB, SimNFL } from "../../_constants/constants";
 import { useNavigate } from "react-router-dom";
 import routes from "../../_constants/routes";
 import { useDeepLink } from "../../context/DeepLinkContext";
-import { ClickableGameLabel, ClickableTeamLabel } from "../Common/Labels";
+import {
+  ClickableGameLabel,
+  ClickableTeamLabel,
+  ClickableUserLabel,
+} from "../Common/Labels";
 import { CheckCircle, Medic, TrashCan } from "../../_design/Icons";
 import { useModal } from "../../_hooks/useModal";
 import { SchedulePageGameModal } from "../Schedule/Common/GameModal";
@@ -530,9 +534,12 @@ export const TeamMatchUp = ({
                     </Text>
                   )}
                 </div>
-                <Text variant="xs" classes="opacity-70">
-                  {`HC ${coaches[0]}`}
-                </Text>
+                <ClickableUserLabel
+                  textVariant="xs"
+                  label={`HC ${coaches[0]}`}
+                  additionalClasses="opacity-70"
+                  coach={coaches[0]}
+                />
               </div>
             </div>
             <div className="flex flex-col col-span-1 items-center">
@@ -560,9 +567,12 @@ export const TeamMatchUp = ({
                     </Text>
                   )}
                 </div>
-                <Text variant="xs" classes="opacity-70">
-                  {`HC ${coaches[1]}`}
-                </Text>
+                <ClickableUserLabel
+                  textVariant="xs"
+                  label={`HC ${coaches[1]}`}
+                  additionalClasses="opacity-70"
+                  coach={coaches[1]}
+                />
               </div>
             </div>
           </div>

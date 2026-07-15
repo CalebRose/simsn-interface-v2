@@ -2,27 +2,39 @@
 import { createContext, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import routes from "../_constants/routes";
-import { League, SimCBB, SimCFB, SimCHL, SimNBA, SimNFL, SimPHL } from "../_constants/constants";
+import {
+  League,
+  SimCBB,
+  SimCFB,
+  SimCHL,
+  SimNBA,
+  SimNFL,
+  SimPHL,
+} from "../_constants/constants";
 
 interface DeepLinkContextProps {
   goToTeamPage: (
     league: League,
     teamId?: number,
-    options?: Record<string, string>
+    options?: Record<string, string>,
   ) => void;
+  goToUserProfile: (username: string) => void;
 }
 
 const DeepLinkContext = createContext<DeepLinkContextProps>({
   goToTeamPage: () => {},
+  goToUserProfile: () => {},
 });
 
-export const DeepLinkProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const DeepLinkProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const navigate = useNavigate();
 
   const goToTeamPage = (
     league: League,
     teamId?: number,
-    options?: Record<string, string>
+    options?: Record<string, string>,
   ) => {
     let path = "";
     if (league === SimCHL) path = routes.CHL_TEAM;
@@ -44,8 +56,13 @@ export const DeepLinkProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     navigate(path);
   };
 
+  const goToUserProfile = (username: string) => {
+    const path = routes.USER.replace(":username", username);
+    navigate(path);
+  };
+
   return (
-    <DeepLinkContext.Provider value={{ goToTeamPage }}>
+    <DeepLinkContext.Provider value={{ goToTeamPage, goToUserProfile }}>
       {children}
     </DeepLinkContext.Provider>
   );

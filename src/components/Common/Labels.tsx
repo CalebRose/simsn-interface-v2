@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useCallback, useMemo } from "react";
 import { Text, TextVariant } from "../../_design/Typography";
 import { League } from "../../_constants/constants";
 import { useDeepLink } from "../../context/DeepLinkContext";
@@ -59,6 +59,41 @@ export const ClickableTeamLabel: FC<ClickableTeamLabelProps> = ({
       className="pr-1"
     >
       <span onClick={() => goToTeamPage(league, teamID, {})}>{label}</span>
+    </Text>
+  );
+};
+
+interface ClickableUserLabelProps {
+  label: string;
+  textColorClass?: string;
+  additionalClasses?: string;
+  coach: string;
+  textVariant?: TextVariant;
+}
+
+export const ClickableUserLabel: FC<ClickableUserLabelProps> = ({
+  label,
+  textColorClass = "",
+  additionalClasses = "",
+  textVariant = "small",
+  coach,
+}) => {
+  const { goToUserProfile } = useDeepLink();
+  const isUser = useMemo(() => {
+    return coach !== "AI" && coach !== "";
+  }, [coach]);
+
+  const navigateToUserProfile = useCallback(() => {
+    if (!isUser) return;
+    goToUserProfile(coach);
+  }, [coach, goToUserProfile, isUser]);
+  return (
+    <Text
+      variant={textVariant}
+      classes={`${textColorClass} ${isUser ? "cursor-pointer hover:text-blue-500" : ""} ${additionalClasses}`}
+      className="pr-1"
+    >
+      <span onClick={navigateToUserProfile}>{label}</span>
     </Text>
   );
 };

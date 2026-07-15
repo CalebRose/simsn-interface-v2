@@ -10,11 +10,13 @@ import {
   Team as CBBTeam,
   TeamRecruitingProfile,
 } from "../../../models/basketballModels";
+import { ClickableUserLabel } from "../../Common/Labels";
 
 const getRankingsColumns = (league: League, isMobile: boolean) => {
   let columns: { header: string; accessor: string }[] = [
     { header: "Rank", accessor: "RecruitClassRank" },
     { header: "Team", accessor: "TeamName" },
+    { header: "Coach", accessor: "Recruiter" },
     { header: "Conference", accessor: "ConferenceName" },
     { header: "Signees", accessor: "TotalCommitments" },
     { header: "5 ⭐s", accessor: "FiveStars" },
@@ -92,6 +94,16 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
           </div>
         </div>
         <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <div className="flex items-center space-x-2 h-full">
+            <ClickableUserLabel
+              label={cfbTeam.Coach || "-"}
+              coach={item.IsUserTeam ? cfbTeam.Coach : ""}
+              textColorClass={textColorClass}
+              textVariant="small"
+            />
+          </div>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
           <span className={`text-sm ${textColorClass}`}>
             {cfbTeam.Conference}
           </span>
@@ -165,6 +177,16 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
           </div>
         </div>
         <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <div className="flex items-center space-x-2 h-full">
+            <ClickableUserLabel
+              label={chlTeam.Coach || "-"}
+              coach={item.IsUserTeam ? chlTeam.Coach : ""}
+              textColorClass={textColorClass}
+              textVariant="small"
+            />
+          </div>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
           <span className={`text-sm ${textColorClass}`}>
             {chlTeam.Conference}
           </span>
@@ -230,6 +252,16 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
           <div className="flex items-center space-x-2">
             <Logo url={logo} variant="xs" containerClass="p-3" />
             <span className={`text-sm ${textColorClass}`}>{cbbTeam.Team}</span>
+          </div>
+        </div>
+        <div className="table-cell px-2 py-1 whitespace-nowrap">
+          <div className="flex items-center space-x-2 h-full">
+            <ClickableUserLabel
+              label={cbbTeam.Coach || "-"}
+              coach={item.IsUserTeam ? cbbTeam.Coach : ""}
+              textColorClass={textColorClass}
+              textVariant="small"
+            />
           </div>
         </div>
         <div className="table-cell px-2 py-1 whitespace-nowrap">
