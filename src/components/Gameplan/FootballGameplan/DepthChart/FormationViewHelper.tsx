@@ -751,6 +751,15 @@ export const getFormationLayout = (formation: Formation): FormationLayout => {
       rbRow = GRID_POSITIONS.ROWS[3];
     }
 
+    if (
+      index === 1 &&
+      (formationType === ("tight" as FormationType) ||
+        formationType === ("under-center" as FormationType))
+    ) {
+      rbCol = GRID_POSITIONS.COLUMNS[7];
+      rbRow = GRID_POSITIONS.ROWS[9];
+    }
+
     if (index === 1 && formationType === FLEXBONE_GUN) {
       rbCol = GRID_POSITIONS.COLUMNS[7];
       rbRow = GRID_POSITIONS.ROWS[9];

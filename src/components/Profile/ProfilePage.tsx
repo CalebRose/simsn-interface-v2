@@ -763,6 +763,7 @@ export const ProfilePage = () => {
   };
 
   const assignTop5User = (slotIndex: number, uid: string) => {
+    if (uid === currentUser?.id) return; // Prevent adding self to top 5
     const next = [...top5Draft];
     next[slotIndex] = uid;
     setTop5Draft(next);
