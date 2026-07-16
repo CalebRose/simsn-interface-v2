@@ -434,3 +434,42 @@ export function useLatestThreads(enabled: boolean): {
 
   return { threads, loading };
 }
+
+// ─────────────────────────────────────────────
+// Latest Postgame Threads (global, ordered by latest activity)
+// ─────────────────────────────────────────────
+
+export function useLatestPostgameThreads(
+  enabled: boolean,
+  isMediaSubforum: boolean,
+  subforumSlug?: string,
+): {
+  threads: Thread[];
+  loading: boolean;
+} {
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  if (!enabled || !isMediaSubforum || !subforumSlug) {
+    return { threads: [], loading: false };
+  }
+
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    setLoading(true);
+    ForumService.GetLatestPostgameThreads(10)
+      .then((result) => {
+        if (!cancelled) setThreads(result);
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
+
+  return { threads, loading };
+}
