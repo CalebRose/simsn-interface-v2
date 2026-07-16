@@ -7,6 +7,7 @@ import { fbaUrl } from "../../../_constants/urls";
 import { useLiveFieldState } from "../../../_hooks/useLiveFieldState";
 import { TeamStatsSidebar } from "./TeamStatsSidebar";
 import { GridironVisualizer } from "./GridironVisualizer";
+import { useSimFBAStore } from "../../../context/SimFBAContext";
 
 // --- HELPERS ---
 const getPeriodName = (p: number) => {
@@ -64,6 +65,7 @@ const GameMiniList = React.memo(
 const LiveField = () => {
   const { isModerator } = useAuthStore();
   const { ts, selectedLeague, setSelectedLeague } = useLeagueStore();
+  const { allCollegeGames, allProGames, cfb_Timestamp } = useSimFBAStore();
   const { liveGames: firebaseGames } = useLiveFieldState(
     selectedLeague as League,
   );
@@ -91,18 +93,26 @@ const LiveField = () => {
       : (chlTs?.NFLWeek ?? 0);
   }, [chlTs, selectedLeague]);
 
-  // Forced to True for 200 OK
+  const isCFB = useMemo(() => selectedLeague === SimCFB, [selectedLeague]);
+
+  // isSpringGame check
   const isSpringGame = useMemo(() => {
     console.log("Full TS Object for debugging:", chlTs);
-    return true;
-  }, [chlTs]);
+
+    if (isCFB) {
+      return cfb_Timestamp?.CFBSpringGames ?? false;
+    }
+    return cfb_Timestamp?.NFLPreseason ?? false;
+  }, [chlTs, isCFB, cfb_Timestamp]);
+
+  // Setup a useMemo for college games/nfl games & filter by the current season and week && preseason game status (use timestamp to check if it's preseason)
 
   // Initialize and Merge Data
   useEffect(() => {
     const fetchAndStitch = async () => {
       if (!rawSeasonID) return;
-      const isCFB = selectedLeague === SimCFB;
-      const endpoint = isCFB ? "college" : "nfl";
+      const endpoint = isCFB ? "cfb" : "nfl";
+      const gamesToUse = isCFB ? allCollegeGames : allProGames;
 
       let apiResults: any[] = [];
       try {
@@ -134,7 +144,7 @@ const LiveField = () => {
       setGames(stitched);
     };
     fetchAndStitch();
-  }, [firebaseGames, selectedLeague, rawSeasonID]);
+  }, [firebaseGames, selectedLeague, rawSeasonID, isCFB]);
 
   // Broadcast Engine
   const triggerEngine = async () => {
