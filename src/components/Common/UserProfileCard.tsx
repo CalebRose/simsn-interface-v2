@@ -13,6 +13,17 @@ import { useForumStore } from "../../context/ForumContext";
 import { useAuthStore } from "../../context/AuthContext";
 import { ForumService } from "../../_services/forumService";
 import { Thread, Post } from "../../models/forumModels";
+
+// ─── Module-level activity cache ─────────────────────────────────────────────
+// Shared across all UserProfileCard instances so repeated modal opens for the
+// same user don't re-query Firestore.
+interface CachedActivity {
+  threads: Thread[];
+  posts: Post[];
+  fetchedAt: number;
+}
+const activityCache = new Map<string, CachedActivity>();
+const ACTIVITY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 import { Modal } from "../../_design/Modal";
 import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
@@ -71,9 +82,18 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
     [userMap, uid],
   );
 
-  // Lazy-load recent activity when the modal first opens
+  // Lazy-load recent activity when the modal first opens, using a cache to
+  // avoid re-querying Firestore on every open for the same user.
   useEffect(() => {
     if (!isModalOpen) return;
+
+    const cached = activityCache.get(uid);
+    if (cached && Date.now() - cached.fetchedAt < ACTIVITY_CACHE_TTL_MS) {
+      setRecentThreads(cached.threads);
+      setRecentPosts(cached.posts);
+      return;
+    }
+
     let cancelled = false;
     setActivityLoading(true);
     Promise.all([
@@ -82,6 +102,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
     ])
       .then(([threads, posts]) => {
         if (cancelled) return;
+        activityCache.set(uid, { threads, posts, fetchedAt: Date.now() });
         setRecentThreads(threads);
         setRecentPosts(posts);
       })

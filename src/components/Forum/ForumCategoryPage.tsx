@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
@@ -6,7 +6,10 @@ import { Button } from "../../_design/Buttons";
 import { ForumBreadcrumbs } from "./components/ForumBreadcrumbs";
 import { ThreadList } from "./components/ThreadList";
 import { ForumBorder } from "../../_design/Borders";
-import { useForumThreads } from "../../_hooks/useForumHooks";
+import {
+  useForumThreads,
+  useLatestPostgameThreads,
+} from "../../_hooks/useForumHooks";
 import { useForumStore } from "../../context/ForumContext";
 import {
   canGuestPostInForum,
@@ -15,6 +18,9 @@ import {
 import { ForumService } from "../../_services/forumService";
 import { Forum } from "../../models/forumModels";
 import routes from "../../_constants/routes";
+import { useResponsive } from "../../_hooks/useMobile";
+import { LastViewedThreadsSidebar } from "./components/LastViewedThreadsSidebar";
+import { LatestThreadsSidebar } from "./components/LatestThreadsSidebar";
 
 interface Params {
   forumSlug: string;
@@ -93,6 +99,15 @@ export const ForumCategoryPage: React.FC = () => {
     if (!forum) return;
     navigate(`${routes.FORUM_CREATE_THREAD}?forumId=${forum.id}`);
   };
+
+  const isMediaSubforum = useMemo(() => {
+    return forumSlug === "media";
+  }, [forumSlug]);
+
+  const { isMobile } = useResponsive();
+
+  const { threads: latestThreads, loading: latestThreadsLoading } =
+    useLatestPostgameThreads(true, isMediaSubforum, subforumSlug);
 
   return (
     <PageContainer isLoading={forumLoading} title="">
@@ -178,13 +193,98 @@ export const ForumCategoryPage: React.FC = () => {
           </div>
         )}
 
-        <ThreadList
-          threads={threads}
-          pinnedThreads={pinnedThreads}
-          isLoading={threadsLoading}
-          hasMore={hasMoreThreads}
-          onLoadMore={() => forum && loadMore()}
-        />
+        {!isMobile && (
+          <div className="grid grid-cols-12 gap-4 border-b border-white/10 pb-3">
+            <div
+              className={`${isMediaSubforum && subforumSlug ? "col-span-10" : "col-span-12"} flex items-end justify-between`}
+            >
+              <div>
+                <Text variant="h5">
+                  {forum?.name} {parentForum?.name} Threads
+                </Text>
+                <Text variant="secondary" classes="mt-1">
+                  The latest news!
+                </Text>
+              </div>
+              <Text
+                variant="body-small"
+                classes="hidden sm:block text-white/45 uppercase tracking-[0.2em]"
+              >
+                Directory
+              </Text>
+            </div>
+            {isMediaSubforum && subforumSlug && (
+              <div className="col-span-2 flex flex-col justify-end">
+                <Text variant="h5">Postgame Threads</Text>
+                <Text variant="secondary" classes="mt-1">
+                  The most recent {forum?.name} games
+                </Text>
+              </div>
+            )}
+          </div>
+        )}
+        <div
+          className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-12"} ${isMobile ? "gap-2" : "gap-4"} items-start pt-4`}
+        >
+          {isMobile && isMediaSubforum && subforumSlug && (
+            <>
+              <div className="col-span-1 flex flex-col justify-end">
+                <Text variant="h6">Postgame Threads</Text>
+                <Text variant="body-small" classes="mt-1 text-gray-500">
+                  The latest {forum?.name} games
+                </Text>
+              </div>
+              <div className="col-span-1">
+                <LatestThreadsSidebar
+                  threads={latestThreads}
+                  isLoading={latestThreadsLoading}
+                />
+              </div>
+            </>
+          )}
+          {/* Forum category cards */}
+          {isMobile && (
+            <>
+              <div className="col-span-1 flex items-end justify-between">
+                <div>
+                  <Text variant="h6">
+                    {forum?.name} {parentForum?.name} Threads
+                  </Text>
+                  <Text variant="body-small" classes="mt-1 text-gray-500">
+                    The latest news!
+                  </Text>
+                </div>
+              </div>
+            </>
+          )}
+          {/* yes this is an awful ternary but it works */}
+          <div
+            className={`${isMobile ? "col-span-1" : isMediaSubforum && subforumSlug ? "col-span-10" : "col-span-12"}`}
+          >
+            <div className="grid grid-cols-1 gap-4">
+              <ThreadList
+                threads={threads}
+                pinnedThreads={pinnedThreads}
+                isLoading={threadsLoading}
+                hasMore={hasMoreThreads}
+                onLoadMore={() => forum && loadMore()}
+              />
+            </div>
+          </div>
+
+          {/* Latest Threads sidebar */}
+          {!isMobile && isMediaSubforum && subforumSlug && (
+            <div className="col-span-2">
+              <LatestThreadsSidebar
+                threads={latestThreads}
+                isLoading={latestThreadsLoading}
+              />
+            </div>
+          )}
+        </div>
+        {/* Last Viewed sidebar in this forum */}
+        {/* Forum category cards */}
+        {/* Post Game Discussions */}
       </div>
     </PageContainer>
   );

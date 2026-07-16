@@ -8,7 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { QueryDocumentSnapshot } from "firebase/firestore";
+import { QueryDocumentSnapshot, collection, getDocs } from "firebase/firestore";
 import { ForumService } from "../_services/forumService";
 import {
   Forum,
@@ -29,7 +29,7 @@ import {
 import { CurrentUser } from "../_hooks/useCurrentUser";
 import { getUserLogoUrl } from "../_utility/getLogo";
 import { parseForumBody } from "../components/Forum/forumUtils";
-import { useFirestoreCollection } from "../firebase/firebase";
+import { firestore } from "../firebase/firebase";
 
 // ─────────────────────────────────────────────
 // Permission helpers
@@ -254,8 +254,23 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   const [currentUserState, setCurrentUserState] = useState<CurrentUser | null>(
     initialUser,
   );
-  const [users, { update, remove }, isLoading, error] =
-    useFirestoreCollection<CurrentUser>("users");
+  const [users, setUsers] = useState<(CurrentUser & { id: string })[] | null>(
+    null,
+  );
+
+  // One-time fetch — user display data (names, logos) doesn't need real-time updates
+  // and a live subscription on the whole collection is expensive.
+  useEffect(() => {
+    getDocs(collection(firestore, "users"))
+      .then((snap) =>
+        setUsers(
+          snap.docs.map(
+            (d) => ({ id: d.id, ...d.data() }) as CurrentUser & { id: string },
+          ),
+        ),
+      )
+      .catch(console.error);
+  }, []);
   const [forums, setForums] = useState<Forum[]>([]);
   const [forumsLoading, setForumsLoading] = useState(false);
   const [threads, setThreads] = useState<Thread[]>([]);
