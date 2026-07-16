@@ -74,6 +74,12 @@ const LiveField = () => {
     return selectedLeague === SimCFB ? (chlTs?.CollegeWeek ?? 0) : (chlTs?.NFLWeek ?? 0);
   }, [chlTs, selectedLeague]);
 
+  // Forced to True for 200 OK
+  const isSpringGame = useMemo(() => {
+     console.log("Full TS Object for debugging:", chlTs);
+     return true; 
+  }, [chlTs]);
+
   // Initialize and Merge Data
   useEffect(() => {
     const fetchAndStitch = async () => {
@@ -87,14 +93,10 @@ const LiveField = () => {
             if (res.ok) apiResults = await res.json();
         } catch (e) { console.error("API Fetch Error:", e); }
 
-        const apiMap: Record<number, any> = {};
-        apiResults.forEach((g: any) => apiMap[Number(g.ID ?? g.GameID)] = g);
-
         const stitched: Record<number, any> = {};
         firebaseGames.forEach((fg: any) => {
             const id = Number(fg.GameID || fg.ID);
             
-            // Force state to Upcoming so we can initiate the broadcast
             stitched[id] = {
                 GameID: id,
                 HomeTeam: fg.HomeTeam,
@@ -113,7 +115,7 @@ const LiveField = () => {
     fetchAndStitch();
   }, [firebaseGames, selectedLeague, rawSeasonID]);
 
-  // Broadcast Engine - PHILOSOPHY MATCHING LIVERINK[cite: 4]
+  // Broadcast Engine
   const triggerEngine = async () => {
     setBroadcastState("GENERATING");
     try {
@@ -121,21 +123,32 @@ const LiveField = () => {
       const endpoint = selectedLeague === SimCFB ? "college" : "nfl";
       const isCFB = selectedLeague === SimCFB;
       
-      // Exact path/query pattern as LiveRink[cite: 4]
-      const playsRes = await fetch(
-        `${fbaUrl}games/plays/bulk/${endpoint}?isCollege=${isCFB}&season=${rawSeasonID}&week=${currentWeek}`
-      );
+      const url = `${fbaUrl}games/plays/bulk/${endpoint}?isCollege=${isCFB}&season=${rawSeasonID}&week=${currentWeek}&is_spring_game=${isSpringGame}`;
+      console.log("Fetching plays from:", url);
+      
+      const playsRes = await fetch(url);
       
       if (playsRes.ok) {
         const playData = await playsRes.json();
-        bulkPlaysRef.current = playData.Plays || {};
-        Object.keys(bulkPlaysRef.current).forEach(id => bulkPlaysRef.current[Number(id)].reverse());
+        
+        console.log("Play Data Received:", playData);
+        
+        bulkPlaysRef.current = playData.Plays || playData || {}; 
+        
+        Object.keys(bulkPlaysRef.current).forEach(id => {
+            if (Array.isArray(bulkPlaysRef.current[Number(id)])) {
+                bulkPlaysRef.current[Number(id)].reverse();
+            }
+        });
+        
         setIsSpoofing(true);
         setBroadcastState("BROADCASTING");
       } else {
+          console.error("Broadcast failed:", playsRes.status);
           setBroadcastState("IDLE");
       }
     } catch (e) {
+      console.error("Broadcast trigger error:", e);
       setBroadcastState("IDLE");
     }
   };
