@@ -257,20 +257,6 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   const [users, setUsers] = useState<(CurrentUser & { id: string })[] | null>(
     null,
   );
-
-  // One-time fetch — user display data (names, logos) doesn't need real-time updates
-  // and a live subscription on the whole collection is expensive.
-  useEffect(() => {
-    getDocs(collection(firestore, "users"))
-      .then((snap) =>
-        setUsers(
-          snap.docs.map(
-            (d) => ({ id: d.id, ...d.data() }) as CurrentUser & { id: string },
-          ),
-        ),
-      )
-      .catch(console.error);
-  }, []);
   const [forums, setForums] = useState<Forum[]>([]);
   const [forumsLoading, setForumsLoading] = useState(false);
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -290,6 +276,20 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
 
   const postsUnsubscribeRef = useRef<(() => void) | null>(null);
   const notificationsUnsubscribeRef = useRef<(() => void) | null>(null);
+
+  // One-time fetch — user display data (names, logos) doesn't need real-time updates
+  // and a live subscription on the whole collection is expensive.
+  useEffect(() => {
+    getDocs(collection(firestore, "users"))
+      .then((snap) =>
+        setUsers(
+          snap.docs.map(
+            (d) => ({ id: d.id, ...d.data() }) as CurrentUser & { id: string },
+          ),
+        ),
+      )
+      .catch(console.error);
+  }, []);
 
   useEffect(() => {
     setCurrentUserState(initialUser);
