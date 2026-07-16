@@ -142,6 +142,7 @@ interface RecentActivitySectionProps {
 const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
   uid,
 }) => {
+  const { getOrFetchUserActivity } = useForumStore();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
@@ -151,11 +152,8 @@ const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
     if (!uid) return;
     let cancelled = false;
     setLoading(true);
-    Promise.all([
-      ForumService.GetThreadsByAuthor(uid, 10),
-      ForumService.GetPostsByAuthor(uid, 10),
-    ])
-      .then(([t, p]) => {
+    getOrFetchUserActivity(uid, 10)
+      .then(({ threads: t, posts: p }) => {
         if (cancelled) return;
         setThreads(t);
         setPosts(p);
@@ -167,7 +165,7 @@ const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [uid]);
+  }, [uid, getOrFetchUserActivity]);
 
   return (
     <Border classes="w-full p-4">

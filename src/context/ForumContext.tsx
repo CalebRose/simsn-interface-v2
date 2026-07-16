@@ -28,6 +28,38 @@ import {
 } from "../models/forumModels";
 import { CurrentUser } from "../_hooks/useCurrentUser";
 import { getUserLogoUrl } from "../_utility/getLogo";
+
+// ─────────────────────────────────────────────
+// User activity cache types
+// ─────────────────────────────────────────────
+
+export interface UserActivity {
+  threads: Thread[];
+  posts: Post[];
+  fetchedAt: number;
+}
+
+const USER_ACTIVITY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const FORUMS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes — forum list rarely changes
+const THREAD_PAGE_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes — active forums update often
+const THREAD_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes — thread metadata
+
+interface CachedForums {
+  forums: Forum[];
+  fetchedAt: number;
+}
+
+interface CachedThreadPage {
+  threads: Thread[];
+  pinnedThreads: Thread[];
+  lastDoc: QueryDocumentSnapshot | null;
+  fetchedAt: number;
+}
+
+interface CachedThread {
+  thread: Thread;
+  fetchedAt: number;
+}
 import { parseForumBody } from "../components/Forum/forumUtils";
 import { firestore } from "../firebase/firebase";
 
@@ -140,6 +172,10 @@ interface ForumContextProps {
   hasMoreThreads: boolean;
   userMap: Record<string, CurrentUser>;
   userListOptions: { label: string; value: string }[];
+  getOrFetchUserActivity: (
+    uid: string,
+    count?: number,
+  ) => Promise<UserActivity>;
 
   // Actions
   loadForums: () => Promise<void>;
@@ -206,6 +242,11 @@ const defaultForumContext: ForumContextProps = {
   hasMoreThreads: false,
   userMap: {},
   userListOptions: [],
+  getOrFetchUserActivity: async () => ({
+    threads: [],
+    posts: [],
+    fetchedAt: 0,
+  }),
   loadForums: async () => {},
   loadThreadsForForum: async () => {},
   loadMoreThreads: async () => {},
@@ -276,6 +317,10 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
 
   const postsUnsubscribeRef = useRef<(() => void) | null>(null);
   const notificationsUnsubscribeRef = useRef<(() => void) | null>(null);
+  const userActivityCacheRef = useRef<Map<string, UserActivity>>(new Map());
+  const forumsCacheRef = useRef<CachedForums | null>(null);
+  const threadPageCacheRef = useRef<Map<string, CachedThreadPage>>(new Map());
+  const threadCacheRef = useRef<Map<string, CachedThread>>(new Map());
 
   // One-time fetch — user display data (names, logos) doesn't need real-time updates
   // and a live subscription on the whole collection is expensive.
@@ -381,9 +426,15 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   // ─── Forums ───────────────────────────────────
 
   const loadForums = useCallback(async () => {
+    const cached = forumsCacheRef.current;
+    if (cached && Date.now() - cached.fetchedAt < FORUMS_CACHE_TTL_MS) {
+      setForums(cached.forums);
+      return;
+    }
     setForumsLoading(true);
     try {
       const result = await ForumService.GetAllForums();
+      forumsCacheRef.current = { forums: result, fetchedAt: Date.now() };
       setForums(result);
     } catch (err) {
       console.error("ForumContext.loadForums:", err);
@@ -396,11 +447,22 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
 
   const loadThreadsForForum = useCallback(
     async (forumId: string, reset = true) => {
-      setThreadsLoading(true);
       if (reset) {
+        const cached = threadPageCacheRef.current.get(forumId);
+        if (
+          cached &&
+          Date.now() - cached.fetchedAt < THREAD_PAGE_CACHE_TTL_MS
+        ) {
+          setPinnedThreads(cached.pinnedThreads);
+          setThreads(cached.threads);
+          setThreadsCursor(cached.lastDoc);
+          setHasMoreThreads(cached.threads.length === PAGE_SIZE);
+          return;
+        }
         setThreads([]);
         setThreadsCursor(null);
       }
+      setThreadsLoading(true);
       try {
         const [pinned, { threads: normalThreads, lastDoc }] = await Promise.all(
           [
@@ -408,6 +470,14 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
             ForumService.GetThreadsByForum(forumId, PAGE_SIZE),
           ],
         );
+        if (reset) {
+          threadPageCacheRef.current.set(forumId, {
+            threads: normalThreads,
+            pinnedThreads: pinned,
+            lastDoc,
+            fetchedAt: Date.now(),
+          });
+        }
         setPinnedThreads(pinned);
         setThreads(normalThreads);
         setThreadsCursor(lastDoc);
@@ -444,8 +514,16 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   );
 
   const loadThread = useCallback(async (threadId: string) => {
+    const cached = threadCacheRef.current.get(threadId);
+    if (cached && Date.now() - cached.fetchedAt < THREAD_CACHE_TTL_MS) {
+      setActiveThread(cached.thread);
+      return;
+    }
     try {
       const thread = await ForumService.GetThreadById(threadId);
+      if (thread) {
+        threadCacheRef.current.set(threadId, { thread, fetchedAt: Date.now() });
+      }
       setActiveThread(thread);
     } catch (err) {
       console.error("ForumContext.loadThread:", err);
@@ -515,6 +593,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
             dto.title,
           ).catch(console.error);
         }
+        // Invalidate forum thread page so the new thread appears on next visit
+        threadPageCacheRef.current.delete(dto.forumId);
         return threadId;
       } catch (err) {
         console.error("ForumContext.createThread:", err);
@@ -640,6 +720,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
       setActiveThread((prev) =>
         prev && prev.id === threadId ? { ...prev, isLocked: true } : prev,
       );
+      threadCacheRef.current.delete(threadId);
     },
     [currentUserState],
   );
@@ -651,6 +732,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
       setActiveThread((prev) =>
         prev && prev.id === threadId ? { ...prev, isLocked: false } : prev,
       );
+      threadCacheRef.current.delete(threadId);
     },
     [currentUserState],
   );
@@ -662,6 +744,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
       setThreads((prev) =>
         prev.map((t) => (t.id === threadId ? { ...t, isPinned: true } : t)),
       );
+      threadPageCacheRef.current.clear();
     },
     [currentUserState],
   );
@@ -671,6 +754,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
       if (!currentUserState) return;
       await ForumService.UnpinThread(threadId, buildPerformedBy());
       setPinnedThreads((prev) => prev.filter((t) => t.id !== threadId));
+      threadPageCacheRef.current.clear();
     },
     [currentUserState],
   );
@@ -681,6 +765,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
       await ForumService.SoftDeleteThread(threadId, buildPerformedBy(), reason);
       setThreads((prev) => prev.filter((t) => t.id !== threadId));
       setPinnedThreads((prev) => prev.filter((t) => t.id !== threadId));
+      threadCacheRef.current.delete(threadId);
+      threadPageCacheRef.current.clear();
     },
     [currentUserState],
   );
@@ -697,7 +783,14 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
       );
       // Re-fetch updated thread so breadcrumbs / forumPath reflect the move
       const updated = await ForumService.GetThreadById(threadId);
+      if (updated) {
+        threadCacheRef.current.set(threadId, {
+          thread: updated,
+          fetchedAt: Date.now(),
+        });
+      }
       setActiveThread(updated);
+      threadPageCacheRef.current.clear();
     },
     [currentUserState, forums],
   );
@@ -874,6 +967,28 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     }
   }, []);
 
+  // ─── User Activity Cache ─────────────────────────────────────────
+
+  const getOrFetchUserActivity = useCallback(
+    async (uid: string, count = 5): Promise<UserActivity> => {
+      const cached = userActivityCacheRef.current.get(uid);
+      if (
+        cached &&
+        Date.now() - cached.fetchedAt < USER_ACTIVITY_CACHE_TTL_MS
+      ) {
+        return cached;
+      }
+      const [threads, posts] = await Promise.all([
+        ForumService.GetThreadsByAuthor(uid, count),
+        ForumService.GetPostsByAuthor(uid, count),
+      ]);
+      const entry: UserActivity = { threads, posts, fetchedAt: Date.now() };
+      userActivityCacheRef.current.set(uid, entry);
+      return entry;
+    },
+    [],
+  );
+
   return (
     <ForumContext.Provider
       value={{
@@ -923,6 +1038,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         markNotificationRead,
         markAllNotificationsRead,
         clearNotifications,
+        getOrFetchUserActivity,
         setCurrentUser: setCurrentUserState,
       }}
     >
