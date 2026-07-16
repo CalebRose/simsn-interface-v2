@@ -97,13 +97,11 @@ const LiveField = () => {
 
   // isSpringGame check
   const isSpringGame = useMemo(() => {
-    console.log("Full TS Object for debugging:", chlTs);
-
     if (isCFB) {
       return cfb_Timestamp?.CFBSpringGames ?? false;
     }
     return cfb_Timestamp?.NFLPreseason ?? false;
-  }, [chlTs, isCFB, cfb_Timestamp]);
+  }, [isCFB, cfb_Timestamp]);
 
   // Setup a useMemo for college games/nfl games & filter by the current season and week && preseason game status (use timestamp to check if it's preseason)
 
@@ -153,16 +151,12 @@ const LiveField = () => {
       await fetch(`${fbaUrl}admin/run/the/games/`);
       const endpoint = selectedLeague === SimCFB ? "cfb" : "nfl";
       const isCFB = selectedLeague === SimCFB;
-
       const url = `${fbaUrl}games/plays/bulk/${endpoint}?isCollege=${isCFB}&season=${rawSeasonID}&week=${currentWeek}&is_spring_game=${isSpringGame}`;
-      console.log("Fetching plays from:", url);
 
       const playsRes = await fetch(url);
 
       if (playsRes.ok) {
         const playData = await playsRes.json();
-
-        console.log("Play Data Received:", playData);
 
         bulkPlaysRef.current = playData.Plays || playData || {};
 
