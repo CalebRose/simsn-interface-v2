@@ -28,6 +28,7 @@
         "MOST",
         "MSVU"
     ],
+    "AS": ["SAMO"],
     "AZ": ["ZONA", "AZST", "UNLV", "NAU"],
     "CA(N)": [
         "CAL",
@@ -80,6 +81,7 @@
         "WOFF",
         "CIT"
     ],
+    "GM": ["UOG"],
     "HI": ["HAWI"],
     "ID": [
         "BOIS",
