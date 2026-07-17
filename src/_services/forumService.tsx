@@ -192,11 +192,14 @@ export const ForumService = {
       .slice(0, count);
   },
 
-  GetLatestPostgameThreads: async (count = 10): Promise<Thread[]> => {
+  GetLatestPostgameThreads: async (
+    league = "simcfb",
+    count = 10,
+  ): Promise<Thread[]> => {
     const q = query(
       threadsCol(),
       where("isDeleted", "==", false),
-      where("threadType", "!=", "standard"),
+      where("forumId", "==", `postgame-discussions-${league}`),
       orderBy("latestActivityAt", "desc"),
       limit(count),
     );

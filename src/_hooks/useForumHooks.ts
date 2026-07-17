@@ -8,6 +8,24 @@ import {
   ForumEditorialItem,
 } from "../components/Forum/forumUtils";
 
+// ─────────────────────────────────────────────
+// Module-level caches (survive re-mounts, shared across all instances)
+// ─────────────────────────────────────────────
+
+const LATEST_THREADS_TTL_MS = 2 * 60 * 1000;
+const POSTGAME_THREADS_TTL_MS = 2 * 60 * 1000;
+const EDITORIAL_ITEMS_TTL_MS = 5 * 60 * 1000;
+
+let latestThreadsCache: { threads: Thread[]; cachedAt: number } | null = null;
+const postgameThreadsCache = new Map<
+  string,
+  { threads: Thread[]; cachedAt: number }
+>();
+let editorialItemsCache: {
+  items: ForumEditorialItem[];
+  cachedAt: number;
+} | null = null;
+
 const MEDIA_FORUM_SLUG = "media";
 const EDITORIAL_SPORT_FORUM_KEYS = new Set([
   "simcfb",
@@ -159,6 +177,16 @@ export const useForumEditorialItems = (
 
     if (forumsLoading) return;
 
+    // Serve from cache to avoid re-fetching on every forum navigation
+    if (
+      editorialItemsCache &&
+      Date.now() - editorialItemsCache.cachedAt < EDITORIAL_ITEMS_TTL_MS
+    ) {
+      setEditorialItems(editorialItemsCache.items);
+      setEditorialLoading(false);
+      return;
+    }
+
     let isCancelled = false;
 
     const loadEditorialItems = async () => {
@@ -179,9 +207,13 @@ export const useForumEditorialItems = (
 
         const postsById = await loadPostsById(selectedThreads);
         if (!isCancelled) {
-          setEditorialItems(
-            buildForumEditorialItems(selectedThreads, forumsById, postsById),
+          const items = buildForumEditorialItems(
+            selectedThreads,
+            forumsById,
+            postsById,
           );
+          editorialItemsCache = { items, cachedAt: Date.now() };
+          setEditorialItems(items);
         }
       } catch (err) {
         console.error("useForumEditorialItems:", err);
@@ -412,16 +444,34 @@ export function useLatestThreads(enabled: boolean): {
   threads: Thread[];
   loading: boolean;
 } {
-  const [threads, setThreads] = useState<Thread[]>([]);
+  const [threads, setThreads] = useState<Thread[]>(() => {
+    if (
+      latestThreadsCache &&
+      Date.now() - latestThreadsCache.cachedAt < LATEST_THREADS_TTL_MS
+    ) {
+      return latestThreadsCache.threads;
+    }
+    return [];
+  });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!enabled) return;
+    if (
+      latestThreadsCache &&
+      Date.now() - latestThreadsCache.cachedAt < LATEST_THREADS_TTL_MS
+    ) {
+      setThreads(latestThreadsCache.threads);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     ForumService.GetLatestThreads(10)
       .then((result) => {
-        if (!cancelled) setThreads(result);
+        if (!cancelled) {
+          latestThreadsCache = { threads: result, cachedAt: Date.now() };
+          setThreads(result);
+        }
       })
       .catch(console.error)
       .finally(() => {
@@ -447,20 +497,36 @@ export function useLatestPostgameThreads(
   threads: Thread[];
   loading: boolean;
 } {
-  const [threads, setThreads] = useState<Thread[]>([]);
+  const shouldFetch = enabled && isMediaSubforum && !!subforumSlug;
+
+  const [threads, setThreads] = useState<Thread[]>(() => {
+    if (subforumSlug) {
+      const c = postgameThreadsCache.get(subforumSlug);
+      if (c && Date.now() - c.cachedAt < POSTGAME_THREADS_TTL_MS)
+        return c.threads;
+    }
+    return [];
+  });
   const [loading, setLoading] = useState(false);
 
-  if (!enabled || !isMediaSubforum || !subforumSlug) {
-    return { threads: [], loading: false };
-  }
-
   useEffect(() => {
-    if (!enabled) return;
+    if (!shouldFetch || !subforumSlug) return;
+    const c = postgameThreadsCache.get(subforumSlug);
+    if (c && Date.now() - c.cachedAt < POSTGAME_THREADS_TTL_MS) {
+      setThreads(c.threads);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
-    ForumService.GetLatestPostgameThreads(10)
+    ForumService.GetLatestPostgameThreads(subforumSlug, 10)
       .then((result) => {
-        if (!cancelled) setThreads(result);
+        if (!cancelled) {
+          postgameThreadsCache.set(subforumSlug, {
+            threads: result,
+            cachedAt: Date.now(),
+          });
+          setThreads(result);
+        }
       })
       .catch(console.error)
       .finally(() => {
@@ -469,7 +535,7 @@ export function useLatestPostgameThreads(
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [shouldFetch, subforumSlug]);
 
   return { threads, loading };
 }

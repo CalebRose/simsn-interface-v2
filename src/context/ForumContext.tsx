@@ -18,6 +18,7 @@ import {
   PollVote,
   ForumNotification,
   GameReference,
+  Achievement,
   CreateThreadDTO,
   CreatePostDTO,
   UpdatePostDTO,
@@ -60,6 +61,20 @@ interface CachedThread {
   thread: Thread;
   fetchedAt: number;
 }
+
+interface CachedAchievements {
+  achievements: Achievement[];
+  fetchedAt: number;
+}
+
+const ACHIEVEMENTS_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes — achievements rarely change
+
+interface CachedPosts {
+  posts: Post[];
+  cachedAt: number;
+}
+
+const POSTS_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes — pre-populate on return visits
 import { parseForumBody } from "../components/Forum/forumUtils";
 import { firestore } from "../firebase/firebase";
 
@@ -176,6 +191,7 @@ interface ForumContextProps {
     uid: string,
     count?: number,
   ) => Promise<UserActivity>;
+  getOrFetchAchievements: (uid: string) => Promise<Achievement[]>;
 
   // Actions
   loadForums: () => Promise<void>;
@@ -247,6 +263,7 @@ const defaultForumContext: ForumContextProps = {
     posts: [],
     fetchedAt: 0,
   }),
+  getOrFetchAchievements: async () => [],
   loadForums: async () => {},
   loadThreadsForForum: async () => {},
   loadMoreThreads: async () => {},
@@ -321,6 +338,10 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   const forumsCacheRef = useRef<CachedForums | null>(null);
   const threadPageCacheRef = useRef<Map<string, CachedThreadPage>>(new Map());
   const threadCacheRef = useRef<Map<string, CachedThread>>(new Map());
+  const achievementsCacheRef = useRef<Map<string, CachedAchievements>>(
+    new Map(),
+  );
+  const postsCacheRef = useRef<Map<string, CachedPosts>>(new Map());
 
   // One-time fetch — user display data (names, logos) doesn't need real-time updates
   // and a live subscription on the whole collection is expensive.
@@ -539,12 +560,27 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         postsUnsubscribeRef.current();
         postsUnsubscribeRef.current = null;
       }
-      if (reset) setPosts([]);
-      setPostsLoading(true);
+
+      if (reset) {
+        // Pre-populate from cache so the thread page renders immediately on
+        // return visits instead of showing a loading spinner.
+        const cached = postsCacheRef.current.get(threadId);
+        if (cached && Date.now() - cached.cachedAt < POSTS_CACHE_TTL_MS) {
+          setPosts(cached.posts);
+          setPostsLoading(false);
+        } else {
+          setPosts([]);
+          setPostsLoading(true);
+        }
+      }
 
       postsUnsubscribeRef.current = ForumService.SubscribeToThreadPosts(
         threadId,
         (newPosts) => {
+          postsCacheRef.current.set(threadId, {
+            posts: newPosts,
+            cachedAt: Date.now(),
+          });
           setPosts(newPosts);
           setPostsLoading(false);
         },
@@ -989,6 +1025,22 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     [],
   );
 
+  const getOrFetchAchievements = useCallback(
+    async (uid: string): Promise<Achievement[]> => {
+      const cached = achievementsCacheRef.current.get(uid);
+      if (cached && Date.now() - cached.fetchedAt < ACHIEVEMENTS_CACHE_TTL_MS) {
+        return cached.achievements;
+      }
+      const achievements = await ForumService.GetAchievementsByUser(uid);
+      achievementsCacheRef.current.set(uid, {
+        achievements,
+        fetchedAt: Date.now(),
+      });
+      return achievements;
+    },
+    [],
+  );
+
   return (
     <ForumContext.Provider
       value={{
@@ -1039,6 +1091,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         markAllNotificationsRead,
         clearNotifications,
         getOrFetchUserActivity,
+        getOrFetchAchievements,
         setCurrentUser: setCurrentUserState,
       }}
     >

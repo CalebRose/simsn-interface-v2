@@ -77,7 +77,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
     if (!isModalOpen) return;
     let cancelled = false;
     setActivityLoading(true);
-    getOrFetchUserActivity(uid, 5)
+    getOrFetchUserActivity(uid, 10)
       .then(({ threads, posts }) => {
         if (cancelled) return;
         setRecentThreads(threads);
@@ -341,7 +341,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
               </Text>
             ) : (
               <ul className="space-y-1 max-h-36 overflow-y-auto">
-                {recentThreads.map((t) => (
+                {recentThreads.slice(0, 5).map((t) => (
                   <li
                     key={t.id}
                     className="text-xs border-b border-gray-700 pb-1 last:border-b-0"
@@ -368,7 +368,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
             </Text>
           ) : (
             <ul className="space-y-1 max-h-36 overflow-y-auto">
-              {recentPosts.map((p) => (
+              {recentPosts.slice(0, 5).map((p) => (
                 <li
                   key={p.id}
                   className="text-xs border-b border-gray-700 pb-1 last:border-b-0"

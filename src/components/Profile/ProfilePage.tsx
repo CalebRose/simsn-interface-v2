@@ -476,7 +476,7 @@ export const ProfilePage = () => {
     isSubscriber,
     defaultLogo,
   } = useAuthStore();
-  const { userMap, userListOptions } = useForumStore();
+  const { userMap, userListOptions, getOrFetchAchievements } = useForumStore();
   const { cfbTeam, nflTeam, cfbTeamMap, proTeamMap } = useSimFBAStore();
   const { cbbTeam, nbaTeam, cbbTeamMap, nbaTeamMap } = useSimBBAStore();
   const { chlTeam, phlTeam, chlTeamMap, phlTeamMap } = useSimHCKStore();
@@ -605,10 +605,17 @@ export const ProfilePage = () => {
     if (!paramUsername) return;
     let cancelled = false;
     setViewedUserLoading(true);
+
+    // Use the already-loaded userMap entry to avoid a Firestore read.
     const fromMap = Object.values(userMap).find(
       (u) => u.username === paramUsername,
     );
-    if (fromMap) setViewedUser(fromMap);
+    if (fromMap) {
+      setViewedUser(fromMap);
+      setViewedUserLoading(false);
+      return;
+    }
+
     ForumService.GetUserByUsername(paramUsername)
       .then((u) => {
         if (!cancelled) setViewedUser(u);
@@ -628,10 +635,10 @@ export const ProfilePage = () => {
       setViewedAchievements([]);
       return;
     }
-    ForumService.GetAchievementsByUser(uid)
+    getOrFetchAchievements(uid)
       .then(setViewedAchievements)
       .catch(console.error);
-  }, [viewedUser?.id, currentUser?.id]);
+  }, [viewedUser?.id, currentUser?.id, getOrFetchAchievements]);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -649,10 +656,10 @@ export const ProfilePage = () => {
 
   useEffect(() => {
     if (!currentUser?.id) return;
-    ForumService.GetAchievementsByUser(currentUser.id)
+    getOrFetchAchievements(currentUser.id)
       .then(setAchievements)
       .catch(console.error);
-  }, [currentUser?.id]);
+  }, [currentUser?.id, getOrFetchAchievements]);
 
   useEffect(() => {
     if (!top5SearchQuery.trim()) {
