@@ -289,7 +289,8 @@ export const ValidateCloseToHome = (croot: any, abbr: any) => {
   }
 
   const closeToHomeSchools = StateMatcherMap[crootState];
-  if (closeToHomeSchools.length <= 0) {
+  if (!closeToHomeSchools || closeToHomeSchools.length <= 0) {
+    console.log("Warning: no close-to-home schools found for croot:", String(croot.FirstName) + " " + String(croot.LastName), "State: ", crootState);
     return false;
   }
 
