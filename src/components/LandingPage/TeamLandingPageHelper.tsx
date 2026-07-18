@@ -279,8 +279,6 @@ export const getLandingNFLData = (
       AwayTeamAbbr: teamAbbrMap.get(game.AwayTeamID),
     }));
 
-  console.log({ teamSchedule, allProGames, team });
-
   // Team Stats
   const userPassers = topNFLPassers.filter((p) => p.TeamID === team.ID);
   const userRushers = topNFLRushers.filter((r) => r.TeamID === team.ID);

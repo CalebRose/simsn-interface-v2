@@ -4,10 +4,15 @@ import { useAuthStore } from "../../../context/AuthContext";
 import { SimCFB, SimNFL, League } from "../../../_constants/constants";
 import { PillButton, ButtonGrid } from "../../../_design/Buttons";
 import { fbaUrl } from "../../../_constants/urls";
-import { useLiveFieldState } from "../../../_hooks/useLiveFieldState";
+import {
+  useLiveFieldState,
+  getPlayText,
+} from "../../../_hooks/useLiveFieldState";
 import { TeamStatsSidebar } from "./TeamStatsSidebar";
 import { GridironVisualizer } from "./GridironVisualizer";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
+import { Logo } from "../../../_design/Logo";
+import { getLogo } from "../../../_utility/getLogo";
 
 // --- HELPERS ---
 const getPeriodName = (p: number) => {
@@ -63,12 +68,17 @@ const GameMiniList = React.memo(
 
 // --- MAIN COMPONENT ---
 const LiveField = () => {
-  const { isModerator } = useAuthStore();
+  const { isModerator, currentUser } = useAuthStore();
   const { ts, selectedLeague, setSelectedLeague } = useLeagueStore();
-  const { allCollegeGames, allProGames, cfb_Timestamp } = useSimFBAStore();
-  const { liveGames: firebaseGames } = useLiveFieldState(
-    selectedLeague as League,
-  );
+  const { cfb_Timestamp } = useSimFBAStore();
+  const {
+    liveGameStates,
+    shownPlays,
+    touchdownFlashGames,
+    isFirebaseMode,
+    isReady,
+    rawGames: firebaseRawGames,
+  } = useLiveFieldState(selectedLeague as League);
 
   const [games, setGames] = useState<Record<number, any>>({});
   const [selectedGameId, setSelectedGameId] = useState<number | null>(null);
@@ -79,6 +89,8 @@ const LiveField = () => {
 
   const bulkPlaysRef = useRef<Record<number, any[]>>({});
   const currentPlaysRef = useRef<Record<number, any[]>>({});
+  const gameCooldowns = useRef<Record<number, number>>({});
+  const MAX_CONCURRENT_GAMES = 8;
 
   const chlTs = ts as any;
   const rawSeasonID = useMemo(() => {
@@ -105,50 +117,32 @@ const LiveField = () => {
 
   // Setup a useMemo for college games/nfl games & filter by the current season and week && preseason game status (use timestamp to check if it's preseason)
 
-  // Initialize and Merge Data
+  // Seed local games state from Firebase docs whenever they change.
+  // Only used by the manual broadcast engine when isFirebaseMode is false.
   useEffect(() => {
-    const fetchAndStitch = async () => {
-      if (!rawSeasonID) return;
-      const endpoint = isCFB ? "cfb" : "nfl";
-      const gamesToUse = isCFB ? allCollegeGames : allProGames;
-
-      let apiResults: any[] = [];
-      try {
-        const res = await fetch(
-          `${fbaUrl}games/${endpoint}/season/${rawSeasonID}`,
-        );
-        if (res.ok) apiResults = await res.json();
-      } catch (e) {
-        console.error("API Fetch Error:", e);
-      }
-
-      const stitched: Record<number, any> = {};
-      firebaseGames.forEach((fg: any) => {
-        const id = Number(fg.GameID || fg.ID);
-
-        stitched[id] = {
-          GameID: id,
-          HomeTeam: fg.HomeTeam,
-          AwayTeam: fg.AwayTeam,
-          HomeTeamScore: 0,
-          AwayTeamScore: 0,
-          Period: 0,
-          TimeOnClock: 900,
-          GameComplete: false,
-          IsRevealed: false,
-          Zone: fg.YardLine || "50",
-        };
-      });
-      setGames(stitched);
-    };
-    fetchAndStitch();
-  }, [firebaseGames, selectedLeague, rawSeasonID, isCFB]);
+    if (!rawSeasonID || firebaseRawGames.length === 0) return;
+    const stitched: Record<number, any> = {};
+    firebaseRawGames.forEach((fg) => {
+      stitched[fg.GameID] = {
+        GameID: fg.GameID,
+        HomeTeam: fg.HomeTeam,
+        AwayTeam: fg.AwayTeam,
+        HomeTeamScore: 0,
+        AwayTeamScore: 0,
+        Period: 0,
+        TimeOnClock: 900,
+        GameComplete: false,
+        IsRevealed: false,
+        Zone: "50",
+      };
+    });
+    setGames(stitched);
+  }, [firebaseRawGames, rawSeasonID]);
 
   // Broadcast Engine
   const triggerEngine = async () => {
     setBroadcastState("GENERATING");
     try {
-      await fetch(`${fbaUrl}admin/run/the/games/`);
       const endpoint = selectedLeague === SimCFB ? "cfb" : "nfl";
       const isCFB = selectedLeague === SimCFB;
       const url = `${fbaUrl}games/plays/bulk/${endpoint}?isCollege=${isCFB}&season=${rawSeasonID}&week=${currentWeek}&is_spring_game=${isSpringGame}`;
@@ -184,8 +178,10 @@ const LiveField = () => {
     const interval = setInterval(() => {
       setGames((prev) => {
         const newGames = { ...prev };
+        const now = Date.now();
         Object.values(newGames).forEach((g: any) => {
           if (g.GameComplete) return;
+          if (now < (gameCooldowns.current[g.GameID] || 0)) return;
           const plays = bulkPlaysRef.current[g.GameID] || [];
           if (plays.length === 0) {
             g.GameComplete = true;
@@ -201,12 +197,50 @@ const LiveField = () => {
           currentPlaysRef.current[g.GameID] =
             currentPlaysRef.current[g.GameID] || [];
           currentPlaysRef.current[g.GameID].unshift(play);
+          const isTouchdown =
+            play.StreamResult?.findIndex(
+              (result: any) => result === "TOUCHDOWN",
+            ) !== -1;
+          gameCooldowns.current[g.GameID] = now + (isTouchdown ? 10000 : 5000);
         });
         return { ...newGames };
       });
     }, 250);
     return () => clearInterval(interval);
   }, [isSpoofing]);
+
+  const effectiveGames = useMemo<Record<number, any>>(
+    () => (isFirebaseMode ? liveGameStates : games),
+    [isFirebaseMode, liveGameStates, games],
+  );
+  const allGames = useMemo(() => Object.values(games), [games]);
+  const upcomingGames = useMemo(
+    () =>
+      allGames.filter(
+        (g) => !g.GameComplete && effectiveGames[g.GameID] === undefined,
+      ),
+    [allGames, effectiveGames],
+  );
+  const liveGames = useMemo(() => {
+    if (isFirebaseMode) {
+      return Object.values(liveGameStates).filter((g) => !g.IsRevealed);
+    }
+    return allGames.filter((g) => !g.GameComplete && g.Period > 0);
+  }, [isFirebaseMode, liveGameStates, allGames]);
+
+  const resultsGames = useMemo(() => {
+    return allGames.filter((g) => g.GameComplete || g.IsRevealed === true);
+  }, [allGames]);
+
+  console.log({
+    effectiveGames,
+    liveGames,
+    liveGameStates,
+    upcomingGames,
+    resultsGames,
+    allGames,
+    isFirebaseMode,
+  });
 
   if (selectedGameId === null) {
     return (
@@ -246,9 +280,7 @@ const LiveField = () => {
           <div className="col-span-2 border-r border-white/10">
             <GameMiniList
               title="Upcoming"
-              games={Object.values(games).filter(
-                (g) => !g.GameComplete && !g.IsRevealed,
-              )}
+              games={upcomingGames}
               color="border-blue-500"
               onSelect={setSelectedGameId}
               broadcastState={broadcastState}
@@ -256,27 +288,51 @@ const LiveField = () => {
           </div>
           <div className="col-span-8 overflow-y-auto">
             <div className="grid grid-cols-2 gap-6">
-              {Object.values(games)
-                .filter((g) => !g.GameComplete && !g.IsRevealed && g.Period > 0)
-                .map((g) => (
-                  <div
-                    key={g.GameID}
-                    onClick={() => setSelectedGameId(g.GameID)}
-                    className="bg-(--bg-secondary) p-6 border border-white/10 cursor-pointer"
-                  >
-                    <div className="text-white font-black text-2xl">
-                      {g.AwayTeamScore} - {g.HomeTeamScore}
-                    </div>
+              {liveGames.map((g) => (
+                <div
+                  key={g.GameID}
+                  onClick={() => setSelectedGameId(g.GameID)}
+                  className="bg-(--bg-secondary) p-6 border border-white/10 cursor-pointer"
+                >
+                  <div className="text-[1.1vh] text-(--text-muted) font-bold mb-3 uppercase flex justify-between">
+                    <span>
+                      {getPeriodName(g.Period)} | {formatClock(g.TimeOnClock)}
+                    </span>
+                    <span>{g.Zone} Yardline</span>
+                  </div>{" "}
+                  <div className="flex justify-between items-center font-black text-white">
+                    <span className="text-[1.2vh] text-center">
+                      <Logo
+                        url={getLogo(
+                          selectedLeague as League,
+                          g.HomeTeamID,
+                          currentUser?.IsRetro,
+                        )}
+                        label={`${g.HomeTeamRank > 0 ? `#${g.HomeTeamRank} ` : ""}${g.HomeTeam}`}
+                      />
+                    </span>
+                    <span className="text-[2.8vh]">{g.HomeTeamScore}</span>
+                    <span className="opacity-20 italic">VS</span>
+                    <span className="text-[2.8vh]">{g.AwayTeamScore}</span>
+                    <span className="text-[1.2vh] text-center">
+                      <Logo
+                        url={getLogo(
+                          selectedLeague as League,
+                          g.AwayTeamID,
+                          currentUser?.IsRetro,
+                        )}
+                        label={`${g.AwayTeamRank > 0 ? `#${g.AwayTeamRank} ` : ""}${g.AwayTeam}`}
+                      />
+                    </span>
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
           </div>
           <div className="col-span-2 border-l border-white/10">
             <GameMiniList
               title="Results"
-              games={Object.values(games).filter(
-                (g) => g.GameComplete || g.IsRevealed,
-              )}
+              games={resultsGames}
               color="border-green-500"
               onSelect={setSelectedGameId}
               broadcastState={broadcastState}
@@ -312,16 +368,17 @@ const LiveField = () => {
             awayName={activeGame.AwayTeam}
           />
           <div className="p-4 bg-black/20 mt-4 h-64 overflow-y-auto">
-            {(currentPlaysRef.current[activeGame.GameID] || []).map(
-              (p: any, i: number) => (
-                <div
-                  key={i}
-                  className="text-white text-xs py-1 border-b border-white/5"
-                >
-                  {p.PlayText}
-                </div>
-              ),
-            )}
+            {(isFirebaseMode
+              ? [...(shownPlays[activeGame.GameID] ?? [])].reverse()
+              : (currentPlaysRef.current[activeGame.GameID] ?? [])
+            ).map((p: any, i: number) => (
+              <div
+                key={i}
+                className="text-white text-xs py-1 border-b border-white/5"
+              >
+                {isFirebaseMode ? getPlayText(p) : p.PlayText}
+              </div>
+            ))}
           </div>
         </div>
         <div className="col-span-2">
