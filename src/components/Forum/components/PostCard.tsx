@@ -58,6 +58,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   const { currentUser } = useAuthStore();
   const [showReactions, setShowReactions] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [profileCardActive, setProfileCardActive] = useState(false);
   const isOwnPost = post.author.uid === currentUserId;
   const canEdit =
     permissions.canEditAnyPost || (isOwnPost && permissions.canEditOwnPost);
@@ -90,48 +91,96 @@ export const PostCard: React.FC<PostCardProps> = ({
       {/* Header: author + timestamp */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2">
-          <UserProfileCard
-            uid={post.author.uid}
-            username={post.author.username}
-            logoUrl={post.author.logoUrl}
-          >
-            <div className="flex items-start gap-2 text-start">
-              {post.author.logoUrl && (
-                <img
-                  src={post.author.logoUrl}
-                  alt=""
-                  className="w-8 h-8 object-contain shrink-0 mt-0.5"
-                />
-              )}
-              <div>
-                <div className="flex items-center gap-2 text-start">
-                  <Text
-                    variant="body-small"
-                    classes="font-semibold hover:text-blue-400 transition-colors"
-                  >
-                    {post.author.username}
-                  </Text>
-                  {post.replyToPostId && (
-                    <Text variant="xs" classes="text-gray-500">
-                      ↩ replied
+          {/* Lazy-mount UserProfileCard — only activate on first hover/click so
+              idle posts don't pay the hook + event-listener cost up front. */}
+          {profileCardActive ? (
+            <UserProfileCard
+              uid={post.author.uid}
+              username={post.author.username}
+              logoUrl={post.author.logoUrl}
+              triggerHover
+            >
+              <div className="flex items-start gap-2 text-start">
+                {post.author.logoUrl && (
+                  <img
+                    src={post.author.logoUrl}
+                    alt=""
+                    className="w-8 h-8 object-contain shrink-0 mt-0.5"
+                  />
+                )}
+                <div>
+                  <div className="flex items-center gap-2 text-start">
+                    <Text
+                      variant="body-small"
+                      classes="font-semibold hover:text-blue-400 transition-colors"
+                    >
+                      {post.author.username}
                     </Text>
-                  )}
+                    {post.replyToPostId && (
+                      <Text variant="xs" classes="text-gray-500">
+                        ↩ replied
+                      </Text>
+                    )}
+                  </div>
+                  <Text variant="xs" classes="text-gray-500">
+                    {formatTimestamp(
+                      post.createdAt as unknown as { seconds: number },
+                    )}
+                    {post.isEdited && (
+                      <span className="ml-2 text-gray-600 italic">
+                        {post.editedByUsername
+                          ? `(edited by ${post.editedByUsername})`
+                          : "(edited)"}
+                      </span>
+                    )}
+                  </Text>
                 </div>
-                <Text variant="xs" classes="text-gray-500">
-                  {formatTimestamp(
-                    post.createdAt as unknown as { seconds: number },
-                  )}
-                  {post.isEdited && (
-                    <span className="ml-2 text-gray-600 italic">
-                      {post.editedByUsername
-                        ? `(edited by ${post.editedByUsername})`
-                        : "(edited)"}
-                    </span>
-                  )}
-                </Text>
+              </div>
+            </UserProfileCard>
+          ) : (
+            <div
+              className="relative inline-block cursor-pointer text-start"
+              onMouseEnter={() => setProfileCardActive(true)}
+              onClick={() => setProfileCardActive(true)}
+            >
+              <div className="flex items-start gap-2 text-start">
+                {post.author.logoUrl && (
+                  <img
+                    src={post.author.logoUrl}
+                    alt=""
+                    className="w-8 h-8 object-contain shrink-0 mt-0.5"
+                  />
+                )}
+                <div>
+                  <div className="flex items-center gap-2 text-start">
+                    <Text
+                      variant="body-small"
+                      classes="font-semibold hover:text-blue-400 transition-colors"
+                    >
+                      {post.author.username}
+                    </Text>
+                    {post.replyToPostId && (
+                      <Text variant="xs" classes="text-gray-500">
+                        ↩ replied
+                      </Text>
+                    )}
+                  </div>
+                  <Text variant="xs" classes="text-gray-500">
+                    {formatTimestamp(
+                      post.createdAt as unknown as { seconds: number },
+                    )}
+                    {post.isEdited && (
+                      <span className="ml-2 text-gray-600 italic">
+                        {post.editedByUsername
+                          ? `(edited by ${post.editedByUsername})`
+                          : "(edited)"}
+                      </span>
+                    )}
+                  </Text>
+                </div>
               </div>
             </div>
-          </UserProfileCard>
+          )}
         </div>
 
         {/* Moderation controls */}

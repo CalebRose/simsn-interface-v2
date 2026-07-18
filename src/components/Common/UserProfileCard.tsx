@@ -23,6 +23,8 @@ interface UserProfileCardProps {
   username: string;
   logoUrl?: string;
   children: ReactNode;
+  /** If true, open the hover popover immediately on mount (used for lazy activation). */
+  triggerHover?: boolean;
 }
 
 const LEAGUE_FIELDS: { key: keyof CurrentUser; label: string }[] = [
@@ -50,10 +52,18 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
   username,
   logoUrl,
   children,
+  triggerHover = false,
 }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuthStore();
-  const { userMap, getOrFetchUserActivity } = useForumStore();
+  const { userMap, getOrFetchUserActivity, getOrFetchUserById } =
+    useForumStore();
+
+  // As soon as the card is active (first hover/click), ensure the user's doc
+  // is in the cache so the popover shows full info.
+  useEffect(() => {
+    getOrFetchUserById(uid);
+  }, [uid, getOrFetchUserById]);
 
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,6 +75,22 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
 
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
+
+  // When mounted via lazy activation, open the hover popover right away.
+  useEffect(() => {
+    if (!triggerHover) return;
+    hoverTimeoutRef.current = setTimeout(() => {
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setPopoverPos({ top: rect.top, left: rect.left });
+      }
+      setIsHovered(true);
+    }, 300);
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // intentionally runs only on first mount
 
   const user = useMemo<CurrentUser | null>(
     () => userMap[uid] ?? null,

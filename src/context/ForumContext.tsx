@@ -8,7 +8,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { QueryDocumentSnapshot, collection, getDocs } from "firebase/firestore";
+import {
+  QueryDocumentSnapshot,
+  collection,
+  getDocs,
+  getDoc,
+  doc,
+} from "firebase/firestore";
 import { ForumService } from "../_services/forumService";
 import {
   Forum,
@@ -29,6 +35,7 @@ import {
 } from "../models/forumModels";
 import { CurrentUser } from "../_hooks/useCurrentUser";
 import { getUserLogoUrl } from "../_utility/getLogo";
+import { logFirestoreRead } from "../_utility/firestoreLogger";
 
 // ─────────────────────────────────────────────
 // User activity cache types
@@ -192,6 +199,10 @@ interface ForumContextProps {
     count?: number,
   ) => Promise<UserActivity>;
   getOrFetchAchievements: (uid: string) => Promise<Achievement[]>;
+  /** Fetch a single user document on demand (cached for the session). */
+  getOrFetchUserById: (uid: string) => Promise<CurrentUser | null>;
+  /** Fetch all users — only call from pages that need the full list (e.g. Profile dropdown). */
+  loadAllUsers: () => Promise<void>;
 
   // Actions
   loadForums: () => Promise<void>;
@@ -264,6 +275,8 @@ const defaultForumContext: ForumContextProps = {
     fetchedAt: 0,
   }),
   getOrFetchAchievements: async () => [],
+  getOrFetchUserById: async () => null,
+  loadAllUsers: async () => {},
   loadForums: async () => {},
   loadThreadsForForum: async () => {},
   loadMoreThreads: async () => {},
@@ -312,9 +325,10 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   const [currentUserState, setCurrentUserState] = useState<CurrentUser | null>(
     initialUser,
   );
-  const [users, setUsers] = useState<(CurrentUser & { id: string })[] | null>(
-    null,
-  );
+  // Start empty — users are added lazily via getOrFetchUserById or all at once
+  // via loadAllUsers. This avoids reading the entire users collection on every
+  // session open.
+  const [users, setUsers] = useState<(CurrentUser & { id: string })[]>([]);
   const [forums, setForums] = useState<Forum[]>([]);
   const [forumsLoading, setForumsLoading] = useState(false);
   const [threads, setThreads] = useState<Thread[]>([]);
@@ -335,6 +349,12 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
   const postsUnsubscribeRef = useRef<(() => void) | null>(null);
   const notificationsUnsubscribeRef = useRef<(() => void) | null>(null);
   const userActivityCacheRef = useRef<Map<string, UserActivity>>(new Map());
+  // Ref-backed user cache: O(1) lookups without re-creating callbacks on every
+  // users state change. Populated by both getOrFetchUserById and loadAllUsers.
+  const usersRefMap = useRef<Map<string, CurrentUser & { id: string }>>(
+    new Map(),
+  );
+  const allUsersLoadedRef = useRef(false);
   const forumsCacheRef = useRef<CachedForums | null>(null);
   const threadPageCacheRef = useRef<Map<string, CachedThreadPage>>(new Map());
   const threadCacheRef = useRef<Map<string, CachedThread>>(new Map());
@@ -342,20 +362,6 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     new Map(),
   );
   const postsCacheRef = useRef<Map<string, CachedPosts>>(new Map());
-
-  // One-time fetch — user display data (names, logos) doesn't need real-time updates
-  // and a live subscription on the whole collection is expensive.
-  useEffect(() => {
-    getDocs(collection(firestore, "users"))
-      .then((snap) =>
-        setUsers(
-          snap.docs.map(
-            (d) => ({ id: d.id, ...d.data() }) as CurrentUser & { id: string },
-          ),
-        ),
-      )
-      .catch(console.error);
-  }, []);
 
   useEffect(() => {
     setCurrentUserState(initialUser);
@@ -1041,6 +1047,43 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     [],
   );
 
+  // ─── Lazy user loading ───────────────────────────────────────────────────────
+  // Individual user fetch — used by UserProfileCard when a post author is hovered.
+  // Checks the ref-backed cache first; only hits Firestore on a cache miss.
+  const getOrFetchUserById = useCallback(
+    async (uid: string): Promise<CurrentUser | null> => {
+      const cached = usersRefMap.current.get(uid);
+      if (cached) return cached;
+
+      const userRef = doc(firestore, "users", uid);
+      const snap = await getDoc(userRef);
+      logFirestoreRead(`getOrFetchUserById [${uid}]`, snap.exists() ? 1 : 0);
+      if (!snap.exists()) return null;
+
+      const userData = { id: snap.id, ...snap.data() } as CurrentUser & {
+        id: string;
+      };
+      usersRefMap.current.set(uid, userData);
+      setUsers((prev) => [...prev.filter((u) => u.id !== uid), userData]);
+      return userData;
+    },
+    [],
+  );
+
+  // Full users fetch — call only from pages that need the complete list
+  // (e.g. Profile page "View another user" dropdown).
+  const loadAllUsers = useCallback(async () => {
+    if (allUsersLoadedRef.current) return;
+    const snap = await getDocs(collection(firestore, "users"));
+    logFirestoreRead("loadAllUsers", snap.docs.length);
+    const allUsers = snap.docs.map(
+      (d) => ({ id: d.id, ...d.data() }) as CurrentUser & { id: string },
+    );
+    allUsers.forEach((u) => usersRefMap.current.set(u.id, u));
+    allUsersLoadedRef.current = true;
+    setUsers(allUsers);
+  }, []);
+
   return (
     <ForumContext.Provider
       value={{
@@ -1092,6 +1135,8 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         clearNotifications,
         getOrFetchUserActivity,
         getOrFetchAchievements,
+        getOrFetchUserById,
+        loadAllUsers,
         setCurrentUser: setCurrentUserState,
       }}
     >

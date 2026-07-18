@@ -45,6 +45,7 @@ import {
   Achievement,
 } from "../models/forumModels";
 import { CurrentUser } from "../_hooks/useCurrentUser";
+import { logFirestoreRead } from "../_utility/firestoreLogger";
 
 // ─────────────────────────────────────────────
 // Collection references
@@ -71,12 +72,14 @@ export const ForumService = {
   GetAllForums: async (): Promise<Forum[]> => {
     const q = query(forumsCol(), orderBy("sortOrder", "asc"));
     const snap = await getDocs(q);
+    logFirestoreRead("GetAllForums", snap.docs.length);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Forum);
   },
 
   GetForumBySlug: async (slug: string): Promise<Forum | null> => {
     const q = query(forumsCol(), where("slug", "==", slug), limit(1));
     const snap = await getDocs(q);
+    logFirestoreRead("GetForumBySlug", snap.docs.length);
     if (snap.empty) return null;
     const d = snap.docs[0];
     return { id: d.id, ...d.data() } as Forum;
@@ -94,6 +97,7 @@ export const ForumService = {
       limit(1),
     );
     const snap = await getDocs(q);
+    logFirestoreRead("GetForumBySlugAndParent", snap.docs.length);
     if (snap.empty) return null;
     const d = snap.docs[0];
     return { id: d.id, ...d.data() } as Forum;
@@ -102,6 +106,7 @@ export const ForumService = {
   GetForumById: async (id: string): Promise<Forum | null> => {
     const ref = doc(firestore, "forums", id);
     const snap = await getDoc(ref);
+    logFirestoreRead("GetForumById", snap.exists() ? 1 : 0);
     if (!snap.exists()) return null;
     return { id: snap.id, ...snap.data() } as Forum;
   },
@@ -109,6 +114,7 @@ export const ForumService = {
   GetSubforums: async (parentForumId: string): Promise<Forum[]> => {
     const q = query(forumsCol(), where("parentForumId", "==", parentForumId));
     const snap = await getDocs(q);
+    logFirestoreRead("GetSubforums", snap.docs.length);
     return snap.docs
       .map((d) => ({ id: d.id, ...d.data() }) as Forum)
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
@@ -127,6 +133,7 @@ export const ForumService = {
       orderBy("latestActivityAt", "desc"),
     );
     const snap = await getDocs(q);
+    logFirestoreRead(`GetPinnedThreads [${forumId}]`, snap.docs.length);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Thread);
   },
 
@@ -157,6 +164,7 @@ export const ForumService = {
     }
 
     const snap = await getDocs(q);
+    logFirestoreRead(`GetThreadsByForum [${forumId}]`, snap.docs.length);
     const threads = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Thread);
     const lastDoc =
       snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
@@ -166,6 +174,7 @@ export const ForumService = {
   GetThreadById: async (threadId: string): Promise<Thread | null> => {
     const ref = doc(firestore, "threads", threadId);
     const snap = await getDoc(ref);
+    logFirestoreRead(`GetThreadById [${threadId}]`, snap.exists() ? 1 : 0);
     if (!snap.exists()) return null;
     return { id: snap.id, ...snap.data() } as Thread;
   },
@@ -184,6 +193,7 @@ export const ForumService = {
       limit(count),
     );
     const snap = await getDocs(q);
+    logFirestoreRead("GetLatestThreads", snap.docs.length);
     const threads = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Thread);
     return threads
       .sort(
@@ -204,6 +214,7 @@ export const ForumService = {
       limit(count),
     );
     const snap = await getDocs(q);
+    logFirestoreRead(`GetLatestPostgameThreads [${league}]`, snap.docs.length);
     const threads = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Thread);
     return threads
       .sort(
@@ -345,6 +356,10 @@ export const ForumService = {
       orderBy("createdAt", "asc"),
     );
     return onSnapshot(q, (snap) => {
+      logFirestoreRead(
+        `SubscribeToThreadPosts [${threadId}]`,
+        snap.docs.length,
+      );
       const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Post);
       onUpdate(posts);
     });
@@ -375,6 +390,7 @@ export const ForumService = {
     }
 
     const snap = await getDocs(q);
+    logFirestoreRead(`GetPostsByThread [${threadId}]`, snap.docs.length);
     const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Post);
     const lastDoc =
       snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
@@ -384,6 +400,7 @@ export const ForumService = {
   GetPostById: async (postId: string): Promise<Post | null> => {
     const ref = doc(firestore, "posts", postId);
     const snap = await getDoc(ref);
+    logFirestoreRead(`GetPostById [${postId}]`, snap.exists() ? 1 : 0);
     if (!snap.exists()) return null;
     return { id: snap.id, ...snap.data() } as Post;
   },
@@ -458,6 +475,10 @@ export const ForumService = {
   ): Promise<void> => {
     const ref = doc(firestore, "posts", postId);
     const snap = await getDoc(ref);
+    logFirestoreRead(
+      `UpdatePost(read post) [${postId}]`,
+      snap.exists() ? 1 : 0,
+    );
     if (!snap.exists()) return;
 
     const existingPost = { id: snap.id, ...snap.data() } as Post;
@@ -466,6 +487,10 @@ export const ForumService = {
     if (existingPost.threadId) {
       const threadRef = doc(firestore, "threads", existingPost.threadId);
       const threadSnap = await getDoc(threadRef);
+      logFirestoreRead(
+        `UpdatePost(read thread) [${existingPost.threadId}]`,
+        threadSnap.exists() ? 1 : 0,
+      );
       if (threadSnap.exists()) {
         const thread = { id: threadSnap.id, ...threadSnap.data() } as Thread;
         if (thread.firstPostId === postId) {
@@ -514,6 +539,10 @@ export const ForumService = {
   ): Promise<void> => {
     const ref = doc(firestore, "posts", postId);
     const snap = await getDoc(ref);
+    logFirestoreRead(
+      `AddReaction(read post) [${postId}]`,
+      snap.exists() ? 1 : 0,
+    );
     if (!snap.exists()) return;
 
     const data = snap.data() as Post;
@@ -644,6 +673,10 @@ export const ForumService = {
   ): Promise<void> => {
     const threadRef = doc(firestore, "threads", threadId);
     const threadSnap = await getDoc(threadRef);
+    logFirestoreRead(
+      `MoveThread(read thread) [${threadId}]`,
+      threadSnap.exists() ? 1 : 0,
+    );
     if (!threadSnap.exists()) throw new Error("Thread not found");
 
     const thread = { id: threadSnap.id, ...threadSnap.data() } as unknown as {
@@ -680,6 +713,10 @@ export const ForumService = {
     // Update all posts in the thread
     const postsSnap = await getDocs(
       query(postsCol(), where("threadId", "==", threadId)),
+    );
+    logFirestoreRead(
+      `MoveThread(read posts) [${threadId}]`,
+      postsSnap.docs.length,
     );
     for (const postDoc of postsSnap.docs) {
       batch.update(postDoc.ref, { forumId: newForumId, updatedAt: now });
@@ -737,6 +774,7 @@ export const ForumService = {
   GetPollByThreadId: async (threadId: string): Promise<Poll | null> => {
     const q = query(pollsCol(), where("threadId", "==", threadId), limit(1));
     const snap = await getDocs(q);
+    logFirestoreRead(`GetPollByThreadId [${threadId}]`, snap.docs.length);
     if (snap.empty) return null;
     const d = snap.docs[0];
     return { id: d.id, ...d.data() } as Poll;
@@ -748,6 +786,7 @@ export const ForumService = {
   ): Promise<PollVote | null> => {
     const voteRef = doc(firestore, "polls", pollId, "votes", uid);
     const snap = await getDoc(voteRef);
+    logFirestoreRead(`GetPollVoteForUser [${pollId}]`, snap.exists() ? 1 : 0);
     if (!snap.exists()) return null;
     return snap.data() as PollVote;
   },
@@ -760,6 +799,10 @@ export const ForumService = {
   ): Promise<void> => {
     const pollRef = doc(firestore, "polls", pollId);
     const pollSnap = await getDoc(pollRef);
+    logFirestoreRead(
+      `SubmitPollVote(read poll) [${pollId}]`,
+      pollSnap.exists() ? 1 : 0,
+    );
 
     if (!pollSnap.exists()) throw new Error("Poll not found");
 
@@ -769,6 +812,10 @@ export const ForumService = {
 
     const existingVoteRef = doc(pollVotesCol(pollId), uid);
     const existing = await getDoc(existingVoteRef);
+    logFirestoreRead(
+      `SubmitPollVote(read existing vote) [${pollId}]`,
+      existing.exists() ? 1 : 0,
+    );
     if (existing.exists()) throw new Error("Already voted");
 
     const batch = writeBatch(firestore);
@@ -818,6 +865,10 @@ export const ForumService = {
   ): Promise<void> => {
     const pollRef = doc(firestore, "polls", pollId);
     const pollSnap = await getDoc(pollRef);
+    logFirestoreRead(
+      `ChangeVote(read poll) [${pollId}]`,
+      pollSnap.exists() ? 1 : 0,
+    );
     if (!pollSnap.exists()) throw new Error("Poll not found");
     const poll = { id: pollSnap.id, ...pollSnap.data() } as Poll;
     if (!poll.allowVoteChange)
@@ -826,6 +877,10 @@ export const ForumService = {
 
     const voteRef = doc(pollVotesCol(pollId), uid);
     const existingSnap = await getDoc(voteRef);
+    logFirestoreRead(
+      `ChangeVote(read existing vote) [${pollId}]`,
+      existingSnap.exists() ? 1 : 0,
+    );
     if (!existingSnap.exists()) throw new Error("No existing vote to change");
     const existingVote =
       existingSnap.data() as import("../models/forumModels").PollVote;
@@ -862,6 +917,7 @@ export const ForumService = {
 
   GetAllPollVotes: async (pollId: string): Promise<PollVote[]> => {
     const snap = await getDocs(pollVotesCol(pollId));
+    logFirestoreRead(`GetAllPollVotes [${pollId}]`, snap.docs.length);
     return snap.docs.map((d) => d.data() as PollVote);
   },
 
@@ -880,6 +936,7 @@ export const ForumService = {
       limit(pageSize),
     );
     const snap = await getDocs(q);
+    logFirestoreRead(`GetNotificationsForUser [${uid}]`, snap.docs.length);
     return snap.docs.map(
       (d) => ({ id: d.id, ...d.data() }) as ForumNotification,
     );
@@ -897,6 +954,7 @@ export const ForumService = {
       where("isRead", "==", false),
     );
     const snap = await getDocs(q);
+    logFirestoreRead(`MarkAllNotificationsRead [${uid}]`, snap.docs.length);
     const batch = writeBatch(firestore);
     snap.docs.forEach((d) => batch.update(d.ref, { isRead: true }));
     await batch.commit();
@@ -905,6 +963,7 @@ export const ForumService = {
   ClearAllNotifications: async (uid: string): Promise<void> => {
     const q = query(notificationsCol(), where("uid", "==", uid));
     const snap = await getDocs(q);
+    logFirestoreRead(`ClearAllNotifications [${uid}]`, snap.docs.length);
     // Firestore batches are capped at 500 writes; chunk if needed
     const chunks: (typeof snap.docs)[] = [];
     for (let i = 0; i < snap.docs.length; i += 500) {
@@ -926,6 +985,7 @@ export const ForumService = {
   GetGameReferenceById: async (id: string): Promise<GameReference | null> => {
     const ref = doc(firestore, "gameReferences", id);
     const snap = await getDoc(ref);
+    logFirestoreRead(`GetGameReferenceById [${id}]`, snap.exists() ? 1 : 0);
     if (!snap.exists()) return null;
     return { id: snap.id, ...snap.data() } as GameReference;
   },
@@ -935,6 +995,7 @@ export const ForumService = {
   ): Promise<GameReference[]> => {
     const q = query(gameReferencesCol(), where("league", "==", league));
     const snap = await getDocs(q);
+    logFirestoreRead(`GetGameReferencesByLeague [${league}]`, snap.docs.length);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as GameReference);
   },
 
@@ -968,6 +1029,7 @@ export const ForumService = {
         )
       : query(postReportsCol(), orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
+    logFirestoreRead("GetPostReports", snap.docs.length);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as PostReport);
   },
 
@@ -1008,6 +1070,7 @@ export const ForumService = {
     const seen = new Set<string>();
     const results: { uid: string; username: string }[] = [];
     for (const snap of snaps) {
+      logFirestoreRead(`SearchUsersByPrefix [${prefix}]`, snap.docs.length);
       for (const d of snap.docs) {
         if (!seen.has(d.id)) {
           seen.add(d.id);
@@ -1172,6 +1235,7 @@ export const ForumService = {
       limit(maxResults),
     );
     return onSnapshot(q, (snap) => {
+      logFirestoreRead(`SubscribeToNotifications [${uid}]`, snap.docs.length);
       const notifications = snap.docs.map(
         (d) =>
           ({
@@ -1196,6 +1260,7 @@ export const ForumService = {
       limit(count),
     );
     const snap = await getDocs(q);
+    logFirestoreRead(`GetThreadsByAuthor [${uid}]`, snap.docs.length);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Thread);
   },
 
@@ -1208,6 +1273,7 @@ export const ForumService = {
       limit(count),
     );
     const snap = await getDocs(q);
+    logFirestoreRead(`GetPostsByAuthor [${uid}]`, snap.docs.length);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Post);
   },
 
@@ -1215,6 +1281,7 @@ export const ForumService = {
     const achievementsRef = collection(firestore, "users", uid, "achievements");
     const q = query(achievementsRef, orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
+    logFirestoreRead(`GetAchievementsByUser [${uid}]`, snap.docs.length);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Achievement);
   },
 
@@ -1222,6 +1289,7 @@ export const ForumService = {
     const usersRef = collection(firestore, "users");
     const q = query(usersRef, where("username", "==", username), limit(1));
     const snap = await getDocs(q);
+    logFirestoreRead(`GetUserByUsername [${username}]`, snap.docs.length);
     if (snap.empty) return null;
     const d = snap.docs[0];
     return { id: d.id, ...d.data() } as CurrentUser;

@@ -476,7 +476,13 @@ export const ProfilePage = () => {
     isSubscriber,
     defaultLogo,
   } = useAuthStore();
-  const { userMap, userListOptions, getOrFetchAchievements } = useForumStore();
+  const { userMap, userListOptions, getOrFetchAchievements, loadAllUsers } =
+    useForumStore();
+
+  // Load all users so the "View another user" dropdown is populated.
+  useEffect(() => {
+    loadAllUsers();
+  }, [loadAllUsers]);
   const { cfbTeam, nflTeam, cfbTeamMap, proTeamMap } = useSimFBAStore();
   const { cbbTeam, nbaTeam, cbbTeamMap, nbaTeamMap } = useSimBBAStore();
   const { chlTeam, phlTeam, chlTeamMap, phlTeamMap } = useSimHCKStore();
