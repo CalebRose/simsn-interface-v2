@@ -48,12 +48,11 @@ const isPossession = (possessionRaw: any, teamId: any, teamName: string) => {
   return false;
 };
 
-// Translates "3 13" into "ILLI 3" or whatever the team abbreviation is
+// Translates "3 13" into "ILLI 3"
 const formatYardlineText = (yardLineRaw: any, homeTeamId: any, awayTeamId: any, homeName: string, awayName: string) => {
   if (yardLineRaw === undefined || yardLineRaw === null) return "50";
   const str = String(yardLineRaw).trim();
 
-  // Handle format like "3 13" (Yard TeamID)
   const parts = str.split(' ');
   if (parts.length === 2 && !isNaN(Number(parts[0])) && !isNaN(Number(parts[1]))) {
       const yard = parts[0];
@@ -72,12 +71,10 @@ const parseBallX = (yardLineRaw: any, homeTeamId: any, awayTeamId: any) => {
 
   const str = String(yardLineRaw).trim();
 
-  // Handle format like "3 13" (Yard TeamID)
   const parts = str.split(' ');
   if (parts.length === 2 && !isNaN(Number(parts[0])) && !isNaN(Number(parts[1]))) {
       const yard = parseInt(parts[0], 10);
       const teamId = String(parts[1]);
-      // If it's on the Home team's side, subtract from 100. Otherwise, keep it as is.
       if (teamId === String(homeTeamId)) return 100 - yard;
       if (teamId === String(awayTeamId)) return yard;
       return yard; 
@@ -186,6 +183,12 @@ const LiveField = () => {
         Possession: null,
         Down: null,
         Distance: null,
+        LastPlayType: null,
+        LastPlayName: null,
+        LastOffForm: null,
+        LastDefForm: null,
+        LastDefTend: null,
+        LastYards: null,
       };
     });
     setGames(stitched);
@@ -240,18 +243,32 @@ const LiveField = () => {
           }
           const play = plays.pop()!;
           
-          g.Period = play.Quarter || play.Period || (g.Period === 0 ? 1 : g.Period);
-          g.TimeOnClock = play.TimeRemaining ?? play.TimeOnClock ?? g.TimeOnClock;
+          g.Period = play.Quarter || play.Period || play.quarter || (g.Period === 0 ? 1 : g.Period);
+          g.TimeOnClock = play['Time Remaining'] ?? play.TimeRemaining ?? play.TimeOnClock ?? g.TimeOnClock;
           g.HomeTeamScore = play.HomeTeamScore ?? g.HomeTeamScore;
           g.AwayTeamScore = play.AwayTeamScore ?? g.AwayTeamScore;
           
-          // Extracted exactly from your new JSON layout
-          const newYardLine = play.LineOfScrimmage ?? play.YardLine;
+          const newYardLine = play['Line of Scrimmage'] ?? play.LineOfScrimmage ?? play.YardLine;
           g.Zone = newYardLine !== undefined && newYardLine !== null ? newYardLine : g.Zone;
           
-          g.Down = play.Down ?? g.Down;
-          g.Distance = play.Distance ?? g.Distance;
-          g.Possession = play.Possession ?? g.Possession;
+          g.Down = play.Down ?? play.down ?? g.Down;
+          g.Distance = play.Distance ?? play.distance ?? play.DistanceToFirstDown ?? g.Distance;
+          g.Possession = play.Possession ?? play.OffenseTeamID ?? play.OffenseID ?? g.Possession;
+
+          const isValid = (val: any) => val && val !== "N/A" && val !== "nan" && String(val).trim() !== "";
+          const newPlayType = play['Type of Play'] ?? play.PlayType;
+          const newPlayName = play['Offensive Play'] ?? play.PlayName;
+          const newOffForm = play['Offensive Formation'] ?? play.OffensiveFormation;
+          const newDefForm = play['Defensive Formation'] ?? play.DefensiveFormation;
+          const newDefTend = play['Defensive Tendency'] ?? play.DefensiveTendency;
+          const newYards = play['Yards Gained'] ?? play.ResultYards;
+
+          g.LastPlayType = isValid(newPlayType) ? newPlayType : g.LastPlayType;
+          g.LastPlayName = isValid(newPlayName) ? newPlayName : g.LastPlayName;
+          g.LastOffForm = isValid(newOffForm) ? newOffForm : g.LastOffForm;
+          g.LastDefForm = isValid(newDefForm) ? newDefForm : g.LastDefForm;
+          g.LastDefTend = isValid(newDefTend) ? newDefTend : g.LastDefTend;
+          g.LastYards = newYards !== undefined && newYards !== null && !isNaN(newYards) ? newYards : g.LastYards;
 
           currentPlaysRef.current[g.GameID] = currentPlaysRef.current[g.GameID] || [];
           currentPlaysRef.current[g.GameID].unshift(play);
@@ -302,6 +319,59 @@ const LiveField = () => {
     }
     return allGames.filter((g: any) => !g.GameComplete && (g.Period || 0) === 0);
   }, [isFirebaseMode, isSpoofing, liveGameStates, allGames, shownPlays]);
+
+
+  // --- VISUALIZER DATA EXTRACTION ---
+  let combinedPlayTypeStr = 'IDLE'; // The combined string used by physics engine
+  let activeResultCategory = 'NONE';
+  let activePlayCounter = 0;
+  let activeYards = 0;
+
+  if (selectedGameId !== null) {
+      const currentPlays = isFirebaseMode && !isSpoofing 
+          ? shownPlays[selectedGameId] 
+          : currentPlaysRef.current[selectedGameId];
+      
+      activePlayCounter = currentPlays?.length || 0;
+
+      if (currentPlays && currentPlays.length > 0) {
+          const latestPlay = (isFirebaseMode && !isSpoofing) 
+              ? currentPlays[currentPlays.length - 1] 
+              : currentPlays[0];
+          
+          if (latestPlay) {
+              const basePlayType = latestPlay['Type of Play'] || latestPlay.PlayType || 'IDLE';
+              const specificPlayName = latestPlay['Offensive Play'] || latestPlay.PlayName || '';
+              
+              // NEW COMBINED STRING: "Run Outside Right"
+              combinedPlayTypeStr = `${basePlayType} ${specificPlayName}`; 
+              
+              const rawYards = latestPlay['Yards Gained'] ?? latestPlay.ResultYards;
+              activeYards = rawYards !== undefined && rawYards !== null && !isNaN(rawYards) ? parseInt(rawYards, 10) : 0;
+              
+              const streamRes = Array.isArray(latestPlay.StreamResult) ? latestPlay.StreamResult.join(' ') : latestPlay.StreamResult;
+              const playText = isFirebaseMode && !isSpoofing ? getPlayText(latestPlay) : (streamRes || latestPlay.Result || latestPlay.PlayText || "");
+              
+              const pTextLower = String(playText).toLowerCase();
+              const pTypeLower = String(combinedPlayTypeStr).toLowerCase();
+              
+              if (/(intercepted|picked off|interception|it flies)/.test(pTextLower)) {
+                  activeResultCategory = 'INTERCEPTION';
+              } else if (/(fumbled|fumble)/.test(pTextLower)) {
+                  activeResultCategory = 'FUMBLE';
+              } else if (/(incomplete)/.test(pTextLower)) {
+                  activeResultCategory = 'INCOMPLETE';
+              } else if (/(no good|missed|misses|blocked|wide)/.test(pTextLower)) {
+                  activeResultCategory = 'NO_GOOD';
+              } else if (/(is good|made|good)/.test(pTextLower) && /(kick|xp|field goal|fg)/.test(pTypeLower)) {
+                  activeResultCategory = 'GOOD';
+              } else if (pTypeLower.includes('pass')) {
+                  activeResultCategory = 'COMPLETE';
+              }
+          }
+      }
+  }
+
 
   if (selectedGameId === null) {
     return (
@@ -413,6 +483,9 @@ const LiveField = () => {
   }
 
   const activeGame = games[selectedGameId];
+  const awayIsOffense = isPossession(activeGame.Possession, activeGame.AwayTeamID, activeGame.AwayTeam);
+  const homeIsOffense = isPossession(activeGame.Possession, activeGame.HomeTeamID, activeGame.HomeTeam);
+
   return (
     <div className="h-screen w-full bg-(--bg-primary) pt-[calc(8vh+10px)] flex flex-col p-8 overflow-hidden">
       <button
@@ -424,10 +497,9 @@ const LiveField = () => {
       <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
         <div className="col-span-10 flex flex-col min-h-0">
           
-          {/* Top Scoreboard Header */}
           <div className="bg-(--bg-secondary) border border-white/10 p-6 flex justify-between items-center text-white shrink-0 shadow-lg z-10">
             <h2 className="flex items-center gap-4 text-2xl font-bold">
-                {isPossession(activeGame.Possession, activeGame.AwayTeamID, activeGame.AwayTeam) && <span className="text-yellow-400">🏈</span>}
+                {awayIsOffense && <span className="text-yellow-400">🏈</span>}
                 <Logo
                     url={getLogo(selectedLeague as League, activeGame.AwayTeamID, currentUser?.IsRetro)}
                     label=""
@@ -449,41 +521,42 @@ const LiveField = () => {
                     url={getLogo(selectedLeague as League, activeGame.HomeTeamID, currentUser?.IsRetro)}
                     label=""
                 />
-                {isPossession(activeGame.Possession, activeGame.HomeTeamID, activeGame.HomeTeam) && <span className="text-yellow-400">🏈</span>}
+                {homeIsOffense && <span className="text-yellow-400">🏈</span>}
             </h2>
           </div>
           
-          {/* Centered & Shrunk Visualizer using precise Math */}
+          {/* Animated Visualizer passing the Combined Result string */}
           <div className="shrink-0 mt-6 flex justify-center w-full">
             <div className="w-2/3 max-w-3xl">
                 <GridironVisualizer
                   ballX={parseBallX(activeGame.Zone, activeGame.HomeTeamID, activeGame.AwayTeamID)}
-                  playType="IDLE"
+                  playType={combinedPlayTypeStr}
+                  resultCategory={activeResultCategory as any}
+                  playId={activePlayCounter}
                   homeName={activeGame.HomeTeam}
                   awayName={activeGame.AwayTeam}
+                  yards={activeYards}
+                  isHomeOffense={homeIsOffense}
                 />
             </div>
           </div>
           
-          {/* Play-by-Play Ticker taking up remaining space */}
           <div className="p-4 bg-black/20 mt-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar border border-white/5 shadow-inner">
             {(isFirebaseMode && !isSpoofing
               ? [...(shownPlays[activeGame.GameID] ?? [])].reverse()
               : (currentPlaysRef.current[activeGame.GameID] ?? [])
             ).map((p: any, i: number) => {
               
-              const qtr = p.Quarter || p.Period || 1;
-              const clock = p.TimeRemaining || p.TimeOnClock || "15:00";
+              const qtr = p.Quarter || p.Period || p.quarter || 1;
+              const clock = p['Time Remaining'] || p.TimeRemaining || p.TimeOnClock || "15:00";
 
-              // 1. Unpack StreamResult (It's an Array in your JSON!)
               const streamRes = Array.isArray(p.StreamResult) ? p.StreamResult.join(' ') : p.StreamResult;
               const resultText = isFirebaseMode && !isSpoofing ? getPlayText(p) : (streamRes || p.Result || p.PlayText || JSON.stringify(p));
               
-              // 2. Extract Specific Columns from JSON
-              const type = p.PlayType;
-              const offForm = p.OffensiveFormation;
-              const defForm = p.DefensiveFormation;
-              const yards = p.ResultYards;
+              const type = p['Type of Play'] || p.PlayType;
+              const offForm = p['Offensive Formation'] || p.OffensiveFormation;
+              const defForm = p['Defensive Formation'] || p.DefensiveFormation;
+              const yards = p['Yards Gained'] ?? p.ResultYards;
 
               return (
                 <div
@@ -495,19 +568,17 @@ const LiveField = () => {
                     <span className="text-(--text-primary)">{formatClock(clock)}</span>
                   </div>
                   
-                  {/* Clean, separated Column Data */}
                   <div className="flex-1 flex flex-col gap-1">
                       <div className="leading-relaxed text-(--text-primary)">
                           {resultText}
                       </div>
                       
-                      {/* Secondary Stats Row */}
                       {!isFirebaseMode && isSpoofing && (type || offForm || defForm || yards !== undefined) && (
                           <div className="flex gap-4 text-[1.1vh] text-(--text-muted) font-bold uppercase tracking-widest mt-1 opacity-70">
-                              {type && type !== "N/A" && <span>TYPE: {type}</span>}
-                              {offForm && offForm !== "N/A" && <span>OFF: {offForm}</span>}
-                              {defForm && defForm !== "N/A" && <span>DEF: {defForm}</span>}
-                              {yards !== undefined && yards !== null && <span>YDS: {yards}</span>}
+                              {type && type !== "N/A" && type !== "nan" && <span>TYPE: {type}</span>}
+                              {offForm && offForm !== "N/A" && offForm !== "nan" && <span>OFF: {offForm}</span>}
+                              {defForm && defForm !== "N/A" && defForm !== "nan" && <span>DEF: {defForm}</span>}
+                              {yards !== undefined && yards !== null && !isNaN(yards) && <span>YDS: {yards}</span>}
                           </div>
                       )}
                   </div>
@@ -517,20 +588,31 @@ const LiveField = () => {
           </div>
         </div>
         
-        {/* Dual Stats Sidebars */}
         <div className="col-span-2 flex flex-col gap-4 min-h-0">
           <div className="flex-1 min-h-0 overflow-hidden">
             <TeamStatsSidebar
-              title="Away Stats"
+              title="Away Team"
               teamName={activeGame.AwayTeam}
-              stats={null}
+              stats={{
+                isOffense: awayIsOffense,
+                formation: awayIsOffense ? activeGame.LastOffForm : activeGame.LastDefForm,
+                tendency: awayIsOffense ? null : activeGame.LastDefTend,
+                lastPlay: activeGame.LastPlayType ? `${activeGame.LastPlayType} ${activeGame.LastPlayName ? `(${activeGame.LastPlayName})` : ''}` : null,
+                yards: activeGame.LastYards
+              }}
             />
           </div>
           <div className="flex-1 min-h-0 overflow-hidden">
             <TeamStatsSidebar
-              title="Home Stats"
+              title="Home Team"
               teamName={activeGame.HomeTeam}
-              stats={null}
+              stats={{
+                isOffense: homeIsOffense,
+                formation: homeIsOffense ? activeGame.LastOffForm : activeGame.LastDefForm,
+                tendency: homeIsOffense ? null : activeGame.LastDefTend,
+                lastPlay: activeGame.LastPlayType ? `${activeGame.LastPlayType} ${activeGame.LastPlayName ? `(${activeGame.LastPlayName})` : ''}` : null,
+                yards: activeGame.LastYards
+              }}
             />
           </div>
         </div>
