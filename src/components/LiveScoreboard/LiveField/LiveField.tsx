@@ -115,8 +115,6 @@ const LiveField = () => {
     return cfb_Timestamp?.NFLPreseason ?? false;
   }, [isCFB, cfb_Timestamp]);
 
-  // Setup a useMemo for college games/nfl games & filter by the current season and week && preseason game status (use timestamp to check if it's preseason)
-
   // Seed local games state from Firebase docs whenever they change.
   // Only used by the manual broadcast engine when isFirebaseMode is false.
   useEffect(() => {
@@ -139,7 +137,7 @@ const LiveField = () => {
     setGames(stitched);
   }, [firebaseRawGames, rawSeasonID]);
 
-  // Broadcast Engine
+// Broadcast Engine
   const triggerEngine = async () => {
     setBroadcastState("GENERATING");
     try {
@@ -147,12 +145,21 @@ const LiveField = () => {
       const isCFB = selectedLeague === SimCFB;
       const url = `${fbaUrl}games/plays/bulk/${endpoint}?isCollege=${isCFB}&season=${rawSeasonID}&week=${currentWeek}&is_spring_game=${isSpringGame}`;
 
+      console.log("🏈 1. FETCHING FROM URL:", url);
       const playsRes = await fetch(url);
 
       if (playsRes.ok) {
         const playData = await playsRes.json();
-
+        
         bulkPlaysRef.current = playData.Plays || playData || {};
+
+        const apiGameIds = Object.keys(bulkPlaysRef.current);
+        const firebaseGameIds = Object.keys(games);
+
+        console.log("🏈 2. RAW PLAY DATA RECEIVED:", playData);
+        console.log("🏈 3. API GAME IDs WITH PLAYS:", apiGameIds);
+        console.log("🏈 4. FIREBASE GAME IDs WAITING FOR PLAYS:", firebaseGameIds);
+        console.log("🏈 5. PLAYS FOR GAME 9933:", bulkPlaysRef.current['9933']);
 
         Object.keys(bulkPlaysRef.current).forEach((id) => {
           if (Array.isArray(bulkPlaysRef.current[Number(id)])) {
@@ -189,7 +196,8 @@ const LiveField = () => {
             return;
           }
           const play = plays.pop()!;
-          g.Period = play.Quarter || g.Period;
+          // If the play has a quarter, use it. Otherwise, force it to 1 so the UI sees it as "Live".
+          g.Period = play.Quarter || (g.Period === 0 ? 1 : g.Period);
           g.TimeOnClock = play.TimeRemaining || g.TimeOnClock;
           g.HomeTeamScore = play.HomeTeamScore ?? g.HomeTeamScore;
           g.AwayTeamScore = play.AwayTeamScore ?? g.AwayTeamScore;
@@ -209,44 +217,56 @@ const LiveField = () => {
     return () => clearInterval(interval);
   }, [isSpoofing]);
 
-  const effectiveGames = useMemo<Record<number, any>>(
-    () => (isFirebaseMode ? liveGameStates : games),
-    [isFirebaseMode, liveGameStates, games],
-  );
   const allGames = useMemo(() => Object.values(games), [games]);
-  const upcomingGames = useMemo(
-    () =>
-      allGames.filter(
-        (g) => !g.GameComplete && effectiveGames[g.GameID] === undefined,
-      ),
-    [allGames, effectiveGames],
-  );
-  const liveGames = useMemo(() => {
-    if (isFirebaseMode) {
-      return Object.values(liveGameStates).filter((g) => !g.IsRevealed);
-    }
-    return allGames.filter((g) => !g.GameComplete && g.Period > 0);
-  }, [isFirebaseMode, liveGameStates, allGames]);
 
   const resultsGames = useMemo(() => {
-    return allGames.filter((g) => g.GameComplete || g.IsRevealed === true);
+    return allGames.filter((g: any) => g.GameComplete || g.IsRevealed === true);
   }, [allGames]);
 
-  console.log({
-    effectiveGames,
-    liveGames,
-    liveGameStates,
-    upcomingGames,
-    resultsGames,
-    allGames,
-    isFirebaseMode,
-  });
+  const liveGames = useMemo(() => {
+    // Firebase Mode: Must not be revealed AND must have actually started (plays exist, or clock ticked, or Period > 1)
+    if (isFirebaseMode && !isSpoofing) {
+      return Object.values(liveGameStates).filter((g: any) => {
+        if (g.IsRevealed) return false;
+        const p = g.Period || g.Quarter || 0;
+        const t = g.TimeOnClock;
+        const plays = shownPlays[g.GameID] || [];
+        // True if plays have fired, OR period > 1, OR it's period 1 but clock is no longer 15:00
+        return plays.length > 0 || p > 1 || (p === 1 && t !== 900 && t !== "15:00");
+      });
+    }
+    // Broadcast Mode
+    return allGames.filter((g: any) => !g.GameComplete && (g.Period || 0) > 0);
+  }, [isFirebaseMode, isSpoofing, liveGameStates, allGames, shownPlays]);
+
+  const upcomingGames = useMemo(() => {
+    // Firebase Mode: If missing from Firebase completely, OR present but hasn't met the "Live" criteria
+    if (isFirebaseMode && !isSpoofing) {
+      return allGames.filter((g: any) => {
+        if (g.GameComplete) return false;
+        
+        const fbGame = liveGameStates[g.GameID] as any;
+        if (!fbGame) return true; // No firebase data yet, so it's upcoming
+        if (fbGame.IsRevealed) return false;
+        
+        const p = fbGame.Period || fbGame.Quarter || 0;
+        const t = fbGame.TimeOnClock;
+        const plays = shownPlays[g.GameID] || [];
+        
+        // If it meets the live conditions, it is NOT upcoming
+        const isLive = plays.length > 0 || p > 1 || (p === 1 && t !== 900 && t !== "15:00");
+        return !isLive;
+      });
+    }
+    // Broadcast Mode
+    return allGames.filter((g: any) => !g.GameComplete && (g.Period || 0) === 0);
+  }, [isFirebaseMode, isSpoofing, liveGameStates, allGames, shownPlays]);
 
   if (selectedGameId === null) {
     return (
       <div className="h-screen w-full bg-(--bg-primary) pt-[calc(8vh+10px)] flex flex-col overflow-hidden text-left p-8">
         {isModerator && (
-          <div className="bg-(--bg-secondary) border border-(--border-primary) p-4 mb-6 flex justify-between items-center rounded">
+          <div className="bg-(--bg-secondary) border border-(--border-primary) p-4 mb-6 flex justify-between items-center rounded shrink-0">
             <span className="text-white font-bold uppercase tracking-widest text-sm">
               Control Room
             </span>
@@ -260,7 +280,7 @@ const LiveField = () => {
             </button>
           </div>
         )}
-        <div className="flex gap-4">
+        <div className="flex gap-4 shrink-0">
           <ButtonGrid>
             <PillButton
               isSelected={selectedLeague === SimCFB}
@@ -276,8 +296,12 @@ const LiveField = () => {
             </PillButton>
           </ButtonGrid>
         </div>
-        <div className="grid grid-cols-12 gap-4 h-full mt-4">
-          <div className="col-span-2 border-r border-white/10">
+        
+        {/* Flex-1 and min-h-0 to act as a proper flex boundary for scrolling */}
+        <div className="grid grid-cols-12 gap-4 flex-1 min-h-0 mt-4">
+          
+          {/* Flex flex-col min-h-0 to cage the column */}
+          <div className="col-span-2 border-r border-white/10 flex flex-col min-h-0">
             <GameMiniList
               title="Upcoming"
               games={upcomingGames}
@@ -286,9 +310,11 @@ const LiveField = () => {
               broadcastState={broadcastState}
             />
           </div>
-          <div className="col-span-8 overflow-y-auto">
-            <div className="grid grid-cols-2 gap-6">
-              {liveGames.map((g) => (
+          
+          {/* Center Column with custom-scrollbar */}
+          <div className="col-span-8 overflow-y-auto custom-scrollbar flex flex-col min-h-0 pb-4">
+            <div className="grid grid-cols-2 gap-6 p-2">
+              {liveGames.map((g: any) => (
                 <div
                   key={g.GameID}
                   onClick={() => setSelectedGameId(g.GameID)}
@@ -329,7 +355,9 @@ const LiveField = () => {
               ))}
             </div>
           </div>
-          <div className="col-span-2 border-l border-white/10">
+          
+          {/* Flex flex-col min-h-0 to cage the column */}
+          <div className="col-span-2 border-l border-white/10 flex flex-col min-h-0">
             <GameMiniList
               title="Results"
               games={resultsGames}
@@ -348,27 +376,31 @@ const LiveField = () => {
     <div className="h-screen w-full bg-(--bg-primary) pt-[calc(8vh+10px)] flex flex-col p-8 overflow-hidden">
       <button
         onClick={() => setSelectedGameId(null)}
-        className="text-(--text-muted) uppercase font-bold mb-4"
+        className="text-(--text-muted) uppercase font-bold mb-4 flex shrink-0"
       >
         ← BACK
       </button>
-      <div className="grid grid-cols-12 gap-6 h-full">
-        <div className="col-span-10">
-          <div className="bg-(--bg-secondary) border border-white/10 p-6 flex justify-between items-center text-white">
+      <div className="grid grid-cols-12 gap-6 flex-1 min-h-0">
+        <div className="col-span-10 flex flex-col min-h-0">
+          <div className="bg-(--bg-secondary) border border-white/10 p-6 flex justify-between items-center text-white shrink-0">
             <h2>{activeGame.AwayTeam}</h2>
             <span className="text-5xl font-black">
               {activeGame.AwayTeamScore} - {activeGame.HomeTeamScore}
             </span>
             <h2>{activeGame.HomeTeam}</h2>
           </div>
-          <GridironVisualizer
-            ballX={activeGame.Zone}
-            playType="IDLE"
-            homeName={activeGame.HomeTeam}
-            awayName={activeGame.AwayTeam}
-          />
-          <div className="p-4 bg-black/20 mt-4 h-64 overflow-y-auto">
-            {(isFirebaseMode
+          
+          <div className="shrink-0 mt-4">
+            <GridironVisualizer
+              ballX={activeGame.Zone}
+              playType="IDLE"
+              homeName={activeGame.HomeTeam}
+              awayName={activeGame.AwayTeam}
+            />
+          </div>
+          
+          <div className="p-4 bg-black/20 mt-4 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+            {(isFirebaseMode && !isSpoofing
               ? [...(shownPlays[activeGame.GameID] ?? [])].reverse()
               : (currentPlaysRef.current[activeGame.GameID] ?? [])
             ).map((p: any, i: number) => (
@@ -376,7 +408,7 @@ const LiveField = () => {
                 key={i}
                 className="text-white text-xs py-1 border-b border-white/5"
               >
-                {isFirebaseMode ? getPlayText(p) : p.PlayText}
+                {isFirebaseMode && !isSpoofing ? getPlayText(p) : p.PlayText}
               </div>
             ))}
           </div>
