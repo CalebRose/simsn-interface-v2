@@ -58,6 +58,13 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
       {
+        label: "Live Field",
+        isRoute: true,
+        route: routes.LIVEFIELD,
+        league: SimCFB,
+        toggle: () => toggleMenu(),
+      },
+      {
         label: "Recruiting",
         isRoute: true,
         route: routes.CFB_RECRUITING,
@@ -103,6 +110,13 @@ export const useSideMenu = () => {
         route: routes.NFL_GAMEPLAN,
         league: SimNFL,
         click: () => navigate(routes.NFL_GAMEPLAN),
+        toggle: () => toggleMenu(),
+      },
+      {
+        label: "Live Field",
+        isRoute: true,
+        route: routes.LIVEFIELD,
+        league: SimNFL,
         toggle: () => toggleMenu(),
       },
       {
