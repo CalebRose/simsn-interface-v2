@@ -31,6 +31,10 @@ export const BasketballGameplanPage = () => {
     selectedCenterOptions,
     ChangeLineupInput,
     errors,
+    totalMinutesAllocated,
+    totalInsideProportionWeighted,
+    totalMidrangeProportionWeighted,
+    totalThreePointProportionWeighted,
   } = useBasketballGameplan();
   const { isMobile } = useResponsive();
 
@@ -78,6 +82,53 @@ export const BasketballGameplanPage = () => {
                 isMobile={isMobile}
               />
             </div>
+            {viewingUserTeam && (
+              <>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  <Text variant="h6" classes="text-start">
+                    Total Minutes Allocated: {totalMinutesAllocated}
+                  </Text>
+                </div>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  <Text variant="small" classes="text-start">
+                    Inside Weight: {totalInsideProportionWeighted.toFixed(2)}
+                  </Text>
+                </div>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  <Text variant="small" classes="text-start">
+                    Midrange Weight:{" "}
+                    {totalMidrangeProportionWeighted.toFixed(2)}
+                  </Text>
+                </div>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  <Text variant="small" classes="text-start">
+                    3pt Weight: {totalThreePointProportionWeighted.toFixed(2)}
+                  </Text>
+                </div>
+
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start my-2">
+                  <TeamLabel
+                    team="Errors"
+                    variant="h5"
+                    backgroundColor={teamColors.One}
+                    borderColor={teamColors.One}
+                    headerTextColorClass={headerTextColorClass}
+                  />
+                </div>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  {errors.length === 0 && (
+                    <Text variant="small" classes="text-start">
+                      No errors found.
+                    </Text>
+                  )}
+                  {errors.map((error, index) => (
+                    <Text key={index} variant="small" classes="text-start">
+                      {error}
+                    </Text>
+                  ))}
+                </div>
+              </>
+            )}
           </Border>
         </div>
         <div className="flex flex-col w-full max-[1024px]:gap-y-2">
