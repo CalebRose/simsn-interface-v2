@@ -228,6 +228,50 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               </div>
             </div>
           )}
+          {league === SimPHL && (
+            <div className="flex-col self-start md:self-auto mx-2 ml-4">
+              <div className="flex-row text-start">
+                <div className="flex-col">
+                  <Text variant="small" classes="font-semibold text-start">
+                    Owner:{" "}
+                    {selectedTeam.Owner?.length > 0
+                      ? selectedTeam.Owner
+                      : "None"}
+                  </Text>
+                </div>
+                <div className="flex-col">
+                  <Text variant="small" classes="font-semibold text-start">
+                    GM: {selectedTeam.GM?.length > 0 ? selectedTeam.GM : "None"}
+                  </Text>
+                </div>
+
+                <div className="flex-col">
+                  <Text variant="small" classes="font-semibold text-start">
+                    Coach:{" "}
+                    {selectedTeam.Coach?.length > 0
+                      ? selectedTeam.Coach
+                      : "None"}
+                  </Text>
+                </div>
+                <div className="flex-col">
+                  <Text variant="small" classes="font-semibold text-start">
+                    Scout:{" "}
+                    {selectedTeam.Assistant?.length > 0
+                      ? selectedTeam.Assistant
+                      : "None"}
+                  </Text>
+                </div>
+                <div className="flex-col">
+                  <Text variant="small" classes="font-semibold text-start">
+                    Marketing:{" "}
+                    {selectedTeam.Marketing?.length > 0
+                      ? selectedTeam.Marketing
+                      : "None"}
+                  </Text>
+                </div>
+              </div>
+            </div>
+          )}
           {league === SimNBA && (
             <div className="flex-col self-start md:self-auto mx-2 ml-4">
               <div className="flex-row text-start">
