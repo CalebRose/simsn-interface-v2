@@ -792,7 +792,6 @@ const LiveRink = () => {
   const activePlays: any[] = isFirebaseMode
     ? [...(shownPlays[selectedGameId] ?? [])].reverse()
     : (currentPlaysRef.current[selectedGameId] ?? []);
-
   return (
     <div className="h-screen w-full bg-(--bg-primary) pt-[calc(8vh+10px)] flex flex-col overflow-hidden">
       <div className="flex-1 px-8 pb-4 flex flex-col min-h-0">
