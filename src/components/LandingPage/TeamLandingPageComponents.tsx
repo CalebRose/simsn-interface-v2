@@ -1204,6 +1204,11 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.CFB_STATS)}>
                 Stats
               </Button>
+              {ts && !ts.IsOffSeason && (
+                <Button size="xs" onClick={() => navigate(routes.LIVEFIELD)}>
+                  Live
+                </Button>
+              )}
               {ts && ts.IsOffSeason && (
                 <Button size="xs" onClick={() => navigate(routes.CFB_TRANSFER)}>
                   Portal
@@ -1231,6 +1236,11 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => navigate(routes.NFL_STATS)}>
                 Stats
               </Button>
+              {ts && !ts.IsOffSeason && (
+                <Button size="xs" onClick={() => navigate(routes.LIVEFIELD)}>
+                  Live
+                </Button>
+              )}
               <Button size="xs" onClick={() => navigate(routes.NEWS)}>
                 News
               </Button>
