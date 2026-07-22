@@ -38,6 +38,9 @@ export const CreateThreadPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preselectedForumId = searchParams.get("forumId");
+  const referenceGameId = searchParams.get("referenceGameId");
+  const referencedLeague = searchParams.get("league");
+  console.log({ preselectedForumId, referenceGameId, referencedLeague });
 
   const { currentUser } = useAuthStore();
   const { createThread, permissions, forumRole, forums, loadForums } =
@@ -261,6 +264,8 @@ export const CreateThreadPage: React.FC = () => {
         tags: selectedMediaTags.length > 0 ? selectedMediaTags : [],
         poll,
         mentions,
+        referencedGameId: referenceGameId ?? "",
+        referencedLeague: referencedLeague ?? "",
       };
 
       const threadId = await createThread(dto);
