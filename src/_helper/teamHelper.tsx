@@ -25,7 +25,12 @@ import {
 import { Timestamp as BaseballTimestamp } from "../models/baseball/baseballModels";
 
 export const GetTeamLabel = (league: League, team: any): String => {
-  if (league === SimCFB || league === SimNFL) {
+  if (
+    league === SimCFB ||
+    league === SimNFL ||
+    league === SimCHL ||
+    league === SimPHL
+  ) {
     return `${team.TeamName} ${team.Mascot}`;
   } else if (league === SimCBB || league === SimNBA) {
     return `${team.Team} ${team.Nickname}`;
