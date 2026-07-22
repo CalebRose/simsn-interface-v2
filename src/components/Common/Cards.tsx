@@ -43,7 +43,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   return (
     <button
-      className={`relative md:p-[3px] border-2 rounded-2xl md:mx-2 mb-2 md:mb-4 shadow-lg cursor-pointer ${
+      className={`relative md:p-0.75 border-2 rounded-2xl md:mx-2 mb-2 md:mb-4 shadow-lg cursor-pointer ${
         disable ? "grayscale" : ""
       }`}
       style={{ backgroundColor, borderColor }}
