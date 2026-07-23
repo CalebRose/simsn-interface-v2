@@ -197,14 +197,14 @@ export const BasketballGameplanPage = () => {
             </Border>
           </div>
           <Border
-            direction="row"
+            direction="col"
             classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-between"
             styles={{
               borderColor: teamColors.One,
               backgroundColor: backgroundColor,
             }}
           >
-            <div className="grid grid-cols-5 w-full space-x-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 w-full space-x-4">
               {lineupFormation.map((position, index) => {
                 const playerOptions = (() => {
                   if (position === "G") return selectedGuardOptions;

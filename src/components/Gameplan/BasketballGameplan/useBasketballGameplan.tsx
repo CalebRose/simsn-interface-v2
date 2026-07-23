@@ -261,7 +261,10 @@ export const useBasketballGameplan = () => {
 
       // --- 2. No duplicate players within first string / second string across positions ---
       if (lineup.FirstStringID) {
-        if (firstStringPlayers.has(lineup.FirstStringID)) {
+        if (
+          firstStringPlayers.has(lineup.FirstStringID) ||
+          secondStringPlayers.has(lineup.FirstStringID)
+        ) {
           errorList.push(
             `${getPlayerName(lineup.FirstStringID, selectedRosterMap)} is assigned as first string at more than one position.`,
           );
@@ -270,7 +273,10 @@ export const useBasketballGameplan = () => {
         }
       }
       if (lineup.SecondStringID) {
-        if (secondStringPlayers.has(lineup.SecondStringID)) {
+        if (
+          secondStringPlayers.has(lineup.SecondStringID) ||
+          firstStringPlayers.has(lineup.SecondStringID)
+        ) {
           errorList.push(
             `${getPlayerName(lineup.SecondStringID, selectedRosterMap)} is assigned as second string at more than one position.`,
           );
@@ -325,9 +331,9 @@ export const useBasketballGameplan = () => {
             `${position} ${label}: Shot allocation cannot be negative.`,
           );
         }
-        if (inside > 45 || mid > 45 || three > 45) {
+        if (inside > 50 || mid > 50 || three > 50) {
           errorList.push(
-            `${position} ${label}: Shot allocation cannot exceed 45%.`,
+            `${position} ${label}: Shot allocation cannot exceed 50%.`,
           );
         }
       };

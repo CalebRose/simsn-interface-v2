@@ -78,12 +78,23 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
     [ChangeLineupInput, id, index],
   );
 
+  const totalInput = useMemo(() => {
+    if (!lineup) return 0;
+    return (
+      lineup[selectedStringAbbr + "InsideProportion"] +
+        lineup[selectedStringAbbr + "MidProportion"] +
+        lineup[selectedStringAbbr + "ThreeProportion"] || 0
+    );
+  }, [lineup, selectedStringAbbr]);
+
   if (!lineup) return <></>;
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col mb-4 border-b py-2.5 w-full border-gray-700 md:border-0">
       <div key={index} className="flex flex-col items-center">
-        <Text variant="body-small">{position}</Text>
+        <Text variant="body-small" classes="font-semibold">
+          {position}
+        </Text>
       </div>
       <BasketballLineupPlayerCard
         id={id}
@@ -95,7 +106,12 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
         idx={index}
         canModify={canModify}
       />
-      <div className="space-y-2">
+      <div>
+        <Text variant="small" className="text-center mb-2 font-semibold">
+          Shot Allocation: {totalInput}%
+        </Text>
+      </div>
+      <div className="space-y-2 mb-2">
         {allocationList.map((x) => {
           const label = (() => {
             switch (x) {
