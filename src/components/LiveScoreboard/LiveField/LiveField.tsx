@@ -242,7 +242,10 @@ const LiveField = () => {
   };
 
   useEffect(() => {
-    if (!isSpoofing) return;
+    if (!isSpoofing) {
+      setGames(liveGameStates);
+      return;
+    }
     const interval = setInterval(() => {
       setGames((prev) => {
         const newGames = { ...prev };
@@ -325,7 +328,7 @@ const LiveField = () => {
       });
     }, 250);
     return () => clearInterval(interval);
-  }, [isSpoofing]);
+  }, [isSpoofing, liveGameStates]);
 
   const allGames = useMemo(() => Object.values(games), [games]);
 
@@ -492,7 +495,7 @@ const LiveField = () => {
                 >
                   <div className="text-[1.1vh] text-(--text-muted) font-bold mb-3 uppercase flex justify-between">
                     <span>
-                      {getPeriodName(g.Period)} | {formatClock(g.TimeOnClock)}
+                      {getPeriodName(g.Quarter)} | {formatClock(g.TimeOnClock)}
                     </span>
                     <span>
                       {g.Down && g.Distance && g.Down > 0
@@ -637,8 +640,11 @@ const LiveField = () => {
                 playId={activePlayCounter}
                 homeName={activeGame.HomeTeam}
                 awayName={activeGame.AwayTeam}
+                homeID={activeGame.HomeTeamID}
+                awayID={activeGame.AwayTeamID}
                 yards={activeYards}
                 isHomeOffense={homeIsOffense}
+                selectedLeague={selectedLeague as League}
               />
             </div>
           </div>

@@ -235,7 +235,6 @@ export const useLiveFieldState = (league: League): UseLiveFieldStateReturn => {
         }
 
         const shown = plays.slice(0, visibleCount);
-        console.log({ gameID, visibleCount, shown });
         newShownPlays[gameID] = shown;
 
         // Touchdown / score detection.
@@ -279,7 +278,6 @@ export const useLiveFieldState = (league: League): UseLiveFieldStateReturn => {
           StreamEndTime: game.StreamEndTime,
         };
       }
-      console.log({ newStates, newShownPlays });
       // Always push state when we have games — the loading placeholder states
       // also need to appear before plays arrive.
       if (Object.keys(newStates).length > 0) {
