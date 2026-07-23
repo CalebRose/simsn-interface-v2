@@ -370,10 +370,6 @@ const LiveField = () => {
     );
   }, [isFirebaseMode, isSpoofing, liveGameStates, allGames, shownPlays]);
 
-  useEffect(() => {
-    triggerEngine();
-  }, []);
-
   // --- VISUALIZER DATA EXTRACTION ---
   let combinedPlayTypeStr = "IDLE"; // The combined string used by physics engine
   let activeResultCategory = "NONE";

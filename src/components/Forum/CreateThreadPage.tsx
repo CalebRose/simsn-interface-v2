@@ -40,7 +40,6 @@ export const CreateThreadPage: React.FC = () => {
   const preselectedForumId = searchParams.get("forumId");
   const referenceGameId = searchParams.get("referenceGameId");
   const referencedLeague = searchParams.get("league");
-  console.log({ preselectedForumId, referenceGameId, referencedLeague });
 
   const { currentUser } = useAuthStore();
   const { createThread, permissions, forumRole, forums, loadForums } =

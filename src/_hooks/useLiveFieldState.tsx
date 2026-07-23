@@ -178,9 +178,8 @@ export const useLiveFieldState = (league: League): UseLiveFieldStateReturn => {
     const url = `${fbaUrl}games/plays/bulk/${leagueSlug}?isCollege=${isCFB}&season=${cfb_Timestamp?.CollegeSeasonID}&week=${cfb_Timestamp?.CollegeWeek}&is_spring_game=${cfb_Timestamp?.CFBSpringGames}`;
     fetch(url)
       .then((res) => (res.ok ? res.json() : []))
-      .then((plays: Record<number, LivePlayDoc[]>) => {
-        console.log({ plays });
-        playsRef.current = plays;
+      .then((plays: any) => {
+        playsRef.current = plays.Plays;
       });
   }, [cfb_Timestamp, leagueSlug]);
 
@@ -196,7 +195,7 @@ export const useLiveFieldState = (league: League): UseLiveFieldStateReturn => {
       let anyCountChanged = false;
 
       for (const game of rawGames) {
-        const gameID = game.GameID;
+        const gameID = Number(game.id);
         const plays = playsRef.current[gameID];
 
         // Plays not yet fetched — show a loading/initial state.
@@ -236,6 +235,7 @@ export const useLiveFieldState = (league: League): UseLiveFieldStateReturn => {
         }
 
         const shown = plays.slice(0, visibleCount);
+        console.log({ gameID, visibleCount, shown });
         newShownPlays[gameID] = shown;
 
         // Touchdown / score detection.
@@ -279,7 +279,7 @@ export const useLiveFieldState = (league: League): UseLiveFieldStateReturn => {
           StreamEndTime: game.StreamEndTime,
         };
       }
-
+      console.log({ newStates, newShownPlays });
       // Always push state when we have games — the loading placeholder states
       // also need to appear before plays arrive.
       if (Object.keys(newStates).length > 0) {
