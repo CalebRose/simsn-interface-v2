@@ -320,6 +320,16 @@ export const useBasketballGameplan = () => {
             `${position} ${label}: Shot allocation totals ${total}%, must equal ${requiredShotTotal}%.`,
           );
         }
+        if (inside < 0 || mid < 0 || three < 0) {
+          errorList.push(
+            `${position} ${label}: Shot allocation cannot be negative.`,
+          );
+        }
+        if (inside > 45 || mid > 45 || three > 45) {
+          errorList.push(
+            `${position} ${label}: Shot allocation cannot exceed 45%.`,
+          );
+        }
       };
 
       checkShotAllocation(
@@ -401,7 +411,6 @@ export const useBasketballGameplan = () => {
   }, [selectedTeamLineups]);
 
   const saveLineupChanges = useCallback(() => {
-    console.log({ selectedTeam });
     let dto: any = {
       TeamID: selectedTeam?.ID || 0,
     };
