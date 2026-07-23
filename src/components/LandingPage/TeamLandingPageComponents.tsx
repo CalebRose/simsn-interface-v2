@@ -621,7 +621,7 @@ export const TeamMatchUp = ({
               </div>
             )}
             {(league === SimCBB || league === SimNBA) && (
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2 py-2">
                 <Button
                   variant="primary"
                   size="sm"

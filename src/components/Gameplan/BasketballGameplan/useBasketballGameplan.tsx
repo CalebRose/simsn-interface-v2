@@ -27,6 +27,8 @@ export const useBasketballGameplan = () => {
     nbaTeamMap,
     updateCBBLineupMap,
     updateNBALineupMap,
+    saveCBBGameplan,
+    saveNBAGameplan,
   } = useSimBBAStore();
 
   const [selectedTeamID, setSelectedTeamID] = useState<number>(0);
@@ -398,6 +400,26 @@ export const useBasketballGameplan = () => {
     return total / 15;
   }, [selectedTeamLineups]);
 
+  const saveLineupChanges = useCallback(() => {
+    console.log({ selectedTeam });
+    let dto: any = {
+      TeamID: selectedTeam?.ID || 0,
+    };
+    if (selectedLeague === SimCBB) {
+      dto.CollegeLineups = selectedTeamLineups;
+      saveCBBGameplan(dto);
+    } else if (selectedLeague === SimNBA) {
+      dto.NBALineups = selectedTeamLineups;
+      saveNBAGameplan(dto);
+    }
+  }, [
+    selectedLeague,
+    selectedTeam,
+    selectedTeamLineups,
+    saveCBBGameplan,
+    saveNBAGameplan,
+  ]);
+
   return {
     selectedTeamID,
     setSelectedTeamID,
@@ -423,5 +445,6 @@ export const useBasketballGameplan = () => {
     totalInsideProportionWeighted,
     totalMidrangeProportionWeighted,
     totalThreePointProportionWeighted,
+    saveLineupChanges,
   };
 };

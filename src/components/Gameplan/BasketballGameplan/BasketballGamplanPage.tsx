@@ -35,6 +35,7 @@ export const BasketballGameplanPage = () => {
     totalInsideProportionWeighted,
     totalMidrangeProportionWeighted,
     totalThreePointProportionWeighted,
+    saveLineupChanges,
   } = useBasketballGameplan();
   const { isMobile } = useResponsive();
 
@@ -187,7 +188,7 @@ export const BasketballGameplanPage = () => {
                   variant={
                     errors.length > 0 || !viewingUserTeam ? "danger" : "success"
                   }
-                  onClick={() => {}}
+                  onClick={saveLineupChanges}
                   disabled={errors.length > 0 || !viewingUserTeam}
                 >
                   Save
