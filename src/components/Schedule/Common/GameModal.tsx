@@ -20,6 +20,8 @@ import {
 import { Modal } from "../../../_design/Modal";
 import { Text } from "../../../_design/Typography";
 import { Logo } from "../../../_design/Logo";
+import routes from "../../../_constants/routes";
+
 import FBAScheduleService from "../../../_services/scheduleService";
 import {
   PlayerStats,
@@ -68,6 +70,7 @@ import {
 import { Table, TableCell } from "../../../_design/Table";
 import { getLogo } from "../../../_utility/getLogo";
 import { ClickableUserLabel } from "../../Common/Labels";
+import { useNavigate } from "react-router-dom";
 
 export interface SchedulePageGameModalProps {
   isOpen: boolean;
@@ -92,6 +95,23 @@ export const SchedulePageGameModal: FC<SchedulePageGameModalProps> = ({
     return league === SimPHL || league === SimNFL || league === SimNBA;
   }, [league]);
 
+  const navigate = useNavigate();
+
+  const createMedia = useCallback(() => {
+    let forumId = `media-${league.toLowerCase()}`;
+    let leagueAbbr = "";
+    if (league === SimCHL) leagueAbbr = "chl";
+    if (league === SimPHL) leagueAbbr = "phl";
+    if (league === SimCFB) leagueAbbr = "cfb";
+    if (league === SimNFL) leagueAbbr = "nfl";
+    if (league === SimCBB) leagueAbbr = "cbb";
+    if (league === SimNBA) leagueAbbr = "nba";
+    navigate(
+      `${routes.FORUM_CREATE_THREAD}?forumId=${forumId}&referenceGameId=${game.ID}&league=${leagueAbbr}`,
+    );
+    onClose();
+  }, [game, league]);
+
   return (
     <>
       <Modal
@@ -103,6 +123,13 @@ export const SchedulePageGameModal: FC<SchedulePageGameModalProps> = ({
             ? "sm:min-w-[1650px]"
             : "sm:min-w-[1400px]"
         } overflow-auto`}
+        actions={
+          <>
+            <Button size="xs" onClick={createMedia}>
+              Create Media
+            </Button>
+          </>
+        }
       >
         {league === SimCHL && (
           <HockeyGameModal

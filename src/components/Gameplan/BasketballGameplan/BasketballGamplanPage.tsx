@@ -31,6 +31,11 @@ export const BasketballGameplanPage = () => {
     selectedCenterOptions,
     ChangeLineupInput,
     errors,
+    totalMinutesAllocated,
+    totalInsideProportionWeighted,
+    totalMidrangeProportionWeighted,
+    totalThreePointProportionWeighted,
+    saveLineupChanges,
   } = useBasketballGameplan();
   const { isMobile } = useResponsive();
 
@@ -78,6 +83,53 @@ export const BasketballGameplanPage = () => {
                 isMobile={isMobile}
               />
             </div>
+            {viewingUserTeam && (
+              <>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  <Text variant="h6" classes="text-start">
+                    Total Minutes Allocated: {totalMinutesAllocated}
+                  </Text>
+                </div>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  <Text variant="small" classes="text-start">
+                    Inside Weight: {totalInsideProportionWeighted.toFixed(2)}
+                  </Text>
+                </div>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  <Text variant="small" classes="text-start">
+                    Midrange Weight:{" "}
+                    {totalMidrangeProportionWeighted.toFixed(2)}
+                  </Text>
+                </div>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  <Text variant="small" classes="text-start">
+                    3pt Weight: {totalThreePointProportionWeighted.toFixed(2)}
+                  </Text>
+                </div>
+
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start my-2">
+                  <TeamLabel
+                    team="Errors"
+                    variant="h5"
+                    backgroundColor={teamColors.One}
+                    borderColor={teamColors.One}
+                    headerTextColorClass={headerTextColorClass}
+                  />
+                </div>
+                <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
+                  {errors.length === 0 && (
+                    <Text variant="small" classes="text-start">
+                      No errors found.
+                    </Text>
+                  )}
+                  {errors.map((error, index) => (
+                    <Text key={index} variant="small" classes="text-start">
+                      {error}
+                    </Text>
+                  ))}
+                </div>
+              </>
+            )}
           </Border>
         </div>
         <div className="flex flex-col w-full max-[1024px]:gap-y-2">
@@ -136,7 +188,7 @@ export const BasketballGameplanPage = () => {
                   variant={
                     errors.length > 0 || !viewingUserTeam ? "danger" : "success"
                   }
-                  onClick={() => {}}
+                  onClick={saveLineupChanges}
                   disabled={errors.length > 0 || !viewingUserTeam}
                 >
                   Save
@@ -145,14 +197,14 @@ export const BasketballGameplanPage = () => {
             </Border>
           </div>
           <Border
-            direction="row"
+            direction="col"
             classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-between"
             styles={{
               borderColor: teamColors.One,
               backgroundColor: backgroundColor,
             }}
           >
-            <div className="grid grid-cols-5 w-full space-x-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 w-full space-x-4">
               {lineupFormation.map((position, index) => {
                 const playerOptions = (() => {
                   if (position === "G") return selectedGuardOptions;

@@ -27,6 +27,8 @@ export const useBasketballGameplan = () => {
     nbaTeamMap,
     updateCBBLineupMap,
     updateNBALineupMap,
+    saveCBBGameplan,
+    saveNBAGameplan,
   } = useSimBBAStore();
 
   const [selectedTeamID, setSelectedTeamID] = useState<number>(0);
@@ -224,22 +226,214 @@ export const useBasketballGameplan = () => {
     );
   }, [userTeam, currentUser, selectedTeamID, selectedLeague]);
 
+  const getPlayerName = (
+    id: number,
+    rosterMap: Record<number, CollegePlayer | NBAPlayer>,
+  ) => {
+    const player = rosterMap?.[id];
+    return player ? `${player.FirstName} ${player.LastName}` : `Player #${id}`;
+  };
+
   const errors = useMemo(() => {
     const errorList: string[] = [];
-    const playersInLineup = {};
+    if (!selectedTeamLineups || selectedTeamLineups.length === 0) {
+      return errorList;
+    }
+    const firstStringPlayers = new Set<number>();
+    const secondStringPlayers = new Set<number>();
+    let requiredMinutes = 40;
+    let requiredShotTotal = 100;
+    if (selectedLeague === SimNBA) {
+      requiredMinutes = 48;
+      requiredShotTotal = 100;
+    }
 
-    // Check to ensure that first & second strings for each lineup are filled.
+    for (const lineup of selectedTeamLineups) {
+      const position = lineup.Position;
 
-    // Check for players in lineup. There shouldn't be any duplicate players or selections within first string or 2nd string.
+      // --- 1. First & second string filled ---
+      if (!lineup.FirstStringID) {
+        errorList.push(`${position}: First string is empty.`);
+      }
+      if (!lineup.SecondStringID) {
+        errorList.push(`${position}: Second string is empty.`);
+      }
 
-    // Check to ensure the shot allocations for each designated position (1st string Center, 2nd string center, 1st string Forward, etc.) adds up to 100
+      // --- 2. No duplicate players within first string / second string across positions ---
+      if (lineup.FirstStringID) {
+        if (
+          firstStringPlayers.has(lineup.FirstStringID) ||
+          secondStringPlayers.has(lineup.FirstStringID)
+        ) {
+          errorList.push(
+            `${getPlayerName(lineup.FirstStringID, selectedRosterMap)} is assigned as first string at more than one position.`,
+          );
+        } else {
+          firstStringPlayers.add(lineup.FirstStringID);
+        }
+      }
+      if (lineup.SecondStringID) {
+        if (
+          secondStringPlayers.has(lineup.SecondStringID) ||
+          firstStringPlayers.has(lineup.SecondStringID)
+        ) {
+          errorList.push(
+            `${getPlayerName(lineup.SecondStringID, selectedRosterMap)} is assigned as second string at more than one position.`,
+          );
+        } else {
+          secondStringPlayers.add(lineup.SecondStringID);
+        }
+      }
 
-    // Will probably need to check for minutes allocated per position.
+      // --- Same player can't occupy two strings at the same position ---
+      if (
+        lineup.FirstStringID &&
+        lineup.FirstStringID === lineup.SecondStringID
+      ) {
+        errorList.push(
+          `${position}: ${getPlayerName(lineup.FirstStringID, selectedRosterMap)} can't be both first and second string.`,
+        );
+      }
+      if (
+        lineup.FirstStringID &&
+        lineup.FirstStringID === lineup.ThirdStringID
+      ) {
+        errorList.push(
+          `${position}: ${getPlayerName(lineup.FirstStringID, selectedRosterMap)} can't be both first and third string.`,
+        );
+      }
+      if (
+        lineup.SecondStringID &&
+        lineup.SecondStringID === lineup.ThirdStringID
+      ) {
+        errorList.push(
+          `${position}: ${getPlayerName(lineup.SecondStringID, selectedRosterMap)} can't be both second and third string.`,
+        );
+      }
 
-    //
+      // --- 3. Shot allocation must sum to 100 per string ---
+      const checkShotAllocation = (
+        label: string,
+        playerId: number,
+        inside: number,
+        mid: number,
+        three: number,
+      ) => {
+        if (!playerId) return; // nothing assigned, nothing to validate
+        const total = (inside || 0) + (mid || 0) + (three || 0);
+        if (total !== requiredShotTotal) {
+          errorList.push(
+            `${position} ${label}: Shot allocation totals ${total}%, must equal ${requiredShotTotal}%.`,
+          );
+        }
+        if (inside < 0 || mid < 0 || three < 0) {
+          errorList.push(
+            `${position} ${label}: Shot allocation cannot be negative.`,
+          );
+        }
+        if (inside > 50 || mid > 50 || three > 50) {
+          errorList.push(
+            `${position} ${label}: Shot allocation cannot exceed 50%.`,
+          );
+        }
+      };
+
+      checkShotAllocation(
+        `1st String (${getPlayerName(lineup.FirstStringID, selectedRosterMap)})`,
+        lineup.FirstStringID,
+        lineup.FSInsideProportion,
+        lineup.FSMidProportion,
+        lineup.FSThreeProportion,
+      );
+      checkShotAllocation(
+        `2nd String (${getPlayerName(lineup.SecondStringID, selectedRosterMap)})`,
+        lineup.SecondStringID,
+        lineup.SSInsideProportion,
+        lineup.SSMidProportion,
+        lineup.SSThreeProportion,
+      );
+      checkShotAllocation(
+        `3rd String (${getPlayerName(lineup.ThirdStringID, selectedRosterMap)})`,
+        lineup.ThirdStringID,
+        lineup.TSInsideProportion,
+        lineup.TSMidProportion,
+        lineup.TSThreeProportion,
+      );
+
+      // --- 4. Minutes allocated per position ---
+      const totalMinutes =
+        (lineup.FSMinutes || 0) +
+        (lineup.SSMinutes || 0) +
+        (lineup.TSMinutes || 0);
+      if (totalMinutes !== requiredMinutes) {
+        errorList.push(
+          `${position}: Total minutes allocated is ${totalMinutes}, must equal ${requiredMinutes}.`,
+        );
+      }
+    }
 
     return errorList;
-  }, [selectedRosterMap, selectedTeamLineups]);
+  }, [selectedLeague, selectedRosterMap, selectedTeamLineups]);
+
+  const totalMinutesAllocated = useMemo(() => {
+    let total = 0;
+    selectedTeamLineups.forEach((lineup) => {
+      total += lineup.FSMinutes + lineup.SSMinutes + lineup.TSMinutes;
+    });
+    return total;
+  }, [selectedTeamLineups]);
+
+  const totalInsideProportionWeighted = useMemo(() => {
+    let total = 0;
+    selectedTeamLineups.forEach((lineup) => {
+      total +=
+        lineup.FSInsideProportion +
+        lineup.SSInsideProportion +
+        lineup.TSInsideProportion;
+    });
+    return total / 15;
+  }, [selectedTeamLineups]);
+
+  const totalMidrangeProportionWeighted = useMemo(() => {
+    let total = 0;
+    selectedTeamLineups.forEach((lineup) => {
+      total +=
+        lineup.FSMidProportion +
+        lineup.SSMidProportion +
+        lineup.TSMidProportion;
+    });
+    return total / 15;
+  }, [selectedTeamLineups]);
+
+  const totalThreePointProportionWeighted = useMemo(() => {
+    let total = 0;
+    selectedTeamLineups.forEach((lineup) => {
+      total +=
+        lineup.FSThreeProportion +
+        lineup.SSThreeProportion +
+        lineup.TSThreeProportion;
+    });
+    return total / 15;
+  }, [selectedTeamLineups]);
+
+  const saveLineupChanges = useCallback(() => {
+    let dto: any = {
+      TeamID: selectedTeam?.ID || 0,
+    };
+    if (selectedLeague === SimCBB) {
+      dto.CollegeLineups = selectedTeamLineups;
+      saveCBBGameplan(dto);
+    } else if (selectedLeague === SimNBA) {
+      dto.NBALineups = selectedTeamLineups;
+      saveNBAGameplan(dto);
+    }
+  }, [
+    selectedLeague,
+    selectedTeam,
+    selectedTeamLineups,
+    saveCBBGameplan,
+    saveNBAGameplan,
+  ]);
 
   return {
     selectedTeamID,
@@ -262,5 +456,10 @@ export const useBasketballGameplan = () => {
     selectedForwardOptions,
     selectedCenterOptions,
     errors,
+    totalMinutesAllocated,
+    totalInsideProportionWeighted,
+    totalMidrangeProportionWeighted,
+    totalThreePointProportionWeighted,
+    saveLineupChanges,
   };
 };

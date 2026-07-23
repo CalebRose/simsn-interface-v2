@@ -516,7 +516,8 @@ export const AvailableTeams = () => {
                   league={selectedLeague}
                   disable={
                     sentRequestCHL ||
-                    (x.Coach && x.Coach !== "AI" && x.Coach.length > 0)
+                    (x.Coach && x.Coach !== "AI" && x.Coach.length > 0) ||
+                    x.LeagueID > 1
                   }
                   setSelectedTeam={setSelectedTeam}
                 />

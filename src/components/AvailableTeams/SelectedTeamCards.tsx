@@ -640,7 +640,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             NOTE: All team requests without an application filled out on our
             forums OR Discord server will be rejected.
           </Text>
-          <Text classes="text-start mb-2">
+          <Text classes="text-start mb-2 font-semibold">
             If you haven't filled out an application, please join our{" "}
             <a target="_blank" href="https://discord.gg/q46vwZ83RH">
               Discord server
