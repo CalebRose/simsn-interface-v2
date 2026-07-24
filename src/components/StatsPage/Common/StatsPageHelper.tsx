@@ -551,7 +551,11 @@ export const GetFootballPlayerStatsValues = (
       break;
 
     case RUSHING:
-      let rushingAvg =
+      let rushingAvg = stats.RushingAvg;
+      if (rushingAvg === undefined || rushingAvg === null) {
+        rushingAvg = 0;
+      }
+      rushingAvg =
         statsView === SEASON_VIEW
           ? Number(stats.RushingAvg.toFixed(2))
           : Number((stats.RushingYards / stats.RushAttempts).toFixed(2));
