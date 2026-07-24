@@ -227,6 +227,7 @@ export const useSideMenu = () => {
         isRoute: true,
         route: "",
         league: SimNBA,
+        click: () => navigate(routes.NBA_FREE_AGENCY),
         toggle: () => toggleMenu(),
       },
       {
@@ -250,6 +251,7 @@ export const useSideMenu = () => {
         isRoute: true,
         route: "",
         league: SimNBA,
+        click: () => navigate(routes.NBA_DRAFT_ROOM),
         toggle: () => toggleMenu(),
       },
     ],

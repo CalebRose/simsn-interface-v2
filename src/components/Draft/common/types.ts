@@ -15,9 +15,10 @@ import {
   SimCHL,
   League,
 } from "../../../_constants/constants";
+import { NBADraftee } from "../../../models/basketballModels";
 
 export type DraftPick = NFLDraftPick | PHLDraftPick;
-export type Draftee = NFLDraftee | PHLDraftee;
+export type Draftee = NFLDraftee | PHLDraftee | NBADraftee;
 export type ScoutingProfile = NFLScoutingProfile | PHLScoutingProfile;
 export type DraftLeague = League;
 

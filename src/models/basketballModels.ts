@@ -4901,7 +4901,7 @@ export class BootstrapData {
   PollSubmission: CollegePollSubmission;
   NBADraftees: NBADraftee[];
   WarRoomMap: { [key: number]: NBAWarRoom };
-  ScoutingProfileMap: { [key: number]: ScoutingProfile };
+  ScoutingProfileMap: { [key: number]: ScoutingProfile[] };
   TransferPortalProfiles: TransferPortalProfile[];
   CollegeLineupMap: { [key: number]: CollegeLineup[] };
   ProLineupMap: { [key: number]: NBALineup[] };
