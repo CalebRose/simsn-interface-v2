@@ -4,12 +4,13 @@ import { League, ModalAction } from "../../../_constants/constants";
 import { ProfessionalTeam } from "../../../models/hockeyModels";
 import { DraftPickCard } from "./DraftPick";
 import { NFLTeam } from "../../../models/footballModels";
+import { NBATeam } from "../../../models/basketballModels";
 
 interface BigDraftBoardProps {
   league: League;
   backgroundColor: string;
   draftPicks: DraftPick[];
-  selectedTeam: ProfessionalTeam | NFLTeam | null;
+  selectedTeam: ProfessionalTeam | NFLTeam | NBATeam | null;
   draftablePlayerMap: Record<number, Draftee>;
   currentPick: DraftPick | null;
   handlePlayerModal?: (action: ModalAction, player: Draftee) => void;

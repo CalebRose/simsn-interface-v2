@@ -21,8 +21,6 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
   backgroundColor,
   league,
 }) => {
-  const leagueConstant = getLeagueConstant(league);
-
   const getPickStatus = (pick: DraftPick, index: number) => {
     if (pick.TeamID === userTeamId) return "user";
     if (currentPick && pick.ID === currentPick.ID) return "current";
@@ -56,7 +54,7 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
             index={index}
             currentPick={currentPick}
             userTeamId={userTeamId}
-            league={leagueConstant}
+            league={league}
           />
         ))}
       </div>

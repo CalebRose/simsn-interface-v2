@@ -179,6 +179,7 @@ export class NBAWarRoom {
   }
 }
 export class NBADraftee {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { League, SimPHL } from "../../../_constants/constants";
+import { League, SimNBA, SimPHL } from "../../../_constants/constants";
 import { Draftee, DraftPick as DraftPickType } from "./types";
 import { Text } from "../../../_design/Typography";
 import { ProfessionalTeam } from "../../../models/hockeyModels";
@@ -7,15 +7,17 @@ import { WarRoomDraftPick } from "./DraftPick";
 import { NFLTeam } from "../../../models/footballModels";
 import { AnyTradeProposal, WarRoomDoc } from "../hooks/useDraftTradeState";
 import { Button } from "../../../_design/Buttons";
+import { NBATeam } from "../../../models/basketballModels";
 
 interface DraftWarRoomProps {
   league: League;
   backgroundColor: string;
   teamDraftPicks: DraftPickType[];
-  selectedTeam: ProfessionalTeam | NFLTeam | null;
+  selectedTeam: ProfessionalTeam | NFLTeam | NBATeam | null;
   draftablePlayerMap: Record<number, Draftee>;
-  handleOpenProposeTradeModal: () => void;
-  handleOpenReceiveTradeModal: () => void;
+  canTrade?: boolean;
+  handleOpenProposeTradeModal?: () => void;
+  handleOpenReceiveTradeModal?: () => void;
 }
 
 export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
@@ -24,15 +26,22 @@ export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
   teamDraftPicks,
   selectedTeam,
   draftablePlayerMap,
+  canTrade = false,
   handleOpenProposeTradeModal,
   handleOpenReceiveTradeModal,
 }) => {
   const teamLabel = useMemo(() => {
     if (!selectedTeam) return "No team selected";
-    if (league === SimPHL) {
-      return `${selectedTeam.TeamName}`;
+    if (league === SimNBA) {
+      const t = selectedTeam as NBATeam;
+      return `${t.Team}`;
     }
-    return selectedTeam.TeamName;
+    if (league === SimPHL) {
+      const t = selectedTeam as ProfessionalTeam;
+      return `${t.TeamName}`;
+    }
+    const t = selectedTeam as NFLTeam;
+    return t.TeamName;
   }, [selectedTeam, league]);
 
   const draftPickCount = useMemo(() => {
@@ -48,21 +57,23 @@ export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
         <Text variant="body-small" className="mb-4">
           {draftPickCount}
         </Text>
-        <div className="grid grid-cols-1 xl:grid-cols-2 mb-4 gap-4">
-          <div className="flex">
-            <Text variant="body-small" className="mb-4">
-              Propose Trade
-            </Text>
-            <Button onClick={handleOpenProposeTradeModal}>Propose</Button>
-          </div>
+        {canTrade && (
+          <div className="grid grid-cols-1 xl:grid-cols-2 mb-4 gap-4">
+            <div className="flex">
+              <Text variant="body-small" className="mb-4">
+                Propose Trade
+              </Text>
+              <Button onClick={handleOpenProposeTradeModal}>Propose</Button>
+            </div>
 
-          <div className="flex">
-            <Text variant="body-small" className="mb-4">
-              View Trades
-            </Text>
-            <Button onClick={handleOpenReceiveTradeModal}>View</Button>
+            <div className="flex">
+              <Text variant="body-small" className="mb-4">
+                View Trades
+              </Text>
+              <Button onClick={handleOpenReceiveTradeModal}>View</Button>
+            </div>
           </div>
-        </div>
+        )}
         <div className="grid grid-cols-1 xl:grid-cols-4 mb-4 gap-4">
           {teamDraftPicks.map((pick) => (
             <WarRoomDraftPick

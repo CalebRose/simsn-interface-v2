@@ -132,7 +132,7 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
           Overall
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {getOverallGrade(player)}
+          {getOverallGrade(player, SimPHL)}
         </Text>
       </div>
       <div className="flex flex-col">

@@ -45,7 +45,7 @@ interface PHLDraftPageProps {
 }
 
 export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
-  const { currentUser } = useAuthStore();
+  const { currentUser, isAdmin } = useAuthStore();
   const { exportPHLDraftees } = useSimHCKStore();
   const {
     proDraftablePlayers,
@@ -112,14 +112,11 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
   const receiveTradeModal = useModal();
   const adminProposalsModal = useModal();
 
-  const isAdmin = useMemo(() => {
+  const isCommissioner = useMemo(() => {
     if (!currentUser) return false;
     if (!currentUser.roleID) return false;
-    return (
-      currentUser?.roleID === "Admin" ||
-      currentUser?.roleID?.includes("PHL Commissioner")
-    );
-  }, [currentUser]);
+    return isAdmin || currentUser?.roleID?.includes("PHL Commissioner");
+  }, [currentUser, isAdmin]);
 
   const rawTeamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -267,7 +264,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
           teamColors={teamColors}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          isAdmin={isAdmin}
+          isAdmin={isCommissioner}
           offensiveSystem={offensiveSystem}
           defensiveSystem={defensiveSystem}
           teamNeedsList={teamNeedsList}

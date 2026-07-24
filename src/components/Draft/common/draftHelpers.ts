@@ -11,6 +11,8 @@ import {
   getHockeyAttributeShowProperty,
   getHockeyScoutingCost,
 } from "../PHLDraft/utils/draftHelpers";
+import { League, SimNBA, SimNFL } from "../../../_constants/constants";
+import { NBADraftee } from "../../../models/basketballModels";
 
 export const getScoutableAttributes = (
   position: string,
@@ -55,9 +57,12 @@ export const getScoutingCost = (
   return getHockeyScoutingCost(attributeName);
 };
 
-export const getOverallGrade = (player: Draftee): string => {
-  if (isNFLDraftee(player)) {
+export const getOverallGrade = (player: Draftee, league: League): string => {
+  if (league === SimNFL) {
     return player.OverallGrade || "C";
+  }
+  if (league === SimNBA) {
+    return (player as NBADraftee).OverallGrade || "C";
   }
   const overall = (player as any).Overall || 0;
   if (overall >= 27) return "A+";

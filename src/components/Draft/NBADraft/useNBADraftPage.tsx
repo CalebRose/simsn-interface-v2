@@ -53,6 +53,7 @@ export const useNBADraftPage = () => {
     revealScoutingAttribute,
     removePlayerFromScoutBoard,
     exportDraftPicks,
+    exportNBADraftees,
   } = useSimBBAStore();
 
   const {
@@ -70,7 +71,7 @@ export const useNBADraftPage = () => {
     isDraftComplete,
   } = useDraftState({
     CollectionName: "nbadraftstate",
-    DocName: "YfIofzhpUVSJITQpBrUA ",
+    DocName: "YfIofzhpUVSJITQpBrUA",
   });
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -603,5 +604,6 @@ export const useNBADraftPage = () => {
     teamDraftPicks,
     draftablePlayerMap,
     nbaDraftPicks,
+    exportNBADraftees,
   };
 };

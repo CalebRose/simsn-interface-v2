@@ -922,6 +922,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     setNBADraftees(res.NBADraftees);
     setNBAWarRoomMap(res.WarRoomMap);
     setNBAScoutingProfileMap(res.ScoutingProfileMap);
+    setNBADraftPicks(res.DraftPicks);
   };
 
   // use this once the portal page is finished

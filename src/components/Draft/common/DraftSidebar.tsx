@@ -19,6 +19,7 @@ import { DraftClock } from "./DraftClock";
 interface DraftSidebarProps {
   selectedTeam?: {
     TeamName?: string;
+    Team?: string;
   } | null;
   teamColors: {
     primary: string;
@@ -27,8 +28,8 @@ interface DraftSidebarProps {
   activeTab: DraftBoardType;
   setActiveTab: (tab: DraftBoardType) => void;
   isAdmin: boolean;
-  offensiveSystem: string;
-  defensiveSystem: string;
+  offensiveSystem?: string;
+  defensiveSystem?: string;
   teamNeedsList: string[];
   league: League;
   currentPick: DraftPick | null;
@@ -65,7 +66,7 @@ export const DraftSidebar: React.FC<DraftSidebarProps> = ({
       >
         <Text variant="h4" classes="text-white mb-4">
           {activeTab !== BigBoard
-            ? selectedTeam?.TeamName || "View"
+            ? selectedTeam?.TeamName || selectedTeam?.Team || "View"
             : "Big Board"}
         </Text>
         <ButtonGrid>
