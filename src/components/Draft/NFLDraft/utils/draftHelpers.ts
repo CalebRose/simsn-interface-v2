@@ -408,6 +408,45 @@ export const getScoutableAttributes = (
   }
 };
 
+export const getNBAScoutableAttributes = (
+  position: string,
+  archetype: string,
+): string[] => {
+  return [
+    "Inside Shooting",
+    "Mid Range Shooting",
+    "Three Point Shooting",
+    "Free Throw",
+    "Agility",
+    "Ballwork",
+    "Stealing",
+    "Blocking",
+    "Rebounding",
+    "Interior Def.",
+    "Perimeter Def.",
+    "Potential Grade",
+  ];
+};
+
+export const getNBAAttributeFieldName = (displayName: string): string => {
+  const attributeMap: { [key: string]: string } = {
+    "Inside Shooting": "InsideShooting",
+    "Mid Range Shooting": "MidRangeShooting",
+    "Three Point Shooting": "ThreePointShooting",
+    "Free Throw": "FreeThrow",
+    Agility: "Agility",
+    Ballwork: "Ballwork",
+    Stealing: "Stealing",
+    Blocking: "Blocking",
+    Rebounding: "Rebounding",
+    "Interior Def.": "InteriorDefense",
+    "Perimeter Def.": "PerimeterDefense",
+    "Potential Grade": "PotentialGrade",
+  };
+
+  return attributeMap[displayName] || displayName;
+};
+
 export const getAttributeFieldName = (displayName: string): string => {
   const attributeMap: { [key: string]: string } = {
     "Football IQ": "FootballIQ",
@@ -438,6 +477,38 @@ export const getAttributeShowProperty = (
     return "ShowPotential";
   }
   return `ShowAttribute${index + 1}`;
+};
+
+export const getNBAAttributeShowProperty = (
+  displayName: string,
+  index: number,
+): string => {
+  switch (displayName) {
+    case "Inside Shooting":
+      return "ShowFinishing";
+    case "Mid Range Shooting":
+      return "ShowShooting2";
+    case "Three Point Shooting":
+      return "ShowShooting3";
+    case "Free Throw":
+      return "ShowFreeThrow";
+    case "Agility":
+      return "ShowAgility";
+    case "Ballwork":
+      return "ShowBallwork";
+    case "Stealing":
+      return "ShowStealing";
+    case "Blocking":
+      return "ShowBlocking";
+    case "Interior Def.":
+      return "ShowInteriorDefense";
+    case "Perimeter Def.":
+      return "ShowPerimeterDefense";
+    case "Potential Grade":
+      return "ShowPotential";
+    default:
+      return `ShowAttribute${index + 1}`;
+  }
 };
 
 export const getScoutingCost = (attributeName: string): number => {

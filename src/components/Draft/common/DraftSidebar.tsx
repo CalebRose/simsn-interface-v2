@@ -9,6 +9,7 @@ import {
   DraftBoardType,
   League,
   ScoutBoard,
+  SimNBA,
   SimNFL,
   SimPHL,
   WarRoomBoard,
@@ -140,6 +141,15 @@ export const DraftSidebar: React.FC<DraftSidebarProps> = ({
                 <div className="">
                   <Text variant="xs" classes="text-gray-200">
                     Defensive System: {defensiveSystem}
+                  </Text>
+                </div>
+              </>
+            )}
+            {league === SimNBA && (
+              <>
+                <div className="mt-2">
+                  <Text variant="xs" classes="text-gray-200">
+                    The season to start.
                   </Text>
                 </div>
               </>

@@ -1889,7 +1889,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const revealScoutingAttribute = useCallback(
     async (dto: any) => {
       try {
-        const res = await DraftService.RevealNFLAttribute(dto);
+        const res = await DraftService.RevealNBAAttribute(dto);
         // Testing purposes
         // console.log({ dto });
         // const res = true;

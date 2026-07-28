@@ -16,6 +16,7 @@ import {
   SimCHL,
   League,
   SimNBA,
+  SimCBB,
 } from "../../../_constants/constants";
 import {
   NBADraftee,
@@ -79,6 +80,15 @@ export const getLeagueConstant = (league: DraftLeague): DraftLeague => {
 };
 
 export const getCollegeLeagueConstant = (league: DraftLeague): League => {
+  if (isNFLLeague(league)) {
+    return SimCFB;
+  }
+  if (league === SimPHL) {
+    return SimCHL;
+  }
+  if (league === SimNBA) {
+    return SimCBB;
+  }
   return isNFLLeague(league) ? SimCFB : SimCHL;
 };
 

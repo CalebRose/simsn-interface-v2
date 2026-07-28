@@ -4,6 +4,9 @@ import {
   getAttributeFieldName as getNFLAttributeFieldName,
   getAttributeShowProperty as getNFLAttributeShowProperty,
   getScoutingCost as getNFLScoutingCost,
+  getNBAAttributeFieldName,
+  getNBAAttributeShowProperty,
+  getNBAScoutableAttributes,
 } from "../NFLDraft/utils/draftHelpers";
 import {
   getHockeyScoutableAttributes,
@@ -22,6 +25,9 @@ export const getScoutableAttributes = (
   if (isNFLLeague(league)) {
     return getNFLScoutableAttributes(position, archetype);
   }
+  if (league === SimNBA) {
+    return getNBAScoutableAttributes(position, archetype);
+  }
   return getHockeyScoutableAttributes(position, archetype);
 };
 
@@ -31,6 +37,9 @@ export const getAttributeFieldName = (
 ): string => {
   if (isNFLLeague(league)) {
     return getNFLAttributeFieldName(displayName);
+  }
+  if (league === SimNBA) {
+    return getNBAAttributeFieldName(displayName);
   }
   return getHockeyAttributeFieldName(displayName);
 };
@@ -43,6 +52,9 @@ export const getAttributeShowProperty = (
 ): string => {
   if (isNFLLeague(league)) {
     return getNFLAttributeShowProperty(displayName, index);
+  }
+  if (league === SimNBA) {
+    return getNBAAttributeShowProperty(displayName, index);
   }
   return getHockeyAttributeShowProperty(displayName, showPotentialGrade, index);
 };

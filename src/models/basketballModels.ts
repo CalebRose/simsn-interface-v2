@@ -72,6 +72,7 @@ export class TransferPortalProfile {
   }
 }
 export class ScoutingProfile {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -86,6 +87,9 @@ export class ScoutingProfile {
   ShowRebounding: boolean;
   ShowInteriorDefense: boolean;
   ShowPerimeterDefense: boolean;
+  ShowAgility: boolean;
+  ShowStealing: boolean;
+  ShowBlocking: boolean;
   ShowPotential: boolean;
   RemovedFromBoard: boolean;
   ShowCount: number;
@@ -104,6 +108,9 @@ export class ScoutingProfile {
     this.ShowFreeThrow = source["ShowFreeThrow"];
     this.ShowFinishing = source["ShowFinishing"];
     this.ShowBallwork = source["ShowBallwork"];
+    this.ShowAgility = source["ShowAgility"];
+    this.ShowStealing = source["ShowStealing"];
+    this.ShowBlocking = source["ShowBlocking"];
     this.ShowRebounding = source["ShowRebounding"];
     this.ShowInteriorDefense = source["ShowInteriorDefense"];
     this.ShowPerimeterDefense = source["ShowPerimeterDefense"];

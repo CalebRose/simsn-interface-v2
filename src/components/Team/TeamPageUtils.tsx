@@ -73,6 +73,7 @@ import {
   Croot as BasketballCroot,
   NBAPlayer,
   TransferPlayerResponse,
+  NBADraftee,
 } from "../../models/basketballModels";
 import { TradeBlockRow } from "./TeamPageTypes";
 
@@ -2576,6 +2577,70 @@ export const setPriorityDrafteeAttributes = (
     { Name: Stamina, Value: player.Stamina, Letter: player.StaminaGrade },
     { Name: Injury, Value: player.Injury, Letter: player.InjuryGrade },
   );
+
+  return priorityAttributes;
+};
+
+export const setNBAPriorityDrafteeAttributes = (
+  player: NBADraftee,
+): PriorityAttribute[] => {
+  let priorityAttributes: PriorityAttribute[] = [
+    {
+      Name: "Inside Shooting",
+      Value: player.InsideShooting,
+      Letter: player.InsideShootingGrade,
+    },
+    {
+      Name: "Mid Range Shooting",
+      Value: player.MidRangeShooting,
+      Letter: player.MidrangeShootingGrade,
+    },
+    {
+      Name: "3pt Shooting",
+      Value: player.ThreePointShooting,
+      Letter: player.ThreePointShootingGrade,
+    },
+    {
+      Name: "Free Throw",
+      Value: player.FreeThrow,
+      Letter: player.FreeThrowGrade,
+    },
+    {
+      Name: Agility,
+      Value: player.Agility,
+      Letter: player.AgilityGrade,
+    },
+    {
+      Name: "Ballwork",
+      Value: player.Ballwork,
+      Letter: player.BallworkGrade,
+    },
+    {
+      Name: "Stealing",
+      Value: player.Stealing,
+      Letter: player.StealingGrade,
+    },
+    {
+      Name: "Blocking",
+      Value: player.Blocking,
+      Letter: player.BlockingGrade,
+    },
+    {
+      Name: "Rebounding",
+      Value: player.Rebounding,
+      Letter: player.ReboundingGrade,
+    },
+    {
+      Name: "Int. Defense",
+      Value: player.InteriorDefense,
+      Letter: player.InteriorDefenseGrade,
+    },
+    {
+      Name: "Per. Defense",
+      Value: player.PerimeterDefense,
+      Letter: player.PerimeterDefenseGrade,
+    },
+  ];
 
   return priorityAttributes;
 };
