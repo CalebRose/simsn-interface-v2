@@ -34,6 +34,17 @@ export const useBasketballGameplan = () => {
   const [selectedTeamID, setSelectedTeamID] = useState<number>(0);
   const [selectedString, setSelectedString] = useState<string>("First");
   const [selectedStringAbbr, setSelectedStringAbbr] = useState<string>("FS");
+  const [pace, setPace] = useState<string>("");
+
+  const paceOptions = useMemo(() => {
+    return [
+      { label: "Very Fast", value: "Very Fast" },
+      { label: "Fast", value: "Fast" },
+      { label: "Balanced", value: "Balanced" },
+      { label: "Slow", value: "Slow" },
+      { label: "Very Slow", value: "Very Slow" },
+    ];
+  }, []);
 
   const selectedTeam = useMemo(() => {
     if (selectedLeague === SimCBB && cbbTeamMap) {
@@ -183,6 +194,11 @@ export const useBasketballGameplan = () => {
   const SelectTeam = (options: any) => {
     const opts = Number(options.value);
     setSelectedTeamID(() => opts);
+  };
+
+  const SelectPace = (options: any) => {
+    const opts = options.value;
+    setPace(() => opts);
   };
 
   const ChangeLineupInput = useCallback(
@@ -461,5 +477,8 @@ export const useBasketballGameplan = () => {
     totalMidrangeProportionWeighted,
     totalThreePointProportionWeighted,
     saveLineupChanges,
+    pace,
+    paceOptions,
+    SelectPace,
   };
 };
