@@ -401,6 +401,8 @@ interface ForumEditorProps {
    * participants) instead of searching the global user index.
    */
   mentionUsers?: { uid: string; username: string }[];
+  /** Caps the editor content area height and makes it scroll internally, keeping the toolbar and submit buttons always visible. */
+  editorMaxHeight?: string;
 }
 
 export interface ForumEditorHandle {
@@ -627,6 +629,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
       maxLength = MAX_DEFAULT,
       onDocChange,
       mentionUsers,
+      editorMaxHeight,
     },
     ref,
   ) {
@@ -1051,6 +1054,9 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
           style={{
             backgroundColor: "var(--bg-secondary)",
             borderColor: "var(--border-secondary)",
+            ...(editorMaxHeight
+              ? { maxHeight: editorMaxHeight, overflowY: "auto" }
+              : {}),
           }}
           onDragOver={(e) => {
             if (

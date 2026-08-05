@@ -7,6 +7,7 @@ import { ConversationView } from "./ConversationView";
 import { ComposeModal } from "./ComposeModal";
 import { useDMStore } from "../../context/DMContext";
 import { useAuthStore } from "../../context/AuthContext";
+import { useResponsive } from "../../_hooks/useMobile";
 import type { Conversation } from "../../models/dmModels";
 
 // ─────────────────────────────────────────────
@@ -119,6 +120,7 @@ interface InboxModalProps {
 
 export const InboxModal: React.FC<InboxModalProps> = ({ isOpen, onClose }) => {
   const { currentUser } = useAuthStore();
+  const { isMobile } = useResponsive();
   const {
     conversations,
     totalUnreadDMs,
@@ -137,6 +139,10 @@ export const InboxModal: React.FC<InboxModalProps> = ({ isOpen, onClose }) => {
     [conversations, selectedConversationId],
   );
 
+  // On mobile show only one panel at a time
+  const showList = !isMobile || !selectedConversationId;
+  const showThread = !isMobile || !!selectedConversationId;
+
   return (
     <>
       <Modal
@@ -144,11 +150,16 @@ export const InboxModal: React.FC<InboxModalProps> = ({ isOpen, onClose }) => {
         onClose={onClose}
         title="Messages"
         maxWidth="max-w-5xl"
+        bodyClass="overflow-hidden"
       >
-        {/* Split layout: list + thread */}
-        <div className="flex h-[70vh] overflow-hidden rounded-b-lg">
+        {/* Single-column on mobile, two-column on sm+ */}
+        <div className="flex h-[80vh] sm:h-[70vh] overflow-hidden">
           {/* ── Left: conversation list ─────────────────────────────── */}
-          <div className="w-72 shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div
+            className={`${
+              showList ? "flex" : "hidden"
+            } sm:flex w-full sm:w-72 shrink-0 flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800`}
+          >
             {/* List header */}
             <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-200 dark:border-gray-700 shrink-0">
               <Text
@@ -211,9 +222,16 @@ export const InboxModal: React.FC<InboxModalProps> = ({ isOpen, onClose }) => {
           </div>
 
           {/* ── Right: thread view or empty state ──────────────────── */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-gray-900">
+          <div
+            className={`${
+              showThread ? "flex" : "hidden"
+            } sm:flex flex-1 flex-col overflow-hidden bg-white dark:bg-gray-900`}
+          >
             {selectedConversation ? (
-              <ConversationView conversation={selectedConversation} />
+              <ConversationView
+                conversation={selectedConversation}
+                onBack={isMobile ? () => selectConversation(null) : undefined}
+              />
             ) : (
               <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
                 <svg

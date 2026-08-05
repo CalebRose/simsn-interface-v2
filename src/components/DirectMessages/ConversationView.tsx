@@ -9,6 +9,7 @@ import {
   ForumEditorHandle,
 } from "../Forum/components/ForumEditor";
 import { RichTextRenderer } from "../Forum/components/RichTextRenderer";
+import { ReportConversationModal } from "./ReportConversationModal";
 import { DMService } from "../../_services/dmService";
 import { useDMStore } from "../../context/DMContext";
 import { useAuthStore } from "../../context/AuthContext";
@@ -72,6 +73,8 @@ interface ConversationHeaderProps {
   currentUserId: string;
   onArchive: () => void;
   onMuteToggle: () => void;
+  onReport: () => void;
+  onBack?: () => void;
   isMuted: boolean;
 }
 
@@ -80,6 +83,8 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   currentUserId,
   onArchive,
   onMuteToggle,
+  onReport,
+  onBack,
   isMuted,
 }) => {
   const otherParticipants = conversation.participantUsernames.filter(
@@ -88,19 +93,44 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 
   return (
     <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 shrink-0">
-      <div className="min-w-0 text-start">
-        <Text
-          variant="h5"
-          className="font-semibold truncate text-gray-900 dark:text-white"
-        >
-          {conversation.subject}
-        </Text>
-        <Text
-          variant="small"
-          className="text-gray-500 dark:text-gray-400 truncate"
-        >
-          {otherParticipants.map((u) => `@${u}`).join(", ")}
-        </Text>
+      <div className="flex items-center gap-2 min-w-0">
+        {/* Back button — mobile only */}
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="sm:hidden shrink-0 p-1 -ml-1 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Back to inbox"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+        )}
+        <div className="min-w-0 text-start">
+          <Text
+            variant="h5"
+            className="font-semibold truncate text-gray-900 dark:text-white"
+          >
+            {conversation.subject}
+          </Text>
+          <Text
+            variant="small"
+            className="text-gray-500 dark:text-gray-400 truncate"
+          >
+            {otherParticipants.map((u) => `@${u}`).join(", ")}
+          </Text>
+        </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <button
@@ -161,6 +191,26 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             />
           </svg>
         </button>
+        <button
+          type="button"
+          onClick={onReport}
+          title="Report a user in this conversation"
+          className="p-1.5 rounded-md text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   );
@@ -172,10 +222,13 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 
 interface ConversationViewProps {
   conversation: Conversation;
+  /** Mobile-only: called when the user taps the back arrow to return to the inbox list. */
+  onBack?: () => void;
 }
 
 export const ConversationView: React.FC<ConversationViewProps> = ({
   conversation,
+  onBack,
 }) => {
   const { currentUser } = useAuthStore();
   const { archiveConversation, muteConversation, unmuteConversation } =
@@ -183,6 +236,7 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
   const editorRef = useRef<ForumEditorHandle>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -270,6 +324,8 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
         currentUserId={uid}
         onArchive={handleArchive}
         onMuteToggle={handleMuteToggle}
+        onReport={() => setIsReportOpen(true)}
+        onBack={onBack}
         isMuted={isMuted}
       />
 
@@ -305,8 +361,16 @@ export const ConversationView: React.FC<ConversationViewProps> = ({
           onSubmit={handleSend}
           mentionUsers={mentionUsers}
           maxLength={5000}
+          editorMaxHeight="8rem"
         />
       </div>
+
+      <ReportConversationModal
+        isOpen={isReportOpen}
+        conversationId={conversation.id}
+        participants={mentionUsers}
+        onClose={() => setIsReportOpen(false)}
+      />
     </div>
   );
 };

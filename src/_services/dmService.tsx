@@ -414,4 +414,36 @@ export const DMService = {
   ): Promise<{ uid: string; username: string }[]> => {
     return ForumService.SearchUsersByPrefix(prefix);
   },
+
+  // ── Reporting ────────────────────────────────────────────────────────────────
+
+  /** Creates a report and auto-mutes the conversation for the reporter. */
+  reportUserInConversation: async (
+    conversationId: string,
+    reporterId: string,
+    reporterUsername: string,
+    reportedUserId: string,
+    reportedUsername: string,
+    reason: string,
+  ): Promise<void> => {
+    const batch = writeBatch(firestore);
+
+    batch.set(doc(collection(firestore, "dmReports")), {
+      conversationId,
+      reporterId,
+      reporterUsername,
+      reportedUserId,
+      reportedUsername,
+      reason,
+      status: "open",
+      createdAt: serverTimestamp(),
+    });
+
+    // Auto-mute for reporter so they stop receiving notifications
+    batch.update(doc(conversationsCol(), conversationId), {
+      [`participantMeta.${reporterId}.muted`]: true,
+    });
+
+    await batch.commit();
+  },
 };

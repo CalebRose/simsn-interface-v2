@@ -173,6 +173,7 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({
       onClose={onClose}
       title="New Message"
       maxWidth="max-w-3xl"
+      classes="mx-2 sm:mx-auto"
     >
       {isInboxFull && (
         <div className="mb-3 px-3 py-2 rounded-md bg-yellow-500/10 border border-yellow-500/30">
@@ -297,6 +298,7 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({
           onSubmit={handleSend}
           onCancel={onClose}
           mentionUsers={participants}
+          editorMaxHeight="10rem"
         />
       </div>
     </Modal>
