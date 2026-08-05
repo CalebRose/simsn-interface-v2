@@ -26,6 +26,8 @@ import { useModal } from "../../_hooks/useModal";
 import { SelectedTeamModal } from "./SelectedTeamModal";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { getPrimaryBaseballTeam } from "../../_utility/baseballHelpers";
+import { useAuthStore } from "../../context/AuthContext";
+import { useCallback, useMemo, useState } from "react";
 
 // ✅ Types
 interface SelectedTeamCardProps {
@@ -34,7 +36,7 @@ interface SelectedTeamCardProps {
   retro: boolean | undefined;
   data: any;
   sentRequest?: boolean;
-  sendRequest?: (league: League, team: any, role?: string) => void;
+  sendRequest?: (dto: any) => void;
 }
 
 const isTeamDisabled = (team: any | undefined, league: string): boolean => {
@@ -80,7 +82,7 @@ const NoSelectedTeam = () => {
       className={`flex flex-col max-h-[80vh] w-full min-[1025px]:h-[70vh] min-[820px]:max-h-[48vh] min-[1025px]:max-h-[75vh] min-[1025px]:mx-4 min-[1025px]:mb-3 rounded-2xl shadow-lg border-2 p-6 bg-white dark:bg-gray-600`}
     >
       <div className="flex flex-col items-center justify-center min-[1025px]:h-full px-6 py-4">
-        <div className="h-[125px] flex flex-col">
+        <div className="h-31.25 flex flex-col">
           <div className="hidden lg:flex flex-row mb-2 text-center justify-between w-[300px]">
             <Text variant="h5" classes="text-white font-semibold">
               Please select a team on the left.
@@ -108,6 +110,18 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
     return <NoSelectedTeam />;
   }
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const { currentUser } = useAuthStore();
+
+  const userName = useMemo(() => {
+    return currentUser?.username || "";
+  }, [currentUser]);
+
+  const [discordUsername, setDiscordUsername] = useState("");
+  const [howMuchTimeAnswer, setHowMuchTimeAnswer] = useState("");
+  const [howDidYouHearAboutSimSN, setHowDidYouHearAboutSimSN] = useState("");
+  const [communityReference, setCommunityReference] = useState("");
+  const [aboutYourself, setAboutYourself] = useState("");
+
   const isBaseball = league === SimMLB || league === SimCollegeBaseball;
   const primaryBaseballTeam = isBaseball
     ? getPrimaryBaseballTeam(selectedTeam)
@@ -135,6 +149,47 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   const conferenceLabel = isBaseball
     ? primaryBaseballTeam?.conference || ""
     : selectedTeam.Conference || "";
+
+  // All three required fields must be non-empty before submission is allowed
+  const canSubmit = useMemo(
+    () =>
+      howMuchTimeAnswer.trim().length > 0 &&
+      howDidYouHearAboutSimSN.trim().length > 0 &&
+      aboutYourself.trim().length > 0,
+    [howMuchTimeAnswer, howDidYouHearAboutSimSN, aboutYourself],
+  );
+
+  const handleClick = useCallback(
+    (role: string) => {
+      if (sendRequest) {
+        const dto = {
+          league,
+          team: selectedTeam,
+          role: role || "o",
+          userName,
+          discordUsername,
+          howMuchTimeAnswer,
+          howDidYouHearAboutSimSN,
+          communityReference,
+          aboutYourself,
+        };
+        sendRequest(dto);
+      }
+      handleCloseModal();
+    },
+    [
+      sendRequest,
+      league,
+      selectedTeam,
+      userName,
+      discordUsername,
+      howMuchTimeAnswer,
+      howDidYouHearAboutSimSN,
+      communityReference,
+      aboutYourself,
+    ],
+  );
+
   return (
     <div
       className={`flex flex-col max-h-[80vh] w-full min-[1025px]:h-[70vh] min-[820px]:max-h-[48vh] min-[1025px]:max-h-[75vh] min-[1025px]:mx-4 min-[1025px]:mb-3 rounded-2xl shadow-lg border-2 p-6 ${
@@ -427,12 +482,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 league === SimCBB ||
                 league === SimCHL ||
                 league === SimCollegeBaseball) && (
-                <Button
-                  onClick={() => {
-                    sendRequest?.(league, selectedTeam, "");
-                    handleCloseModal();
-                  }}
-                >
+                <Button onClick={() => handleClick("")} disabled={!canSubmit}>
                   Confirm
                 </Button>
               )}
@@ -440,29 +490,38 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 <>
                   <Button
                     size="sm"
-                    onClick={() => sendRequest?.(league, selectedTeam, "o")}
-                    disabled={(selectedTeam.NFLOwnerName?.length ?? 0) > 0}
+                    onClick={() => handleClick("o")}
+                    disabled={
+                      (selectedTeam.NFLOwnerName?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Request Ownership</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => sendRequest?.(league, selectedTeam, "hc")}
-                    disabled={(selectedTeam.NFLCoachName?.length ?? 0) > 0}
+                    onClick={() => handleClick("hc")}
+                    disabled={
+                      (selectedTeam.NFLCoachName?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Request Coach</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => sendRequest?.(league, selectedTeam, "gm")}
-                    disabled={(selectedTeam.NFLGMName?.length ?? 0) > 0}
+                    onClick={() => handleClick("gm")}
+                    disabled={
+                      (selectedTeam.NFLGMName?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Request GM</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => sendRequest?.(league, selectedTeam, "a")}
-                    disabled={(selectedTeam.NFLAssistantName?.length ?? 0) > 0}
+                    onClick={() => handleClick("a")}
+                    disabled={
+                      (selectedTeam.NFLAssistantName?.length ?? 0) > 0 ||
+                      !canSubmit
+                    }
                   >
                     Request Assistant
                   </Button>
@@ -472,29 +531,38 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 <>
                   <Button
                     size="sm"
-                    onClick={() => sendRequest?.(league, selectedTeam, "o")}
-                    disabled={(selectedTeam.NBAOwnerName?.length ?? 0) > 0}
+                    onClick={() => handleClick("o")}
+                    disabled={
+                      (selectedTeam.NBAOwnerName?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     Request Ownership
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => sendRequest?.(league, selectedTeam, "hc")}
-                    disabled={(selectedTeam.NBACoachName?.length ?? 0) > 0}
+                    onClick={() => handleClick("hc")}
+                    disabled={
+                      (selectedTeam.NBACoachName?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     Request Coach
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => sendRequest?.(league, selectedTeam, "gm")}
-                    disabled={(selectedTeam.NBAGMName?.length ?? 0) > 0}
+                    onClick={() => handleClick("gm")}
+                    disabled={
+                      (selectedTeam.NBAGMName?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     Request GM
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => sendRequest?.(league, selectedTeam, "a")}
-                    disabled={(selectedTeam.NBAAssistantName?.length ?? 0) > 0}
+                    onClick={() => handleClick("a")}
+                    disabled={
+                      (selectedTeam.NBAAssistantName?.length ?? 0) > 0 ||
+                      !canSubmit
+                    }
                   >
                     Request Assistant
                   </Button>
@@ -504,51 +572,44 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 <ButtonGroup>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      sendRequest?.(league, selectedTeam, Owner);
-                      handleCloseModal();
-                    }}
-                    disabled={(selectedTeam.Owner?.length ?? 0) > 0}
+                    onClick={() => handleClick("o")}
+                    disabled={
+                      (selectedTeam.Owner?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Ownership</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      sendRequest?.(league, selectedTeam, Coach);
-                      handleCloseModal();
-                    }}
-                    disabled={(selectedTeam.Coach?.length ?? 0) > 0}
+                    onClick={() => handleClick("hc")}
+                    disabled={
+                      (selectedTeam.Coach?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Coach</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      sendRequest?.(league, selectedTeam, GM);
-                      handleCloseModal();
-                    }}
-                    disabled={(selectedTeam.GM?.length ?? 0) > 0}
+                    onClick={() => handleClick("gm")}
+                    disabled={(selectedTeam.GM?.length ?? 0) > 0 || !canSubmit}
                   >
                     <Text variant="small">GM</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      sendRequest?.(league, selectedTeam, Scout);
-                      handleCloseModal();
-                    }}
-                    disabled={(selectedTeam.Scout?.length ?? 0) > 0}
+                    onClick={() => handleClick("a")}
+                    disabled={
+                      (selectedTeam.Scout?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Assistant</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      sendRequest?.(league, selectedTeam, Marketing);
-                      handleCloseModal();
-                    }}
-                    disabled={(selectedTeam.Marketing?.length ?? 0) > 0}
+                    onClick={() => handleClick("m")}
+                    disabled={
+                      (selectedTeam.Marketing?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Marketing</Text>
                   </Button>
@@ -558,41 +619,37 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 <ButtonGroup>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      sendRequest?.(league, selectedTeam, "o");
-                      handleCloseModal();
-                    }}
-                    disabled={(selectedTeam.owner_name?.length ?? 0) > 0}
+                    onClick={() => handleClick("o")}
+                    disabled={
+                      (selectedTeam.owner_name?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Ownership</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      sendRequest?.(league, selectedTeam, "mgr");
-                      handleCloseModal();
-                    }}
-                    disabled={(selectedTeam.manager_name?.length ?? 0) > 0}
+                    onClick={() => handleClick("mgr")}
+                    disabled={
+                      (selectedTeam.manager_name?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Manager</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      sendRequest?.(league, selectedTeam, "gm");
-                      handleCloseModal();
-                    }}
-                    disabled={(selectedTeam.gm_name?.length ?? 0) > 0}
+                    onClick={() => handleClick("gm")}
+                    disabled={
+                      (selectedTeam.gm_name?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">GM</Text>
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => {
-                      sendRequest?.(league, selectedTeam, "sc");
-                      handleCloseModal();
-                    }}
-                    disabled={(selectedTeam.scout_name?.length ?? 0) > 0}
+                    onClick={() => handleClick("sc")}
+                    disabled={
+                      (selectedTeam.scout_name?.length ?? 0) > 0 || !canSubmit
+                    }
                   >
                     <Text variant="small">Scout</Text>
                   </Button>
@@ -630,43 +687,97 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               `competing not only for the
             postseason, but also the opportunity to win the World Series.`}
           </Text>
-          <Text classes="mb-6 text-start">
-            If at any point you don't know where to start or what to do, please
-            reach out to others in our Discord Server. We'd be more than happy
-            to help show the ropes so that you can make the most out of your
-            team.
-          </Text>
-          <Text classes="text-start mb-2" variant="danger">
-            NOTE: All team requests without an application filled out on our
-            forums OR Discord server will be rejected.
-          </Text>
-          <Text classes="text-start mb-2 font-semibold">
-            If you haven't filled out an application, please join our{" "}
-            <a target="_blank" href="https://discord.gg/q46vwZ83RH">
-              Discord server
-            </a>{" "}
-            and we shall help you there.
-          </Text>
-          <Text classes="text-start mb-2">
-            Please navigate to our forums{" "}
-            <a target="_blank" href="https://simulationsports.net/forums">
-              forums
-            </a>{" "}
-            and we can also answer questions within the{" "}
+
+          {/* ── Application form ─────────────────────────────────────────────── */}
+          <div className="flex flex-col gap-3 mb-4 px-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Fields marked{" "}
+              <span className="text-red-400 font-semibold">*</span> are required
+              before you can submit your request.
+            </p>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Discord username{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={discordUsername}
+                onChange={(e) => setDiscordUsername(e.target.value)}
+                placeholder="e.g. yourname or yourname#0000"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                How much time can you dedicate to your team each week?{" "}
+                <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={howMuchTimeAnswer}
+                onChange={(e) => setHowMuchTimeAnswer(e.target.value)}
+                placeholder="e.g. A few hours per week"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                How did you find out about SimSN?{" "}
+                <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                value={howDidYouHearAboutSimSN}
+                onChange={(e) => setHowDidYouHearAboutSimSN(e.target.value)}
+                placeholder="e.g. Reddit, a friend, YouTube…"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Do you know anyone in the SimSN community?{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <input
+                type="text"
+                value={communityReference}
+                onChange={(e) => setCommunityReference(e.target.value)}
+                placeholder="List any SimSN usernames"
+                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Tell us a bit about yourself{" "}
+                <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                value={aboutYourself}
+                onChange={(e) => setAboutYourself(e.target.value)}
+                placeholder="A short introduction — what you're hoping to get out of SimSN, your sim sports background, etc."
+                rows={3}
+                className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+            </div>
+          </div>
+
+          <Text classes="text-start text-sm text-gray-500 dark:text-gray-400">
+            If you have questions before applying, visit our{" "}
             <a
               target="_blank"
               href="https://simulationsports.net/forums/welcome/intro-help"
+              className="underline hover:text-blue-500"
             >
-              Intro / Help Subforum
-            </a>
-            .
+              Intro / Help subforum
+            </a>{" "}
+            — we're happy to help get you started.
           </Text>
-          {league === SimCFB && !selectedTeam.IsFBS && (
-            <Text classes="text-start mb-2">
-              FCS Teams are currently being displayed but are unavailable for
-              the 2027 Season.
-            </Text>
-          )}
         </SelectedTeamModal>
       )}
       {data && (
