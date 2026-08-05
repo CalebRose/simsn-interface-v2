@@ -117,6 +117,7 @@ interface SimBBAContextProps {
   proNews: NewsLog[];
   allProGames: NBAMatch[];
   currentProSeasonGames: NBAMatch[];
+  proTeamsGames: NBAMatch[];
   proNotifications: Notification[];
   collegeGameplan: Gameplan[];
   nbaGameplan: NBAGameplan[];
@@ -279,6 +280,7 @@ const defaultContext: SimBBAContextProps = {
   proNews: [],
   allProGames: [],
   currentProSeasonGames: [],
+  proTeamsGames: [],
   proNotifications: [],
   collegeGameplan: [],
   nbaGameplan: [],
@@ -448,10 +450,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   >([]);
   const [collegeNews, setCollegeNews] = useState<NewsLog[]>([]);
   const [allCollegeGames, setAllCollegeGames] = useState<Match[]>([]);
-  const [currentCollegeSeasonGames, setCurrentCollegeSeasonGames] = useState<
-    Match[]
-  >([]);
-  const [collegeTeamsGames, setCollegeTeamsGames] = useState<Match[]>([]);
   const [collegeNotifications, setCollegeNotifications] = useState<
     Notification[]
   >([]);
@@ -487,12 +485,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [proInjuryReport, setProInjuryReport] = useState<NBAPlayer[]>([]);
   const [proNews, setProNews] = useState<NewsLog[]>([]);
   const [allProGames, setAllProGames] = useState<NBAMatch[]>([]);
-  const [currentProSeasonGames, setCurrentProSeasonGames] = useState<
-    NBAMatch[]
-  >([]);
   const [collegeGameplan, setCollegeGameplan] = useState<Gameplan[]>([]);
   const [nbaGameplan, setNBAGameplan] = useState<NBAGameplan[]>([]);
-  const [proTeamsGames, setProTeamsGames] = useState<NBAMatch[]>([]);
   const [proNotifications, setProNotifications] = useState<Notification[]>([]);
   const [topCBBPoints, setTopCBBPoints] = useState<CollegePlayer[]>([]);
   const [topCBBAssists, setTopCBBAssists] = useState<CollegePlayer[]>([]);
@@ -550,6 +544,36 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [nbaScoutingProfileMap, setNBAScoutingProfileMap] = useState<
     Record<number, ScoutingProfile[] | null>
   >({});
+
+  const currentCollegeSeasonGames = useMemo(() => {
+    if (!allProGames || !cbb_Timestamp) return [];
+    return allCollegeGames.filter(
+      (game) => game.SeasonID === cbb_Timestamp.SeasonID,
+    );
+  }, [allProGames, cbb_Timestamp]);
+
+  const collegeTeamsGames = useMemo(() => {
+    if (!currentCollegeSeasonGames || !cbb_Timestamp) return [];
+    return currentCollegeSeasonGames.filter(
+      (game) =>
+        game.HomeTeamID === cbbTeam?.ID || game.AwayTeamID === cbbTeam?.ID,
+    );
+  }, [currentCollegeSeasonGames, cbb_Timestamp, cbbTeam]);
+
+  const currentProSeasonGames = useMemo(() => {
+    if (!allProGames || !cbb_Timestamp) return [];
+    return allProGames.filter(
+      (game) => game.SeasonID === cbb_Timestamp.SeasonID,
+    );
+  }, [allProGames, cbb_Timestamp]);
+
+  const proTeamsGames = useMemo(() => {
+    if (!currentProSeasonGames || !cbb_Timestamp) return [];
+    return currentProSeasonGames.filter(
+      (game) =>
+        game.HomeTeamID === nbaTeam?.ID || game.AwayTeamID === nbaTeam?.ID,
+    );
+  }, [currentProSeasonGames, cbb_Timestamp, nbaTeam]);
 
   const nbaDraftPickMap = useMemo(() => {
     const pickMap: Record<number, DraftPick[]> = {};
@@ -2040,6 +2064,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         proNews,
         allProGames,
         currentProSeasonGames,
+        proTeamsGames,
         proNotifications,
         collegeGameplan,
         nbaGameplan,

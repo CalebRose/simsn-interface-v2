@@ -39,6 +39,12 @@ export const BasketballGameplanPage = () => {
     pace,
     paceOptions,
     SelectPace,
+    SelectOffensiveSystem,
+    offensiveSystem,
+    offensiveSystemOptions,
+    SelectDefensiveSystem,
+    defensiveSystem,
+    defensiveSystemOptions,
   } = useBasketballGameplan();
   const { isMobile } = useResponsive();
 
@@ -122,6 +128,20 @@ export const BasketballGameplanPage = () => {
                       label="Pace"
                       options={paceOptions}
                       change={SelectPace}
+                      isMulti={false}
+                      isMobile={isMobile}
+                    />
+                    <CategoryDropdown
+                      label="Offensive System"
+                      options={offensiveSystemOptions}
+                      change={SelectOffensiveSystem}
+                      isMulti={false}
+                      isMobile={isMobile}
+                    />
+                    <CategoryDropdown
+                      label="Defensive System"
+                      options={defensiveSystemOptions}
+                      change={SelectDefensiveSystem}
                       isMulti={false}
                       isMobile={isMobile}
                     />

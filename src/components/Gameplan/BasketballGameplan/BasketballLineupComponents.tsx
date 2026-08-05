@@ -116,7 +116,7 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
           const label = (() => {
             switch (x) {
               case "Minutes":
-                return "Minutes";
+                return "Usage";
               case "InsideProportion":
                 return "Inside Proportion";
               case "MidProportion":
