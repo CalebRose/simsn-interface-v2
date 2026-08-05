@@ -17,6 +17,8 @@ export interface ModalProps {
   actions?: ReactNode;
   maxWidth?: string;
   classes?: string;
+  /** Override classes on the scrollable content wrapper (default: "mt-4 overflow-y-auto text-gray-700 dark:text-gray-300"). Use "overflow-hidden" for split-panel layouts that manage their own scroll. */
+  bodyClass?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -27,6 +29,7 @@ export const Modal: React.FC<ModalProps> = ({
   actions,
   classes = "",
   maxWidth = "max-w-xl",
+  bodyClass,
 }) => {
   // ✅ Strongly Typed Ref
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -78,10 +81,10 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div
         ref={modalRef}
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full ${maxWidth} max-h-[90vh] flex flex-col p-6 ${classes}`}
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full ${maxWidth} max-h-[90vh] flex flex-col p-4 ${classes}`}
       >
         {/* ✅ Modal Header */}
         <div className="flex justify-between items-center border-b pb-3 shrink-0">
@@ -102,13 +105,21 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {/* ✅ Modal Content */}
-        <div className="mt-4 text-gray-700 dark:text-gray-300 flex-1 min-h-0 overflow-y-auto">
+        <div
+          className={`flex-1 min-h-0 ${
+            bodyClass !== undefined
+              ? bodyClass
+              : "mt-4 text-gray-700 dark:text-gray-300 overflow-y-auto"
+          }`}
+        >
           {children}
         </div>
 
         {/* ✅ Modal Actions */}
         {actions && (
-          <div className="mt-6 flex justify-end space-x-2 shrink-0">{actions}</div>
+          <div className="mt-6 flex justify-end space-x-2 shrink-0">
+            {actions}
+          </div>
         )}
       </div>
     </div>

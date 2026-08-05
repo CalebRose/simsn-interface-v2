@@ -7,8 +7,8 @@ import { SimBBAProvider } from "./context/SimBBAContext";
 import { SimFBAProvider } from "./context/SimFBAContext";
 import { SimHCKProvider } from "./context/SimHockeyContext";
 import { ForumProvider } from "./context/ForumContext";
+import { DMProvider } from "./context/DMContext";
 import AppRoutes from "./routes/AppRoutes";
-
 
 function App() {
   return (
@@ -37,7 +37,9 @@ const InnerApp = () => {
               <LeagueProvider>
                 <AdminPageProvider>
                   <ForumProvider currentUser={currentUser}>
-                    <AppRoutes />
+                    <DMProvider currentUser={currentUser}>
+                      <AppRoutes />
+                    </DMProvider>
                   </ForumProvider>
                 </AdminPageProvider>
               </LeagueProvider>

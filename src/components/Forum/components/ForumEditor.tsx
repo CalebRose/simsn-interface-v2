@@ -2,6 +2,7 @@ import React, {
   useCallback,
   useRef,
   useState,
+  useMemo,
   forwardRef,
   useImperativeHandle,
 } from "react";
@@ -395,6 +396,11 @@ interface ForumEditorProps {
   maxLength?: number;
   /** Called on every editor content change (debounce externally if needed). */
   onDocChange?: (doc: RichTextDocument) => void;
+  /**
+   * When provided, @mention autocomplete is restricted to this list (e.g. DM
+   * participants) instead of searching the global user index.
+   */
+  mentionUsers?: { uid: string; username: string }[];
 }
 
 export interface ForumEditorHandle {
@@ -447,103 +453,126 @@ function extractMentionsFromDoc(doc: RichTextDocument): PostMention[] {
 }
 
 // Mention extension extended with uid/username attrs
-const MentionExtension = Mention.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      uid: {
-        default: null,
-        parseHTML: (el) => el.getAttribute("data-uid"),
-        renderHTML: (attrs) => (attrs.uid ? { "data-uid": attrs.uid } : {}),
-      },
-      username: {
-        default: null,
-        parseHTML: (el) => el.getAttribute("data-username"),
-        renderHTML: (attrs) =>
-          attrs.username ? { "data-username": attrs.username } : {},
-      },
-    };
-  },
-  renderHTML({ node, HTMLAttributes: baseAttrs }) {
-    return [
-      "span",
-      mergeAttributes(
-        { class: "mention-chip", "data-type": "mention" },
-        baseAttrs,
-      ),
-      `@${(node.attrs.username as string) ?? ""}`,
-    ];
-  },
-}).configure({
-  suggestion: {
-    items: async ({ query }: { query: string }) => {
-      if (!query || query.trim().length === 0) return [];
-      try {
-        return await ForumService.SearchUsersByPrefix(query.trim());
-      } catch {
-        return [];
+// Shared dropdown render logic for the mention suggestion UI
+const mentionSuggestionRender = () => {
+  let renderer: ReactRenderer<MentionListHandle>;
+  let wrapper: HTMLDivElement;
+
+  const positionWrapper = (
+    clientRect: (() => DOMRect | null) | null | undefined,
+  ) => {
+    if (!wrapper || !clientRect) return;
+    const rect = clientRect();
+    if (!rect) return;
+    const DROPDOWN_EST_HEIGHT = 300;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const maxLeft = window.innerWidth - 280;
+    const left = Math.min(rect.left, maxLeft);
+    wrapper.style.left = `${left}px`;
+    if (spaceBelow < DROPDOWN_EST_HEIGHT && spaceAbove > spaceBelow) {
+      wrapper.style.top = "auto";
+      wrapper.style.bottom = `${window.innerHeight - rect.top + 4}px`;
+    } else {
+      wrapper.style.top = `${rect.bottom + 4}px`;
+      wrapper.style.bottom = "auto";
+    }
+  };
+
+  return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onStart(props: any) {
+      wrapper = document.createElement("div");
+      wrapper.style.position = "fixed";
+      wrapper.style.zIndex = "9999";
+      document.body.appendChild(wrapper);
+      renderer = new ReactRenderer(MentionList, {
+        props,
+        editor: props.editor,
+      });
+      wrapper.appendChild(renderer.element);
+      positionWrapper(props.clientRect);
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onUpdate(props: any) {
+      renderer.updateProps(props);
+      positionWrapper(props.clientRect);
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onKeyDown(props: any) {
+      if (props.event.key === "Escape") {
+        wrapper?.remove();
+        renderer?.destroy();
+        return true;
       }
+      return renderer.ref?.onKeyDown(props.event) ?? false;
     },
-    render: () => {
-      let renderer: ReactRenderer<MentionListHandle>;
-      let wrapper: HTMLDivElement;
+    onExit() {
+      wrapper?.remove();
+      renderer?.destroy();
+    },
+  };
+};
 
-      const positionWrapper = (
-        clientRect: (() => DOMRect | null) | null | undefined,
-      ) => {
-        if (!wrapper || !clientRect) return;
-        const rect = clientRect();
-        if (!rect) return;
-        const DROPDOWN_EST_HEIGHT = 300;
-        const spaceBelow = window.innerHeight - rect.bottom;
-        const spaceAbove = rect.top;
-        const maxLeft = window.innerWidth - 280;
-        const left = Math.min(rect.left, maxLeft);
-        wrapper.style.left = `${left}px`;
-        if (spaceBelow < DROPDOWN_EST_HEIGHT && spaceAbove > spaceBelow) {
-          // Flip above the caret when there isn't enough room below
-          wrapper.style.top = "auto";
-          wrapper.style.bottom = `${window.innerHeight - rect.top + 4}px`;
-        } else {
-          wrapper.style.top = `${rect.bottom + 4}px`;
-          wrapper.style.bottom = "auto";
-        }
-      };
-
+/**
+ * Builds a TipTap Mention extension.
+ * When `usersRef` is provided its current value is used as a fixed participant
+ * list (for DMs); otherwise users are fetched from the global search API.
+ */
+function buildMentionExtension(
+  usersRef?: React.MutableRefObject<
+    { uid: string; username: string }[] | undefined
+  >,
+) {
+  return Mention.extend({
+    addAttributes() {
       return {
-        onStart(props) {
-          wrapper = document.createElement("div");
-          wrapper.style.position = "fixed";
-          wrapper.style.zIndex = "9999";
-          document.body.appendChild(wrapper);
-
-          renderer = new ReactRenderer(MentionList, {
-            props,
-            editor: props.editor,
-          });
-          wrapper.appendChild(renderer.element);
-          positionWrapper(props.clientRect);
+        ...this.parent?.(),
+        uid: {
+          default: null,
+          parseHTML: (el) => el.getAttribute("data-uid"),
+          renderHTML: (attrs) => (attrs.uid ? { "data-uid": attrs.uid } : {}),
         },
-        onUpdate(props) {
-          renderer.updateProps(props);
-          positionWrapper(props.clientRect);
-        },
-        onKeyDown(props) {
-          if (props.event.key === "Escape") {
-            wrapper?.remove();
-            renderer?.destroy();
-            return true;
-          }
-          return renderer.ref?.onKeyDown(props.event) ?? false;
-        },
-        onExit() {
-          wrapper?.remove();
-          renderer?.destroy();
+        username: {
+          default: null,
+          parseHTML: (el) => el.getAttribute("data-username"),
+          renderHTML: (attrs) =>
+            attrs.username ? { "data-username": attrs.username } : {},
         },
       };
     },
-  },
-});
+    renderHTML({ node, HTMLAttributes: baseAttrs }) {
+      return [
+        "span",
+        mergeAttributes(
+          { class: "mention-chip", "data-type": "mention" },
+          baseAttrs,
+        ),
+        `@${(node.attrs.username as string) ?? ""}`,
+      ];
+    },
+  }).configure({
+    suggestion: {
+      items: async ({ query }: { query: string }) => {
+        const users = usersRef?.current;
+        if (users) {
+          const q = query.trim().toLowerCase();
+          if (!q) return users.slice(0, 5);
+          return users
+            .filter((u) => u.username.toLowerCase().startsWith(q))
+            .slice(0, 5);
+        }
+        if (!query || query.trim().length === 0) return [];
+        try {
+          return await ForumService.SearchUsersByPrefix(query.trim());
+        } catch {
+          return [];
+        }
+      },
+      render: mentionSuggestionRender,
+    },
+  });
+}
 
 const MAX_DEFAULT = 10000;
 
@@ -597,6 +626,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
       submitDisabled = false,
       maxLength = MAX_DEFAULT,
       onDocChange,
+      mentionUsers,
     },
     ref,
   ) {
@@ -612,6 +642,19 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
     // captures a stale version of the callback.
     const onDocChangeRef = useRef(onDocChange);
     onDocChangeRef.current = onDocChange;
+
+    // Keep a stable ref for mentionUsers so the TipTap extension (created once)
+    // always reads the latest value without needing to be recreated.
+    const mentionUsersRef = useRef(mentionUsers);
+    mentionUsersRef.current = mentionUsers;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const mentionExt = useMemo(
+      () =>
+        buildMentionExtension(
+          mentionUsers !== undefined ? mentionUsersRef : undefined,
+        ),
+      [],
+    );
 
     const editor = useEditor({
       extensions: [
@@ -629,7 +672,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
         TableRow,
         TableCell,
         TableHeader,
-        MentionExtension,
+        mentionExt,
         YoutubeEmbedExtension,
         ForumImageExtension,
       ],

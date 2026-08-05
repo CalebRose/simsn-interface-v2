@@ -5,6 +5,8 @@ import { AuthService } from "../../_services/auth";
 import { getLogo } from "../../_utility/getLogo";
 import routes from "../../_constants/routes";
 import { useForumStore } from "../../context/ForumContext";
+import { useDMStore } from "../../context/DMContext";
+import { InboxModal } from "../DirectMessages/InboxModal";
 import {
   League,
   SimCBB,
@@ -61,6 +63,7 @@ export const SideMenu = ({}) => {
     markAllNotificationsRead,
     clearNotifications,
   } = useForumStore();
+  const { totalUnreadDMs, isInboxOpen, openInbox, closeInbox } = useDMStore();
   const { isDesktop } = useResponsive();
   const [processing, setProcessing] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -265,6 +268,32 @@ export const SideMenu = ({}) => {
                 )}
               </div>
 
+              {/* Inbox (DMs) Button */}
+              <button
+                type="button"
+                aria-label="Messages"
+                onClick={openInbox}
+                className="relative p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-hidden"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                  />
+                </svg>
+                {totalUnreadDMs > 0 && (
+                  <span className="absolute top-0.5 right-0.5 block h-2 w-2 rounded-full bg-blue-500 ring-2 ring-white dark:ring-gray-800" />
+                )}
+              </button>
+
               {/* User Avatar Dropdown */}
               <div className="relative">
                 <button
@@ -437,6 +466,8 @@ export const SideMenu = ({}) => {
           </ul>
         </div>
       </aside>
+
+      <InboxModal isOpen={isInboxOpen} onClose={closeInbox} />
     </>
   );
 };
