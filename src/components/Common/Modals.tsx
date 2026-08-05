@@ -1959,7 +1959,7 @@ export const CBBCrootInfoModalBody: FC<CBBCrootInfoModalBodyProps> = ({
     if (recruitProfile.InsideShooting) {
       count++;
     }
-    if (recruitProfile.MidRangeShooting) {
+    if (recruitProfile.MidrangeShooting) {
       count++;
     }
     if (recruitProfile.ThreePointShooting) {

@@ -6,8 +6,10 @@ import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { getLogo } from "../../_utility/getLogo";
 import {
   League,
+  SimCBB,
   SimCFB,
   SimCHL,
+  SimNBA,
   SimNFL,
   SimPHL,
 } from "../../_constants/constants";
@@ -23,10 +25,13 @@ import {
 import { getOverallGrade } from "../Draft/common";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import {
+  setNBAPriorityDrafteeAttributes,
   setPriorityCFBAttributes,
   setPriorityDrafteeAttributes,
 } from "../Team/TeamPageUtils";
 import { NFLDraftee } from "../../models/footballModels";
+import { NBADraftee } from "../../models/basketballModels";
+import { useSimBBAStore } from "../../context/SimBBAContext";
 
 interface DrafteeInfoModalBodyProps {
   league: League;
@@ -42,6 +47,9 @@ export const DrafteeInfoModalBody: FC<DrafteeInfoModalBodyProps> = ({
   }
   if (league === SimNFL) {
     return <NFLDrafteeInfoModalBody player={player as NFLDraftee} />;
+  }
+  if (league === SimNBA) {
+    return <NBADrafteeInfoModalBody player={player as NBADraftee} />;
   }
   return <>Unsupported League.</>;
 };
@@ -132,7 +140,7 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
           Overall
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {getOverallGrade(player)}
+          {getOverallGrade(player, SimPHL)}
         </Text>
       </div>
       <div className="flex flex-col">
@@ -489,6 +497,161 @@ export const NFLDrafteeInfoModalBody: FC<NFLDrafteeInfoModalBodyProps> = ({
           <div className="mt-2 overflow-x-auto">
             <FootballPlayerStatsModalView player={player} league={SimCFB} />
           </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+interface NBADrafteeInfoModalBodyProps {
+  player: NBADraftee;
+}
+
+export const NBADrafteeInfoModalBody: FC<NBADrafteeInfoModalBodyProps> = ({
+  player,
+}) => {
+  const [selectedTab, setSelectedTab] = useState<string>("Attributes");
+  const { currentUser } = useAuthStore();
+  const { nbaTeamMap, cbbTeamMap } = useSimBBAStore();
+  const proTeam = nbaTeamMap![player.TeamID];
+  let cbbTeam = cbbTeamMap![player.CollegeID];
+  if (!cbbTeam) {
+    cbbTeam = cbbTeamMap![player.TeamID];
+  }
+  const teamLogo = getLogo(SimCBB, player.CollegeID, currentUser?.IsRetro);
+  const heightObj = HeightToFeetAndInches(player.Height);
+  const priorityAttributes = setNBAPriorityDrafteeAttributes(
+    player as NBADraftee,
+  );
+  const abbr = cbbTeam ? cbbTeam.Abbr : "";
+
+  return (
+    <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
+      <div className="row-span-3 flex flex-col items-center">
+        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
+          <PlayerPicture
+            playerID={player.ID}
+            player={player}
+            league={SimNBA}
+            team={proTeam}
+          />
+        </div>
+        {cbbTeam && (
+          <Logo
+            url={teamLogo}
+            label={cbbTeam.Abbr}
+            classes="h-20 max-h-20"
+            containerClass="p-4"
+            textClass="text-small"
+          />
+        )}
+      </div>
+      <div className="flex flex-col">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          Origin
+        </Text>
+        <Text variant="small" classes="whitespace-nowrap">
+          {player.State.length > 0 && `${player.State}`}
+        </Text>
+      </div>
+      <div className="flex flex-col">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          Age
+        </Text>
+        <Text variant="small" classes="whitespace-nowrap">
+          {player.Age}
+        </Text>
+      </div>
+      <div className="flex flex-col">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          Height
+        </Text>
+        <Text variant="small" classes="whitespace-nowrap">
+          {heightObj.feet}'{heightObj.inches}"
+        </Text>
+      </div>
+      <div className="flex flex-col">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          Weight
+        </Text>
+        <Text variant="small" classes="whitespace-nowrap">
+          {player.Weight} lbs
+        </Text>
+      </div>
+      <div className="flex flex-col items-center">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          Personality
+        </Text>
+        <Text variant="small" classes="whitespace-nowrap">
+          {player.Personality}
+        </Text>
+      </div>
+      <div className="flex flex-col">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          Overall
+        </Text>
+        <Text variant="small" classes="whitespace-nowrap">
+          {player.OverallGrade}
+        </Text>
+      </div>
+      <div className="flex flex-col">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          College
+        </Text>
+        <Text variant="small" classes="whitespace-nowrap">
+          {abbr}
+        </Text>
+      </div>
+      <div className="flex flex-col items-center">
+        <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+          Drafted
+        </Text>
+        {player.DraftedRound === 0 && player.DraftedPick === 0 ? (
+          <Text variant="small" classes="whitespace-nowrap">
+            UDFA
+          </Text>
+        ) : (
+          <>
+            <Text variant="small" classes="whitespace-nowrap">
+              Round {player.DraftedRound} - Pick {player.DraftedPick}
+            </Text>
+            <Text variant="xs" classes="whitespace-nowrap text-small">
+              by {player.DraftedTeam}
+            </Text>
+          </>
+        )}
+      </div>
+      <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
+        <TabGroup classes="mb-3 w-full">
+          <Tab
+            label="Attributes"
+            selected={selectedTab === "Attributes"}
+            setSelected={setSelectedTab}
+          />
+          <Tab
+            label="Stats"
+            selected={selectedTab === "Stats"}
+            setSelected={setSelectedTab}
+          />
+        </TabGroup>
+
+        {selectedTab === "Attributes" && (
+          <div className="grid w-full grid-cols-4 gap-3">
+            {priorityAttributes.map((attr, idx) => (
+              <div key={idx} className="flex flex-col px-1 gap-1">
+                <Text
+                  variant="small"
+                  classes="mb-1 whitespace-nowrap font-semibold"
+                >
+                  {attr.Name}
+                </Text>
+                <Text variant="small">{attr.Letter}</Text>
+              </div>
+            ))}
+          </div>
+        )}
+        {selectedTab === "Stats" && (
+          <div className="mt-2 overflow-x-auto">To be implemented</div>
         )}
       </div>
     </div>

@@ -31,7 +31,7 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
   onClick,
   league,
 }) => {
-  const fieldName = getAttributeFieldName(attributeName, league);
+  let fieldName = getAttributeFieldName(attributeName, league);
   const isClickable = !revealed && canAfford;
   const isOverallGrade = attributeName === "Overall Grade";
   const isPotentialGrade = attributeName === "Potential Grade";
@@ -41,7 +41,7 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
   let valueColor: string = "";
 
   if (isOverallGrade) {
-    displayValue = getOverallGrade(player);
+    displayValue = getOverallGrade(player, league);
     valueColor = getGradeColor(displayValue);
   } else if (isPotentialGrade) {
     if (revealed) {
@@ -60,6 +60,9 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
       valueColor = getRatingColor(parseInt(displayValue), league);
     }
   } else {
+    if (fieldName === "MidRangeShooting") {
+      fieldName = "MidrangeShooting";
+    }
     const grade = (player as any)[`${fieldName}Grade`];
     displayValue = grade || "?";
     valueColor = getGradeColor(displayValue);
@@ -74,7 +77,7 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
     <div
       className={`
         relative p-2 rounded-sm border text-center cursor-pointer
-        ${isPotentialGrade || isOverallGrade ? "min-w-[50px] min-h-[50px] sm:min-w-[60px] sm:min-h-[60px] max-w-[80px] max-h-[80px]" : "min-w-[60px] min-h-[60px] sm:min-w-[70px] sm:min-h-[70px] max-w-[80px] max-h-[80px]"}
+        ${isPotentialGrade || isOverallGrade ? "min-w-12.5 min-h-12.5 sm:min-w-15 sm:min-h-15 max-w-20 max-h-20" : "min-w-15 min-h-15 sm:min-w-17.5 sm:min-h-17.5 max-w-20 max-h-20"}
         flex flex-col justify-center items-center
         ${
           revealed

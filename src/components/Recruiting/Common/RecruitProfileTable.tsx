@@ -892,7 +892,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
     if (profile.InsideShooting) {
       count++;
     }
-    if (profile.MidRangeShooting) {
+    if (profile.MidrangeShooting) {
       count++;
     }
     if (profile.ThreePointShooting) {

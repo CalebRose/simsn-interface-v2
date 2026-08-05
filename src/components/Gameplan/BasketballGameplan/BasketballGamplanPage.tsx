@@ -36,6 +36,15 @@ export const BasketballGameplanPage = () => {
     totalMidrangeProportionWeighted,
     totalThreePointProportionWeighted,
     saveLineupChanges,
+    pace,
+    paceOptions,
+    SelectPace,
+    SelectOffensiveSystem,
+    offensiveSystem,
+    offensiveSystemOptions,
+    SelectDefensiveSystem,
+    defensiveSystem,
+    defensiveSystemOptions,
   } = useBasketballGameplan();
   const { isMobile } = useResponsive();
 
@@ -106,7 +115,38 @@ export const BasketballGameplanPage = () => {
                     3pt Weight: {totalThreePointProportionWeighted.toFixed(2)}
                   </Text>
                 </div>
-
+                {viewingUserTeam && (
+                  <div className="flex flex-col gap-x-2 flex-wrap w-full text-start my-2">
+                    <TeamLabel
+                      team="Gameplan"
+                      variant="h5"
+                      backgroundColor={teamColors.One}
+                      borderColor={teamColors.One}
+                      headerTextColorClass={headerTextColorClass}
+                    />
+                    <CategoryDropdown
+                      label="Pace"
+                      options={paceOptions}
+                      change={SelectPace}
+                      isMulti={false}
+                      isMobile={isMobile}
+                    />
+                    <CategoryDropdown
+                      label="Offensive System"
+                      options={offensiveSystemOptions}
+                      change={SelectOffensiveSystem}
+                      isMulti={false}
+                      isMobile={isMobile}
+                    />
+                    <CategoryDropdown
+                      label="Defensive System"
+                      options={defensiveSystemOptions}
+                      change={SelectDefensiveSystem}
+                      isMulti={false}
+                      isMobile={isMobile}
+                    />
+                  </div>
+                )}
                 <div className="flex flex-col gap-x-2 flex-wrap w-full text-start my-2">
                   <TeamLabel
                     team="Errors"

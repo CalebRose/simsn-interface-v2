@@ -1,61 +1,59 @@
-import { FC, useMemo } from "react";
-import {
-  DraftablePlayer,
-  ProfessionalTeam as PHLTeam,
-  ProfessionalPlayer,
-  ProfessionalTeam,
-  ScoutingProfile,
-} from "../../../models/hockeyModels";
+import React, { useMemo } from "react";
 import {
   AdminBoard,
   BigBoard,
   DraftBoardStr,
   League,
   ScoutBoard,
-  SimPHL,
+  SimNBA,
   WarRoomBoard,
 } from "../../../_constants/constants";
-import { Text } from "../../../_design/Typography";
-import { useTeamColors } from "../../../_hooks/useTeamColors";
-import {
-  DraftClock,
-  DraftTicker,
-  UpcomingPicks,
-  DraftBoard,
-  ScoutingBoard,
-  ScoutingProfile as CommonScoutingProfile,
-  Draftee as CommonDraftee,
-  DraftPick,
-} from "../common";
-import { usePHLDraft } from "./usePHLDraft";
+import { useNBADraftPage } from "./useNBADraftPage";
 import { useAuthStore } from "../../../context/AuthContext";
+import { useTeamColors } from "../../../_hooks/useTeamColors";
+import { getSecondsByRound } from "../PHLDraft/utils/draftHelpers";
+import {
+  DraftPick,
+  NBADraftee,
+  NBATeam,
+  ScoutingProfile,
+} from "../../../models/basketballModels";
+import { Text } from "../../../_design/Typography";
 import { ActionModal } from "../../Common/ActionModal";
 import { DraftAdminBoard } from "../common/AdminBoard";
-import { DraftSidebar } from "../common/DraftSidebar";
-import { DraftWarRoom } from "../common/WarRoom";
 import { BigDraftBoard } from "../common/BigBoard";
-import { useModal } from "../../../_hooks/useModal";
-import ProposeDraftTradeModal from "../common/ProposeDraftTradeModal";
-import { ManageDraftTradesModal } from "../common/ManageDraftTradesModal";
-import { getSecondsByRound } from "./utils/draftHelpers";
-import { useSimHCKStore } from "../../../context/SimHockeyContext";
+import { DraftWarRoom } from "../common/WarRoom";
+import {
+  DraftBoard,
+  DraftClock,
+  Draftee,
+  DraftTicker,
+  ScoutingBoard,
+  ScoutingProfile as CommonScoutingProfile,
+  UpcomingPicks,
+} from "../common";
+import { DraftSidebar } from "../common/DraftSidebar";
 
-interface PHLDraftPageProps {
+interface NBADraftPageProps {
   league: League;
 }
 
-export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
+export const NBADraftPage: React.FC<NBADraftPageProps> = ({ league }) => {
   const { currentUser, isAdmin } = useAuthStore();
-  const { exportPHLDraftees } = useSimHCKStore();
   const {
-    proDraftablePlayers,
     selectedTeam,
+    nbaDraftees,
     teamScoutProfiles,
+    currentSeasonDraftPicks,
     activeTab,
     setActiveTab,
     isLoading,
     error,
     draftState,
+    updateDraftState,
+    handleManualDraftStateUpdate,
+    selectedScoutProfile,
+    isScoutingModalOpen,
     currentPick,
     upcomingPicks,
     recentPicks,
@@ -67,55 +65,40 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     handleRemoveFromScoutBoard,
     handleRevealAttribute,
     handleViewScoutDetails,
+    closeScoutingModal,
+    handleExportDraftPicks,
+    refreshDraftData,
+    formatDraftPosition,
+    getTimeForPick,
+    PICKS_PER_ROUND: NBA_PICKS_PER_ROUND,
     selectTeamOption,
-    phlTeamOptions,
+    nbaTeamOptions,
     teamNeedsList,
-    offensiveSystemsInformation,
-    defensiveSystemsInformation,
-    offensiveSystem,
-    defensiveSystem,
     modalPlayer,
     handleCloseModal,
     handlePlayerModal,
     modalAction,
     isModalOpen,
+    isPaused,
+    seconds,
+    draftPicksFromState,
     resyncDraftData,
-    handleManualDraftStateUpdate,
-    handleExportDraftPicks,
+    isDraftStateLoading,
+    formattedTime,
     isDraftComplete,
     togglePause,
-    resetTimer,
     startDraft,
-    seconds,
+    resetTimer,
     teamDraftPicks,
     draftablePlayerMap,
-    draftPicksFromState,
-    userTeam,
-    tradePartnerTeam,
-    selectTradePartner,
-    teamOptions,
-    userTradablePlayers,
-    userTradablePicks,
-    partnerTradablePlayers,
-    partnerTradablePicks,
-    userTradeProposals,
-    userWarRoomData,
-    approvedRequests,
-    proposeTrade,
-    acceptTrade,
-    rejectTrade,
-    vetoTrade,
-    handleProcessTrade,
-  } = usePHLDraft();
-
-  const proposeTradeModal = useModal();
-  const receiveTradeModal = useModal();
-  const adminProposalsModal = useModal();
+    nbaDraftPicks,
+    exportNBADraftees,
+  } = useNBADraftPage();
 
   const isCommissioner = useMemo(() => {
     if (!currentUser) return false;
     if (!currentUser.roleID) return false;
-    return isAdmin || currentUser?.roleID?.includes("PHL Commissioner");
+    return isAdmin || currentUser?.roleID?.includes("NBA Commissioner");
   }, [currentUser, isAdmin]);
 
   const rawTeamColors = useTeamColors(
@@ -128,12 +111,12 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
   };
   const backgroundColor = "#1f2937";
 
-  const onAddToScoutBoard = async (player: DraftablePlayer) => {
+  const onAddToScoutBoard = async (player: NBADraftee) => {
     await handleAddToScoutBoard(player);
   };
 
-  const onRemoveFromScoutBoard = async (profile: ScoutingProfile) => {
-    await handleRemoveFromScoutBoard(profile);
+  const onRemoveFromScoutBoard = async (profile: CommonScoutingProfile) => {
+    await handleRemoveFromScoutBoard(profile as ScoutingProfile);
   };
 
   const onRevealAttribute = async (
@@ -144,11 +127,11 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     await handleRevealAttribute(profileId, attribute, points);
   };
 
-  const onViewDetails = (profile: ScoutingProfile) => {
-    handleViewScoutDetails(profile);
+  const onViewDetails = (profile: CommonScoutingProfile) => {
+    handleViewScoutDetails(profile as ScoutingProfile);
   };
 
-  const onDraftPlayer = async (player: DraftablePlayer) => {
+  const onDraftPlayer = async (player: NBADraftee) => {
     // Logic to draft player from the current pick
     const draftPickMap = { ...draftState.allDraftPicks };
     const roundKey = draftState.currentRound;
@@ -160,7 +143,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     if (currentPickIndex === -1) return; // Pick not found
     draftPickMap[roundKey][currentPickIndex].DrafteeID = player.ID;
     const newDraftState = draftState;
-    newDraftState.advanceToNextPick(SimPHL);
+    newDraftState.advanceToNextPick(SimNBA);
     const curr = newDraftState.currentPick;
     const round = newDraftState.currentRound;
     const next = newDraftState.nextPick;
@@ -218,34 +201,6 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
 
   return (
     <>
-      <ProposeDraftTradeModal
-        isOpen={proposeTradeModal.isModalOpen}
-        onClose={proposeTradeModal.handleCloseModal}
-        userTeam={userTeam as ProfessionalTeam}
-        tradePartnerTeam={tradePartnerTeam as ProfessionalTeam}
-        league={SimPHL}
-        teamOptions={phlTeamOptions}
-        selectTradePartner={selectTradePartner}
-        userTradablePlayers={userTradablePlayers as ProfessionalPlayer[]}
-        userTradablePicks={teamDraftPicks}
-        partnerTradablePlayers={partnerTradablePlayers as ProfessionalPlayer[]}
-        partnerTradablePicks={partnerTradablePicks as DraftPick[]}
-        proposeTrade={proposeTrade}
-        backgroundColor={backgroundColor}
-        borderColor={teamColors?.secondary}
-      />
-      <ManageDraftTradesModal
-        isOpen={receiveTradeModal.isModalOpen}
-        onClose={receiveTradeModal.handleCloseModal}
-        league={SimPHL}
-        userTeam={userTeam as ProfessionalTeam}
-        sentRequests={userWarRoomData?.sentRequests ?? []}
-        receivedRequests={userWarRoomData?.requests ?? []}
-        cancelTrade={rejectTrade}
-        acceptTrade={acceptTrade}
-        rejectTrade={rejectTrade}
-        backgroundColor={backgroundColor}
-      />
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
@@ -265,10 +220,8 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           isAdmin={isCommissioner}
-          offensiveSystem={offensiveSystem}
-          defensiveSystem={defensiveSystem}
           teamNeedsList={teamNeedsList}
-          league={SimPHL}
+          league={SimNBA}
           currentPick={currentPick}
           currentRound={draftState.currentRound}
           pickNumber={draftState.currentPick}
@@ -297,7 +250,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                     recentPicks={recentPicks.map((pick) => ({ pick }))}
                     teamColors={teamColors}
                     backgroundColor={backgroundColor}
-                    league={SimPHL}
+                    league={SimNBA}
                   />
                 </div>
               </div>
@@ -316,16 +269,15 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
           <div>
             {activeTab === DraftBoardStr && (
               <DraftBoard
-                draftees={proDraftablePlayers as unknown as CommonDraftee[]}
+                draftees={nbaDraftees as unknown as Draftee[]}
                 draftedPlayerIds={draftedPlayerIds}
                 scoutedPlayerIds={scoutedPlayerIds}
                 onAddToScoutBoard={(player) =>
-                  onAddToScoutBoard(player as unknown as DraftablePlayer)
+                  onAddToScoutBoard(player as unknown as NBADraftee)
                 }
                 onDraftPlayer={
                   isUserTurn
-                    ? (player) =>
-                        onDraftPlayer(player as unknown as DraftablePlayer)
+                    ? (player) => onDraftPlayer(player as unknown as NBADraftee)
                     : undefined
                 }
                 isUserTurn={isUserTurn}
@@ -335,9 +287,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 spentPoints={teamWarRoom?.SpentPoints || 0}
                 league={league}
                 openModal={handlePlayerModal}
-                offensiveSystemsInformation={offensiveSystemsInformation}
-                defensiveSystemsInformation={defensiveSystemsInformation}
-                exportDraftBoard={exportPHLDraftees}
+                exportDraftBoard={exportNBADraftees}
               />
             )}
             {activeTab === ScoutBoard && (
@@ -347,16 +297,17 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 }
                 draftedPlayerIds={draftedPlayerIds}
                 onRemoveFromBoard={(profile) =>
-                  onRemoveFromScoutBoard(profile as unknown as ScoutingProfile)
+                  onRemoveFromScoutBoard(
+                    profile as unknown as CommonScoutingProfile,
+                  )
                 }
                 onDraftPlayer={
                   isUserTurn
-                    ? (player) =>
-                        onDraftPlayer(player as unknown as DraftablePlayer)
+                    ? (player) => onDraftPlayer(player as unknown as NBADraftee)
                     : undefined
                 }
                 onViewDetails={(profile) =>
-                  onViewDetails(profile as unknown as ScoutingProfile)
+                  onViewDetails(profile as unknown as CommonScoutingProfile)
                 }
                 onRevealAttribute={onRevealAttribute}
                 handlePlayerModal={handlePlayerModal}
@@ -367,24 +318,16 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 spentPoints={teamWarRoom?.SpentPoints || 0}
                 league={league}
                 draftablePlayerMap={draftablePlayerMap}
-                offensiveSystemsInformation={offensiveSystemsInformation}
-                defensiveSystemsInformation={defensiveSystemsInformation}
               />
             )}
             {activeTab === WarRoomBoard && (
               <>
                 <DraftWarRoom
-                  league={SimPHL}
+                  league={SimNBA}
                   backgroundColor={backgroundColor}
                   teamDraftPicks={teamDraftPicks as DraftPick[]}
-                  selectedTeam={selectedTeam as PHLTeam | null}
+                  selectedTeam={selectedTeam as NBATeam | null}
                   draftablePlayerMap={draftablePlayerMap}
-                  handleOpenProposeTradeModal={
-                    proposeTradeModal.handleOpenModal
-                  }
-                  handleOpenReceiveTradeModal={
-                    receiveTradeModal.handleOpenModal
-                  }
                 />
               </>
             )}
@@ -393,9 +336,9 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 <BigDraftBoard
                   handlePlayerModal={handlePlayerModal}
                   draftPicks={draftPicksFromState as DraftPick[]}
-                  selectedTeam={selectedTeam as PHLTeam | null}
+                  selectedTeam={selectedTeam as NBATeam | null}
                   draftablePlayerMap={draftablePlayerMap}
-                  league={SimPHL}
+                  league={SimNBA}
                   backgroundColor={backgroundColor}
                   currentPick={currentPick}
                 />
@@ -407,19 +350,15 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   draftState={draftState}
                   resyncDraftData={resyncDraftData}
                   handleManualDraftStateUpdate={handleManualDraftStateUpdate}
-                  league={SimPHL}
+                  league={SimNBA}
                   backgroundColor={backgroundColor}
                   isDraftComplete={isDraftComplete}
-                  teamOptions={phlTeamOptions}
+                  teamOptions={nbaTeamOptions}
                   selectTeamOption={selectTeamOption}
                   resetTimer={resetTimer}
                   startDraft={startDraft}
                   pauseDraft={togglePause}
                   handleExportDraft={handleExportDraftPicks}
-                  handleOpenAdminProposalsModal={
-                    adminProposalsModal.handleOpenModal
-                  }
-                  approvedRequestsCount={approvedRequests?.length ?? 0}
                 />
               </>
             )}

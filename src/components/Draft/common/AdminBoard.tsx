@@ -26,8 +26,9 @@ interface DraftAdminBoardProps {
   startDraft: () => Promise<void>;
   pauseDraft: () => Promise<void>;
   handleExportDraft: () => Promise<void>;
-  handleOpenAdminProposalsModal: () => void;
-  approvedRequestsCount: number;
+  handleOpenAdminProposalsModal?: () => void;
+  approvedRequestsCount?: number;
+  canTrade?: boolean;
 }
 
 export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
@@ -44,7 +45,8 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
   pauseDraft,
   handleExportDraft,
   handleOpenAdminProposalsModal,
-  approvedRequestsCount,
+  approvedRequestsCount = 0,
+  canTrade = false,
 }) => {
   const draftPickOptions = getDraftPickOptions(league);
   const draftRoundOptions = getDraftRoundOptions();
@@ -204,21 +206,23 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
               Export
             </Button>
           </div>
-          <div className="flex flex-col">
-            <Text variant="body-small">Draft Trades</Text>
-            <Button
-              disabled={!draftState.isPaused}
-              onClick={handleOpenAdminProposalsModal}
-              classes="relative"
-            >
-              Process Trades
-              {approvedRequestsCount > 0 && (
-                <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                  {approvedRequestsCount}
-                </span>
-              )}
-            </Button>
-          </div>
+          {canTrade && (
+            <div className="flex flex-col">
+              <Text variant="body-small">Draft Trades</Text>
+              <Button
+                disabled={!draftState.isPaused}
+                onClick={handleOpenAdminProposalsModal}
+                classes="relative"
+              >
+                Process Trades
+                {approvedRequestsCount > 0 && (
+                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                    {approvedRequestsCount}
+                  </span>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </>

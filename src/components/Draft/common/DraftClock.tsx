@@ -60,8 +60,6 @@ export const DraftClock: FC<DraftClockProps> = ({
     return ((totalTime - timeLeft) / totalTime) * 100;
   };
 
-  const leagueConstant = getLeagueConstant(league);
-
   if (!currentPick) {
     return (
       <Border
@@ -80,7 +78,7 @@ export const DraftClock: FC<DraftClockProps> = ({
     );
   }
 
-  const teamLogo = getLogo(leagueConstant, currentPick.TeamID, false);
+  const teamLogo = getLogo(league, currentPick.TeamID, false);
 
   return (
     <Border

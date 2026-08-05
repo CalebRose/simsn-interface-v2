@@ -14,12 +14,15 @@ import {
   Match,
   NBAMatch,
 } from "../models/basketballModels";
-import { Timestamp as FBTimestamp } from "../models/footballModels";
+import {
+  Timestamp as FBTimestamp,
+  CollegeGame as CFBGame,
+  NFLGame,
+} from "../models/footballModels";
 import {
   Timestamp as HCKTimestamp,
   CollegeGame as CHLGame,
   ProfessionalGame as PHLGame,
-  CollegeGame,
 } from "../models/hockeyModels";
 
 import { Timestamp as BaseballTimestamp } from "../models/baseball/baseballModels";
@@ -153,6 +156,8 @@ interface Game {
   SeasonID: number;
   ID: number;
   IsRevealed?: boolean;
+  IsSpringGame?: boolean;
+  IsPreseasonGame?: boolean;
 }
 
 export const RevealFBResults = (
@@ -171,10 +176,20 @@ export const RevealFBResults = (
     timestamp = timestamp as FBTimestamp;
     currentWeek = timestamp.CollegeWeek;
     currentSeasonID = timestamp.CollegeSeasonID;
+    if (!timestamp.CFBSpringGames && !timestamp.IsOffSeason) {
+      if (game.IsSpringGame) {
+        return true;
+      }
+    }
   } else if (league === SimNFL) {
     timestamp = timestamp as FBTimestamp;
     currentWeek = timestamp.NFLWeek;
     currentSeasonID = timestamp.NFLSeasonID;
+    if (!timestamp.NFLPreseason && !timestamp.IsNFLOffSeason) {
+      if (game.IsPreseasonGame) {
+        return true;
+      }
+    }
   }
 
   if (Week < currentWeek || SeasonID < currentSeasonID) {

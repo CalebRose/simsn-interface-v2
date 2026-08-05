@@ -36,6 +36,7 @@ interface AuthContextProps {
   isPHLUser: boolean;
   isDarkMode: boolean;
   isModerator: boolean;
+  isAdmin: boolean;
   isSubscriber: boolean;
   defaultLogo: string;
   cfbLogo: string;
@@ -64,6 +65,7 @@ const defaultAuthContext: AuthContextProps = {
   isNBAUser: false,
   isPHLUser: false,
   isDarkMode: true,
+  isAdmin: false,
   isModerator: false,
   isSubscriber: false,
   defaultLogo: "",
@@ -223,16 +225,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return true;
   }, [viewMode]);
 
+  const isAdmin = useMemo(() => {
+    if (currentUser) {
+      return currentUser.roleID?.toLocaleLowerCase() === "admin";
+    }
+    return false;
+  }, [currentUser]);
+
   const isModerator = useMemo(() => {
     if (currentUser) {
-      const isAdmin = currentUser.roleID?.toLocaleLowerCase() === "admin";
       const isCommissioner =
         typeof currentUser.roleID === "string" &&
         currentUser.roleID.toLocaleLowerCase().includes("commissioner");
       return isAdmin || isCommissioner;
     }
     return false;
-  }, [currentUser]);
+  }, [currentUser, isAdmin]);
 
   const isSubscriber = useMemo(() => {
     return currentUser?.IsSubscribed || false;
@@ -373,6 +381,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isNFLUser,
         isPHLUser,
         isDarkMode,
+        isAdmin,
         isModerator,
         isSubscriber,
         defaultLogo,

@@ -8,17 +8,27 @@ import {
   DraftablePlayer as PHLDraftee,
   ScoutingProfile as PHLScoutingProfile,
 } from "../../../models/hockeyModels";
+import { DraftPick as NBADraftPick } from "../../../models/basketballModels";
 import {
   SimNFL,
   SimPHL,
   SimCFB,
   SimCHL,
   League,
+  SimNBA,
+  SimCBB,
 } from "../../../_constants/constants";
+import {
+  NBADraftee,
+  ScoutingProfile as NBAScoutingProfile,
+} from "../../../models/basketballModels";
 
-export type DraftPick = NFLDraftPick | PHLDraftPick;
-export type Draftee = NFLDraftee | PHLDraftee;
-export type ScoutingProfile = NFLScoutingProfile | PHLScoutingProfile;
+export type DraftPick = NFLDraftPick | PHLDraftPick | NBADraftPick;
+export type Draftee = NFLDraftee | PHLDraftee | NBADraftee;
+export type ScoutingProfile =
+  | NFLScoutingProfile
+  | PHLScoutingProfile
+  | NBAScoutingProfile;
 export type DraftLeague = League;
 
 export const isNFLLeague = (league: DraftLeague | League): boolean => {
@@ -70,6 +80,15 @@ export const getLeagueConstant = (league: DraftLeague): DraftLeague => {
 };
 
 export const getCollegeLeagueConstant = (league: DraftLeague): League => {
+  if (isNFLLeague(league)) {
+    return SimCFB;
+  }
+  if (league === SimPHL) {
+    return SimCHL;
+  }
+  if (league === SimNBA) {
+    return SimCBB;
+  }
   return isNFLLeague(league) ? SimCFB : SimCHL;
 };
 
@@ -95,6 +114,9 @@ export const getPlayerCollege = (
   player: Draftee,
   league: DraftLeague,
 ): string => {
+  if (league === SimNBA) {
+    return (player as NBADraftee).College || "";
+  }
   if (isNFLLeague(league)) {
     return (player as NFLDraftee).College || "";
   }

@@ -164,6 +164,21 @@ export const DraftBoard: FC<DraftBoardProps> = ({
         { header: "Actions", accessor: "actions" },
       ];
     }
+    if (league === SimNFL) {
+      return [
+        { header: "Rank", accessor: "rank" },
+        { header: "Player", accessor: "LastName" },
+        { header: "Position", accessor: "Position" },
+        { header: "Archetype", accessor: "Archetype" },
+        { header: "College", accessor: "College" },
+        { header: "Age", accessor: "Age" },
+        { header: "Height", accessor: "Height" },
+        { header: "Weight", accessor: "Weight" },
+        { header: "Overall", accessor: "OverallGrade" },
+        { header: "Scheme Fit", accessor: "SchemeFit" },
+        { header: "Actions", accessor: "actions" },
+      ];
+    }
     return [
       { header: "Rank", accessor: "rank" },
       { header: "Player", accessor: "LastName" },
@@ -174,7 +189,6 @@ export const DraftBoard: FC<DraftBoardProps> = ({
       { header: "Height", accessor: "Height" },
       { header: "Weight", accessor: "Weight" },
       { header: "Overall", accessor: "OverallGrade" },
-      { header: "Scheme Fit", accessor: "SchemeFit" },
       { header: "Actions", accessor: "actions" },
     ];
   }, [league]);
@@ -185,7 +199,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     rowBackgroundColor: string,
   ) => {
     const isScouted = scoutedPlayerIds.has(player.ID);
-    const overallGrade = getOverallGrade(player);
+    const overallGrade = getOverallGrade(player, league);
     const playerCollege = getPlayerCollege(player, league);
     const isGoodOffensiveHCKFit = (() => {
       if (!player || !offensiveSystemsInformation) return false;

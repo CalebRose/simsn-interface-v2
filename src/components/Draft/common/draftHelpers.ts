@@ -4,6 +4,9 @@ import {
   getAttributeFieldName as getNFLAttributeFieldName,
   getAttributeShowProperty as getNFLAttributeShowProperty,
   getScoutingCost as getNFLScoutingCost,
+  getNBAAttributeFieldName,
+  getNBAAttributeShowProperty,
+  getNBAScoutableAttributes,
 } from "../NFLDraft/utils/draftHelpers";
 import {
   getHockeyScoutableAttributes,
@@ -11,6 +14,8 @@ import {
   getHockeyAttributeShowProperty,
   getHockeyScoutingCost,
 } from "../PHLDraft/utils/draftHelpers";
+import { League, SimNBA, SimNFL } from "../../../_constants/constants";
+import { NBADraftee } from "../../../models/basketballModels";
 
 export const getScoutableAttributes = (
   position: string,
@@ -19,6 +24,9 @@ export const getScoutableAttributes = (
 ): string[] => {
   if (isNFLLeague(league)) {
     return getNFLScoutableAttributes(position, archetype);
+  }
+  if (league === SimNBA) {
+    return getNBAScoutableAttributes(position, archetype);
   }
   return getHockeyScoutableAttributes(position, archetype);
 };
@@ -29,6 +37,9 @@ export const getAttributeFieldName = (
 ): string => {
   if (isNFLLeague(league)) {
     return getNFLAttributeFieldName(displayName);
+  }
+  if (league === SimNBA) {
+    return getNBAAttributeFieldName(displayName);
   }
   return getHockeyAttributeFieldName(displayName);
 };
@@ -41,6 +52,9 @@ export const getAttributeShowProperty = (
 ): string => {
   if (isNFLLeague(league)) {
     return getNFLAttributeShowProperty(displayName, index);
+  }
+  if (league === SimNBA) {
+    return getNBAAttributeShowProperty(displayName, index);
   }
   return getHockeyAttributeShowProperty(displayName, showPotentialGrade, index);
 };
@@ -55,9 +69,12 @@ export const getScoutingCost = (
   return getHockeyScoutingCost(attributeName);
 };
 
-export const getOverallGrade = (player: Draftee): string => {
-  if (isNFLDraftee(player)) {
+export const getOverallGrade = (player: Draftee, league: League): string => {
+  if (league === SimNFL) {
     return player.OverallGrade || "C";
+  }
+  if (league === SimNBA) {
+    return (player as NBADraftee).OverallGrade || "C";
   }
   const overall = (player as any).Overall || 0;
   if (overall >= 27) return "A+";

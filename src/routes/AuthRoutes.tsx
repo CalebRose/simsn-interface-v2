@@ -428,6 +428,15 @@ export const AuthRoutes = [
     }
   />,
   <Route
+    key="NBA DRAFT"
+    path={routes.NBA_DRAFT_ROOM}
+    element={
+      <AuthGuard>
+        <DraftPage league={SimNBA} />
+      </AuthGuard>
+    }
+  />,
+  <Route
     key="CFB TEAM PROFILE"
     path={routes.CFB_TEAMPROFILE}
     element={

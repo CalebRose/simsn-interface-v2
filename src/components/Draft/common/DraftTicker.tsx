@@ -13,9 +13,11 @@ import {
 import {
   DrafteeInfoType,
   ModalAction,
+  SimNBA,
   SimNFL,
   SimPHL,
 } from "../../../_constants/constants";
+import { NFLDraftee } from "../../../models/footballModels";
 
 interface DraftTickerProps {
   recentPicks: Array<{
@@ -81,7 +83,8 @@ const PickCard: FC<PickCardProps> = ({
   const drafteePosition = useMemo(() => {
     if (!draftee) return "";
     if (league === SimNFL) {
-      return `${draftee.Position}${draftee.PositionTwo.length > 0 ? `/${draftee.PositionTwo}` : ""}`;
+      const d = draftee as NFLDraftee;
+      return `${d.Position}${d.PositionTwo.length > 0 ? `/${d.PositionTwo}` : ""}`;
     }
     return `${draftee.Position}`;
   }, [draftee, league]);
@@ -89,7 +92,8 @@ const PickCard: FC<PickCardProps> = ({
   const drafteeArchetype = useMemo(() => {
     if (!draftee) return "";
     if (league === SimNFL) {
-      return `${draftee.Archetype}${draftee.ArchetypeTwo.length > 0 ? `/${draftee.ArchetypeTwo}` : ""}`;
+      const d = draftee as NFLDraftee;
+      return `${d.Archetype}${d.ArchetypeTwo.length > 0 ? `/${d.ArchetypeTwo}` : ""}`;
     }
     return draftee.Archetype;
   }, [draftee, league]);

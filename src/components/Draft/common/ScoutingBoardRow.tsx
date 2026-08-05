@@ -26,7 +26,7 @@ import {
   getOverallGrade,
 } from "./draftHelpers";
 import { Tag } from "../../../_design/Tags";
-import { SimNFL, SimPHL } from "../../../_constants/constants";
+import { SimNBA, SimNFL, SimPHL } from "../../../_constants/constants";
 import { ToggleSwitch } from "../../../_design/Inputs";
 import { isBadFit, isGoodFit } from "../../../_helper/recruitingHelper";
 
@@ -410,7 +410,7 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
                 </Text>
                 <div className="min-w-12.5 min-h-12.5 max-w-20 max-h-20 bg-gray-700 border border-gray-600 rounded-sm flex items-center justify-center">
                   <Text variant="xs" classes="text-green-400 font-bold text-sm">
-                    {getOverallGrade(player)}
+                    {getOverallGrade(player, league)}
                   </Text>
                 </div>
               </div>
@@ -440,7 +440,9 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
               </div>
             </div>
             <div className="flex-1">
-              <div className="grid grid-cols-4 gap-2 md:grid-cols-8 md:gap-1">
+              <div
+                className={`grid grid-cols-4 gap-2 ${league !== SimNBA ? "md:grid-cols-8" : "md:grid-cols-6"} md:gap-1`}
+              >
                 {scoutableAttributes.map((attributeName, idx) => {
                   return renderScoutingAttributeBox(
                     profile,

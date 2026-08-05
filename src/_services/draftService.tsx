@@ -40,19 +40,19 @@ export const DraftService = {
   },
 
   // NEW UDFA ENDPOINTS
-  GetUDFABoard: async (teamID: number) => 
+  GetUDFABoard: async (teamID: number) =>
     GetCall(`${fbaUrl}nfl/udfa/board/${teamID}`),
 
-  AddPlayerToUDFABoard: async (dto: any) => 
+  AddPlayerToUDFABoard: async (dto: any) =>
     PostCall(`${fbaUrl}nfl/udfa/board/add`, dto),
 
-  SaveUDFABoard: async (dto: any) => 
+  SaveUDFABoard: async (dto: any) =>
     PostCall(`${fbaUrl}nfl/udfa/board/save`, dto),
 
-  RemovePlayerFromUDFABoard: async (profileID: number) => 
+  RemovePlayerFromUDFABoard: async (profileID: number) =>
     GetActionCall(`${fbaUrl}nfl/udfa/board/remove/${profileID}`),
 
-  ProcessUDFAs: async (isDryRun: boolean) => 
+  ProcessUDFAs: async (isDryRun: boolean) =>
     GetCall(`${fbaUrl}admin/process-udfas?dryRun=${isDryRun}`),
 
   // HOCKEY / PHL ENDPOINTS
@@ -78,5 +78,38 @@ export const DraftService = {
 
   ExportPHLDraftPicks: async (dto: any): Promise<any> => {
     return await PostCall(`${hckUrl}phl/draft/export/picks`, dto);
+  },
+
+  // NBA ENDPOINTS
+  GetNBADraftPageData: async (teamID: number): Promise<any> => {
+    return await GetCall(`${bbaUrl}nba/draft/page/${teamID}`);
+  },
+
+  CreateNBAScoutingProfile: async (dto: any): Promise<any> => {
+    return await PostCall(`${bbaUrl}nba/draft/create/scoutprofile`, dto);
+  },
+
+  RevealNBAAttribute: async (dto: any): Promise<any> => {
+    return await PostCall(`${bbaUrl}nba/draft/reveal/attribute`, dto);
+  },
+
+  RemoveNBAPlayerFromBoard: async (id: number): Promise<void> => {
+    await GetActionCall(`${bbaUrl}nba/draft/remove/${id}`);
+  },
+
+  DraftNBAPlayer: async (dto: any): Promise<any> => {
+    return await PostCall(`${bbaUrl}nba/draft/player/`, dto);
+  },
+
+  ExportNBADraftPicks: async (dto: any): Promise<any> => {
+    return await PostCall(`${bbaUrl}nba/draft/export/picks`, dto);
+  },
+
+  ExportNBADraftees: async (): Promise<any> => {
+    return await GetExportCall(
+      `${bbaUrl}nba/draft/draftees/export`,
+      "blob",
+      "nba_draftees_export",
+    );
   },
 };

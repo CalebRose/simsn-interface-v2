@@ -1,5 +1,11 @@
 import { FC, useEffect, useMemo } from "react";
-import { League, SimPHL, SimNFL, SimNBA, SimMLB } from "../../_constants/constants";
+import {
+  League,
+  SimPHL,
+  SimNFL,
+  SimNBA,
+  SimMLB,
+} from "../../_constants/constants";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
@@ -9,6 +15,7 @@ import { PageContainer } from "../../_design/Container";
 import { PHLDraftPage } from "./PHLDraft/PHLDraftPage";
 import { NFLDraftPage } from "./NFLDraft/NFLDraftPage";
 import { BaseballDraftPage } from "./BaseballDraft/BaseballDraftPage";
+import { NBADraftPage } from "./NBADraft/NBADraftPage";
 
 interface DraftPageProps {
   league: League;
@@ -68,6 +75,9 @@ export const DraftPage: FC<DraftPageProps> = ({ league }) => {
         )}
         {selectedLeague === SimPHL && phlTeam && (
           <PHLDraftPage league={SimPHL} />
+        )}
+        {selectedLeague === SimNBA && nbaTeam && (
+          <NBADraftPage league={SimNBA} />
         )}
         {/* {selectedLeague === SimNBA && nbaTeam && <NBADraftPage />} */}
         {selectedLeague === SimMLB && mlbOrganization && (
