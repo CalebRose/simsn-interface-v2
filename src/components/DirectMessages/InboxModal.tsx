@@ -200,7 +200,7 @@ export const InboxModal: React.FC<InboxModalProps> = ({ isOpen, onClose }) => {
             )}
 
             {/* Conversation list */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto space-y-2 px-2 pt-2">
               {conversations.length === 0 ? (
                 <div className="px-4 py-8 text-center">
                   <Text variant="small" className="text-gray-400">

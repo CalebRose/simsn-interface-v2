@@ -181,7 +181,17 @@ export const AvailableTeams = () => {
     setSelectedTeamData(() => res);
   };
 
-  const sendRequest = async (league: string, team: any, role?: string) => {
+  const sendRequest = async (dto: any) => {
+    const {
+      league,
+      team,
+      role,
+      discordUsername,
+      howMuchTimeAnswer,
+      howDidYouHearAboutSimSN,
+      communityReference,
+      aboutYourself,
+    } = dto;
     if (
       (league === SimCFB && sentRequestCFB) ||
       (league === SimNFL && sentRequestNFL) ||
@@ -203,11 +213,17 @@ export const AvailableTeams = () => {
       TeamID: team.ID,
       Role: role,
       IsApproved: false,
+      DiscordUsername: discordUsername,
+      HowMuchTimeAnswer: howMuchTimeAnswer,
+      HowDidYouHearAboutSimSN: howDidYouHearAboutSimSN,
+      CommunityReference: communityReference,
+      AboutYourself: aboutYourself,
+      IsActive: true,
     };
 
     switch (league) {
       case SimCFB:
-        await RequestService.CreateCFBTeamRequest(team, currentUser!.username);
+        await RequestService.CreateCFBTeamRequest(requestDTO);
         setSentRequestCFB(true);
         break;
       case SimNFL:
@@ -220,12 +236,17 @@ export const AvailableTeams = () => {
           IsManager: role === "gm",
           IsCoach: role === "hc",
           IsAssistant: role === "a",
+          DiscordUsername: discordUsername,
+          HowMuchTimeAnswer: howMuchTimeAnswer,
+          HowDidYouHearAboutSimSN: howDidYouHearAboutSimSN,
+          CommunityReference: communityReference,
+          AboutYourself: aboutYourself,
         };
         await RequestService.CreateNFLTeamRequest(nflRequestDTO as any);
         setSentRequestNFL(true);
         break;
       case SimCBB:
-        await RequestService.CreateCBBTeamRequest(team, currentUser!.username);
+        await RequestService.CreateCBBTeamRequest(requestDTO);
         setSentRequestCBB(true);
         break;
       case SimNBA:
@@ -238,12 +259,17 @@ export const AvailableTeams = () => {
           IsManager: role === "gm",
           IsCoach: role === "hc",
           IsAssistant: role === "a",
+          DiscordUsername: discordUsername,
+          HowMuchTimeAnswer: howMuchTimeAnswer,
+          HowDidYouHearAboutSimSN: howDidYouHearAboutSimSN,
+          CommunityReference: communityReference,
+          AboutYourself: aboutYourself,
         };
         await RequestService.CreateNBATeamRequest(nbaRequestDTO as any);
         setSentRequestNBA(true);
         break;
       case SimCHL:
-        await RequestService.CreateCHLTeamRequest(team, currentUser!.username);
+        await RequestService.CreateCHLTeamRequest(requestDTO);
         setSentRequestCHL(true);
         break;
       case SimPHL:
@@ -255,6 +281,11 @@ export const AvailableTeams = () => {
           IsAssistant: role === "a",
           IsMarketing: role === "m",
           IsActive: true,
+          DiscordUsername: discordUsername,
+          HowMuchTimeAnswer: howMuchTimeAnswer,
+          HowDidYouHearAboutSimSN: howDidYouHearAboutSimSN,
+          CommunityReference: communityReference,
+          AboutYourself: aboutYourself,
         };
         await RequestService.CreatePHLTeamRequest(requestDTO as any);
         setSentRequestPHL(true);

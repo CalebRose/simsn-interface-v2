@@ -64,6 +64,11 @@ export interface RequestDTO {
   IsMarketing?: boolean;
   NFLTeamID?: number;
   NBATeamID?: number;
+  DiscordUsername?: string;
+  HowMuchTimeAnswer?: string;
+  HowDidYouHearAboutSimSN?: string;
+  CommunityReference?: string;
+  AboutYourself?: string;
 }
 
 export const RequestService = {
@@ -120,27 +125,12 @@ export const RequestService = {
     });
   },
 
-  CreateCFBTeamRequest: async (
-    team: CFBTeam,
-    username: string,
-  ): Promise<void> => {
-    await PostCall(`${fbaUrl}requests/create/`, {
-      TeamID: team.ID,
-      Username: username,
-      IsApproved: false,
-    });
+  CreateCFBTeamRequest: async (dto: any): Promise<void> => {
+    await PostCall(`${fbaUrl}requests/create/`, dto);
   },
 
-  CreateCHLTeamRequest: async (
-    team: CHLTeam,
-    username: string,
-  ): Promise<CollegeTeamRequest> => {
-    return await PostCall(`${hckUrl}chl/requests/create`, {
-      TeamID: team.ID,
-      Username: username,
-      IsApproved: false,
-      IsActive: true,
-    });
+  CreateCHLTeamRequest: async (dto: any): Promise<CollegeTeamRequest> => {
+    return await PostCall(`${hckUrl}chl/requests/create`, dto);
   },
 
   CreatePHLTeamRequest: async (
@@ -196,15 +186,8 @@ export const RequestService = {
     return await GetCall(`${bbaUrl}nba/requests/all/`);
   },
 
-  CreateCBBTeamRequest: async (
-    team: CBBTeam,
-    username: string,
-  ): Promise<CBBRequest> => {
-    return await PostCall(`${bbaUrl}requests/createTeamRequest`, {
-      TeamID: team.ID,
-      Username: username,
-      IsApproved: false,
-    });
+  CreateCBBTeamRequest: async (dto: any): Promise<CBBRequest> => {
+    return await PostCall(`${bbaUrl}requests/createTeamRequest`, dto);
   },
 
   ApproveCBBRequest: async (payload: Request): Promise<Response> => {
