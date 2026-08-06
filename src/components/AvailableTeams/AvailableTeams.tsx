@@ -114,6 +114,52 @@ export const AvailableTeams = () => {
     }
   }, [selectedTeam, selectedLeague]);
 
+  useEffect(() => {
+    switch (selectedLeague) {
+      case SimCFB:
+        setTeamOptions(cfbTeamOptions);
+        setConferenceOptions(cfbConferenceOptions);
+        break;
+      case SimCBB:
+        setTeamOptions(cbbTeamOptions);
+        setConferenceOptions(cbbConferenceOptions);
+        break;
+      case SimNFL:
+        setTeamOptions(nflTeamOptions);
+        setConferenceOptions(nflConferenceOptions);
+        break;
+      case SimNBA:
+        setTeamOptions(nbaTeamOptions);
+        setConferenceOptions(nbaConferenceOptions);
+        break;
+      case SimCHL:
+        setTeamOptions(chlTeamOptions);
+        setConferenceOptions(chlConferenceOptions);
+        break;
+      case SimPHL:
+        setTeamOptions(phlTeamOptions);
+        setConferenceOptions(phlConferenceOptions);
+        break;
+      case SimMLB: {
+        const mlb = buildBaseballOptions(mlbOrganizations || [], "mlb");
+        setTeamOptions(mlb.teamOpts);
+        setConferenceOptions(mlb.confOpts);
+        break;
+      }
+      case SimCollegeBaseball: {
+        const cbl = buildBaseballOptions(mlbOrganizations || [], "college");
+        setTeamOptions(cbl.teamOpts);
+        setConferenceOptions(cbl.confOpts);
+        break;
+      }
+    }
+
+    setSelectedTeams([]);
+    setConferences([]);
+    setSelectedTeam(null);
+    setSelectedTeamData(null);
+  }, [selectedLeague]);
+
   const filteredTeams = useMemo(() => {
     let teams: any[] = [];
     if (selectedLeague === SimCFB) teams = [...cfbTeams];
@@ -321,50 +367,6 @@ export const AvailableTeams = () => {
   const selectSport = (sport: League) => {
     setIsLoading(true);
     setSelectedLeague(sport);
-
-    switch (sport) {
-      case SimCFB:
-        setTeamOptions(cfbTeamOptions);
-        setConferenceOptions(cfbConferenceOptions);
-        break;
-      case SimCBB:
-        setTeamOptions(cbbTeamOptions);
-        setConferenceOptions(cbbConferenceOptions);
-        break;
-      case SimNFL:
-        setTeamOptions(nflTeamOptions);
-        setConferenceOptions(nflConferenceOptions);
-        break;
-      case SimNBA:
-        setTeamOptions(nbaTeamOptions);
-        setConferenceOptions(nbaConferenceOptions);
-        break;
-      case SimCHL:
-        setTeamOptions(chlTeamOptions);
-        setConferenceOptions(chlConferenceOptions);
-        break;
-      case SimPHL:
-        setTeamOptions(phlTeamOptions);
-        setConferenceOptions(phlConferenceOptions);
-        break;
-      case SimMLB: {
-        const mlb = buildBaseballOptions(mlbOrganizations || [], "mlb");
-        setTeamOptions(mlb.teamOpts);
-        setConferenceOptions(mlb.confOpts);
-        break;
-      }
-      case SimCollegeBaseball: {
-        const cbl = buildBaseballOptions(mlbOrganizations || [], "college");
-        setTeamOptions(cbl.teamOpts);
-        setConferenceOptions(cbl.confOpts);
-        break;
-      }
-    }
-
-    setSelectedTeams([]);
-    setConferences([]);
-    setSelectedTeam(null);
-    setSelectedTeamData(null);
   };
 
   const ChangeConference = (options: any) => {
