@@ -325,12 +325,14 @@ export const SideMenu = ({}) => {
                           ":username",
                           currentUser.username,
                         )}
+                        click={toggleDropdown}
                       />
                       {isCommissioner && !isBanned && (
                         <NavDropdownItem
                           label="Admin"
                           isRoute={true}
                           route="/admin"
+                          click={toggleDropdown}
                         />
                       )}
                       {currentUser.roleID === "Admin" && !isBanned && (
@@ -338,8 +340,19 @@ export const SideMenu = ({}) => {
                           label="Users"
                           isRoute={true}
                           route="/users"
+                          click={toggleDropdown}
                         />
                       )}
+                      <NavDropdownItem
+                        label="Discord"
+                        click={() => {
+                          toggleDropdown();
+                          window.open(
+                            "https://discord.gg/MhFqnzz8fd",
+                            "_blank",
+                          );
+                        }}
+                      />
                       <NavDropdownItem label="Sign Out" click={logout} />
                     </NavDropdown>
                   </div>
@@ -356,7 +369,7 @@ export const SideMenu = ({}) => {
           isOpen ? "translate-x-0" : "-translate-x-full"
         } bg-white border-r dark:bg-gray-800 dark:border-gray-700`}
       >
-        <div className="h-full px-3 pb-4 overflow-y-auto">
+        <div className="h-full px-3 pb-4 overflow-y-scroll">
           <ul className="space-y-2 font-medium">
             <SideMenuItem
               label="Dashboard"
@@ -462,6 +475,13 @@ export const SideMenu = ({}) => {
               click={navigateToHelp}
               label="Help"
               toggle={toggleMenu}
+            />
+            <SideMenuItem
+              label="Discord"
+              toggle={toggleMenu}
+              click={() =>
+                window.open("https://discord.gg/MhFqnzz8fd", "_blank")
+              }
             />
           </ul>
         </div>
