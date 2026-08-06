@@ -1825,7 +1825,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   };
 
   const exportNBADraftees = useCallback(async () => {
-    await DraftService.ExportNFLDraftees();
+    await DraftService.ExportNBADraftees();
     enqueueSnackbar("Exporting NBA Draftees...", {
       variant: "warning",
       autoHideDuration: 3000,
