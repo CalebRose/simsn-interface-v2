@@ -298,7 +298,7 @@ export const CBBRecruiting = () => {
                     }
                     size="sm"
                     onClick={SaveRecruitingBoard}
-                    disabled={recruitingLocked}
+                    disabled={recruitingLocked || teamProfile!.SpentPoints > 50}
                   >
                     Save
                   </Button>
