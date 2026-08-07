@@ -698,7 +698,8 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Discord username{" "}
+                Discord username. This is completely optional, though we do have
+                a Discord server where a lot of the community also interacts.
                 <span className="text-gray-400 font-normal">(optional)</span>
               </label>
               <input

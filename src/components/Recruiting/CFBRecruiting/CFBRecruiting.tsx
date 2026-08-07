@@ -280,13 +280,15 @@ export const CFBRecruiting = () => {
                   <Button
                     type="button"
                     variant={
-                      teamProfile && teamProfile!.SpentPoints <= 50
+                      teamProfile && teamProfile!.SpentPoints <= 100
                         ? "primary"
                         : "warning"
                     }
                     size="sm"
                     onClick={SaveRecruitingBoard}
-                    disabled={recruitingLocked}
+                    disabled={
+                      recruitingLocked || teamProfile!.SpentPoints > 100
+                    }
                   >
                     Save
                   </Button>
