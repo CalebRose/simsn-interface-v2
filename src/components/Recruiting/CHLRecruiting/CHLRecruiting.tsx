@@ -293,7 +293,10 @@ export const CHLRecruiting = () => {
                     }
                     size="sm"
                     onClick={SaveRecruitingBoard}
-                    disabled={recruitingLocked || teamProfile!.SpentPoints > 50}
+                    disabled={
+                      recruitingLocked ||
+                      (teamProfile !== null && teamProfile?.SpentPoints > 50)
+                    }
                   >
                     Save
                   </Button>
