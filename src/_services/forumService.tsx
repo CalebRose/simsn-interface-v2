@@ -46,6 +46,34 @@ import {
 } from "../models/forumModels";
 import { CurrentUser } from "../_hooks/useCurrentUser";
 import { logFirestoreRead } from "../_utility/firestoreLogger";
+import type { BaseballOrganization } from "../models/baseball/baseballModels";
+
+// ─────────────────────────────────────────────
+// Rich-text / job-application helpers
+// ─────────────────────────────────────────────
+
+function buildJobApplicationRichBody(paragraphs: string[]): RichTextDocument {
+  return {
+    type: "doc",
+    content: paragraphs.map((text) => ({
+      type: "paragraph",
+      content: [{ type: "text", text }],
+    })),
+  };
+}
+
+function mlbRoleLabel(dto: {
+  IsOwner?: boolean;
+  IsGM?: boolean;
+  IsManager?: boolean;
+  IsScout?: boolean;
+}): string {
+  if (dto.IsOwner) return "Owner";
+  if (dto.IsGM) return "General Manager";
+  if (dto.IsManager) return "Manager";
+  if (dto.IsScout) return "Scout";
+  return "Staff";
+}
 
 // ─────────────────────────────────────────────
 // Collection references
@@ -221,6 +249,98 @@ export const ForumService = {
         (a, b) => b.latestActivityAt.toMillis() - a.latestActivityAt.toMillis(),
       )
       .slice(0, count);
+  },
+
+  CreateMLBJobApplicationThreadFromTeamRequest: async (
+    requestDto: {
+      Username: string;
+      OrgID: number;
+      IsOwner?: boolean;
+      IsGM?: boolean;
+      IsManager?: boolean;
+      IsScout?: boolean;
+      DiscordUsername?: string;
+      HowMuchTimeAnswer?: string;
+      HowDidYouHearAboutSimSN?: string;
+      CommunityReference?: string;
+      AboutYourself?: string;
+    },
+    team: BaseballOrganization,
+    uid: string,
+    displayName: string,
+  ): Promise<{ threadId: string; postId: string }> => {
+    const role = mlbRoleLabel(requestDto);
+    const teamName = team.org_abbrev;
+    const title = `MLB Application: ${requestDto.Username} for ${teamName} - ${role}`;
+
+    const paragraphs: string[] = [
+      `${requestDto.Username} has applied for the ${role} position with the ${teamName}. Please review their application below.`,
+    ];
+    if (requestDto.DiscordUsername)
+      paragraphs.push(`Discord: ${requestDto.DiscordUsername}`);
+    if (requestDto.HowMuchTimeAnswer)
+      paragraphs.push(`Time commitment: ${requestDto.HowMuchTimeAnswer}`);
+    if (requestDto.HowDidYouHearAboutSimSN)
+      paragraphs.push(
+        `How they found SimSN: ${requestDto.HowDidYouHearAboutSimSN}`,
+      );
+    if (requestDto.CommunityReference)
+      paragraphs.push(`Community reference: ${requestDto.CommunityReference}`);
+    if (requestDto.AboutYourself)
+      paragraphs.push(
+        `About ${requestDto.Username}: ${requestDto.AboutYourself}`,
+      );
+
+    const body = buildJobApplicationRichBody(paragraphs);
+    const dto: CreateThreadDTO = {
+      forumId: "welcome-job-applications",
+      forumPath: ["welcome", "job-applications"],
+      title,
+      body,
+      bodyText: paragraphs.join("\n\n"),
+      threadType: "standard",
+      referencedLeague: "simmlb",
+    };
+    return ForumService.CreateThread(
+      dto,
+      uid,
+      requestDto.Username,
+      displayName,
+    );
+  },
+
+  CreateSimCollegeBaseballJobApplicationThreadFromTeamRequest: async (
+    requestDto: {
+      Username: string;
+      OrgID: number;
+    },
+    team: BaseballOrganization,
+    uid: string,
+    displayName: string,
+  ): Promise<{ threadId: string; postId: string }> => {
+    const teamName = team.org_abbrev;
+    const title = `College Baseball Application: ${requestDto.Username} for ${teamName}`;
+
+    const paragraphs: string[] = [
+      `${requestDto.Username} has applied to coach the ${teamName}. Please review their application below.`,
+    ];
+
+    const body = buildJobApplicationRichBody(paragraphs);
+    const dto: CreateThreadDTO = {
+      forumId: "welcome-job-applications",
+      forumPath: ["welcome", "job-applications"],
+      title,
+      body,
+      bodyText: paragraphs.join("\n\n"),
+      threadType: "standard",
+      referencedLeague: "simcbl",
+    };
+    return ForumService.CreateThread(
+      dto,
+      uid,
+      requestDto.Username,
+      displayName,
+    );
   },
 
   CreateThread: async (

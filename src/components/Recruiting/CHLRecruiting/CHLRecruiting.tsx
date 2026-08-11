@@ -531,16 +531,18 @@ export const CHLRecruiting = () => {
             <>
               <Border
                 direction="col"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center h-[50vh]"
+                classes="w-full text-wrap max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center h-[50vh]"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,
                 }}
               >
-                <Text variant="h2" classes="mb-6">
-                  Recruiting Sync is Running!
-                </Text>
-                <Text variant="h5">{lockMessage}</Text>
+                <div className="w-200">
+                  <Text variant="h2" classes="mb-6">
+                    Recruiting Sync is Running!
+                  </Text>
+                  <Text variant="h5">{lockMessage}</Text>
+                </div>
               </Border>
             </>
           )}

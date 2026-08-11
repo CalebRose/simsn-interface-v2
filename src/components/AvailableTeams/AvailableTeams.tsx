@@ -26,6 +26,7 @@ import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { getPrimaryBaseballTeam } from "../../_utility/baseballHelpers";
+import { ForumService } from "../../_services/forumService";
 import type { BaseballOrganization } from "../../models/baseball/baseballModels";
 
 const buildBaseballOptions = (
@@ -349,6 +350,19 @@ export const AvailableTeams = () => {
         };
         await RequestService.CreateMLBTeamRequest(mlbRequestDTO);
         setSentRequestMLB(true);
+        await ForumService.CreateMLBJobApplicationThreadFromTeamRequest(
+          {
+            ...mlbRequestDTO,
+            DiscordUsername: discordUsername,
+            HowMuchTimeAnswer: howMuchTimeAnswer,
+            HowDidYouHearAboutSimSN: howDidYouHearAboutSimSN,
+            CommunityReference: communityReference,
+            AboutYourself: aboutYourself,
+          },
+          team as BaseballOrganization,
+          currentUser!.id,
+          currentUser!.username,
+        );
         break;
       case SimCollegeBaseball:
         await RequestService.CreateCollegeBaseballTeamRequest(
@@ -356,6 +370,12 @@ export const AvailableTeams = () => {
           currentUser!.username,
         );
         setSentRequestCollegeBaseball(true);
+        await ForumService.CreateSimCollegeBaseballJobApplicationThreadFromTeamRequest(
+          { Username: currentUser!.username, OrgID: team.id },
+          team as BaseballOrganization,
+          currentUser!.id,
+          currentUser!.username,
+        );
         break;
     }
     enqueueSnackbar(`${league} Request Sent!`, {
