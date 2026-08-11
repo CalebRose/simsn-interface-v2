@@ -16,6 +16,7 @@ import {
 } from "../../../models/hockeyModels";
 import {
   getFBADisplayWeek,
+  getFBAWeekID,
   getHCKDisplayWeek,
   getHCKWeekID,
   MakeBBASeasonsOptionList,
@@ -498,8 +499,12 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
     useSimFBAStore();
 
   const { isMobile } = useResponsive();
-  const [selectedWeek, setSelectedWeek] = useState<number>(2601);
-  const [selectedSeason, setSelectedSeason] = useState<number>(6); // SEASON ID
+  const [selectedWeek, setSelectedWeek] = useState<number>(
+    ts.CollegeWeekID || 2701,
+  );
+  const [selectedSeason, setSelectedSeason] = useState<number>(
+    ts.CollegeSeasonID || 7,
+  ); // SEASON ID
 
   const collegePolls = useMemo(() => {
     return collegePollsMapBySeason[selectedSeason] || [];
@@ -512,7 +517,7 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
   );
   const seasonOptions = useMemo(() => {
     if (!ts) {
-      return [{ label: "2025", value: "1" }];
+      return [{ label: "2027", value: "1" }];
     }
     return MakeFBASeasonsOptionList(ts);
   }, [ts]);
@@ -524,7 +529,7 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
   const SelectSeasonOption = (opts: SingleValue<SelectOption>) => {
     const value = opts!.value;
     const num = Number(value);
-    const newWeekID = getHCKWeekID(1, num);
+    const newWeekID = getFBAWeekID(1, num);
     setSelectedSeason(num);
     setSelectedWeek(newWeekID);
   };
