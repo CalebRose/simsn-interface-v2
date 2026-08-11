@@ -21,6 +21,7 @@ import {
   League,
   ModalAction,
   OfferAction,
+  PracticeSquad,
   Preferences,
   SimNBA,
   SimNFL,
@@ -43,6 +44,8 @@ import {
   getFAMarketPreference,
 } from "../../../_helper/utilHelper";
 import { useResponsive } from "../../../_hooks/useMobile";
+import { useSimFBAStore } from "../../../context/SimFBAContext";
+import { useAuthStore } from "../../../context/AuthContext";
 
 interface FreeAgentTableProps {
   players: PHLPlayer[] | NFLPlayer[] | NBAPlayer[];
@@ -76,6 +79,7 @@ interface FreeAgentTableProps {
   ) => void;
   league: League;
   currentPage: number;
+  playerType?: string;
 }
 
 export const FreeAgentTable: FC<FreeAgentTableProps> = ({
@@ -90,7 +94,9 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
   handleOfferModal,
   league,
   currentPage,
+  playerType,
 }) => {
+  const { currentUser } = useAuthStore();
   const { isTablet, isDesktop } = useResponsive();
   const backgroundColor = colorOne;
   const rosterColumns = useMemo(() => {
@@ -103,11 +109,17 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
       { header: "Ovr", accessor: "Overall" },
     ];
 
-    if (league === SimNFL) {
+    if (league === SimNFL && playerType !== PracticeSquad) {
       columns = columns.concat([
         { header: "Pot", accessor: "PotentialGrade" },
         { header: "Prev", accessor: "PreviousTeamID" },
         { header: "Bias", accessor: "FreeAgencyBias" },
+      ]);
+    }
+    if (league === SimNFL && playerType === PracticeSquad) {
+      columns = columns.concat([
+        { header: "Pot", accessor: "PotentialGrade" },
+        { header: "Team", accessor: "TeamAbbr" },
       ]);
     }
 
@@ -169,21 +181,26 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
         { header: "Financial", accessor: "FinancialPreference" },
       ]);
     }
-
-    columns.push({ header: "Min. Value", accessor: "MinimumValue" });
-    if (league === SimNFL) {
-      columns.push({ header: "AAV", accessor: "AAV" });
+    if (league === SimNFL && playerType === PracticeSquad) {
+      columns.push({ header: "Contract", accessor: "ContractValue" });
+    } else {
+      columns.push({ header: "Min. Value", accessor: "MinimumValue" });
+      if (league === SimNFL) {
+        columns.push({ header: "AAV", accessor: "AAV" });
+      }
     }
+
     columns.push({ header: "Interest", accessor: "LeadingTeams" });
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category, league]);
+  }, [isDesktop, category, league, playerType]);
 
   const NFLRowRenderer = (
     item: NFLPlayer,
     index: number,
     backgroundColor: string,
   ) => {
+    const { proContractMap } = useSimFBAStore();
     const attributes = getNFLAttributes(
       item,
       !isDesktop,
@@ -196,6 +213,14 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
       letter: string;
     }[];
 
+    const contract = (() => {
+      if (playerType !== PracticeSquad) {
+        return null;
+      }
+      if (!proContractMap) return null;
+      return proContractMap[item.ID] || null;
+    })();
+
     const offers = offersByPlayer[item.ID];
     let offerIds: number[] = [];
     let logos: string[] = [];
@@ -205,8 +230,12 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
     }
     const actionVariant = !teamOfferMap[item.ID] ? "success" : "secondary";
     let previousLogo = "";
+    let teamLogo = "";
     if (item.PreviousTeamID > 0) {
       previousLogo = getLogo(SimNFL, item.PreviousTeamID, false);
+    }
+    if (item.TeamID > 0) {
+      teamLogo = getLogo(SimNFL, item.TeamID, false);
     }
 
     return (
@@ -250,16 +279,40 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
           </TableCell>
         ))}
         <TableCell>{item.PotentialGrade}</TableCell>
-        <TableCell>
-          {item.PreviousTeamID > 0 ? (
-            <Logo url={previousLogo} variant="tiny" />
-          ) : (
-            "None"
-          )}
-        </TableCell>
-        <TableCell>{item.FreeAgency}</TableCell>
-        <TableCell>{item.MinimumValue.toFixed(2)}</TableCell>
-        <TableCell>{item.AAV.toFixed(2)}</TableCell>
+        {playerType !== PracticeSquad && (
+          <>
+            <TableCell>
+              {item.PreviousTeamID > 0 ? (
+                <Logo url={previousLogo} variant="tiny" />
+              ) : (
+                "None"
+              )}
+            </TableCell>
+            <TableCell>{item.FreeAgency}</TableCell>
+          </>
+        )}
+        {playerType === PracticeSquad && (
+          <>
+            <TableCell>
+              {item.TeamID > 0 ? (
+                <Logo url={teamLogo} variant="tiny" />
+              ) : (
+                "None"
+              )}
+            </TableCell>
+          </>
+        )}
+        {playerType !== PracticeSquad && (
+          <>
+            <TableCell>{item.MinimumValue.toFixed(2)}</TableCell>
+            <TableCell>{item.AAV.toFixed(2)}</TableCell>
+          </>
+        )}
+        {playerType === PracticeSquad && (
+          <TableCell classes="w-[5em] 430px:w-[10em]">
+            {contract?.ContractValue.toFixed(2)}
+          </TableCell>
+        )}
         <TableCell classes="w-[5em] 430px:w-[10em]">
           <div className="flex flex-row">
             {(!offers || offers.length === 0) && "None"}
@@ -274,9 +327,15 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
             variant={actionVariant}
             size="xs"
             onClick={() => handleOfferModal(FreeAgentOffer, item as NFLPlayer)}
-            disabled={!!teamOfferMap[item.ID]}
+            disabled={
+              !!teamOfferMap[item.ID] || item.TeamID === currentUser?.NFLTeamID
+            }
           >
-            {teamOfferMap[item.ID] ? <ActionLock /> : <Plus />}
+            {teamOfferMap[item.ID] || item.TeamID === currentUser?.NFLTeamID ? (
+              <ActionLock />
+            ) : (
+              <Plus />
+            )}
           </Button>
         </TableCell>
       </div>

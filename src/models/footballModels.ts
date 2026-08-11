@@ -2307,6 +2307,7 @@ export class NFLDraftPick {
   }
 }
 export class NFLContract {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -2340,6 +2341,7 @@ export class NFLContract {
   TagType: number;
   IsTagged: boolean;
   IsCut: boolean;
+  AAV: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -2376,6 +2378,7 @@ export class NFLContract {
     this.TagType = source["TagType"];
     this.IsTagged = source["IsTagged"];
     this.IsCut = source["IsCut"];
+    this.AAV = source["AAV"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

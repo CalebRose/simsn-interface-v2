@@ -35,6 +35,7 @@ export const useNFLFreeAgency = () => {
     proPlayerMap,
     freeAgents,
     waiverPlayers,
+    proContractMap,
     getBootstrapFreeAgencyData,
   } = fbStore;
 
@@ -227,7 +228,7 @@ export const useNFLFreeAgency = () => {
 
   const handleFAModal = (
     action: ModalAction,
-    player: ProfessionalPlayer | NFLPlayer | NBAPlayer
+    player: ProfessionalPlayer | NFLPlayer | NBAPlayer,
   ) => {
     setModalPlayer(player);
     setModalAction(action);
@@ -238,7 +239,7 @@ export const useNFLFreeAgency = () => {
 
   const handleOfferModal = (
     action: OfferAction,
-    player: ProfessionalPlayer | NFLPlayer | NBAPlayer
+    player: ProfessionalPlayer | NFLPlayer | NBAPlayer,
   ) => {
     setOfferAction(action);
     setModalPlayer(player);
@@ -284,5 +285,6 @@ export const useNFLFreeAgency = () => {
     offerAction,
     offerModal,
     handleOfferModal,
+    proContractMap,
   };
 };

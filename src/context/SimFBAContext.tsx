@@ -1085,6 +1085,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setFreeAgents(res.FreeAgents);
     setWaiverPlayers(res.WaiverPlayers);
     setUDFAs(res.UDFAs);
+    setPracticeSquadPlayers(res.PracticeSquadPlayers);
+    setProContractMap(res.ContractMap);
   };
 
   const getBootstrapScheduleData = useCallback(async () => {

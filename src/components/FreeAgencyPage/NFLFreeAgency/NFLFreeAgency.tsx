@@ -69,6 +69,7 @@ export const NFLFreeAgency = () => {
     setPlayerType,
     offerAction,
     offerModal,
+    proContractMap,
     handleOfferModal,
   } = useNFLFreeAgency();
   const { backgroundColor } = useBackgroundColor();
@@ -80,7 +81,7 @@ export const NFLFreeAgency = () => {
   );
   const helpModal = useModal();
   const aiSettingsModal = useModal();
-
+  console.log({ proContractMap });
   return (
     <>
       {modalPlayer && (
@@ -91,6 +92,10 @@ export const NFLFreeAgency = () => {
           league={SimNFL}
           player={modalPlayer}
           existingOffer={teamOfferMap[modalPlayer.ID]}
+          existingContract={
+            proContractMap ? proContractMap[modalPlayer.ID] : undefined
+          }
+          playerType={playerType}
           action={offerAction}
           ts={cfb_Timestamp!!}
           confirmOffer={SaveFreeAgencyOffer}
@@ -108,6 +113,7 @@ export const NFLFreeAgency = () => {
           player={modalPlayer}
           offer={teamOfferMap[modalPlayer.ID]}
           cancelFAOffer={CancelFreeAgencyOffer}
+          contract={proContractMap ? proContractMap[modalPlayer.ID] : undefined}
         />
       )}
       <FreeAgencyHelpModal
@@ -254,6 +260,7 @@ export const NFLFreeAgency = () => {
                 team={nflTeam!!}
                 league={SimNFL}
                 teamMap={proTeamMap}
+                playerType={playerType}
                 openModal={handleFAModal}
                 handleOfferModal={handleOfferModal}
               />

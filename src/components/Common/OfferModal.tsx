@@ -3,6 +3,7 @@ import {
   FreeAgentOffer,
   League,
   OfferAction,
+  PracticeSquad,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -24,6 +25,7 @@ import {
   NFLCapsheet,
   Timestamp,
   FreeAgencyOfferDTO,
+  NFLContract,
 } from "../../models/footballModels";
 import {
   NBAContractOffer,
@@ -59,12 +61,14 @@ interface OfferModalProps {
     | NFLWaiverOffer
     | NBAContractOffer
     | NBAWaiverOffer;
+  existingContract?: NFLContract;
   league: League;
   isOpen: boolean;
   ts: HCKTimestamp | FBTimestamp | BKTimestamp;
   capsheet: ProCapsheet | NFLCapsheet | NBACapsheet;
   onClose: () => void;
   confirmOffer: (dto: any) => Promise<void>;
+  playerType?: string;
 }
 
 export const OfferModal: FC<OfferModalProps> = ({
@@ -77,6 +81,8 @@ export const OfferModal: FC<OfferModalProps> = ({
   ts,
   capsheet,
   confirmOffer,
+  existingContract,
+  playerType,
 }) => {
   const [offer, setOffer] = useState<
     | PHLFreeAgencyOffer
@@ -87,6 +93,29 @@ export const OfferModal: FC<OfferModalProps> = ({
     | NBAWaiverOffer
   >(() => {
     if (league === SimNFL && action === FreeAgentOffer) {
+      if (
+        playerType === PracticeSquad &&
+        existingContract &&
+        existingContract.IsActive
+      ) {
+        return new NFLFreeAgencyOffer({
+          ...existingContract,
+          IsRejected: false,
+          TotalBonus:
+            existingContract.Y1Bonus +
+            existingContract.Y2Bonus +
+            existingContract.Y3Bonus +
+            existingContract.Y4Bonus +
+            existingContract.Y5Bonus,
+          TotalSalary:
+            existingContract.Y1BaseSalary +
+            existingContract.Y2BaseSalary +
+            existingContract.Y3BaseSalary +
+            existingContract.Y4BaseSalary +
+            existingContract.Y5BaseSalary,
+          Syncs: 0,
+        });
+      }
       return new NFLFreeAgencyOffer({ existingOffer });
     }
     if (league === SimNFL && action === WaiverOffer) {
@@ -119,9 +148,38 @@ export const OfferModal: FC<OfferModalProps> = ({
     return new PHLFreeAgencyOffer();
   });
 
+  console.log({ offer });
+
   useEffect(() => {
-    setOffer(createOffer(league, action, existingOffer));
-  }, [existingOffer, league, action]);
+    if (
+      league === SimNFL &&
+      action === FreeAgentOffer &&
+      playerType === PracticeSquad &&
+      existingContract?.IsActive
+    ) {
+      setOffer(
+        new NFLFreeAgencyOffer({
+          ...existingContract,
+          IsRejected: false,
+          TotalBonus:
+            existingContract.Y1Bonus +
+            existingContract.Y2Bonus +
+            existingContract.Y3Bonus +
+            existingContract.Y4Bonus +
+            existingContract.Y5Bonus,
+          TotalSalary:
+            existingContract.Y1BaseSalary +
+            existingContract.Y2BaseSalary +
+            existingContract.Y3BaseSalary +
+            existingContract.Y4BaseSalary +
+            existingContract.Y5BaseSalary,
+          Syncs: 0,
+        }),
+      );
+    } else {
+      setOffer(createOffer(league, action, existingOffer));
+    }
+  }, [existingOffer, existingContract, league, action, playerType]);
 
   const isNFL = useMemo(() => {
     return league === SimNFL && offer instanceof NFLFreeAgencyOffer;
@@ -136,7 +194,7 @@ export const OfferModal: FC<OfferModalProps> = ({
   }, [league]);
 
   const playerLabel = useMemo(() => {
-    return `${player.Age} year, ${player.Position} ${player.FirstName} ${player.LastName}`;
+    return `${player.ID} ${player.Position} ${player.FirstName} ${player.LastName}, ${player.Age} years old`;
   }, [player]);
 
   const title = useMemo(() => {
@@ -293,6 +351,9 @@ export const OfferModal: FC<OfferModalProps> = ({
       );
     }
     if (league === SimNFL) {
+      if (playerType === PracticeSquad) {
+        return [];
+      }
       return GenerateNFLFAErrorList(
         offer as NFLFreeAgencyOffer,
         ts as Timestamp,
@@ -311,7 +372,7 @@ export const OfferModal: FC<OfferModalProps> = ({
       );
     }
     return list;
-  }, [offer, capsheet, ts, player]);
+  }, [offer, capsheet, ts, player, playerType]);
 
   const ChangeInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -431,7 +492,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 </Text>
               </>
             )}
-            {isNFL && (
+            {isNFL && playerType !== PracticeSquad && (
               <>
                 <Text variant="xs">
                   - AAV is calculated using the total of all inputs divided by
@@ -458,6 +519,24 @@ export const OfferModal: FC<OfferModalProps> = ({
                 <Text variant="xs">
                   - The minimum value for a player AND the player's AAV must be
                   met.
+                </Text>
+              </>
+            )}
+            {isNFL && playerType === PracticeSquad && (
+              <>
+                <Text variant="xs">
+                  - Practice Squad offers cannot be updated or adjusted. If you
+                  are offering an a player on another team's Practice Squad, you
+                  must click the confirm button as is.
+                </Text>
+                <Text variant="xs">
+                  - Players will wait for 3 days before choosing to sign with
+                  the team claiming them.
+                </Text>
+                <Text variant="xs">
+                  - Teams that have a player on their Practice Squad offered can
+                  choose to reclaim them by going to their Team page and
+                  bringing the player up from the Practice Squad.
                 </Text>
               </>
             )}
@@ -555,6 +634,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y1Bonus"
                 value={offer.Y1Bonus || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
@@ -564,6 +644,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y2Bonus"
                 value={offer.Y2Bonus || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
@@ -573,6 +654,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y3Bonus"
                 value={offer.Y3Bonus || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
@@ -582,6 +664,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y4Bonus"
                 value={offer.Y4Bonus || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
@@ -591,6 +674,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y5Bonus"
                 value={offer.Y5Bonus || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
@@ -671,6 +755,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y1BaseSalary"
                 value={offer.Y1BaseSalary || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
@@ -680,6 +765,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y2BaseSalary"
                 value={offer.Y2BaseSalary || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
@@ -689,6 +775,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y3BaseSalary"
                 value={offer.Y3BaseSalary || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
@@ -698,6 +785,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y4BaseSalary"
                 value={offer.Y4BaseSalary || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
@@ -707,6 +795,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 name="Y5BaseSalary"
                 value={offer.Y5BaseSalary || 0}
                 onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
               />
             </div>
             <div className="flex">
