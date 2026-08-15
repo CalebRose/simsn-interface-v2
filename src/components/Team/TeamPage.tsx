@@ -308,7 +308,8 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
         isPro={false}
         Roster={selectedRoster}
         TeamProfile={selectedTeamProfile}
-        TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
+        TeamName={`${selectedTeam?.TeamName}`}
+        Mascot={selectedTeam?.Mascot}
         Coach={selectedTeam?.Coach}
         Conference={selectedTeam?.Conference}
         Arena={selectedTeam?.Arena}
@@ -734,7 +735,8 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
         League={league}
         ts={ts}
         isPro={true}
-        TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
+        TeamName={`${selectedTeam?.TeamName}`}
+        Mascot={selectedTeam?.Mascot}
         Coach={selectedTeam?.Coach}
         Owner={selectedTeam?.Owner}
         GM={selectedTeam?.GM}
@@ -1545,7 +1547,8 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         ts={ts}
         isPro={true}
         isUserTeam={selectedTeam!.ID === nflTeam!.ID}
-        TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
+        TeamName={`${selectedTeam?.TeamName}`}
+        Mascot={selectedTeam?.Mascot}
         Coach={selectedTeam?.NFLCoachName}
         Owner={selectedTeam?.NFLOwnerName}
         GM={selectedTeam?.NFLGMName}
@@ -1786,7 +1789,8 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
         Team={selectedTeam}
         TeamProfile={selectedTeamProfile}
         isPro={false}
-        TeamName={`${selectedTeam?.Team} ${selectedTeam?.Nickname}`}
+        TeamName={`${selectedTeam?.Team}`}
+        Mascot={selectedTeam?.Nickname}
         Coach={selectedTeam?.Coach}
         Conference={selectedTeam?.Conference}
         Arena={selectedTeam?.Arena}
@@ -1990,7 +1994,8 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
         Team={selectedTeam}
         TeamProfile={selectedTeamProfile}
         isPro={false}
-        TeamName={`${selectedTeam?.Team} ${selectedTeam?.Nickname}`}
+        TeamName={`${selectedTeam?.Team}`}
+        Mascot={selectedTeam?.Nickname}
         Coach={selectedTeam?.NBACoachName}
         Conference={selectedTeam?.Conference}
         Arena={selectedTeam?.Arena}
