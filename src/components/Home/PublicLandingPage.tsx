@@ -4,7 +4,16 @@ import { simLogos } from "../../_constants/logos";
 import routes from "../../_constants/routes";
 import { Text } from "../../_design/Typography";
 import { PublicAvailableTeamsCard } from "./PublicAvailableTeamsCard";
-import { SimCFB, SimNFL, SimCBB, SimNBA, SimCHL, SimPHL, SimCBL, SimMLB } from "../../_constants/constants";
+import {
+  SimCFB,
+  SimNFL,
+  SimCBB,
+  SimNBA,
+  SimCHL,
+  SimPHL,
+  SimCBL,
+  SimMLB,
+} from "../../_constants/constants";
 
 const leagueLogos = [
   [SimCFB, simLogos.SimCFB],
@@ -55,10 +64,11 @@ export const PublicLandingPage = () => {
             An online multiplayer sports simulation community for college and
             professional football, basketball, hockey, and baseball.
           </Text>
+
           <Text variant="body-small">
             Build a roster, manage a program, follow league news, and compete
             with other coaches, owners, and general managers across the SimSN
-            universe.
+            universe. All directly from the web browser of your choice.
           </Text>
 
           <Text variant="body-small">
@@ -82,9 +92,8 @@ export const PublicLandingPage = () => {
               Log in
             </NavLink>
           </div>
-          
-          <PublicAvailableTeamsCard />
 
+          <PublicAvailableTeamsCard />
         </div>
       </main>
     </section>

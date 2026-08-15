@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react";
+import { FC, ReactNode, useMemo, useState } from "react";
 import { Border } from "../../_design/Borders";
 import { Text } from "../../_design/Typography";
 import {
@@ -20,10 +20,12 @@ import { Button } from "../../_design/Buttons";
 import { Bell, ChatBubble } from "../../_design/Icons";
 import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 import { ClickableUserLabel } from "../Common/Labels";
+import { ToggleSwitch } from "../../_design/Inputs";
 
 interface TeamInfoProps {
   id?: number;
   TeamName?: string;
+  Mascot?: string;
   Team?: any;
   Owner?: string;
   Coach?: string;
@@ -48,12 +50,16 @@ interface TeamInfoProps {
   openTradeModal?: () => void;
   openProposeTradeModal?: () => void;
   draftPickCount?: number;
+  showInfo?: boolean;
+  setShowInfo: React.Dispatch<React.SetStateAction<boolean>>;
+  children?: ReactNode;
 }
 
 export const TeamInfo: FC<TeamInfoProps> = ({
   isPro,
   id,
   TeamName = "",
+  Mascot = "",
   Team,
   isUserTeam,
   Owner = "None",
@@ -77,6 +83,9 @@ export const TeamInfo: FC<TeamInfoProps> = ({
   openTradeModal,
   openProposeTradeModal,
   draftPickCount = 0,
+  showInfo = false,
+  setShowInfo,
+  children,
 }) => {
   const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const sectionBg = getThemeAwareDarkenColor(themeBackgroundColor, -5);
@@ -84,110 +93,161 @@ export const TeamInfo: FC<TeamInfoProps> = ({
   const logo = getLogo(League, id!!, IsRetro);
   const { isMobile } = useResponsive();
   return (
-    <Border
-      direction="row"
-      classes="w-full p-4 justify-around gap-x-4"
-      styles={{
-        background: themeBackgroundColor,
-        borderColor: headerColor,
-      }}
+    <div
+      className={
+        showInfo
+          ? "flex flex-col w-full"
+          : "flex flex-row space-x-3 w-full items-stretch"
+      }
     >
-      <div className="w-full grid grid-cols-1 min-[769px]:grid-cols-2 min-[1025px]:grid-cols-4 lg:gap-y-0 md:gap-y-4 gap-x-4">
-        <div className="flex flex-row justify-center items-center p-2 pt-6 gap-x-4">
+      <Border
+        direction={showInfo ? "row" : "col"}
+        classes={`${showInfo ? "w-full justify-around gap-x-4" : ""} p-4`}
+        styles={{
+          background: themeBackgroundColor,
+          borderColor: headerColor,
+        }}
+      >
+        <div
+          className={`grid ${showInfo ? "w-full grid-cols-1 min-[769px]:grid-cols-2 min-[1025px]:grid-cols-4" : ""} lg:gap-y-0 md:gap-y-4 gap-x-4`}
+        >
           <div
-            className="max-w-40 5xl:max-w-48 h-30 items-center justify-center rounded-lg border-2"
-            style={{ backgroundColor: sectionBg, borderColor: headerColor }}
+            className={`flex flex-row justify-start items-center ${showInfo ? "p-2" : ""} ${showInfo ? "pt-6" : ""} gap-x-4`}
           >
-            <Logo
-              url={logo}
-              variant="large"
-              containerClass="p-4 items-center justify-center h-full"
-            />
-          </div>
-          <div className="flex flex-col justify-center pb-2">
-            <Text variant="h5" classes={`${textColorClass}`}>
-              {TeamName}
-            </Text>
-            <Text variant="small" classes={`${textColorClass} mb-2`}>
-              {Conference} Conference
-            </Text>
-            {Division && Division.length > 0 && (
-              <Text variant="xs" classes={`${textColorClass}`}>
-                {Division}
-              </Text>
-            )}
-            <TeamGrades
-              Team={Team}
-              backgroundColor={sectionBg}
-              gradeColor={themeBackgroundColor}
-              borderColor={headerColor}
-            />
-          </div>
-        </div>
-        {!isMobile && (
-          <div className="flex flex-col gap-2 justify-center items-center gap-x-2">
-            <FrontOfficeInfo
-              owner={Owner}
-              gm={GM}
-              coach={Coach}
-              scout={Scout}
-              isPro={isPro}
-              marketing={Marketing}
-              borderColor={headerColor}
-              backgroundColor={sectionBg}
-              lineColor={borderColor}
-            />
-          </div>
-        )}
-        {!isMobile && (
-          <div
-            className="flex flex-col justify-start items-start px-4 py-6 rounded-lg border-2"
-            style={{ borderColor: headerColor, backgroundColor: sectionBg }}
-          >
-            <AdditionalTeamInfo
-              league={League}
-              arena={Arena}
-              roster={Roster}
-              capacity={Capacity}
-              textColorClass={textColorClass}
-              borderColor={headerColor}
-              backgroundColor={backgroundColor}
-              isPro={isPro}
-              isUserTeam={isUserTeam}
-              openTradeModal={openTradeModal}
-              openProposeTradeModal={openProposeTradeModal}
-              draftPickCount={draftPickCount}
-              teamProfile={TeamProfile}
-              team={Team}
-              lineColor={borderColor}
-            />
-          </div>
-        )}
-        {!isMobile && (
-          <div className="flex flex-col items-center justify-center gap-x-2">
-            {isPro && (
-              <CapsheetInfo
-                capsheet={Capsheet}
-                ts={ts}
-                league={League}
-                borderColor={headerColor}
-                backgroundColor={sectionBg}
+            <div
+              className={`max-w-40 5xl:max-w-48 ${showInfo ? "h-30" : ""} items-center justify-center rounded-lg border-2`}
+              style={{ backgroundColor: sectionBg, borderColor: headerColor }}
+            >
+              <Logo
+                url={logo}
+                variant={`${showInfo ? "large" : "small"}`}
+                containerClass={`p-4 items-center justify-center ${showInfo ? "h-full" : ""}`}
               />
-            )}
-            {!isPro && (
-              <TeamBreakdown
-                TeamProfile={TeamProfile}
-                ts={ts}
-                league={League}
-                backgroundColor={sectionBg}
+            </div>
+            <div
+              className={`flex flex-col justify-center pb-2 ${showInfo ? "text-start" : ""}`}
+            >
+              {showInfo && (
+                <Text variant="h5" classes={`${textColorClass}`}>
+                  {TeamName} {Mascot}
+                </Text>
+              )}
+              {showInfo && (
+                <Text
+                  variant="small"
+                  classes={`${textColorClass} ${showInfo ? "mb-2" : ""}`}
+                >
+                  {Conference} Conference
+                </Text>
+              )}
+              {Division && Division.length > 0 && showInfo && (
+                <Text variant="xs" classes={`${textColorClass}`}>
+                  {Division}
+                </Text>
+              )}
+              {showInfo && (
+                <TeamGrades
+                  Team={Team}
+                  backgroundColor={sectionBg}
+                  gradeColor={themeBackgroundColor}
+                  borderColor={headerColor}
+                />
+              )}
+              <div
+                className={`mt-1 justify-center flex ${!showInfo ? "flex-col" : ""} items-center text-start  space-y-2 space-x-1`}
+              >
+                <Text variant="xs">Show Info</Text>
+                <ToggleSwitch
+                  checked={showInfo}
+                  onChange={() => setShowInfo((prev: boolean) => !prev)}
+                />
+              </div>
+            </div>
+          </div>
+          {!isMobile && showInfo && (
+            <div className="flex flex-col gap-2 justify-center items-center gap-x-2">
+              <FrontOfficeInfo
+                owner={Owner}
+                gm={GM}
+                coach={Coach}
+                scout={Scout}
+                isPro={isPro}
+                marketing={Marketing}
                 borderColor={headerColor}
+                backgroundColor={sectionBg}
+                lineColor={borderColor}
+                showInfo={showInfo}
+              />
+            </div>
+          )}
+          {!isMobile && showInfo && (
+            <div
+              className="flex flex-col justify-start items-start px-4 py-6 rounded-lg border-2"
+              style={{ borderColor: headerColor, backgroundColor: sectionBg }}
+            >
+              <AdditionalTeamInfo
+                league={League}
+                arena={Arena}
+                roster={Roster}
+                capacity={Capacity}
+                textColorClass={textColorClass}
+                borderColor={headerColor}
+                backgroundColor={backgroundColor}
+                isPro={isPro}
+                isUserTeam={isUserTeam}
+                openTradeModal={openTradeModal}
+                openProposeTradeModal={openProposeTradeModal}
+                draftPickCount={draftPickCount}
+                teamProfile={TeamProfile}
+                team={Team}
                 lineColor={borderColor}
               />
-            )}
-          </div>
-        )}
-      </div>
-    </Border>
+            </div>
+          )}
+          {!isMobile && showInfo && (
+            <div className="flex flex-col items-center justify-center gap-x-2">
+              {isPro && (
+                <CapsheetInfo
+                  capsheet={Capsheet}
+                  ts={ts}
+                  league={League}
+                  borderColor={headerColor}
+                  backgroundColor={sectionBg}
+                />
+              )}
+              {!isPro && (
+                <TeamBreakdown
+                  TeamProfile={TeamProfile}
+                  ts={ts}
+                  league={League}
+                  backgroundColor={sectionBg}
+                  borderColor={headerColor}
+                  lineColor={borderColor}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      </Border>
+      {children && (
+        <div
+          className={
+            showInfo
+              ? "flex flex-row md:flex-col w-full"
+              : "flex flex-col flex-1 justify-between h-full"
+          }
+        >
+          {!showInfo && (
+            <div className="text-start mb-0.5">
+              <Text variant="h4">
+                {TeamName} {Mascot}
+              </Text>
+            </div>
+          )}
+          {children}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -424,6 +484,7 @@ export const FrontOfficeInfo = ({
   scout,
   marketing,
   isPro,
+  showInfo,
 }: any) => {
   const personnelRoles = isPro
     ? [
@@ -460,7 +521,7 @@ export const FrontOfficeInfo = ({
 
   return (
     <div
-      className="flex w-full h-full py-5 px-4 border-2 rounded-lg flex-row"
+      className={`flex w-full h-full py-5 px-4 border-2 rounded-lg flex-row`}
       style={{ borderColor, backgroundColor }}
     >
       <div className="table-fixed w-full">
@@ -482,44 +543,53 @@ export const FrontOfficeInfo = ({
               </div>
             ))}
           </div>
-          <div className="table-row">
-            <div className="table-cell font-semibold text-left">
-              <Text variant="body-small" classes={`${textColorClass}`}>
-                Role
-              </Text>
-            </div>
-            {filledPersonnel.map(({ role }, idx) => (
-              <div key={`role-${idx}`} className="table-cell text-left w-[6em]">
-                <Text variant="xs" classes={`${textColorClass}`}>
-                  {role || "-"}
+          {showInfo && (
+            <div className="table-row">
+              <div className="table-cell font-semibold text-left">
+                <Text variant="body-small" classes={`${textColorClass}`}>
+                  Role
                 </Text>
               </div>
-            ))}
-          </div>
-        </div>
-        <div
-          className="flex my-2 border-t"
-          style={{ borderColor: lineColor }}
-        />
-        <div className="table-row-group">
-          {vacancies && (
-            <div
-              className="table-row border-t"
-              style={{ borderColor: lineColor, borderTopWidth: "2px" }}
-            >
-              <div className="table-cell w-[6em] text-left">
-                <Text variant="xs" classes={`${textColorClass}`}>
-                  Vacancies
-                </Text>
-              </div>
-              <div className="table-cell text-left">
-                <Text variant="xs" classes={`${textColorClass}`}>
-                  {vacancies}
-                </Text>
-              </div>
+              {filledPersonnel.map(({ role }, idx) => (
+                <div
+                  key={`role-${idx}`}
+                  className="table-cell text-left w-[6em]"
+                >
+                  <Text variant="xs" classes={`${textColorClass}`}>
+                    {role || "-"}
+                  </Text>
+                </div>
+              ))}
             </div>
           )}
         </div>
+        {showInfo && (
+          <>
+            <div
+              className="flex my-2 border-t"
+              style={{ borderColor: lineColor }}
+            />
+            <div className="table-row-group">
+              {vacancies && (
+                <div
+                  className="table-row border-t"
+                  style={{ borderColor: lineColor, borderTopWidth: "2px" }}
+                >
+                  <div className="table-cell w-[6em] text-left">
+                    <Text variant="xs" classes={`${textColorClass}`}>
+                      Vacancies
+                    </Text>
+                  </div>
+                  <div className="table-cell text-left">
+                    <Text variant="xs" classes={`${textColorClass}`}>
+                      {vacancies}
+                    </Text>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

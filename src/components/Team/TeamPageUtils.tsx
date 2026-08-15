@@ -76,6 +76,7 @@ import {
   NBADraftee,
 } from "../../models/basketballModels";
 import { TradeBlockRow } from "./TeamPageTypes";
+import { useMemo } from "react";
 
 export const getCHLAttributes = (
   player: CHLPlayer,
@@ -979,7 +980,6 @@ export const getCFBAttributes = (
           },
           { label: "Personality", value: player.Personality },
           { label: "WorkEthic", value: player.WorkEthic },
-          { label: "AcademicBias", value: player.AcademicBias },
           { label: "Redshirt", value: player.IsRedshirting },
           { label: "TransferStatus", value: player.TransferStatus },
         ]
@@ -3441,4 +3441,37 @@ export const getAdditionalCFBPortalPreferenceAttributes = (
     { label: "CoachPref", value: 0 },
     { label: "SeasonMomentumPref", value: 0 },
   ];
+};
+
+export const useFilteredRoster = ({
+  roster,
+  selectedPositions,
+  selectedClasses,
+}: {
+  roster: any[];
+  selectedPositions: string[];
+  selectedClasses: string[];
+}) => {
+  const positionSet = useMemo(
+    () => new Set(selectedPositions),
+    [selectedPositions],
+  );
+  const yearsSet = useMemo(() => new Set(selectedClasses), [selectedClasses]);
+
+  return useMemo(() => {
+    if (!roster) {
+      return [];
+    }
+    return roster.filter((player) => {
+      const positionMatch =
+        selectedPositions.length === 0 ||
+        positionSet.size === 0 ||
+        positionSet.has(player.Position);
+      const classMatch =
+        selectedClasses.length === 0 ||
+        yearsSet.size === 0 ||
+        yearsSet.has(player.Year.toString());
+      return positionMatch && classMatch;
+    });
+  }, [roster, positionSet, yearsSet]);
 };

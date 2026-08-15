@@ -168,7 +168,13 @@ export const Home = () => {
                 (SimPHL), College Baseball (SimCBL), and Pro Baseball (SimMLB).
               </Text>
             </div>
-
+            <div className="flex flex-row mb-4 justify-center">
+              <Text variant="body-small" classes="">
+                Our simulations are custom-engines built in-house, and do not
+                use any software to play or simulate the games. Players can use
+                any web browser to participate and manage their teams.
+              </Text>
+            </div>
             <div className="flex flex-row mb-4 justify-center">
               <Text variant="body-small" classes="">
                 As a new user, we encourage you to join a league and start

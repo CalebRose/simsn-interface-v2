@@ -16,6 +16,8 @@ import {
   TradeBlock,
   Promises,
   Draft,
+  FootballPositionOptions,
+  YearOptions,
 } from "../../_constants/constants";
 import { Border } from "../../_design/Borders";
 import { PageContainer } from "../../_design/Container";
@@ -74,6 +76,7 @@ import { PromiseModal } from "../Common/PromiseModal";
 import { ExtensionOfferModal } from "../Common/ExtensionOfferModal";
 import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 import { FranchiseTagModal } from "../Common/FranchiseTagModal";
+import { useFilteredRoster } from "./TeamPageUtils";
 
 interface TeamPageProps {
   league: League;
@@ -159,6 +162,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     SearchHockeyStats,
     chlGameplan,
   } = useSimHCKStore();
+  const [showInfo, setShowInfo] = useState(false);
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
@@ -295,27 +299,26 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
           promisePlayer={createPromise}
         />
       )}
-      <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
-        <TeamInfo
-          id={selectedTeam?.ID}
-          IsRetro={currentUser?.IsRetro}
-          League={league}
-          Team={selectedTeam}
-          ts={ts}
-          isPro={false}
-          Roster={selectedRoster}
-          TeamProfile={selectedTeamProfile}
-          TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
-          Coach={selectedTeam?.Coach}
-          Conference={selectedTeam?.Conference}
-          Arena={selectedTeam?.Arena}
-          Capacity={selectedTeam?.ArenaCapacity}
-          backgroundColor={backgroundColor}
-          headerColor={headerColor}
-          borderColor={borderColor}
-        />
-      </div>
-      <div className="flex flex-row md:flex-col w-full">
+      <TeamInfo
+        id={selectedTeam?.ID}
+        IsRetro={currentUser?.IsRetro}
+        League={league}
+        Team={selectedTeam}
+        ts={ts}
+        isPro={false}
+        Roster={selectedRoster}
+        TeamProfile={selectedTeamProfile}
+        TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
+        Coach={selectedTeam?.Coach}
+        Conference={selectedTeam?.Conference}
+        Arena={selectedTeam?.Arena}
+        Capacity={selectedTeam?.ArenaCapacity}
+        backgroundColor={backgroundColor}
+        headerColor={headerColor}
+        borderColor={borderColor}
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
+      >
         <Border
           direction="row"
           classes="w-full p-2 gap-x-2"
@@ -330,6 +333,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
               onChange={selectTeamOption}
             />
           </div>
+
           <div className="flex flex-row gap-x-1 sm:gap-x-4">
             {!isMobile && (
               <Button
@@ -367,7 +371,6 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
-
             {!isMobile && (
               <Button
                 size="sm"
@@ -383,7 +386,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
             </Button>
           </div>
         </Border>
-      </div>
+      </TeamInfo>
       {selectedRoster && (
         <Border
           classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
@@ -443,6 +446,8 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     SaveExtensionOffer,
     CancelExtensionOffer,
   } = hkStore;
+  const [showInfo, setShowInfo] = useState(false);
+
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const extensionModal = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -720,34 +725,33 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           tradeBlockPlayer={PlacePHLPlayerOnTradeBlock}
         />
       )}
-      <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
-        <TeamInfo
-          id={selectedTeam?.ID}
-          IsRetro={currentUser?.IsRetro}
-          Roster={selectedRoster}
-          Team={selectedTeam}
-          isUserTeam={selectedTeam!.ID === phlTeam!.ID}
-          League={league}
-          ts={ts}
-          isPro={true}
-          TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
-          Coach={selectedTeam?.Coach}
-          Owner={selectedTeam?.Owner}
-          GM={selectedTeam?.GM}
-          Scout={selectedTeam?.Scout}
-          Capsheet={capsheet}
-          Conference={selectedTeam?.Conference}
-          Arena={selectedTeam?.Arena}
-          Capacity={selectedTeam?.ArenaCapacity}
-          backgroundColor={backgroundColor}
-          headerColor={headerColor}
-          borderColor={borderColor}
-          draftPickCount={selectedTeamDraftPicks.length}
-          openTradeModal={manageTradesModal.handleOpenModal}
-          openProposeTradeModal={proposeTradeModal.handleOpenModal}
-        />
-      </div>
-      <div className="flex flex-row md:flex-col w-full">
+      <TeamInfo
+        id={selectedTeam?.ID}
+        IsRetro={currentUser?.IsRetro}
+        Roster={selectedRoster}
+        Team={selectedTeam}
+        isUserTeam={selectedTeam!.ID === phlTeam!.ID}
+        League={league}
+        ts={ts}
+        isPro={true}
+        TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
+        Coach={selectedTeam?.Coach}
+        Owner={selectedTeam?.Owner}
+        GM={selectedTeam?.GM}
+        Scout={selectedTeam?.Scout}
+        Capsheet={capsheet}
+        Conference={selectedTeam?.Conference}
+        Arena={selectedTeam?.Arena}
+        Capacity={selectedTeam?.ArenaCapacity}
+        backgroundColor={backgroundColor}
+        headerColor={headerColor}
+        borderColor={borderColor}
+        draftPickCount={selectedTeamDraftPicks.length}
+        openTradeModal={manageTradesModal.handleOpenModal}
+        openProposeTradeModal={proposeTradeModal.handleOpenModal}
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
+      >
         <Border
           direction="row"
           classes="w-full p-2 gap-x-2"
@@ -864,7 +868,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
             </Button>
           </div>
         </Border>
-      </div>
+      </TeamInfo>
       <Border
         classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
         styles={{
@@ -925,6 +929,8 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     getBootstrapPlayerData,
     ExportFBRoster,
   } = useSimFBAStore();
+  const [showInfo, setShowInfo] = useState(false);
+
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
 
@@ -937,6 +943,8 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return cfbTeam;
   });
+  const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [category, setCategory] = useState(Overview);
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -992,11 +1000,19 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     return collegePromiseMap[modalPlayer.ID];
   }, [modalPlayer, collegePromiseMap]);
 
+  const filteredRoster = useFilteredRoster({
+    roster: selectedRoster || [],
+    selectedPositions,
+    selectedClasses,
+  });
+
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = cfbTeamMap ? cfbTeamMap[value] : null;
     setSelectedTeam(nextTeam);
     setCategory(Overview);
+    setSelectedPositions([]);
+    setSelectedClasses([]);
   };
 
   const openModal = (action: ModalAction, player: CFBPlayer) => {
@@ -1012,6 +1028,16 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
 
   const exportRoster = async () => {
     await ExportFBRoster(selectedTeam!.ID, false, selectedTeam!.TeamName);
+  };
+
+  const handlePositionChange = (opts: any) => {
+    const selected = opts?.map((opt: any) => opt.value) || [];
+    setSelectedPositions(selected);
+  };
+
+  const handleClassChange = (opts: any) => {
+    const selected = opts?.map((opt: any) => opt.value) || [];
+    setSelectedClasses(selected);
   };
 
   useEffect(() => {
@@ -1047,27 +1073,27 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
           promisePlayer={promisePlayer}
         />
       )}
-      <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
-        <TeamInfo
-          id={selectedTeam?.ID}
-          IsRetro={currentUser?.IsRetro}
-          League={league}
-          ts={ts}
-          Roster={selectedRoster}
-          Team={selectedTeam}
-          TeamProfile={selectedTeamProfile}
-          isPro={false}
-          TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
-          Coach={selectedTeam?.Coach}
-          Conference={selectedTeam?.Conference}
-          Arena={selectedTeam?.Stadium}
-          Capacity={selectedTeam?.StadiumCapacity}
-          backgroundColor={backgroundColor}
-          headerColor={headerColor}
-          borderColor={borderColor}
-        />
-      </div>
-      <div className="flex flex-row md:flex-col w-full">
+      <TeamInfo
+        id={selectedTeam?.ID}
+        IsRetro={currentUser?.IsRetro}
+        League={league}
+        ts={ts}
+        Roster={selectedRoster}
+        Team={selectedTeam}
+        TeamProfile={selectedTeamProfile}
+        isPro={false}
+        TeamName={`${selectedTeam?.TeamName}`}
+        Mascot={selectedTeam?.Mascot}
+        Coach={selectedTeam?.Coach}
+        Conference={selectedTeam?.Conference}
+        Arena={selectedTeam?.Stadium}
+        Capacity={selectedTeam?.StadiumCapacity}
+        backgroundColor={backgroundColor}
+        headerColor={headerColor}
+        borderColor={borderColor}
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
+      >
         <Border
           direction="row"
           classes="w-full p-2 gap-x-2"
@@ -1078,8 +1104,25 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
         >
           <div className="flex w-full">
             <SelectDropdown
+              placeholder="Select Team"
               options={cfbTeamOptions}
               onChange={selectTeamOption}
+            />
+          </div>
+          <div className="flex w-full">
+            <SelectDropdown
+              placeholder="Select Position"
+              options={FootballPositionOptions}
+              isMulti={true}
+              onChange={handlePositionChange}
+            />
+          </div>
+          <div className="flex w-full">
+            <SelectDropdown
+              placeholder="Select Class"
+              options={YearOptions}
+              isMulti={true}
+              onChange={handleClassChange}
             />
           </div>
           <div className="flex flex-row gap-x-1 sm:gap-x-4">
@@ -1115,17 +1158,17 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
             </Button>
           </div>
         </Border>
-      </div>
-      {selectedRoster && (
+      </TeamInfo>
+      {filteredRoster.length > 0 && (
         <Border
-          classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
+          classes={`px-2 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
           }}
         >
           <CFBRosterTable
-            roster={selectedRoster}
+            roster={filteredRoster}
             team={selectedTeam}
             category={category}
             backgroundColor={backgroundColor}
@@ -1175,6 +1218,8 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     ExportFBRoster,
     getBootstrapPlayerData,
   } = fbStore;
+  const [showInfo, setShowInfo] = useState(false);
+
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<NFLPlayer | null>(null);
@@ -1491,34 +1536,33 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
           tradeBlockPlayer={placeNFLPlayerOnTradeBlock}
         />
       )}
-      <div className="flex flex-row">
-        <TeamInfo
-          id={selectedTeam?.ID}
-          IsRetro={currentUser?.IsRetro}
-          Roster={selectedRoster}
-          Team={selectedTeam}
-          League={league}
-          ts={ts}
-          isPro={true}
-          isUserTeam={selectedTeam!.ID === nflTeam!.ID}
-          TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
-          Coach={selectedTeam?.NFLCoachName}
-          Owner={selectedTeam?.NFLOwnerName}
-          GM={selectedTeam?.NFLGMName}
-          Scout={selectedTeam?.NFLAssistantName}
-          Capsheet={nflCapsheet}
-          Conference={selectedTeam?.Conference}
-          Arena={selectedTeam?.Stadium}
-          Capacity={selectedTeam?.StadiumCapacity}
-          backgroundColor={backgroundColor}
-          headerColor={headerColor}
-          borderColor={borderColor}
-          draftPickCount={selectedTeamDraftPicks?.length}
-          openTradeModal={manageTradesModal.handleOpenModal}
-          openProposeTradeModal={proposeTradeModal.handleOpenModal}
-        />
-      </div>
-      <div className="flex flex-row md:flex-col w-full">
+      <TeamInfo
+        id={selectedTeam?.ID}
+        IsRetro={currentUser?.IsRetro}
+        Roster={selectedRoster}
+        Team={selectedTeam}
+        League={league}
+        ts={ts}
+        isPro={true}
+        isUserTeam={selectedTeam!.ID === nflTeam!.ID}
+        TeamName={`${selectedTeam?.TeamName} ${selectedTeam?.Mascot}`}
+        Coach={selectedTeam?.NFLCoachName}
+        Owner={selectedTeam?.NFLOwnerName}
+        GM={selectedTeam?.NFLGMName}
+        Scout={selectedTeam?.NFLAssistantName}
+        Capsheet={nflCapsheet}
+        Conference={selectedTeam?.Conference}
+        Arena={selectedTeam?.Stadium}
+        Capacity={selectedTeam?.StadiumCapacity}
+        backgroundColor={backgroundColor}
+        headerColor={headerColor}
+        borderColor={borderColor}
+        draftPickCount={selectedTeamDraftPicks?.length}
+        openTradeModal={manageTradesModal.handleOpenModal}
+        openProposeTradeModal={proposeTradeModal.handleOpenModal}
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
+      >
         <Border
           direction="row"
           classes="w-full p-2 gap-x-2"
@@ -1541,7 +1585,6 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             >
               <Text variant="small">Overview</Text>
             </Button>
-
             <Button
               size={isMobile ? "xs" : "sm"}
               isSelected={category === Contracts}
@@ -1569,7 +1612,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             )}
           </div>
         </Border>
-      </div>
+      </TeamInfo>
       {selectedRoster && (
         <Border
           classes="px-1 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
@@ -1618,6 +1661,8 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     createPromise,
     ExportBBRoster,
   } = bbStore;
+  const [showInfo, setShowInfo] = useState(false);
+
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1732,26 +1777,25 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
           promisePlayer={createPromise}
         />
       )}
-      <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
-        <TeamInfo
-          id={selectedTeam?.ID}
-          IsRetro={currentUser?.IsRetro}
-          League={league}
-          ts={ts}
-          Roster={selectedRoster}
-          Team={selectedTeam}
-          TeamProfile={selectedTeamProfile}
-          isPro={false}
-          TeamName={`${selectedTeam?.Team} ${selectedTeam?.Nickname}`}
-          Coach={selectedTeam?.Coach}
-          Conference={selectedTeam?.Conference}
-          Arena={selectedTeam?.Arena}
-          backgroundColor={backgroundColor}
-          headerColor={headerColor}
-          borderColor={borderColor}
-        />
-      </div>
-      <div className="flex flex-row md:flex-col w-full">
+      <TeamInfo
+        id={selectedTeam?.ID}
+        IsRetro={currentUser?.IsRetro}
+        League={league}
+        ts={ts}
+        Roster={selectedRoster}
+        Team={selectedTeam}
+        TeamProfile={selectedTeamProfile}
+        isPro={false}
+        TeamName={`${selectedTeam?.Team} ${selectedTeam?.Nickname}`}
+        Coach={selectedTeam?.Coach}
+        Conference={selectedTeam?.Conference}
+        Arena={selectedTeam?.Arena}
+        backgroundColor={backgroundColor}
+        headerColor={headerColor}
+        borderColor={borderColor}
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
+      >
         <Border
           direction="row"
           classes="w-full p-2 gap-x-2"
@@ -1790,7 +1834,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
             </Button>
           </div>
         </Border>
-      </div>
+      </TeamInfo>
       {selectedRoster && (
         <Border
           classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
@@ -1836,6 +1880,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     CancelExtensionOffer,
     ExportBBRoster,
   } = bbStore;
+  const [showInfo, setShowInfo] = useState(false);
   const extensionModal = useModal();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1936,26 +1981,25 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
           cutPlayer={cutNBAPlayer}
         />
       )}
-      <div className="flex flex-row lg:flex-col w-full max-[450px]:max-w-full">
-        <TeamInfo
-          id={selectedTeam?.ID}
-          IsRetro={currentUser?.IsRetro}
-          League={league}
-          ts={ts}
-          Roster={selectedRoster}
-          Team={selectedTeam}
-          TeamProfile={selectedTeamProfile}
-          isPro={false}
-          TeamName={`${selectedTeam?.Team} ${selectedTeam?.Nickname}`}
-          Coach={selectedTeam?.NBACoachName}
-          Conference={selectedTeam?.Conference}
-          Arena={selectedTeam?.Arena}
-          backgroundColor={backgroundColor}
-          headerColor={headerColor}
-          borderColor={borderColor}
-        />
-      </div>
-      <div className="flex flex-row md:flex-col w-full">
+      <TeamInfo
+        id={selectedTeam?.ID}
+        IsRetro={currentUser?.IsRetro}
+        League={league}
+        ts={ts}
+        Roster={selectedRoster}
+        Team={selectedTeam}
+        TeamProfile={selectedTeamProfile}
+        isPro={false}
+        TeamName={`${selectedTeam?.Team} ${selectedTeam?.Nickname}`}
+        Coach={selectedTeam?.NBACoachName}
+        Conference={selectedTeam?.Conference}
+        Arena={selectedTeam?.Arena}
+        backgroundColor={backgroundColor}
+        headerColor={headerColor}
+        borderColor={borderColor}
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
+      >
         <Border
           direction="row"
           classes="w-full p-2 gap-x-2"
@@ -1994,7 +2038,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
             </Button>
           </div>
         </Border>
-      </div>
+      </TeamInfo>
       {selectedRoster && (
         <Border
           classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"

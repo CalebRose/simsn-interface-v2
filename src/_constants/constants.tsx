@@ -841,6 +841,7 @@ export const YearOptions = [
   { label: "Sophomore", value: "2" },
   { label: "Junior", value: "3" },
   { label: "Senior", value: "4" },
+  { label: "Graduate", value: "5" },
 ];
 
 export const StarOptions = [

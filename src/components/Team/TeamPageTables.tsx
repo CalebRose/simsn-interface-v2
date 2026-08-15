@@ -1415,7 +1415,6 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
         { header: "Injury", accessor: "InjuryType" },
         { header: "Personality", accessor: "Personality" },
         { header: "Work Ethic", accessor: "WorkEthic" },
-        { header: "Academics", accessor: "AcademicBias" },
         { header: "Redshirt", accessor: "isRedshirting" },
         { header: "Mood", accessor: "TransferStatus" },
       ]);
