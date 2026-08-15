@@ -53,6 +53,7 @@ import { NFLUDFAView } from "../components/NFL/UDFA/NFLUDFAView";
 // import { NFLUDFA_LocalTest } from "../components/NFL/UDFA/NFLUDFA_LocalTest";
 import LiveRink from "../components/LiveScoreboard/LiveRink/LiveRink";
 import LiveField from "../components/LiveScoreboard/LiveField/LiveField";
+import { DocumentationMain } from "../components/Documentation/DocumentationMain";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
@@ -732,6 +733,15 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <LiveField />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="Help"
+    path={routes.HELP} // Use the constant
+    element={
+      <AuthGuard>
+        <DocumentationMain />
       </AuthGuard>
     }
   />,
