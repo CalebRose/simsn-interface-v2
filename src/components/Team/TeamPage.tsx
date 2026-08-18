@@ -162,7 +162,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     SearchHockeyStats,
     chlGameplan,
   } = useSimHCKStore();
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
@@ -390,7 +390,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
       </TeamInfo>
       {selectedRoster && (
         <Border
-          classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
+          classes={`px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
@@ -447,7 +447,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     SaveExtensionOffer,
     CancelExtensionOffer,
   } = hkStore;
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const extensionModal = useModal();
@@ -872,7 +872,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
         </Border>
       </TeamInfo>
       <Border
-        classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
+        classes={`px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
         styles={{
           backgroundColor: backgroundColor,
           borderColor: headerColor,
@@ -931,7 +931,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     getBootstrapPlayerData,
     ExportFBRoster,
   } = useSimFBAStore();
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
@@ -1220,7 +1220,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     ExportFBRoster,
     getBootstrapPlayerData,
   } = fbStore;
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -1618,7 +1618,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       </TeamInfo>
       {selectedRoster && (
         <Border
-          classes="px-1 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] h-[50vh]"
+          classes={`px-1 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
@@ -1664,7 +1664,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     createPromise,
     ExportBBRoster,
   } = bbStore;
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
@@ -1841,7 +1841,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
       </TeamInfo>
       {selectedRoster && (
         <Border
-          classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
+          classes={`px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
@@ -1884,7 +1884,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     CancelExtensionOffer,
     ExportBBRoster,
   } = bbStore;
-  const [showInfo, setShowInfo] = useState(false);
+  const [showInfo, setShowInfo] = useState(true);
   const extensionModal = useModal();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
@@ -2046,7 +2046,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
       </TeamInfo>
       {selectedRoster && (
         <Border
-          classes="px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh] h-[50vh]"
+          classes={`px-1 min-[320px]:w-[95vw] min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh] max-[769px]:h-[70vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
