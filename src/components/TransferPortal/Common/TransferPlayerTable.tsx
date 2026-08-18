@@ -18,6 +18,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  TextGreen,
 } from "../../../_constants/constants";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { Table, TableCell } from "../../../_design/Table";
@@ -28,7 +29,13 @@ import {
   getCHLPortalAttributes,
 } from "../../Team/TeamPageUtils";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
-import { ActionLock, Plus } from "../../../_design/Icons";
+import {
+  ActionLock,
+  CheckCircle,
+  CrossCircle,
+  DashCircle,
+  Plus,
+} from "../../../_design/Icons";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
@@ -129,6 +136,8 @@ const getTableColumns = (
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
+        { header: "Off", accessor: "" },
+        { header: "Def", accessor: "" },
         { header: "Program", accessor: "ProgramPref" },
         { header: "Prof. Dev.", accessor: "ProfDevPref" },
         { header: "Trad.", accessor: "TraditionsPref" },
@@ -157,6 +166,8 @@ interface CHLRowProps {
   recruitOnBoardMap: Record<number, boolean>;
   isMobile: boolean;
   category: string;
+  offensiveSystemsInformation?: any;
+  defensiveSystemsInformation?: any;
 }
 
 const CHLRow: React.FC<CHLRowProps> = ({
@@ -167,6 +178,8 @@ const CHLRow: React.FC<CHLRowProps> = ({
   recruitOnBoardMap,
   isMobile,
   category,
+  offensiveSystemsInformation,
+  defensiveSystemsInformation,
 }) => {
   const hkStore = useSimHCKStore();
   const { transferProfileMapByPlayerID, chlTeam } = hkStore;
@@ -253,6 +266,46 @@ const CHLRow: React.FC<CHLRowProps> = ({
     return <Logo url={previousURL} variant="small" />;
   }, [item]);
 
+  const isGoodOffensiveFit = useMemo(() => {
+    if (!item || !offensiveSystemsInformation) return false;
+    const goodFits = offensiveSystemsInformation.GoodFits;
+    const idx = goodFits.findIndex((x: any) => x.archetype === item.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [item, offensiveSystemsInformation]);
+
+  const isBadOffensiveFit = useMemo(() => {
+    if (!item || !offensiveSystemsInformation) return false;
+    const badFits = offensiveSystemsInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [item, offensiveSystemsInformation]);
+
+  const isGoodDefensiveFit = useMemo(() => {
+    if (!item || !defensiveSystemsInformation) return false;
+    const goodFits = defensiveSystemsInformation.GoodFits;
+    const idx = goodFits.findIndex((x: any) => x.archetype === item.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [item, defensiveSystemsInformation]);
+
+  const isBadDefensiveFit = useMemo(() => {
+    if (!item || !defensiveSystemsInformation) return false;
+    const badFits = defensiveSystemsInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === item.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [item, defensiveSystemsInformation]);
+
   return (
     <div
       key={item.ID}
@@ -277,6 +330,34 @@ const CHLRow: React.FC<CHLRowProps> = ({
               onClick={() => openModal(PortalInfoType, item)}
             >
               {attr.value}
+            </span>
+          ) : attr.label === "Off" ? (
+            <span className="text-xs">
+              {isGoodOffensiveFit && (
+                <CheckCircle
+                  textColorClass={`w-full text-center ${TextGreen}`}
+                />
+              )}
+              {isBadOffensiveFit && (
+                <CrossCircle textColorClass="w-full text-center text-red-500" />
+              )}
+              {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                <DashCircle textColorClass="w-full text-center text-gray-500" />
+              )}
+            </span>
+          ) : attr.label === "Def" ? (
+            <span className="text-xs">
+              {isGoodDefensiveFit && (
+                <CheckCircle
+                  textColorClass={`w-full text-center ${TextGreen}`}
+                />
+              )}
+              {isBadDefensiveFit && (
+                <CrossCircle textColorClass="w-full text-center text-red-500" />
+              )}
+              {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                <DashCircle textColorClass="w-full text-center text-gray-500" />
+              )}
             </span>
           ) : (
             <span className="text-xs">{attr.value}</span>
@@ -689,6 +770,8 @@ interface TransferTableProps {
   transferOnBoardMap: Record<number, boolean>;
   currentPage: number;
   teamProfile?: any;
+  offensiveSystemsInformation?: any;
+  defensiveSystemsInformation?: any;
 }
 
 export const TransferPlayerTable: FC<TransferTableProps> = ({
@@ -703,6 +786,8 @@ export const TransferPlayerTable: FC<TransferTableProps> = ({
   transferOnBoardMap,
   currentPage,
   teamProfile,
+  offensiveSystemsInformation,
+  defensiveSystemsInformation,
 }) => {
   const backgroundColor = colorOne;
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -721,6 +806,8 @@ export const TransferPlayerTable: FC<TransferTableProps> = ({
           openModal={openModal}
           isMobile={isMobile}
           category={category}
+          offensiveSystemsInformation={offensiveSystemsInformation}
+          defensiveSystemsInformation={defensiveSystemsInformation}
           recruitOnBoardMap={transferOnBoardMap}
         />
       );

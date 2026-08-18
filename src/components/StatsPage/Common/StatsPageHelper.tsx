@@ -555,10 +555,18 @@ export const GetFootballPlayerStatsValues = (
       if (rushingAvg === undefined || rushingAvg === null) {
         rushingAvg = 0;
       }
-      rushingAvg =
-        statsView === SEASON_VIEW
-          ? Number(stats.RushingAvg.toFixed(2))
-          : Number((stats.RushingYards / stats.RushAttempts).toFixed(2));
+      if (statsView === SEASON_VIEW) {
+        let rAvg = Number(stats.RushingAvg);
+        if (!rAvg) {
+          rAvg = 0;
+        }
+        console.log({ rAvg, rushingAvg });
+        rushingAvg = rAvg.toFixed(2);
+      } else {
+        rushingAvg = Number(
+          (stats.RushingYards / stats.RushAttempts).toFixed(2),
+        );
+      }
       values.push(
         { label: "Snaps", value: stats.Snaps },
         { label: "RY", value: stats.RushingYards },
