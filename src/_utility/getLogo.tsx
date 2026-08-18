@@ -2040,9 +2040,56 @@ export const getCHLLogo = (id: number, IsRetro: boolean) => {
       return HCKLogos.Sarnia;
     case 93:
       return HCKLogos.SaultSteMarie;
-
     case 94:
       return HCKLogos.Windsor;
+    case 95:
+      return HCKLogos.CalgaryHitmen;
+    case 96:
+      return HCKLogos.EdmontonOilKings;
+    case 97:
+      return HCKLogos.LethbridgeHurricanes;
+    case 98:
+      return HCKLogos.MedicineHat;
+    case 99:
+      return HCKLogos.RedDeer;
+    case 100:
+      return HCKLogos.BrandonWheatKings;
+    case 101:
+      return HCKLogos.MooseJaw;
+    case 102:
+      return HCKLogos.PrinceAlbert;
+    case 103:
+      return HCKLogos.ReginaPats;
+    case 104:
+      return HCKLogos.Saskatoon;
+    case 105:
+      return HCKLogos.SwiftCurrent;
+    case 106:
+      return HCKLogos.Chilliwack;
+    case 107:
+      return HCKLogos.Kamloops;
+    case 108:
+      return HCKLogos.Kelowna;
+    case 109:
+      return HCKLogos.Penticton;
+    case 110:
+      return HCKLogos.PrinceGeorge;
+    case 111:
+      return HCKLogos.VancouverGiants;
+    case 112:
+      return HCKLogos.Victoria;
+    case 113:
+      return HCKLogos.Everett;
+    case 114:
+      return HCKLogos.Portland;
+    case 115:
+      return HCKLogos.SeattleThunderbirds;
+    case 116:
+      return HCKLogos.Spokane;
+    case 117:
+      return HCKLogos.TriCityAmericans;
+    case 118:
+      return HCKLogos.Wenatchee;
 
     default:
       return logoObj.Unknown;
