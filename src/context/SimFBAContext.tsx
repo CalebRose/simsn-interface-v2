@@ -1369,7 +1369,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       const gamesCompleted = collegeTeamsGames.filter(
         (game) =>
           (game.HomeTeamID === teamID || game.AwayTeamID === teamID) &&
-          game.GameComplete,
+          game.GameComplete && !game.IsSpringGame,
       ).length;
 
       if (gamesCompleted > 4) {
