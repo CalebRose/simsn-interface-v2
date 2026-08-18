@@ -560,7 +560,6 @@ export const GetFootballPlayerStatsValues = (
         if (!rAvg) {
           rAvg = 0;
         }
-        console.log({ rAvg, rushingAvg });
         rushingAvg = rAvg.toFixed(2);
       } else {
         rushingAvg = Number(
