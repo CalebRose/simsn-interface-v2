@@ -10,7 +10,7 @@ import { getTextColorBasedOnBg } from "../_utility/getBorderClass";
 import { getThemeAwareDarkenColor } from "../_utility/getDarkerColor";
 import { Text } from "./Typography";
 import { isBrightColor } from "../_utility/isBrightColor";
-import { League, SimCFB, SimNFL } from "../_constants/constants";
+import { League, SimCFB, SimNFL, SimPHL } from "../_constants/constants";
 import { useAuthStore } from "../context/AuthContext";
 import { getThemeColors } from "../_utility/themeHelpers";
 import { getPlayerOverall } from "../components/Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
@@ -153,11 +153,18 @@ export const Table = <T,>({
           aGrade = getPlayerOverall(a, SimCFB).toString();
           bGrade = getPlayerOverall(b, SimCFB).toString();
         } else if (page === "SimPHLDraftPage" && key === "OverallGrade") {
-          aGrade = getOverallGrade(a);
-          bGrade = getOverallGrade(b);
+          aGrade = getOverallGrade(a, SimPHL);
+          bGrade = getOverallGrade(b, SimPHL);
         } else if (page === "SimPHLDraftPage" && key === "OverallGrade") {
-          aGrade = getOverallGrade(a);
-          bGrade = getOverallGrade(b);
+          aGrade = getOverallGrade(a, SimPHL);
+          bGrade = getOverallGrade(b, SimPHL);
+        } else if (
+          page === "SimCFBRecruitingProfileTable" ||
+          page === "SimCHLRecruitingProfileTable" ||
+          page === "SimCBBRecruitingProfileTable"
+        ) {
+          aGrade = a.Croot[key];
+          bGrade = b.Croot[key];
         }
 
         const ai = gradeOrder.indexOf(aGrade);
