@@ -27,6 +27,7 @@ import {
   clearPlayerFromSlot,
   isPlayerOnTeam,
 } from "./Modal/DepthChartModalHelper";
+import { autoArrangeDepthChart } from "../Utils/DepthChartAutoArrangeUtils";
 
 interface DepthChartViewProps {
   players: (CFBPlayer | NFLPlayer)[];
@@ -331,6 +332,17 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
     setLocalDepthChart(depthChart);
   }, [depthChart]);
 
+  const handleAutoArrangeDepthChart = useCallback(() => {
+    if (!localDepthChart || !players) return;
+    const arranged = autoArrangeDepthChart(
+      players,
+      localDepthChart,
+      league,
+      gameplan,
+    );
+    setLocalDepthChart(arranged);
+  }, [localDepthChart, players, league, gameplan]);
+
   const hasUnsavedChanges = useMemo(() => {
     if (!localDepthChart || !depthChart) return false;
 
@@ -469,6 +481,15 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
                       >
                         Reset
                       </Button>
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={handleAutoArrangeDepthChart}
+                        disabled={isSaving}
+                        className={`min-w-24 ${isSaving ? "cursor-not-allowed" : "cursor-pointer"}`}
+                      >
+                        Auto
+                      </Button>
                     </div>
                     {hasUnsavedChanges && (
                       <Text
@@ -559,6 +580,15 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
                         className={`min-w-24 ${isSaving || !hasUnsavedChanges ? "cursor-not-allowed" : ""}`}
                       >
                         Reset
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={handleAutoArrangeDepthChart}
+                        disabled={isSaving}
+                        className={`min-w-24 ${isSaving ? "cursor-not-allowed" : "cursor-pointer"}`}
+                      >
+                        Auto
                       </Button>
                     </div>
                     {hasUnsavedChanges && (
