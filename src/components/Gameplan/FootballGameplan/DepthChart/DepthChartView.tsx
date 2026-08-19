@@ -2,12 +2,9 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   CollegePlayer as CFBPlayer,
   NFLPlayer,
-  CollegeDepthChartPosition,
-  NFLDepthChartPosition,
 } from "../../../../models/footballModels";
 import { SimCFB, SimNFL } from "../../../../_constants/constants";
 import { Text } from "../../../../_design/Typography";
-import { SelectDropdown } from "../../../../_design/Select";
 import { SelectOption } from "../../../../_hooks/useSelectStyles";
 import { useSimFBAStore } from "../../../../context/SimFBAContext";
 import { Button } from "../../../../_design/Buttons";
@@ -15,11 +12,6 @@ import { SingleValue } from "react-select";
 import FormationView from "./FormationView";
 import DepthChartManager from "./DepthChartManager";
 import { useDepthChartValidation } from "./useDepthChartValidation";
-import {
-  DepthChartService,
-  UpdateDepthChartDTO,
-  UpdateNFLDepthChartDTO,
-} from "../../../../_services/depthChartService";
 import ValidationToast from "../Common/ValidationToast";
 import {
   CFBPlayerInfoModalBody,

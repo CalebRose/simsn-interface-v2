@@ -20,6 +20,7 @@ import { GetNFLOverall } from "../../../Team/TeamPageUtils";
 import { getCFBOverall } from "../../../../_utility/getLetterGrade";
 import { getRatingBgColor } from "../Utils/GameplanPlayerUtils";
 import { ArrowsUpDown } from "../../../../_design/Icons";
+import { getYear } from "../../../../_utility/getYear";
 
 interface DepthChartManagerProps {
   players: (CollegePlayer | NFLPlayer)[];
@@ -184,6 +185,7 @@ const DepthChartManager: React.FC<DepthChartManagerProps> = ({
 
             let assignedPlayerOverall;
             let assignedPlayerBackground = "bg-gray-500";
+            let assignedPlayerYear = "";
 
             if (assignedPlayer?.playerData) {
               assignedPlayerOverall =
@@ -199,12 +201,20 @@ const DepthChartManager: React.FC<DepthChartManagerProps> = ({
               assignedPlayerBackground = getRatingBgColor(
                 assignedPlayerOverall,
               );
+
+              assignedPlayerYear =
+                league === SimNFL
+                  ? `${assignedPlayer.playerData.Experience} Years Exp.`
+                  : getYear(
+                      assignedPlayer.playerData.Year,
+                      assignedPlayer.playerData.IsRedshirt,
+                    );
             }
 
             return (
               <div
                 key={`${selectedPosition}-${positionLevel}`}
-                className="flex items-center gap-3 p-3 bg-gray-700 bg-black/30 rounded-lg max-h-[3em]"
+                className="flex items-center gap-3 p-3 bg-gray-700 border border-black/30 rounded-lg max-h-[3em]"
               >
                 <Text
                   variant="body-small"
@@ -243,9 +253,10 @@ const DepthChartManager: React.FC<DepthChartManagerProps> = ({
                           classes="text-white font-semibold"
                         >
                           {assignedPlayer.playerData.FirstName}{" "}
-                          {assignedPlayer.playerData.LastName}
+                          {assignedPlayer.playerData.LastName},{" "}
                         </Text>
                       </div>
+                      <span className="italic">{assignedPlayerYear} </span>
                     </div>
                     <div className="ml-auto">
                       <div
