@@ -50,7 +50,7 @@ export const CFBRecruiting = () => {
   } = fbStore;
   const {
     teamProfile,
-    sortedCrootProfiles,
+    filteredCrootProfiles,
     recruitMap,
     recruitingCategory,
     setRecruitingCategory,
@@ -81,6 +81,7 @@ export const CFBRecruiting = () => {
     recruitingLocked,
     filteredClass,
     SelectClass,
+    SelectCategory,
   } = useCFBRecruiting();
   const { isMobile } = useResponsive();
   const { backgroundColor } = useBackgroundColor();
@@ -155,7 +156,7 @@ export const CFBRecruiting = () => {
                   variant={
                     recruitingCategory === Overview ? "success" : "secondary"
                   }
-                  onClick={() => setRecruitingCategory(Overview)}
+                  onClick={() => SelectCategory(Overview)}
                 >
                   Overview
                 </Button>
@@ -167,7 +168,7 @@ export const CFBRecruiting = () => {
                       ? "success"
                       : "secondary"
                   }
-                  onClick={() => setRecruitingCategory(RecruitingTeamBoard)}
+                  onClick={() => SelectCategory(RecruitingTeamBoard)}
                 >
                   Board
                 </Button>
@@ -179,7 +180,7 @@ export const CFBRecruiting = () => {
                       ? "success"
                       : "secondary"
                   }
-                  onClick={() => setRecruitingCategory(RecruitingRankings)}
+                  onClick={() => SelectCategory(RecruitingRankings)}
                 >
                   Rankings
                 </Button>
@@ -191,7 +192,7 @@ export const CFBRecruiting = () => {
                       ? "success"
                       : "secondary"
                   }
-                  onClick={() => setRecruitingCategory(RecruitingClassView)}
+                  onClick={() => SelectCategory(RecruitingClassView)}
                 >
                   Class
                 </Button>
@@ -349,7 +350,7 @@ export const CFBRecruiting = () => {
               </Border>
               <Border
                 direction="col"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
+                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[62vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,
@@ -395,8 +396,56 @@ export const CFBRecruiting = () => {
           {!recruitingLocked && recruitingCategory === RecruitingTeamBoard && (
             <>
               <Border
+                direction="row"
+                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-center"
+                styles={{
+                  borderColor: teamColors.One,
+                  backgroundColor: backgroundColor,
+                }}
+              >
+                <div className="flex flex-row flex-wrap gap-x-1 sm:gap-x-2 gap-y-2 px-2 w-full">
+                  <CategoryDropdown
+                    label="Positions"
+                    options={FootballPositionOptions}
+                    change={SelectPositionOptions}
+                    isMulti={true}
+                    isMobile={isMobile}
+                  />
+                  <CategoryDropdown
+                    label="Archetype"
+                    options={FootballArchetypeOptions}
+                    change={SelectArchetypeOptions}
+                    isMulti={true}
+                    isMobile={isMobile}
+                  />
+                  {regionOptions.length > 0 && (
+                    <CategoryDropdown
+                      label="Region"
+                      options={regionOptions}
+                      change={SelectRegionOptions}
+                      isMulti={true}
+                      isMobile={isMobile}
+                    />
+                  )}
+                  <CategoryDropdown
+                    label="Stars"
+                    options={StarOptions}
+                    change={SelectStarOptions}
+                    isMulti={true}
+                    isMobile={isMobile}
+                  />
+                  <CategoryDropdown
+                    label="Status"
+                    options={StatusOptions}
+                    change={SelectStatusOptions}
+                    isMulti={true}
+                    isMobile={isMobile}
+                  />
+                </div>
+              </Border>
+              <Border
                 direction="col"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
+                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[62vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,
@@ -406,7 +455,7 @@ export const CFBRecruiting = () => {
                   colorOne={teamColors.One}
                   colorTwo={teamColors.Two}
                   colorThree={teamColors.Three}
-                  recruitProfiles={sortedCrootProfiles}
+                  recruitProfiles={filteredCrootProfiles}
                   recruitMap={recruitMap}
                   teamMap={cfbTeamMap}
                   team={cfbTeam}
@@ -450,7 +499,7 @@ export const CFBRecruiting = () => {
               </Border>
               <Border
                 direction="col"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
+                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[62vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,
@@ -487,11 +536,25 @@ export const CFBRecruiting = () => {
                     isMobile={isMobile}
                     isMulti={false}
                   />
+                  <CategoryDropdown
+                    label="Positions"
+                    options={FootballPositionOptions}
+                    change={SelectPositionOptions}
+                    isMulti={true}
+                    isMobile={isMobile}
+                  />
+                  <CategoryDropdown
+                    label="Archetype"
+                    options={FootballArchetypeOptions}
+                    change={SelectArchetypeOptions}
+                    isMulti={true}
+                    isMobile={isMobile}
+                  />
                 </div>
               </Border>
               <Border
                 direction="col"
-                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[50vh] overflow-y-auto"
+                classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 max-h-[62vh] overflow-y-auto"
                 styles={{
                   borderColor: teamColors.One,
                   backgroundColor: backgroundColor,

@@ -497,7 +497,7 @@ export const AvailableTeams = () => {
           </div>
         </div>
         <div className="min-[320px]:flex min-[320px]:flex-col-reverse min-[1025px]:grid min-[1025px]:grid-cols-2 gap-x-8">
-          <div className="grid min-[800px]:grid-cols-4 px-2 min-[300px]:grid-cols-3 overflow-y-auto gap-1 md:gap-0 justify-center min-[320px]:max-h-68 min-[420px]:max-h-100 min-[820px]:max-h-80 max-[1024px]:w-full min-[1025px]:max-h-[70vh] min-[1025px]:w-[50vw]">
+          <div className="grid min-[800px]:grid-cols-4 px-2 min-[300px]:grid-cols-3 overflow-y-auto gap-1 md:gap-0 justify-center min-[320px]:max-h-68 min-[420px]:max-h-100 min-[820px]:max-h-80 max-[1024px]:w-full min-[1025px]:max-h-[75vh] min-[1025px]:w-[50vw]">
             {selectedLeague === SimCFB &&
               filteredTeams.map((x) => (
                 <TeamCard

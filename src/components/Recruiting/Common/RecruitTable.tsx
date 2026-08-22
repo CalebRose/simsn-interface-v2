@@ -47,6 +47,7 @@ import {
   ValidateCloseToHome,
 } from "../../../_helper/recruitingHelper";
 import { CFBRecruitingPrefLabel } from "./RecruitingPrefColumn";
+import { GetRecruitingTendency } from "../../../_utility/getRecruitingTendency";
 
 const getRecruitingColumns = (
   league: League,
@@ -92,6 +93,10 @@ const getRecruitingColumns = (
       ]);
     }
     columns.push({ header: "Close To Home", accessor: "CloseToHome" });
+    columns.push({
+      header: "Signing Expectation",
+      accessor: "RecruitModifier",
+    });
     columns.push({ header: "Status", accessor: "RecruitingStatus" });
     columns.push({ header: "Leaders", accessor: "lead" });
     columns.push({ header: "Actions", accessor: "actions" });
@@ -493,6 +498,9 @@ const CFBRow: React.FC<CFBRowProps> = ({
             <CrossCircle textColorClass="text-red-500" />
           )}
         </div>
+      </TableCell>
+      <TableCell classes="text-xs">
+        {GetRecruitingTendency(item.RecruitModifier)}
       </TableCell>
       <TableCell classes="text-xs">
         {item.RecruitingStatus === "" ? "None" : item.RecruitingStatus}

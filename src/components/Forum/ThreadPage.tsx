@@ -533,7 +533,7 @@ export const ThreadPage: React.FC = () => {
       {activeThread && (
         <ThreadSEOMeta thread={activeThread} threadId={threadId} />
       )}
-      <div className="flex flex-col w-[90vw] lg:w-[80vw]">
+      <div className="flex flex-col w-[90vw] lg:w-full mx-auto sm:px-4">
         <ForumBreadcrumbs crumbs={crumbs} />
 
         {/* Thread header */}

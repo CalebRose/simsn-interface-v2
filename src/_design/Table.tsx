@@ -80,7 +80,6 @@ export const Table = <T,>({
     key: null,
     order: "asc",
   });
-  const [sortedData, setSortedData] = useState<T[]>(data);
   const [invalidSortKeys] = useState([
     "actions",
     "rank",
@@ -107,14 +106,20 @@ export const Table = <T,>({
     "F",
   ];
 
-  // When data or sortState changes, update sortedData
-  useEffect(() => {
-    if (sortState.key === null) {
-      setSortedData(data);
-      return;
-    }
+  // Sort order stored as indices into `data`.
+  // Only recomputed on user-initiated column click — NOT on every data value change.
+  // This keeps rows stable while the user edits an input field.
+  const [sortIndices, setSortIndices] = useState<number[]>(() =>
+    data.map((_, i) => i),
+  );
+
+  const computeSortIndices = (source: T[]): number[] => {
+    const indices = source.map((_, i) => i);
+    if (sortState.key === null) return indices;
     const { key, order } = sortState;
-    const sorted = [...data].sort((a: any, b: any) => {
+    return [...indices].sort((ai, bi) => {
+      const a = source[ai] as any;
+      const b = source[bi] as any;
       if (league === SimNFL && key === "Overall") {
         if (a.ShowLetterGrade && !b.ShowLetterGrade) return 1;
         if (!a.ShowLetterGrade && b.ShowLetterGrade) return -1;
@@ -142,6 +147,12 @@ export const Table = <T,>({
           return order === "asc" ? 1 : -1;
         if (a["IsRedshirt"] && !b["IsRedshirt"])
           return order === "asc" ? -1 : 1;
+        return 0;
+      }
+      if (
+        key.includes("RecruitModifier") ||
+        key.includes("CurrentWeeksPoints")
+      ) {
         return 0;
       }
 
@@ -212,6 +223,9 @@ export const Table = <T,>({
         page === "SimCHLRecruitingProfileTable" ||
         page === "SimCBBRecruitingProfileTable"
       ) {
+        if (key.includes("CurrentWeeksPoints")) {
+          return 0; // Skip sorting for CurrentWeeksPoints
+        }
         if (
           key.includes("LastName") ||
           key.includes("Position") ||
@@ -270,8 +284,24 @@ export const Table = <T,>({
       if (a[key] > b[key]) return order === "asc" ? 1 : -1;
       return 0;
     });
-    setSortedData(sorted);
-  }, [data, sortState, page]);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSortIndices(computeSortIndices(data));
+  }, [sortState, page]);
+
+  // Re-sort when the filtered list grows or shrinks (e.g. filter change).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSortIndices(computeSortIndices(data));
+  }, [data.length]);
+
+  // Order is stable from sortIndices; values are always fresh from current data.
+  const sortedData = useMemo(
+    () => sortIndices.filter((i) => i < data.length).map((i) => data[i]),
+    [data, sortIndices],
+  );
 
   const pageSize = 100;
 

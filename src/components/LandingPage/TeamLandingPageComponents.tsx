@@ -110,8 +110,8 @@ export const GamesBar = ({
 
   return (
     <div className="flex pb-1 mb-2">
-      <div className="flex w-[95vw] sm:w-[90vw] md:w-full max-w-400 justify-center">
-        <div className="relative flex items-center w-[92vw] md:w-[85vw] lg:w-[80vw] 3xl:w-full pb-1">
+      <div className="flex w-[95vw] sm:w-full justify-center">
+        <div className="relative flex items-center w-[95vw] sm:w-full pb-1">
           <button
             onClick={scrollLeft}
             className="absolute left-0 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-gray-800 text-white border border-gray-600 hover:bg-gray-700 transition-colors"
@@ -120,7 +120,7 @@ export const GamesBar = ({
           </button>
           <div
             ref={scrollContainerRef}
-            className="flex flex-row gap-2 overflow-x-auto w-full px-8 py-1"
+            className="flex flex-row gap-2 overflow-x-auto w-full px-1 sm:px-8 py-1"
           >
             {games.map((game, index) => {
               const isHomeGame = game.HomeTeamID === team.ID;

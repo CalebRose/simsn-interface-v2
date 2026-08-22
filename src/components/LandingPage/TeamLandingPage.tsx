@@ -464,7 +464,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
 
   return (
     <>
-      <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6">
+      <div className="flex-col w-full md:mb-6">
         <GamesBar
           games={teamSchedule}
           league={league}
@@ -475,7 +475,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           headerColor={headerColor}
           borderColor={borderColor}
         />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:w-[85vw] items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:w-full items-start">
           {/* Column 1: Standings */}
           <div className="flex flex-col gap-4">
             {currentUser && (

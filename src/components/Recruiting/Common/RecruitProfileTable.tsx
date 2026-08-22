@@ -36,7 +36,7 @@ import {
   getCFBCrootAttributes,
 } from "../../Team/TeamPageUtils";
 import { Input } from "../../../_design/Inputs";
-import { Button, ButtonGroup } from "../../../_design/Buttons";
+import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import {
   Croot as BasketballCroot,
   RecruitPlayerProfile as BasketballCrootProfile,
@@ -133,7 +133,8 @@ const getRecruitProfileColumns = (
     columns = columns.concat([
       { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
-      { header: "Add Points", accessor: "CurrentWeeksPoints" },
+      { header: "Add Points", accessor: "" },
+      { header: "Streak", accessor: "SpendingCount" },
       { header: "Mod.", accessor: "Modifier" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
@@ -151,7 +152,6 @@ const getRecruitProfileColumns = (
     if (!isMobile && category === Attributes) {
       columns = columns.concat([
         { header: "City", accessor: "City" },
-        { header: "HS", accessor: "HighSchool" },
         { header: "State", accessor: "State" },
         { header: "Ovr", accessor: "OverallGrade" },
         { header: "Pot", accessor: "PotentialGrade" },
@@ -180,7 +180,8 @@ const getRecruitProfileColumns = (
 
     columns = columns.concat([
       { header: "Leaders", accessor: "lead" },
-      { header: "Add Points", accessor: "CurrentWeeksPoints" },
+      { header: "Add Points", accessor: "" },
+      { header: "Streak", accessor: "SpendingCount" },
       { header: "Mod.", accessor: "PreferenceModifier" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
@@ -228,7 +229,8 @@ const getRecruitProfileColumns = (
     columns = columns.concat([
       { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
-      { header: "Add Points", accessor: "CurrentWeeksPoints" },
+      { header: "Add Points", accessor: "" },
+      { header: "Streak", accessor: "SpendingCount" },
       { header: "Mod.", accessor: "CurrentWeeksPoints" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
@@ -486,6 +488,9 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
+        <span className={`text-xs`}>{profile.SpendingCount}</span>
+      </TableCell>
+      <TableCell>
         <span className={`text-xs`}>{modValue.toFixed(2)}</span>
       </TableCell>
       <TableCell>
@@ -649,9 +654,6 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
         <>
           <TableCell>
             <span className={`text-xs`}>{croot.City}</span>
-          </TableCell>
-          <TableCell>
-            <span className={`text-xs`}>{croot.HighSchool}</span>
           </TableCell>
           <TableCell>
             <span className={`text-xs`}>{annotateRegion(croot.State)}</span>
@@ -818,18 +820,22 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
         </div>
       </TableCell>
       <TableCell>
+        <span className={`text-xs`}>{profile.SpendingCount}</span>
+      </TableCell>
+      <TableCell>
         <span className={`text-xs`}>{recruitModifier.toFixed(3)}</span>
       </TableCell>
       <TableCell>
         <span className={`text-xs`}>{profile.TotalPoints.toFixed(3)}</span>
       </TableCell>
       <TableCell>
-        <ButtonGroup classes="flex-nowrap">
+        <ButtonGrid classes="">
           <Button
             variant={toggleVariant as ButtonColor}
             size="xs"
             onClick={toggleScholarship}
             disabled={profile.ScholarshipRevoked}
+            classes="flex items-center justify-center"
           >
             {profile.ScholarshipRevoked ? <SadFace /> : <Scholarship />}
           </Button>
@@ -837,10 +843,11 @@ export const CFBProfileRow: FC<CFBProfileRowProps> = ({
             variant="danger"
             size="xs"
             onClick={() => openModal(RemoveRecruitType, croot)}
+            classes="flex items-center justify-center"
           >
             <TrashCan />
           </Button>
-        </ButtonGroup>
+        </ButtonGrid>
       </TableCell>
     </div>
   );
@@ -1258,6 +1265,9 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
             onChange={onPointsChange}
           />
         </div>
+      </TableCell>
+      <TableCell>
+        <span className={`text-xs`}>{profile.SpendingCount}</span>
       </TableCell>
       <TableCell>
         <span className={`text-xs`}>{modValue.toFixed(3)}</span>

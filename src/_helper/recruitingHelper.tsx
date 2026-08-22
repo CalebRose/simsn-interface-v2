@@ -240,6 +240,91 @@ export const useFilteredFootballRecruits = ({
   );
 };
 
+export const useFilteredFootballRecruitsByTeam = ({
+  recruits,
+  positions,
+  archetype,
+  selectedClassView,
+}: {
+  recruits: FootballCroot[];
+  positions: string[];
+  archetype: string[];
+  selectedClassView: number | null;
+}) => {
+  // 1) build Sets once per-change
+  const positionSet = useMemo(() => new Set(positions), [positions]);
+  const archSet = useMemo(() => new Set(archetype), [archetype]);
+
+  return useMemo(() => {
+    return recruits.filter((r) => {
+      if (positionSet.size > 0 && !positionSet.has(r.Position)) {
+        return false;
+      }
+      if (archSet.size > 0 && !archSet.has(r.Archetype)) {
+        return false;
+      }
+      if (selectedClassView && r.TeamID !== selectedClassView) {
+        return false;
+      }
+      return true;
+    });
+  }, [recruits, positionSet, archSet, selectedClassView]);
+};
+
+export const useFilteredCrootProfiles = ({
+  recruitProfiles,
+  recruitMap,
+  positions,
+  archetype,
+  regions,
+  statuses,
+  stars,
+}: {
+  recruitProfiles: any[];
+  recruitMap: Record<number, any>;
+  positions: string[];
+  archetype: string[];
+  regions: string[];
+  statuses: string[];
+  stars: number[];
+}) => {
+  const positionSet = useMemo(() => new Set(positions), [positions]);
+  const archSet = useMemo(() => new Set(archetype), [archetype]);
+  const regionSet = useMemo(() => new Set(regions), [regions]);
+  const statusSet = useMemo(() => new Set(statuses), [statuses]);
+  const starSet = useMemo(() => new Set(stars), [stars]);
+
+  return useMemo(() => {
+    return recruitProfiles.filter((profile) => {
+      const r = recruitMap[profile.RecruitID];
+      if (positionSet.size > 0 && !positionSet.has(r.Position)) {
+        return false;
+      }
+      if (archSet.size > 0 && !archSet.has(r.Archetype)) {
+        return false;
+      }
+      if (regionSet.size > 0 && !regionSet.has(r.State)) {
+        return false;
+      }
+      if (statusSet.size > 0 && !statusSet.has(r.RecruitingStatus)) {
+        return false;
+      }
+      if (starSet.size > 0 && !starSet.has(r.Stars)) {
+        return false;
+      }
+      return true;
+    });
+  }, [
+    recruitProfiles,
+    recruitMap,
+    positionSet,
+    archSet,
+    regionSet,
+    statusSet,
+    starSet,
+  ]);
+};
+
 export const getAffinityList = (teamProfile: RecruitingTeamProfile) => {
   const list = [];
   if (teamProfile.AcademicsAffinity) {
@@ -290,7 +375,12 @@ export const ValidateCloseToHome = (croot: any, abbr: any) => {
 
   const closeToHomeSchools = StateMatcherMap[crootState];
   if (!closeToHomeSchools || closeToHomeSchools.length <= 0) {
-    console.log("Warning: no close-to-home schools found for croot:", String(croot.FirstName) + " " + String(croot.LastName), "State: ", crootState);
+    console.log(
+      "Warning: no close-to-home schools found for croot:",
+      String(croot.FirstName) + " " + String(croot.LastName),
+      "State: ",
+      crootState,
+    );
     return false;
   }
 
