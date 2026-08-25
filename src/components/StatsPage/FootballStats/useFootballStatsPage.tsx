@@ -84,7 +84,7 @@ export const useFootballStats = () => {
   const [selectedLeagueOption, setSelectedLeagueOption] = useState<number>(1);
   const [selectedWeek, setSelectedWeek] = useState<number>(2501);
   const [selectedSeason, setSelectedSeason] = useState<number>(
-    cfb_Timestamp!.CollegeSeasonID,
+    cfb_Timestamp?.CollegeSeasonID ?? 0,
   ); // SEASON ID
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [selectedConferences, setSelectedConferences] = useState<string[]>([]);

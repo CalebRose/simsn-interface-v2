@@ -84,6 +84,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     if (!player) return <></>;
     item.Player = player;
     const team = teamMap[item.TeamID] as CollegeTeam;
+    if (!team) return <></>;
     const logo = getLogo(league, team.ID, false);
     const values = GetFootballPlayerStatsValues(
       item,
@@ -205,6 +206,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     const player = playerMap[item.NFLPlayerID] as NFLPlayer;
     if (!player) return <></>;
     const team = teamMap[item.TeamID] as NFLTeam;
+    if (!team) return <></>;
     const logo = getLogo(league, team.ID, false);
     const values = GetFootballPlayerStatsValues(
       item,

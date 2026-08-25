@@ -18,7 +18,8 @@ export const useResponsive = () => {
       return {
         isMobile: width < 768,
         isTablet: width > 767 && width <= 1024,
-        isDesktop: width > 1024,
+        isDesktop: width > 1024 && width <= 2559,
+        isUltraWide: width > 2559,
       };
     } catch (error) {
       console.warn("Error accessing window dimensions:", error);
@@ -26,6 +27,7 @@ export const useResponsive = () => {
         isMobile: false,
         isTablet: false,
         isDesktop: true,
+        isUltraWide: false,
       };
     }
   }, []);
@@ -38,6 +40,7 @@ export const useResponsive = () => {
         isMobile: false,
         isTablet: false,
         isDesktop: true,
+        isUltraWide: false,
       };
     }
     return getSizes();

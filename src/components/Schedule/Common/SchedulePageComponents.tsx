@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useResponsive } from "../../../_hooks/useMobile";
 import { getLogo } from "../../../_utility/getLogo";
 import { Text } from "../../../_design/Typography";
 import { Logo } from "../../../_design/Logo";
@@ -58,6 +59,14 @@ export const TeamSchedule = ({
   const gameModal = useModal();
   const [selectedGame, setSelectedGame] = useState<any>(null);
   const isFootball = league === SimCFB || league === SimNFL ? true : false;
+  const { isUltraWide } = useResponsive();
+  let gridColumns = useMemo(() => {
+    if (isFootball) {
+      return isUltraWide ? "grid-cols-9" : "grid-cols-7";
+    } else {
+      return isUltraWide ? "grid-cols-7" : "grid-cols-5";
+    }
+  }, [isFootball, isUltraWide]);
 
   return (
     <>
@@ -84,9 +93,7 @@ export const TeamSchedule = ({
         ) : (
           <div className="grid">
             <div
-              className={`grid ${
-                isFootball ? "grid-cols-7" : "grid-cols-5"
-              } font-semibold border-b-2 pb-2`}
+              className={`grid ${gridColumns} font-semibold border-b-2 pb-2`}
               style={{
                 borderColor,
               }}
@@ -108,6 +115,13 @@ export const TeamSchedule = ({
                   Opponent
                 </Text>
               </div>
+              {isUltraWide && (
+                <div className="text-left col-span-2">
+                  <Text variant="xs" className={`${textColorClass}`}>
+                    Location
+                  </Text>
+                </div>
+              )}
               <div className="text-center col-span-1">
                 <Text variant="xs" className={`${textColorClass}`}>
                   Result
@@ -133,7 +147,7 @@ export const TeamSchedule = ({
                 <div
                   key={`${game.ID}-${game.Week}-${index}`}
                   className={`grid ${
-                    isFootball ? "grid-cols-7" : "grid-cols-5"
+                    gridColumns
                   } border-b border-b-[#34455d] items-center`}
                   style={{
                     backgroundColor:
@@ -176,6 +190,13 @@ export const TeamSchedule = ({
                       league={league}
                     />
                   </div>
+                  {isUltraWide && (
+                    <div className="text-left col-span-2">
+                      <Text variant="xs" className="font-semibold opacity-70">
+                        {!isFootball ? game.Arena : game.Stadium}
+                      </Text>
+                    </div>
+                  )}
                   <div className="text-center col-span-1">
                     <ClickableGameLabel
                       textColorClass={`${

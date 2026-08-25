@@ -309,7 +309,7 @@ export const TeamStandings = ({
     <SectionCards
       team={team}
       header={`${team.Conference} Standings`}
-      classes={`${textColorClass}, h-full max-w-120`}
+      classes={`${textColorClass}, h-full`}
       backgroundColor={backgroundColor}
       headerColor={headerColor}
       borderColor={borderColor}
