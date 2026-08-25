@@ -116,9 +116,16 @@ export const TeamSchedule = ({
                 </Text>
               </div>
               {isUltraWide && (
-                <div className="text-left col-span-2">
+                <div className="text-left col-span-1">
                   <Text variant="xs" className={`${textColorClass}`}>
                     Location
+                  </Text>
+                </div>
+              )}
+              {isUltraWide && (
+                <div className="text-left col-span-1">
+                  <Text variant="xs" className={`${textColorClass}`}>
+                    Attendance
                   </Text>
                 </div>
               )}
@@ -191,9 +198,16 @@ export const TeamSchedule = ({
                     />
                   </div>
                   {isUltraWide && (
-                    <div className="text-left col-span-2">
+                    <div className="text-left col-span-1">
                       <Text variant="xs" className="font-semibold opacity-70">
                         {!isFootball ? game.Arena : game.Stadium}
+                      </Text>
+                    </div>
+                  )}
+                  {isUltraWide && (
+                    <div className="text-left col-span-1">
+                      <Text variant="xs" className="font-semibold opacity-70">
+                        {game.AttendanceCount || "?"}
                       </Text>
                     </div>
                   )}
