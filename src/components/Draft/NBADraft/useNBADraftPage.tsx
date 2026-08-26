@@ -40,7 +40,7 @@ export const useNBADraftPage = () => {
     cbb_Timestamp,
     nbaTeam,
     nbaDraftees,
-    nbaTeamOptions,
+    nbaTeamOnlyOptions,
     nbaTeamMap,
     nbaWarRoomMap,
     nbaGameplanMap,
@@ -321,9 +321,10 @@ export const useNBADraftPage = () => {
 
   const handleRemoveFromScoutBoard = useCallback(
     async (profile: ScoutingProfile) => {
-      await removePlayerFromScoutBoard(profile.ID);
+      if (!selectedTeam) return;
+      await removePlayerFromScoutBoard(profile.ID, selectedTeam?.ID);
     },
-    [removePlayerFromScoutBoard],
+    [removePlayerFromScoutBoard, selectedTeam],
   );
 
   const handleRevealAttribute = useCallback(
@@ -584,7 +585,7 @@ export const useNBADraftPage = () => {
     getTimeForPick,
     PICKS_PER_ROUND: NBA_PICKS_PER_ROUND,
     selectTeamOption,
-    nbaTeamOptions,
+    nbaTeamOnlyOptions,
     teamNeedsList,
     modalPlayer,
     handleCloseModal,

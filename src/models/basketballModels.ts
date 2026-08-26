@@ -90,6 +90,7 @@ export class ScoutingProfile {
   ShowAgility: boolean;
   ShowStealing: boolean;
   ShowBlocking: boolean;
+  ShowBasketballIQ: boolean;
   ShowPotential: boolean;
   RemovedFromBoard: boolean;
   ShowCount: number;
@@ -114,6 +115,7 @@ export class ScoutingProfile {
     this.ShowRebounding = source["ShowRebounding"];
     this.ShowInteriorDefense = source["ShowInteriorDefense"];
     this.ShowPerimeterDefense = source["ShowPerimeterDefense"];
+    this.ShowBasketballIQ = source["ShowBasketballIQ"];
     this.ShowPotential = source["ShowPotential"];
     this.RemovedFromBoard = source["RemovedFromBoard"];
     this.ShowCount = source["ShowCount"];
