@@ -502,6 +502,8 @@ export const getNBAAttributeShowProperty = (
       return "ShowStealing";
     case "Blocking":
       return "ShowBlocking";
+    case "Rebounding":
+      return "ShowRebounding";
     case "Interior Def.":
       return "ShowInteriorDefense";
     case "Perimeter Def.":
