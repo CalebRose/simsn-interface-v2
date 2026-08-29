@@ -24,15 +24,25 @@ import {
 import { isSeasonStats } from "../../../_helper/statsPageHelper";
 import { getPasserRating } from "../../../_utility/getPasserRating";
 import {
-  CollegePlayerSeasonStats,
-  CollegePlayerStats,
-  CollegeTeamSeasonStats,
-  CollegeTeamStats,
+  CollegePlayerSeasonStats as CFBPlayerSeasonStats,
+  CollegePlayerStats as CFBPlayerStats,
+  CollegeTeamSeasonStats as CFBTeamSeasonStats,
+  CollegeTeamStats as CFBTeamStats,
   NFLPlayerSeasonStats,
   NFLPlayerStats,
   NFLTeamSeasonStats,
   NFLTeamStats,
 } from "../../../models/footballModels";
+import {
+  CollegePlayerSeasonStats,
+  CollegePlayerStats,
+  NBAPlayerSeasonStats,
+  NBAPlayerStats,
+  NBATeamSeasonStats,
+  NBATeamStats,
+  TeamSeasonStats,
+  TeamStats,
+} from "../../../models/basketballModels";
 import {
   CollegePlayerGameStats as CHLPlayerGameStats,
   CollegePlayerSeasonStats as CHLPlayerSeasonStats,
@@ -50,6 +60,7 @@ export const GetStatsColumns = (
   statsView: StatsView,
   isMobile: boolean,
   isGoalie: boolean,
+  basketballStatsType?: string,
 ) => {
   if (league === SimCHL || league === SimPHL) {
     return GetHockeyStatsColumns(
@@ -61,7 +72,13 @@ export const GetStatsColumns = (
     );
   }
   if (league === SimCBB || league === SimNBA) {
-    return GetBasketballStatsColumns(league, statsType, statsView, isMobile);
+    return GetBasketballStatsColumns(
+      league,
+      statsType,
+      statsView,
+      basketballStatsType ?? "Total",
+      isMobile,
+    );
   }
   return [];
 };
@@ -278,9 +295,182 @@ export const GetBasketballStatsColumns = (
   league: League,
   statsType: StatsType,
   statsView: StatsView,
+  basketballStatsType: string,
   isMobile: boolean,
 ) => {
-  return [];
+  let columns = [{ header: "", accessor: "" }];
+
+  if (statsType === TEAM_VIEW) {
+    columns = columns.concat([{ header: "Team", accessor: "Team" }]);
+  }
+  if (statsType === PLAYER_VIEW) {
+    columns = columns.concat([
+      { header: "Team", accessor: "Team" },
+      { header: "Player", accessor: "LastName" },
+      { header: "Pos", accessor: "Position" },
+      { header: isMobile ? "Arch" : "Archetype", accessor: "Archetype" },
+      { header: "Exp", accessor: "Year" },
+      { header: "Ovr", accessor: "Overall" },
+    ]);
+  } else if (statsType === TEAM_VIEW) {
+    columns = columns.concat([{ header: "Conf", accessor: "Conference" }]);
+  }
+
+  if (statsView === SEASON_VIEW) {
+    columns = columns.concat([{ header: "GP", accessor: "GamesPlayed" }]);
+  }
+
+  if (statsType === PLAYER_VIEW) {
+    if (statsView === SEASON_VIEW && basketballStatsType === "Average") {
+      columns = columns.concat([
+        { header: "MPG", accessor: "MinutesPerGame" },
+        { header: "PPG", accessor: "PPG" },
+        { header: "RPG", accessor: "ReboundsPerGame" },
+        { header: "OR/G", accessor: "OffReboundsPerGame" },
+        { header: "DR/G", accessor: "DefReboundsPerGame" },
+        { header: "APG", accessor: "AssistsPerGame" },
+        { header: "SPG", accessor: "StealsPerGame" },
+        { header: "BPG", accessor: "BlocksPerGame" },
+        { header: "TPG", accessor: "TurnoversPerGame" },
+        { header: "FPG", accessor: "FoulsPerGame" },
+        { header: "FGM/G", accessor: "FGMPG" },
+        { header: "FGA/G", accessor: "FGAPG" },
+        { header: "FG%", accessor: "FGPercent" },
+        { header: "3PM/G", accessor: "ThreePointsMadePerGame" },
+        { header: "3PA/G", accessor: "ThreePointAttemptsPerGame" },
+        { header: "3P%", accessor: "ThreePointPercent" },
+        { header: "FTM/G", accessor: "FTMPG" },
+        { header: "FTA/G", accessor: "FTAPG" },
+        { header: "FT%", accessor: "FTPercent" },
+      ]);
+    } else {
+      // Game view or season Total
+      columns = columns.concat([
+        { header: "Min", accessor: "Minutes" },
+        { header: "Pts", accessor: "Points" },
+        { header: "Reb", accessor: "TotalRebounds" },
+        { header: "OR", accessor: "OffRebounds" },
+        { header: "DR", accessor: "DefRebounds" },
+        { header: "Ast", accessor: "Assists" },
+        { header: "Stl", accessor: "Steals" },
+        { header: "Blk", accessor: "Blocks" },
+        { header: "TO", accessor: "Turnovers" },
+        { header: "Fouls", accessor: "Fouls" },
+        { header: "FGM", accessor: "FGM" },
+        { header: "FGA", accessor: "FGA" },
+        { header: "FG%", accessor: "FGPercent" },
+        { header: "3PM", accessor: "ThreePointsMade" },
+        { header: "3PA", accessor: "ThreePointAttempts" },
+        { header: "3P%", accessor: "ThreePointPercent" },
+        { header: "FTM", accessor: "FTM" },
+        { header: "FTA", accessor: "FTA" },
+        { header: "FT%", accessor: "FTPercent" },
+      ]);
+      if (statsView === SEASON_VIEW) {
+        columns = columns.concat([{ header: "FO", accessor: "FoulOuts" }]);
+      }
+    }
+  } else if (statsType === TEAM_VIEW) {
+    if (statsView === SEASON_VIEW && basketballStatsType === "Average") {
+      columns = columns.concat([
+        { header: "PPG", accessor: "PPG" },
+        { header: "PAPG", accessor: "PAPG" },
+        { header: "FGM/G", accessor: "FGMPG" },
+        { header: "FGA/G", accessor: "FGAPG" },
+        { header: "FG%", accessor: "FGPercent" },
+        { header: "FGM-A/G", accessor: "FGMAPG" },
+        { header: "FGA-A/G", accessor: "FGAAPG" },
+        { header: "FG%-A", accessor: "FGPercentAgainst" },
+        { header: "3PM/G", accessor: "TPMPG" },
+        { header: "3PA/G", accessor: "TPAPG" },
+        { header: "3P%", accessor: "ThreePointPercent" },
+        { header: "3PM-A/G", accessor: "TPMAPG" },
+        { header: "3PA-A/G", accessor: "TPAAPG" },
+        { header: "3P%-A", accessor: "ThreePointPercentAgainst" },
+        { header: "FTM/G", accessor: "FTMPG" },
+        { header: "FTA/G", accessor: "FTAPG" },
+        { header: "FT%", accessor: "FTPercent" },
+        { header: "FTM-A/G", accessor: "FTMAPG" },
+        { header: "FTA-A/G", accessor: "FTAAPG" },
+        { header: "FT%-A", accessor: "FTPercentAgainst" },
+        { header: "RPG", accessor: "ReboundsPerGame" },
+        { header: "RPG-A", accessor: "ReboundsAllowedPerGame" },
+        { header: "APG", accessor: "AssistsPerGame" },
+        { header: "APG-A", accessor: "AssistsAllowedPerGame" },
+        { header: "SPG", accessor: "StealsPerGame" },
+        { header: "SPG-A", accessor: "StealsAllowedPerGame" },
+        { header: "BPG", accessor: "BlocksPerGame" },
+        { header: "BPG-A", accessor: "BlocksAllowedPerGame" },
+        { header: "TPG", accessor: "TurnoversPerGame" },
+        { header: "TPG-A", accessor: "TurnoversAllowedPerGame" },
+        { header: "FPG", accessor: "FoulsPerGame" },
+      ]);
+    } else if (statsView === SEASON_VIEW) {
+      columns = columns.concat([
+        { header: "Pts", accessor: "Points" },
+        { header: "PA", accessor: "PointsAgainst" },
+        { header: "FGM", accessor: "FGM" },
+        { header: "FGA", accessor: "FGA" },
+        { header: "FG%", accessor: "FGPercent" },
+        { header: "FGM-A", accessor: "FGMAgainst" },
+        { header: "FGA-A", accessor: "FGAAgainst" },
+        { header: "FG%-A", accessor: "FGPercentAgainst" },
+        { header: "3PM", accessor: "ThreePointsMade" },
+        { header: "3PA", accessor: "ThreePointAttempts" },
+        { header: "3P%", accessor: "ThreePointPercent" },
+        { header: "3PM-A", accessor: "ThreePointsMadeAgainst" },
+        { header: "3PA-A", accessor: "ThreePointAttemptsAgainst" },
+        { header: "3P%-A", accessor: "ThreePointPercentAgainst" },
+        { header: "FTM", accessor: "FTM" },
+        { header: "FTA", accessor: "FTA" },
+        { header: "FT%", accessor: "FTPercent" },
+        { header: "FTM-A", accessor: "FTMAgainst" },
+        { header: "FTA-A", accessor: "FTAAgainst" },
+        { header: "FT%-A", accessor: "FTPercentAgainst" },
+        { header: "Reb", accessor: "Rebounds" },
+        { header: "Reb-A", accessor: "ReboundsAllowed" },
+        { header: "OR", accessor: "OffRebounds" },
+        { header: "DR", accessor: "DefRebounds" },
+        { header: "Ast", accessor: "Assists" },
+        { header: "Ast-A", accessor: "AssistsAllowed" },
+        { header: "Stl", accessor: "Steals" },
+        { header: "Stl-A", accessor: "StealsAllowed" },
+        { header: "Blk", accessor: "Blocks" },
+        { header: "Blk-A", accessor: "BlocksAllowed" },
+        { header: "TO", accessor: "TotalTurnovers" },
+        { header: "TO-A", accessor: "TurnoversAllowed" },
+        { header: "Fouls", accessor: "Fouls" },
+      ]);
+    } else {
+      // Game view
+      columns = columns.concat([
+        { header: "Pts", accessor: "Points" },
+        { header: "PA", accessor: "PointsAgainst" },
+        { header: "1H", accessor: "FirstHalfScore" },
+        { header: "2H", accessor: "SecondHalfScore" },
+        { header: "OT", accessor: "OvertimeScore" },
+        { header: "FGM", accessor: "FGM" },
+        { header: "FGA", accessor: "FGA" },
+        { header: "FG%", accessor: "FGPercent" },
+        { header: "3PM", accessor: "ThreePointsMade" },
+        { header: "3PA", accessor: "ThreePointAttempts" },
+        { header: "3P%", accessor: "ThreePointPercent" },
+        { header: "FTM", accessor: "FTM" },
+        { header: "FTA", accessor: "FTA" },
+        { header: "FT%", accessor: "FTPercent" },
+        { header: "Reb", accessor: "Rebounds" },
+        { header: "OR", accessor: "OffRebounds" },
+        { header: "DR", accessor: "DefRebounds" },
+        { header: "Ast", accessor: "Assists" },
+        { header: "Stl", accessor: "Steals" },
+        { header: "Blk", accessor: "Blocks" },
+        { header: "TO", accessor: "TotalTurnovers" },
+        { header: "Fouls", accessor: "Fouls" },
+      ]);
+    }
+  }
+
+  return columns;
 };
 
 export const GetHockeyStatsColumns = (
@@ -491,8 +681,8 @@ export const GetHockeyTeamStatsValues = (
 
 export const GetFootballPlayerStatsValues = (
   stats:
-    | CollegePlayerStats
-    | CollegePlayerSeasonStats
+    | CFBPlayerStats
+    | CFBPlayerSeasonStats
     | NFLPlayerStats
     | NFLPlayerSeasonStats,
   statsView: StatsView,
@@ -656,11 +846,7 @@ export const GetFootballPlayerStatsValues = (
 };
 
 export const GetFootballTeamStatsValues = (
-  stats:
-    | CollegeTeamStats
-    | CollegeTeamSeasonStats
-    | NFLTeamStats
-    | NFLTeamSeasonStats,
+  stats: CFBTeamStats | CFBTeamSeasonStats | NFLTeamStats | NFLTeamSeasonStats,
   statsView: StatsView,
   footballStatsType: FootballStatsType,
 ): { label: string; value: number }[] => {
@@ -670,8 +856,7 @@ export const GetFootballTeamStatsValues = (
     if ("GamesPlayed" in stats) {
       values.push({
         label: "GP",
-        value: (stats as CollegeTeamSeasonStats | NFLTeamSeasonStats)
-          .GamesPlayed,
+        value: (stats as CFBTeamSeasonStats | NFLTeamSeasonStats).GamesPlayed,
       });
     }
   }
@@ -750,6 +935,250 @@ export const GetFootballTeamStatsValues = (
         { label: "xScks", value: stats.DefensiveExpectedSacks },
       );
       break;
+  }
+
+  return values;
+};
+
+export const GetBasketballPlayerStatsValues = (
+  stats:
+    | CollegePlayerStats
+    | CollegePlayerSeasonStats
+    | NBAPlayerStats
+    | NBAPlayerSeasonStats,
+  statsView: StatsView,
+  basketballStatsType: string,
+): { label: string; value: number | string }[] => {
+  const values: { label: string; value: number | string }[] = [];
+
+  if (statsView === SEASON_VIEW) {
+    const seasonStats = stats as
+      | CollegePlayerSeasonStats
+      | NBAPlayerSeasonStats;
+    values.push({ label: "GP", value: seasonStats.GamesPlayed });
+
+    if (basketballStatsType === "Average") {
+      values.push(
+        { label: "MPG", value: seasonStats.MinutesPerGame.toFixed(1) },
+        { label: "PPG", value: seasonStats.PPG.toFixed(1) },
+        { label: "RPG", value: seasonStats.ReboundsPerGame.toFixed(1) },
+        { label: "OR/G", value: seasonStats.OffReboundsPerGame.toFixed(1) },
+        { label: "DR/G", value: seasonStats.DefReboundsPerGame.toFixed(1) },
+        { label: "APG", value: seasonStats.AssistsPerGame.toFixed(1) },
+        { label: "SPG", value: seasonStats.StealsPerGame.toFixed(1) },
+        { label: "BPG", value: seasonStats.BlocksPerGame.toFixed(1) },
+        { label: "TPG", value: seasonStats.TurnoversPerGame.toFixed(1) },
+        { label: "FPG", value: seasonStats.FoulsPerGame.toFixed(1) },
+        { label: "FGM/G", value: seasonStats.FGMPG.toFixed(1) },
+        { label: "FGA/G", value: seasonStats.FGAPG.toFixed(1) },
+        { label: "FG%", value: (seasonStats.FGPercent * 100).toFixed(1) },
+        {
+          label: "3PM/G",
+          value: seasonStats.ThreePointsMadePerGame.toFixed(1),
+        },
+        {
+          label: "3PA/G",
+          value: seasonStats.ThreePointAttemptsPerGame.toFixed(1),
+        },
+        {
+          label: "3P%",
+          value: (seasonStats.ThreePointPercent * 100).toFixed(1),
+        },
+        { label: "FTM/G", value: seasonStats.FTMPG.toFixed(1) },
+        { label: "FTA/G", value: seasonStats.FTAPG.toFixed(1) },
+        { label: "FT%", value: (seasonStats.FTPercent * 100).toFixed(1) },
+      );
+    } else {
+      values.push(
+        { label: "Min", value: seasonStats.Minutes },
+        { label: "Pts", value: seasonStats.Points },
+        { label: "Reb", value: seasonStats.TotalRebounds },
+        { label: "OR", value: seasonStats.OffRebounds },
+        { label: "DR", value: seasonStats.DefRebounds },
+        { label: "Ast", value: seasonStats.Assists },
+        { label: "Stl", value: seasonStats.Steals },
+        { label: "Blk", value: seasonStats.Blocks },
+        { label: "TO", value: seasonStats.Turnovers },
+        { label: "Fouls", value: seasonStats.Fouls },
+        { label: "FO", value: seasonStats.FoulOuts },
+        { label: "FGM", value: seasonStats.FGM },
+        { label: "FGA", value: seasonStats.FGA },
+        { label: "FG%", value: (seasonStats.FGPercent * 100).toFixed(1) },
+        { label: "3PM", value: seasonStats.ThreePointsMade },
+        { label: "3PA", value: seasonStats.ThreePointAttempts },
+        {
+          label: "3P%",
+          value: (seasonStats.ThreePointPercent * 100).toFixed(1),
+        },
+        { label: "FTM", value: seasonStats.FTM },
+        { label: "FTA", value: seasonStats.FTA },
+        { label: "FT%", value: (seasonStats.FTPercent * 100).toFixed(1) },
+      );
+    }
+  } else {
+    values.push(
+      { label: "Min", value: stats.Minutes },
+      { label: "Pts", value: stats.Points },
+      { label: "Reb", value: stats.TotalRebounds },
+      { label: "OR", value: stats.OffRebounds },
+      { label: "DR", value: stats.DefRebounds },
+      { label: "Ast", value: stats.Assists },
+      { label: "Stl", value: stats.Steals },
+      { label: "Blk", value: stats.Blocks },
+      { label: "TO", value: stats.Turnovers },
+      { label: "Fouls", value: stats.Fouls },
+      { label: "FGM", value: stats.FGM },
+      { label: "FGA", value: stats.FGA },
+      { label: "FG%", value: (stats.FGPercent * 100).toFixed(1) },
+      { label: "3PM", value: stats.ThreePointsMade },
+      { label: "3PA", value: stats.ThreePointAttempts },
+      { label: "3P%", value: (stats.ThreePointPercent * 100).toFixed(1) },
+      { label: "FTM", value: stats.FTM },
+      { label: "FTA", value: stats.FTA },
+      { label: "FT%", value: (stats.FTPercent * 100).toFixed(1) },
+    );
+  }
+
+  return values;
+};
+
+export const GetBasketballTeamStatsValues = (
+  stats: TeamStats | TeamSeasonStats | NBATeamStats | NBATeamSeasonStats,
+  statsView: StatsView,
+  basketballStatsType: string,
+): { label: string; value: number | string }[] => {
+  const values: { label: string; value: number | string }[] = [];
+
+  if (statsView === SEASON_VIEW) {
+    const seasonStats = stats as TeamSeasonStats | NBATeamSeasonStats;
+    values.push({ label: "GP", value: seasonStats.GamesPlayed });
+
+    if (basketballStatsType === "Average") {
+      values.push(
+        { label: "PPG", value: seasonStats.PPG.toFixed(1) },
+        { label: "PAPG", value: seasonStats.PAPG.toFixed(1) },
+        { label: "FGM/G", value: seasonStats.FGMPG.toFixed(1) },
+        { label: "FGA/G", value: seasonStats.FGAPG.toFixed(1) },
+        { label: "FG%", value: (seasonStats.FGPercent * 100).toFixed(1) },
+        { label: "FGM-A/G", value: seasonStats.FGMAPG.toFixed(1) },
+        { label: "FGA-A/G", value: seasonStats.FGAAPG.toFixed(1) },
+        {
+          label: "FG%-A",
+          value: (seasonStats.FGPercentAgainst * 100).toFixed(1),
+        },
+        { label: "3PM/G", value: seasonStats.TPMPG.toFixed(1) },
+        { label: "3PA/G", value: seasonStats.TPAPG.toFixed(1) },
+        {
+          label: "3P%",
+          value: (seasonStats.ThreePointPercent * 100).toFixed(1),
+        },
+        { label: "3PM-A/G", value: seasonStats.TPMAPG.toFixed(1) },
+        { label: "3PA-A/G", value: seasonStats.TPAAPG.toFixed(1) },
+        {
+          label: "3P%-A",
+          value: (seasonStats.ThreePointPercentAgainst * 100).toFixed(1),
+        },
+        { label: "FTM/G", value: seasonStats.FTMPG.toFixed(1) },
+        { label: "FTA/G", value: seasonStats.FTAPG.toFixed(1) },
+        { label: "FT%", value: (seasonStats.FTPercent * 100).toFixed(1) },
+        { label: "FTM-A/G", value: seasonStats.FTMAPG.toFixed(1) },
+        { label: "FTA-A/G", value: seasonStats.FTAAPG.toFixed(1) },
+        {
+          label: "FT%-A",
+          value: (seasonStats.FTPercentAgainst * 100).toFixed(1),
+        },
+        { label: "RPG", value: seasonStats.ReboundsPerGame.toFixed(1) },
+        {
+          label: "RPG-A",
+          value: seasonStats.ReboundsAllowedPerGame.toFixed(1),
+        },
+        { label: "APG", value: seasonStats.AssistsPerGame.toFixed(1) },
+        { label: "APG-A", value: seasonStats.AssistsAllowedPerGame.toFixed(1) },
+        { label: "SPG", value: seasonStats.StealsPerGame.toFixed(1) },
+        { label: "SPG-A", value: seasonStats.StealsAllowedPerGame.toFixed(1) },
+        { label: "BPG", value: seasonStats.BlocksPerGame.toFixed(1) },
+        { label: "BPG-A", value: seasonStats.BlocksAllowedPerGame.toFixed(1) },
+        { label: "TPG", value: seasonStats.TurnoversPerGame.toFixed(1) },
+        {
+          label: "TPG-A",
+          value: seasonStats.TurnoversAllowedPerGame.toFixed(1),
+        },
+        { label: "FPG", value: seasonStats.FoulsPerGame.toFixed(1) },
+      );
+    } else {
+      values.push(
+        { label: "Pts", value: seasonStats.Points },
+        { label: "PA", value: seasonStats.PointsAgainst },
+        { label: "FGM", value: seasonStats.FGM },
+        { label: "FGA", value: seasonStats.FGA },
+        { label: "FG%", value: (seasonStats.FGPercent * 100).toFixed(1) },
+        { label: "FGM-A", value: seasonStats.FGMAgainst },
+        { label: "FGA-A", value: seasonStats.FGAAgainst },
+        {
+          label: "FG%-A",
+          value: (seasonStats.FGPercentAgainst * 100).toFixed(1),
+        },
+        { label: "3PM", value: seasonStats.ThreePointsMade },
+        { label: "3PA", value: seasonStats.ThreePointAttempts },
+        {
+          label: "3P%",
+          value: (seasonStats.ThreePointPercent * 100).toFixed(1),
+        },
+        { label: "3PM-A", value: seasonStats.ThreePointsMadeAgainst },
+        { label: "3PA-A", value: seasonStats.ThreePointAttemptsAgainst },
+        {
+          label: "3P%-A",
+          value: (seasonStats.ThreePointPercentAgainst * 100).toFixed(1),
+        },
+        { label: "FTM", value: seasonStats.FTM },
+        { label: "FTA", value: seasonStats.FTA },
+        { label: "FT%", value: (seasonStats.FTPercent * 100).toFixed(1) },
+        { label: "FTM-A", value: seasonStats.FTMAgainst },
+        { label: "FTA-A", value: seasonStats.FTAAgainst },
+        {
+          label: "FT%-A",
+          value: (seasonStats.FTPercentAgainst * 100).toFixed(1),
+        },
+        { label: "Reb", value: seasonStats.Rebounds },
+        { label: "Reb-A", value: seasonStats.ReboundsAllowed },
+        { label: "OR", value: seasonStats.OffRebounds },
+        { label: "DR", value: seasonStats.DefRebounds },
+        { label: "Ast", value: seasonStats.Assists },
+        { label: "Ast-A", value: seasonStats.AssistsAllowed },
+        { label: "Stl", value: seasonStats.Steals },
+        { label: "Stl-A", value: seasonStats.StealsAllowed },
+        { label: "Blk", value: seasonStats.Blocks },
+        { label: "Blk-A", value: seasonStats.BlocksAllowed },
+        { label: "TO", value: seasonStats.TotalTurnovers },
+        { label: "TO-A", value: seasonStats.TurnoversAllowed },
+        { label: "Fouls", value: seasonStats.Fouls },
+      );
+    }
+  } else {
+    values.push(
+      { label: "Pts", value: stats.Points },
+      { label: "PA", value: stats.PointsAgainst },
+      { label: "1H", value: stats.FirstHalfScore },
+      { label: "2H", value: stats.SecondHalfScore },
+      { label: "OT", value: stats.OvertimeScore },
+      { label: "FGM", value: stats.FGM },
+      { label: "FGA", value: stats.FGA },
+      { label: "FG%", value: (stats.FGPercent * 100).toFixed(1) },
+      { label: "3PM", value: stats.ThreePointsMade },
+      { label: "3PA", value: stats.ThreePointAttempts },
+      { label: "3P%", value: (stats.ThreePointPercent * 100).toFixed(1) },
+      { label: "FTM", value: stats.FTM },
+      { label: "FTA", value: stats.FTA },
+      { label: "FT%", value: (stats.FTPercent * 100).toFixed(1) },
+      { label: "Reb", value: stats.Rebounds },
+      { label: "OR", value: stats.OffRebounds },
+      { label: "DR", value: stats.DefRebounds },
+      { label: "Ast", value: stats.Assists },
+      { label: "Stl", value: stats.Steals },
+      { label: "Blk", value: stats.Blocks },
+      { label: "TO", value: stats.TotalTurnovers },
+      { label: "Fouls", value: stats.Fouls },
+    );
   }
 
   return values;

@@ -2,12 +2,15 @@ import { FC, useMemo } from "react";
 import { HelpModalProps } from "../../Recruiting/Common/RecruitingHelpModal";
 import {
   Help1,
+  SimCBB,
   SimCFB,
   SimCHL,
+  SimNBA,
   SimNFL,
   SimPHL,
 } from "../../../_constants/constants";
 import {
+  BBStatsHelpContent,
   FBStatsHelpContent,
   HCKStatsHelpContent,
   NFLFreeAgencyHelpContent,
@@ -30,6 +33,9 @@ export const StatsPageHelpModal: FC<HelpModalProps> = ({
     }
     if (league === SimNFL || league === SimCFB) {
       return FBStatsHelpContent;
+    }
+    if (league === SimNBA || league === SimCBB) {
+      return BBStatsHelpContent;
     }
     return [];
   }, [league]);

@@ -561,16 +561,20 @@ const LiveField = () => {
   }
 
   const activeGame = games[selectedGameId];
-  const awayIsOffense = isPossession(
-    activeGame.Possession,
-    activeGame.AwayTeamID,
-    activeGame.AwayTeam,
-  );
-  const homeIsOffense = isPossession(
-    activeGame.Possession,
-    activeGame.HomeTeamID,
-    activeGame.HomeTeam,
-  );
+  const awayIsOffense = activeGame
+    ? isPossession(
+        activeGame.Possession,
+        activeGame.AwayTeamID,
+        activeGame.AwayTeam,
+      )
+    : false;
+  const homeIsOffense = activeGame
+    ? isPossession(
+        activeGame.Possession,
+        activeGame.HomeTeamID,
+        activeGame.HomeTeam,
+      )
+    : false;
 
   return (
     <div className="h-screen w-full bg-(--bg-primary) pt-[calc(8vh+10px)] flex flex-col p-8 overflow-hidden">

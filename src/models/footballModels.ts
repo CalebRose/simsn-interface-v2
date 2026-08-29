@@ -3529,6 +3529,7 @@ export class CollegePlayerStats {
   }
 }
 export class CollegePlayer {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

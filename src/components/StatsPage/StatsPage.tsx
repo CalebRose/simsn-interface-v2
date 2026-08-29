@@ -15,6 +15,7 @@ import { useSimBBAStore } from "../../context/SimBBAContext";
 import { PageContainer } from "../../_design/Container";
 import { HockeyStatsPage } from "./HockeyStats/HockeyStatsPage";
 import { FootballStatsPage } from "./FootballStats/FootballStatsPage";
+import { BasketballStatsPage } from "./BasketballStats/BasketballStatsPage";
 
 export interface StatsPageProps {
   league: League;
@@ -69,7 +70,9 @@ export const StatsPage: FC<StatsPageProps> = ({ league }) => {
           </>
         )}
         {selectedLeague === SimCBB && cbbTeam && (
-          <>This page will be available when Guam wins a playoff game.</>
+          <>
+            <BasketballStatsPage league={selectedLeague} />
+          </>
         )}
         {selectedLeague === SimCHL && chlTeam && (
           <>
@@ -81,7 +84,11 @@ export const StatsPage: FC<StatsPageProps> = ({ league }) => {
             <HockeyStatsPage league={selectedLeague} />
           </>
         )}
-        {selectedLeague === SimNBA && nbaTeam && <></>}
+        {selectedLeague === SimNBA && nbaTeam && (
+          <>
+            <BasketballStatsPage league={selectedLeague} />
+          </>
+        )}
         {selectedLeague === SimNFL && nflTeam && (
           <>
             <FootballStatsPage league={selectedLeague} />

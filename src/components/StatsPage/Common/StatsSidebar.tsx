@@ -21,8 +21,10 @@ import {
   RETURN,
   RUSHING,
   SEASON_VIEW,
+  SimCBB,
   SimCFB,
   SimCHL,
+  SimNBA,
   SimNFL,
   SimPHL,
   SPECIAL_TEAMS,
@@ -46,13 +48,15 @@ import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDrop
 import { useResponsive } from "../../../_hooks/useMobile";
 import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import { CollegeTeam, NFLTeam } from "../../../models/footballModels";
+import { NBATeam, Team } from "../../../models/basketballModels";
 
 interface StatsSidebarProps {
-  team: CHLTeam | PHLTeam | CollegeTeam | NFLTeam;
+  team: CHLTeam | PHLTeam | CollegeTeam | NFLTeam | Team | NBATeam;
   teamColors: any;
   league: League;
   statsView: StatsView;
   statsType: StatsType;
+  basketballStatsType?: string;
   footballStatsType?: FootballStatsType;
   weekOptions: { label: string; value: string }[];
   seasonOptions: { label: string; value: string }[];
@@ -65,6 +69,7 @@ interface StatsSidebarProps {
   ChangeStatsType: (newView: StatsType) => void;
   ChangeGameType: (newView: GameType) => void;
   ChangeFBStatsType?: (newStatsType: FootballStatsType) => void;
+  ChangeBasketballStatsType?: (newStatsType: string) => void;
   HandleHelpModal: () => void;
   HandleAwardsModal: () => void;
   HandleInjuryReportModal: () => void;
@@ -96,6 +101,8 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
   Export,
   HandleAwardsModal,
   HandleInjuryReportModal,
+  basketballStatsType,
+  ChangeBasketballStatsType,
 }) => {
   const { backgroundColor } = useBackgroundColor();
   const { isMobile, isTablet, isDesktop } = useResponsive();
@@ -103,11 +110,17 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
   let teamLabel = "";
   let conferenceLabel = "";
   if (league === SimCHL || league === SimPHL) {
-    teamLabel = `${team.TeamName} ${team.Mascot}`;
-    conferenceLabel = `${team.Conference} Conference`;
+    const teamTyped = team as CHLTeam | PHLTeam;
+    teamLabel = `${teamTyped.TeamName} ${teamTyped.Mascot}`;
+    conferenceLabel = `${teamTyped.Conference} Conference`;
   } else if (league === SimCFB || league === SimNFL) {
-    teamLabel = `${team.TeamName} ${team.Mascot}`;
-    conferenceLabel = `${team.Conference} Conference`;
+    const teamTyped = team as CollegeTeam | NFLTeam;
+    teamLabel = `${teamTyped.TeamName} ${teamTyped.Mascot}`;
+    conferenceLabel = `${teamTyped.Conference} Conference`;
+  } else if (league === SimCBB || league === SimNBA) {
+    const teamTyped = team as Team | NBATeam;
+    teamLabel = `${teamTyped.Team} ${teamTyped.Nickname}`;
+    conferenceLabel = `${teamTyped.Conference} Conference`;
   }
 
   return (
@@ -432,6 +445,57 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
                           onClick={() => ChangeFBStatsType!(DEFENSE)}
                         >
                           Defense
+                        </Button>
+                      </>
+                    )}
+                  </ButtonGrid>
+                </>
+              )}
+              {(league === SimCBB || league === SimNBA) && (
+                <>
+                  <div
+                    className="w-full rounded-md text-center my-2 mb-2"
+                    style={{
+                      backgroundColor: teamColors.One,
+                      borderColor: teamColors.One,
+                    }}
+                  >
+                    <Text
+                      variant="body-small"
+                      className={`font-semibold rounded-md py-1 mb-1 mt-1 ${headerTextColorClass}`}
+                    >
+                      Stat Category
+                    </Text>
+                  </div>
+                  <ButtonGrid
+                    classes="grid-cols-2 mb-2 justify-center"
+                    style={{ flexGrow: 0 }}
+                  >
+                    {statsView === SEASON_VIEW && (
+                      <>
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant={
+                            basketballStatsType === "Total"
+                              ? "success"
+                              : "secondary"
+                          }
+                          onClick={() => ChangeBasketballStatsType!("Total")}
+                        >
+                          Total
+                        </Button>
+                        <Button
+                          type="button"
+                          size="xs"
+                          variant={
+                            basketballStatsType === "Average"
+                              ? "success"
+                              : "secondary"
+                          }
+                          onClick={() => ChangeBasketballStatsType!("Average")}
+                        >
+                          Average
                         </Button>
                       </>
                     )}
