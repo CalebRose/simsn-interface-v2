@@ -1267,6 +1267,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
                   Recruit
                 </Button>
               )}
+              <Button size="xs" onClick={() => navigate(routes.CBB_GAMEPLAN)}>
+                Gameplan
+              </Button>
               <Button size="xs" onClick={() => navigate(routes.CBB_SCHEDULE)}>
                 Schedule
               </Button>
@@ -1296,6 +1299,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
                   Free Agency
                 </Button>
               )}
+              <Button size="xs" onClick={() => navigate(routes.NBA_GAMEPLAN)}>
+                Gameplan
+              </Button>
               <Button size="xs" onClick={() => navigate(routes.NBA_SCHEDULE)}>
                 Schedule
               </Button>

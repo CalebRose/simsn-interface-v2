@@ -624,22 +624,22 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   >({});
   const [cfbTeamGameStatsMap, setCfbTeamGameStats] = useState<
     Record<number, CollegeTeamStats[]>
-  >([]);
+  >({});
   const [cfbTeamSeasonStatsMap, setCfbTeamSeasonStats] = useState<
     Record<number, CollegeTeamSeasonStats[]>
-  >([]);
+  >({});
   const [nflPlayerGameStatsMap, setNflPlayerGameStats] = useState<
     Record<number, NFLPlayerStats[]>
-  >([]);
+  >({});
   const [nflPlayerSeasonStatsMap, setNflPlayerSeasonStats] = useState<
     Record<number, NFLPlayerSeasonStats[]>
-  >([]);
+  >({});
   const [nflTeamGameStatsMap, setNflTeamGameStats] = useState<
     Record<number, NFLTeamStats[]>
-  >([]);
+  >({});
   const [nflTeamSeasonStatsMap, setNflTeamSeasonStats] = useState<
     Record<number, NFLTeamSeasonStats[]>
-  >([]);
+  >({});
   const [collegeGameplanMap, setCollegeGameplanMap] = useState<
     Record<number, CollegeGameplan | null>
   >({});
@@ -1369,7 +1369,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       const gamesCompleted = collegeTeamsGames.filter(
         (game) =>
           (game.HomeTeamID === teamID || game.AwayTeamID === teamID) &&
-          game.GameComplete && !game.IsSpringGame,
+          game.GameComplete &&
+          !game.IsSpringGame,
       ).length;
 
       if (gamesCompleted > 4) {

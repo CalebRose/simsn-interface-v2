@@ -52,11 +52,19 @@ import {
   TransferPortalProfile,
   CollegeLineup,
   NBALineup,
+  CollegePlayerStats,
+  CollegePlayerSeasonStats,
+  TeamSeasonStats,
+  NBAPlayerStats,
+  NBAPlayerSeasonStats,
+  NBATeamStats,
+  NBATeamSeasonStats,
+  TeamStats,
 } from "../models/basketballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { BootstrapService } from "../_services/bootstrapService";
 import { bba_ws } from "../_constants/urls";
-import { SimBBA, SimCBB } from "../_constants/constants";
+import { SEASON_VIEW, SimBBA, SimCBB } from "../_constants/constants";
 import { StatsService } from "../_services/statsService";
 import { enqueueSnackbar } from "notistack";
 import { FreeAgencyService } from "../_services/freeAgencyService";
@@ -203,6 +211,14 @@ interface SimBBAContextProps {
   transferProfileMapByPlayerID: Record<number, TransferPortalProfile[]>;
   cbbLineupMap: Record<number, CollegeLineup[]>;
   nbaLineupMap: Record<number, NBALineup[]>;
+  cbbPlayerGameStatsMap: Record<number, CollegePlayerStats[]>;
+  cbbPlayerSeasonStatsMap: Record<number, CollegePlayerSeasonStats[]>;
+  cbbTeamGameStatsMap: Record<number, TeamStats[]>;
+  cbbTeamSeasonStatsMap: Record<number, TeamSeasonStats[]>;
+  nbaPlayerGameStatsMap: Record<number, NBAPlayerStats[]>;
+  nbaPlayerSeasonStatsMap: Record<number, NBAPlayerSeasonStats[]>;
+  nbaTeamGameStatsMap: Record<number, NBATeamStats[]>;
+  nbaTeamSeasonStatsMap: Record<number, NBATeamSeasonStats[]>;
   updateCBBLineupMap: (newMap: Record<number, CollegeLineup[]>) => void;
   updateNBALineupMap: (newMap: Record<number, NBALineup[]>) => void;
   getLandingBootstrapData: () => void;
@@ -369,6 +385,14 @@ const defaultContext: SimBBAContextProps = {
   transferProfileMapByPlayerID: {},
   cbbLineupMap: {},
   nbaLineupMap: {},
+  cbbPlayerGameStatsMap: {},
+  cbbPlayerSeasonStatsMap: {},
+  cbbTeamGameStatsMap: {},
+  cbbTeamSeasonStatsMap: {},
+  nbaPlayerGameStatsMap: {},
+  nbaPlayerSeasonStatsMap: {},
+  nbaTeamGameStatsMap: {},
+  nbaTeamSeasonStatsMap: {},
   getLandingBootstrapData: async () => {},
   getBootstrapRosterData: async () => {},
   getBootstrapRecruitingData: async () => {},
@@ -551,6 +575,31 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   >({});
   const [nbaScoutingProfileMap, setNBAScoutingProfileMap] = useState<
     Record<number, ScoutingProfile[] | null>
+  >({});
+
+  const [cbbPlayerGameStatsMap, setCbbPlayerGameStatsMap] = useState<
+    Record<number, CollegePlayerStats[]>
+  >({});
+  const [cbbPlayerSeasonStatsMap, setCbbPlayerSeasonStats] = useState<
+    Record<number, CollegePlayerSeasonStats[]>
+  >({});
+  const [cbbTeamGameStatsMap, setCbbTeamGameStats] = useState<
+    Record<number, TeamStats[]>
+  >({});
+  const [cbbTeamSeasonStatsMap, setCbbTeamSeasonStats] = useState<
+    Record<number, TeamSeasonStats[]>
+  >({});
+  const [nbaPlayerGameStatsMap, setNbaPlayerGameStats] = useState<
+    Record<number, NBAPlayerStats[]>
+  >({});
+  const [nbaPlayerSeasonStatsMap, setNbaPlayerSeasonStats] = useState<
+    Record<number, NBAPlayerSeasonStats[]>
+  >({});
+  const [nbaTeamGameStatsMap, setNbaTeamGameStats] = useState<
+    Record<number, NBATeamStats[]>
+  >({});
+  const [nbaTeamSeasonStatsMap, setNbaTeamSeasonStats] = useState<
+    Record<number, NBATeamSeasonStats[]>
   >({});
 
   const currentCollegeSeasonGames = useMemo(() => {
@@ -1375,61 +1424,59 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const SearchBasketballStats = useCallback(async (dto: any) => {
     if (dto.League === SimCBB) {
       const res = await StatsService.BBACollegeStatsSearch(dto);
-      // if (dto.ViewType === SEASON_VIEW) {
-      //   setCBBPlayerSeasonStats((prev) => {
-      //     return {...prev,
-      //       [dto.SeasonID]: res.CBBPlayerSeasonStats,
-      //     };
-      //   });
-      //   setCBBTeamSeasonStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.SeasonID]: res.CBBTeamSeasonStats,
-      //     };
-      //   });
-      // } else {
-      //   setCBBPlayerGameStatsMap((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.WeekID]: res.CBBPlayerGameStats,
-      //     }
-      //   });
-      //   setCBBTeamGameStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.WeekID]: res.CBBTeamGameStats,
-      //     };
-      //   });
-      // }
+      if (dto.ViewType === SEASON_VIEW) {
+        setCbbPlayerSeasonStats((prev) => {
+          return { ...prev, [dto.SeasonID]: res.CBBPlayerSeasonStats };
+        });
+        setCbbTeamSeasonStats((prev) => {
+          return {
+            ...prev,
+            [dto.SeasonID]: res.CBBTeamSeasonStats,
+          };
+        });
+      } else {
+        setCbbPlayerGameStatsMap((prev) => {
+          return {
+            ...prev,
+            [dto.WeekID]: res.CBBPlayerGameStats,
+          };
+        });
+        setCbbTeamGameStats((prev) => {
+          return {
+            ...prev,
+            [dto.WeekID]: res.CBBTeamGameStats,
+          };
+        });
+      }
     } else {
-      const res = await StatsService.HCKProStatsSearch(dto);
-      // if (dto.ViewType === SEASON_VIEW) {
-      //   setNBAPlayerSeasonStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.SeasonID]: res.NBAPlayerSeasonStats,
-      //     };
-      //   });
-      //   setNBATeamSeasonStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.SeasonID]: res.NBATeamSeasonStats,
-      //     };
-      //   });
-      // } else {
-      //   setNBAPlayerGameStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.WeekID]: res.NBAPlayerGameStats,
-      //     };
-      //   });
-      //   setNBATeamGameStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.WeekID]: res.NBATeamGameStats,
-      //     };
-      //   });
-      // }
+      const res = await StatsService.BBAProStatsSearch(dto);
+      if (dto.ViewType === SEASON_VIEW) {
+        setNbaPlayerSeasonStats((prev) => {
+          return {
+            ...prev,
+            [dto.SeasonID]: res.NBAPlayerSeasonStats,
+          };
+        });
+        setNbaTeamSeasonStats((prev) => {
+          return {
+            ...prev,
+            [dto.SeasonID]: res.NBATeamSeasonStats,
+          };
+        });
+      } else {
+        setNbaPlayerGameStats((prev) => {
+          return {
+            ...prev,
+            [dto.WeekID]: res.NBAPlayerGameStats,
+          };
+        });
+        setNbaTeamGameStats((prev) => {
+          return {
+            ...prev,
+            [dto.WeekID]: res.NBATeamGameStats,
+          };
+        });
+      }
     }
   }, []);
 
@@ -2122,6 +2169,14 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         transferProfileMapByPlayerID,
         cbbLineupMap,
         nbaLineupMap,
+        cbbPlayerGameStatsMap,
+        cbbPlayerSeasonStatsMap,
+        cbbTeamGameStatsMap,
+        cbbTeamSeasonStatsMap,
+        nbaPlayerGameStatsMap,
+        nbaPlayerSeasonStatsMap,
+        nbaTeamGameStatsMap,
+        nbaTeamSeasonStatsMap,
         getLandingBootstrapData,
         getBootstrapRosterData,
         getBootstrapRecruitingData,

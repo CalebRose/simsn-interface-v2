@@ -14,6 +14,7 @@ import {
   RECEIVING,
   RETURN,
   RUSHING,
+  SimCBB,
   SimCFB,
   SPECIAL_TEAMS,
   StatsType,
@@ -52,7 +53,19 @@ import {
   CollegeTeamSeasonStats,
   CollegeTeam,
 } from "../models/footballModels";
-import { Timestamp as BBATimestamp } from "../models/basketballModels";
+import {
+  Timestamp as BBATimestamp,
+  CollegePlayerSeasonStats as CBBPlayerSeasonStats,
+  CollegePlayerStats as CBBPlayerStats,
+  TeamSeasonStats as CBBTeamSeasonStats,
+  TeamStats as CBBTeamStats,
+  NBAPlayerSeasonStats,
+  NBAPlayerStats,
+  NBATeam,
+  NBATeamSeasonStats,
+  NBATeamStats,
+  Team,
+} from "../models/basketballModels";
 
 export const MakeCHLPlayerMapFromRosterMap = (
   chlTeams: CHLTeam[],
@@ -646,6 +659,210 @@ export const GetFilteredCFBConferenceOptions = (
     if (
       (selectedLeagueOption === 2 && team.IsFBS) ||
       (selectedLeagueOption === 3 && !team.IsFBS)
+    ) {
+      const conf = optionsMap[team.ConferenceID];
+      if (selectedMap[team.ConferenceID]) {
+        continue;
+      }
+      selectedMap[team.ConferenceID] = true;
+      optionsList.push(conf);
+    }
+  }
+  return optionsList;
+};
+
+export const GetBBACollegeStats = (
+  statsView: StatsView,
+  statsType: StatsType,
+  week: number,
+  season: number,
+  cbbPlayerGameStatsMap: Record<number, CBBPlayerStats[]>,
+  cbbPlayerSeasonStatsMap: Record<number, CBBPlayerSeasonStats[]>,
+  cbbTeamGameStatsMap: Record<number, CBBTeamStats[]>,
+  cbbTeamSeasonStatsMap: Record<number, CBBTeamSeasonStats[]>,
+) => {
+  if (statsView === WEEK_VIEW) {
+    if (statsType === PLAYER_VIEW) {
+      const slateOfStats = cbbPlayerGameStatsMap[week] || [];
+      if (slateOfStats.length > 0) {
+        return slateOfStats;
+      }
+      return [];
+    }
+    const slateOfStats = cbbTeamGameStatsMap[week] || [];
+    if (slateOfStats.length > 0) {
+      return slateOfStats;
+    }
+    return [];
+  }
+  if (statsType === PLAYER_VIEW) {
+    return cbbPlayerSeasonStatsMap[season] || [];
+  }
+  return cbbTeamSeasonStatsMap[season] || [];
+};
+
+export const GetBBAProStats = (
+  statsView: StatsView,
+  statsType: StatsType,
+  week: number,
+  season: number,
+  nbaPlayerGameStatsMap: Record<number, NBAPlayerStats[]>,
+  nbaPlayerSeasonStatsMap: Record<number, NBAPlayerSeasonStats[]>,
+  nbaTeamGameStatsMap: Record<number, NBATeamStats[]>,
+  nbaTeamSeasonStatsMap: Record<number, NBATeamSeasonStats[]>,
+) => {
+  if (statsView === WEEK_VIEW) {
+    if (statsType === PLAYER_VIEW) {
+      const slateOfStats = nbaPlayerGameStatsMap[week] || [];
+      if (slateOfStats.length > 0) {
+        return slateOfStats;
+      }
+      return [];
+    }
+    const slateOfStats = nbaTeamGameStatsMap[week] || [];
+    if (slateOfStats.length > 0) {
+      return slateOfStats;
+    }
+    return [];
+  }
+  if (statsType === PLAYER_VIEW) {
+    return nbaPlayerSeasonStatsMap[season] || [];
+  }
+  return nbaTeamSeasonStatsMap[season] || [];
+};
+
+export const useFilteredBasketballStats = ({
+  selectedStats,
+  selectedTeams,
+  selectedConferences,
+  teamMap,
+  playerMap,
+  statsType,
+  selectedLeague,
+  selectedLeagueOption,
+}: {
+  selectedStats: any[];
+  selectedTeams: string[];
+  selectedConferences: string[];
+  teamMap: Record<number, { ConferenceID: number; LeagueID?: number }>;
+  playerMap: Record<number, { Position: string }>;
+  statsType: StatsType;
+  selectedLeague: string;
+  selectedLeagueOption: number;
+}) => {
+  // 1) build Sets once per change
+  const teamSet = useMemo(() => new Set(selectedTeams), [selectedTeams]);
+  const confSet = useMemo(
+    () => new Set(selectedConferences),
+    [selectedConferences],
+  );
+
+  const filtered = useMemo(() => {
+    return selectedStats.filter((stat) => {
+      // 1) Team filter
+      if (teamSet.size > 0) {
+        const tid = stat.TeamID.toString();
+        if (!teamSet.has(tid)) {
+          return false;
+        }
+      }
+
+      // 2) Conference filter
+      if (confSet.size > 0) {
+        const confId = teamMap[stat.TeamID]?.ConferenceID?.toString() ?? "";
+        if (!confSet.has(confId)) {
+          return false;
+        }
+      }
+
+      // 3) Player‐view
+      if (statsType === PLAYER_VIEW) {
+        const id =
+          selectedLeague === SimCBB ? stat.CollegePlayerID : stat.NBAPlayerID;
+        const player = playerMap[id];
+        if (!player) return false;
+        if (selectedLeague === SimCBB) {
+          const team = teamMap[stat.TeamID];
+          if (selectedLeagueOption === 2 && team.LeagueID !== 1) {
+            return false;
+          }
+          if (selectedLeagueOption === 3 && team.LeagueID === 1) {
+            return false;
+          }
+        }
+      }
+
+      if (statsType === TEAM_VIEW) {
+        const id = stat.TeamID;
+        const team = teamMap[id];
+        if (!team) return false;
+        if (selectedLeague === SimCBB) {
+          const team = teamMap[stat.TeamID];
+          if (selectedLeagueOption === 2 && team.LeagueID !== 1) {
+            return false;
+          }
+          if (selectedLeagueOption === 3 && team.LeagueID === 1) {
+            return false;
+          }
+        }
+      }
+
+      // 4) If we get here, we've passed all active filters
+      return true;
+    });
+  }, [
+    selectedStats,
+    teamSet,
+    confSet,
+    teamMap,
+    playerMap,
+    statsType,
+    selectedLeagueOption,
+    selectedLeague,
+  ]);
+
+  return filtered;
+};
+
+export const GetFilteredNBATeamOptions = (
+  selectedLeagueOption: number,
+  nbaTeamOptions: { label: string; value: string }[],
+  teamMap: Record<number, NBATeam>,
+) => {
+  const optionsList = [];
+  for (let i = 0; i < nbaTeamOptions.length; i++) {
+    const opt = nbaTeamOptions[i];
+    const teamID = Number(opt.value);
+    const team = teamMap[teamID];
+    if (
+      (selectedLeagueOption === 2 && team.LeagueID === 1) ||
+      (selectedLeagueOption === 3 && team.LeagueID !== 1)
+    ) {
+      optionsList.push(opt);
+    }
+  }
+  return optionsList;
+};
+
+export const GetFilteredNBAConferenceOptions = (
+  selectedLeagueOption: number,
+  nbaConferenceOptions: { label: string; value: string }[],
+  nbaTeams: NBATeam[],
+) => {
+  const optionsMap: any = {};
+  const selectedMap: any = {};
+  for (let i = 0; i < nbaConferenceOptions.length; i++) {
+    const opt = nbaConferenceOptions[i];
+    const confID = Number(opt.value);
+    optionsMap[confID] = opt;
+  }
+
+  const optionsList = [];
+  for (let i = 0; i < nbaTeams.length; i++) {
+    const team = nbaTeams[i];
+    if (
+      (selectedLeagueOption === 2 && team.LeagueID === 1) ||
+      (selectedLeagueOption === 3 && team.LeagueID !== 1)
     ) {
       const conf = optionsMap[team.ConferenceID];
       if (selectedMap[team.ConferenceID]) {
