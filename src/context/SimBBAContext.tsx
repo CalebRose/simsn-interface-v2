@@ -1424,8 +1424,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const SearchBasketballStats = useCallback(async (dto: any) => {
     if (dto.League === SimCBB) {
       const res = await StatsService.BBACollegeStatsSearch(dto);
-      console.log({ dto, res });
-
       if (dto.ViewType === SEASON_VIEW) {
         setCbbPlayerSeasonStats((prev) => {
           return { ...prev, [dto.SeasonID]: res.CBBPlayerSeasonStats };
@@ -1452,7 +1450,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       }
     } else {
       const res = await StatsService.BBAProStatsSearch(dto);
-      console.log({ dto, res });
       if (dto.ViewType === SEASON_VIEW) {
         setNbaPlayerSeasonStats((prev) => {
           return {
