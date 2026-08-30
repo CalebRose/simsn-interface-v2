@@ -105,7 +105,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
   ChangeBasketballStatsType,
 }) => {
   const { backgroundColor } = useBackgroundColor();
-  const { isMobile, isTablet, isDesktop } = useResponsive();
+  const { isMobile, isTablet, isDesktop, isUltraWide } = useResponsive();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
   let teamLabel = "";
   let conferenceLabel = "";
@@ -224,7 +224,7 @@ export const StatsSidebar: FC<StatsSidebarProps> = ({
               )}
             </ButtonGroup>
           </div>
-          {isDesktop && (
+          {(isDesktop || isUltraWide) && (
             <>
               <div
                 className="w-full rounded-md text-center mb-2"
