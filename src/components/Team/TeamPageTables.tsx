@@ -106,7 +106,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
   redshirtCount,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop, isTablet } = useResponsive();
+  const { isDesktop, isTablet, isUltraWide } = useResponsive();
   const {
     hck_Timestamp,
     collegePromiseMap,
@@ -114,30 +114,32 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     individualDraftPickMap,
   } = useSimHCKStore();
 
+  const isMobile = !isDesktop && !isTablet && !isUltraWide;
+
   let rosterColumns = useMemo(() => {
     let columns = [
       { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       {
-        header: !isDesktop && !isTablet ? "Pos" : "Position",
+        header: isMobile ? "Pos" : "Position",
         accessor: "Position",
       },
       {
-        header: !isDesktop && !isTablet ? "Arch" : "Archetype",
+        header: isMobile ? "Arch" : "Archetype",
         accessor: "Archetype",
       },
       {
-        header: !isDesktop && !isTablet ? "Yr" : "Year",
+        header: isMobile ? "Yr" : "Year",
         accessor: "Year",
       },
       { header: "⭐", accessor: "Stars" },
       {
-        header: !isDesktop && !isTablet ? "Ovr" : "Overall",
+        header: isMobile ? "Ovr" : "Overall",
         accessor: "Overall",
       },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         { header: "Health", accessor: "isInjured" },
         { header: "Injury", accessor: "InjuryType" },
@@ -153,7 +155,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     }
 
     if (
-      (isDesktop || isTablet) &&
+      (isDesktop || isTablet || isUltraWide) &&
       (category === Attributes || category === Potentials)
     ) {
       columns = columns.concat([
@@ -177,7 +179,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "Def. Fit", accessor: "DefensiveFit" },
       ]);
     }
-    if ((isDesktop || isTablet) && category === Promises) {
+    if ((isDesktop || isTablet || isUltraWide) && category === Promises) {
       columns = columns.concat([
         { header: "Transfer Likeliness", accessor: "TransferLikeliness" },
         { header: "Promise Type", accessor: "PromiseType" },
@@ -188,7 +190,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "Active", accessor: "IsActive" },
       ]);
     }
-    if ((isDesktop || isTablet) && category === Draft) {
+    if ((isDesktop || isTablet || isUltraWide) && category === Draft) {
       columns = columns.concat([
         { header: "Drafted Team", accessor: "DraftedTeamID" },
         { header: "Season", accessor: "SeasonID" },
@@ -199,7 +201,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isTablet, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
@@ -370,7 +372,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             )}
           </div>
         ))}
-        {category === Overview && isDesktop && (
+        {category === Overview && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -404,7 +406,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             </TableCell>
           </>
         )}
-        {category === Attributes && isDesktop && (
+        {category === Attributes && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -448,7 +450,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             </TableCell>
           </>
         )}
-        {category === Potentials && isDesktop && (
+        {category === Potentials && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -482,7 +484,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             </TableCell>
           </>
         )}
-        {category == Promises && isDesktop && (
+        {category == Promises && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -521,7 +523,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             </TableCell>
           </>
         )}
-        {category == Draft && isDesktop && (
+        {category == Draft && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -568,7 +570,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
 
         <div className="table-cell align-middle w-[5em] 430px:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
-            placeholder={!isDesktop ? "Action" : "Select an action"}
+            placeholder={isMobile ? "Action" : "Select an action"}
             options={[
               {
                 value: "cut",
@@ -662,7 +664,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
   gameplan,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop, isTablet } = useResponsive();
+  const { isDesktop, isTablet, isUltraWide, isMobile } = useResponsive();
   const {
     chlPlayerMap,
     phlDraftPicks,
@@ -676,19 +678,19 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       {
-        header: !isDesktop && !isTablet ? "Pos" : "Pos",
+        header: !isDesktop && !isTablet && !isUltraWide ? "Pos" : "Pos",
         accessor: "Position",
       },
       {
-        header: !isDesktop && !isTablet ? "Arch" : "Arch",
+        header: !isDesktop && !isTablet && !isUltraWide ? "Arch" : "Arch",
         accessor: "Archetype",
       },
       {
-        header: !isDesktop && !isTablet ? "Exp" : "Exp",
+        header: !isDesktop && !isTablet && !isUltraWide ? "Exp" : "Exp",
         accessor: "Year",
       },
       {
-        header: !isDesktop && !isTablet ? "Ovr" : "Ovr",
+        header: !isDesktop && !isTablet && !isUltraWide ? "Ovr" : "Ovr",
         accessor: "Overall",
       },
     ];
@@ -711,7 +713,10 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       ]);
     }
 
-    if ((isDesktop && category === Attributes) || category === Potentials) {
+    if (
+      (isDesktop || isUltraWide) &&
+      (category === Attributes || category === Potentials)
+    ) {
       columns = columns.concat([
         { header: "Agi", accessor: "Agility" },
         { header: "FO", accessor: "Faceoffs" },
@@ -734,7 +739,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Contracts) {
+    if ((isDesktop || isUltraWide) && category === Contracts) {
       columns = columns.concat([
         { header: "Offensive Fit", accessor: "OffensiveFit" },
         { header: "Defensive Fit", accessor: "DefensiveFit" },
@@ -748,7 +753,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         { header: "NMC", accessor: "NoMovementClause" },
       ]);
     }
-    if ((isDesktop || isTablet) && category === Draft) {
+    if ((isDesktop || isUltraWide || isTablet) && category === Draft) {
       columns = [
         { header: "Season", accessor: "SeasonID" },
         { header: "Round", accessor: "DraftRound" },
@@ -764,7 +769,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
 
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
@@ -973,7 +978,9 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
               className={`table-cell align-middle w-[5em] 430px:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
             >
               <SelectDropdown
-                placeholder={!isDesktop ? "Action" : "Select an action"}
+                placeholder={
+                  isMobile || isTablet ? "Action" : "Select an action"
+                }
                 options={[
                   {
                     value: "pickUp",
@@ -1177,7 +1184,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
           </div>
         ))}
 
-        {category === Attributes && isDesktop && (
+        {category === Attributes && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="xs" classes="text-start">
@@ -1221,7 +1228,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             </TableCell>
           </>
         )}
-        {category === Potentials && isDesktop && (
+        {category === Potentials && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -1392,7 +1399,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
 }) => {
   const store = useSimFBAStore();
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   let rosterColumns = useMemo(() => {
     let columns = [
@@ -1405,7 +1412,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
       { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
           header: !isDesktop ? "Pot" : "Potential",
@@ -1420,7 +1427,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Attributes) {
+    if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         { header: "Pot", accessor: "PotentialGrade" },
         { header: "FIQ", accessor: "FootballIQ" },
@@ -1447,7 +1454,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
         { header: "INJ", accessor: "Injury" },
       ]);
     }
-    if (isDesktop && category === Promises) {
+    if ((isDesktop || isUltraWide) && category === Promises) {
       columns = columns.concat([
         { header: "Transfer Likeliness", accessor: "TransferLikeliness" },
         { header: "Promise Type", accessor: "PromiseType" },
@@ -1460,7 +1467,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
     }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
@@ -1556,7 +1563,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
             )}
           </div>
         ))}
-        {category == Promises && isDesktop && (
+        {category == Promises && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -1728,7 +1735,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop, isTablet } = useResponsive();
+  const { isDesktop, isTablet, isUltraWide } = useResponsive();
 
   const rosterColumns = useMemo(() => {
     let columns = [
@@ -1740,7 +1747,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
       { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
           header: !isDesktop ? "Pot" : "Potential",
@@ -1769,7 +1776,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Attributes) {
+    if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         { header: "Pot", accessor: "PotentialGrade" },
         { header: "FIQ", accessor: "FootballIQ" },
@@ -1797,7 +1804,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Contracts) {
+    if ((isDesktop || isUltraWide) && category === Contracts) {
       columns = columns.concat([
         { header: "Y1 Bonus", accessor: "Y1Bonus" },
         { header: "Y1 Salary", accessor: "Y1BaseSalary" },
@@ -1815,7 +1822,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
 
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => {
@@ -2078,7 +2085,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   let rosterColumns = useMemo(() => {
     let columns = [
@@ -2091,7 +2098,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
       { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
           header: !isDesktop ? "Pot" : "Potential",
@@ -2107,7 +2114,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Attributes) {
+    if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         {
           header: !isDesktop ? "Pot" : "Potential",
@@ -2130,7 +2137,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
     }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
@@ -2333,7 +2340,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   let rosterColumns = useMemo(() => {
     let columns = [
@@ -2346,7 +2353,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
       { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
           header: !isDesktop ? "Pot" : "Potential",
@@ -2368,7 +2375,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Attributes) {
+    if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         {
           header: !isDesktop ? "Pot" : "Potential",
@@ -2392,7 +2399,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
     }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
