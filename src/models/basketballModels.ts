@@ -4032,6 +4032,7 @@ export class CollegePlayerSeasonStats {
   }
 }
 export class TransferPlayerResponse {
+  [key: string]: any;
   ID: number;
   FirstName: string;
   LastName: string;
