@@ -176,18 +176,21 @@ export const useNBAFreeAgency = () => {
     }
     const adjCapsheet = { ...teamCapsheet } as NBACapsheet;
     for (let i = 0; i < teamFreeAgentOffers.length; i++) {
-      adjCapsheet.Year1Total += teamFreeAgentOffers[i].ContractValue;
+      if (!teamFreeAgentOffers[i].IsActive) {
+        continue;
+      }
+      adjCapsheet.Year1Total += teamFreeAgentOffers[i].Year1Total;
       if (teamFreeAgentOffers[i].TotalYears > 1) {
-        adjCapsheet.Year2Total += teamFreeAgentOffers[i].ContractValue;
+        adjCapsheet.Year2Total += teamFreeAgentOffers[i].Year2Total;
       }
       if (teamFreeAgentOffers[i].TotalYears > 2) {
-        adjCapsheet.Year3Total += teamFreeAgentOffers[i].ContractValue;
+        adjCapsheet.Year3Total += teamFreeAgentOffers[i].Year3Total;
       }
       if (teamFreeAgentOffers[i].TotalYears > 3) {
-        adjCapsheet.Year4Total += teamFreeAgentOffers[i].ContractValue;
+        adjCapsheet.Year4Total += teamFreeAgentOffers[i].Year4Total;
       }
       if (teamFreeAgentOffers[i].TotalYears > 4) {
-        adjCapsheet.Year5Total += teamFreeAgentOffers[i].ContractValue;
+        adjCapsheet.Year5Total += teamFreeAgentOffers[i].Year5Total;
       }
     }
     adjCapsheet.UpdatedAt = new Date();
