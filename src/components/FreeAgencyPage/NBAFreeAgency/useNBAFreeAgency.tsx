@@ -98,10 +98,10 @@ export const useNBAFreeAgency = () => {
     }
     for (let i = 0; i < freeAgentOffers.length; i++) {
       const offer = freeAgentOffers[i];
-      if (dict[offer.NBAPlayerID] && dict[offer.NBAPlayerID].length > 0) {
-        dict[offer.NBAPlayerID].push(offer);
+      if (dict[offer.PlayerID] && dict[offer.PlayerID].length > 0) {
+        dict[offer.PlayerID].push(offer);
       } else {
-        dict[offer.NFLPlayerID] = [offer];
+        dict[offer.PlayerID] = [offer];
       }
     }
     return dict;
@@ -130,7 +130,7 @@ export const useNBAFreeAgency = () => {
     }
     for (let i = 0; i < teamFreeAgentOffers.length; i++) {
       const offer = teamFreeAgentOffers[i];
-      dict[offer.NFLPlayerID] = offer;
+      dict[offer.PlayerID] = offer;
     }
     return dict;
   }, [teamFreeAgentOffers]);
@@ -154,6 +154,8 @@ export const useNBAFreeAgency = () => {
     return freeAgentOfferMapByPlayer;
   }, [freeAgentOfferMapByPlayer, waiverOfferMapByPlayer, playerType]);
 
+  console.log({ offerMapByPlayerType });
+
   const teamOfferMap = useMemo(() => {
     if (playerType === Waivers) {
       return teamWaiverOfferMap;
@@ -175,16 +177,16 @@ export const useNBAFreeAgency = () => {
     const adjCapsheet = { ...teamCapsheet } as NBACapsheet;
     for (let i = 0; i < teamFreeAgentOffers.length; i++) {
       adjCapsheet.Year1Total += teamFreeAgentOffers[i].ContractValue;
-      if (teamFreeAgentOffers[i].ContractLength > 1) {
+      if (teamFreeAgentOffers[i].TotalYears > 1) {
         adjCapsheet.Year2Total += teamFreeAgentOffers[i].ContractValue;
       }
-      if (teamFreeAgentOffers[i].ContractLength > 2) {
+      if (teamFreeAgentOffers[i].TotalYears > 2) {
         adjCapsheet.Year3Total += teamFreeAgentOffers[i].ContractValue;
       }
-      if (teamFreeAgentOffers[i].ContractLength > 3) {
+      if (teamFreeAgentOffers[i].TotalYears > 3) {
         adjCapsheet.Year4Total += teamFreeAgentOffers[i].ContractValue;
       }
-      if (teamFreeAgentOffers[i].ContractLength > 4) {
+      if (teamFreeAgentOffers[i].TotalYears > 4) {
         adjCapsheet.Year5Total += teamFreeAgentOffers[i].ContractValue;
       }
     }

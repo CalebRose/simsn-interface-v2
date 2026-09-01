@@ -33,6 +33,7 @@ import {
   NBAWaiverOffer,
   Timestamp as BKTimestamp,
   NBACapsheet,
+  NBAContractOfferDTO,
 } from "../../models/basketballModels";
 import { Modal } from "../../_design/Modal";
 import { Text } from "../../_design/Typography";
@@ -45,6 +46,7 @@ import {
   GenerateNFLFAErrorList,
   GeneratePHLFAErrorList,
   GetNBAContractValue,
+  getNBASalaryData,
   GetNFLAAVValue,
   GetNFLContractValue,
   getNFLSalaryData,
@@ -253,11 +255,11 @@ export const OfferModal: FC<OfferModalProps> = ({
     if (isNBA) {
       let proOffer = offer as NBAContractOffer;
       return (
-        proOffer.Year1Total +
-        proOffer.Year2Total +
-        proOffer.Year3Total +
-        proOffer.Year4Total +
-        proOffer.Year5Total
+        (proOffer.Year1Total || 0) +
+        (proOffer.Year2Total || 0) +
+        (proOffer.Year3Total || 0) +
+        (proOffer.Year4Total || 0) +
+        (proOffer.Year5Total || 0)
       );
     }
     return 0;
@@ -367,8 +369,9 @@ export const OfferModal: FC<OfferModalProps> = ({
         offer as NBAContractOffer,
         ts as BKTimestamp,
         capsheet as NBACapsheet,
-        0,
-        0,
+        Number(playerAAV),
+        aavValue,
+        player.MinimumValue,
       );
     }
     return list;
@@ -444,6 +447,21 @@ export const OfferModal: FC<OfferModalProps> = ({
         NFLPlayerID: player.ID,
         TeamID: capsheet.ID,
         AAV: aavValue,
+      });
+      await confirmOffer(dto);
+    }
+    if (league === SimNBA) {
+      const { totalSalaries, TotalYears } = getNBASalaryData(
+        offer as NBAContractOffer,
+      );
+      if (totalSalaries === 0 && TotalYears === 0) {
+        onClose();
+        return;
+      }
+      const dto = new NBAContractOfferDTO({
+        ...offer,
+        PlayerID: player.ID,
+        TeamID: capsheet.ID,
       });
       await confirmOffer(dto);
     }
@@ -589,6 +607,15 @@ export const OfferModal: FC<OfferModalProps> = ({
                 disabled
               />
             )}
+            {isNBA && (
+              <Input
+                type="text"
+                label="Min. Value"
+                name="MinimumValue"
+                value={player.MinimumValue}
+                disabled
+              />
+            )}
           </div>
           <div className="flex">
             {isNFL && (
@@ -625,7 +652,7 @@ export const OfferModal: FC<OfferModalProps> = ({
             )}
           </div>
         </div>
-        {isNFL && (
+        {isNFL && offer instanceof NFLFreeAgencyOffer && (
           <div className="grid grid-cols-6 space-x-2 mb-4">
             <div className="flex">
               <Input
@@ -688,7 +715,7 @@ export const OfferModal: FC<OfferModalProps> = ({
             </div>
           </div>
         )}
-        {isNBA && (
+        {isNBA && offer instanceof NBAContractOffer && (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 mb-2">
             <div className="flex flex-col">
               <Input
@@ -737,7 +764,7 @@ export const OfferModal: FC<OfferModalProps> = ({
             </div>
             <div className="flex">
               <Input
-                type="number"
+                type="text"
                 label="Total Salary"
                 name="TotalSalary"
                 value={totalSalary}
@@ -746,70 +773,71 @@ export const OfferModal: FC<OfferModalProps> = ({
             </div>
           </div>
         )}
-        {(isPHL || isNFL) && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 space-y-2 md:space-y-2 lg:space-y-0 space-x-2 mb-4">
-            <div className="flex">
-              <Input
-                type="number"
-                label="Y1 Salary"
-                name="Y1BaseSalary"
-                value={offer.Y1BaseSalary || 0}
-                onChange={ChangeInput}
-                disabled={playerType === PracticeSquad}
-              />
+        {(isPHL && offer instanceof PHLFreeAgencyOffer) ||
+          (isNFL && offer instanceof NFLFreeAgencyOffer && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 space-y-2 md:space-y-2 lg:space-y-0 space-x-2 mb-4">
+              <div className="flex">
+                <Input
+                  type="number"
+                  label="Y1 Salary"
+                  name="Y1BaseSalary"
+                  value={offer.Y1BaseSalary || 0}
+                  onChange={ChangeInput}
+                  disabled={playerType === PracticeSquad}
+                />
+              </div>
+              <div className="flex">
+                <Input
+                  type="number"
+                  label="Y2 Salary"
+                  name="Y2BaseSalary"
+                  value={offer.Y2BaseSalary || 0}
+                  onChange={ChangeInput}
+                  disabled={playerType === PracticeSquad}
+                />
+              </div>
+              <div className="flex">
+                <Input
+                  type="number"
+                  label="Y3 Salary"
+                  name="Y3BaseSalary"
+                  value={offer.Y3BaseSalary || 0}
+                  onChange={ChangeInput}
+                  disabled={playerType === PracticeSquad}
+                />
+              </div>
+              <div className="flex">
+                <Input
+                  type="number"
+                  label="Y4 Salary"
+                  name="Y4BaseSalary"
+                  value={offer.Y4BaseSalary || 0}
+                  onChange={ChangeInput}
+                  disabled={playerType === PracticeSquad}
+                />
+              </div>
+              <div className="flex">
+                <Input
+                  type="number"
+                  label="Y5 Salary"
+                  name="Y5BaseSalary"
+                  value={offer.Y5BaseSalary || 0}
+                  onChange={ChangeInput}
+                  disabled={playerType === PracticeSquad}
+                />
+              </div>
+              <div className="flex">
+                <Input
+                  type="text"
+                  label="Total Salary"
+                  name="TotalSalary"
+                  value={totalSalary}
+                  disabled
+                />
+              </div>
             </div>
-            <div className="flex">
-              <Input
-                type="number"
-                label="Y2 Salary"
-                name="Y2BaseSalary"
-                value={offer.Y2BaseSalary || 0}
-                onChange={ChangeInput}
-                disabled={playerType === PracticeSquad}
-              />
-            </div>
-            <div className="flex">
-              <Input
-                type="number"
-                label="Y3 Salary"
-                name="Y3BaseSalary"
-                value={offer.Y3BaseSalary || 0}
-                onChange={ChangeInput}
-                disabled={playerType === PracticeSquad}
-              />
-            </div>
-            <div className="flex">
-              <Input
-                type="number"
-                label="Y4 Salary"
-                name="Y4BaseSalary"
-                value={offer.Y4BaseSalary || 0}
-                onChange={ChangeInput}
-                disabled={playerType === PracticeSquad}
-              />
-            </div>
-            <div className="flex">
-              <Input
-                type="number"
-                label="Y5 Salary"
-                name="Y5BaseSalary"
-                value={offer.Y5BaseSalary || 0}
-                onChange={ChangeInput}
-                disabled={playerType === PracticeSquad}
-              />
-            </div>
-            <div className="flex">
-              <Input
-                type="number"
-                label="Total Salary"
-                name="TotalSalary"
-                value={totalSalary}
-                disabled
-              />
-            </div>
-          </div>
-        )}
-        {isNFL && (
+          ))}
+        {isNFL && offer instanceof NFLFreeAgencyOffer && (
           <div className="grid grid-cols-6 space-x-2 mb-4">
             <div className="flex">
               <Input

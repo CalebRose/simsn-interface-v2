@@ -3180,25 +3180,23 @@ export const getAdditionalNBAAttributes = (player: NBAPlayer) => {
   return [
     { label: "POT", value: player.PotentialGrade },
     {
-      label: "Agi",
-      value: player.Agility,
-    },
-    {
-      label: "Fin",
+      label: "Ins",
       value: player.InsideShooting,
     },
     {
-      label: "SH2",
+      label: "Mid",
       value: player.MidRangeShooting,
     },
     {
-      label: "SH3",
+      label: "3pt",
       value: player.ThreePointShooting,
     },
     {
       label: "FT",
       value: player.FreeThrow,
     },
+    { label: "BIQ", value: player.BasketballIQ },
+    { label: "Agi", value: player.Agility },
     {
       label: "BW",
       value: player.Ballwork,
