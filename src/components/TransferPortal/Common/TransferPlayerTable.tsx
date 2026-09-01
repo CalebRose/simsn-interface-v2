@@ -136,8 +136,8 @@ const getTableColumns = (
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
-        { header: "Off", accessor: "" },
-        { header: "Def", accessor: "" },
+        { header: "Off", accessor: "OffFit" },
+        { header: "Def", accessor: "DefFit" },
         { header: "Program", accessor: "ProgramPref" },
         { header: "Prof. Dev.", accessor: "ProfDevPref" },
         { header: "Trad.", accessor: "TraditionsPref" },

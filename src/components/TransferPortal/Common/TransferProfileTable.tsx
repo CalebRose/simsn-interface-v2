@@ -73,7 +73,7 @@ const getTransferProfileTableColumns = (
 ) => {
   if (league === SimCHL) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
@@ -125,8 +125,8 @@ const getTransferProfileTableColumns = (
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
-        { header: "Off", accessor: "" },
-        { header: "Def", accessor: "" },
+        { header: "Off", accessor: "OffFit" },
+        { header: "Def", accessor: "DefFit" },
         { header: "Program", accessor: "ProgramPref" },
         { header: "Prof. Dev.", accessor: "ProfDevPref" },
         { header: "Trad.", accessor: "TraditionsPref" },
@@ -150,7 +150,7 @@ const getTransferProfileTableColumns = (
   }
   if (league === SimCBB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
@@ -202,7 +202,7 @@ const getTransferProfileTableColumns = (
   }
   if (league === SimCFB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
@@ -414,7 +414,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
     >
       <TableCell>
         <span className={`text-xs`}>{player.ID}</span>
-      </TableCell>{" "}
+      </TableCell>
       <TableCell>
         <span
           className={`text-xs cursor-pointer font-semibold`}
@@ -1211,7 +1211,15 @@ export const TransferPortalProfileTable: FC<
   const borderColor = colorTwo;
   const secondaryBorderColor = colorThree;
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const columns = getTransferProfileTableColumns(league, category, isMobile);
+  const columns = useMemo(() => {
+    return getTransferProfileTableColumns(league, category, isMobile);
+  }, [
+    league,
+    category,
+    isMobile,
+    offensiveSystemsInformation,
+    defensiveSystemsInformation,
+  ]);
 
   const { collegePromiseMap: hckPromiseMap } = useSimHCKStore();
 

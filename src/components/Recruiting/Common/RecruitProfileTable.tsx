@@ -57,10 +57,8 @@ import {
 import { getLogo } from "../../../_utility/getLogo";
 import { Logo } from "../../../_design/Logo";
 import {
-  CalculateAdjustedCFBPoints,
   isBadFit,
   isGoodFit,
-  ValidateAffinity,
   ValidateCloseToHome,
 } from "../../../_helper/recruitingHelper";
 import { CFBRecruitingPrefLabel } from "./RecruitingPrefColumn";
@@ -72,7 +70,7 @@ const getRecruitProfileColumns = (
 ) => {
   if (league === SimCHL) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
@@ -117,8 +115,8 @@ const getRecruitProfileColumns = (
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
-        { header: "Off.", accessor: "" },
-        { header: "Def.", accessor: "" },
+        { header: "Off.", accessor: "OffFit" },
+        { header: "Def.", accessor: "DefFit" },
         { header: "Prog.", accessor: "ProgramPref" },
         { header: "Prof. Dev.", accessor: "ProfDevPref" },
         { header: "Trad.", accessor: "TraditionsPref" },
@@ -143,7 +141,7 @@ const getRecruitProfileColumns = (
   }
   if (league === SimCFB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
@@ -180,7 +178,7 @@ const getRecruitProfileColumns = (
 
     columns = columns.concat([
       { header: "Leaders", accessor: "lead" },
-      { header: "Add Points", accessor: "" },
+      { header: "Add Points", accessor: "AddedPoints" },
       { header: "Streak", accessor: "SpendingCount" },
       { header: "Mod.", accessor: "PreferenceModifier" },
       { header: "Total", accessor: "TotalPoints" },
@@ -190,7 +188,7 @@ const getRecruitProfileColumns = (
   }
   if (league === SimCBB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
@@ -229,7 +227,7 @@ const getRecruitProfileColumns = (
     columns = columns.concat([
       { header: "Status", accessor: "RecruitingStatus" },
       { header: "Leaders", accessor: "lead" },
-      { header: "Add Points", accessor: "" },
+      { header: "Add Points", accessor: "AddedPoints" },
       { header: "Streak", accessor: "SpendingCount" },
       { header: "Mod.", accessor: "CurrentWeeksPoints" },
       { header: "Total", accessor: "TotalPoints" },

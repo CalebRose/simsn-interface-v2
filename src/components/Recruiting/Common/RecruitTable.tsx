@@ -56,7 +56,7 @@ const getRecruitingColumns = (
 ) => {
   if (league === SimCFB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch.", accessor: "Archetype" },
@@ -105,7 +105,7 @@ const getRecruitingColumns = (
   }
   if (league === SimCBB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "⭐", accessor: "Stars" },
@@ -132,7 +132,7 @@ const getRecruitingColumns = (
   }
   if (league === SimCHL) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch.", accessor: "Archetype" },
@@ -163,8 +163,8 @@ const getRecruitingColumns = (
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
-        { header: "Off", accessor: "" },
-        { header: "Def", accessor: "" },
+        { header: "Off", accessor: "OffFit" },
+        { header: "Def", accessor: "DefFit" },
         { header: "Prog.", accessor: "ProgramPref" },
         { header: "Prof. Dev.", accessor: "ProfDevPref" },
         { header: "Trad.", accessor: "TraditionsPref" },
