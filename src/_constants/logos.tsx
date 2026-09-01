@@ -1213,6 +1213,7 @@ export const HCKLogos = {
   TriCityAmericans: `${baseUrl}/logos/Tri-City_Americans_logo.webp`,
   Wenatchee: `${baseUrl}/logos/Wenatchee_Wild_Logo.png`,
   MooseJaw: `${baseUrl}/logos/Moose_Jaw_Warriors_logo.webp`,
+  Maryville: `${baseUrl}/logos/Maryville_Saints_logo.png`,
 
   BOS: `${baseUrl}/logos/Boston_Bruins.png`,
   BUF: `${baseUrl}/logos/Buffalo_Sabres.png`,

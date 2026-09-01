@@ -3033,6 +3033,7 @@ export class NBAPlayerStats {
   }
 }
 export class NBAContract {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

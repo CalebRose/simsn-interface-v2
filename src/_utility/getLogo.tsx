@@ -2090,6 +2090,14 @@ export const getCHLLogo = (id: number, IsRetro: boolean) => {
       return HCKLogos.TriCityAmericans;
     case 118:
       return HCKLogos.Wenatchee;
+    case 119:
+      return HCKLogos.Maryville;
+    case 120:
+      return logos.South_Dakota_State;
+    case 121:
+      return logos.FGCU;
+    case 122:
+      return logos.Oklahoma_State;
 
     default:
       return logoObj.Unknown;
@@ -2151,15 +2159,15 @@ export const getPHLLogo = (id: number, IsRetro: boolean) => {
     case 26:
       return HCKLogos.BUF;
     case 27:
-      return HCKLogos.TBL;
-    case 28:
-      return HCKLogos.CAR;
-    case 29:
       return HCKLogos.CBJ;
+    case 28:
+      return HCKLogos.EDM;
+    case 29:
+      return HCKLogos.CAR;
     case 30:
       return HCKLogos.ANA;
     case 31:
-      return HCKLogos.CBJ;
+      return HCKLogos.TBL;
     case 32:
       return HCKLogos.WAS;
 
