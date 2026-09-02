@@ -7,6 +7,7 @@ import {
   FootballStatsType,
   StatsView,
   BASE_FBA_SEASON,
+  BASE_HCK_SEASON,
 } from "../../_constants/constants";
 import { TableCell } from "../../_design/Table";
 import { Text } from "../../_design/Typography";
@@ -99,7 +100,7 @@ export const HCKPlayerStatsRow: React.FC<HCKPlayerStatsRowProps> = ({
     >
       <TableCell>
         <Text variant="small">
-          {isCareerRow ? "Career" : BASE_FBA_SEASON + item.SeasonID}
+          {isCareerRow ? "Career" : BASE_HCK_SEASON + item.SeasonID}
         </Text>
       </TableCell>
 

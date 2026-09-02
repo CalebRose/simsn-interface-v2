@@ -137,6 +137,24 @@ export const calculateHCKCareerStats = (
 ) => {
   if (playerStats.length === 0) return null;
 
+  // Deduplicate stats by SeasonID, preferring rows with actual data
+  const uniqueStatsMap = new Map();
+  for (const s of playerStats as any[]) {
+    if (s.SeasonID) {
+      const existing = uniqueStatsMap.get(s.SeasonID);
+      const sGP = s.GamesPlayed ?? s.Games ?? s.GP ?? 0;
+      if (!existing) {
+        uniqueStatsMap.set(s.SeasonID, s);
+      } else {
+        const existingGP = existing.GamesPlayed ?? existing.Games ?? existing.GP ?? 0;
+        if (sGP > 0 && existingGP === 0) {
+          uniqueStatsMap.set(s.SeasonID, s);
+        }
+      }
+    }
+  }
+  const cleanStats = Array.from(uniqueStatsMap.values());
+
   const total: any = {
     SeasonID: 0,
     GamesPlayed: 0,
@@ -179,8 +197,9 @@ export const calculateHCKCareerStats = (
   let gamesWithTimeOnIce = 0;
   let gamesWithShotsAgainst = 0;
 
-  for (const s of playerStats as any[]) {
-    total.GamesPlayed += s.GamesPlayed ?? 0;
+  for (const s of cleanStats) {
+    const gp = s.GamesPlayed ?? s.Games ?? s.GP ?? 0;
+    total.GamesPlayed += gp;
     total.GamesStarted += s.GamesStarted ?? 0;
     total.Goals += s.Goals ?? 0;
     total.Assists += s.Assists ?? 0;
@@ -210,20 +229,17 @@ export const calculateHCKCareerStats = (
     total.BodyChecks += s.BodyChecks ?? 0;
     total.StickChecks += s.StickChecks ?? 0;
 
-    // Track time on ice for averaging
     if (s.TimeOnIce && s.TimeOnIce > 0) {
       totalTimeOnIce += s.TimeOnIce;
       gamesWithTimeOnIce++;
     }
 
-    // Track shots against for save percentage calculation
     if (s.ShotsAgainst && s.ShotsAgainst > 0) {
       totalShotsAgainst += s.ShotsAgainst;
       gamesWithShotsAgainst++;
     }
   }
 
-  // Calculate derived stats
   if (total.Shots > 0) {
     total.ShootingPercentage = (total.Goals / total.Shots) * 100;
   }

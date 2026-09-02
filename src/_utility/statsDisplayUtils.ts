@@ -110,7 +110,14 @@ export const getHCKStatsDisplayValue = (
   const valueMap = new Map(values.map((v) => [v.label, v.value]));
 
   if (label === "GP") {
-    return (item as any).GamesPlayed ?? valueMap.get("GP") ?? "";
+    // Check all potential property variations for Games Played
+    return (
+      (item as any).GamesPlayed ??
+      (item as any).Games ??
+      (item as any).GP ??
+      valueMap.get("GP") ??
+      0
+    );
   } else if (label === "GS") {
     return (item as any).GamesStarted ?? valueMap.get("GS") ?? "";
   } else if (label === "G") {
