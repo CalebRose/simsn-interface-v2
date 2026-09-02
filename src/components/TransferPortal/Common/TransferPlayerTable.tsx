@@ -385,7 +385,8 @@ const CHLRow: React.FC<CHLRowProps> = ({
               recruitOnBoardMap[item.ID] ||
               item.IsSigned ||
               item.Age < 18 ||
-              item.PreviousTeamID === chlTeam?.ID
+              item.PreviousTeamID === chlTeam?.ID ||
+              (item.TeamID > 0 && item.LeagueID === 1)
             }
           >
             {recruitOnBoardMap[item.ID] ||
