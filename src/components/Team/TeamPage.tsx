@@ -1354,10 +1354,20 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         tradeBlockSet.push(block);
       }
     }
+// Use ts?.Season or fall back to checking if the pick's season is behind/equal to the active year, 
+    // or if the pick has already been utilized/spent.
+    const activeSeason = ts?.Season || ts?.NFLSeasonID;
+
     const userTeamPicks = nflDraftPickMap[nflTeam!.ID];
     if (userTeamPicks) {
       for (let i = 0; i < userTeamPicks.length; i++) {
         const pick = userTeamPicks[i];
+        
+        // Hide past and current season picks (or any pick where a draftee has already been selected)
+        if (activeSeason && pick.Season <= activeSeason) continue;
+        if (pick.DrafteeID && pick.DrafteeID > 0) continue;
+        if (pick.SelectedPlayerID && pick.SelectedPlayerID > 0) continue;
+
         const block: TradeBlockRow = {
           id: pick.ID,
           pick: pick,
@@ -1410,9 +1420,18 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         tradeBlockSet.push(block);
       }
     }
+
+    const activeSeason = ts?.Season || ts?.NFLSeasonID;
+
     if (selectedTeamDraftPicks) {
       for (let i = 0; i < selectedTeamDraftPicks.length; i++) {
         const pick = selectedTeamDraftPicks[i];
+        
+        // Hide past and current season picks, or any picks already used/spent
+        if (activeSeason && pick.Season <= activeSeason) continue;
+        if (pick.DrafteeID && pick.DrafteeID > 0) continue;
+        if (pick.SelectedPlayerID && pick.SelectedPlayerID > 0) continue;
+
         const block: TradeBlockRow = {
           id: pick.ID,
           pick: pick,
@@ -1431,7 +1450,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       }
     }
     return tradeBlockSet;
-  }, [selectedRoster, selectedTeamDraftPicks, nflContractMap]);
+  }, [selectedRoster, selectedTeamDraftPicks, nflContractMap, ts]);
 
   const sentTradeProposals = useMemo(() => {
     const proposals: NFLTradeProposal[] = [];
