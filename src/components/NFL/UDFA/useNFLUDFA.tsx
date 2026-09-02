@@ -3,7 +3,6 @@ import { useSimFBAStore } from "../../../context/SimFBAContext";
 import { useSnackbar } from "notistack";
 
 export const useNFLUDFA = () => {
-  // We added getUDFABoard here
   const { enqueueSnackbar } = useSnackbar();
 
   const {
@@ -12,6 +11,7 @@ export const useNFLUDFA = () => {
     getUDFABoard,
     saveUDFABoard,
     removePlayerFromUDFABoard,
+    processUDFAs, // Real store method for moving UDFAs
   } = useSimFBAStore();
   const [localBoard, setLocalBoard] = useState<any>(null);
   const [pointsRemaining, setPointsRemaining] = useState(20);
@@ -63,11 +63,23 @@ export const useNFLUDFA = () => {
     await saveUDFABoard(localBoard);
   };
 
+  const handleMoveUDFAsToFA = async () => {
+    try {
+      await processUDFAs();
+    } catch (error) {
+      enqueueSnackbar("Failed to move UDFAs to Free Agency.", {
+        variant: "error",
+        autoHideDuration: 2000,
+      });
+    }
+  };
+
   return {
     board: localBoard,
     pointsRemaining,
     handlePointChange,
     saveBids,
     removePlayer: removePlayerFromUDFABoard,
+    handleMoveUDFAsToFA,
   };
 };
