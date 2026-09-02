@@ -1327,12 +1327,12 @@ export const SelectedSimCHLTeamCard = (data: any) => {
         </div>
       </BorderHidden>
       <BorderHidden>
-        <div className="flex flex-row mb-2 justify-between items-center gap-10">
+        <div className="grid grid-cols-5 mb-2 justify-between items-center gap-10">
           <div className="flex flex-col">
-            <Text variant="alternate" classes="font-semibold whitespace-nowrap">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
               Conference Championships
             </Text>
-            <Text variant="small">
+            <Text variant="xs">
               {data.ConferenceChampionships &&
               data.ConferenceChampionships.length > 0
                 ? data.ConferenceChampionships.map(
@@ -1345,10 +1345,49 @@ export const SelectedSimCHLTeamCard = (data: any) => {
             </Text>
           </div>
           <div className="flex flex-col">
-            <Text variant="alternate" classes="font-semibold whitespace-nowrap">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
+              Playoffs
+            </Text>
+            <Text variant="xs">
+              {data.Playoffs && data.Playoffs.length > 0
+                ? data.Playoffs.map(
+                    (x: any, i: number) =>
+                      `${x}${i < data.Playoffs.length - 1 ? "," : ""}`,
+                  )
+                : "None"}
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
+              Frozen Fours
+            </Text>
+            <Text variant="xs">
+              {data.FrozenFours && data.FrozenFours.length > 0
+                ? data.FrozenFours.map(
+                    (x: any, i: number) =>
+                      `${x}${i < data.FrozenFours.length - 1 ? "," : ""}`,
+                  )
+                : "None"}
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
+              National Runner-Ups
+            </Text>
+            <Text variant="xs">
+              {data.RunnerUps && data.RunnerUps.length > 0
+                ? data.RunnerUps.map(
+                    (x: any, i: number) =>
+                      `${x}${i < data.RunnerUps.length - 1 ? "," : ""}`,
+                  )
+                : "None"}
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
               National Championships
             </Text>
-            <Text variant="small">
+            <Text variant="xs">
               {data.NationalChampionships &&
               data.NationalChampionships.length > 0
                 ? data.NationalChampionships.map(
