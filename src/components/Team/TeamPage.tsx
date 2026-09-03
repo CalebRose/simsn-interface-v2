@@ -33,6 +33,7 @@ import {
   CBBRosterTable,
   NBARosterTable,
   PHLTradeBlockTable,
+  NFLDraftPicksTable,
 } from "./TeamPageTables";
 import { SelectDropdown } from "../../_design/Select";
 import { SingleValue } from "react-select";
@@ -1189,9 +1190,9 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
 
 const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   const { teamId } = useParams<{ teamId?: string }>();
-
   const { currentUser } = useAuthStore();
   const fbStore = useSimFBAStore();
+  
   const {
     nflTeam,
     nflTeams,
@@ -1207,7 +1208,9 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     proContractMap: nflContractMap,
     tradeProposalsMap,
     proPlayerMap,
+    nflDraftPicks,
     nflDraftPickMap,
+    nflDraftees,
     individualDraftPickMap,
     proposeTrade,
     cancelTrade,
@@ -1220,11 +1223,12 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     ExportFBRoster,
     getBootstrapPlayerData,
   } = fbStore;
-  const [showInfo, setShowInfo] = useState(true);
 
+  const [showInfo, setShowInfo] = useState(true);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<NFLPlayer | null>(null);
+
   const [selectedTeam, setSelectedTeam] = useState(() => {
     if (teamId && nflTeamMap) {
       const id = Number(teamId);
@@ -1232,6 +1236,24 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return nflTeam;
   });
+
+  // Build draftee map matching WarRoom logic
+  const drafteeMap = useMemo(() => {
+    const map: Record<number, any> = {};
+    if (nflDraftees) {
+      nflDraftees.forEach((d) => {
+        map[d.ID] = d;
+      });
+    }
+    return map;
+  }, [nflDraftees]);
+
+  // Include past, current, and future picks so completed historical drafts display correctly
+  const selectedTeamDraftPicks = useMemo(() => {
+    if (!selectedTeam || !nflDraftPickMap) return [];
+    return nflDraftPickMap[selectedTeam.ID] || [];
+  }, [selectedTeam, nflDraftPickMap]);
+
   const [category, setCategory] = useState(Overview);
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -1354,20 +1376,10 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         tradeBlockSet.push(block);
       }
     }
-// Use ts?.Season or fall back to checking if the pick's season is behind/equal to the active year, 
-    // or if the pick has already been utilized/spent.
-    const activeSeason = ts?.Season || ts?.NFLSeasonID;
-
     const userTeamPicks = nflDraftPickMap[nflTeam!.ID];
     if (userTeamPicks) {
       for (let i = 0; i < userTeamPicks.length; i++) {
         const pick = userTeamPicks[i];
-        
-        // Hide past and current season picks (or any pick where a draftee has already been selected)
-        if (activeSeason && pick.Season <= activeSeason) continue;
-        if (pick.DrafteeID && pick.DrafteeID > 0) continue;
-        if (pick.SelectedPlayerID && pick.SelectedPlayerID > 0) continue;
-
         const block: TradeBlockRow = {
           id: pick.ID,
           pick: pick,
@@ -1387,11 +1399,6 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return tradeBlockSet;
   }, [nflRosterMap, nflTeam, nflDraftPickMap, nflContractMap]);
-
-  const selectedTeamDraftPicks = useMemo(() => {
-    if (!selectedTeam || !nflDraftPickMap) return [];
-    return nflDraftPickMap[selectedTeam.ID];
-  }, [selectedTeam, nflDraftPickMap]);
 
   const selectedTeamTradeBlock = useMemo(() => {
     const tradeBlockSet: TradeBlockRow[] = [];
@@ -1420,18 +1427,9 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         tradeBlockSet.push(block);
       }
     }
-
-    const activeSeason = ts?.Season || ts?.NFLSeasonID;
-
     if (selectedTeamDraftPicks) {
       for (let i = 0; i < selectedTeamDraftPicks.length; i++) {
         const pick = selectedTeamDraftPicks[i];
-        
-        // Hide past and current season picks, or any picks already used/spent
-        if (activeSeason && pick.Season <= activeSeason) continue;
-        if (pick.DrafteeID && pick.DrafteeID > 0) continue;
-        if (pick.SelectedPlayerID && pick.SelectedPlayerID > 0) continue;
-
         const block: TradeBlockRow = {
           id: pick.ID,
           pick: pick,
@@ -1450,7 +1448,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       }
     }
     return tradeBlockSet;
-  }, [selectedRoster, selectedTeamDraftPicks, nflContractMap, ts]);
+  }, [selectedRoster, selectedTeamDraftPicks, nflContractMap]);
 
   const sentTradeProposals = useMemo(() => {
     const proposals: NFLTradeProposal[] = [];
@@ -1599,7 +1597,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
               onChange={selectTeamOption}
             />
           </div>
-          <div className="flex flex-row gap-x-1 sm:gap-x-2">
+          <div className="flex flex-row gap-x-1 sm:gap-2">
             <Button
               size={isMobile ? "xs" : "sm"}
               isSelected={category === Overview}
@@ -1614,6 +1612,15 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             >
               <Text variant="small">Contracts</Text>
             </Button>
+            {!isMobile && (
+              <Button
+                size={isMobile ? "xs" : "sm"}
+                isSelected={category === Draft}
+                onClick={() => setCategory(Draft)}
+              >
+                <Text variant="small">Draft</Text>
+              </Button>
+            )}
             {isDesktop && (
               <Button
                 size={isMobile ? "xs" : "sm"}
@@ -1635,31 +1642,45 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
           </div>
         </Border>
       </TeamInfo>
-      {selectedRoster && (
-        <Border
-          classes={`px-1 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
-          styles={{
-            backgroundColor: backgroundColor,
-            borderColor: headerColor,
-          }}
-        >
-          <NFLRosterTable
-            roster={selectedRoster}
-            contracts={rosterContracts}
-            ts={ts}
+      
+      <Border
+        classes={`px-1 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
+        styles={{
+          backgroundColor: backgroundColor,
+          borderColor: headerColor,
+        }}
+      >
+        {category === Draft ? (
+          <NFLDraftPicksTable
+            draftPicks={selectedTeamDraftPicks}
             team={selectedTeam}
-            category={category}
             backgroundColor={backgroundColor}
             headerColor={headerColor}
             borderColor={borderColor}
-            openModal={openModal}
-            existingOfferMap={nflExtensionMap!!}
-            openExtensionModal={openExtensionModal}
-            openFranchiseTagModal={openFranchiseTagModal}
-            disable={selectedTeam!.ID !== nflTeam!.ID}
+            teamMap={nflTeamMap ?? {}}
+            drafteeMap={drafteeMap}
+            roster={selectedRoster ?? []}
           />
-        </Border>
-      )}
+        ) : (
+          selectedRoster && (
+            <NFLRosterTable
+              roster={selectedRoster}
+              contracts={rosterContracts}
+              ts={ts}
+              team={selectedTeam}
+              category={category}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              openModal={openModal}
+              existingOfferMap={nflExtensionMap!!}
+              openExtensionModal={openExtensionModal}
+              openFranchiseTagModal={openFranchiseTagModal}
+              disable={selectedTeam!.ID !== nflTeam!.ID}
+            />
+          )
+        )}
+      </Border>
     </>
   );
 };

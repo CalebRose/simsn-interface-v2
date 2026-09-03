@@ -2884,3 +2884,117 @@ export const NFLTradeBlockTable: FC<NFLTradeBlockTableProps> = ({
     />
   );
 };
+
+interface NFLDraftPicksTableProps {
+  draftPicks: any[];
+  team: any;
+  backgroundColor?: string;
+  headerColor?: string;
+  borderColor?: string;
+  teamMap: Record<number, any>;
+  drafteeMap?: Record<number, any>;
+  proPlayerMap?: Record<number, any>;
+  roster?: any[];
+}
+
+export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
+  draftPicks = [],
+  team,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  teamMap,
+  drafteeMap = {},
+  proPlayerMap = {},
+  roster = [],
+}) => {
+  const { isDesktop } = useResponsive();
+
+  const columns = useMemo(
+    () => [
+      { header: "Season", accessor: "Season" },
+      { header: "Round", accessor: "DraftRound" },
+      { header: "Pick", accessor: "DraftNumber" },
+      { header: "Selected Player", accessor: "PlayerName" },
+      { header: "Original Team", accessor: "OriginalTeamID" },
+    ],
+    [],
+  );
+
+  const rowRenderer = (
+    item: any,
+    index: number,
+    backgroundColor: string,
+  ) => {
+    const originalTeam = teamMap?.[item.OriginalTeamID];
+    const originalTeamLabel = originalTeam
+      ? `${originalTeam.TeamName} ${originalTeam.Mascot}`
+      : "None";
+
+    const draftedRosterPlayer = (roster || []).find(
+      (p: any) => 
+        Number(p.DraftRound) === Number(item.DraftRound) && 
+        Number(p.DraftPick) === Number(item.DraftNumber)
+    );
+
+    const rosterPlayerLabel = draftedRosterPlayer
+      ? `${draftedRosterPlayer.Position} ${draftedRosterPlayer.FirstName} ${draftedRosterPlayer.LastName}`
+      : null;
+
+    const draftee = item.DrafteeID > 0 ? drafteeMap[item.DrafteeID] : null;
+    const drafteeLabel = draftee
+      ? `${draftee.Position} ${draftee.FirstName} ${draftee.LastName}`
+      : null;
+
+    const resolvedPlayerName =
+      item.PlayerName ||
+      item.DrafteeName ||
+      drafteeLabel ||
+      rosterPlayerLabel ||
+      "Available / Unused";
+
+    return (
+      <div
+        key={item.ID || index}
+        className="table-row border-b dark:border-gray-700 text-left"
+        style={{ backgroundColor }}
+      >
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {item.Season}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {item.DraftRound}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {item.DraftNumber}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {resolvedPlayerName}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {originalTeamLabel}
+          </Text>
+        </TableCell>
+      </div>
+    );
+  };
+
+  return (
+    <Table
+      columns={columns}
+      data={draftPicks && draftPicks.length > 0 ? draftPicks : []}
+      rowRenderer={rowRenderer}
+      backgroundColor={backgroundColor}
+      team={team}
+    />
+  );
+};
