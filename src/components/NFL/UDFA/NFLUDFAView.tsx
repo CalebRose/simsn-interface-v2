@@ -53,6 +53,7 @@ export const NFLUDFAView = () => {
   const [viewCategory, setViewCategory] = useState(Overview);
   const [positions, setPositions] = useState<string[]>([]);
   const [archetypes, setArchetypes] = useState<string[]>([]);
+  const [isForcing, setIsForcing] = useState(false);
   const pageSize = 50;
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -63,6 +64,26 @@ export const NFLUDFAView = () => {
     fetchingUDFAs.current = true;
     getBootstrapFreeAgencyData();
   }, [getBootstrapFreeAgencyData]);
+
+  // Temporary button handler to force unassigned UDFAs directly to FA
+  const handleDirectForceToFA = async () => {
+    if (window.confirm("Force all unsigned UDFAs directly to general Free Agency?")) {
+      setIsForcing(true);
+      try {
+        const response = await fetch("http://localhost:5001/api/admin/force-udfas-to-fa");
+        if (!response.ok) throw new Error("Failed to force UDFAs to FA");
+        
+        alert("Unsigned UDFAs successfully moved to Free Agency!");
+        if (typeof getBootstrapFreeAgencyData === "function") {
+          getBootstrapFreeAgencyData();
+        }
+      } catch (error) {
+        alert("Error moving players to Free Agency.");
+      } finally {
+        setIsForcing(false);
+      }
+    }
+  };
 
   const gradeWeight: Record<string, number> = {
     "A+": 13,
@@ -190,7 +211,7 @@ export const NFLUDFAView = () => {
 
         <div className="flex flex-col w-full gap-y-4">
           <div
-            className="w-full p-4 flex flex-row items-center justify-between border-2 rounded-xl"
+            className="w-full p-4 flex flex-row items-center justify-between border-2 rounded-xl flex-wrap gap-2"
             style={{
               borderColor: teamColors.One,
               backgroundColor: "rgba(0,0,0,0.4)",
@@ -210,7 +231,7 @@ export const NFLUDFAView = () => {
                 My Bids
               </Button>
             </ButtonGroup>
-            <div className="flex gap-x-2 items-center">
+            <div className="flex gap-x-2 items-center flex-wrap gap-y-2">
               <Text
                 variant="h5"
                 classes={
@@ -229,11 +250,13 @@ export const NFLUDFAView = () => {
                 Save All Bids
               </Button>
 
+              {/* TEMPORARY BYPASS BUTTON */}
               <Button
                 variant="danger"
-                onClick={handleMoveUDFAsToFA}
+                onClick={handleDirectForceToFA}
+                disabled={isForcing}
               >
-                Move Unsigned UDFAs to FA
+                {isForcing ? "Moving..." : "Force UDFAs to FA"}
               </Button>
             </div>
           </div>

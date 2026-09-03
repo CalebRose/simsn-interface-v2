@@ -3,6 +3,7 @@ import { useSimFBAStore } from "../../../context/SimFBAContext";
 import { useSnackbar } from "notistack";
 
 export const useNFLUDFA = () => {
+  // We added getUDFABoard here
   const { enqueueSnackbar } = useSnackbar();
 
   const {
@@ -11,7 +12,6 @@ export const useNFLUDFA = () => {
     getUDFABoard,
     saveUDFABoard,
     removePlayerFromUDFABoard,
-    processUDFAs, // Real store method for moving UDFAs
   } = useSimFBAStore();
   const [localBoard, setLocalBoard] = useState<any>(null);
   const [pointsRemaining, setPointsRemaining] = useState(20);
@@ -65,29 +65,14 @@ export const useNFLUDFA = () => {
 
   const handleMoveUDFAsToFA = async () => {
     try {
-      // 1. Wipe out/clear active bids locally or reset point allocations to 0
-      if (localBoard && localBoard.Profiles) {
-        const clearedProfiles = localBoard.Profiles.map((p: any) => ({
-          ...p,
-          Points: 0,
-        }));
-        
-        // Save the wiped board first so the backend records zeroed-out bids
-        await saveUDFABoard({ ...localBoard, Profiles: clearedProfiles });
-      }
-
-      // 2. Now trigger the move to Free Agency without active roster awards
-      await processUDFAs();
+      const response = await fetch("http://localhost:5001/api/admin/force-udfas-to-fa");
+      if (!response.ok) throw new Error("Failed to force UDFAs to FA");
       
-      enqueueSnackbar("Bids wiped and UDFAs moved to Free Agency successfully!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
+      if (nflTeam) {
+        await getUDFABoard(nflTeam.ID);
+      }
     } catch (error) {
-      enqueueSnackbar("Failed to clear bids and move UDFAs.", {
-        variant: "error",
-        autoHideDuration: 2000,
-      });
+      console.error("Error moving UDFAs to FA:", error);
     }
   };
 
