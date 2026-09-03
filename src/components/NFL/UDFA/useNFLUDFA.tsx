@@ -65,9 +65,26 @@ export const useNFLUDFA = () => {
 
   const handleMoveUDFAsToFA = async () => {
     try {
+      // 1. Wipe out/clear active bids locally or reset point allocations to 0
+      if (localBoard && localBoard.Profiles) {
+        const clearedProfiles = localBoard.Profiles.map((p: any) => ({
+          ...p,
+          Points: 0,
+        }));
+        
+        // Save the wiped board first so the backend records zeroed-out bids
+        await saveUDFABoard({ ...localBoard, Profiles: clearedProfiles });
+      }
+
+      // 2. Now trigger the move to Free Agency without active roster awards
       await processUDFAs();
+      
+      enqueueSnackbar("Bids wiped and UDFAs moved to Free Agency successfully!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
     } catch (error) {
-      enqueueSnackbar("Failed to move UDFAs to Free Agency.", {
+      enqueueSnackbar("Failed to clear bids and move UDFAs.", {
         variant: "error",
         autoHideDuration: 2000,
       });
