@@ -336,53 +336,43 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
             />
           </div>
 
-          <div className="flex flex-row gap-x-1 sm:gap-x-4">
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Overview}
-                onClick={() => setCategory(Overview)}
-              >
-                <Text variant="small">Overview</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Promises}
-                onClick={() => setCategory(Promises)}
-              >
-                <Text variant="small">Promises</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Draft}
-                onClick={() => setCategory(Draft)}
-              >
-                <Text variant="small">Draft</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Attributes}
-                onClick={() => setCategory(Attributes)}
-              >
-                <Text variant="small">Attributes</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                disabled={selectedTeam?.ID !== chlTeam?.ID}
-                isSelected={category === Potentials}
-                onClick={() => setCategory(Potentials)}
-              >
-                <Text variant="small">Potentials</Text>
-              </Button>
-            )}
+          <div className="flex flex-row flex-wrap gap-x-1 gap-y-1 sm:gap-x-4">
+            <Button
+              size="sm"
+              isSelected={category === Overview}
+              onClick={() => setCategory(Overview)}
+            >
+              <Text variant="small">Overview</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Promises}
+              onClick={() => setCategory(Promises)}
+            >
+              <Text variant="small">Promises</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Draft}
+              onClick={() => setCategory(Draft)}
+            >
+              <Text variant="small">Draft</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Attributes}
+              onClick={() => setCategory(Attributes)}
+            >
+              <Text variant="small">Attributes</Text>
+            </Button>
+            <Button
+              size="sm"
+              disabled={selectedTeam?.ID !== chlTeam?.ID}
+              isSelected={category === Potentials}
+              onClick={() => setCategory(Potentials)}
+            >
+              <Text variant="small">Potentials</Text>
+            </Button>
             <Button variant="primary" size="sm" onClick={exportRoster}>
               <Text variant="small">Export</Text>
             </Button>
@@ -808,64 +798,52 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
               }}
             />
           </div>
-          <div className="flex flex-row gap-x-1 sm:gap-x-4">
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Overview}
-                onClick={() => setCategory(Overview)}
-              >
-                <Text variant="small">Overview</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Contracts}
-                onClick={() => setCategory(Contracts)}
-              >
-                <Text variant="small">Contracts</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Draft}
-                onClick={() => setCategory(Draft)}
-              >
-                <Text variant="small">Draft</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Attributes}
-                onClick={() => setCategory(Attributes)}
-              >
-                <Text variant="small">Attributes</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                disabled={selectedTeam?.ID !== phlTeam?.ID}
-                isSelected={category === Potentials}
-                onClick={() => setCategory(Potentials)}
-              >
-                <Text variant="small">Potentials</Text>
-              </Button>
-            )}
-            {!isMobile && !isTablet && (
-              <Button
-                size="sm"
-                disabled={selectedTeam?.ID !== phlTeam?.ID}
-                isSelected={category === TradeBlock}
-                onClick={() => setCategory(TradeBlock)}
-                classes="w-32"
-              >
-                <Text variant="small">Trade Block</Text>
-              </Button>
-            )}
+          <div className="flex flex-row flex-wrap gap-x-1 gap-y-1 sm:gap-x-4">
+            <Button
+              size="sm"
+              isSelected={category === Overview}
+              onClick={() => setCategory(Overview)}
+            >
+              <Text variant="small">Overview</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Contracts}
+              onClick={() => setCategory(Contracts)}
+            >
+              <Text variant="small">Contracts</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Draft}
+              onClick={() => setCategory(Draft)}
+            >
+              <Text variant="small">Draft</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Attributes}
+              onClick={() => setCategory(Attributes)}
+            >
+              <Text variant="small">Attributes</Text>
+            </Button>
+            <Button
+              size="sm"
+              disabled={selectedTeam?.ID !== phlTeam?.ID}
+              isSelected={category === Potentials}
+              onClick={() => setCategory(Potentials)}
+            >
+              <Text variant="small">Potentials</Text>
+            </Button>
+            <Button
+              size="sm"
+              disabled={selectedTeam?.ID !== phlTeam?.ID}
+              isSelected={category === TradeBlock}
+              onClick={() => setCategory(TradeBlock)}
+              classes="w-32"
+            >
+              <Text variant="small">Trade Block</Text>
+            </Button>
             <Button variant="primary" size="sm" onClick={exportRoster}>
               <Text variant="small">Export</Text>
             </Button>
@@ -1597,7 +1575,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
               onChange={selectTeamOption}
             />
           </div>
-          <div className="flex flex-row gap-x-1 sm:gap-2">
+          <div className="flex flex-row flex-wrap gap-x-1 gap-y-1 sm:gap-2">
             <Button
               size={isMobile ? "xs" : "sm"}
               isSelected={category === Overview}
@@ -1612,33 +1590,27 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             >
               <Text variant="small">Contracts</Text>
             </Button>
-            {!isMobile && (
-              <Button
-                size={isMobile ? "xs" : "sm"}
-                isSelected={category === Draft}
-                onClick={() => setCategory(Draft)}
-              >
-                <Text variant="small">Draft</Text>
-              </Button>
-            )}
-            {isDesktop && (
-              <Button
-                size={isMobile ? "xs" : "sm"}
-                isSelected={category === Attributes}
-                onClick={() => setCategory(Attributes)}
-              >
-                <Text variant="small">Attributes</Text>
-              </Button>
-            )}
-            {isDesktop && (
-              <Button
-                variant="primary"
-                size={isMobile ? "xs" : "sm"}
-                onClick={exportRoster}
-              >
-                <Text variant="small">Export</Text>
-              </Button>
-            )}
+            <Button
+              size={isMobile ? "xs" : "sm"}
+              isSelected={category === Draft}
+              onClick={() => setCategory(Draft)}
+            >
+              <Text variant="small">Draft</Text>
+            </Button>
+            <Button
+              size={isMobile ? "xs" : "sm"}
+              isSelected={category === Attributes}
+              onClick={() => setCategory(Attributes)}
+            >
+              <Text variant="small">Attributes</Text>
+            </Button>
+            <Button
+              variant="primary"
+              size={isMobile ? "xs" : "sm"}
+              onClick={exportRoster}
+            >
+              <Text variant="small">Export</Text>
+            </Button>
           </div>
         </Border>
       </TeamInfo>
