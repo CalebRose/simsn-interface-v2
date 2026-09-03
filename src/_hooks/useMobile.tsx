@@ -8,6 +8,7 @@ export const useResponsive = () => {
         isMobile: false,
         isTablet: false,
         isDesktop: true,
+        isUltraWide: false,
       };
     }
 
@@ -47,10 +48,13 @@ export const useResponsive = () => {
   });
 
   useEffect(() => {
+    // Force an immediate update right after mount to catch correct viewport dimensions
+    setSizes(getSizes());
+
     // Safari requires a small delay to ensure proper initialization
     const initTimer = setTimeout(() => {
       setSizes(getSizes());
-    }, 0);
+    }, 50);
 
     // Safari-compatible resize handler with throttling
     let resizeTimer: ReturnType<typeof setTimeout>;
