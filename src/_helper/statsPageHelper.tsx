@@ -568,7 +568,7 @@ export const useFilteredFootballStats = ({
           );
         }
         if (footballStatsType === OLINE) {
-          return ["OT", "OG", "C", "ATH"].includes(player.Position);
+          return ["OT", "OG", "C", "FB", "TE", "ATH"].includes(player.Position);
         }
         if (footballStatsType === RETURN) {
           return stat.KickReturns > 0 || stat.PuntReturns > 0;
