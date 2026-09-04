@@ -938,7 +938,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   const selectedRoster = useMemo(() => {
     if (selectedTeam && cfbRosterMap) {
@@ -1107,7 +1107,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
             />
           </div>
           <div className="flex flex-row gap-x-1 sm:gap-x-4">
-            {isDesktop && (
+            {(isDesktop || isUltraWide) && (
               <Button
                 size="sm"
                 isSelected={category === Overview}
@@ -1116,7 +1116,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Overview</Text>
               </Button>
             )}
-            {isDesktop && (
+            {(isDesktop || isUltraWide) && (
               <Button
                 size="sm"
                 isSelected={category === Attributes}
@@ -1125,7 +1125,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
-            {isDesktop && (
+            {(isDesktop || isUltraWide) && (
               <Button
                 size="sm"
                 isSelected={category === Promises}
@@ -1249,7 +1249,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const { isMobile, isDesktop } = useResponsive();
+  const { isMobile, isDesktop, isUltraWide } = useResponsive();
   let darkerBackgroundColor = darkenColor(backgroundColor, -5);
 
   const selectedRoster = useMemo(() => {
@@ -1592,6 +1592,24 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             >
               <Text variant="small">Contracts</Text>
             </Button>
+            {(isDesktop || isUltraWide) && (
+              <Button
+                size={isMobile ? "xs" : "sm"}
+                isSelected={category === Attributes}
+                onClick={() => setCategory(Attributes)}
+              >
+                <Text variant="small">Attributes</Text>
+              </Button>
+            )}
+            {(isDesktop || isUltraWide) && (
+              <Button
+                variant="primary"
+                size={isMobile ? "xs" : "sm"}
+                onClick={exportRoster}
+              >
+                <Text variant="small">Export</Text>
+              </Button>
+            )}
             <Button
               size={isMobile ? "xs" : "sm"}
               isSelected={category === Draft}
@@ -1703,7 +1721,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   const selectedRoster = useMemo(() => {
     if (selectedTeam && cbbRosterMap) {
@@ -1829,7 +1847,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
             />
           </div>
           <div className="flex flex-row gap-x-1 sm:gap-x-4">
-            {isDesktop && (
+            {(isDesktop || isUltraWide) && (
               <Button
                 size="sm"
                 isSelected={category === Overview}
@@ -1838,7 +1856,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Overview</Text>
               </Button>
             )}
-            {isDesktop && (
+            {(isDesktop || isUltraWide) && (
               <Button
                 size="sm"
                 isSelected={category === Attributes}
@@ -1922,7 +1940,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   const selectedRoster = useMemo(() => {
     if (selectedTeam && proRosterMap) {
@@ -2034,7 +2052,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
             />
           </div>
           <div className="flex flex-row gap-x-1 sm:gap-x-4">
-            {isDesktop && (
+            {(isDesktop || isUltraWide) && (
               <Button
                 size="sm"
                 isSelected={category === Overview}
@@ -2043,7 +2061,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Overview</Text>
               </Button>
             )}
-            {isDesktop && (
+            {(isDesktop || isUltraWide) && (
               <Button
                 size="sm"
                 isSelected={category === Attributes}

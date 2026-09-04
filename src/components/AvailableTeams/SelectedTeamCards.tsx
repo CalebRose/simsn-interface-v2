@@ -1338,7 +1338,7 @@ export const SelectedSimCHLTeamCard = (data: any) => {
                 ? data.ConferenceChampionships.map(
                     (x: any, i: number) =>
                       `${x}${
-                        i < data.ConferenceChampionships.length - 1 ? "," : ""
+                        i < data.ConferenceChampionships.length - 1 ? ", " : ""
                       }`,
                   )
                 : "None"}
@@ -1352,7 +1352,7 @@ export const SelectedSimCHLTeamCard = (data: any) => {
               {data.Playoffs && data.Playoffs.length > 0
                 ? data.Playoffs.map(
                     (x: any, i: number) =>
-                      `${x}${i < data.Playoffs.length - 1 ? "," : ""}`,
+                      `${x}${i < data.Playoffs.length - 1 ? ", " : ""}`,
                   )
                 : "None"}
             </Text>
@@ -1365,7 +1365,7 @@ export const SelectedSimCHLTeamCard = (data: any) => {
               {data.FrozenFours && data.FrozenFours.length > 0
                 ? data.FrozenFours.map(
                     (x: any, i: number) =>
-                      `${x}${i < data.FrozenFours.length - 1 ? "," : ""}`,
+                      `${x}${i < data.FrozenFours.length - 1 ? ", " : ""}`,
                   )
                 : "None"}
             </Text>
@@ -1378,7 +1378,7 @@ export const SelectedSimCHLTeamCard = (data: any) => {
               {data.RunnerUps && data.RunnerUps.length > 0
                 ? data.RunnerUps.map(
                     (x: any, i: number) =>
-                      `${x}${i < data.RunnerUps.length - 1 ? "," : ""}`,
+                      `${x}${i < data.RunnerUps.length - 1 ? ", " : ""}`,
                   )
                 : "None"}
             </Text>
@@ -1393,7 +1393,7 @@ export const SelectedSimCHLTeamCard = (data: any) => {
                 ? data.NationalChampionships.map(
                     (x: any, i: number) =>
                       `${x}${
-                        i < data.NationalChampionships.length - 1 ? "," : ""
+                        i < data.NationalChampionships.length - 1 ? ", " : ""
                       }`,
                   )
                 : "None"}

@@ -106,6 +106,29 @@ export const getHCKPromiseWeight = (promiseType: string, benchmark: number) => {
   if (promiseType === "Home State Game") {
     return "Medium";
   }
+  if (promiseType === "Lineup") {
+    if (benchmark < 1 || benchmark > 20) {
+      return "Invalid";
+    }
+    if (benchmark === 4) return "Very Low";
+    if (benchmark === 3) return "Low";
+    if (benchmark === 2) return "Medium";
+    if (benchmark === 1) return "High";
+    return "Very High";
+  }
+  if (promiseType === "Games Played") {
+    if (benchmark < 1 || benchmark > 34) {
+      return "Invalid";
+    }
+    if (benchmark === 0) return "Why even try?";
+    if (benchmark <= 2) return "Extremely Low";
+    if (benchmark <= 8) return "Very Low";
+    if (benchmark <= 18) return "Low";
+    if (benchmark <= 24) return "Medium";
+    if (benchmark <= 30) return "High";
+    if (benchmark < 34) return "Very High";
+    return "Extremely High";
+  }
   if (promiseType === "Time on Ice") {
     if (benchmark < 1 || benchmark > 20) {
       return "Invalid";
