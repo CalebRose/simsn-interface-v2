@@ -80,7 +80,7 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
     null,
   );
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   const validation = useDepthChartValidation({
     depthChart: localDepthChart,
@@ -406,7 +406,7 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
         contextName="Depth Chart"
       />
       <div className="grid grid-cols-1 gap-8 2xl:gap-6 items-start">
-        {isDesktop && (
+        {(isDesktop || isUltraWide) && (
           <div className="relative min-w-0 z-0 w-full">
             <div className="text-center pb-4 flex justify-between">
               <div>
@@ -519,7 +519,7 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
           </div>
         )}
         <div className="relative z-10 w-full max-w-[20rem] justify-self-center 2xl:max-w-none 2xl:justify-self-stretch">
-          {!isDesktop && (
+          {!isDesktop && !isUltraWide && (
             <div className="space-y-2">
               {!canModify && (
                 <div className="text-center mb-4 p-3 bg-yellow-900 border border-yellow-600 rounded-lg">

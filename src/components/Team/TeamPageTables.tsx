@@ -159,22 +159,52 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
       (category === Attributes || category === Potentials)
     ) {
       columns = columns.concat([
-        { header: "Agi", accessor: "Agility" },
-        { header: "FO", accessor: "Faceoffs" },
-        { header: "LSA", accessor: "LongShotAccuracy" },
-        { header: "LSP", accessor: "LongShotPower" },
-        { header: "CSA", accessor: "CloseShotAccuracy" },
-        { header: "CSP", accessor: "CloseShotPower" },
-        { header: "Pass", accessor: "Passing" },
-        { header: "PH", accessor: "PuckHandling" },
-        { header: "Str", accessor: "Strength" },
-        { header: "BChk", accessor: "BodyChecking" },
-        { header: "SChk", accessor: "StickChecking" },
-        { header: "SB", accessor: "ShotBlocking" },
-        { header: "GK", accessor: "Goalkeeping" },
-        { header: "GV", accessor: "GoalieVision" },
-        { header: "Sta", accessor: "Stamina" },
-        { header: "Inj", accessor: "Injury" },
+        { header: !isUltraWide ? "Agi" : "Agility", accessor: "Agility" },
+        { header: !isUltraWide ? "FO" : "Faceoffs", accessor: "Faceoffs" },
+        {
+          header: !isUltraWide ? "LSA" : "Long Shot Accuracy",
+          accessor: "LongShotAccuracy",
+        },
+        {
+          header: !isUltraWide ? "LSP" : "Long Shot Power",
+          accessor: "LongShotPower",
+        },
+        {
+          header: !isUltraWide ? "CSA" : "Close Shot Accuracy",
+          accessor: "CloseShotAccuracy",
+        },
+        {
+          header: !isUltraWide ? "CSP" : "Close Shot Power",
+          accessor: "CloseShotPower",
+        },
+        { header: !isUltraWide ? "Pass" : "Passing", accessor: "Passing" },
+        {
+          header: !isUltraWide ? "PH" : "Puck Handling",
+          accessor: "PuckHandling",
+        },
+        { header: !isUltraWide ? "Str" : "Strength", accessor: "Strength" },
+        {
+          header: !isUltraWide ? "BChk" : "Body Checking",
+          accessor: "BodyChecking",
+        },
+        {
+          header: !isUltraWide ? "SChk" : "Stick Checking",
+          accessor: "StickChecking",
+        },
+        {
+          header: !isUltraWide ? "SB" : "Shot Blocking",
+          accessor: "ShotBlocking",
+        },
+        {
+          header: !isUltraWide ? "GK" : "Goalkeeping",
+          accessor: "Goalkeeping",
+        },
+        {
+          header: !isUltraWide ? "GV" : "Goalie Vision",
+          accessor: "GoalieVision",
+        },
+        { header: !isUltraWide ? "Sta" : "Stamina", accessor: "Stamina" },
+        { header: !isUltraWide ? "Inj" : "Injury", accessor: "Injury" },
         { header: "Off. Fit", accessor: "OffensiveFit" },
         { header: "Def. Fit", accessor: "DefensiveFit" },
       ]);
@@ -224,7 +254,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     index: number,
     backgroundColor: string,
   ) => {
-    const attributes = getCHLAttributes(item, !isDesktop, isTablet, category!);
+    const attributes = getCHLAttributes(item, isMobile, isTablet, category!);
     const collegePromise = collegePromiseMap[item.ID];
     const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
     if (hasPromise) {
@@ -695,7 +725,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         { header: "Health", accessor: "isInjured" },
         { header: "Injury", accessor: "InjuryType" },
@@ -718,22 +748,52 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       (category === Attributes || category === Potentials)
     ) {
       columns = columns.concat([
-        { header: "Agi", accessor: "Agility" },
-        { header: "FO", accessor: "Faceoffs" },
-        { header: "LSA", accessor: "LongShotAccuracy" },
-        { header: "LSP", accessor: "LongShotPower" },
-        { header: "CSA", accessor: "CloseShotAccuracy" },
-        { header: "CSP", accessor: "CloseShotPower" },
-        { header: "Pass", accessor: "Passing" },
-        { header: "PH", accessor: "PuckHandling" },
-        { header: "Str", accessor: "Strength" },
-        { header: "BChk", accessor: "BodyChecking" },
-        { header: "SChk", accessor: "StickChecking" },
-        { header: "SB", accessor: "ShotBlocking" },
-        { header: "GK", accessor: "Goalkeeping" },
-        { header: "GV", accessor: "GoalieVision" },
-        { header: "Sta", accessor: "Stamina" },
-        { header: "Inj", accessor: "Injury" },
+        { header: !isUltraWide ? "Agi" : "Agility", accessor: "Agility" },
+        { header: !isUltraWide ? "FO" : "Faceoffs", accessor: "Faceoffs" },
+        {
+          header: !isUltraWide ? "LSA" : "Long Shot Accuracy",
+          accessor: "LongShotAccuracy",
+        },
+        {
+          header: !isUltraWide ? "LSP" : "Long Shot Power",
+          accessor: "LongShotPower",
+        },
+        {
+          header: !isUltraWide ? "CSA" : "Close Shot Accuracy",
+          accessor: "CloseShotAccuracy",
+        },
+        {
+          header: !isUltraWide ? "CSP" : "Close Shot Power",
+          accessor: "CloseShotPower",
+        },
+        { header: !isUltraWide ? "Pass" : "Passing", accessor: "Passing" },
+        {
+          header: !isUltraWide ? "PH" : "Puck Handling",
+          accessor: "PuckHandling",
+        },
+        { header: !isUltraWide ? "Str" : "Strength", accessor: "Strength" },
+        {
+          header: !isUltraWide ? "BChk" : "Body Checking",
+          accessor: "BodyChecking",
+        },
+        {
+          header: !isUltraWide ? "SChk" : "Stick Checking",
+          accessor: "StickChecking",
+        },
+        {
+          header: !isUltraWide ? "SB" : "Shot Blocking",
+          accessor: "ShotBlocking",
+        },
+        {
+          header: !isUltraWide ? "GK" : "Goalkeeping",
+          accessor: "Goalkeeping",
+        },
+        {
+          header: !isUltraWide ? "GV" : "Goalie Vision",
+          accessor: "GoalieVision",
+        },
+        { header: !isUltraWide ? "Sta" : "Stamina", accessor: "Stamina" },
+        { header: !isUltraWide ? "Inj" : "Injury", accessor: "Injury" },
         { header: "Offensive Fit", accessor: "OffensiveFit" },
         { header: "Defensive Fit", accessor: "DefensiveFit" },
       ]);
@@ -1063,7 +1123,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
     item.Contract = playerContract!!;
     const attributes = getPHLAttributes(
       item,
-      !isDesktop,
+      isMobile,
       isTablet,
       category!,
       playerContract,
