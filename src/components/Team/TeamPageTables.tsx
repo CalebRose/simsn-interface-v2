@@ -209,17 +209,18 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "Def. Fit", accessor: "DefensiveFit" },
       ]);
     }
-    if ((isDesktop || isTablet || isUltraWide) && category === Promises) {
+    if (category === Promises) {
       columns = columns.concat([
-        { header: "Transfer Likeliness", accessor: "TransferLikeliness" },
-        { header: "Promise Type", accessor: "PromiseType" },
-        { header: "Promise Weight", accessor: "PromiseWeight" },
-        { header: "Benchmark", accessor: "Benchmark" },
-        { header: "Benchmark 2", accessor: "BenchmarkStr" },
-        { header: "Committed", accessor: "PromiseMade" },
-        { header: "Active", accessor: "IsActive" },
+        { header: !isDesktop ? "Risk" : "Transfer Likeliness", accessor: "TransferLikeliness" },
+        { header: !isDesktop ? "Type" : "Promise Type", accessor: "PromiseType" },
+        { header: !isDesktop ? "Wgt" : "Promise Weight", accessor: "PromiseWeight" },
+        { header: !isDesktop ? "BM1" : "Benchmark", accessor: "Benchmark" },
+        { header: !isDesktop ? "BM2" : "Benchmark 2", accessor: "BenchmarkStr" },
+        { header: !isDesktop ? "Made" : "Committed", accessor: "PromiseMade" },
+        { header: !isDesktop ? "Act" : "Active", accessor: "IsActive" },
       ]);
     }
+
     if ((isDesktop || isTablet || isUltraWide) && category === Draft) {
       columns = columns.concat([
         { header: "Drafted Team", accessor: "DraftedTeamID" },
@@ -492,7 +493,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             </TableCell>
           </>
         )}
-        {category == Promises && (isDesktop || isUltraWide) && (
+        {category == Promises && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -775,15 +776,15 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       ]);
     }
 
-    if ((isDesktop || isUltraWide) && category === Contracts) {
+if (category === Contracts) {
       columns = columns.concat([
-        { header: "Offensive Fit", accessor: "OffensiveFit" },
-        { header: "Defensive Fit", accessor: "DefensiveFit" },
-        { header: "Y1 S", accessor: "Y1BaseSalary" },
-        { header: "Y2 S", accessor: "Y2BaseSalary" },
-        { header: "Y3 S", accessor: "Y3BaseSalary" },
-        { header: "Y4 S", accessor: "Y4BaseSalary" },
-        { header: "Y5 S", accessor: "Y5BaseSalary" },
+        { header: !isDesktop ? "Off" : "Offensive Fit", accessor: "OffensiveFit" },
+        { header: !isDesktop ? "Def" : "Defensive Fit", accessor: "DefensiveFit" },
+        { header: !isDesktop ? "Y1 S" : "Y1 Salary", accessor: "Y1BaseSalary" },
+        { header: !isDesktop ? "Y2 S" : "Y2 Salary", accessor: "Y2BaseSalary" },
+        { header: !isDesktop ? "Y3 S" : "Y3 Salary", accessor: "Y3BaseSalary" },
+        { header: !isDesktop ? "Y4 S" : "Y4 Salary", accessor: "Y4BaseSalary" },
+        { header: !isDesktop ? "Y5 S" : "Y5 Salary", accessor: "Y5BaseSalary" },
         { header: "Yrs", accessor: "ContractLength" },
         { header: "NTC", accessor: "NoTradeClause" },
         { header: "NMC", accessor: "NoMovementClause" },
@@ -1464,15 +1465,15 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
         { header: "INJ", accessor: "Injury" },
       ]);
     }
-    if ((isDesktop || isUltraWide) && category === Promises) {
+if (category === Promises) {
       columns = columns.concat([
-        { header: "Transfer Likeliness", accessor: "TransferLikeliness" },
-        { header: "Promise Type", accessor: "PromiseType" },
-        { header: "Promise Weight", accessor: "PromiseWeight" },
-        { header: "Benchmark", accessor: "Benchmark" },
-        { header: "Benchmark 2", accessor: "BenchmarkStr" },
-        { header: "Committed", accessor: "PromiseMade" },
-        { header: "Active", accessor: "IsActive" },
+        { header: !isDesktop ? "Risk" : "Transfer Likeliness", accessor: "TransferLikeliness" },
+        { header: !isDesktop ? "Type" : "Promise Type", accessor: "PromiseType" },
+        { header: !isDesktop ? "Wgt" : "Promise Weight", accessor: "PromiseWeight" },
+        { header: !isDesktop ? "BM1" : "Benchmark", accessor: "Benchmark" },
+        { header: !isDesktop ? "BM2" : "Benchmark 2", accessor: "BenchmarkStr" },
+        { header: !isDesktop ? "Made" : "Committed", accessor: "PromiseMade" },
+        { header: !isDesktop ? "Act" : "Active", accessor: "IsActive" },
       ]);
     }
     columns.push({ header: "Actions", accessor: "actions" });
@@ -1567,7 +1568,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
             )}
           </div>
         ))}
-        {category == Promises && (isDesktop || isUltraWide) && (
+        {category == Promises && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -1808,19 +1809,19 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
       ]);
     }
 
-    if ((isDesktop || isUltraWide) && category === Contracts) {
+    if (category === Contracts) {
       columns = columns.concat([
-        { header: "Y1 Bonus", accessor: "Y1Bonus" },
-        { header: "Y1 Salary", accessor: "Y1BaseSalary" },
-        { header: "Y2 Bonus", accessor: "Y2Bonus" },
-        { header: "Y2 Salary", accessor: "Y2BaseSalary" },
-        { header: "Y3 Bonus", accessor: "Y3Bonus" },
-        { header: "Y3 Salary", accessor: "Y3BaseSalary" },
-        { header: "Y4 Bonus", accessor: "Y4Bonus" },
-        { header: "Y4 Salary", accessor: "Y4BaseSalary" },
-        { header: "Y5 Bonus", accessor: "Y5Bonus" },
-        { header: "Y5 Salary", accessor: "Y5BaseSalary" },
-        { header: "Years", accessor: "ContractLength" },
+        { header: !isDesktop ? "Y1B" : "Y1 Bonus", accessor: "Y1Bonus" },
+        { header: !isDesktop ? "Y1S" : "Y1 Salary", accessor: "Y1BaseSalary" },
+        { header: !isDesktop ? "Y2B" : "Y2 Bonus", accessor: "Y2Bonus" },
+        { header: !isDesktop ? "Y2S" : "Y2 Salary", accessor: "Y2BaseSalary" },
+        { header: !isDesktop ? "Y3B" : "Y3 Bonus", accessor: "Y3Bonus" },
+        { header: !isDesktop ? "Y3S" : "Y3 Salary", accessor: "Y3BaseSalary" },
+        { header: !isDesktop ? "Y4B" : "Y4 Bonus", accessor: "Y4Bonus" },
+        { header: !isDesktop ? "Y4S" : "Y4 Salary", accessor: "Y4BaseSalary" },
+        { header: !isDesktop ? "Y5B" : "Y5 Bonus", accessor: "Y5Bonus" },
+        { header: !isDesktop ? "Y5S" : "Y5 Salary", accessor: "Y5BaseSalary" },
+        { header: !isDesktop ? "Yrs" : "Years", accessor: "ContractLength" },
       ]);
     }
 

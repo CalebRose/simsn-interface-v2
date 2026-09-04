@@ -273,7 +273,7 @@ export const getPHLAttributes = (
       : [];
 
   const contractAttributes =
-    !isMobile && category === Contracts && phlContract
+    category === Contracts && phlContract
       ? getPHLContracts(phlContract)
       : [];
 
@@ -860,7 +860,7 @@ export const getNFLAttributes = (
       : [];
 
   const nflContracts =
-    !isMobile && category === Contracts
+    category === Contracts
       ? getNFLContracts(nflContract).map((attr) => ({
           ...attr,
           value: attr.value,
