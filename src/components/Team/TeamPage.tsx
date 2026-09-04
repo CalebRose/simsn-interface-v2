@@ -33,6 +33,7 @@ import {
   CBBRosterTable,
   NBARosterTable,
   PHLTradeBlockTable,
+  NFLDraftPicksTable,
 } from "./TeamPageTables";
 import { SelectDropdown } from "../../_design/Select";
 import { SingleValue } from "react-select";
@@ -335,53 +336,43 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
             />
           </div>
 
-          <div className="flex flex-row gap-x-1 sm:gap-x-4">
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Overview}
-                onClick={() => setCategory(Overview)}
-              >
-                <Text variant="small">Overview</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Promises}
-                onClick={() => setCategory(Promises)}
-              >
-                <Text variant="small">Promises</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Draft}
-                onClick={() => setCategory(Draft)}
-              >
-                <Text variant="small">Draft</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Attributes}
-                onClick={() => setCategory(Attributes)}
-              >
-                <Text variant="small">Attributes</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                disabled={selectedTeam?.ID !== chlTeam?.ID}
-                isSelected={category === Potentials}
-                onClick={() => setCategory(Potentials)}
-              >
-                <Text variant="small">Potentials</Text>
-              </Button>
-            )}
+          <div className="flex flex-row flex-wrap gap-x-1 gap-y-1 sm:gap-x-4">
+            <Button
+              size="sm"
+              isSelected={category === Overview}
+              onClick={() => setCategory(Overview)}
+            >
+              <Text variant="small">Overview</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Promises}
+              onClick={() => setCategory(Promises)}
+            >
+              <Text variant="small">Promises</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Draft}
+              onClick={() => setCategory(Draft)}
+            >
+              <Text variant="small">Draft</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Attributes}
+              onClick={() => setCategory(Attributes)}
+            >
+              <Text variant="small">Attributes</Text>
+            </Button>
+            <Button
+              size="sm"
+              disabled={selectedTeam?.ID !== chlTeam?.ID}
+              isSelected={category === Potentials}
+              onClick={() => setCategory(Potentials)}
+            >
+              <Text variant="small">Potentials</Text>
+            </Button>
             <Button variant="primary" size="sm" onClick={exportRoster}>
               <Text variant="small">Export</Text>
             </Button>
@@ -807,64 +798,52 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
               }}
             />
           </div>
-          <div className="flex flex-row gap-x-1 sm:gap-x-4">
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Overview}
-                onClick={() => setCategory(Overview)}
-              >
-                <Text variant="small">Overview</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Contracts}
-                onClick={() => setCategory(Contracts)}
-              >
-                <Text variant="small">Contracts</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Draft}
-                onClick={() => setCategory(Draft)}
-              >
-                <Text variant="small">Draft</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                isSelected={category === Attributes}
-                onClick={() => setCategory(Attributes)}
-              >
-                <Text variant="small">Attributes</Text>
-              </Button>
-            )}
-            {!isMobile && (
-              <Button
-                size="sm"
-                disabled={selectedTeam?.ID !== phlTeam?.ID}
-                isSelected={category === Potentials}
-                onClick={() => setCategory(Potentials)}
-              >
-                <Text variant="small">Potentials</Text>
-              </Button>
-            )}
-            {!isMobile && !isTablet && (
-              <Button
-                size="sm"
-                disabled={selectedTeam?.ID !== phlTeam?.ID}
-                isSelected={category === TradeBlock}
-                onClick={() => setCategory(TradeBlock)}
-                classes="w-32"
-              >
-                <Text variant="small">Trade Block</Text>
-              </Button>
-            )}
+          <div className="flex flex-row flex-wrap gap-x-1 gap-y-1 sm:gap-x-4">
+            <Button
+              size="sm"
+              isSelected={category === Overview}
+              onClick={() => setCategory(Overview)}
+            >
+              <Text variant="small">Overview</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Contracts}
+              onClick={() => setCategory(Contracts)}
+            >
+              <Text variant="small">Contracts</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Draft}
+              onClick={() => setCategory(Draft)}
+            >
+              <Text variant="small">Draft</Text>
+            </Button>
+            <Button
+              size="sm"
+              isSelected={category === Attributes}
+              onClick={() => setCategory(Attributes)}
+            >
+              <Text variant="small">Attributes</Text>
+            </Button>
+            <Button
+              size="sm"
+              disabled={selectedTeam?.ID !== phlTeam?.ID}
+              isSelected={category === Potentials}
+              onClick={() => setCategory(Potentials)}
+            >
+              <Text variant="small">Potentials</Text>
+            </Button>
+            <Button
+              size="sm"
+              disabled={selectedTeam?.ID !== phlTeam?.ID}
+              isSelected={category === TradeBlock}
+              onClick={() => setCategory(TradeBlock)}
+              classes="w-32"
+            >
+              <Text variant="small">Trade Block</Text>
+            </Button>
             <Button variant="primary" size="sm" onClick={exportRoster}>
               <Text variant="small">Export</Text>
             </Button>
@@ -1189,9 +1168,9 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
 
 const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   const { teamId } = useParams<{ teamId?: string }>();
-
   const { currentUser } = useAuthStore();
   const fbStore = useSimFBAStore();
+  
   const {
     nflTeam,
     nflTeams,
@@ -1207,7 +1186,9 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     proContractMap: nflContractMap,
     tradeProposalsMap,
     proPlayerMap,
+    nflDraftPicks,
     nflDraftPickMap,
+    nflDraftees,
     individualDraftPickMap,
     proposeTrade,
     cancelTrade,
@@ -1219,12 +1200,14 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     CancelExtensionOffer,
     ExportFBRoster,
     getBootstrapPlayerData,
+    getBootstrapDraftData,
   } = fbStore;
-  const [showInfo, setShowInfo] = useState(true);
 
+  const [showInfo, setShowInfo] = useState(true);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(Cut);
   const [modalPlayer, setModalPlayer] = useState<NFLPlayer | null>(null);
+
   const [selectedTeam, setSelectedTeam] = useState(() => {
     if (teamId && nflTeamMap) {
       const id = Number(teamId);
@@ -1232,6 +1215,24 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return nflTeam;
   });
+
+  // Build draftee map matching WarRoom logic
+  const drafteeMap = useMemo(() => {
+    const map: Record<number, any> = {};
+    if (nflDraftees) {
+      nflDraftees.forEach((d) => {
+        map[d.ID] = d;
+      });
+    }
+    return map;
+  }, [nflDraftees]);
+
+  // Include past, current, and future picks so completed historical drafts display correctly
+  const selectedTeamDraftPicks = useMemo(() => {
+    if (!selectedTeam || !nflDraftPickMap) return [];
+    return nflDraftPickMap[selectedTeam.ID] || [];
+  }, [selectedTeam, nflDraftPickMap]);
+
   const [category, setCategory] = useState(Overview);
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -1265,6 +1266,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   useEffect(() => {
     getBootstrapPlayerData();
     getBootstrapRosterData();
+    getBootstrapDraftData();
   }, []);
 
   const rosterContracts = useMemo(() => {
@@ -1377,11 +1379,6 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     }
     return tradeBlockSet;
   }, [nflRosterMap, nflTeam, nflDraftPickMap, nflContractMap]);
-
-  const selectedTeamDraftPicks = useMemo(() => {
-    if (!selectedTeam || !nflDraftPickMap) return [];
-    return nflDraftPickMap[selectedTeam.ID];
-  }, [selectedTeam, nflDraftPickMap]);
 
   const selectedTeamTradeBlock = useMemo(() => {
     const tradeBlockSet: TradeBlockRow[] = [];
@@ -1566,21 +1563,24 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         showInfo={showInfo}
         setShowInfo={setShowInfo}
       >
-        <Border
+       <Border
           direction="row"
-          classes="w-full p-2 gap-x-2"
+          classes="w-full p-2 gap-x-2 items-center"
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
           }}
         >
-          <div className="flex w-full">
+          {/* Constrain dropdown width so it stops pushing buttons off the line */}
+          <div className="w-64 flex-shrink-0">
             <SelectDropdown
               options={nflTeamOptions}
               onChange={selectTeamOption}
             />
           </div>
-          <div className="flex flex-row gap-x-1 sm:gap-x-2">
+
+          {/* ml-auto pushes the entire button group to the right side of the container */}
+          <div className="flex flex-row flex-nowrap items-center ml-auto gap-x-1 sm:gap-2 overflow-x-auto">
             <Button
               size={isMobile ? "xs" : "sm"}
               isSelected={category === Overview}
@@ -1604,6 +1604,13 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
+            <Button
+              size={isMobile ? "xs" : "sm"}
+              isSelected={category === Draft}
+              onClick={() => setCategory(Draft)}
+            >
+              <Text variant="small">Draft</Text>
+            </Button>
             {(isDesktop || isUltraWide) && (
               <Button
                 variant="primary"
@@ -1616,31 +1623,45 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
           </div>
         </Border>
       </TeamInfo>
-      {selectedRoster && (
-        <Border
-          classes={`px-1 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
-          styles={{
-            backgroundColor: backgroundColor,
-            borderColor: headerColor,
-          }}
-        >
-          <NFLRosterTable
-            roster={selectedRoster}
-            contracts={rosterContracts}
-            ts={ts}
+      
+      <Border
+        classes={`px-1 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
+        styles={{
+          backgroundColor: backgroundColor,
+          borderColor: headerColor,
+        }}
+      >
+        {category === Draft ? (
+          <NFLDraftPicksTable
+            draftPicks={selectedTeamDraftPicks}
             team={selectedTeam}
-            category={category}
             backgroundColor={backgroundColor}
             headerColor={headerColor}
             borderColor={borderColor}
-            openModal={openModal}
-            existingOfferMap={nflExtensionMap!!}
-            openExtensionModal={openExtensionModal}
-            openFranchiseTagModal={openFranchiseTagModal}
-            disable={selectedTeam!.ID !== nflTeam!.ID}
+            teamMap={nflTeamMap ?? {}}
+            drafteeMap={drafteeMap}
+            roster={selectedRoster ?? []}
           />
-        </Border>
-      )}
+        ) : (
+          selectedRoster && (
+            <NFLRosterTable
+              roster={selectedRoster}
+              contracts={rosterContracts}
+              ts={ts}
+              team={selectedTeam}
+              category={category}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              openModal={openModal}
+              existingOfferMap={nflExtensionMap!!}
+              openExtensionModal={openExtensionModal}
+              openFranchiseTagModal={openFranchiseTagModal}
+              disable={selectedTeam!.ID !== nflTeam!.ID}
+            />
+          )
+        )}
+      </Border>
     </>
   );
 };

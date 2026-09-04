@@ -197,7 +197,25 @@ export const useHockeyPlayerStatsData = (
         );
     }
 
-    return allStats.sort((a, b) => a.SeasonID - b.SeasonID);
+    // Deduplicate by SeasonID, prioritizing rows with actual games played / data
+    const uniqueMap = new Map();
+    for (const stat of allStats) {
+      if (stat.SeasonID) {
+        const existing = uniqueMap.get(stat.SeasonID);
+        const statGP = (stat as any).GamesPlayed ?? (stat as any).Games ?? (stat as any).GP ?? 0;
+
+        if (!existing) {
+          uniqueMap.set(stat.SeasonID, stat);
+        } else {
+          const existingGP = existing.GamesPlayed ?? existing.Games ?? existing.GP ?? 0;
+          if (statGP > 0 && existingGP === 0) {
+            uniqueMap.set(stat.SeasonID, stat);
+          }
+        }
+      }
+    }
+
+    return Array.from(uniqueMap.values()).sort((a, b) => a.SeasonID - b.SeasonID);
   }, [chlPlayerSeasonStatsMap, phlPlayerSeasonStatsMap, league, player.ID]);
 
   useEffect(() => {

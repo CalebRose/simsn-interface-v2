@@ -2920,3 +2920,153 @@ export const NFLTradeBlockTable: FC<NFLTradeBlockTableProps> = ({
     />
   );
 };
+
+interface NFLDraftPicksTableProps {
+  draftPicks: any[];
+  team: any;
+  backgroundColor?: string;
+  headerColor?: string;
+  borderColor?: string;
+  teamMap: Record<number, any>;
+  drafteeMap?: Record<number, any>;
+  proPlayerMap?: Record<number, any>;
+  roster?: any[];
+}
+
+export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
+  draftPicks = [],
+  team,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  teamMap,
+  drafteeMap = {},
+  proPlayerMap = {},
+  roster = [],
+}) => {
+  const { isDesktop } = useResponsive();
+
+  const columns = useMemo(
+    () => [
+      { header: "Season", accessor: "Season" },
+      { header: "Round", accessor: "DraftRound" },
+      { header: "Pick", accessor: "OverallPickNumber" },
+      { header: "Selected Player", accessor: "PlayerName" },
+      { header: "Original Team", accessor: "OriginalTeamID" },
+    ],
+    [],
+  );
+
+  // Dynamically detect the current draft season (e.g., 2027)
+  const currentDraftSeason = draftPicks.length > 0 
+    ? Math.min(...draftPicks.map((p: any) => Number(p.Season))) 
+    : new Date().getFullYear();
+
+  // Sort picks chronologically by Season, then sequentially by OverallPickNumber
+  const sortedDraftPicks = useMemo(() => {
+    if (!draftPicks) return [];
+    return [...draftPicks].sort((a: any, b: any) => {
+      // 1. Group by Season first
+      if (Number(a.Season) !== Number(b.Season)) {
+        return Number(a.Season) - Number(b.Season);
+      }
+      // 2. Sort by the exact draft position within that year
+      const pickA = Number(a.OverallPickNumber) || Number(a.DraftNumber) || 0;
+      const pickB = Number(b.OverallPickNumber) || Number(b.DraftNumber) || 0;
+      return pickA - pickB;
+    });
+  }, [draftPicks]);
+
+  const rowRenderer = (
+    item: any,
+    index: number,
+    backgroundColor: string,
+  ) => {
+    const originalTeam = teamMap?.[item.OriginalTeamID];
+    const originalTeamLabel = originalTeam
+      ? `${originalTeam.TeamName} ${originalTeam.Mascot}`
+      : "None";
+
+    let resolvedPlayerName = "Available / Unused";
+
+    // Grab the true overall number from the pick (ignores math)
+    const displayPickNumber = item.OverallPickNumber || item.DraftNumber;
+
+    // ONLY lookup players for the current season so future years stay clean
+    if (Number(item.Season) <= currentDraftSeason) {
+      
+      // The ultimate 1-to-1 matching using database foreign keys:
+      // 1. DraftPickID matches the Pick's ID
+      // 2. DrafteeID matches the Draftee's ID
+      // 3. DraftedPick matches the true overall display number
+      const matchingDraftee = Object.values(drafteeMap || {}).find(
+        (d: any) => 
+          (d.DraftPickID > 0 && Number(d.DraftPickID) === Number(item.ID)) ||
+          (item.DrafteeID > 0 && Number(d.ID) === Number(item.DrafteeID)) ||
+          (Number(d.DraftedRound) === Number(item.DraftRound) && Number(d.DraftedPick) === Number(displayPickNumber))
+      );
+
+      if (matchingDraftee) {
+        resolvedPlayerName = `${matchingDraftee.Position} ${matchingDraftee.FirstName} ${matchingDraftee.LastName}`;
+      } else {
+        // Fallback to active roster if they've already been migrated
+        const draftedRosterPlayer = (roster || []).find(
+          (p: any) => 
+            (p.DraftPickID > 0 && Number(p.DraftPickID) === Number(item.ID)) ||
+            (item.DrafteeID > 0 && Number(p.ID) === Number(item.DrafteeID)) ||
+            (Number(p.DraftRound) === Number(item.DraftRound) && (Number(p.DraftPick) === Number(displayPickNumber) || Number(p.OverallPickNumber) === Number(displayPickNumber)))
+        );
+        
+        if (draftedRosterPlayer) {
+          resolvedPlayerName = `${draftedRosterPlayer.Position} ${draftedRosterPlayer.FirstName} ${draftedRosterPlayer.LastName}`;
+        } else if (item.SelectedPlayerName || item.PlayerName || item.DrafteeName) {
+          resolvedPlayerName = item.SelectedPlayerName || item.PlayerName || item.DrafteeName;
+        }
+      }
+    }
+
+    return (
+      <div
+        key={item.ID || index}
+        className="table-row border-b dark:border-gray-700 text-left"
+        style={{ backgroundColor }}
+      >
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {item.Season}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {item.DraftRound}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {displayPickNumber}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {resolvedPlayerName}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {originalTeamLabel}
+          </Text>
+        </TableCell>
+      </div>
+    );
+  };
+
+  return (
+    <Table
+      columns={columns}
+      data={sortedDraftPicks}
+      rowRenderer={rowRenderer}
+      backgroundColor={backgroundColor}
+      team={team}
+    />
+  );
+};

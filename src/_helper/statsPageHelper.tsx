@@ -119,7 +119,7 @@ export const MakePHLPlayerMapFromRosterMap = (
 export const MakeHCKSeasonsOptionList = (ts: HCKTimestamp) => {
   const seasonsList = [];
   for (let i = 1; i <= ts.SeasonID; i++) {
-    const iterativeSeason = 2024 + i;
+    const iterativeSeason = BASE_HCK_SEASON + i;
     const seasonLabel = `${iterativeSeason}`;
     const option = { label: seasonLabel, value: i.toString() };
     seasonsList.push(option);

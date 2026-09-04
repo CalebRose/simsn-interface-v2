@@ -36,3 +36,6 @@ dist-ssr
 .vs/simsn-interface-v2/v17/DocumentLayout.json
 .vs/slnx.sqlite
 .vs/VSWorkspaceState.json
+go.mod
+go.sum
+migrate_db.go
