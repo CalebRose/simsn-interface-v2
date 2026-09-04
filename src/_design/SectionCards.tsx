@@ -60,20 +60,22 @@ export const SectionCards: React.FC<SectionCardsProps> = ({
         </Text>
       </div>
       <div className="flex flex-col overflow-auto h-full">
-        {React.Children.map(children, (child, index) => (
-          <div
-            className={
-              index % 2 === 0 ? "border-t-2 pt-0.5" : "border-t-2 pt-0.5"
-            }
-            style={{
-              backgroundColor:
-                index % 2 === 0 ? "transparent" : darkerBackgroundColor,
-              borderColor,
-            }}
-          >
-            {child}
-          </div>
-        ))}
+        {React.Children.map(children, (child, index) =>
+          child === null ? null : (
+            <div
+              className={
+                index % 2 === 0 ? "border-t-2 pt-0.5" : "border-t-2 pt-0.5"
+              }
+              style={{
+                backgroundColor:
+                  index % 2 === 0 ? "transparent" : darkerBackgroundColor,
+                borderColor,
+              }}
+            >
+              {child}
+            </div>
+          ),
+        )}
       </div>
     </div>
   );
