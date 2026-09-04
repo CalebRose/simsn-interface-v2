@@ -21,6 +21,7 @@ import {
   useFilteredFootballRecruitsByTeam,
 } from "../../../_helper/recruitingHelper";
 import { usePagination } from "../../../_hooks/usePagination";
+
 export const useCFBRecruiting = () => {
   const fbStore = useSimFBAStore();
   const {
@@ -76,10 +77,20 @@ export const useCFBRecruiting = () => {
 
   const sortedCrootProfiles = useMemo(() => {
     if (!recruitProfiles) return [];
-    return recruitProfiles.sort((a, b) => {
-      const aVal = a.IsSigned || a.IsLocked ? 1 : 0;
-      const bVal = b.IsSigned || b.IsLocked ? 1 : 0;
-      return aVal - bVal;
+    return [...recruitProfiles].sort((a: any, b: any) => {
+      // 1. Prioritize signed/locked recruits to the bottom
+      const aSigned = a.IsSigned || a.IsLocked ? 1 : 0;
+      const bSigned = b.IsSigned || b.IsLocked ? 1 : 0;
+      if (aSigned !== bSigned) return aSigned - bSigned;
+
+      // 2. Sort by CurrentWeeksPoints in descending order (highest points first)
+      const aPoints = a.CurrentWeeksPoints ?? 0;
+      const bPoints = b.CurrentWeeksPoints ?? 0;
+      if (aPoints !== bPoints) {
+        return bPoints - aPoints;
+      }
+
+      return 0;
     });
   }, [recruitProfiles]);
 
@@ -118,7 +129,7 @@ export const useCFBRecruiting = () => {
     selectedClassView,
   });
 
-  const filteredCrootProfiles = useFilteredCrootProfiles({
+  const rawFilteredCrootProfiles = useFilteredCrootProfiles({
     recruitProfiles: sortedCrootProfiles,
     recruitMap,
     positions,
@@ -127,6 +138,24 @@ export const useCFBRecruiting = () => {
     statuses,
     stars,
   });
+
+  const filteredCrootProfiles = useMemo(() => {
+    if (!rawFilteredCrootProfiles) return [];
+    return [...rawFilteredCrootProfiles].sort((a: any, b: any) => {
+      // 1. Keep signed/locked at the bottom
+      const aSigned = a.IsSigned || a.IsLocked ? 1 : 0;
+      const bSigned = b.IsSigned || b.IsLocked ? 1 : 0;
+      if (aSigned !== bSigned) return aSigned - bSigned;
+
+      // 2. Sort by CurrentWeeksPoints descending (highest points first)
+      const aPoints = a.CurrentWeeksPoints ?? 0;
+      const bPoints = b.CurrentWeeksPoints ?? 0;
+      if (aPoints !== bPoints) {
+        return bPoints - aPoints;
+      }
+      return 0;
+    });
+  }, [rawFilteredCrootProfiles]);
 
   const pageSize = 100;
 
