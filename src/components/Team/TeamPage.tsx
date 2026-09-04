@@ -1200,6 +1200,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
     CancelExtensionOffer,
     ExportFBRoster,
     getBootstrapPlayerData,
+    getBootstrapDraftData,
   } = fbStore;
 
   const [showInfo, setShowInfo] = useState(true);
@@ -1265,6 +1266,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   useEffect(() => {
     getBootstrapPlayerData();
     getBootstrapRosterData();
+    getBootstrapDraftData();
   }, []);
 
   const rosterContracts = useMemo(() => {

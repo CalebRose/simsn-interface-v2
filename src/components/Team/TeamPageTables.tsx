@@ -2914,12 +2914,17 @@ export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
     () => [
       { header: "Season", accessor: "Season" },
       { header: "Round", accessor: "DraftRound" },
-      { header: "Pick", accessor: "DraftNumber" },
+      { header: "Pick", accessor: "OverallPickNumber" },
       { header: "Selected Player", accessor: "PlayerName" },
       { header: "Original Team", accessor: "OriginalTeamID" },
     ],
     [],
   );
+
+  // Dynamically detect the current draft season (e.g., 2027)
+  const currentDraftSeason = draftPicks.length > 0 
+    ? Math.min(...draftPicks.map((p: any) => Number(p.Season))) 
+    : new Date().getFullYear();
 
   const rowRenderer = (
     item: any,
@@ -2931,27 +2936,43 @@ export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
       ? `${originalTeam.TeamName} ${originalTeam.Mascot}`
       : "None";
 
-    const draftedRosterPlayer = (roster || []).find(
-      (p: any) => 
-        Number(p.DraftRound) === Number(item.DraftRound) && 
-        Number(p.DraftPick) === Number(item.DraftNumber)
-    );
+    let resolvedPlayerName = "Available / Unused";
 
-    const rosterPlayerLabel = draftedRosterPlayer
-      ? `${draftedRosterPlayer.Position} ${draftedRosterPlayer.FirstName} ${draftedRosterPlayer.LastName}`
-      : null;
+    // Grab the true overall number from the pick (ignores math)
+    const displayPickNumber = item.OverallPickNumber || item.DraftNumber;
 
-    const draftee = item.DrafteeID > 0 ? drafteeMap[item.DrafteeID] : null;
-    const drafteeLabel = draftee
-      ? `${draftee.Position} ${draftee.FirstName} ${draftee.LastName}`
-      : null;
+    // ONLY lookup players for the current season so future years stay clean
+    if (Number(item.Season) <= currentDraftSeason) {
+      
+      // The ultimate 1-to-1 matching using database foreign keys:
+      // 1. DraftPickID matches the Pick's ID
+      // 2. DrafteeID matches the Draftee's ID
+      // 3. DraftedPick matches the true overall display number
+      const matchingDraftee = Object.values(drafteeMap || {}).find(
+        (d: any) => 
+          (d.DraftPickID > 0 && Number(d.DraftPickID) === Number(item.ID)) ||
+          (item.DrafteeID > 0 && Number(d.ID) === Number(item.DrafteeID)) ||
+          (Number(d.DraftedRound) === Number(item.DraftRound) && Number(d.DraftedPick) === Number(displayPickNumber))
+      );
 
-    const resolvedPlayerName =
-      item.PlayerName ||
-      item.DrafteeName ||
-      drafteeLabel ||
-      rosterPlayerLabel ||
-      "Available / Unused";
+      if (matchingDraftee) {
+        resolvedPlayerName = `${matchingDraftee.Position} ${matchingDraftee.FirstName} ${matchingDraftee.LastName}`;
+      } else {
+        // Fallback to active roster if they've already been migrated
+        const draftedRosterPlayer = (roster || []).find(
+          (p: any) => 
+            (p.DraftPickID > 0 && Number(p.DraftPickID) === Number(item.ID)) ||
+            (item.DrafteeID > 0 && Number(p.ID) === Number(item.DrafteeID)) ||
+            (Number(p.DraftRound) === Number(item.DraftRound) && (Number(p.DraftPick) === Number(displayPickNumber) || Number(p.OverallPickNumber) === Number(displayPickNumber)))
+        );
+        
+        if (draftedRosterPlayer) {
+          resolvedPlayerName = `${draftedRosterPlayer.Position} ${draftedRosterPlayer.FirstName} ${draftedRosterPlayer.LastName}`;
+        } else if (item.SelectedPlayerName || item.PlayerName || item.DrafteeName) {
+          resolvedPlayerName = item.SelectedPlayerName || item.PlayerName || item.DrafteeName;
+        }
+      }
+    }
 
     return (
       <div
@@ -2971,7 +2992,7 @@ export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
         </TableCell>
         <TableCell>
           <Text variant="small" classes="text-start">
-            {item.DraftNumber}
+            {displayPickNumber}
           </Text>
         </TableCell>
         <TableCell>
