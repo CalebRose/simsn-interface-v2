@@ -1563,21 +1563,24 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         showInfo={showInfo}
         setShowInfo={setShowInfo}
       >
-        <Border
+       <Border
           direction="row"
-          classes="w-full p-2 gap-x-2"
+          classes="w-full p-2 gap-x-2 items-center"
           styles={{
             backgroundColor: backgroundColor,
             borderColor: headerColor,
           }}
         >
-          <div className="flex w-full">
+          {/* Constrain dropdown width so it stops pushing buttons off the line */}
+          <div className="w-64 flex-shrink-0">
             <SelectDropdown
               options={nflTeamOptions}
               onChange={selectTeamOption}
             />
           </div>
-          <div className="flex flex-row flex-wrap gap-x-1 gap-y-1 sm:gap-2">
+
+          {/* ml-auto pushes the entire button group to the right side of the container */}
+          <div className="flex flex-row flex-nowrap items-center ml-auto gap-x-1 sm:gap-2 overflow-x-auto">
             <Button
               size={isMobile ? "xs" : "sm"}
               isSelected={category === Overview}
@@ -1601,6 +1604,13 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Attributes</Text>
               </Button>
             )}
+            <Button
+              size={isMobile ? "xs" : "sm"}
+              isSelected={category === Draft}
+              onClick={() => setCategory(Draft)}
+            >
+              <Text variant="small">Draft</Text>
+            </Button>
             {(isDesktop || isUltraWide) && (
               <Button
                 variant="primary"
@@ -1610,27 +1620,6 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Text variant="small">Export</Text>
               </Button>
             )}
-            <Button
-              size={isMobile ? "xs" : "sm"}
-              isSelected={category === Draft}
-              onClick={() => setCategory(Draft)}
-            >
-              <Text variant="small">Draft</Text>
-            </Button>
-            <Button
-              size={isMobile ? "xs" : "sm"}
-              isSelected={category === Attributes}
-              onClick={() => setCategory(Attributes)}
-            >
-              <Text variant="small">Attributes</Text>
-            </Button>
-            <Button
-              variant="primary"
-              size={isMobile ? "xs" : "sm"}
-              onClick={exportRoster}
-            >
-              <Text variant="small">Export</Text>
-            </Button>
           </div>
         </Border>
       </TeamInfo>
