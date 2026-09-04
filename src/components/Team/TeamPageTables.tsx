@@ -2926,6 +2926,21 @@ export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
     ? Math.min(...draftPicks.map((p: any) => Number(p.Season))) 
     : new Date().getFullYear();
 
+  // Sort picks chronologically by Season, then sequentially by OverallPickNumber
+  const sortedDraftPicks = useMemo(() => {
+    if (!draftPicks) return [];
+    return [...draftPicks].sort((a: any, b: any) => {
+      // 1. Group by Season first
+      if (Number(a.Season) !== Number(b.Season)) {
+        return Number(a.Season) - Number(b.Season);
+      }
+      // 2. Sort by the exact draft position within that year
+      const pickA = Number(a.OverallPickNumber) || Number(a.DraftNumber) || 0;
+      const pickB = Number(b.OverallPickNumber) || Number(b.DraftNumber) || 0;
+      return pickA - pickB;
+    });
+  }, [draftPicks]);
+
   const rowRenderer = (
     item: any,
     index: number,
@@ -3012,7 +3027,7 @@ export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
   return (
     <Table
       columns={columns}
-      data={draftPicks && draftPicks.length > 0 ? draftPicks : []}
+      data={sortedDraftPicks}
       rowRenderer={rowRenderer}
       backgroundColor={backgroundColor}
       team={team}
