@@ -7788,6 +7788,7 @@ export class Timestamp {
   RunGames: boolean;
   TransferPortalPhase: number;
   TransferPortalRound: number;
+  Phase: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -7832,6 +7833,7 @@ export class Timestamp {
     this.RunGames = source["RunGames"];
     this.TransferPortalPhase = source["TransferPortalPhase"];
     this.TransferPortalRound = source["TransferPortalRound"];
+    this.Phase = source["Phase"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

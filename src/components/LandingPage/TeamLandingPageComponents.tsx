@@ -43,6 +43,11 @@ import {
 import { useAuthStore } from "../../context/AuthContext";
 import { ForumService } from "../../_services/forumService";
 import { Thread } from "../../models/forumModels";
+import { Timestamp as BKTimestamp } from "../../models/basketballModels";
+import { Timestamp as FBTimestamp } from "../../models/footballModels";
+import { Timestamp as HCKTimestamp } from "../../models/hockeyModels";
+import { useSimBBAStore } from "../../context/SimBBAContext";
+import { useSimHCKStore } from "../../context/SimHockeyContext";
 
 interface GamesBarProps {
   games: any[];
@@ -1394,6 +1399,969 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
           )}
         </ButtonGrid>
       </SectionCards>
+    </>
+  );
+};
+
+interface SeasonPhaseSectionProps {
+  ts?: any;
+  team: any;
+  league: League;
+  backgroundColor: string;
+  headerColor: string;
+  borderColor: string;
+  textColorClass: string;
+  darkerBackgroundColor: string;
+}
+
+export const SeasonPhaseSection: FC<SeasonPhaseSectionProps> = ({
+  ts,
+  league,
+  team,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  textColorClass,
+  darkerBackgroundColor,
+}) => {
+  return (
+    <SectionCards
+      team={team}
+      header="Season Info"
+      classes={`${textColorClass} h-full`}
+      backgroundColor={backgroundColor}
+      headerColor={headerColor}
+      borderColor={borderColor}
+      textColorClass={textColorClass}
+      darkerBackgroundColor={darkerBackgroundColor}
+    >
+      {league === SimCFB ? (
+        <SimCFBPhaseSection phase={ts?.Phase ?? 0} ts={ts as FBTimestamp} />
+      ) : null}
+      {league === SimNFL ? (
+        <SimNFLPhaseSection phase={ts?.Phase ?? 0} ts={ts as FBTimestamp} />
+      ) : null}
+      {league === SimCBB ? (
+        <SimCBBPhaseSection phase={ts?.Phase ?? 0} ts={ts as BKTimestamp} />
+      ) : null}
+      {league === SimNBA ? (
+        <SimNBAPhaseSection phase={ts?.Phase ?? 0} ts={ts as BKTimestamp} />
+      ) : null}
+      {league === SimCHL ? (
+        <SimCHLPhaseSection phase={ts?.Phase ?? 0} ts={ts as HCKTimestamp} />
+      ) : null}
+      {league === SimPHL ? (
+        <SimPHLPhaseSection phase={ts?.Phase ?? 0} ts={ts as HCKTimestamp} />
+      ) : null}
+    </SectionCards>
+  );
+};
+
+const SimCFBPhaseSection = ({
+  phase,
+  ts,
+}: {
+  phase: number;
+  ts?: FBTimestamp;
+}) => {
+  const { collegeTeamsGames } = useSimFBAStore();
+  if (!ts) return <></>;
+
+  const hasUpcomingMatchup = useMemo(() => {
+    const index = collegeTeamsGames.findIndex(
+      (game) =>
+        game.WeekID === ts?.CollegeWeekID &&
+        game.IsSpringGame === ts.CFBSpringGames,
+    );
+    return index !== -1;
+  }, [ts, collegeTeamsGames]);
+
+  const weeksUntilRedshirtsClose = useMemo(() => {
+    const regularSeasonGames = collegeTeamsGames.filter(
+      (game) => !game.IsSpringGame,
+    );
+    const index = regularSeasonGames.findIndex(
+      (game) => game.WeekID === ts?.CollegeWeekID,
+    );
+    return 4 - index;
+  }, [ts, collegeTeamsGames]);
+
+  const seasonPhase = useMemo(() => {
+    if (phase < 7) return "Offseason";
+    if (phase < 10) return "Preseason";
+    if (phase < 25) return "Regular Season";
+    if (phase === 25) return "Conference Championships";
+    if (phase < 30) return "Bowl Season";
+    if (phase === 30) return "National Championship Week";
+    return "Season Over";
+  }, [phase]);
+
+  const preseasonSchedulingOpen = useMemo(() => {
+    return phase < 7;
+  }, [phase]);
+
+  const schedulingPhase = useMemo(() => {
+    if (phase < 4) return "Open";
+    if (phase < 6)
+      return `${7 - phase} weeks until Preseason Scheduling Closes`;
+    return "Closed";
+  }, [phase]);
+
+  const recruitingMessage = useMemo(() => {
+    return phase >= 7 && phase < 31;
+  }, [phase]);
+
+  const seasonOver = useMemo(() => phase === 31, [phase]);
+
+  const isActiveSeason = useMemo(() => phase >= 10 && phase < 30, [phase]);
+  const transferPortalPhase = useMemo(() => {
+    if (ts?.TransferPortalPhase === 0) {
+      return "Not Open";
+    }
+    if (ts?.TransferPortalPhase === 1) {
+      return "Process Promises & Intentions";
+    }
+    if (ts?.TransferPortalPhase === 2) {
+      return "Transfers Retention";
+    }
+    if (ts?.TransferPortalPhase === 3 && ts?.TransferPortalRound < 11) {
+      return "Portal Active";
+    }
+  }, [ts]);
+  const transferPortalRound = useMemo(() => ts?.TransferPortalRound || 0, [ts]);
+
+  const phase31 = useMemo(() => phase === 31, [phase]);
+
+  return (
+    <>
+      <div className="grid grid-cols-4 px-1">
+        <div className="text-start col-span-4">
+          <Text variant="small" classes="font-semibold">
+            Week {ts?.CollegeWeek || 0} of the {ts?.Season} Season
+          </Text>
+        </div>
+        <div className="text-start col-span-3">
+          <Text variant="small">Which phase of the season are we in?</Text>
+        </div>
+        <div className="text-end col-span-1">
+          <Text variant="small">{seasonPhase}</Text>
+        </div>
+        {preseasonSchedulingOpen && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">OOC Scheduling</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{schedulingPhase}</Text>
+            </div>
+          </>
+        )}
+        {recruitingMessage && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Is Recruiting This Week?</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">
+                {ts?.CollegeWeek > 0 && ts?.CollegeWeek < 21 ? "Yes" : "No"}
+              </Text>
+            </div>
+          </>
+        )}
+        {isActiveSeason && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Do you play this week?</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{hasUpcomingMatchup ? "Yes" : "No"}</Text>
+            </div>
+          </>
+        )}
+        {weeksUntilRedshirtsClose > 0 && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Games Until Redshirts Close</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{weeksUntilRedshirtsClose}</Text>
+            </div>
+          </>
+        )}
+        {phase31 && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">When Do College Progressions Run?</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">Monday Night / Tuesday Morning</Text>
+            </div>
+          </>
+        )}
+        {seasonOver && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Season Migration?</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">When SimNFL season ends.</Text>
+            </div>
+            <div className="text-start col-span-3">
+              <Text variant="small">Transfer Portal Status</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{transferPortalPhase}</Text>
+            </div>
+          </>
+        )}
+        {transferPortalPhase === "Portal Active" && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Transfer Portal Round</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{transferPortalRound}</Text>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
+const SimNFLPhaseSection = ({
+  phase,
+  ts,
+}: {
+  phase: number;
+  ts?: FBTimestamp;
+}) => {
+  const { proTeamsGames } = useSimFBAStore();
+  if (!ts) return <></>;
+
+  const hasUpcomingMatchup = useMemo(() => {
+    const index = proTeamsGames.findIndex(
+      (game) =>
+        game.WeekID === ts?.NFLWeekID &&
+        game.IsPreseasonGame === ts.NFLPreseason,
+    );
+    return index !== -1;
+  }, [ts, proTeamsGames]);
+
+  const weeksUntilTradeDeadline = useMemo(() => {
+    const regularSeasonGames = proTeamsGames.filter(
+      (game) => !game.IsPreseasonGame,
+    );
+    const index = regularSeasonGames.findIndex(
+      (game) => game.WeekID === ts?.NFLWeekID,
+    );
+    return 8 - index;
+  }, [ts, proTeamsGames]);
+
+  const seasonPhase = useMemo(() => {
+    if (phase < 7) return "Offseason";
+    if (phase < 10) return "Preseason";
+    if (phase === 10) return "Please wait a week.";
+    if (phase < 29) return "Regular Season";
+    if (phase < 33) return "SimNFL Playoffs";
+    if (phase === 33) return "Superb Owl Observation Week";
+    return "Season Over";
+  }, [phase]);
+
+  const oocSchedulingOpen = useMemo(() => {
+    return phase < 7;
+  }, [phase]);
+
+  const oocSchedulingPhase = useMemo(() => {
+    if (phase < 4) return "Open";
+    if (phase < 6) return `${7 - phase} weeks until OOC Scheduling Closes`;
+    return "Closed";
+  }, [phase]);
+
+  const seasonOver = useMemo(() => phase === 34, [phase]);
+
+  const isActiveSeason = useMemo(() => phase >= 10 && phase < 30, [phase]);
+  const simNFLDraftPhase = useMemo(() => {
+    if (phase === 3) return "This Weekend";
+    if (phase === 4) return "UDFAs Run This Wednesday";
+    if (phase === 8) return "Training Camps run this Wednesday";
+    if (phase < 3) {
+      return `Approx. ${3 - phase} weeks until the SimNFL Draft Weekend.`;
+    }
+    if (phase > 30) {
+      return `Approx. ${37 - phase} weeks until the SimNFL Draft Weekend.`;
+    }
+    return "";
+  }, [phase]);
+
+  return (
+    <>
+      <div className="grid grid-cols-6 px-1">
+        <div className="text-start col-span-6">
+          <Text variant="small" classes="font-semibold">
+            Week {ts?.NFLWeek || 0} of the {ts?.Season} Season
+          </Text>
+        </div>
+        <div className="text-start col-span-4">
+          <Text variant="small">Which phase of the season are we in?</Text>
+        </div>
+        <div className="text-end col-span-2">
+          <Text variant="small">{seasonPhase}</Text>
+        </div>
+        {(phase < 4 || phase > 31) && (
+          <>
+            <div className="text-start col-span-2">
+              <Text variant="small">SimNFL Draft Phase</Text>
+            </div>
+            <div className="text-end col-span-4">
+              <Text variant="small">{simNFLDraftPhase}</Text>
+            </div>
+          </>
+        )}
+        {oocSchedulingOpen && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Preseason Scheduling</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">{oocSchedulingPhase}</Text>
+            </div>
+          </>
+        )}
+        {weeksUntilTradeDeadline < 6 && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Trade Deadline</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">
+                Trade Deadline is until {weeksUntilTradeDeadline} weeks.
+              </Text>
+            </div>
+          </>
+        )}
+        {isActiveSeason && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Do you play this week?</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">{hasUpcomingMatchup ? "Yes" : "No"}</Text>
+            </div>
+          </>
+        )}
+        {seasonOver && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Season Migration and Progressions?</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">Monday Night / Tuesday Morning.</Text>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
+const SimCBBPhaseSection = ({
+  phase,
+  ts,
+}: {
+  phase: number;
+  ts?: BKTimestamp;
+}) => {
+  const { collegeTeamsGames } = useSimBBAStore();
+  if (!ts) return <></>;
+
+  const hasUpcomingMatchup = useMemo(() => {
+    const index = collegeTeamsGames.findIndex(
+      (game) => game.WeekID === ts?.CollegeWeekID,
+    );
+    return index !== -1;
+  }, [ts, collegeTeamsGames]);
+
+  const weeksUntilRedshirtsClose = useMemo(() => {
+    const index = collegeTeamsGames.findIndex(
+      (game) => game.WeekID === ts?.CollegeWeekID,
+    );
+    return 3 - index;
+  }, [ts, collegeTeamsGames]);
+
+  const seasonPhase = useMemo(() => {
+    if (phase < 9) return "Offseason";
+    if (phase < 11) return "Preseason";
+    if (phase < 26) return "Regular Season";
+    if (phase === 28) return "Conference Tournaments";
+    if (phase < 31) return "Postseason";
+    if (phase === 31) return "National Championship Week";
+    return "Season Over";
+  }, [phase]);
+
+  const preseasonSchedulingOpen = useMemo(() => {
+    return phase < 7;
+  }, [phase]);
+
+  const schedulingPhase = useMemo(() => {
+    if (phase < 4) return "Open";
+    if (phase < 7)
+      return `${6 - phase} weeks until Preseason Scheduling Closes`;
+    return "Closed";
+  }, [phase]);
+
+  const recruitingMessage = useMemo(() => {
+    return phase >= 11 && phase < 26;
+  }, [phase]);
+
+  const seasonOver = useMemo(() => phase >= 31, [phase]);
+
+  const isActiveSeason = useMemo(() => phase >= 11 && phase < 32, [phase]);
+
+  const transferPortalPhase = useMemo(() => {
+    if (ts?.TransferPortalPhase === 0) {
+      return "Not Open";
+    }
+    if (ts?.TransferPortalPhase === 1) {
+      return "Process Promises & Intentions";
+    }
+    if (ts?.TransferPortalPhase === 2) {
+      return "Transfers Retention";
+    }
+    if (ts?.TransferPortalPhase === 3 && ts?.TransferPortalRound < 11) {
+      return "Portal Active";
+    }
+    return "";
+  }, [ts]);
+  const transferPortalRound = useMemo(() => ts?.TransferPortalRound || 0, [ts]);
+
+  const phase31 = useMemo(() => phase === 31, [phase]);
+
+  return (
+    <>
+      <div className="grid grid-cols-4 px-1">
+        <div className="text-start col-span-4">
+          <Text variant="small" classes="font-semibold">
+            Week {ts?.CollegeWeek || 0} of the {ts?.Season} Season
+          </Text>
+        </div>
+        <div className="text-start col-span-3">
+          <Text variant="small">Which phase of the season are we in?</Text>
+        </div>
+        <div className="text-end col-span-1">
+          <Text variant="small">{seasonPhase}</Text>
+        </div>
+        {preseasonSchedulingOpen && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">OOC Scheduling</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{schedulingPhase}</Text>
+            </div>
+          </>
+        )}
+        {recruitingMessage && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Is Recruiting This Week?</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">
+                {ts?.CollegeWeek > 0 && ts?.CollegeWeek < 16 ? "Yes" : "No"}
+              </Text>
+            </div>
+          </>
+        )}
+        {isActiveSeason && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Do you play this week?</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{hasUpcomingMatchup ? "Yes" : "No"}</Text>
+            </div>
+          </>
+        )}
+        {weeksUntilRedshirtsClose > 0 && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Games Until Redshirts Close</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{weeksUntilRedshirtsClose}</Text>
+            </div>
+          </>
+        )}
+        {phase31 && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">When Do College Progressions Run?</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">Monday Night / Tuesday Morning</Text>
+            </div>
+          </>
+        )}
+        {seasonOver && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Season Migration?</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">When SimNBA season ends.</Text>
+            </div>
+            <div className="text-start col-span-3">
+              <Text variant="small">Transfer Portal Status</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{transferPortalPhase}</Text>
+            </div>
+          </>
+        )}
+        {transferPortalPhase === "Portal Active" && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Transfer Portal Round</Text>
+            </div>
+            <div className="text-end col-span-1">
+              <Text variant="small">{transferPortalRound}</Text>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
+const SimNBAPhaseSection = ({
+  phase,
+  ts,
+}: {
+  phase: number;
+  ts?: BKTimestamp;
+}) => {
+  const { proTeamsGames } = useSimBBAStore();
+  if (!ts) return <></>;
+
+  const hasUpcomingMatchup = useMemo(() => {
+    const index = proTeamsGames.findIndex(
+      (game) => game.WeekID === ts?.NBAWeekID,
+    );
+    return index !== -1;
+  }, [ts, proTeamsGames]);
+
+  const weeksUntilTradeDeadline = useMemo(() => {
+    const index = proTeamsGames.findIndex(
+      (game) => game.WeekID === ts?.NBAWeekID,
+    );
+    return 8 - index;
+  }, [ts, proTeamsGames]);
+
+  const seasonPhase = useMemo(() => {
+    if (phase < 9) return "Offseason";
+    if (phase < 11) return "Preseason";
+    if (phase < 28) return "Regular Season";
+    if (phase < 36) return "Postseason";
+    if (phase < 38) return "The SimNBA Finals";
+    return "Season Over";
+  }, [phase]);
+
+  const oocSchedulingOpen = useMemo(() => {
+    return phase < 7;
+  }, [phase]);
+
+  const oocSchedulingPhase = useMemo(() => {
+    if (phase < 4) return "Open";
+    if (phase < 6) return `${11 - phase} weeks until OOC Scheduling Closes`;
+    return "Closed";
+  }, [phase]);
+
+  const seasonOver = useMemo(() => phase === 34, [phase]);
+
+  const isActiveSeason = useMemo(() => phase >= 10 && phase < 30, [phase]);
+  const simNBADraftPhase = useMemo(() => {
+    if (phase === 3) return "This Weekend";
+    if (phase === 4) return "UDFAs Run This Wednesday";
+    if (phase === 8) return "Training Camps run this Wednesday";
+    if (phase < 3) {
+      return `Approx. ${3 - phase} weeks until the SimNBA Draft Weekend.`;
+    }
+    if (phase > 32) {
+      return `Approx. ${41 - phase} weeks until the SimNBA Draft Weekend.`;
+    }
+    return "";
+  }, [phase]);
+
+  return (
+    <>
+      <div className="grid grid-cols-6 px-1">
+        <div className="text-start col-span-6">
+          <Text variant="small" classes="font-semibold">
+            Week {ts?.NBAWeek || 0} of the {ts?.Season} Season
+          </Text>
+        </div>
+        <div className="text-start col-span-4">
+          <Text variant="small">Which phase of the season are we in?</Text>
+        </div>
+        <div className="text-end col-span-2">
+          <Text variant="small">{seasonPhase}</Text>
+        </div>
+        {(phase < 4 || phase > 31) && (
+          <>
+            <div className="text-start col-span-2">
+              <Text variant="small">SimNBA Draft Phase</Text>
+            </div>
+            <div className="text-end col-span-4">
+              <Text variant="small">{simNBADraftPhase}</Text>
+            </div>
+          </>
+        )}
+        {oocSchedulingOpen && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Preseason Scheduling</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">{oocSchedulingPhase}</Text>
+            </div>
+          </>
+        )}
+        {weeksUntilTradeDeadline < 6 &&
+          weeksUntilTradeDeadline > -1 &&
+          phase > 14 && (
+            <>
+              <div className="text-start col-span-3">
+                <Text variant="small">Trade Deadline</Text>
+              </div>
+              <div className="text-end col-span-3">
+                <Text variant="small">
+                  Trade Deadline is until {weeksUntilTradeDeadline} weeks.
+                </Text>
+              </div>
+            </>
+          )}
+        {isActiveSeason && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Do you play this week?</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">{hasUpcomingMatchup ? "Yes" : "No"}</Text>
+            </div>
+          </>
+        )}
+        {seasonOver && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Season Migration and Progressions?</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">Monday Night / Tuesday Morning.</Text>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
+const SimCHLPhaseSection = ({
+  phase,
+  ts,
+}: {
+  phase: number;
+  ts?: HCKTimestamp;
+}) => {
+  const { collegeTeamsGames } = useSimHCKStore();
+  if (!ts) return <></>;
+
+  const hasUpcomingMatchup = useMemo(() => {
+    const index = collegeTeamsGames.findIndex(
+      (game) =>
+        game.WeekID === ts?.WeekID && game.IsPreseason === ts.IsPreseason,
+    );
+    return index !== -1;
+  }, [ts, collegeTeamsGames]);
+
+  const weeksUntilRedshirtsClose = useMemo(() => {
+    const index = collegeTeamsGames.findIndex(
+      (game) =>
+        game.WeekID === ts?.WeekID && game.IsPreseason === ts.IsPreseason,
+    );
+    return 3 - index;
+  }, [ts, collegeTeamsGames]);
+
+  const seasonPhase = useMemo(() => {
+    if (phase < 12) return "Offseason";
+    if (phase < 15) return "Preseason";
+    if (phase < 32) return "Regular Season";
+    if (phase === 33) return "Conference Tournaments";
+    if (phase < 35) return "Postseason";
+    if (phase === 35) return "National Championship Week";
+    return "Season Over";
+  }, [phase]);
+
+  const preseasonSchedulingOpen = useMemo(() => {
+    return phase < 7;
+  }, [phase]);
+
+  const schedulingPhase = useMemo(() => {
+    if (phase < 4) return "Open";
+    if (phase < 7)
+      return `${6 - phase} weeks until Preseason Scheduling Closes`;
+    return "Closed";
+  }, [phase]);
+
+  const recruitingMessage = useMemo(() => {
+    return phase >= 11 && phase < 26;
+  }, [phase]);
+
+  const seasonOver = useMemo(() => phase >= 36, [phase]);
+
+  const isActiveSeason = useMemo(() => phase >= 11 && phase < 36, [phase]);
+
+  const transferPortalPhase = useMemo(() => {
+    if (ts?.TransferPortalPhase === 0) {
+      return "Not Open";
+    }
+    if (ts?.TransferPortalPhase === 1) {
+      return "Process Promises & Intentions";
+    }
+    if (ts?.TransferPortalPhase === 2) {
+      return "Transfers Retention";
+    }
+    if (ts?.TransferPortalPhase === 3 && ts?.TransferPortalRound < 11) {
+      return "Portal Active";
+    }
+    return "";
+  }, [ts]);
+  const transferPortalRound = useMemo(() => ts?.TransferPortalRound || 0, [ts]);
+
+  const phase36 = useMemo(() => phase === 36, [phase]);
+
+  return (
+    <>
+      <div className="grid grid-cols-4 px-1">
+        <div className="text-start col-span-4">
+          <Text variant="small" classes="font-semibold">
+            Week {ts?.Week || 0} of the {ts?.Season} Season
+          </Text>
+        </div>
+        <div className="text-start col-span-3">
+          <Text variant="small">Which phase of the season are we in?</Text>
+        </div>
+        <div className="text-end">
+          <Text variant="small">{seasonPhase}</Text>
+        </div>
+        {preseasonSchedulingOpen && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">OOC Scheduling</Text>
+            </div>
+            <div className="text-end">
+              <Text variant="small">{schedulingPhase}</Text>
+            </div>
+          </>
+        )}
+        {recruitingMessage && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Is Recruiting This Week?</Text>
+            </div>
+            <div className="text-end">
+              <Text variant="small">
+                {ts?.Week > 0 && ts?.Week < 18 ? "Yes" : "No"}
+              </Text>
+            </div>
+          </>
+        )}
+        {isActiveSeason && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Do you play this week?</Text>
+            </div>
+            <div className="text-end">
+              <Text variant="small">{hasUpcomingMatchup ? "Yes" : "No"}</Text>
+            </div>
+          </>
+        )}
+        {weeksUntilRedshirtsClose > 0 && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Games Until Redshirts Close</Text>
+            </div>
+            <div className="text-end">
+              <Text variant="small">{weeksUntilRedshirtsClose}</Text>
+            </div>
+          </>
+        )}
+        {phase36 && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">When Do College Progressions Run?</Text>
+            </div>
+            <div className="text-end">
+              <Text variant="small">When SimPHL Season is Over</Text>
+            </div>
+          </>
+        )}
+        {seasonOver && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Season Migration?</Text>
+            </div>
+            <div className="text-end">
+              <Text variant="small">When SimPHL season ends.</Text>
+            </div>
+            <div className="text-start col-span-3">
+              <Text variant="small">Transfer Portal Status</Text>
+            </div>
+            <div className="text-end">
+              <Text variant="small">{transferPortalPhase}</Text>
+            </div>
+          </>
+        )}
+        {transferPortalPhase === "Portal Active" && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Transfer Portal Round</Text>
+            </div>
+            <div className="text-end">
+              <Text variant="small">{transferPortalRound}</Text>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
+const SimPHLPhaseSection = ({
+  phase,
+  ts,
+}: {
+  phase: number;
+  ts?: HCKTimestamp;
+}) => {
+  const { proTeamsGames } = useSimHCKStore();
+  if (!ts) return <></>;
+
+  const hasUpcomingMatchup = useMemo(() => {
+    const index = proTeamsGames.findIndex(
+      (game) =>
+        game.WeekID === ts?.WeekID &&
+        game.IsPreseason === ts.IsPreseason &&
+        !game.GameComplete,
+    );
+    return index !== -1;
+  }, [ts, proTeamsGames]);
+
+  const weeksUntilTradeDeadline = useMemo(() => {
+    const index = proTeamsGames.findIndex((game) => game.WeekID === ts?.WeekID);
+    return 8 - index;
+  }, [ts, proTeamsGames]);
+
+  const seasonPhase = useMemo(() => {
+    if (phase < 9) return "Offseason";
+    if (phase < 11) return "Preseason";
+    if (phase < 28) return "Regular Season";
+    if (phase < 36) return "Postseason";
+    if (phase < 38) return "The Stanley Cup Finals";
+    return "Season Over";
+  }, [phase]);
+
+  const oocSchedulingOpen = useMemo(() => {
+    return phase < 7;
+  }, [phase]);
+
+  const oocSchedulingPhase = useMemo(() => {
+    if (phase < 4) return "Open";
+    if (phase < 6) return `${11 - phase} weeks until OOC Scheduling Closes`;
+    return "Closed";
+  }, [phase]);
+
+  const seasonOver = useMemo(() => phase === 39, [phase]);
+
+  const isActiveSeason = useMemo(() => phase >= 10 && phase < 30, [phase]);
+  const simPHLDraftPhase = useMemo(() => {
+    if (phase === 7) return "This Weekend";
+    if (phase === 8) return "UDFAs Run This Wednesday";
+    if (phase < 7) {
+      return `Approx. ${7 - phase} weeks until the SimPHL Draft Weekend.`;
+    }
+    return "";
+  }, [phase]);
+
+  return (
+    <>
+      <div className="grid grid-cols-6 px-1">
+        <div className="text-start col-span-6">
+          <Text variant="small" classes="font-semibold">
+            Week {ts?.Week || 0} of the {ts?.Season} Season
+          </Text>
+        </div>
+        <div className="text-start col-span-4">
+          <Text variant="small">Which phase of the season are we in?</Text>
+        </div>
+        <div className="text-end col-span-2">
+          <Text variant="small">{seasonPhase}</Text>
+        </div>
+        {(phase < 4 || phase > 31) && (
+          <div className="text-start col-span-2">
+            <Text variant="small">SimPHL Draft Phase</Text>
+          </div>
+        )}
+        {(phase < 4 || phase > 31) && (
+          <div className="text-end col-span-4">
+            <Text variant="small">{simPHLDraftPhase}</Text>
+          </div>
+        )}
+        {oocSchedulingOpen && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Preseason Scheduling</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">{oocSchedulingPhase}</Text>
+            </div>
+          </>
+        )}
+        {weeksUntilTradeDeadline < 6 &&
+          weeksUntilTradeDeadline > -1 &&
+          phase > 18 && (
+            <>
+              <div className="text-start col-span-4">
+                <Text variant="small">Trade Deadline</Text>
+              </div>
+              <div className="text-end col-span-2">
+                <Text variant="small">
+                  Trade Deadline is until {weeksUntilTradeDeadline} weeks.
+                </Text>
+              </div>
+            </>
+          )}
+        {isActiveSeason && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Do you play this week?</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">{hasUpcomingMatchup ? "Yes" : "No"}</Text>
+            </div>
+          </>
+        )}
+        {seasonOver && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Season Migration and Progressions?</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">Monday Night / Tuesday Morning.</Text>
+            </div>
+          </>
+        )}
+      </div>
     </>
   );
 };
