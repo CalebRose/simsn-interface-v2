@@ -1382,7 +1382,6 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       for (let i = 0; i < userTeamPicks.length; i++) {
         const pick = userTeamPicks[i];
 
-        // Mirror the Draft Tab's logic to see if this pick has been spent/completed
         const matchingDraftee = Object.values(drafteeMap || {}).find(
           (d: any) => 
             (d.DraftPickID && Number(d.DraftPickID) === Number(pick.ID)) ||
@@ -1396,7 +1395,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
 
         const originalTeam = nflTeamMap?.[pick.OriginalTeamID];
         const originalTeamLabel = originalTeam 
-          ? `${originalTeam.TeamName} ${originalTeam.Mascot}` 
+          ? originalTeam.TeamAbbr 
           : "N/A";
 
         const block: TradeBlockRow = {
@@ -1450,7 +1449,6 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       for (let i = 0; i < selectedTeamDraftPicks.length; i++) {
         const pick = selectedTeamDraftPicks[i];
 
-        // Mirror the Draft Tab's logic to see if this pick has been spent/completed
         const matchingDraftee = Object.values(drafteeMap || {}).find(
           (d: any) => 
             (d.DraftPickID && Number(d.DraftPickID) === Number(pick.ID)) ||
@@ -1458,14 +1456,13 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
             (pick.SelectedPlayerID && Number(pick.SelectedPlayerID) > 0 && Number(d.ID) === Number(pick.SelectedPlayerID))
         );
 
-        // If a player has been drafted with this pick, skip it entirely from the trade block
         if (matchingDraftee || (pick.DrafteeID && Number(pick.DrafteeID) > 0)) {
           continue;
         }
 
         const originalTeam = nflTeamMap?.[pick.OriginalTeamID];
         const originalTeamLabel = originalTeam 
-          ? `${originalTeam.TeamName} ${originalTeam.Mascot}` 
+          ? originalTeam.TeamAbbr 
           : "N/A";
 
         const block: TradeBlockRow = {
