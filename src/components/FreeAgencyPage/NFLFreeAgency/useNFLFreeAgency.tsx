@@ -48,6 +48,7 @@ export const useNFLFreeAgency = () => {
   const [modalAction, setModalAction] = useState<ModalAction>(InfoType);
   const [offerAction, setOfferAction] = useState<OfferAction>(FreeAgentOffer);
   const [country, setCountry] = useState<string>("");
+  const [ages, setAges] = useState<string[]>([]);
   const [positions, setPositions] = useState<string[]>([]);
   const [archetype, setArchetype] = useState<string[]>([]);
   const [regions, setRegions] = useState<string[]>([]);
@@ -198,6 +199,7 @@ export const useNFLFreeAgency = () => {
     positions,
     archetype,
     regions,
+    ages,
   });
 
   const {
@@ -207,6 +209,12 @@ export const useNFLFreeAgency = () => {
     goToPreviousPage,
     goToNextPage,
   } = usePagination(filteredFA.length, pageSize);
+
+  const SelectAgeOptions = (opts: any) => {
+    const options = [...opts.map((x: any) => x.value)];
+    setAges(options);
+    setCurrentPage(0);
+  };
 
   const SelectPositionOptions = (opts: any) => {
     const options = [...opts.map((x: any) => x.value)];
@@ -271,6 +279,7 @@ export const useNFLFreeAgency = () => {
     SelectArchetypeOptions,
     SelectPositionOptions,
     SelectRegionOptions,
+    SelectAgeOptions,
     country,
     regionOptions,
     filteredFA,
