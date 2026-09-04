@@ -342,44 +342,34 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 7
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "Redshirt" ? (
               <>
                 {item.IsRedshirt && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {item.IsRedshirting && (
-                  <CheckCircle textColorClass="w-full text-center text-yellow-500" />
+                  <CheckCircle textColorClass="w-full text-yellow-500" />
                 )}
                 {!item.IsRedshirt && !item.IsRedshirting && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="w-full text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`w-full ${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "TransferStatus" ? (
               <>
                 {attr.value === 0 ? (
-                  <ShieldCheck
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <ShieldCheck textColorClass={`w-full ${TextGreen}`} />
                 ) : (
-                  <ShieldCheck textColorClass="w-full text-center text-red-500" />
+                  <ShieldCheck textColorClass="w-full text-red-500" />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -407,30 +397,26 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
@@ -451,30 +437,26 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
@@ -485,30 +467,26 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
@@ -586,12 +564,10 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isEligibleToPickUp && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 )}
                 {!isEligibleToPickUp && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </Text>
             </TableCell>
@@ -995,42 +971,36 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isEligibleToPickUp && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {!isEligibleToPickUp && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
               </Text>
             </TableCell>
@@ -1185,42 +1155,30 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 6
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "NTC" || attr.label === "NMC" ? (
               <>
                 {attr.value === true ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 ) : (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="w-full text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`w-full ${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "TradeBlock" || attr.label === "Affiliate" ? (
               <>
                 {attr.value === "Yes" ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 ) : (
-                  <CrossCircle
-                    textColorClass={`w-full text-center text-red-500`}
-                  />
+                  <CrossCircle textColorClass={`w-full text-red-500`} />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -1259,30 +1217,26 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
@@ -1293,30 +1247,26 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
@@ -1539,7 +1489,11 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
     backgroundColor: string,
   ) => {
     const { collegePromiseMap } = useSimFBAStore();
-    const attributes = getCFBAttributes(item, !isDesktop, category!);
+    const attributes = getCFBAttributes(
+      item,
+      !isDesktop && !isUltraWide,
+      category!,
+    );
 
     const collegePromise = collegePromiseMap[item.ID];
     const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
@@ -1563,44 +1517,34 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 8
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "Redshirt" ? (
               <>
                 {item.IsRedshirt && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 )}
                 {item.IsRedshirting && (
-                  <CheckCircle textColorClass="w-full text-center text-yellow-500" />
+                  <CheckCircle textColorClass="text-yellow-500" />
                 )}
                 {!item.IsRedshirt && !item.IsRedshirting && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "TransferStatus" ? (
               <>
                 {attr.value === 0 ? (
-                  <ShieldCheck
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <ShieldCheck textColorClass={`${TextGreen}`} />
                 ) : (
-                  <ShieldCheck textColorClass="w-full text-center text-red-500" />
+                  <ShieldCheck textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -1908,7 +1852,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
     item.Contract = playerContract!!;
     const attributes = getNFLAttributes(
       item,
-      !isDesktop,
+      !isDesktop && !isUltraWide,
       category!,
       item.ShowLetterGrade,
       playerContract,
@@ -1926,59 +1870,45 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
             className={`table-cell 
           align-middle 
           360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-          text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-            category === Overview && idx === 7
-              ? "text-left"
-              : idx !== 0
-                ? "text-center"
-                : ""
-          }`}
+          text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap  text-start`}
           >
             {attr.label === "Is Tagged" ||
             attr.label === "IsOnTradeBlock" ||
             attr.label === "PS" ? (
               <>
                 {attr.value === true ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 ) : (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Is Extended" ? (
               <>
                 {!extensionOffer && (
-                  <DashCircle
-                    textColorClass={`w-full text-center text-gray-500`}
-                  />
+                  <DashCircle textColorClass={`text-gray-500`} />
                 )}
                 {extensionOffer?.IsAccepted === true && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 )}
                 {extensionOffer?.IsActive === true &&
                   !extensionOffer.IsAccepted &&
                   !extensionOffer.IsRejected && (
                     <DashCircle
-                      textColorClass={`w-full text-center ${extensionOffer.Rejections < 2 ? "text-yellow-500" : "text-orange-500"}`}
+                      textColorClass={`${extensionOffer.Rejections < 2 ? "text-yellow-500" : "text-orange-500"}`}
                     />
                   )}
 
                 {extensionOffer?.IsActive === true &&
                   extensionOffer.IsRejected && (
-                    <CrossCircle
-                      textColorClass={`w-full text-center text-red-500`}
-                    />
+                    <CrossCircle textColorClass={`text-red-500`} />
                   )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "Injury" ||
@@ -2151,17 +2081,29 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
     let columns = [
       { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
-      { header: !isDesktop ? "Pos" : "Position", accessor: "Position" },
-      { header: !isDesktop ? "Arch" : "Archetype", accessor: "Archetype" },
-      { header: !isDesktop ? "Yr" : "Year", accessor: "Experience" },
+      {
+        header: !isDesktop && !isUltraWide ? "Pos" : "Position",
+        accessor: "Position",
+      },
+      {
+        header: !isDesktop && !isUltraWide ? "Arch" : "Archetype",
+        accessor: "Archetype",
+      },
+      {
+        header: !isDesktop && !isUltraWide ? "Yr" : "Year",
+        accessor: "Experience",
+      },
       { header: "⭐", accessor: "Stars" },
-      { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
+      {
+        header: !isDesktop && !isUltraWide ? "Ovr" : "Overall",
+        accessor: "Overall",
+      },
     ];
 
     if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
-          header: !isDesktop ? "Pot" : "Potential",
+          header: !isDesktop && !isUltraWide ? "Pot" : "Potential",
           accessor: "PotentialGrade",
         },
         { header: "Health", accessor: "isInjured" },
@@ -2177,22 +2119,44 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
     if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         {
-          header: !isDesktop ? "Pot" : "Potential",
+          header: !isDesktop && !isUltraWide ? "Pot" : "Potential",
           accessor: "PotentialGrade",
         },
-        { header: "Agi", accessor: "Agility" },
-        { header: "Ins", accessor: "InsideShooting" },
-        { header: "Mid", accessor: "MidRangeShooting" },
-        { header: "3pt", accessor: "ThreePointShooting" },
-        { header: "FT", accessor: "Freethrow" },
-        { header: "BW", accessor: "Ballwork" },
-        { header: "Stl", accessor: "Stealing" },
-        { header: "RB", accessor: "Rebounding" },
-        { header: "Blk", accessor: "Blocking" },
-        { header: "ID", accessor: "InteriorDefense" },
-        { header: "PD", accessor: "PerimeterDefense" },
-        { header: "IR", accessor: "InjuryRating" },
-        { header: "PTE", accessor: "PlaytimeExpectations" },
+        { header: !isUltraWide ? "Agi" : "Agility", accessor: "Agility" },
+        {
+          header: !isUltraWide ? "Ins" : "Inside Shooting",
+          accessor: "InsideShooting",
+        },
+        {
+          header: !isUltraWide ? "Mid" : "Mid Range Shooting",
+          accessor: "MidRangeShooting",
+        },
+        {
+          header: !isUltraWide ? "3pt" : "3pt Shooting",
+          accessor: "ThreePointShooting",
+        },
+        { header: !isUltraWide ? "FT" : "Freethrow", accessor: "Freethrow" },
+        { header: !isUltraWide ? "BW" : "Ballwork", accessor: "Ballwork" },
+        { header: !isUltraWide ? "Stl" : "Stealing", accessor: "Stealing" },
+        { header: !isUltraWide ? "RB" : "Rebounding", accessor: "Rebounding" },
+        { header: !isUltraWide ? "Blk" : "Blocking", accessor: "Blocking" },
+        {
+          header: !isUltraWide ? "ID" : "Interior Defense",
+          accessor: "InteriorDefense",
+        },
+        {
+          header: !isUltraWide ? "PD" : "Perimeter Defense",
+          accessor: "PerimeterDefense",
+        },
+        {
+          header: !isUltraWide ? "IR" : "Injury Rating",
+          accessor: "InjuryRating",
+        },
+        {
+          header: !isUltraWide ? "PTE" : "Playtime Expectations",
+          accessor: "PlaytimeExpectations",
+        },
+        { header: !isUltraWide ? "Min" : "Minutes", accessor: "Minutes" },
       ]);
     }
     columns.push({ header: "Actions", accessor: "actions" });
@@ -2208,7 +2172,11 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
     index: number,
     backgroundColor: string,
   ) => {
-    const attributes = getCBBAttributes(item, !isDesktop, category!);
+    const attributes = getCBBAttributes(
+      item,
+      !isDesktop && !isUltraWide,
+      category!,
+    );
     return (
       <div
         key={item.ID}
@@ -2221,40 +2189,30 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 8
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "Redshirt" ? (
               <>
                 {attr.value === true ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 ) : (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "TransferStatus" ? (
               <>
                 {attr.value === 0 ? (
-                  <ShieldCheck
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <ShieldCheck textColorClass={`${TextGreen}`} />
                 ) : (
-                  <ShieldCheck textColorClass="w-full text-center text-red-500" />
+                  <ShieldCheck textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -2406,25 +2364,34 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
     let columns = [
       { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
-      { header: !isDesktop ? "Pos" : "Position", accessor: "Position" },
-      { header: !isDesktop ? "Arch" : "Archetype", accessor: "Archetype" },
-      { header: !isDesktop ? "Age" : "Age", accessor: "Age" },
-      { header: !isDesktop ? "Yr" : "Year", accessor: "Year" },
-      { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
+      {
+        header: !isDesktop && !isUltraWide ? "Pos" : "Position",
+        accessor: "Position",
+      },
+      {
+        header: !isDesktop && !isUltraWide ? "Arch" : "Archetype",
+        accessor: "Archetype",
+      },
+      { header: !isDesktop && !isUltraWide ? "Age" : "Age", accessor: "Age" },
+      { header: !isDesktop && !isUltraWide ? "Yr" : "Year", accessor: "Year" },
+      {
+        header: !isDesktop && !isUltraWide ? "Ovr" : "Overall",
+        accessor: "Overall",
+      },
     ];
 
     if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
-          header: !isDesktop ? "Pot" : "Potential",
+          header: !isDesktop && !isUltraWide ? "Pot" : "Potential",
           accessor: "PotentialGrade",
         },
         {
-          header: `${ts.Season} ${!isDesktop ? "B" : "Bonus"}`,
+          header: `${ts.Season} ${!isDesktop && !isUltraWide ? "B" : "Bonus"}`,
           accessor: "Year1Total",
         },
         {
-          header: !isDesktop ? "Yrs Left" : "Years Left",
+          header: !isDesktop && !isUltraWide ? "Yrs Left" : "Years Left",
           accessor: "ContractLength",
         },
         { header: "Health", accessor: "isInjured" },
@@ -2438,23 +2405,44 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
     if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         {
-          header: !isDesktop ? "Pot" : "Potential",
+          header: !isDesktop && !isUltraWide ? "Pot" : "Potential",
           accessor: "PotentialGrade",
         },
-        { header: "Agi", accessor: "Agility" },
-        { header: "Fin", accessor: "InsideShooting" },
-        { header: "SH2", accessor: "MidRangeShooting" },
-        { header: "SH3", accessor: "ThreePointShooting" },
-        { header: "FT", accessor: "Freethrow" },
-        { header: "BW", accessor: "Ballwork" },
-        { header: "Stl", accessor: "Stealing" },
-        { header: "RB", accessor: "Rebounding" },
-        { header: "Blk", accessor: "Blocking" },
-        { header: "ID", accessor: "InteriorDefense" },
-        { header: "PD", accessor: "PerimeterDefense" },
-        { header: "IR", accessor: "InjuryRating" },
-        { header: "PTE", accessor: "PlaytimeExpectations" },
-        { header: "Min", accessor: "Minutes" },
+        { header: !isUltraWide ? "Agi" : "Agility", accessor: "Agility" },
+        {
+          header: !isUltraWide ? "Ins" : "Inside Shooting",
+          accessor: "InsideShooting",
+        },
+        {
+          header: !isUltraWide ? "Mid" : "Mid Range Shooting",
+          accessor: "MidRangeShooting",
+        },
+        {
+          header: !isUltraWide ? "3pt" : "3pt Shooting",
+          accessor: "ThreePointShooting",
+        },
+        { header: !isUltraWide ? "FT" : "Freethrow", accessor: "Freethrow" },
+        { header: !isUltraWide ? "BW" : "Ballwork", accessor: "Ballwork" },
+        { header: !isUltraWide ? "Stl" : "Stealing", accessor: "Stealing" },
+        { header: !isUltraWide ? "RB" : "Rebounding", accessor: "Rebounding" },
+        { header: !isUltraWide ? "Blk" : "Blocking", accessor: "Blocking" },
+        {
+          header: !isUltraWide ? "ID" : "Interior Defense",
+          accessor: "InteriorDefense",
+        },
+        {
+          header: !isUltraWide ? "PD" : "Perimeter Defense",
+          accessor: "PerimeterDefense",
+        },
+        {
+          header: !isUltraWide ? "IR" : "Injury Rating",
+          accessor: "InjuryRating",
+        },
+        {
+          header: !isUltraWide ? "PTE" : "Playtime Expectations",
+          accessor: "PlaytimeExpectations",
+        },
+        { header: !isUltraWide ? "Min" : "Minutes", accessor: "Minutes" },
       ]);
     }
     columns.push({ header: "Actions", accessor: "actions" });
@@ -2473,11 +2461,15 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
     const contract = contracts[item.ID];
     if (!contract) return <></>;
     item.Contract = contract!!;
-    const attributes = getNBAAttributes(item, !isDesktop, category!);
+    const attributes = getNBAAttributes(
+      item,
+      !isDesktop && !isUltraWide,
+      category!,
+    );
     return (
       <div
         key={item.ID}
-        className={`table-row border-b dark:border-gray-700 text-start`}
+        className={`table-row border-b dark:border-gray-700 text-start justify-start`}
         style={{ backgroundColor }}
       >
         {attributes.map((attr, idx) => (
@@ -2486,40 +2478,30 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 8
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start justify-start`}
           >
             {attr.label === "Redshirt" ? (
               <>
                 {attr.value === true ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 ) : (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={TextGreen} />
                 )}
               </>
             ) : attr.label === "TransferStatus" ? (
               <>
                 {attr.value === 0 ? (
-                  <ShieldCheck
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <ShieldCheck textColorClass={`${TextGreen}`} />
                 ) : (
-                  <ShieldCheck textColorClass="w-full text-center text-red-500" />
+                  <ShieldCheck textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -2725,13 +2707,7 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 6
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "Name" ? (
               <span

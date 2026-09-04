@@ -2,6 +2,7 @@ import {
   Contracts,
   FootballArchetypeOptions,
   FootballPositionOptions,
+  FootballAgeOptions,
   FreeAgent,
   Help1,
   Overview,
@@ -56,6 +57,7 @@ export const NFLFreeAgency = () => {
     SelectArchetypeOptions,
     SelectPositionOptions,
     SelectRegionOptions,
+    SelectAgeOptions,
     country,
     regionOptions,
     filteredFA,
@@ -237,6 +239,13 @@ export const NFLFreeAgency = () => {
                     isMobile={isMobile}
                   />
                 )}
+                <CategoryDropdown
+                  label="Age"
+                  options={FootballAgeOptions}
+                  change={SelectAgeOptions}
+                  isMulti={true}
+                  isMobile={isMobile}
+                />
               </div>
             </Border>
           )}
