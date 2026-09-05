@@ -293,10 +293,10 @@ export const getLandingNFLData = (
     TopReceiver: topReceiver,
   };
 
-  // Team Injuries
+// Team Injuries
   const teamInjuries =
-    proRosterMap && team.ID
-      ? proRosterMap[team.ID]?.filter((player) => player.IsInjured) || []
+    proRosterMap && team?.ID && proRosterMap[team.ID]
+      ? proRosterMap[team.ID].filter((player) => player.IsInjured)
       : [];
 
   // Team News

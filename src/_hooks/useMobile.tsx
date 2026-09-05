@@ -1,78 +1,46 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
+
+// Hook directly into the browser's CSS media queries for instant, accurate detection
+const getMatchMediaSizes = () => {
+  if (typeof window === "undefined") {
+    return {
+      isMobile: false,
+      isTablet: false,
+      isDesktop: true,
+      isUltraWide: false,
+    };
+  }
+  return {
+    isMobile: window.matchMedia("(max-width: 767px)").matches,
+    isTablet: window.matchMedia("(min-width: 768px) and (max-width: 1024px)").matches,
+    isDesktop: window.matchMedia("(min-width: 1025px) and (max-width: 2559px)").matches,
+    isUltraWide: window.matchMedia("(min-width: 2560px)").matches,
+  };
+};
 
 export const useResponsive = () => {
-  const getSizes = useCallback(() => {
-    // Guard against SSR and ensure window is available
-    if (typeof window === "undefined") {
-      return {
-        isMobile: false,
-        isTablet: false,
-        isDesktop: true,
-        isUltraWide: false,
-      };
-    }
-
-    // Safari-safe width access with additional safety checks
-    try {
-      const width =
-        window.innerWidth || document.documentElement?.clientWidth || 0;
-      return {
-        isMobile: width < 768,
-        isTablet: width > 767 && width <= 1024,
-        isDesktop: width > 1024 && width <= 2559,
-        isUltraWide: width > 2559,
-      };
-    } catch (error) {
-      console.warn("Error accessing window dimensions:", error);
-      return {
-        isMobile: false,
-        isTablet: false,
-        isDesktop: true,
-        isUltraWide: false,
-      };
-    }
-  }, []);
-
-  // Initialize with safe defaults, then update in useEffect
-  const [sizes, setSizes] = useState(() => {
-    // Use lazy initialization to avoid calling window during SSR
-    if (typeof window === "undefined") {
-      return {
-        isMobile: false,
-        isTablet: false,
-        isDesktop: true,
-        isUltraWide: false,
-      };
-    }
-    return getSizes();
-  });
+  // Initialize state directly with matchMedia so the very first frame is correct
+  const [sizes, setSizes] = useState(getMatchMediaSizes);
 
   useEffect(() => {
-    // Force an immediate update right after mount to catch correct viewport dimensions
-    setSizes(getSizes());
+    if (typeof window === "undefined") return;
 
-    // Safari requires a small delay to ensure proper initialization
-    const initTimer = setTimeout(() => {
-      setSizes(getSizes());
-    }, 50);
-
-    // Safari-compatible resize handler with throttling
-    let resizeTimer: ReturnType<typeof setTimeout>;
-    const onResize = () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => {
-        setSizes(getSizes());
-      }, 100); // Throttle for Safari performance
+    const updateSizes = () => {
+      setSizes(getMatchMediaSizes());
     };
 
-    window.addEventListener("resize", onResize, { passive: true });
+    // Listen for screen size and orientation changes natively
+    window.addEventListener("resize", updateSizes, { passive: true });
+    window.addEventListener("orientationchange", updateSizes, { passive: true });
+
+    // Force one immediate check in case the screen rotated during load
+    updateSizes();
 
     return () => {
-      clearTimeout(initTimer);
-      clearTimeout(resizeTimer);
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", updateSizes);
+      window.removeEventListener("orientationchange", updateSizes);
     };
-  }, [getSizes]);
+  }, []);
 
-  return sizes; // { isMobile, isTablet, isDesktop }
+  return sizes;
 };

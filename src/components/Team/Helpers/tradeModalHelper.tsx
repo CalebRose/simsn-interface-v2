@@ -13,12 +13,10 @@ export const getTradeOptionsList = (rows: TradeBlockRow[]) => {
     const item = rows[i];
     const label = item.isPlayer
       ? `${item.position} ${item.name} ${item.overall}`
-      : `${item.season} Round ${item.draftRound}, Pick ${item.draftPick}`;
+      : `${item.season} Round ${item.draftRound} - Pick ${item.draftPick} (${item.name})`;
 
-    // Keep index as the value.
     const value = i.toString();
-    const obj = { label: label, value: value };
-    list.push(obj);
+    list.push({ label, value });
   }
 
   return list;
