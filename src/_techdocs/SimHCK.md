@@ -174,8 +174,6 @@
 
 [The Scouting System 52](#the-scouting-system)
 
-[Will all potential grades be revealed once a recruit has joined a program? 52](#will-all-potential-grades-be-revealed-once-a-recruit-has-joined-a-program?)
-
 [The Recruiting Cycle 52](#the-recruiting-cycle)
 
 [Viewing Players 53](#viewing-players)
@@ -276,11 +274,11 @@ _This management sim is a passion project for a sport that deserves more recogni
 
 # Summary
 
-**SimHockey (SimHCK)** is the next simulation league to be introduced to **Simulation Sports Network (SimSN)**. For the first time ever, we will be hosting a hockey simulation on our site and community, and it will be available only on Interface 2.0. Within SimHCK we will host two leagues: **SimCollegeHockey (SimCHL)** and **SimProHockey (SimPHL)**.
+**SimHockey (SimHCK)** is our hockey simulation league that released in early 2025 on **Simulation Sports Network (SimSN)**. Within SimHCK, we host two leagues: **SimCollegeHockey (SimCHL)** and **SimProHockey (SimPHL)**.
 
 This game is a management simulation, similar to other video games like Football Coach: College Dynasty, the Football Manager series, Out of the Park baseball series and the Franchise Hockey Manager series. This is also a fully online multiplayer simulation; meaning, teams you face may either be another player or an AI.
 
-**SimCHL** is a simulation of the NCAA D1 Men’s Hockey sport. The league will feature all 64 D1 college hockey teams with teams located from Massachusetts to Arizona and all the way up to Alaska. Along with the current 64 D1 schools, we are also including several programs including former D1 College Hockey programs, prospective college hockey programs, and some of the best ACHA programs in the country. SimCHL features an event-driven gameplan system dependent on the puck’s location, and who currently has the puck. SimCHL also features a new recruiting system that captures the details of the institutions within the league and the respective success of the teams made within the sim league.
+**SimCHL** is a simulation of the NCAA D1 Men’s Hockey sport. The league features all 63+ D1 college hockey teams with teams located from Massachusetts to Arizona and all the way up to Alaska. Along with the current 63 D1 schools, we have included several programs including former D1 College Hockey programs, prospective college hockey programs, and some of the best ACHA programs in the country. SimCHL features an event-driven gameplan system dependent on the puck’s location, and who currently has the puck. SimCHL also features a new recruiting system that captures the details of the institutions within the league and the respective success of the teams made within the sim league.
 
 **SimPHL** is a simulation of the NHL but rather than aiming for current realism, we’re allowing users to take on teams that have existed at any point in the NHL's existence. Meaning, users can choose to run existing franchises like Montreal Canadiens or previously active franchises like the Atlanta Thrashers. Teams within SimPHL will need to manage their rosters, be competitive on the ice, and manage their cap through operating expenses and making revenue from their games.
 
@@ -291,21 +289,19 @@ There are no prerequisites for requesting a team in SimCHL or SimPHL, and there�
 ## How to Sign Up
 
 Please use the below links for registering for SimHockey.  
-[**Simulation Sports Network**](https://simulationsports.net/)**:** This is our home site where we host our forums. Users can apply to teams here and write media for their teams here.
+[**Simulation Sports Network**](https://simulationsports.net/availableteams)**:** This is the site currently hosting our games. Click here to navigate to the available teams page and to look up a team you would like to join. We usually recommend starting out in the college leagues first, so please take a look at our SimCHL teams and then our SimPHL teams.
 
 [**Discord Server**](https://discord.gg/Jj6QtPvnfZ): Most of the community activity takes place here & we stream game results in text form in our server; so you can, in theory, watch your games in real time before results are revealed.
-
-[**Interface**](https://calebrose.io/simsn-interface-v2/):This is the custom web application used for managing our college hockey teams. The current build is in beta as we’re slowly migrating our football & basketball sims here; but hockey is fully setup and ready.
 
 # Season Format
 
 ## College Format
 
-There will be 34 regular season games per team against at least 17 different opponents. Teams will face the same on their schedule opponents at least twice, but can be played separately during the season. This is to allow flexibility while adhering to IRL College Hockey scheduling as much as possible.
+Each college season features a 34 regular season slate per team against at least 17 different opponents. Teams will face the same on their schedule opponents at least twice, but can be played separately during the season. This is to allow flexibility while adhering to IRL College Hockey scheduling as much as possible.
 
 Games will be run on Tuesdays and Thursdays at an undisclosed time.
 
-For the postseason, each college conference will have a 4-team conference tournament, which will be followed by a 16-team post-season tournament. All conference tournament winners are automatically qualified, with the remaining top teams placed into the tournament by a select committee.
+For the postseason, each college conference will has a 8+ team conference tournament, which is then followed by a 16-team post-season tournament. All conference tournament winners are automatically qualified, with the remaining top teams placed into the tournament by an internal rankings system.
 
 ### Scheduling Out of Conference Games
 
@@ -331,13 +327,16 @@ In the event of a tie in point total, tiebreakers will be determined by the foll
 2. Regulation \+ OT Wins
 3. Goal Differential
 
-In the postseason, each team will face an opponent based on the seeding in their bracket. They will play in rounds consisting of a **best-of-seven** series. The first team to win 4 games advances to the next round.
+In the postseason, each team will face an opponent based on the seeding in their bracket. They will play in rounds consisting of a **best-of-five** series. The first team to win 4 games advances to the next round. The final round, our **Stanley Cup Finals**, is a best-of-seven series.
 
-The series format will follow SimNBA: 2-2-1-1-1 (Home, Home, Away, Away, Home, Away, Home).
+The five-game series format will use the following: 1-1-1-1-1 (Home, Away, Home, Away, Home).
+The seven-game series format will follow SimNBA: 2-2-1-1-1 (Home, Home, Away, Away, Home, Away, Home).
 
 The final two teams remaining in the postseason will play in the Stanley Cup Final with a chance to win the Stanley Cup.
 
 ## Logistics Schedule
+
+_Note: I do need to update the table below and will replace it with a more accurate table._
 
 SimHockey is designed to be self-running. Meaning, once the sim officially becomes active, there will be no need to turn anything off save for scheduling in the offseason.To run a season of SimHockey, the following weeks need to be tracked and will be tracked through the Interface:
 
@@ -1512,7 +1511,7 @@ Once the regular season begins and after the first sync, each team’s available
 
 The cost of revealing a potential attribute is one scouting point. To scout a player’s potential attribute, find the attribute that you would like to reveal and click the ? button. Players will be able to view the potential grade for the attribute that they have selected.
 
-### Will all potential grades be revealed once a recruit has joined a program?
+**Will all potential grades be revealed once a recruit has joined a program?**
 
 Yes. Once a recruit officially signs and is part of the team’s roster, the coach will be able to view the player’s potential grades for all attributes.
 
@@ -2275,7 +2274,7 @@ For the 2026 season, we will be adding the Ontario Hockey League, culminating in
 - All CHL players will be eligible for the SimPHL once these players reach the age of 18\. Additionally, if a PHL team drafts the rights to a CHL player and the CHL player has just transferred through the portal to a collegiate team, the SimPHL team must wait a season before being able to call the player up.
 - Approximately 28 players will be generated for each CHL team. Meaning, 560 players total will be initially generated (28\*20). Of the 560 players available, 280 players will be eligible for both the transfer portal & the SimPHL draft.
 
-#### Can users select a Canadian Hockey League team to coach?
+**Can users select a Canadian Hockey League team to coach?**
 
 At the moment, these teams will be AI only. Depending on the bandwidth I have this offseason, the teams may have a round-robin schedule generated for each team (H\&A game each team). If there is enough interest & demand I may look to expand & allow users to coach these teams; granted, new rules regarding roster building will need to be developed.
 
