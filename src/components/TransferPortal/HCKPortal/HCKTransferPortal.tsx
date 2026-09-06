@@ -84,6 +84,8 @@ export const HCKTransferPortal = () => {
     currentSpentPoints,
     chlTeamOptions,
     SelectPrevTeamOptions,
+    offensiveSystemsInformation,
+    defensiveSystemsInformation,
   } = useHCKTransferPortal();
   const rosterCount = useMemo(() => {
     if (!chlTeam) {
@@ -101,7 +103,7 @@ export const HCKTransferPortal = () => {
   const teamColors = useTeamColors(
     chlTeam?.ColorOne,
     chlTeam?.ColorTwo,
-    chlTeam?.ColorThree
+    chlTeam?.ColorThree,
   );
   const { isMobile } = useResponsive();
   const helpModal = useModal();
@@ -382,6 +384,8 @@ export const HCKTransferPortal = () => {
                   transferOnBoardMap={transferOnBoardMap}
                   currentPage={currentPage}
                   teamProfile={teamProfile}
+                  offensiveSystemsInformation={offensiveSystemsInformation}
+                  defensiveSystemsInformation={defensiveSystemsInformation}
                 />
                 <div className="flex flex-row justify-center py-2">
                   <ButtonGroup>
@@ -431,6 +435,8 @@ export const HCKTransferPortal = () => {
                   openPromiseModal={openPromiseModal}
                   setAttribute={setAttribute}
                   ChangeInput={updatePointsOnPortalPlayer}
+                  offensiveSystemsInformation={offensiveSystemsInformation}
+                  defensiveSystemsInformation={defensiveSystemsInformation}
                 />
               </Border>
             </>

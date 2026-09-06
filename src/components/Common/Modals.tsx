@@ -827,7 +827,13 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
   const { currentUser } = useAuthStore();
   const { cfbTeamMap } = useSimFBAStore();
   const team = cfbTeamMap ? cfbTeamMap[player.TeamID] : null;
+  const previousTeam = cfbTeamMap ? cfbTeamMap[player.PreviousTeamID] : null;
   const teamLogo = getLogo(SimCFB, player.TeamID, currentUser?.IsRetro);
+  const previousTeamLogo = getLogo(
+    SimCFB,
+    player.PreviousTeamID,
+    currentUser?.IsRetro,
+  );
   const heightObj = HeightToFeetAndInches(player.Height);
   const priorityAttributes = setPriorityCFBAttributes(player);
 
@@ -893,14 +899,6 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
             {player.Weight} lbs
           </Text>
         </div>
-        <div className="flex flex-col items-center">
-          <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
-            Personality
-          </Text>
-          <Text variant="small" classes="whitespace-nowrap">
-            {player.Personality}
-          </Text>
-        </div>
         <div className="flex flex-col">
           <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
             Overall
@@ -924,15 +922,38 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
           <Text variant="xs" classes="whitespace-nowrap pt-0.5">
             {player.Stars > 0
               ? Array(player.Stars).fill("⭐").join("")
-              : player.Stars}
+              : "Walk-On"}
           </Text>
         </div>
+        {player.PreviousTeamID > 0 && (
+          <div className="flex flex-col">
+            <Text variant="body" classes="mb-1 whitespace-nowrap font-semibold">
+              Previous Team
+            </Text>
+            <Text variant="xs" classes="whitespace-nowrap pt-0.5">
+              {previousTeam && (
+                <Logo
+                  url={previousTeamLogo}
+                  label={previousTeam.TeamAbbr}
+                  classes="h-4 max-h-4"
+                  containerClass="p-4"
+                  textClass="text-small"
+                />
+              )}
+            </Text>
+          </div>
+        )}
       </div>
       <div className="flex flex-col mt-4 pt-4">
         <TabGroup classes="mb-3">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
+            setSelected={setSelectedTab}
+          />
+          <Tab
+            label="Biases"
+            selected={selectedTab === "Biases"}
             setSelected={setSelectedTab}
           />
           <Tab
@@ -954,6 +975,55 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
                 <Text variant="small">{attr.Letter}</Text>
               </div>
             ))}
+          </div>
+        )}
+        {selectedTab === "Biases" && (
+          <div className="grid w-full grid-cols-2 gap-3">
+            <div className="flex flex-col items-center">
+              <Text
+                variant="body"
+                classes="mb-1 whitespace-nowrap font-semibold"
+              >
+                Personality
+              </Text>
+              <Text variant="small" classes="whitespace-nowrap">
+                {player.Personality}
+              </Text>
+            </div>
+            <div className="flex flex-col items-center">
+              <Text
+                variant="body"
+                classes="mb-1 whitespace-nowrap font-semibold"
+              >
+                Academic Bias
+              </Text>
+              <Text variant="small" classes="whitespace-nowrap">
+                {player.AcademicBias}
+              </Text>
+            </div>
+            <div className="flex flex-col items-center">
+              <Text
+                variant="body"
+                classes="mb-1 whitespace-nowrap font-semibold"
+              >
+                Work Ethic
+              </Text>
+              <Text variant="small" classes="whitespace-nowrap">
+                {player.WorkEthic}
+              </Text>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <Text
+                variant="body"
+                classes="mb-1 whitespace-nowrap font-semibold"
+              >
+                Recruiting Bias
+              </Text>
+              <Text variant="small" classes="whitespace-nowrap">
+                {player.RecruitingBias}
+              </Text>
+            </div>
           </div>
         )}
         {selectedTab === "Stats" && (

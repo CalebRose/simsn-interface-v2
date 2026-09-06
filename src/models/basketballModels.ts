@@ -90,6 +90,7 @@ export class ScoutingProfile {
   ShowAgility: boolean;
   ShowStealing: boolean;
   ShowBlocking: boolean;
+  ShowBasketballIQ: boolean;
   ShowPotential: boolean;
   RemovedFromBoard: boolean;
   ShowCount: number;
@@ -114,6 +115,7 @@ export class ScoutingProfile {
     this.ShowRebounding = source["ShowRebounding"];
     this.ShowInteriorDefense = source["ShowInteriorDefense"];
     this.ShowPerimeterDefense = source["ShowPerimeterDefense"];
+    this.ShowBasketballIQ = source["ShowBasketballIQ"];
     this.ShowPotential = source["ShowPotential"];
     this.RemovedFromBoard = source["RemovedFromBoard"];
     this.ShowCount = source["ShowCount"];
@@ -1247,6 +1249,8 @@ export class NBAPlayer {
   SpecInteriorDefense: boolean;
   PerimeterDefense: number;
   SpecPerimeterDefense: boolean;
+  BasketballIQ: number;
+  SpecBasketballIQ: boolean;
   Potential: number;
   PotentialGrade: string;
   ProPotentialGrade: number;
@@ -1364,6 +1368,8 @@ export class NBAPlayer {
     this.SpecInteriorDefense = source["SpecInteriorDefense"];
     this.PerimeterDefense = source["PerimeterDefense"];
     this.SpecPerimeterDefense = source["SpecPerimeterDefense"];
+    this.BasketballIQ = source["BasketballIQ"];
+    this.SpecBasketballIQ = source["SpecBasketballIQ"];
     this.Potential = source["Potential"];
     this.PotentialGrade = source["PotentialGrade"];
     this.ProPotentialGrade = source["ProPotentialGrade"];
@@ -2059,6 +2065,7 @@ export class NBACapsheet {
   }
 }
 export class NBATeamSeasonStats {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -2229,6 +2236,7 @@ export class NBATeamSeasonStats {
   }
 }
 export class NBATeamStats {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -2639,6 +2647,8 @@ export class CollegePlayer {
   SpecInteriorDefense: boolean;
   PerimeterDefense: number;
   SpecPerimeterDefense: boolean;
+  BasketballIQ: number;
+  SpecBasketballIQ: boolean;
   Potential: number;
   PotentialGrade: string;
   ProPotentialGrade: number;
@@ -2731,6 +2741,8 @@ export class CollegePlayer {
     this.SpecInteriorDefense = source["SpecInteriorDefense"];
     this.PerimeterDefense = source["PerimeterDefense"];
     this.SpecPerimeterDefense = source["SpecPerimeterDefense"];
+    this.BasketballIQ = source["BasketballIQ"];
+    this.SpecBasketballIQ = source["SpecBasketballIQ"];
     this.Potential = source["Potential"];
     this.PotentialGrade = source["PotentialGrade"];
     this.ProPotentialGrade = source["ProPotentialGrade"];
@@ -3021,6 +3033,7 @@ export class NBAPlayerStats {
   }
 }
 export class NBAContract {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -3616,6 +3629,8 @@ export class HistoricCollegePlayer {
   SpecInteriorDefense: boolean;
   PerimeterDefense: number;
   SpecPerimeterDefense: boolean;
+  BasketballIQ: number;
+  SpecBasketballIQ: boolean;
   Potential: number;
   PotentialGrade: string;
   ProPotentialGrade: number;
@@ -3708,6 +3723,8 @@ export class HistoricCollegePlayer {
     this.SpecInteriorDefense = source["SpecInteriorDefense"];
     this.PerimeterDefense = source["PerimeterDefense"];
     this.SpecPerimeterDefense = source["SpecPerimeterDefense"];
+    this.BasketballIQ = source["BasketballIQ"];
+    this.SpecBasketballIQ = source["SpecBasketballIQ"];
     this.Potential = source["Potential"];
     this.PotentialGrade = source["PotentialGrade"];
     this.ProPotentialGrade = source["ProPotentialGrade"];
@@ -3794,6 +3811,7 @@ export class LeadingTeams {
   }
 }
 export class CollegePlayerStats {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -3894,6 +3912,7 @@ export class CollegePlayerStats {
   }
 }
 export class CollegePlayerSeasonStats {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -4014,6 +4033,7 @@ export class CollegePlayerSeasonStats {
   }
 }
 export class TransferPlayerResponse {
+  [key: string]: any;
   ID: number;
   FirstName: string;
   LastName: string;
@@ -4367,6 +4387,7 @@ export class TeamRecruitingProfile {
   }
 }
 export class TeamSeasonStats {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -4537,6 +4558,7 @@ export class TeamSeasonStats {
   }
 }
 export class TeamStats {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -5338,6 +5360,8 @@ export class Recruit {
   SpecInteriorDefense: boolean;
   PerimeterDefense: number;
   SpecPerimeterDefense: boolean;
+  BasketballIQ: number;
+  SpecBasketballIQ: boolean;
   Potential: number;
   PotentialGrade: string;
   ProPotentialGrade: number;
@@ -5406,6 +5430,8 @@ export class Recruit {
     this.Position = source["Position"];
     this.Archetype = source["Archetype"];
     this.Age = source["Age"];
+    this.BasketballIQ = source["BasketballIQ"];
+    this.SpecBasketballIQ = source["SpecBasketballIQ"];
     this.PrimeAge = source["PrimeAge"];
     this.Year = source["Year"];
     this.City = source["City"];
@@ -7762,6 +7788,7 @@ export class Timestamp {
   RunGames: boolean;
   TransferPortalPhase: number;
   TransferPortalRound: number;
+  Phase: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -7806,6 +7833,72 @@ export class Timestamp {
     this.RunGames = source["RunGames"];
     this.TransferPortalPhase = source["TransferPortalPhase"];
     this.TransferPortalRound = source["TransferPortalRound"];
+    this.Phase = source["Phase"];
+  }
+
+  convertValues(a: any, classs: any, asMap: boolean = false): any {
+    if (!a) {
+      return a;
+    }
+    if (Array.isArray(a)) {
+      return (a as any[]).map((elem) => this.convertValues(elem, classs));
+    } else if ("object" === typeof a) {
+      if (asMap) {
+        for (const key of Object.keys(a)) {
+          a[key] = new classs(a[key]);
+        }
+        return a;
+      }
+      return new classs(a);
+    }
+    return a;
+  }
+}
+
+export class SearchStatsResponse {
+  CBBPlayerGameStats: CollegePlayerStats[];
+  CBBPlayerSeasonStats: CollegePlayerSeasonStats[];
+  CBBTeamGameStats: TeamStats[];
+  CBBTeamSeasonStats: TeamSeasonStats[];
+  NBAPlayerGameStats: NBAPlayerStats[];
+  NBAPlayerSeasonStats: NBAPlayerSeasonStats[];
+  NBATeamGameStats: NBATeamStats[];
+  NBATeamSeasonStats: NBATeamSeasonStats[];
+
+  constructor(source: any = {}) {
+    if ("string" === typeof source) source = JSON.parse(source);
+    this.CBBPlayerGameStats = this.convertValues(
+      source["CBBPlayerGameStats"],
+      CollegePlayerStats,
+    );
+    this.CBBPlayerSeasonStats = this.convertValues(
+      source["CBBPlayerSeasonStats"],
+      CollegePlayerSeasonStats,
+    );
+    this.CBBTeamGameStats = this.convertValues(
+      source["CBBTeamGameStats"],
+      TeamStats,
+    );
+    this.CBBTeamSeasonStats = this.convertValues(
+      source["CBBTeamSeasonStats"],
+      TeamSeasonStats,
+    );
+    this.NBAPlayerGameStats = this.convertValues(
+      source["NBAPlayerGameStats"],
+      NBAPlayerStats,
+    );
+    this.NBAPlayerSeasonStats = this.convertValues(
+      source["NBAPlayerSeasonStats"],
+      NBAPlayerSeasonStats,
+    );
+    this.NBATeamGameStats = this.convertValues(
+      source["NBATeamGameStats"],
+      NBATeamStats,
+    );
+    this.NBATeamSeasonStats = this.convertValues(
+      source["NBATeamSeasonStats"],
+      NBATeamSeasonStats,
+    );
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -63,11 +63,25 @@ export const useNFLUDFA = () => {
     await saveUDFABoard(localBoard);
   };
 
+  const handleMoveUDFAsToFA = async () => {
+    try {
+      const response = await fetch("http://localhost:5001/api/admin/force-udfas-to-fa");
+      if (!response.ok) throw new Error("Failed to force UDFAs to FA");
+      
+      if (nflTeam) {
+        await getUDFABoard(nflTeam.ID);
+      }
+    } catch (error) {
+      console.error("Error moving UDFAs to FA:", error);
+    }
+  };
+
   return {
     board: localBoard,
     pointsRemaining,
     handlePointChange,
     saveBids,
     removePlayer: removePlayerFromUDFABoard,
+    handleMoveUDFAsToFA,
   };
 };

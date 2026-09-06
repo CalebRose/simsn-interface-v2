@@ -15,8 +15,13 @@ import {
 } from "../../../models/footballModels";
 import { Croot as BasketballCroot } from "../../../models/basketballModels";
 import { Croot as HockeyCroot } from "../../../models/hockeyModels";
-import { useFilteredFootballRecruits } from "../../../_helper/recruitingHelper";
+import {
+  useFilteredCrootProfiles,
+  useFilteredFootballRecruits,
+  useFilteredFootballRecruitsByTeam,
+} from "../../../_helper/recruitingHelper";
 import { usePagination } from "../../../_hooks/usePagination";
+
 export const useCFBRecruiting = () => {
   const fbStore = useSimFBAStore();
   const {
@@ -41,7 +46,7 @@ export const useCFBRecruiting = () => {
   const [statuses, setStatuses] = useState<string[]>([]);
   const [selectedTeams, setSelectedTeams] = useState<any[]>([]);
   const [selectedClassView, setSelectedClassView] = useState<number>(
-    cfbTeam!.ID
+    cfbTeam!.ID,
   );
   const [conferences, setConferences] = useState<any[]>([]);
   const [attribute, setAttribute] = useState<string>("");
@@ -72,10 +77,20 @@ export const useCFBRecruiting = () => {
 
   const sortedCrootProfiles = useMemo(() => {
     if (!recruitProfiles) return [];
-    return recruitProfiles.sort((a, b) => {
-      const aVal = a.IsSigned || a.IsLocked ? 1 : 0;
-      const bVal = b.IsSigned || b.IsLocked ? 1 : 0;
-      return aVal - bVal;
+    return [...recruitProfiles].sort((a: any, b: any) => {
+      // 1. Prioritize signed/locked recruits to the bottom
+      const aSigned = a.IsSigned || a.IsLocked ? 1 : 0;
+      const bSigned = b.IsSigned || b.IsLocked ? 1 : 0;
+      if (aSigned !== bSigned) return aSigned - bSigned;
+
+      // 2. Sort by CurrentWeeksPoints in descending order (highest points first)
+      const aPoints = a.CurrentWeeksPoints ?? 0;
+      const bPoints = b.CurrentWeeksPoints ?? 0;
+      if (aPoints !== bPoints) {
+        return bPoints - aPoints;
+      }
+
+      return 0;
     });
   }, [recruitProfiles]);
 
@@ -107,9 +122,40 @@ export const useCFBRecruiting = () => {
     stars,
   });
 
-  const filteredClass = useMemo(() => {
-    return recruits.filter((croot) => croot.TeamID === selectedClassView);
-  }, [recruits, selectedClassView]);
+  const filteredClass = useFilteredFootballRecruitsByTeam({
+    recruits,
+    positions,
+    archetype,
+    selectedClassView,
+  });
+
+  const rawFilteredCrootProfiles = useFilteredCrootProfiles({
+    recruitProfiles: sortedCrootProfiles,
+    recruitMap,
+    positions,
+    archetype,
+    regions,
+    statuses,
+    stars,
+  });
+
+  const filteredCrootProfiles = useMemo(() => {
+    if (!rawFilteredCrootProfiles) return [];
+    return [...rawFilteredCrootProfiles].sort((a: any, b: any) => {
+      // 1. Keep signed/locked at the bottom
+      const aSigned = a.IsSigned || a.IsLocked ? 1 : 0;
+      const bSigned = b.IsSigned || b.IsLocked ? 1 : 0;
+      if (aSigned !== bSigned) return aSigned - bSigned;
+
+      // 2. Sort by CurrentWeeksPoints descending (highest points first)
+      const aPoints = a.CurrentWeeksPoints ?? 0;
+      const bPoints = b.CurrentWeeksPoints ?? 0;
+      if (aPoints !== bPoints) {
+        return bPoints - aPoints;
+      }
+      return 0;
+    });
+  }, [rawFilteredCrootProfiles]);
 
   const pageSize = 100;
 
@@ -192,11 +238,22 @@ export const useCFBRecruiting = () => {
   const SelectClass = (options: any) => {
     const opts = Number(options.value);
     setSelectedClassView(() => opts);
+    setPositions([]);
+    setArchetype([]);
+  };
+
+  const SelectCategory = (category: RecruitingCategory) => {
+    setRecruitingCategory(category);
+    setPositions([]);
+    setArchetype([]);
+    setStars([]);
+    setRegions([]);
+    setStatuses([]);
   };
 
   const openModal = (
     action: ModalAction,
-    player: HockeyCroot | FootballCroot | BasketballCroot
+    player: HockeyCroot | FootballCroot | BasketballCroot,
   ) => {
     handleOpenModal();
     setModalAction(action);
@@ -235,8 +292,9 @@ export const useCFBRecruiting = () => {
     attribute,
     setAttribute,
     recruitingLocked,
-    sortedCrootProfiles,
+    filteredCrootProfiles,
     filteredClass,
     SelectClass,
+    SelectCategory,
   };
 };

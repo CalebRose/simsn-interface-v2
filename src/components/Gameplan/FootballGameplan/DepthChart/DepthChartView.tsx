@@ -2,12 +2,9 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
   CollegePlayer as CFBPlayer,
   NFLPlayer,
-  CollegeDepthChartPosition,
-  NFLDepthChartPosition,
 } from "../../../../models/footballModels";
 import { SimCFB, SimNFL } from "../../../../_constants/constants";
 import { Text } from "../../../../_design/Typography";
-import { SelectDropdown } from "../../../../_design/Select";
 import { SelectOption } from "../../../../_hooks/useSelectStyles";
 import { useSimFBAStore } from "../../../../context/SimFBAContext";
 import { Button } from "../../../../_design/Buttons";
@@ -15,11 +12,6 @@ import { SingleValue } from "react-select";
 import FormationView from "./FormationView";
 import DepthChartManager from "./DepthChartManager";
 import { useDepthChartValidation } from "./useDepthChartValidation";
-import {
-  DepthChartService,
-  UpdateDepthChartDTO,
-  UpdateNFLDepthChartDTO,
-} from "../../../../_services/depthChartService";
 import ValidationToast from "../Common/ValidationToast";
 import {
   CFBPlayerInfoModalBody,
@@ -35,6 +27,7 @@ import {
   clearPlayerFromSlot,
   isPlayerOnTeam,
 } from "./Modal/DepthChartModalHelper";
+import { autoArrangeDepthChart } from "../Utils/DepthChartAutoArrangeUtils";
 
 interface DepthChartViewProps {
   players: (CFBPlayer | NFLPlayer)[];
@@ -87,7 +80,7 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
     null,
   );
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   const validation = useDepthChartValidation({
     depthChart: localDepthChart,
@@ -339,6 +332,17 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
     setLocalDepthChart(depthChart);
   }, [depthChart]);
 
+  const handleAutoArrangeDepthChart = useCallback(() => {
+    if (!localDepthChart || !players) return;
+    const arranged = autoArrangeDepthChart(
+      players,
+      localDepthChart,
+      league,
+      gameplan,
+    );
+    setLocalDepthChart(arranged);
+  }, [localDepthChart, players, league, gameplan]);
+
   const hasUnsavedChanges = useMemo(() => {
     if (!localDepthChart || !depthChart) return false;
 
@@ -402,7 +406,7 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
         contextName="Depth Chart"
       />
       <div className="grid grid-cols-1 gap-8 2xl:gap-6 items-start">
-        {isDesktop && (
+        {(isDesktop || isUltraWide) && (
           <div className="relative min-w-0 z-0 w-full">
             <div className="text-center pb-4 flex justify-between">
               <div>
@@ -477,6 +481,15 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
                       >
                         Reset
                       </Button>
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={handleAutoArrangeDepthChart}
+                        disabled={isSaving}
+                        className={`min-w-24 ${isSaving ? "cursor-not-allowed" : "cursor-pointer"}`}
+                      >
+                        Auto
+                      </Button>
                     </div>
                     {hasUnsavedChanges && (
                       <Text
@@ -506,7 +519,7 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
           </div>
         )}
         <div className="relative z-10 w-full max-w-[20rem] justify-self-center 2xl:max-w-none 2xl:justify-self-stretch">
-          {!isDesktop && (
+          {!isDesktop && !isUltraWide && (
             <div className="space-y-2">
               {!canModify && (
                 <div className="text-center mb-4 p-3 bg-yellow-900 border border-yellow-600 rounded-lg">
@@ -567,6 +580,15 @@ const DepthChartView: React.FC<DepthChartViewProps> = ({
                         className={`min-w-24 ${isSaving || !hasUnsavedChanges ? "cursor-not-allowed" : ""}`}
                       >
                         Reset
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        onClick={handleAutoArrangeDepthChart}
+                        disabled={isSaving}
+                        className={`min-w-24 ${isSaving ? "cursor-not-allowed" : "cursor-pointer"}`}
+                      >
+                        Auto
                       </Button>
                     </div>
                     {hasUnsavedChanges && (

@@ -24,6 +24,7 @@ import {
   TeamQuickLinks,
   TeamInjuries,
   ForumPortal,
+  SeasonPhaseSection,
 } from "./TeamLandingPageComponents";
 import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
@@ -464,7 +465,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
 
   return (
     <>
-      <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6">
+      <div className="flex-col w-full md:mb-6">
         <GamesBar
           games={teamSchedule}
           league={league}
@@ -475,7 +476,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           headerColor={headerColor}
           borderColor={borderColor}
         />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:w-[85vw] items-start">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:w-full items-start">
           {/* Column 1: Standings */}
           <div className="flex flex-col gap-4">
             {currentUser && (
@@ -555,6 +556,25 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                 borderColor: backgroundColor,
               }}
             >
+              <TeamInjuries
+                team={team}
+                league={league}
+                teamInjuries={teamInjuries}
+                backgroundColor={backgroundColor}
+                headerColor={headerColor}
+                borderColor={borderColor}
+                textColorClass={textColorClass}
+                darkerBackgroundColor={darkerBackgroundColor}
+                isLoading={isLoading}
+              />
+            </Border>
+            {/* <Border
+              classes="border-4 py-0 px-0 w-full"
+              styles={{
+                backgroundColor: borderColor,
+                borderColor: backgroundColor,
+              }}
+            >
               <TeamNews
                 team={team}
                 teamNews={teamNews}
@@ -565,7 +585,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
               />
-            </Border>
+            </Border> */}
           </div>
 
           {/* Column 3: QuickLinks, Injuries, Stats */}
@@ -595,16 +615,15 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                 borderColor: backgroundColor,
               }}
             >
-              <TeamInjuries
+              <SeasonPhaseSection
                 team={team}
                 league={league}
-                teamInjuries={teamInjuries}
+                ts={ts}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
-                isLoading={isLoading}
               />
             </Border>
             <Border

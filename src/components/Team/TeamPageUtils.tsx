@@ -167,6 +167,8 @@ export const getCHLPortalAttributes = (
   const preferenceAttributes =
     !isMobile && !isTablet && category === Preferences
       ? [
+          { label: "Off", value: 0 },
+          { label: "Def", value: 0 },
           { label: "ProgramPref", value: player.ProgramPref },
           { label: "ProfDevPref", value: player.ProfDevPref },
           { label: "TraditionsPref", value: player.TraditionsPref },
@@ -271,7 +273,7 @@ export const getPHLAttributes = (
       : [];
 
   const contractAttributes =
-    !isMobile && category === Contracts && phlContract
+    category === Contracts && phlContract
       ? getPHLContracts(phlContract)
       : [];
 
@@ -858,7 +860,7 @@ export const getNFLAttributes = (
       : [];
 
   const nflContracts =
-    !isMobile && category === Contracts
+    category === Contracts
       ? getNFLContracts(nflContract).map((attr) => ({
           ...attr,
           value: attr.value,
@@ -3178,25 +3180,23 @@ export const getAdditionalNBAAttributes = (player: NBAPlayer) => {
   return [
     { label: "POT", value: player.PotentialGrade },
     {
-      label: "Agi",
-      value: player.Agility,
-    },
-    {
-      label: "Fin",
+      label: "Ins",
       value: player.InsideShooting,
     },
     {
-      label: "SH2",
+      label: "Mid",
       value: player.MidRangeShooting,
     },
     {
-      label: "SH3",
+      label: "3pt",
       value: player.ThreePointShooting,
     },
     {
       label: "FT",
       value: player.FreeThrow,
     },
+    { label: "BIQ", value: player.BasketballIQ },
+    { label: "Agi", value: player.Agility },
     {
       label: "BW",
       value: player.Ballwork,

@@ -47,6 +47,7 @@ import {
   ValidateCloseToHome,
 } from "../../../_helper/recruitingHelper";
 import { CFBRecruitingPrefLabel } from "./RecruitingPrefColumn";
+import { GetRecruitingTendency } from "../../../_utility/getRecruitingTendency";
 
 const getRecruitingColumns = (
   league: League,
@@ -55,7 +56,7 @@ const getRecruitingColumns = (
 ) => {
   if (league === SimCFB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch.", accessor: "Archetype" },
@@ -92,6 +93,10 @@ const getRecruitingColumns = (
       ]);
     }
     columns.push({ header: "Close To Home", accessor: "CloseToHome" });
+    columns.push({
+      header: "Signing Expectation",
+      accessor: "RecruitModifier",
+    });
     columns.push({ header: "Status", accessor: "RecruitingStatus" });
     columns.push({ header: "Leaders", accessor: "lead" });
     columns.push({ header: "Actions", accessor: "actions" });
@@ -100,7 +105,7 @@ const getRecruitingColumns = (
   }
   if (league === SimCBB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "⭐", accessor: "Stars" },
@@ -127,7 +132,7 @@ const getRecruitingColumns = (
   }
   if (league === SimCHL) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch.", accessor: "Archetype" },
@@ -158,8 +163,8 @@ const getRecruitingColumns = (
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
-        { header: "Off", accessor: "" },
-        { header: "Def", accessor: "" },
+        { header: "Off", accessor: "OffFit" },
+        { header: "Def", accessor: "DefFit" },
         { header: "Prog.", accessor: "ProgramPref" },
         { header: "Prof. Dev.", accessor: "ProfDevPref" },
         { header: "Trad.", accessor: "TraditionsPref" },
@@ -493,6 +498,9 @@ const CFBRow: React.FC<CFBRowProps> = ({
             <CrossCircle textColorClass="text-red-500" />
           )}
         </div>
+      </TableCell>
+      <TableCell classes="text-xs">
+        {GetRecruitingTendency(item.RecruitModifier)}
       </TableCell>
       <TableCell classes="text-xs">
         {item.RecruitingStatus === "" ? "None" : item.RecruitingStatus}

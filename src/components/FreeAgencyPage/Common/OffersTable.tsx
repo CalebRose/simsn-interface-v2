@@ -8,6 +8,7 @@ import {
   ModalAction,
   OfferAction,
   Preferences,
+  SimNBA,
   SimNFL,
   SimPHL,
   Values,
@@ -154,6 +155,18 @@ export const OfferTable: FC<OfferTableProps> = ({
       ]);
     }
 
+    if (league === SimNBA) {
+      columns = columns.concat([
+        { header: "Y1", accessor: "Year1Total" },
+        { header: "Y2", accessor: "Year2Total" },
+        { header: "Y3", accessor: "Year3Total" },
+        { header: "Y4", accessor: "Year4Total" },
+        { header: "Y5", accessor: "Year5Total" },
+        { header: "Yrs", accessor: "TotalYears" },
+        { header: "CV", accessor: "ContractValue" },
+      ]);
+    }
+
     if (league === SimNFL) {
       columns.push({ header: "Pot.", accessor: "PotentialGrade" });
     }
@@ -278,7 +291,89 @@ export const OfferTable: FC<OfferTableProps> = ({
     item: NBAContractOffer,
     index: number,
     backgroundColor: string,
-  ) => <></>;
+  ) => {
+    const player = playerMap[item.PlayerID] as NBAPlayer;
+    if (!player) return <></>;
+    const offers = offersByPlayer[item.PlayerID];
+    let offerIds = [];
+    let logos: string[] = [];
+    if (offers) {
+      offerIds = offers && offers.map((x) => x.TeamID);
+      logos = offers && offerIds.map((id) => getLogo(SimNBA, id, false));
+    }
+    let winningLogo = "FA";
+    let teamID = player.TeamID;
+    if (teamID > 0) {
+      winningLogo = getLogo(SimNBA, teamID, false);
+    }
+    return (
+      <>
+        <div
+          key={item.ID}
+          className={`table-row border-b dark:border-gray-700 text-left`}
+          style={{ backgroundColor }}
+        >
+          <TableCell classes="w-[5em] 430px:w-[4em]">
+            <div className="flex flex-row">
+              {player && player.TeamID > 0 ? (
+                <Logo url={winningLogo} variant="tiny" containerClass="p-2" />
+              ) : (
+                <div className="ml-2">
+                  <QuestionMark />
+                </div>
+              )}
+            </div>
+          </TableCell>
+          <TableCell>{player.ID}</TableCell>
+          <TableCell>
+            {player.FirstName} {player.LastName}
+          </TableCell>
+          <TableCell>{player.Position}</TableCell>
+          <TableCell>{player.Archetype}</TableCell>
+          <TableCell>{player.Year}</TableCell>
+          <TableCell>{player.Overall}</TableCell>
+          <TableCell>{item.Year1Total}</TableCell>
+          <TableCell>{item.Year2Total}</TableCell>
+          <TableCell>{item.Year3Total}</TableCell>
+          <TableCell>{item.Year4Total}</TableCell>
+          <TableCell>{item.Year5Total}</TableCell>
+          <TableCell>{item.TotalYears}</TableCell>
+          <TableCell>{item.ContractValue}</TableCell>
+          <TableCell>{player.MinimumValue.toFixed(2)}</TableCell>
+          <TableCell classes="w-[5em] 430px:w-[10em]">
+            <div className="flex flex-row">
+              {!offers || (offers.length === 0 && "None")}
+              {logos.length > 0 &&
+                logos.map((url) => (
+                  <Logo url={url} variant="tiny" containerClass="p-2" />
+                ))}
+            </div>
+          </TableCell>
+          <TableCell classes="w-[5.5em] 430px:w-[6em] sm:w-28">
+            <ButtonGroup direction="row" classes="">
+              <Button
+                variant="success"
+                size="xs"
+                disabled={ts.IsFreeAgencyLocked || item.IsRejected}
+                onClick={() =>
+                  handleOfferModal(FreeAgentOffer, player as NBAPlayer)
+                }
+              >
+                <CurrencyDollar />
+              </Button>
+              <Button
+                variant="danger"
+                size="xs"
+                onClick={() => openModal(CancelOffer, player as NBAPlayer)}
+              >
+                <CrossCircle />
+              </Button>
+            </ButtonGroup>
+          </TableCell>
+        </div>
+      </>
+    );
+  };
 
   const PHLRowRenderer = (
     item: PHLFreeAgencyOffer,
@@ -427,6 +522,9 @@ export const OfferTable: FC<OfferTableProps> = ({
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
     if (league === SimPHL) {
       return PHLRowRenderer;
+    }
+    if (league === SimNBA) {
+      return NBARowRenderer;
     }
     return NFLRowRenderer;
   };

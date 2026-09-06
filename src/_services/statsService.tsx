@@ -1,7 +1,8 @@
-import { fbaUrl, hckUrl } from "../_constants/urls";
+import { bbaUrl, fbaUrl, hckUrl } from "../_constants/urls";
 import { GetCall, GetExportCall } from "../_helper/fetchHelper";
 import { SearchStatsResponse as FBASearchStatsResponse } from "../models/footballModels";
 import { SearchStatsResponse as HCKSearchStatsResponse } from "../models/hockeyModels";
+import { SearchStatsResponse as BBASearchStatsResponse } from "../models/basketballModels";
 
 export const StatsService = {
   HCKCollegeStatsSearch: async (dto: any): Promise<HCKSearchStatsResponse> => {
@@ -60,21 +61,21 @@ export const StatsService = {
     );
   },
 
-  BBACollegeStatsSearch: async (dto: any): Promise<HCKSearchStatsResponse> => {
+  BBACollegeStatsSearch: async (dto: any): Promise<BBASearchStatsResponse> => {
     return await GetCall(
-      `${hckUrl}statistics/interface/cbb/${dto.SeasonID}/${dto.WeekID}/${dto.ViewType}/${dto.GameType}`,
+      `${bbaUrl}statistics/interface/cbb/${dto.SeasonID}/${dto.WeekID}/${dto.ViewType}/${dto.GameType}`,
     );
   },
 
-  BBAProStatsSearch: async (dto: any): Promise<HCKSearchStatsResponse> => {
+  BBAProStatsSearch: async (dto: any): Promise<BBASearchStatsResponse> => {
     return await GetCall(
-      `${hckUrl}statistics/interface/nba/${dto.SeasonID}/${dto.WeekID}/${dto.ViewType}/${dto.GameType}`,
+      `${bbaUrl}statistics/interface/nba/${dto.SeasonID}/${dto.WeekID}/${dto.ViewType}/${dto.GameType}`,
     );
   },
 
   BBACollegeStatsExport: async (dto: any): Promise<void> => {
     await GetExportCall(
-      `${hckUrl}export/stats/cbb/${dto.SeasonID}/${dto.WeekID}/${dto.ViewType}/${dto.GameType}`,
+      `${bbaUrl}export/stats/cbb/${dto.SeasonID}/${dto.WeekID}/${dto.ViewType}/${dto.GameType}`,
       "blob",
       `cbb_season_${dto.SeasonID}_week_${dto.WeekID}_${dto.ViewType}_${dto.GameType}_stats_export`,
     );
@@ -82,7 +83,7 @@ export const StatsService = {
 
   BBAProStatsExport: async (dto: any): Promise<void> => {
     await GetExportCall(
-      `${hckUrl}export/stats/nba/${dto.SeasonID}/${dto.WeekID}/${dto.ViewType}/${dto.GameType}`,
+      `${bbaUrl}export/stats/nba/${dto.SeasonID}/${dto.WeekID}/${dto.ViewType}/${dto.GameType}`,
       "blob",
       `nba_season_${dto.SeasonID}_week_${dto.WeekID}_${dto.ViewType}_${dto.GameType}_stats_export`,
     );

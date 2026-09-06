@@ -88,7 +88,7 @@ export const ForumsHomePage: React.FC = () => {
 
   return (
     <PageContainer isLoading={forumsLoading} title="">
-      <div className="mx-auto flex w-[95vw] flex-col lg:w-[80vw] py-2">
+      <div className="mx-auto flex w-[95vw] flex-col lg:w-full px-4 py-2">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 space-x-2">
           <Text variant="h4">Community Forums</Text>

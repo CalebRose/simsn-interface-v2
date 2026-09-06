@@ -52,11 +52,19 @@ import {
   TransferPortalProfile,
   CollegeLineup,
   NBALineup,
+  CollegePlayerStats,
+  CollegePlayerSeasonStats,
+  TeamSeasonStats,
+  NBAPlayerStats,
+  NBAPlayerSeasonStats,
+  NBATeamStats,
+  NBATeamSeasonStats,
+  TeamStats,
 } from "../models/basketballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { BootstrapService } from "../_services/bootstrapService";
 import { bba_ws } from "../_constants/urls";
-import { SimBBA, SimCBB } from "../_constants/constants";
+import { SEASON_VIEW, SimBBA, SimCBB } from "../_constants/constants";
 import { StatsService } from "../_services/statsService";
 import { enqueueSnackbar } from "notistack";
 import { FreeAgencyService } from "../_services/freeAgencyService";
@@ -86,6 +94,7 @@ interface SimBBAContextProps {
   nbaTeam: NBATeam | null;
   nbaTeams: NBATeam[];
   nbaTeamOptions: { label: string; value: string }[];
+  nbaTeamOnlyOptions: { label: string; value: string }[];
   nbaConferenceOptions: { label: string; value: string }[];
   cbbTeamMap: Record<number, Team> | null;
   currentCBBStandings: CollegeStandings[];
@@ -202,6 +211,14 @@ interface SimBBAContextProps {
   transferProfileMapByPlayerID: Record<number, TransferPortalProfile[]>;
   cbbLineupMap: Record<number, CollegeLineup[]>;
   nbaLineupMap: Record<number, NBALineup[]>;
+  cbbPlayerGameStatsMap: Record<number, CollegePlayerStats[]>;
+  cbbPlayerSeasonStatsMap: Record<number, CollegePlayerSeasonStats[]>;
+  cbbTeamGameStatsMap: Record<number, TeamStats[]>;
+  cbbTeamSeasonStatsMap: Record<number, TeamSeasonStats[]>;
+  nbaPlayerGameStatsMap: Record<number, NBAPlayerStats[]>;
+  nbaPlayerSeasonStatsMap: Record<number, NBAPlayerSeasonStats[]>;
+  nbaTeamGameStatsMap: Record<number, NBATeamStats[]>;
+  nbaTeamSeasonStatsMap: Record<number, NBATeamSeasonStats[]>;
   updateCBBLineupMap: (newMap: Record<number, CollegeLineup[]>) => void;
   updateNBALineupMap: (newMap: Record<number, NBALineup[]>) => void;
   getLandingBootstrapData: () => void;
@@ -233,7 +250,10 @@ interface SimBBAContextProps {
   exportNBAFreeAgents: () => Promise<void>;
   addPlayerToScoutBoard: (dto: any, playerData?: any) => Promise<void>;
   revealScoutingAttribute: (dto: any) => Promise<void>;
-  removePlayerFromScoutBoard: (id: number) => Promise<void>;
+  removePlayerFromScoutBoard: (
+    id: number,
+    selectedTeamID: number,
+  ) => Promise<void>;
   exportDraftPicks: (dto: any) => Promise<void>;
 }
 
@@ -250,6 +270,7 @@ const defaultContext: SimBBAContextProps = {
   nbaTeam: null,
   nbaTeams: [],
   nbaTeamOptions: [],
+  nbaTeamOnlyOptions: [],
   nbaConferenceOptions: [],
   cbbTeamMap: {},
   currentCBBStandings: [],
@@ -364,6 +385,14 @@ const defaultContext: SimBBAContextProps = {
   transferProfileMapByPlayerID: {},
   cbbLineupMap: {},
   nbaLineupMap: {},
+  cbbPlayerGameStatsMap: {},
+  cbbPlayerSeasonStatsMap: {},
+  cbbTeamGameStatsMap: {},
+  cbbTeamSeasonStatsMap: {},
+  nbaPlayerGameStatsMap: {},
+  nbaPlayerSeasonStatsMap: {},
+  nbaTeamGameStatsMap: {},
+  nbaTeamSeasonStatsMap: {},
   getLandingBootstrapData: async () => {},
   getBootstrapRosterData: async () => {},
   getBootstrapRecruitingData: async () => {},
@@ -415,6 +444,9 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [nbaTeam, setNBATeam] = useState<NBATeam | null>(null);
   const [nbaTeams, setNBATeams] = useState<NBATeam[]>([]);
   const [nbaTeamOptions, setNBATeamOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
+  const [nbaTeamOnlyOptions, setNBATeamOnlyOptions] = useState<
     { label: string; value: string }[]
   >([]);
   const [nbaConferenceOptions, setNBAConferenceOptions] = useState<
@@ -543,6 +575,31 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   >({});
   const [nbaScoutingProfileMap, setNBAScoutingProfileMap] = useState<
     Record<number, ScoutingProfile[] | null>
+  >({});
+
+  const [cbbPlayerGameStatsMap, setCbbPlayerGameStatsMap] = useState<
+    Record<number, CollegePlayerStats[]>
+  >({});
+  const [cbbPlayerSeasonStatsMap, setCbbPlayerSeasonStats] = useState<
+    Record<number, CollegePlayerSeasonStats[]>
+  >({});
+  const [cbbTeamGameStatsMap, setCbbTeamGameStats] = useState<
+    Record<number, TeamStats[]>
+  >({});
+  const [cbbTeamSeasonStatsMap, setCbbTeamSeasonStats] = useState<
+    Record<number, TeamSeasonStats[]>
+  >({});
+  const [nbaPlayerGameStatsMap, setNbaPlayerGameStats] = useState<
+    Record<number, NBAPlayerStats[]>
+  >({});
+  const [nbaPlayerSeasonStatsMap, setNbaPlayerSeasonStats] = useState<
+    Record<number, NBAPlayerSeasonStats[]>
+  >({});
+  const [nbaTeamGameStatsMap, setNbaTeamGameStats] = useState<
+    Record<number, NBATeamStats[]>
+  >({});
+  const [nbaTeamSeasonStatsMap, setNbaTeamSeasonStats] = useState<
+    Record<number, NBATeamSeasonStats[]>
   >({});
 
   const currentCollegeSeasonGames = useMemo(() => {
@@ -756,6 +813,14 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         ).values(),
       ).sort((a, b) => a.label.localeCompare(b.label));
       setNBATeamOptions(nbaTeamOptions);
+      const sortedNBAOnlyTeams = sortedNBATeams.filter(
+        (team) => team.LeagueID === 1,
+      );
+      const nbaTeamOnlyOptions = sortedNBAOnlyTeams.map((team) => ({
+        label: `${team.Team} ${team.Nickname}`,
+        value: team.ID.toString(),
+      }));
+      setNBATeamOnlyOptions(nbaTeamOnlyOptions);
       setNBAConferenceOptions(nbaConferenceOptions);
       const nbaTeamMap = Object.fromEntries(
         sortedNBATeams.map((team) => [team.ID, team]),
@@ -1359,61 +1424,59 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const SearchBasketballStats = useCallback(async (dto: any) => {
     if (dto.League === SimCBB) {
       const res = await StatsService.BBACollegeStatsSearch(dto);
-      // if (dto.ViewType === SEASON_VIEW) {
-      //   setCBBPlayerSeasonStats((prev) => {
-      //     return {...prev,
-      //       [dto.SeasonID]: res.CBBPlayerSeasonStats,
-      //     };
-      //   });
-      //   setCBBTeamSeasonStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.SeasonID]: res.CBBTeamSeasonStats,
-      //     };
-      //   });
-      // } else {
-      //   setCBBPlayerGameStatsMap((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.WeekID]: res.CBBPlayerGameStats,
-      //     }
-      //   });
-      //   setCBBTeamGameStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.WeekID]: res.CBBTeamGameStats,
-      //     };
-      //   });
-      // }
+      if (dto.ViewType === SEASON_VIEW) {
+        setCbbPlayerSeasonStats((prev) => {
+          return { ...prev, [dto.SeasonID]: res.CBBPlayerSeasonStats };
+        });
+        setCbbTeamSeasonStats((prev) => {
+          return {
+            ...prev,
+            [dto.SeasonID]: res.CBBTeamSeasonStats,
+          };
+        });
+      } else {
+        setCbbPlayerGameStatsMap((prev) => {
+          return {
+            ...prev,
+            [dto.WeekID]: res.CBBPlayerGameStats,
+          };
+        });
+        setCbbTeamGameStats((prev) => {
+          return {
+            ...prev,
+            [dto.WeekID]: res.CBBTeamGameStats,
+          };
+        });
+      }
     } else {
-      const res = await StatsService.HCKProStatsSearch(dto);
-      // if (dto.ViewType === SEASON_VIEW) {
-      //   setNBAPlayerSeasonStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.SeasonID]: res.NBAPlayerSeasonStats,
-      //     };
-      //   });
-      //   setNBATeamSeasonStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.SeasonID]: res.NBATeamSeasonStats,
-      //     };
-      //   });
-      // } else {
-      //   setNBAPlayerGameStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.WeekID]: res.NBAPlayerGameStats,
-      //     };
-      //   });
-      //   setNBATeamGameStats((prev) => {
-      //     return {
-      //       ...prev,
-      //       [dto.WeekID]: res.NBATeamGameStats,
-      //     };
-      //   });
-      // }
+      const res = await StatsService.BBAProStatsSearch(dto);
+      if (dto.ViewType === SEASON_VIEW) {
+        setNbaPlayerSeasonStats((prev) => {
+          return {
+            ...prev,
+            [dto.SeasonID]: res.NBAPlayerSeasonStats,
+          };
+        });
+        setNbaTeamSeasonStats((prev) => {
+          return {
+            ...prev,
+            [dto.SeasonID]: res.NBATeamSeasonStats,
+          };
+        });
+      } else {
+        setNbaPlayerGameStats((prev) => {
+          return {
+            ...prev,
+            [dto.WeekID]: res.NBAPlayerGameStats,
+          };
+        });
+        setNbaTeamGameStats((prev) => {
+          return {
+            ...prev,
+            [dto.WeekID]: res.NBATeamGameStats,
+          };
+        });
+      }
     }
   }, []);
 
@@ -1912,6 +1975,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
 
   const revealScoutingAttribute = useCallback(
     async (dto: any) => {
+      console.log({ dto });
       try {
         const res = await DraftService.RevealNBAAttribute(dto);
         // Testing purposes
@@ -1919,11 +1983,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         // const res = true;
         if (res) {
           setNBAScoutingProfileMap((prev) => {
-            if (!nbaTeam) return prev;
-            const profiles = prev[nbaTeam.ID] ?? [];
+            if (!dto.TeamID) return prev;
+            const profiles = prev[dto.TeamID] ?? [];
             return {
               ...prev,
-              [nbaTeam.ID]: profiles.map((p) =>
+              [dto.TeamID]: profiles.map((p) =>
                 p.ID === dto.ScoutProfileID
                   ? new ScoutingProfile({
                       ...p,
@@ -1934,13 +1998,13 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
               ),
             };
           });
-          if (nbaTeam) {
+          if (dto.TeamID) {
             setNBAWarRoomMap((prev) => {
-              const currentWarRoom = prev[nbaTeam.ID];
+              const currentWarRoom = prev[dto.TeamID];
               if (!currentWarRoom) return prev;
               return {
                 ...prev,
-                [nbaTeam.ID]: new NBAWarRoom({
+                [dto.TeamID]: new NBAWarRoom({
                   ...currentWarRoom,
                   SpentPoints: currentWarRoom.SpentPoints + dto.Points,
                 }),
@@ -1964,8 +2028,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   );
 
   const removePlayerFromScoutBoard = useCallback(
-    async (id: number) => {
-      const teamID = nbaTeam?.ID;
+    async (id: number, selectedTeamID: number) => {
+      const teamID = selectedTeamID;
       const removedProfile = teamID
         ? (nbaScoutingProfileMap[teamID] ?? []).find((p) => p.ID === id)
         : null;
@@ -1977,10 +2041,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
           [teamID]: (prev[teamID] ?? []).filter((p) => p.ID !== id),
         }));
       }
-      enqueueSnackbar("Player removed from scouting board!", {
-        variant: "success",
-        autoHideDuration: 3000,
-      });
 
       try {
         await DraftService.RemoveNBAPlayerFromBoard(id);
@@ -1997,8 +2057,12 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
           autoHideDuration: 3000,
         });
       }
+      enqueueSnackbar("Player removed from scouting board!", {
+        variant: "success",
+        autoHideDuration: 3000,
+      });
     },
-    [nbaTeam, nbaScoutingProfileMap, enqueueSnackbar],
+    [nbaScoutingProfileMap, enqueueSnackbar],
   );
 
   const exportDraftPicks = useCallback(
@@ -2034,6 +2098,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         nbaTeam,
         nbaTeams,
         nbaTeamOptions,
+        nbaTeamOnlyOptions,
         nbaConferenceOptions,
         cbbTeamMap,
         currentCBBStandings,
@@ -2104,6 +2169,14 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         transferProfileMapByPlayerID,
         cbbLineupMap,
         nbaLineupMap,
+        cbbPlayerGameStatsMap,
+        cbbPlayerSeasonStatsMap,
+        cbbTeamGameStatsMap,
+        cbbTeamSeasonStatsMap,
+        nbaPlayerGameStatsMap,
+        nbaPlayerSeasonStatsMap,
+        nbaTeamGameStatsMap,
+        nbaTeamSeasonStatsMap,
         getLandingBootstrapData,
         getBootstrapRosterData,
         getBootstrapRecruitingData,

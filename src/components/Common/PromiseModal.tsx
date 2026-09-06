@@ -55,7 +55,8 @@ const CBB_OPTION_TYPES: { label: string; value: string }[] = [
 ];
 const CHL_OPTION_TYPES: { label: string; value: string }[] = [
   { label: "No Redshirt", value: "No Redshirt" },
-  { label: "Time on Ice", value: "Time on Ice" },
+  { label: "Lineup", value: "Lineup" },
+  { label: "Games Played", value: "Games Played" },
   { label: "Wins", value: "Wins" },
   { label: "Home State Game", value: "Home State Game" },
   { label: "Conference Championship", value: "Conference Championship" },
@@ -138,6 +139,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
   }, [league, promiseType, benchmark, promise, hasUserMadeChanges]);
 
   const minRange = useMemo(() => {
+    if (promiseType === "Lineup") return 1;
     return 0;
   }, []);
 
@@ -151,8 +153,11 @@ export const PromiseModal: FC<PromiseModalProps> = ({
     if (promiseType === "Wins" && league === SimCFB) {
       return 17;
     }
-    if (promiseType === "Time on Ice") {
-      return 20; // minutes per game
+    if (promiseType === "Lineup") {
+      return 4; // minutes per game
+    }
+    if (promiseType === "Games Played" && league === SimCHL) {
+      return 34; // minutes per game
     }
     if (promiseType === "Minutes") {
       return 40; // minutes per game
@@ -172,12 +177,21 @@ export const PromiseModal: FC<PromiseModalProps> = ({
       promiseType === "Wins" ||
       promiseType === "Snap Count" ||
       promiseType === "Time on Ice" ||
+      promiseType === "Games Played" ||
       promiseType === "Minutes" ||
       promiseType === "Snap Count"
     ) {
       if (benchmark < minRange || benchmark > maxRange) {
         list.push(`Benchmark must be between ${minRange} and ${maxRange}.`);
       }
+    }
+
+    if (promiseType === "Games Played" && player.Position !== "G") {
+      list.push("Games Played promise can only be made to goalies.");
+    }
+
+    if (promiseType === "Lineup" && player.Position === "G") {
+      list.push("Lineup promise cannot be made to goalies.");
     }
 
     if (

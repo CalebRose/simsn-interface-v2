@@ -417,6 +417,7 @@ export const getNBAScoutableAttributes = (
     "Mid Range Shooting",
     "Three Point Shooting",
     "Free Throw",
+    "Basketball IQ",
     "Agility",
     "Ballwork",
     "Stealing",
@@ -434,6 +435,7 @@ export const getNBAAttributeFieldName = (displayName: string): string => {
     "Mid Range Shooting": "MidRangeShooting",
     "Three Point Shooting": "ThreePointShooting",
     "Free Throw": "FreeThrow",
+    "Basketball IQ": "BasketballIQ",
     Agility: "Agility",
     Ballwork: "Ballwork",
     Stealing: "Stealing",
@@ -500,12 +502,16 @@ export const getNBAAttributeShowProperty = (
       return "ShowStealing";
     case "Blocking":
       return "ShowBlocking";
+    case "Rebounding":
+      return "ShowRebounding";
     case "Interior Def.":
       return "ShowInteriorDefense";
     case "Perimeter Def.":
       return "ShowPerimeterDefense";
     case "Potential Grade":
       return "ShowPotential";
+    case "Basketball IQ":
+      return "ShowBasketballIQ";
     default:
       return `ShowAttribute${index + 1}`;
   }

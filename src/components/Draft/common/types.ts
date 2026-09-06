@@ -71,11 +71,29 @@ export const PHL_POSITIONS = [
   { value: "G", label: "Goalie" },
 ];
 
+export const NBA_POSITIONS = [
+  { value: "C", label: "Center" },
+  { value: "F", label: "Forward" },
+  { value: "G", label: "Guard" },
+];
+
 export const getPositionsByLeague = (league: DraftLeague) => {
-  return isNFLLeague(league) ? NFL_POSITIONS : PHL_POSITIONS;
+  switch (league) {
+    case SimNFL:
+      return NFL_POSITIONS;
+    case SimPHL:
+      return PHL_POSITIONS;
+    case SimNBA:
+      return NBA_POSITIONS;
+    default:
+      return NBA_POSITIONS;
+  }
 };
 
 export const getLeagueConstant = (league: DraftLeague): DraftLeague => {
+  if (league === SimNBA) {
+    return SimNBA;
+  }
   return isNFLLeague(league) ? SimNFL : SimPHL;
 };
 

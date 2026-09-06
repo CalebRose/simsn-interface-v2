@@ -72,7 +72,7 @@ export const NBADraftPage: React.FC<NBADraftPageProps> = ({ league }) => {
     getTimeForPick,
     PICKS_PER_ROUND: NBA_PICKS_PER_ROUND,
     selectTeamOption,
-    nbaTeamOptions,
+    nbaTeamOnlyOptions,
     teamNeedsList,
     modalPlayer,
     handleCloseModal,
@@ -353,7 +353,7 @@ export const NBADraftPage: React.FC<NBADraftPageProps> = ({ league }) => {
                   league={SimNBA}
                   backgroundColor={backgroundColor}
                   isDraftComplete={isDraftComplete}
-                  teamOptions={nbaTeamOptions}
+                  teamOptions={nbaTeamOnlyOptions}
                   selectTeamOption={selectTeamOption}
                   resetTimer={resetTimer}
                   startDraft={startDraft}

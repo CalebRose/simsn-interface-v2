@@ -658,7 +658,42 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             </>
           }
         >
-          <Text classes="mb-4 text-start">
+          {currentUser?.teamId === 0 &&
+            currentUser.NFLTeamID === 0 &&
+            currentUser.CHLTeamID === 0 &&
+            currentUser.PHLTeamID === 0 &&
+            currentUser.cbb_id === 0 &&
+            currentUser.NBATeamID === 0 &&
+            (league === SimNFL || league === SimNBA || league === SimPHL) && (
+              <>
+                <Text variant="small" classes="mb-1 text-start text-yellow-500">
+                  Hey! So it looks like you're a brand new user requesting to
+                  join one of our pro teams. That's awesome. These leagues are
+                  often highly competitive and require a significant amount of
+                  teamwork and communication. Our pro leagues are designed to
+                  allow multiple users to manage a single team simultaneously in
+                  a team effort.
+                </Text>
+                <Text variant="small" classes="mb-1 text-start text-yellow-500">
+                  If this sounds exciting to you, then please continue filling
+                  out the application form below. It is also suggested that you
+                  get in communication with the owner of the team you're
+                  applying for either through our Discord server or using the
+                  DM/Inbox system.
+                </Text>
+                <Text variant="small" classes="mb-4 text-start text-yellow-500">
+                  Additionally, it is{" "}
+                  <span className="font-semibold italic">
+                    highly encouraged
+                  </span>{" "}
+                  to apply for a college team as well. These are single-user
+                  managed, use the same gameplay strategies as the
+                  pro-counter-part, and can give you experience that will
+                  benefit your time in the pro leagues and across the site.
+                </Text>
+              </>
+            )}
+          <Text variant="xs" classes="mb-4 text-start">
             Coaching the {teamLabel} in {league} can be a wonderful experience.
             You will be coaching alongside others users in the{" "}
             {selectedTeam.Conference} Conference,{" "}
@@ -687,7 +722,6 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               `competing not only for the
             postseason, but also the opportunity to win the World Series.`}
           </Text>
-
           {/* ── Application form ─────────────────────────────────────────────── */}
           <div className="flex flex-col gap-3 mb-4 px-2">
             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -767,7 +801,6 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               />
             </div>
           </div>
-
           <Text classes="text-start text-sm text-gray-500 dark:text-gray-400">
             If you have questions before applying, visit our{" "}
             <a
@@ -1294,34 +1327,73 @@ export const SelectedSimCHLTeamCard = (data: any) => {
         </div>
       </BorderHidden>
       <BorderHidden>
-        <div className="flex flex-row mb-2 justify-between items-center gap-10">
+        <div className="grid grid-cols-5 mb-2 justify-between items-center gap-10">
           <div className="flex flex-col">
-            <Text variant="alternate" classes="font-semibold whitespace-nowrap">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
               Conference Championships
             </Text>
-            <Text variant="small">
+            <Text variant="xs">
               {data.ConferenceChampionships &&
               data.ConferenceChampionships.length > 0
                 ? data.ConferenceChampionships.map(
                     (x: any, i: number) =>
                       `${x}${
-                        i < data.ConferenceChampionships.length - 1 ? "," : ""
+                        i < data.ConferenceChampionships.length - 1 ? ", " : ""
                       }`,
                   )
                 : "None"}
             </Text>
           </div>
           <div className="flex flex-col">
-            <Text variant="alternate" classes="font-semibold whitespace-nowrap">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
+              Playoffs
+            </Text>
+            <Text variant="xs">
+              {data.Playoffs && data.Playoffs.length > 0
+                ? data.Playoffs.map(
+                    (x: any, i: number) =>
+                      `${x}${i < data.Playoffs.length - 1 ? ", " : ""}`,
+                  )
+                : "None"}
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
+              Frozen Fours
+            </Text>
+            <Text variant="xs">
+              {data.FrozenFours && data.FrozenFours.length > 0
+                ? data.FrozenFours.map(
+                    (x: any, i: number) =>
+                      `${x}${i < data.FrozenFours.length - 1 ? ", " : ""}`,
+                  )
+                : "None"}
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
+              National Runner-Ups
+            </Text>
+            <Text variant="xs">
+              {data.RunnerUps && data.RunnerUps.length > 0
+                ? data.RunnerUps.map(
+                    (x: any, i: number) =>
+                      `${x}${i < data.RunnerUps.length - 1 ? ", " : ""}`,
+                  )
+                : "None"}
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="xs" classes="font-semibold whitespace-nowrap">
               National Championships
             </Text>
-            <Text variant="small">
+            <Text variant="xs">
               {data.NationalChampionships &&
               data.NationalChampionships.length > 0
                 ? data.NationalChampionships.map(
                     (x: any, i: number) =>
                       `${x}${
-                        i < data.NationalChampionships.length - 1 ? "," : ""
+                        i < data.NationalChampionships.length - 1 ? ", " : ""
                       }`,
                   )
                 : "None"}

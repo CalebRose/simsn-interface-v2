@@ -24,6 +24,10 @@ import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { useModal } from "../../../_hooks/useModal";
 import { CollegePlayer as FootballPlayer } from "../../../models/footballModels";
 import { TransferPlayerResponse as BasketballPlayer } from "../../../models/basketballModels";
+import {
+  defensiveSystemsInformationList,
+  offensiveSystemsInformationList,
+} from "../../Gameplan/HockeyLineups/useLineupUtils";
 
 export const useHCKTransferPortal = () => {
   const hkStore = useSimHCKStore();
@@ -63,7 +67,7 @@ export const useHCKTransferPortal = () => {
   const teamTransferPortalProfiles = useMemo(() => {
     if (chlTeam && transferPortalProfiles) {
       return transferPortalProfiles.filter(
-        (profile) => profile.ProfileID === chlTeam.ID
+        (profile) => profile.ProfileID === chlTeam.ID,
       );
     }
     return [];
@@ -78,7 +82,7 @@ export const useHCKTransferPortal = () => {
     }
     return teamTransferPortalProfiles.reduce(
       (acc, profile) => acc + profile.CurrentWeeksPoints,
-      0
+      0,
     );
   }, [teamTransferPortalProfiles]);
 
@@ -181,7 +185,7 @@ export const useHCKTransferPortal = () => {
 
   const openModal = (
     action: ModalAction,
-    player: HockeyPlayer | FootballPlayer | BasketballPlayer
+    player: HockeyPlayer | FootballPlayer | BasketballPlayer,
   ) => {
     handleOpenModal();
     setModalAction(action);
@@ -189,7 +193,7 @@ export const useHCKTransferPortal = () => {
   };
 
   const openPromiseModal = (
-    player: HockeyPlayer | FootballPlayer | BasketballPlayer
+    player: HockeyPlayer | FootballPlayer | BasketballPlayer,
   ) => {
     promiseModal.handleOpenModal();
     setModalPlayer(player);
@@ -201,6 +205,20 @@ export const useHCKTransferPortal = () => {
       setTableViewType(Attributes);
     }
   };
+
+  const offensiveSystemsInformation = useMemo(() => {
+    return offensiveSystemsInformationList[
+      teamProfile!
+        .OffensiveSystem as keyof typeof offensiveSystemsInformationList
+    ];
+  }, [teamProfile]);
+
+  const defensiveSystemsInformation = useMemo(() => {
+    return defensiveSystemsInformationList[
+      teamProfile!
+        .DefensiveSystem as keyof typeof defensiveSystemsInformationList
+    ];
+  }, [teamProfile]);
 
   return {
     teamProfile,
@@ -236,5 +254,7 @@ export const useHCKTransferPortal = () => {
     openPromiseModal,
     currentSpentPoints,
     chlTeamOptions,
+    offensiveSystemsInformation,
+    defensiveSystemsInformation,
   };
 };

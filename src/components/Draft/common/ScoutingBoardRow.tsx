@@ -111,6 +111,8 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
     const cost = getScoutingCost(attributeName, league);
     const canAfford = availablePoints >= cost;
 
+    console.log({ attributeName, showProperty, revealed, cost });
+
     return (
       <ScoutingAttributeBox
         key={attributeName}

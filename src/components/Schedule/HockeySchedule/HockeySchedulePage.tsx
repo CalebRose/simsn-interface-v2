@@ -344,7 +344,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                       <Text variant="body">Week</Text>
                       <SelectDropdown
                         value={selectedWeek}
-                        options={Array.from({ length: 22 }, (_, i) => ({
+                        options={Array.from({ length: 25 }, (_, i) => ({
                           label: `${i + 1}`,
                           value: (i + 1).toString(),
                         }))}

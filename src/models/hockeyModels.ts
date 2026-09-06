@@ -6839,6 +6839,7 @@ export class Timestamp {
   PreseasonPhase: number;
   IsPreseason: boolean;
   SeasonPhase: number;
+  Phase: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -6883,6 +6884,7 @@ export class Timestamp {
     this.PreseasonPhase = source["PreseasonPhase"];
     this.IsPreseason = source["IsPreseason"];
     this.SeasonPhase = source["SeasonPhase"];
+    this.Phase = source["Phase"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

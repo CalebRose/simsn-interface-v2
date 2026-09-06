@@ -106,7 +106,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
   redshirtCount,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop, isTablet } = useResponsive();
+  const { isDesktop, isTablet, isUltraWide } = useResponsive();
   const {
     hck_Timestamp,
     collegePromiseMap,
@@ -114,30 +114,32 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     individualDraftPickMap,
   } = useSimHCKStore();
 
+  const isMobile = !isDesktop && !isTablet && !isUltraWide;
+
   let rosterColumns = useMemo(() => {
     let columns = [
       { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       {
-        header: !isDesktop && !isTablet ? "Pos" : "Position",
+        header: isMobile ? "Pos" : "Position",
         accessor: "Position",
       },
       {
-        header: !isDesktop && !isTablet ? "Arch" : "Archetype",
+        header: isMobile ? "Arch" : "Archetype",
         accessor: "Archetype",
       },
       {
-        header: !isDesktop && !isTablet ? "Yr" : "Year",
+        header: isMobile ? "Yr" : "Year",
         accessor: "Year",
       },
       { header: "⭐", accessor: "Stars" },
       {
-        header: !isDesktop && !isTablet ? "Ovr" : "Overall",
+        header: isMobile ? "Ovr" : "Overall",
         accessor: "Overall",
       },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         { header: "Health", accessor: "isInjured" },
         { header: "Injury", accessor: "InjuryType" },
@@ -153,42 +155,73 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     }
 
     if (
-      (isDesktop || isTablet) &&
+      (isDesktop || isTablet || isUltraWide) &&
       (category === Attributes || category === Potentials)
     ) {
       columns = columns.concat([
-        { header: "Agi", accessor: "Agility" },
-        { header: "FO", accessor: "Faceoffs" },
-        { header: "LSA", accessor: "LongShotAccuracy" },
-        { header: "LSP", accessor: "LongShotPower" },
-        { header: "CSA", accessor: "CloseShotAccuracy" },
-        { header: "CSP", accessor: "CloseShotPower" },
-        { header: "Pass", accessor: "Passing" },
-        { header: "PH", accessor: "PuckHandling" },
-        { header: "Str", accessor: "Strength" },
-        { header: "BChk", accessor: "BodyChecking" },
-        { header: "SChk", accessor: "StickChecking" },
-        { header: "SB", accessor: "ShotBlocking" },
-        { header: "GK", accessor: "Goalkeeping" },
-        { header: "GV", accessor: "GoalieVision" },
-        { header: "Sta", accessor: "Stamina" },
-        { header: "Inj", accessor: "Injury" },
+        { header: !isUltraWide ? "Agi" : "Agility", accessor: "Agility" },
+        { header: !isUltraWide ? "FO" : "Faceoffs", accessor: "Faceoffs" },
+        {
+          header: !isUltraWide ? "LSA" : "Long Shot Accuracy",
+          accessor: "LongShotAccuracy",
+        },
+        {
+          header: !isUltraWide ? "LSP" : "Long Shot Power",
+          accessor: "LongShotPower",
+        },
+        {
+          header: !isUltraWide ? "CSA" : "Close Shot Accuracy",
+          accessor: "CloseShotAccuracy",
+        },
+        {
+          header: !isUltraWide ? "CSP" : "Close Shot Power",
+          accessor: "CloseShotPower",
+        },
+        { header: !isUltraWide ? "Pass" : "Passing", accessor: "Passing" },
+        {
+          header: !isUltraWide ? "PH" : "Puck Handling",
+          accessor: "PuckHandling",
+        },
+        { header: !isUltraWide ? "Str" : "Strength", accessor: "Strength" },
+        {
+          header: !isUltraWide ? "BChk" : "Body Checking",
+          accessor: "BodyChecking",
+        },
+        {
+          header: !isUltraWide ? "SChk" : "Stick Checking",
+          accessor: "StickChecking",
+        },
+        {
+          header: !isUltraWide ? "SB" : "Shot Blocking",
+          accessor: "ShotBlocking",
+        },
+        {
+          header: !isUltraWide ? "GK" : "Goalkeeping",
+          accessor: "Goalkeeping",
+        },
+        {
+          header: !isUltraWide ? "GV" : "Goalie Vision",
+          accessor: "GoalieVision",
+        },
+        { header: !isUltraWide ? "Sta" : "Stamina", accessor: "Stamina" },
+        { header: !isUltraWide ? "Inj" : "Injury", accessor: "Injury" },
         { header: "Off. Fit", accessor: "OffensiveFit" },
         { header: "Def. Fit", accessor: "DefensiveFit" },
       ]);
     }
-    if ((isDesktop || isTablet) && category === Promises) {
+    if (category === Promises) {
       columns = columns.concat([
-        { header: "Transfer Likeliness", accessor: "TransferLikeliness" },
-        { header: "Promise Type", accessor: "PromiseType" },
-        { header: "Promise Weight", accessor: "PromiseWeight" },
-        { header: "Benchmark", accessor: "Benchmark" },
-        { header: "Benchmark 2", accessor: "BenchmarkStr" },
-        { header: "Committed", accessor: "PromiseMade" },
-        { header: "Active", accessor: "IsActive" },
+        { header: !isDesktop ? "Risk" : "Transfer Likeliness", accessor: "TransferLikeliness" },
+        { header: !isDesktop ? "Type" : "Promise Type", accessor: "PromiseType" },
+        { header: !isDesktop ? "Wgt" : "Promise Weight", accessor: "PromiseWeight" },
+        { header: !isDesktop ? "BM1" : "Benchmark", accessor: "Benchmark" },
+        { header: !isDesktop ? "BM2" : "Benchmark 2", accessor: "BenchmarkStr" },
+        { header: !isDesktop ? "Made" : "Committed", accessor: "PromiseMade" },
+        { header: !isDesktop ? "Act" : "Active", accessor: "IsActive" },
       ]);
     }
-    if ((isDesktop || isTablet) && category === Draft) {
+
+    if ((isDesktop || isTablet || isUltraWide) && category === Draft) {
       columns = columns.concat([
         { header: "Drafted Team", accessor: "DraftedTeamID" },
         { header: "Season", accessor: "SeasonID" },
@@ -199,7 +232,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isTablet, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
@@ -222,7 +255,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     index: number,
     backgroundColor: string,
   ) => {
-    const attributes = getCHLAttributes(item, !isDesktop, isTablet, category!);
+    const attributes = getCHLAttributes(item, isMobile, isTablet, category!);
     const collegePromise = collegePromiseMap[item.ID];
     const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
     if (hasPromise) {
@@ -310,44 +343,34 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 7
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "Redshirt" ? (
               <>
                 {item.IsRedshirt && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {item.IsRedshirting && (
-                  <CheckCircle textColorClass="w-full text-center text-yellow-500" />
+                  <CheckCircle textColorClass="w-full text-yellow-500" />
                 )}
                 {!item.IsRedshirt && !item.IsRedshirting && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="w-full text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`w-full ${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "TransferStatus" ? (
               <>
                 {attr.value === 0 ? (
-                  <ShieldCheck
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <ShieldCheck textColorClass={`w-full ${TextGreen}`} />
                 ) : (
-                  <ShieldCheck textColorClass="w-full text-center text-red-500" />
+                  <ShieldCheck textColorClass="w-full text-red-500" />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -370,41 +393,37 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             )}
           </div>
         ))}
-        {category === Overview && isDesktop && (
+        {category === Overview && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
           </>
         )}
-        {category === Attributes && isDesktop && (
+        {category === Attributes && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -419,70 +438,62 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
           </>
         )}
-        {category === Potentials && isDesktop && (
+        {category === Potentials && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
           </>
         )}
-        {category == Promises && isDesktop && (
+        {category == Promises && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -521,7 +532,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             </TableCell>
           </>
         )}
-        {category == Draft && isDesktop && (
+        {category == Draft && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -554,12 +565,10 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isEligibleToPickUp && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 )}
                 {!isEligibleToPickUp && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </Text>
             </TableCell>
@@ -568,7 +577,7 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
 
         <div className="table-cell align-middle w-[5em] 430px:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap">
           <SelectDropdown
-            placeholder={!isDesktop ? "Action" : "Select an action"}
+            placeholder={isMobile ? "Action" : "Select an action"}
             options={[
               {
                 value: "cut",
@@ -662,7 +671,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
   gameplan,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop, isTablet } = useResponsive();
+  const { isDesktop, isTablet, isUltraWide, isMobile } = useResponsive();
   const {
     chlPlayerMap,
     phlDraftPicks,
@@ -676,24 +685,24 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       {
-        header: !isDesktop && !isTablet ? "Pos" : "Pos",
+        header: !isDesktop && !isTablet && !isUltraWide ? "Pos" : "Pos",
         accessor: "Position",
       },
       {
-        header: !isDesktop && !isTablet ? "Arch" : "Arch",
+        header: !isDesktop && !isTablet && !isUltraWide ? "Arch" : "Arch",
         accessor: "Archetype",
       },
       {
-        header: !isDesktop && !isTablet ? "Exp" : "Exp",
+        header: !isDesktop && !isTablet && !isUltraWide ? "Exp" : "Exp",
         accessor: "Year",
       },
       {
-        header: !isDesktop && !isTablet ? "Ovr" : "Ovr",
+        header: !isDesktop && !isTablet && !isUltraWide ? "Ovr" : "Ovr",
         accessor: "Overall",
       },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         { header: "Health", accessor: "isInjured" },
         { header: "Injury", accessor: "InjuryType" },
@@ -711,44 +720,77 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       ]);
     }
 
-    if ((isDesktop && category === Attributes) || category === Potentials) {
+    if (
+      (isDesktop || isUltraWide) &&
+      (category === Attributes || category === Potentials)
+    ) {
       columns = columns.concat([
-        { header: "Agi", accessor: "Agility" },
-        { header: "FO", accessor: "Faceoffs" },
-        { header: "LSA", accessor: "LongShotAccuracy" },
-        { header: "LSP", accessor: "LongShotPower" },
-        { header: "CSA", accessor: "CloseShotAccuracy" },
-        { header: "CSP", accessor: "CloseShotPower" },
-        { header: "Pass", accessor: "Passing" },
-        { header: "PH", accessor: "PuckHandling" },
-        { header: "Str", accessor: "Strength" },
-        { header: "BChk", accessor: "BodyChecking" },
-        { header: "SChk", accessor: "StickChecking" },
-        { header: "SB", accessor: "ShotBlocking" },
-        { header: "GK", accessor: "Goalkeeping" },
-        { header: "GV", accessor: "GoalieVision" },
-        { header: "Sta", accessor: "Stamina" },
-        { header: "Inj", accessor: "Injury" },
+        { header: !isUltraWide ? "Agi" : "Agility", accessor: "Agility" },
+        { header: !isUltraWide ? "FO" : "Faceoffs", accessor: "Faceoffs" },
+        {
+          header: !isUltraWide ? "LSA" : "Long Shot Accuracy",
+          accessor: "LongShotAccuracy",
+        },
+        {
+          header: !isUltraWide ? "LSP" : "Long Shot Power",
+          accessor: "LongShotPower",
+        },
+        {
+          header: !isUltraWide ? "CSA" : "Close Shot Accuracy",
+          accessor: "CloseShotAccuracy",
+        },
+        {
+          header: !isUltraWide ? "CSP" : "Close Shot Power",
+          accessor: "CloseShotPower",
+        },
+        { header: !isUltraWide ? "Pass" : "Passing", accessor: "Passing" },
+        {
+          header: !isUltraWide ? "PH" : "Puck Handling",
+          accessor: "PuckHandling",
+        },
+        { header: !isUltraWide ? "Str" : "Strength", accessor: "Strength" },
+        {
+          header: !isUltraWide ? "BChk" : "Body Checking",
+          accessor: "BodyChecking",
+        },
+        {
+          header: !isUltraWide ? "SChk" : "Stick Checking",
+          accessor: "StickChecking",
+        },
+        {
+          header: !isUltraWide ? "SB" : "Shot Blocking",
+          accessor: "ShotBlocking",
+        },
+        {
+          header: !isUltraWide ? "GK" : "Goalkeeping",
+          accessor: "Goalkeeping",
+        },
+        {
+          header: !isUltraWide ? "GV" : "Goalie Vision",
+          accessor: "GoalieVision",
+        },
+        { header: !isUltraWide ? "Sta" : "Stamina", accessor: "Stamina" },
+        { header: !isUltraWide ? "Inj" : "Injury", accessor: "Injury" },
         { header: "Offensive Fit", accessor: "OffensiveFit" },
         { header: "Defensive Fit", accessor: "DefensiveFit" },
       ]);
     }
 
-    if (isDesktop && category === Contracts) {
+if (category === Contracts) {
       columns = columns.concat([
-        { header: "Offensive Fit", accessor: "OffensiveFit" },
-        { header: "Defensive Fit", accessor: "DefensiveFit" },
-        { header: "Y1 S", accessor: "Y1BaseSalary" },
-        { header: "Y2 S", accessor: "Y2BaseSalary" },
-        { header: "Y3 S", accessor: "Y3BaseSalary" },
-        { header: "Y4 S", accessor: "Y4BaseSalary" },
-        { header: "Y5 S", accessor: "Y5BaseSalary" },
+        { header: !isDesktop ? "Off" : "Offensive Fit", accessor: "OffensiveFit" },
+        { header: !isDesktop ? "Def" : "Defensive Fit", accessor: "DefensiveFit" },
+        { header: !isDesktop ? "Y1 S" : "Y1 Salary", accessor: "Y1BaseSalary" },
+        { header: !isDesktop ? "Y2 S" : "Y2 Salary", accessor: "Y2BaseSalary" },
+        { header: !isDesktop ? "Y3 S" : "Y3 Salary", accessor: "Y3BaseSalary" },
+        { header: !isDesktop ? "Y4 S" : "Y4 Salary", accessor: "Y4BaseSalary" },
+        { header: !isDesktop ? "Y5 S" : "Y5 Salary", accessor: "Y5BaseSalary" },
         { header: "Yrs", accessor: "ContractLength" },
         { header: "NTC", accessor: "NoTradeClause" },
         { header: "NMC", accessor: "NoMovementClause" },
       ]);
     }
-    if ((isDesktop || isTablet) && category === Draft) {
+    if ((isDesktop || isUltraWide || isTablet) && category === Draft) {
       columns = [
         { header: "Season", accessor: "SeasonID" },
         { header: "Round", accessor: "DraftRound" },
@@ -764,7 +806,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
 
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
@@ -930,42 +972,36 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isEligibleToPickUp && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {!isEligibleToPickUp && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
               </Text>
             </TableCell>
@@ -973,7 +1009,9 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
               className={`table-cell align-middle w-[5em] 430px:w-[6em] sm:w-full flex-wrap sm:flex-nowrap sm:px-2 pb-1 sm:py-1 whitespace-nowrap`}
             >
               <SelectDropdown
-                placeholder={!isDesktop ? "Action" : "Select an action"}
+                placeholder={
+                  isMobile || isTablet ? "Action" : "Select an action"
+                }
                 options={[
                   {
                     value: "pickUp",
@@ -1056,7 +1094,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
     item.Contract = playerContract!!;
     const attributes = getPHLAttributes(
       item,
-      !isDesktop,
+      isMobile,
       isTablet,
       category!,
       playerContract,
@@ -1118,42 +1156,30 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 6
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "NTC" || attr.label === "NMC" ? (
               <>
                 {attr.value === true ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 ) : (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="w-full text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`w-full ${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "TradeBlock" || attr.label === "Affiliate" ? (
               <>
                 {attr.value === "Yes" ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 ) : (
-                  <CrossCircle
-                    textColorClass={`w-full text-center text-red-500`}
-                  />
+                  <CrossCircle textColorClass={`w-full text-red-500`} />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -1177,7 +1203,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
           </div>
         ))}
 
-        {category === Attributes && isDesktop && (
+        {category === Attributes && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="xs" classes="text-start">
@@ -1192,64 +1218,56 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
           </>
         )}
-        {category === Potentials && isDesktop && (
+        {category === Potentials && (isDesktop || isUltraWide) && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodOffensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadOffensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodOffensiveFit && !isBadOffensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
             <TableCell>
               <Text variant="small" classes="text-start">
                 {isGoodDefensiveFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
                 )}
                 {isBadDefensiveFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="w-full text-gray-500" />
                 )}
               </Text>
             </TableCell>
@@ -1392,7 +1410,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
 }) => {
   const store = useSimFBAStore();
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   let rosterColumns = useMemo(() => {
     let columns = [
@@ -1405,7 +1423,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
       { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
           header: !isDesktop ? "Pot" : "Potential",
@@ -1420,7 +1438,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Attributes) {
+    if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         { header: "Pot", accessor: "PotentialGrade" },
         { header: "FIQ", accessor: "FootballIQ" },
@@ -1447,20 +1465,20 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
         { header: "INJ", accessor: "Injury" },
       ]);
     }
-    if (isDesktop && category === Promises) {
+if (category === Promises) {
       columns = columns.concat([
-        { header: "Transfer Likeliness", accessor: "TransferLikeliness" },
-        { header: "Promise Type", accessor: "PromiseType" },
-        { header: "Promise Weight", accessor: "PromiseWeight" },
-        { header: "Benchmark", accessor: "Benchmark" },
-        { header: "Benchmark 2", accessor: "BenchmarkStr" },
-        { header: "Committed", accessor: "PromiseMade" },
-        { header: "Active", accessor: "IsActive" },
+        { header: !isDesktop ? "Risk" : "Transfer Likeliness", accessor: "TransferLikeliness" },
+        { header: !isDesktop ? "Type" : "Promise Type", accessor: "PromiseType" },
+        { header: !isDesktop ? "Wgt" : "Promise Weight", accessor: "PromiseWeight" },
+        { header: !isDesktop ? "BM1" : "Benchmark", accessor: "Benchmark" },
+        { header: !isDesktop ? "BM2" : "Benchmark 2", accessor: "BenchmarkStr" },
+        { header: !isDesktop ? "Made" : "Committed", accessor: "PromiseMade" },
+        { header: !isDesktop ? "Act" : "Active", accessor: "IsActive" },
       ]);
     }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
@@ -1472,7 +1490,11 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
     backgroundColor: string,
   ) => {
     const { collegePromiseMap } = useSimFBAStore();
-    const attributes = getCFBAttributes(item, !isDesktop, category!);
+    const attributes = getCFBAttributes(
+      item,
+      !isDesktop && !isUltraWide,
+      category!,
+    );
 
     const collegePromise = collegePromiseMap[item.ID];
     const hasPromise = collegePromise !== undefined && collegePromise.ID > 0;
@@ -1496,44 +1518,34 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 8
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "Redshirt" ? (
               <>
                 {item.IsRedshirt && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 )}
                 {item.IsRedshirting && (
-                  <CheckCircle textColorClass="w-full text-center text-yellow-500" />
+                  <CheckCircle textColorClass="text-yellow-500" />
                 )}
                 {!item.IsRedshirt && !item.IsRedshirting && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "TransferStatus" ? (
               <>
                 {attr.value === 0 ? (
-                  <ShieldCheck
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <ShieldCheck textColorClass={`${TextGreen}`} />
                 ) : (
-                  <ShieldCheck textColorClass="w-full text-center text-red-500" />
+                  <ShieldCheck textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -1556,7 +1568,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
             )}
           </div>
         ))}
-        {category == Promises && isDesktop && (
+        {category == Promises && (
           <>
             <TableCell>
               <Text variant="small" classes="text-start">
@@ -1728,7 +1740,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop, isTablet } = useResponsive();
+  const { isDesktop, isTablet, isUltraWide } = useResponsive();
 
   const rosterColumns = useMemo(() => {
     let columns = [
@@ -1740,7 +1752,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
       { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
           header: !isDesktop ? "Pot" : "Potential",
@@ -1769,7 +1781,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Attributes) {
+    if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         { header: "Pot", accessor: "PotentialGrade" },
         { header: "FIQ", accessor: "FootballIQ" },
@@ -1797,25 +1809,25 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Contracts) {
+    if (category === Contracts) {
       columns = columns.concat([
-        { header: "Y1 Bonus", accessor: "Y1Bonus" },
-        { header: "Y1 Salary", accessor: "Y1BaseSalary" },
-        { header: "Y2 Bonus", accessor: "Y2Bonus" },
-        { header: "Y2 Salary", accessor: "Y2BaseSalary" },
-        { header: "Y3 Bonus", accessor: "Y3Bonus" },
-        { header: "Y3 Salary", accessor: "Y3BaseSalary" },
-        { header: "Y4 Bonus", accessor: "Y4Bonus" },
-        { header: "Y4 Salary", accessor: "Y4BaseSalary" },
-        { header: "Y5 Bonus", accessor: "Y5Bonus" },
-        { header: "Y5 Salary", accessor: "Y5BaseSalary" },
-        { header: "Years", accessor: "ContractLength" },
+        { header: !isDesktop ? "Y1B" : "Y1 Bonus", accessor: "Y1Bonus" },
+        { header: !isDesktop ? "Y1S" : "Y1 Salary", accessor: "Y1BaseSalary" },
+        { header: !isDesktop ? "Y2B" : "Y2 Bonus", accessor: "Y2Bonus" },
+        { header: !isDesktop ? "Y2S" : "Y2 Salary", accessor: "Y2BaseSalary" },
+        { header: !isDesktop ? "Y3B" : "Y3 Bonus", accessor: "Y3Bonus" },
+        { header: !isDesktop ? "Y3S" : "Y3 Salary", accessor: "Y3BaseSalary" },
+        { header: !isDesktop ? "Y4B" : "Y4 Bonus", accessor: "Y4Bonus" },
+        { header: !isDesktop ? "Y4S" : "Y4 Salary", accessor: "Y4BaseSalary" },
+        { header: !isDesktop ? "Y5B" : "Y5 Bonus", accessor: "Y5Bonus" },
+        { header: !isDesktop ? "Y5S" : "Y5 Salary", accessor: "Y5BaseSalary" },
+        { header: !isDesktop ? "Yrs" : "Years", accessor: "ContractLength" },
       ]);
     }
 
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => {
@@ -1841,7 +1853,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
     item.Contract = playerContract!!;
     const attributes = getNFLAttributes(
       item,
-      !isDesktop,
+      !isDesktop && !isUltraWide,
       category!,
       item.ShowLetterGrade,
       playerContract,
@@ -1859,59 +1871,45 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
             className={`table-cell 
           align-middle 
           360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-          text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-            category === Overview && idx === 7
-              ? "text-left"
-              : idx !== 0
-                ? "text-center"
-                : ""
-          }`}
+          text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap  text-start`}
           >
             {attr.label === "Is Tagged" ||
             attr.label === "IsOnTradeBlock" ||
             attr.label === "PS" ? (
               <>
                 {attr.value === true ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 ) : (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Is Extended" ? (
               <>
                 {!extensionOffer && (
-                  <DashCircle
-                    textColorClass={`w-full text-center text-gray-500`}
-                  />
+                  <DashCircle textColorClass={`text-gray-500`} />
                 )}
                 {extensionOffer?.IsAccepted === true && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 )}
                 {extensionOffer?.IsActive === true &&
                   !extensionOffer.IsAccepted &&
                   !extensionOffer.IsRejected && (
                     <DashCircle
-                      textColorClass={`w-full text-center ${extensionOffer.Rejections < 2 ? "text-yellow-500" : "text-orange-500"}`}
+                      textColorClass={`${extensionOffer.Rejections < 2 ? "text-yellow-500" : "text-orange-500"}`}
                     />
                   )}
 
                 {extensionOffer?.IsActive === true &&
                   extensionOffer.IsRejected && (
-                    <CrossCircle
-                      textColorClass={`w-full text-center text-red-500`}
-                    />
+                    <CrossCircle textColorClass={`text-red-500`} />
                   )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "Injury" ||
@@ -2078,23 +2076,35 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   let rosterColumns = useMemo(() => {
     let columns = [
       { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
-      { header: !isDesktop ? "Pos" : "Position", accessor: "Position" },
-      { header: !isDesktop ? "Arch" : "Archetype", accessor: "Archetype" },
-      { header: !isDesktop ? "Yr" : "Year", accessor: "Experience" },
+      {
+        header: !isDesktop && !isUltraWide ? "Pos" : "Position",
+        accessor: "Position",
+      },
+      {
+        header: !isDesktop && !isUltraWide ? "Arch" : "Archetype",
+        accessor: "Archetype",
+      },
+      {
+        header: !isDesktop && !isUltraWide ? "Yr" : "Year",
+        accessor: "Experience",
+      },
       { header: "⭐", accessor: "Stars" },
-      { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
+      {
+        header: !isDesktop && !isUltraWide ? "Ovr" : "Overall",
+        accessor: "Overall",
+      },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
-          header: !isDesktop ? "Pot" : "Potential",
+          header: !isDesktop && !isUltraWide ? "Pot" : "Potential",
           accessor: "PotentialGrade",
         },
         { header: "Health", accessor: "isInjured" },
@@ -2107,30 +2117,52 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Attributes) {
+    if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         {
-          header: !isDesktop ? "Pot" : "Potential",
+          header: !isDesktop && !isUltraWide ? "Pot" : "Potential",
           accessor: "PotentialGrade",
         },
-        { header: "Agi", accessor: "Agility" },
-        { header: "Ins", accessor: "InsideShooting" },
-        { header: "Mid", accessor: "MidRangeShooting" },
-        { header: "3pt", accessor: "ThreePointShooting" },
-        { header: "FT", accessor: "Freethrow" },
-        { header: "BW", accessor: "Ballwork" },
-        { header: "Stl", accessor: "Stealing" },
-        { header: "RB", accessor: "Rebounding" },
-        { header: "Blk", accessor: "Blocking" },
-        { header: "ID", accessor: "InteriorDefense" },
-        { header: "PD", accessor: "PerimeterDefense" },
-        { header: "IR", accessor: "InjuryRating" },
-        { header: "PTE", accessor: "PlaytimeExpectations" },
+        { header: !isUltraWide ? "Agi" : "Agility", accessor: "Agility" },
+        {
+          header: !isUltraWide ? "Ins" : "Inside Shooting",
+          accessor: "InsideShooting",
+        },
+        {
+          header: !isUltraWide ? "Mid" : "Mid Range Shooting",
+          accessor: "MidRangeShooting",
+        },
+        {
+          header: !isUltraWide ? "3pt" : "3pt Shooting",
+          accessor: "ThreePointShooting",
+        },
+        { header: !isUltraWide ? "FT" : "Freethrow", accessor: "Freethrow" },
+        { header: !isUltraWide ? "BW" : "Ballwork", accessor: "Ballwork" },
+        { header: !isUltraWide ? "Stl" : "Stealing", accessor: "Stealing" },
+        { header: !isUltraWide ? "RB" : "Rebounding", accessor: "Rebounding" },
+        { header: !isUltraWide ? "Blk" : "Blocking", accessor: "Blocking" },
+        {
+          header: !isUltraWide ? "ID" : "Interior Defense",
+          accessor: "InteriorDefense",
+        },
+        {
+          header: !isUltraWide ? "PD" : "Perimeter Defense",
+          accessor: "PerimeterDefense",
+        },
+        {
+          header: !isUltraWide ? "IR" : "Injury Rating",
+          accessor: "InjuryRating",
+        },
+        {
+          header: !isUltraWide ? "PTE" : "Playtime Expectations",
+          accessor: "PlaytimeExpectations",
+        },
+        { header: !isUltraWide ? "Min" : "Minutes", accessor: "Minutes" },
       ]);
     }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
@@ -2141,7 +2173,11 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
     index: number,
     backgroundColor: string,
   ) => {
-    const attributes = getCBBAttributes(item, !isDesktop, category!);
+    const attributes = getCBBAttributes(
+      item,
+      !isDesktop && !isUltraWide,
+      category!,
+    );
     return (
       <div
         key={item.ID}
@@ -2154,40 +2190,30 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 8
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "Redshirt" ? (
               <>
                 {attr.value === true ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 ) : (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={`${TextGreen}`} />
                 )}
               </>
             ) : attr.label === "TransferStatus" ? (
               <>
                 {attr.value === 0 ? (
-                  <ShieldCheck
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <ShieldCheck textColorClass={`${TextGreen}`} />
                 ) : (
-                  <ShieldCheck textColorClass="w-full text-center text-red-500" />
+                  <ShieldCheck textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -2333,31 +2359,40 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isUltraWide } = useResponsive();
 
   let rosterColumns = useMemo(() => {
     let columns = [
       { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
-      { header: !isDesktop ? "Pos" : "Position", accessor: "Position" },
-      { header: !isDesktop ? "Arch" : "Archetype", accessor: "Archetype" },
-      { header: !isDesktop ? "Age" : "Age", accessor: "Age" },
-      { header: !isDesktop ? "Yr" : "Year", accessor: "Year" },
-      { header: !isDesktop ? "Ovr" : "Overall", accessor: "Overall" },
+      {
+        header: !isDesktop && !isUltraWide ? "Pos" : "Position",
+        accessor: "Position",
+      },
+      {
+        header: !isDesktop && !isUltraWide ? "Arch" : "Archetype",
+        accessor: "Archetype",
+      },
+      { header: !isDesktop && !isUltraWide ? "Age" : "Age", accessor: "Age" },
+      { header: !isDesktop && !isUltraWide ? "Yr" : "Year", accessor: "Year" },
+      {
+        header: !isDesktop && !isUltraWide ? "Ovr" : "Overall",
+        accessor: "Overall",
+      },
     ];
 
-    if (isDesktop && category === Overview) {
+    if ((isDesktop || isUltraWide) && category === Overview) {
       columns = columns.concat([
         {
-          header: !isDesktop ? "Pot" : "Potential",
+          header: !isDesktop && !isUltraWide ? "Pot" : "Potential",
           accessor: "PotentialGrade",
         },
         {
-          header: `${ts.Season} ${!isDesktop ? "B" : "Bonus"}`,
+          header: `${ts.Season} ${!isDesktop && !isUltraWide ? "B" : "Bonus"}`,
           accessor: "Year1Total",
         },
         {
-          header: !isDesktop ? "Yrs Left" : "Years Left",
+          header: !isDesktop && !isUltraWide ? "Yrs Left" : "Years Left",
           accessor: "ContractLength",
         },
         { header: "Health", accessor: "isInjured" },
@@ -2368,31 +2403,52 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
       ]);
     }
 
-    if (isDesktop && category === Attributes) {
+    if ((isDesktop || isUltraWide) && category === Attributes) {
       columns = columns.concat([
         {
-          header: !isDesktop ? "Pot" : "Potential",
+          header: !isDesktop && !isUltraWide ? "Pot" : "Potential",
           accessor: "PotentialGrade",
         },
-        { header: "Agi", accessor: "Agility" },
-        { header: "Fin", accessor: "InsideShooting" },
-        { header: "SH2", accessor: "MidRangeShooting" },
-        { header: "SH3", accessor: "ThreePointShooting" },
-        { header: "FT", accessor: "Freethrow" },
-        { header: "BW", accessor: "Ballwork" },
-        { header: "Stl", accessor: "Stealing" },
-        { header: "RB", accessor: "Rebounding" },
-        { header: "Blk", accessor: "Blocking" },
-        { header: "ID", accessor: "InteriorDefense" },
-        { header: "PD", accessor: "PerimeterDefense" },
-        { header: "IR", accessor: "InjuryRating" },
-        { header: "PTE", accessor: "PlaytimeExpectations" },
-        { header: "Min", accessor: "Minutes" },
+        { header: !isUltraWide ? "Agi" : "Agility", accessor: "Agility" },
+        {
+          header: !isUltraWide ? "Ins" : "Inside Shooting",
+          accessor: "InsideShooting",
+        },
+        {
+          header: !isUltraWide ? "Mid" : "Mid Range Shooting",
+          accessor: "MidRangeShooting",
+        },
+        {
+          header: !isUltraWide ? "3pt" : "3pt Shooting",
+          accessor: "ThreePointShooting",
+        },
+        { header: !isUltraWide ? "FT" : "Freethrow", accessor: "Freethrow" },
+        { header: !isUltraWide ? "BW" : "Ballwork", accessor: "Ballwork" },
+        { header: !isUltraWide ? "Stl" : "Stealing", accessor: "Stealing" },
+        { header: !isUltraWide ? "RB" : "Rebounding", accessor: "Rebounding" },
+        { header: !isUltraWide ? "Blk" : "Blocking", accessor: "Blocking" },
+        {
+          header: !isUltraWide ? "ID" : "Interior Defense",
+          accessor: "InteriorDefense",
+        },
+        {
+          header: !isUltraWide ? "PD" : "Perimeter Defense",
+          accessor: "PerimeterDefense",
+        },
+        {
+          header: !isUltraWide ? "IR" : "Injury Rating",
+          accessor: "InjuryRating",
+        },
+        {
+          header: !isUltraWide ? "PTE" : "Playtime Expectations",
+          accessor: "PlaytimeExpectations",
+        },
+        { header: !isUltraWide ? "Min" : "Minutes", accessor: "Minutes" },
       ]);
     }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category]);
+  }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
@@ -2406,11 +2462,15 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
     const contract = contracts[item.ID];
     if (!contract) return <></>;
     item.Contract = contract!!;
-    const attributes = getNBAAttributes(item, !isDesktop, category!);
+    const attributes = getNBAAttributes(
+      item,
+      !isDesktop && !isUltraWide,
+      category!,
+    );
     return (
       <div
         key={item.ID}
-        className={`table-row border-b dark:border-gray-700 text-start`}
+        className={`table-row border-b dark:border-gray-700 text-start justify-start`}
         style={{ backgroundColor }}
       >
         {attributes.map((attr, idx) => (
@@ -2419,40 +2479,30 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 8
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start justify-start`}
           >
             {attr.label === "Redshirt" ? (
               <>
                 {attr.value === true ? (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`${TextGreen}`} />
                 ) : (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
-                  <User textColorClass="w-full text-center text-red-500" />
+                  <User textColorClass="text-red-500" />
                 ) : (
-                  <User textColorClass={`w-full text-center ${TextGreen}`} />
+                  <User textColorClass={TextGreen} />
                 )}
               </>
             ) : attr.label === "TransferStatus" ? (
               <>
                 {attr.value === 0 ? (
-                  <ShieldCheck
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <ShieldCheck textColorClass={`${TextGreen}`} />
                 ) : (
-                  <ShieldCheck textColorClass="w-full text-center text-red-500" />
+                  <ShieldCheck textColorClass="text-red-500" />
                 )}
               </>
             ) : attr.label === "Name" ? (
@@ -2658,13 +2708,7 @@ export const PHLTradeBlockTable: FC<PHLTradeBlockTableProps> = ({
             className={`table-cell 
         align-middle 
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap ${
-          category === Overview && idx === 6
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
             {attr.label === "Name" ? (
               <span
@@ -2871,6 +2915,156 @@ export const NFLTradeBlockTable: FC<NFLTradeBlockTableProps> = ({
     <Table
       columns={rosterColumns}
       data={roster}
+      rowRenderer={rowRenderer}
+      backgroundColor={backgroundColor}
+      team={team}
+    />
+  );
+};
+
+interface NFLDraftPicksTableProps {
+  draftPicks: any[];
+  team: any;
+  backgroundColor?: string;
+  headerColor?: string;
+  borderColor?: string;
+  teamMap: Record<number, any>;
+  drafteeMap?: Record<number, any>;
+  proPlayerMap?: Record<number, any>;
+  roster?: any[];
+}
+
+export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
+  draftPicks = [],
+  team,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  teamMap,
+  drafteeMap = {},
+  proPlayerMap = {},
+  roster = [],
+}) => {
+  const { isDesktop } = useResponsive();
+
+  const columns = useMemo(
+    () => [
+      { header: "Season", accessor: "Season" },
+      { header: "Round", accessor: "DraftRound" },
+      { header: "Pick", accessor: "OverallPickNumber" },
+      { header: "Selected Player", accessor: "PlayerName" },
+      { header: "Original Team", accessor: "OriginalTeamID" },
+    ],
+    [],
+  );
+
+  // Dynamically detect the current draft season (e.g., 2027)
+  const currentDraftSeason = draftPicks.length > 0 
+    ? Math.min(...draftPicks.map((p: any) => Number(p.Season))) 
+    : new Date().getFullYear();
+
+  // Sort picks chronologically by Season, then sequentially by OverallPickNumber
+  const sortedDraftPicks = useMemo(() => {
+    if (!draftPicks) return [];
+    return [...draftPicks].sort((a: any, b: any) => {
+      // 1. Group by Season first
+      if (Number(a.Season) !== Number(b.Season)) {
+        return Number(a.Season) - Number(b.Season);
+      }
+      // 2. Sort by the exact draft position within that year
+      const pickA = Number(a.OverallPickNumber) || Number(a.DraftNumber) || 0;
+      const pickB = Number(b.OverallPickNumber) || Number(b.DraftNumber) || 0;
+      return pickA - pickB;
+    });
+  }, [draftPicks]);
+
+  const rowRenderer = (
+    item: any,
+    index: number,
+    backgroundColor: string,
+  ) => {
+    const originalTeam = teamMap?.[item.OriginalTeamID];
+    const originalTeamLabel = originalTeam
+      ? `${originalTeam.TeamName} ${originalTeam.Mascot}`
+      : "None";
+
+    let resolvedPlayerName = "Available / Unused";
+
+    // Grab the true overall number from the pick (ignores math)
+    const displayPickNumber = item.OverallPickNumber || item.DraftNumber;
+
+    // ONLY lookup players for the current season so future years stay clean
+    if (Number(item.Season) <= currentDraftSeason) {
+      
+      // The ultimate 1-to-1 matching using database foreign keys:
+      // 1. DraftPickID matches the Pick's ID
+      // 2. DrafteeID matches the Draftee's ID
+      // 3. DraftedPick matches the true overall display number
+      const matchingDraftee = Object.values(drafteeMap || {}).find(
+        (d: any) => 
+          (d.DraftPickID > 0 && Number(d.DraftPickID) === Number(item.ID)) ||
+          (item.DrafteeID > 0 && Number(d.ID) === Number(item.DrafteeID)) ||
+          (Number(d.DraftedRound) === Number(item.DraftRound) && Number(d.DraftedPick) === Number(displayPickNumber))
+      );
+
+      if (matchingDraftee) {
+        resolvedPlayerName = `${matchingDraftee.Position} ${matchingDraftee.FirstName} ${matchingDraftee.LastName}`;
+      } else {
+        // Fallback to active roster if they've already been migrated
+        const draftedRosterPlayer = (roster || []).find(
+          (p: any) => 
+            (p.DraftPickID > 0 && Number(p.DraftPickID) === Number(item.ID)) ||
+            (item.DrafteeID > 0 && Number(p.ID) === Number(item.DrafteeID)) ||
+            (Number(p.DraftRound) === Number(item.DraftRound) && (Number(p.DraftPick) === Number(displayPickNumber) || Number(p.OverallPickNumber) === Number(displayPickNumber)))
+        );
+        
+        if (draftedRosterPlayer) {
+          resolvedPlayerName = `${draftedRosterPlayer.Position} ${draftedRosterPlayer.FirstName} ${draftedRosterPlayer.LastName}`;
+        } else if (item.SelectedPlayerName || item.PlayerName || item.DrafteeName) {
+          resolvedPlayerName = item.SelectedPlayerName || item.PlayerName || item.DrafteeName;
+        }
+      }
+    }
+
+    return (
+      <div
+        key={item.ID || index}
+        className="table-row border-b dark:border-gray-700 text-left"
+        style={{ backgroundColor }}
+      >
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {item.Season}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {item.DraftRound}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {displayPickNumber}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {resolvedPlayerName}
+          </Text>
+        </TableCell>
+        <TableCell>
+          <Text variant="small" classes="text-start">
+            {originalTeamLabel}
+          </Text>
+        </TableCell>
+      </div>
+    );
+  };
+
+  return (
+    <Table
+      columns={columns}
+      data={sortedDraftPicks}
       rowRenderer={rowRenderer}
       backgroundColor={backgroundColor}
       team={team}

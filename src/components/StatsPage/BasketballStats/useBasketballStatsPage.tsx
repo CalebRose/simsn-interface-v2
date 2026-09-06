@@ -1,156 +1,145 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  FootballStatsType,
-  GameDay,
   GameType,
   InfoType,
   ModalAction,
-  OVERALL,
-  PASSING,
   PLAYER_VIEW,
   REGULAR_SEASON,
   SEASON_VIEW,
-  SimCFB,
-  SimNFL,
+  SimCBB,
+  SimNBA,
   StatsType,
   StatsView,
 } from "../../../_constants/constants";
 import { useModal } from "../../../_hooks/useModal";
 import { useLeagueStore } from "../../../context/LeagueContext";
-import { useSimFBAStore } from "../../../context/SimFBAContext";
-import { CollegePlayer, NFLPlayer } from "../../../models/footballModels";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
+import { NBAPlayer, CollegePlayer } from "../../../models/basketballModels";
 import {
-  GetFBACollegeStats,
-  GetFBAProStats,
+  GetBBACollegeStats,
+  GetBBAProStats,
   getFBAWeekID,
-  GetFilteredCFBConferenceOptions,
-  GetFilteredCFBTeamOptions,
+  GetFilteredNBAConferenceOptions,
+  GetFilteredNBATeamOptions,
+  MakeBBASeasonsOptionList,
+  MakeBBAWeeksOptionList,
   MakeFBASeasonsOptionList,
-  MakeFBAWeeksOptionList,
-  useFilteredFootballStats,
+  useFilteredBasketballStats,
 } from "../../../_helper/statsPageHelper";
 import { usePagination } from "../../../_hooks/usePagination";
-import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
+import { SingleValue } from "react-select";
 
-export const useFootballStats = () => {
+export const useBasketballStats = () => {
   const { selectedLeague } = useLeagueStore();
   const {
-    cfbTeam,
-    cfbTeams,
-    cfbTeamMap,
-    nflTeam,
-    proTeamMap,
-    cfbTeamOptions,
-    cfbConferenceOptions,
-    nflTeamOptions,
-    nflConferenceOptions,
-    cfbPlayerGameStatsMap,
-    cfbPlayerSeasonStatsMap,
-    cfbTeamGameStatsMap,
-    cfbTeamSeasonStatsMap,
-    nflPlayerGameStatsMap,
-    nflPlayerSeasonStatsMap,
-    nflTeamGameStatsMap,
-    nflTeamSeasonStatsMap,
-    cfb_Timestamp,
-    cfbPlayerMap,
-    nflPlayerMap,
-    cfbPostSeasonAwards,
-    SearchFootballStats,
-    ExportFootballStats,
-    getBootstrapStatsData,
+    cbbTeam,
+    cbbTeams,
+    cbbTeamMap,
+    nbaTeam,
+    nbaTeams,
+    nbaTeamMap,
+    cbbTeamOptions,
+    cbbConferenceOptions,
+    nbaTeamOptions,
+    nbaConferenceOptions,
+    cbbPlayerGameStatsMap,
+    cbbPlayerSeasonStatsMap,
+    cbbTeamGameStatsMap,
+    cbbTeamSeasonStatsMap,
+    nbaPlayerGameStatsMap,
+    nbaPlayerSeasonStatsMap,
+    nbaTeamGameStatsMap,
+    nbaTeamSeasonStatsMap,
+    cbb_Timestamp,
+    cbbPlayerMap,
+    proPlayerMap,
+    SearchBasketballStats,
+    ExportBasketballStats,
     collegeInjuryReport,
     proInjuryReport,
-    getBootstrapPlayerData,
-  } = useSimFBAStore();
+  } = useSimBBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [modalAction, setModalAction] = useState<ModalAction>(InfoType);
-  const [modalPlayer, setModalPlayer] = useState<NFLPlayer | CollegePlayer>(
-    {} as NFLPlayer,
+  const [modalPlayer, setModalPlayer] = useState<NBAPlayer | CollegePlayer>(
+    {} as NBAPlayer,
   );
   const [statsView, setStatsView] = useState<StatsView>(SEASON_VIEW);
   const [statsType, setStatsType] = useState<StatsType>(PLAYER_VIEW);
-  const [footballStatsType, setFBStatsType] =
-    useState<FootballStatsType>(PASSING);
+  const [basketballStatsType, setBasketballStatsType] =
+    useState<string>("Total"); // Total or Average. Only for season view only
   const [gameType, setGameType] = useState<GameType>(REGULAR_SEASON);
   const leagueOptions = useMemo(() => {
     return [
       { label: "All Leagues", value: "1" },
-      { label: "FBS", value: "2" },
-      { label: "FCS", value: "3" },
+      { label: "NBA", value: "2" },
+      { label: "ISL", value: "3" },
     ];
   }, []);
   const [selectedLeagueOption, setSelectedLeagueOption] = useState<number>(1);
   const [selectedWeek, setSelectedWeek] = useState<number>(2501);
   const [selectedSeason, setSelectedSeason] = useState<number>(
-    cfb_Timestamp?.CollegeSeasonID ?? 0,
-  ); // SEASON ID
+    cbb_Timestamp?.SeasonID ?? 0,
+  );
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [selectedConferences, setSelectedConferences] = useState<string[]>([]);
 
-  useEffect(() => {
-    getBootstrapPlayerData();
-    getBootstrapStatsData();
-  }, []);
-
   const team = useMemo(() => {
-    if (selectedLeague === SimCFB) {
-      return cfbTeam;
+    if (selectedLeague === SimCBB) {
+      return cbbTeam;
     }
-    return nflTeam;
-  }, [selectedLeague, cfbTeam, nflTeam]);
-
+    return nbaTeam;
+  }, [selectedLeague, cbbTeam, nbaTeam]);
   const seasonOptions = useMemo(() => {
-    if (!cfb_Timestamp) {
-      return [{ label: "2025", value: "1" }];
+    if (!cbb_Timestamp) {
+      return [{ label: "2022", value: "2" }];
     }
-    return MakeFBASeasonsOptionList(cfb_Timestamp);
-  }, [cfb_Timestamp]);
+    return MakeBBASeasonsOptionList(cbb_Timestamp);
+  }, [cbb_Timestamp]);
 
   const weekOptions = useMemo(() => {
-    return MakeFBAWeeksOptionList(selectedSeason);
+    return MakeBBAWeeksOptionList(selectedSeason);
   }, [selectedSeason]);
 
   const playerMap = useMemo(() => {
-    if (selectedLeague === SimCFB) {
-      return cfbPlayerMap;
-    } else if (selectedLeague === SimNFL) {
-      return nflPlayerMap;
+    if (selectedLeague === SimCBB) {
+      return cbbPlayerMap;
+    } else if (selectedLeague === SimNBA) {
+      return proPlayerMap;
     }
     return [];
-  }, [selectedLeague, cfbPlayerMap, nflPlayerMap]);
+  }, [selectedLeague, cbbPlayerMap, proPlayerMap]);
 
   const teamMap = useMemo(() => {
-    if (selectedLeague === SimCFB) {
-      return cfbTeamMap!!;
+    if (selectedLeague === SimCBB) {
+      return cbbTeamMap!!;
     }
-    return proTeamMap!!;
-  }, [selectedLeague, cfbTeamMap, proTeamMap]);
+    return nbaTeamMap!!;
+  }, [selectedLeague, cbbTeamMap, nbaTeamMap]);
 
   const selectedStats = useMemo(() => {
-    if (selectedLeague === SimCFB) {
-      return GetFBACollegeStats(
+    if (selectedLeague === SimCBB) {
+      return GetBBACollegeStats(
         statsView,
         statsType,
         selectedWeek,
         selectedSeason,
-        cfbPlayerGameStatsMap,
-        cfbPlayerSeasonStatsMap,
-        cfbTeamGameStatsMap,
-        cfbTeamSeasonStatsMap,
+        cbbPlayerGameStatsMap,
+        cbbPlayerSeasonStatsMap,
+        cbbTeamGameStatsMap,
+        cbbTeamSeasonStatsMap,
       );
     }
-    if (selectedLeague === SimNFL) {
-      return GetFBAProStats(
+    if (selectedLeague === SimNBA) {
+      return GetBBAProStats(
         statsView,
         statsType,
         selectedWeek,
         selectedSeason,
-        nflPlayerGameStatsMap,
-        nflPlayerSeasonStatsMap,
-        nflTeamGameStatsMap,
-        nflTeamSeasonStatsMap,
+        nbaPlayerGameStatsMap,
+        nbaPlayerSeasonStatsMap,
+        nbaTeamGameStatsMap,
+        nbaTeamSeasonStatsMap,
       );
     }
     return [];
@@ -160,24 +149,23 @@ export const useFootballStats = () => {
     statsType,
     selectedSeason,
     selectedWeek,
-    cfbPlayerGameStatsMap,
-    cfbPlayerSeasonStatsMap,
-    cfbTeamGameStatsMap,
-    cfbTeamSeasonStatsMap,
-    nflPlayerGameStatsMap,
-    nflPlayerSeasonStatsMap,
-    nflTeamGameStatsMap,
-    nflTeamSeasonStatsMap,
+    cbbPlayerGameStatsMap,
+    cbbPlayerSeasonStatsMap,
+    cbbTeamGameStatsMap,
+    cbbTeamSeasonStatsMap,
+    nbaPlayerGameStatsMap,
+    nbaPlayerSeasonStatsMap,
+    nbaTeamGameStatsMap,
+    nbaTeamSeasonStatsMap,
   ]);
 
-  const filteredStats = useFilteredFootballStats({
+  const filteredStats = useFilteredBasketballStats({
     selectedStats,
     selectedTeams,
     selectedConferences,
     teamMap,
     playerMap,
     statsType,
-    footballStatsType,
     selectedLeague,
     selectedLeagueOption,
   });
@@ -192,26 +180,26 @@ export const useFootballStats = () => {
   } = usePagination(filteredStats.length, pageSize);
 
   const teamOptions = useMemo(() => {
-    if (selectedLeague === SimCFB) {
-      return GetFilteredCFBTeamOptions(
-        selectedLeagueOption,
-        cfbTeamOptions,
-        cfbTeamMap!!,
-      );
+    if (selectedLeague === SimCBB) {
+      return cbbTeamOptions;
     }
-    return nflTeamOptions;
-  }, [selectedLeague, selectedLeagueOption, cfbTeamMap]);
+    return GetFilteredNBATeamOptions(
+      selectedLeagueOption,
+      nbaTeamOptions,
+      nbaTeamMap!!,
+    );
+  }, [selectedLeague, selectedLeagueOption, cbbTeamMap]);
 
   const conferenceOptions = useMemo(() => {
-    if (selectedLeague === SimCFB) {
-      return GetFilteredCFBConferenceOptions(
-        selectedLeagueOption,
-        cfbConferenceOptions,
-        cfbTeams,
-      );
+    if (selectedLeague === SimCBB) {
+      return cbbConferenceOptions;
     }
-    return nflConferenceOptions;
-  }, [selectedLeague, selectedLeagueOption, cfbConferenceOptions, cfbTeams]);
+    return GetFilteredNBAConferenceOptions(
+      selectedLeagueOption,
+      nbaConferenceOptions,
+      nbaTeams,
+    );
+  }, [selectedLeague, selectedLeagueOption, cbbConferenceOptions, cbbTeams]);
 
   const ChangeStatsView = (newView: StatsView) => {
     setStatsView(newView);
@@ -220,16 +208,10 @@ export const useFootballStats = () => {
 
   const ChangeStatsType = (newView: StatsType) => {
     setStatsType(newView);
-    if (newView === PLAYER_VIEW) {
-      setFBStatsType(PASSING);
-    } else {
-      setFBStatsType(OVERALL);
-    }
     setCurrentPage(0);
   };
-
-  const ChangeFBStatsType = (newView: FootballStatsType) => {
-    setFBStatsType(newView);
+  const ChangeBasketballStatsType = (newType: string) => {
+    setBasketballStatsType(newType);
     setCurrentPage(0);
   };
 
@@ -237,7 +219,6 @@ export const useFootballStats = () => {
     setGameType(newView);
     setCurrentPage(0);
   };
-
   const SelectTeamOptions = (opts: any) => {
     const options = [...opts.map((x: any) => x.value)];
     setSelectedTeams(options);
@@ -273,7 +254,7 @@ export const useFootballStats = () => {
 
   const handlePlayerModal = (
     action: ModalAction,
-    player: CollegePlayer | NFLPlayer,
+    player: CollegePlayer | NBAPlayer,
   ) => {
     setModalPlayer(player);
     setModalAction(action);
@@ -290,7 +271,7 @@ export const useFootballStats = () => {
       GameType: selectedGameType,
     };
 
-    return await SearchFootballStats(dto);
+    return await SearchBasketballStats(dto);
   };
 
   const Export = async () => {
@@ -302,11 +283,11 @@ export const useFootballStats = () => {
       SeasonID: selectedSeason,
       GameType: selectedGameType,
     };
-    return await ExportFootballStats(dto);
+    return await ExportBasketballStats(dto);
   };
 
   const injuryReport = useMemo(() => {
-    if (selectedLeague === SimCFB) {
+    if (selectedLeague === SimCBB) {
       return collegeInjuryReport;
     }
     return proInjuryReport;
@@ -329,15 +310,12 @@ export const useFootballStats = () => {
     statsView,
     gameType,
     currentPage,
-    footballStatsType,
     leagueOptions,
-    cfbPostSeasonAwards,
     SelectLeagueOption,
     goToPreviousPage,
     goToNextPage,
     handleCloseModal,
     ChangeStatsType,
-    ChangeFBStatsType,
     ChangeGameType,
     ChangeStatsView,
     handlePlayerModal,
@@ -348,5 +326,7 @@ export const useFootballStats = () => {
     Search,
     Export,
     injuryReport,
+    basketballStatsType,
+    ChangeBasketballStatsType,
   };
 };

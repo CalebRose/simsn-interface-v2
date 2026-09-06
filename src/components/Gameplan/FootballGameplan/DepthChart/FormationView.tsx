@@ -18,6 +18,7 @@ import {
 import { ArrowRight, ArrowLeft } from "../../../../_design/Icons";
 import { getLogo } from "../../../../_utility/getLogo";
 import { Logo } from "../../../../_design/Logo";
+import { useResponsive } from "../../../../_hooks/useMobile";
 
 interface FormationViewProps {
   formationType: "offense" | "defense" | "specialteams";
@@ -47,8 +48,11 @@ const FormationView: React.FC<FormationViewProps> = ({
   openModal,
 }) => {
   const [currentFormationIndex, setCurrentFormationIndex] = useState(0);
+  const { isUltraWide } = useResponsive();
+  // Cap width relative to the available container instead of the viewport so it stays centered on ultrawide screens
+  const containerWidthClasses = "w-full";
   const formationBoardClasses =
-    "relative mx-auto w-full max-w-[80vw] min-h-160 bg-linear-to-b from-green-600 via-green-500 to-green-600 rounded-lg overflow-hidden border-2";
+    "relative mx-auto w-full min-h-160 bg-linear-to-b from-green-600 via-green-500 to-green-600 rounded-lg border-2";
   const logo = getLogo(league, team.ID, false);
   const availableFormations = useMemo(() => {
     if (formationType === "offense") {
@@ -104,7 +108,7 @@ const FormationView: React.FC<FormationViewProps> = ({
   };
 
   const getOffenseFormation = () => (
-    <div className="space-y-4 w-[80vw]">
+    <div className={`space-y-4 mx-auto ${containerWidthClasses}`}>
       {availableFormations.length > 1 && currentFormation && (
         <div
           className="flex items-center space-x-4 p-1 rounded-lg border-2 justify-center"
@@ -254,7 +258,7 @@ const FormationView: React.FC<FormationViewProps> = ({
   );
 
   const getDefenseFormation = () => (
-    <div className="space-y-4 w-[80vw]">
+    <div className={`space-y-4 mx-auto ${containerWidthClasses}`}>
       {availableFormations.length > 1 && currentFormation && (
         <div
           className="flex items-center space-x-4 p-1 rounded-lg border-2 justify-center"
@@ -417,7 +421,7 @@ const FormationView: React.FC<FormationViewProps> = ({
   );
 
   const getSpecialTeamsFormation = () => (
-    <div className="space-y-4 w-[80vw]">
+    <div className={`space-y-4 mx-auto ${containerWidthClasses}`}>
       <div className={formationBoardClasses} style={{ borderColor }}>
         <div className="relative min-h-160">
           <div className="absolute inset-0">

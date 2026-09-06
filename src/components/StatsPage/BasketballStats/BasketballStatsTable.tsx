@@ -1,57 +1,56 @@
 import { FC, ReactNode, useMemo } from "react";
 import {
-  FootballStatsType,
   InfoType,
   League,
   ModalAction,
   PLAYER_VIEW,
-  SimCFB,
-  SimNFL,
+  SimCBB,
+  SimNBA,
   StatsType,
   StatsView,
 } from "../../../_constants/constants";
 import {
   CollegePlayer,
-  CollegePlayerSeasonStats,
+  NBAPlayer,
+  NBATeamStats,
+  NBATeamSeasonStats,
+  NBATeam,
+  NBAPlayerSeasonStats,
+  NBAPlayerStats,
+  TeamSeasonStats,
+  Team,
+  TeamStats,
   CollegePlayerStats,
-  CollegeTeam,
-  CollegeTeamSeasonStats,
-  CollegeTeamStats,
-  NFLPlayer,
-  NFLPlayerSeasonStats,
-  NFLPlayerStats,
-  NFLTeam,
-  NFLTeamSeasonStats,
-  NFLTeamStats,
-} from "../../../models/footballModels";
+  CollegePlayerSeasonStats,
+} from "../../../models/basketballModels";
 import {
-  GetFootballPlayerStatsValues,
-  GetFootballStatsColumns,
-  GetFootballTeamStatsValues,
+  GetBasketballPlayerStatsValues,
+  GetBasketballStatsColumns,
+  GetBasketballTeamStatsValues,
 } from "../Common/StatsPageHelper";
-import { getLogo } from "../../../_utility/getLogo";
 import { Table, TableCell } from "../../../_design/Table";
-import { Logo } from "../../../_design/Logo";
 import { Text } from "../../../_design/Typography";
+import { Logo } from "../../../_design/Logo";
+import { getLogo } from "../../../_utility/getLogo";
 import { getYear } from "../../../_utility/getYear";
-import { getPlayerOverallRating } from "../../Gameplan/FootballGameplan/Utils/GameplanPlayerUtils";
+import { getCBBOverall } from "../../../_utility/getLetterGrade";
 
-interface FootballStatsTableProps {
+interface BasketballStatsTableProps {
   teamColors: any;
   teamMap: any;
   team: any;
   playerMap: any;
   league: League;
   isMobile?: boolean;
-  openModal: (action: ModalAction, player: CollegePlayer | NFLPlayer) => void;
+  openModal: (action: ModalAction, player: CollegePlayer | NBAPlayer) => void;
   stats: any[];
   statsView: StatsView;
   statsType: StatsType;
-  footballStatsType: FootballStatsType;
   currentPage: number;
+  basketballStatsType: string;
 }
 
-export const FootballStatsTable: FC<FootballStatsTableProps> = ({
+export const BasketballStatsTable: FC<BasketballStatsTableProps> = ({
   teamColors,
   teamMap,
   team,
@@ -62,20 +61,20 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
   stats,
   statsView,
   statsType,
-  footballStatsType,
   currentPage,
+  basketballStatsType,
 }) => {
   const backgroundColor = teamColors.One;
-  const columns = GetFootballStatsColumns(
+  const columns = GetBasketballStatsColumns(
     league,
     statsType,
-    footballStatsType,
     statsView,
+    basketballStatsType,
     isMobile!!,
   );
 
   // Get Row Renderer
-  const CFBPlayerRowRenderer = (
+  const CBBPlayerRowRenderer = (
     item: CollegePlayerStats | CollegePlayerSeasonStats,
     index: number,
     backgroundColor: string,
@@ -83,13 +82,13 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     const player = playerMap[item.CollegePlayerID] as CollegePlayer;
     if (!player) return <></>;
     item.Player = player;
-    const team = teamMap[item.TeamID] as CollegeTeam;
+    const team = teamMap[item.TeamID] as Team;
     if (!team) return <></>;
     const logo = getLogo(league, team.ID, false);
-    const values = GetFootballPlayerStatsValues(
+    const values = GetBasketballPlayerStatsValues(
       item,
       statsView,
-      footballStatsType,
+      basketballStatsType,
     );
     return (
       <div
@@ -104,12 +103,12 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
         </TableCell>
         <TableCell>
           <div className="flex flex-row items-start">
-            <Text variant="xs">{team.TeamName}</Text>
+            <Text variant="xs">{team.Team}</Text>
           </div>
         </TableCell>
         <TableCell
           classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-                text-wrap sm:max-w-full`}
+                  text-wrap sm:max-w-full`}
         >
           <span
             className={`cursor-pointer font-semibold`}
@@ -137,7 +136,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
         </TableCell>
         <TableCell>
           <Text variant="small">
-            {getPlayerOverallRating(player, SimCFB, true)}
+            {getCBBOverall(player.Overall, player.Year)}
           </Text>
         </TableCell>
         {values!.map((stat: any, idx: number) => {
@@ -151,19 +150,19 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     );
   };
 
-  const CFBTeamRowRenderer = (
-    item: CollegeTeamStats | CollegeTeamSeasonStats,
+  const CBBTeamRowRenderer = (
+    item: TeamStats | TeamSeasonStats | NBATeamStats | NBATeamSeasonStats,
     index: number,
     backgroundColor: string,
   ) => {
-    const team = teamMap[item.TeamID] as CollegeTeam;
+    const team = teamMap[item.TeamID] as Team;
     if (!team) return <></>;
     item.Team = team;
     const logo = getLogo(league, team.ID, false);
-    const values = GetFootballTeamStatsValues(
+    const values = GetBasketballTeamStatsValues(
       item,
       statsView,
-      footballStatsType,
+      basketballStatsType,
     );
 
     return (
@@ -179,7 +178,7 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
         </TableCell>
         <TableCell>
           <div className="flex flex-row items-start">
-            <Text variant="xs">{team.TeamName}</Text>
+            <Text variant="xs">{team.Team}</Text>
           </div>
         </TableCell>
         <TableCell>
@@ -198,20 +197,20 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     );
   };
 
-  const NFLPlayerRowRenderer = (
-    item: NFLPlayerStats | NFLPlayerSeasonStats,
+  const NBAPlayerRowRenderer = (
+    item: NBAPlayerStats | NBAPlayerSeasonStats,
     index: number,
     backgroundColor: string,
   ) => {
-    const player = playerMap[item.NFLPlayerID] as NFLPlayer;
+    const player = playerMap[item.NBAPlayerID] as NBAPlayer;
     if (!player) return <></>;
-    const team = teamMap[item.TeamID] as NFLTeam;
+    const team = teamMap[item.TeamID] as NBATeam;
     if (!team) return <></>;
     const logo = getLogo(league, team.ID, false);
-    const values = GetFootballPlayerStatsValues(
+    const values = GetBasketballPlayerStatsValues(
       item,
       statsView,
-      footballStatsType,
+      basketballStatsType,
     );
 
     return (
@@ -227,12 +226,12 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
         </TableCell>
         <TableCell>
           <div className="flex flex-row items-start">
-            <Text variant="xs">{team.TeamName}</Text>
+            <Text variant="xs">{team.Team}</Text>
           </div>
         </TableCell>
         <TableCell
           classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-            text-wrap sm:max-w-full`}
+              text-wrap sm:max-w-full`}
         >
           <span
             className={`cursor-pointer font-semibold`}
@@ -259,11 +258,9 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
           <Text variant="small">{item.Year}</Text>
         </TableCell>
         <TableCell>
-          <Text variant="small">
-            {getPlayerOverallRating(player, SimNFL, item.ShowLetterGrade)}
-          </Text>
+          <Text variant="small">{player.Overall}</Text>
         </TableCell>
-        {values.map((stat: any, idx) => {
+        {values.map((stat: any, idx: number) => {
           return (
             <TableCell key={stat.label + idx}>
               <Text variant="small">{stat.value}</Text>
@@ -274,19 +271,19 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
     );
   };
 
-  const NFLTeamRowRenderer = (
-    item: NFLTeamStats | NFLTeamSeasonStats,
+  const NBATeamRowRenderer = (
+    item: NBATeamStats | NBATeamSeasonStats,
     index: number,
     backgroundColor: string,
   ) => {
-    const team = teamMap[item.TeamID] as NFLTeam;
+    const team = teamMap[item.TeamID] as NBATeam;
     if (!team) return <></>;
     item.Team = team;
     const logo = getLogo(league, team.ID, false);
-    const values = GetFootballTeamStatsValues(
+    const values = GetBasketballTeamStatsValues(
       item,
       statsView,
-      footballStatsType,
+      basketballStatsType,
     );
     return (
       <div
@@ -301,10 +298,10 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
         </TableCell>
         <TableCell>
           <div className="flex flex-row items-start">
-            <Text variant="xs">{team.TeamName}</Text>
+            <Text variant="xs">{team.Team}</Text>
           </div>
         </TableCell>
-        {values.map((stat: any, idx) => {
+        {values.map((stat: any, idx: number) => {
           return (
             <TableCell key={stat.label + idx}>
               <Text variant="small">{stat.value}</Text>
@@ -314,13 +311,12 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
       </div>
     );
   };
-
   const augmentedStats = useMemo(() => {
     return stats.map((item: any) => {
       if (statsType === PLAYER_VIEW) {
         if (!item.Player) {
           const playerKey =
-            league === SimNFL ? item.NFLPlayerID : item.CollegePlayerID;
+            league === SimNBA ? item.NBAPlayerID : item.CollegePlayerID;
           const player = playerMap[playerKey];
           if (player) item.Player = player;
         }
@@ -337,16 +333,16 @@ export const FootballStatsTable: FC<FootballStatsTableProps> = ({
   const rowRenderer = (
     league: League,
   ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
-    if (league === SimNFL) {
+    if (league === SimNBA) {
       if (statsType === PLAYER_VIEW) {
-        return NFLPlayerRowRenderer;
+        return NBAPlayerRowRenderer;
       }
-      return NFLTeamRowRenderer;
+      return NBATeamRowRenderer;
     }
     if (statsType === PLAYER_VIEW) {
-      return CFBPlayerRowRenderer;
+      return CBBPlayerRowRenderer;
     }
-    return CFBTeamRowRenderer;
+    return CBBTeamRowRenderer;
   };
   return (
     <Table

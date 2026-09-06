@@ -341,12 +341,14 @@ export const ValidateNBARule3 = (
   y4: number,
   y5: number,
 ): boolean => {
-  if (len === 1 && !y2 && !y3 && !y4 && !y5) return true;
-  if (len === 2 && !y3 && !y4 && !y5 && !y1) return true;
-  if (len === 3 && !y2 && !y4 && !y5 && !y1) return true;
-  if (len === 4 && !y2 && !y3 && !y5 && !y1) return true;
-  if (len === 5 && !y2 && !y4 && !y4 && !y1) return true;
-  return false;
+  // Year-to-year increases must be ≤50% or ≤$3 million.
+  if (len === 1) return true;
+  const ys = [y1, y2, y3, y4, y5];
+  const pctDiffs = ys.slice(1, len).map((y, i) => y / ys[i] - 1);
+  const maxPct = Math.max(...pctDiffs);
+  const absDiffs = ys.slice(1, len).map((y, i) => y - ys[i]);
+  const maxAbs = Math.max(...absDiffs);
+  return maxPct <= 0.5 || maxAbs <= 3;
 };
 
 export const ValidateNBARule4 = (
@@ -396,6 +398,23 @@ export const ValidateNBARule5 = (
   }
 
   return check2 && check3 && check4 && check5;
+};
+
+export const ValidateNBARule6 = (
+  y1: number,
+  y2: number,
+  y3: number,
+  y4: number,
+  y5: number,
+  min: number,
+): boolean => {
+  if (y1 > min && y1 !== 0) return true;
+  if (y2 > min && y2 !== 0) return true;
+  if (y3 > min && y3 !== 0) return true;
+  if (y4 > min && y4 !== 0) return true;
+  if (y5 > min && y5 !== 0) return true;
+
+  return false;
 };
 
 const checkYearlyRange = (val1: number, val2: number, ovr: number): boolean => {
@@ -628,6 +647,7 @@ export const GenerateNBAFAErrorList = (
   capsheet: NBACapsheet,
   playerAAV: number,
   offerAAV: number,
+  playerMinimumValue: number,
 ): string[] => {
   const errors: string[] = [];
   const { salaries, TotalYears, ContractValue, totalSalaries, Year1Total } =
@@ -667,6 +687,7 @@ export const GenerateNBAFAErrorList = (
 
   // 5) Rule3: no huge jumps (>50% or >$3M)
   if (!ValidateNBARule3(TotalYears, y1, y2, y3, y4, y5)) {
+    console.log({ TotalYears, y1, y2, y3, y4, y5 });
     errors.push("Year-to-year increases must be ≤50% or ≤$3 million.");
   }
 
@@ -674,6 +695,13 @@ export const GenerateNBAFAErrorList = (
   if (!ValidateNBARule4(TotalYears, y1, y2, y3, y4, y5, 0.5)) {
     errors.push(
       "Highest year cannot exceed 100% of the lowest year (or $6 million difference).",
+    );
+  }
+
+  // 7) Rule 5: The Total Salary offered in a year must be greater than the player's minimum value
+  if (!ValidateNBARule6(y1, y2, y3, y4, y5, playerMinimumValue)) {
+    errors.push(
+      "Total salary offered in a year must be greater than the player's minimum value.",
     );
   }
 

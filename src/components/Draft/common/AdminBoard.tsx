@@ -1,5 +1,5 @@
-import React, { useCallback } from "react";
-import { League } from "../../../_constants/constants";
+import React, { useCallback, useMemo } from "react";
+import { League, SimNBA } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { DraftStateObj } from "../hooks/useDraftState";
 import { Button } from "../../../_design/Buttons";
@@ -91,6 +91,13 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
 
     await handleManualDraftStateUpdate({ allDraftPicks: draftPickMap });
   }, [draftState, handleManualDraftStateUpdate]);
+
+  const totalRounds = useMemo(() => {
+    if (league === SimNBA) {
+      return 2;
+    }
+    return 7;
+  }, [league]);
 
   return (
     <>
@@ -199,7 +206,8 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
             <Text variant="body-small">Export Draft</Text>
             <Button
               disabled={
-                draftState.currentRound < 8 || draftState.exportComplete
+                draftState.currentRound < totalRounds ||
+                draftState.exportComplete
               }
               onClick={handleExportDraft}
             >

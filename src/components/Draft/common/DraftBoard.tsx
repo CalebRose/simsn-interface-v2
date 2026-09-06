@@ -35,6 +35,7 @@ import {
   ModalAction,
   SimPHL,
   SimNFL,
+  DraftAgeOptions,
 } from "../../../_constants/constants";
 import { isBadFit, isGoodFit } from "../../../_helper/recruitingHelper";
 
@@ -75,10 +76,12 @@ export const DraftBoard: FC<DraftBoardProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
+  const [selectedAges, setSelectedAges] = useState<string[]>([]);
   const [selectedArchetype, setSelectedArchetype] = useState<string>("");
   const [selectedCollege, setSelectedCollege] = useState<string>("");
 
   const positions = useMemo(() => getPositionsByLeague(league), [league]);
+  const ages = useMemo(() => DraftAgeOptions, []);
 
   const archetypes = useMemo(() => {
     const uniqueArchetypes = new Set(
@@ -124,6 +127,13 @@ export const DraftBoard: FC<DraftBoardProps> = ({
         return false;
       }
 
+      if (
+        selectedAges.length > 0 &&
+        !selectedAges.includes(player.Age.toString())
+      ) {
+        return false;
+      }
+
       return true;
     });
 
@@ -135,6 +145,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
     selectedPositions,
     selectedArchetype,
     selectedCollege,
+    selectedAges,
     league,
   ]);
 
@@ -552,7 +563,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1">
           <Input
             value={searchTerm}
             onChange={(e) => {
@@ -560,8 +571,10 @@ export const DraftBoard: FC<DraftBoardProps> = ({
               setCurrentPage(0);
             }}
             placeholder="Search players..."
-            className="bg-gray-800 border-gray-700 text-white"
+            className="bg-gray-800 border-gray-700 text-white w-full px-2"
           />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-2">
           <SelectDropdown
             options={positions}
             value={positions.filter((p) => selectedPositions.includes(p.value))}
@@ -595,6 +608,19 @@ export const DraftBoard: FC<DraftBoardProps> = ({
             }}
             placeholder={isNFLLeague(league) ? "All Colleges" : "All Teams"}
             isClearable
+            className="text-sm"
+          />
+          <SelectDropdown
+            options={ages}
+            value={ages.filter((a) => selectedAges.includes(a.value))}
+            onChange={(selected) => {
+              const values =
+                (selected as SelectOption[])?.map((s) => s.value) || [];
+              setSelectedAges(values);
+              setCurrentPage(0);
+            }}
+            placeholder="All Ages"
+            isMulti
             className="text-sm"
           />
         </div>

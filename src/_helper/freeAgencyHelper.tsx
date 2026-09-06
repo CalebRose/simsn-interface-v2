@@ -96,6 +96,7 @@ export const useFilteredNFLFreeAgents = ({
   positions,
   archetype,
   regions,
+  ages,
 }: {
   freeAgents: NFLPlayer[];
   waiverPlayers: NFLPlayer[];
@@ -104,11 +105,13 @@ export const useFilteredNFLFreeAgents = ({
   positions: string[];
   archetype: string[];
   regions: string[];
+  ages: string[];
 }) => {
   // 1) Pre-build lookup sets
   const positionSet = useMemo(() => new Set(positions), [positions]);
   const archSet = useMemo(() => new Set(archetype), [archetype]);
   const regionSet = useMemo(() => new Set(regions), [regions]);
+  const ageSet = useMemo(() => new Set(ages), [ages]);
 
   // 2) Filter in one pass
   return useMemo(
@@ -134,6 +137,11 @@ export const useFilteredNFLFreeAgents = ({
           return false;
         }
 
+        // age filter
+        if (ageSet.size > 0 && !ageSet.has(fa.Age.toString())) {
+          return false;
+        }
+
         // passes every active filter
         return true;
       });
@@ -147,6 +155,7 @@ export const useFilteredNFLFreeAgents = ({
       positionSet,
       archSet,
       regionSet,
+      ageSet,
     ],
   );
 };

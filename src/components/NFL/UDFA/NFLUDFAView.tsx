@@ -21,12 +21,10 @@ import {
   FootballPositionOptions,
   FootballArchetypeOptions,
   InfoType,
-  // Removed AdminRole import
 } from "../../../_constants/constants";
 import { GetNFLOverall } from "../../Team/TeamPageUtils";
 
 export const NFLUDFAView = () => {
-  // Removed the currentUser and isAdmin checks from here
   const fetchingUDFAs = useRef(false);
   const {
     nflTeam,
@@ -36,8 +34,15 @@ export const NFLUDFAView = () => {
     udfas,
     getBootstrapFreeAgencyData,
   } = useSimFBAStore();
-  const { board, pointsRemaining, handlePointChange, saveBids, removePlayer } =
-    useNFLUDFA();
+  
+  const { 
+    board, 
+    pointsRemaining, 
+    handlePointChange, 
+    saveBids, 
+    removePlayer, 
+    handleMoveUDFAsToFA 
+  } = useNFLUDFA();
 
   const { backgroundColor } = useBackgroundColor();
   const teamColors = useTeamColors(
@@ -48,6 +53,7 @@ export const NFLUDFAView = () => {
   const [viewCategory, setViewCategory] = useState(Overview);
   const [positions, setPositions] = useState<string[]>([]);
   const [archetypes, setArchetypes] = useState<string[]>([]);
+  const [isForcing, setIsForcing] = useState(false);
   const pageSize = 50;
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -58,6 +64,26 @@ export const NFLUDFAView = () => {
     fetchingUDFAs.current = true;
     getBootstrapFreeAgencyData();
   }, [getBootstrapFreeAgencyData]);
+
+  // Temporary button handler to force unassigned UDFAs directly to FA
+  const handleDirectForceToFA = async () => {
+    if (window.confirm("Force all unsigned UDFAs directly to general Free Agency?")) {
+      setIsForcing(true);
+      try {
+        const response = await fetch("http://localhost:5001/api/admin/force-udfas-to-fa");
+        if (!response.ok) throw new Error("Failed to force UDFAs to FA");
+        
+        alert("Unsigned UDFAs successfully moved to Free Agency!");
+        if (typeof getBootstrapFreeAgencyData === "function") {
+          getBootstrapFreeAgencyData();
+        }
+      } catch (error) {
+        alert("Error moving players to Free Agency.");
+      } finally {
+        setIsForcing(false);
+      }
+    }
+  };
 
   const gradeWeight: Record<string, number> = {
     "A+": 13,
@@ -87,14 +113,13 @@ export const NFLUDFAView = () => {
       filtered = filtered.filter((p) => archetypes.includes(p.Archetype));
     
     return filtered.sort((a, b) => {
-
       const overallB = GetNFLOverall(b.Overall, b.ShowLetterGrade);
       const overallA = GetNFLOverall(a.Overall, a.ShowLetterGrade);
       
       if (typeof overallB === "string" && typeof overallA === "string") {
         const valB = gradeWeight[overallB.trim()] || 0;
         const valA = gradeWeight[overallA.trim()] || 0;
-        return valB - valA; // Descending order
+        return valB - valA; 
       }
       
       return 0; 
@@ -186,7 +211,7 @@ export const NFLUDFAView = () => {
 
         <div className="flex flex-col w-full gap-y-4">
           <div
-            className="w-full p-4 flex flex-row items-center justify-between border-2 rounded-xl"
+            className="w-full p-4 flex flex-row items-center justify-between border-2 rounded-xl flex-wrap gap-2"
             style={{
               borderColor: teamColors.One,
               backgroundColor: "rgba(0,0,0,0.4)",
@@ -206,7 +231,7 @@ export const NFLUDFAView = () => {
                 My Bids
               </Button>
             </ButtonGroup>
-            <div className="flex gap-x-2 items-center">
+            <div className="flex gap-x-2 items-center flex-wrap gap-y-2">
               <Text
                 variant="h5"
                 classes={
@@ -224,7 +249,15 @@ export const NFLUDFAView = () => {
               >
                 Save All Bids
               </Button>
-              {/* REMOVED: The Run Live Simulation button is gone from here */}
+
+              {/* TEMPORARY BYPASS BUTTON */}
+              <Button
+                variant="danger"
+                onClick={handleDirectForceToFA}
+                disabled={isForcing}
+              >
+                {isForcing ? "Moving..." : "Force UDFAs to FA"}
+              </Button>
             </div>
           </div>
 
@@ -328,39 +361,38 @@ export const NFLUDFAView = () => {
                       </div>
                     );
                   }}
-              />
-              {(!pagedUDFAs || pagedUDFAs.length === 0) && (
-                <div className="w-full p-20 text-center text-gray-500 italic font-bold uppercase tracking-widest animate-pulse">
-                  Data is syncing... Please wait.
-                </div>
-              )}
+                />
+                {(!pagedUDFAs || pagedUDFAs.length === 0) && (
+                  <div className="w-full p-20 text-center text-gray-500 italic font-bold uppercase tracking-widest animate-pulse">
+                    Data is syncing... Please wait.
+                  </div>
+                )}
 
-              {/* Page Controls Here */}
-              {totalPages > 1 && (
-                <div className="flex justify-between items-center w-full mt-4 p-4 bg-gray-800 rounded-b-xl border-t border-gray-700">
-                  <Button
-                    variant="secondary"
-                    onClick={goToPreviousPage}
-                    disabled={currentPage === 0}
-                  >
-                    Previous
-                  </Button>
-                  <Text variant="small" classes="text-white font-bold tracking-widest">
-                    PAGE {currentPage + 1} OF {totalPages}
-                  </Text>
-                  <Button
-                    variant="secondary"
-                    onClick={goToNextPage}
-                    disabled={currentPage >= totalPages - 1}
-                  >
-                    Next
-                  </Button>
-                </div>
-              )}
-            </>
-          ) : (
-            <Table
-              team={(nflTeam || {}) as any}
+                {totalPages > 1 && (
+                  <div className="flex justify-between items-center w-full mt-4 p-4 bg-gray-800 rounded-b-xl border-t border-gray-700">
+                    <Button
+                      variant="secondary"
+                      onClick={goToPreviousPage}
+                      disabled={currentPage === 0}
+                    >
+                      Previous
+                    </Button>
+                    <Text variant="small" classes="text-white font-bold tracking-widest">
+                      PAGE {currentPage + 1} OF {totalPages}
+                    </Text>
+                    <Button
+                      variant="secondary"
+                      onClick={goToNextPage}
+                      disabled={currentPage >= totalPages - 1}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <Table
+                team={(nflTeam || {}) as any}
                 columns={[
                   { header: "Player", accessor: "PlayerName" },
                   { header: "Pos", accessor: "Position" },

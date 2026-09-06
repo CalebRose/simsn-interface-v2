@@ -12,6 +12,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  TextGreen,
 } from "../../../_constants/constants";
 import { Table, TableCell } from "../../../_design/Table";
 import {
@@ -21,7 +22,14 @@ import {
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { Input } from "../../../_design/Inputs";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
-import { ActionLock, Handshake, TrashCan } from "../../../_design/Icons";
+import {
+  ActionLock,
+  CheckCircle,
+  CrossCircle,
+  DashCircle,
+  Handshake,
+  TrashCan,
+} from "../../../_design/Icons";
 import {
   annotateCountry,
   annotateRegion,
@@ -65,7 +73,7 @@ const getTransferProfileTableColumns = (
 ) => {
   if (league === SimCHL) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
@@ -117,6 +125,8 @@ const getTransferProfileTableColumns = (
       ]);
     } else if (!isMobile && category === Preferences) {
       columns = columns.concat([
+        { header: "Off", accessor: "OffFit" },
+        { header: "Def", accessor: "DefFit" },
         { header: "Program", accessor: "ProgramPref" },
         { header: "Prof. Dev.", accessor: "ProfDevPref" },
         { header: "Trad.", accessor: "TraditionsPref" },
@@ -140,7 +150,7 @@ const getTransferProfileTableColumns = (
   }
   if (league === SimCBB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
@@ -192,7 +202,7 @@ const getTransferProfileTableColumns = (
   }
   if (league === SimCFB) {
     let columns: { header: string; accessor: string }[] = [
-      { header: "ID", accessor: "" },
+      { header: "ID", accessor: "ID" },
       { header: "Name", accessor: "LastName" },
       { header: "Pos", accessor: "Position" },
       { header: "Arch", accessor: "Archetype" },
@@ -243,6 +253,8 @@ interface CHLProfileRowProps {
   openPromiseModal: (player: HockeyPlayer) => void;
   setAttribute: (attr: string) => void;
   backgroundColor: string;
+  offensiveSystemsInformation: any;
+  defensiveSystemsInformation: any;
 }
 
 export const CHLProfileRow: FC<CHLProfileRowProps> = ({
@@ -255,6 +267,8 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
   setAttribute,
   openPromiseModal,
   backgroundColor,
+  offensiveSystemsInformation,
+  defensiveSystemsInformation,
 }) => {
   const hkStore = useSimHCKStore();
   const { transferProfileMapByPlayerID, collegePromiseMap } = hkStore;
@@ -347,7 +361,51 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
     openModal(ScoutAttributeType, player);
   };
 
-  const canPlacePointsDown = player.TeamID === 0 || player.TeamID >= 75;
+  const canPlacePointsDown = player.TeamID === 0 || player.LeagueID === 2;
+
+  const isGoodOffensiveFit = useMemo(() => {
+    if (!player || !offensiveSystemsInformation) return false;
+    const goodFits = offensiveSystemsInformation.GoodFits;
+    const idx = goodFits.findIndex(
+      (x: any) => x.archetype === player.Archetype,
+    );
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [player, offensiveSystemsInformation]);
+
+  const isBadOffensiveFit = useMemo(() => {
+    if (!player || !offensiveSystemsInformation) return false;
+    const badFits = offensiveSystemsInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === player.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [player, offensiveSystemsInformation]);
+
+  const isGoodDefensiveFit = useMemo(() => {
+    if (!player || !defensiveSystemsInformation) return false;
+    const goodFits = defensiveSystemsInformation.GoodFits;
+    const idx = goodFits.findIndex(
+      (x: any) => x.archetype === player.Archetype,
+    );
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [player, defensiveSystemsInformation]);
+
+  const isBadDefensiveFit = useMemo(() => {
+    if (!player || !defensiveSystemsInformation) return false;
+    const badFits = defensiveSystemsInformation.BadFits;
+    const idx = badFits.findIndex((x: any) => x.archetype === player.Archetype);
+    if (idx > -1) {
+      return true;
+    }
+    return false;
+  }, [player, defensiveSystemsInformation]);
 
   return (
     <div
@@ -356,7 +414,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
     >
       <TableCell>
         <span className={`text-xs`}>{player.ID}</span>
-      </TableCell>{" "}
+      </TableCell>
       <TableCell>
         <span
           className={`text-xs cursor-pointer font-semibold`}
@@ -445,11 +503,41 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
       )}
       {category === Preferences && (
         <>
-          {prefList.map((attr, idx) => (
-            <TableCell key={idx}>
-              <span className="text-sm">{attr.value}</span>
-            </TableCell>
-          ))}
+          {prefList.map((attr, idx) =>
+            attr.label === "Off" ? (
+              <TableCell classes="text-xs">
+                {isGoodOffensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadOffensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodOffensiveFit && !isBadOffensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </TableCell>
+            ) : attr.label === "Def" ? (
+              <TableCell classes="text-xs">
+                {isGoodDefensiveFit && (
+                  <CheckCircle
+                    textColorClass={`w-full text-center ${TextGreen}`}
+                  />
+                )}
+                {isBadDefensiveFit && (
+                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                )}
+                {!isGoodDefensiveFit && !isBadDefensiveFit && (
+                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                )}
+              </TableCell>
+            ) : (
+              <TableCell key={idx}>
+                <span className="text-sm">{attr.value}</span>
+              </TableCell>
+            ),
+          )}
         </>
       )}
       <TableCell>
@@ -1094,6 +1182,8 @@ interface TransferPortalProfileTableProps {
   ) => void;
   ChangeInput: (id: number, name: string, points: number) => void;
   setAttribute: Dispatch<SetStateAction<string>>;
+  offensiveSystemsInformation?: any;
+  defensiveSystemsInformation?: any;
 }
 
 export const TransferPortalProfileTable: FC<
@@ -1114,12 +1204,22 @@ export const TransferPortalProfileTable: FC<
   openModal,
   setAttribute,
   openPromiseModal,
+  offensiveSystemsInformation,
+  defensiveSystemsInformation,
 }) => {
   const backgroundColor = colorOne;
   const borderColor = colorTwo;
   const secondaryBorderColor = colorThree;
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
-  const columns = getTransferProfileTableColumns(league, category, isMobile);
+  const columns = useMemo(() => {
+    return getTransferProfileTableColumns(league, category, isMobile);
+  }, [
+    league,
+    category,
+    isMobile,
+    offensiveSystemsInformation,
+    defensiveSystemsInformation,
+  ]);
 
   const { collegePromiseMap: hckPromiseMap } = useSimHCKStore();
 
@@ -1202,6 +1302,8 @@ export const TransferPortalProfileTable: FC<
             openModal={openModal}
             openPromiseModal={openPromiseModal}
             setAttribute={setAttribute}
+            offensiveSystemsInformation={offensiveSystemsInformation}
+            defensiveSystemsInformation={defensiveSystemsInformation}
           />
         );
       };

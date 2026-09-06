@@ -430,3 +430,22 @@ export const HCKStatsHelpContent: string[][] = [
     "To view more data, click on either the Prev or Next button below to view more stats.",
   ],
 ];
+
+export const BBStatsHelpContent: string[][] = [
+  [
+    "Welcome to the Basketball Stats Page!",
+    "This page allows you to view game stats across the current season and previous seasons.",
+    "The left sidebar allows you to input and select which season & week of the season you'd like to view.",
+  ],
+  [
+    "Searching",
+    "To control whether you want to view Season or Weekly stats, select a Stats View by clicking one of the buttons. Once a view is selected, select a season and (if viewing Week) week from the dropdown.",
+    "Click the search button, and results should populate momentarily!",
+  ],
+  [
+    "Table Views",
+    "The table will always display information relevant to the stats view, stats type, and category selected.",
+    "Click on any of the column headers to sort the data by that column.",
+    "To view more data, click on either the Prev or Next button below to view more stats.",
+  ],
+];

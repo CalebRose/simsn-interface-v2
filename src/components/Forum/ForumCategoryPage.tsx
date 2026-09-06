@@ -111,7 +111,7 @@ export const ForumCategoryPage: React.FC = () => {
 
   return (
     <PageContainer isLoading={forumLoading} title="">
-      <div className="flex flex-col w-[95vw] lg:w-[80vw]">
+      <div className="flex flex-col w-[95vw] lg:w-full mx-auto px-4">
         <ForumBreadcrumbs crumbs={crumbs} />
 
         <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">

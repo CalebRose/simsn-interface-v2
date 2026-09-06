@@ -3529,6 +3529,7 @@ export class CollegePlayerStats {
   }
 }
 export class CollegePlayer {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -9410,7 +9411,7 @@ export class Timestamp {
   ProgressedProfessionalPlayers: boolean;
   TransferPortalPhase: number;
   TransferPortalRound: number;
-
+  Phase: number;
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
     this.ID = source["ID"];
@@ -9467,6 +9468,7 @@ export class Timestamp {
       source["ProgressedProfessionalPlayers"];
     this.TransferPortalPhase = source["TransferPortalPhase"];
     this.TransferPortalRound = source["TransferPortalRound"];
+    this.Phase = source["Phase"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
