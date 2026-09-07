@@ -1178,7 +1178,7 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
   const { goToTeamPage } = useDeepLink();
   const draftListModal = useModal();
   const leagueCols = useMemo(() => {
-    if (league === SimCHL) {
+    if (league === SimCHL || league === SimPHL) {
       return "grid-cols-4 md:grid-cols-4";
     }
     return "grid-cols-4 md:grid-cols-6";
@@ -1406,6 +1406,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
                   Draft
                 </Button>
               )}
+              <Button size="xs" onClick={() => navigate(routes.HELP)}>
+                Help
+              </Button>
             </>
           )}
         </ButtonGrid>
