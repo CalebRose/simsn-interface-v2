@@ -1177,6 +1177,12 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
   const navigate = useNavigate();
   const { goToTeamPage } = useDeepLink();
   const draftListModal = useModal();
+  const leagueCols = useMemo(() => {
+    if (league === SimCHL) {
+      return "grid-cols-4 md:grid-cols-4";
+    }
+    return "grid-cols-4 md:grid-cols-6";
+  }, [league]);
   return (
     <>
       <SectionCards
@@ -1189,7 +1195,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
         textColorClass={textColorClass}
         darkerBackgroundColor={darkerBackgroundColor}
       >
-        <ButtonGrid classes="flex justify-around p-1 md:py-3 mt-4 grid-cols-4 md:grid-cols-6">
+        <ButtonGrid
+          classes={`flex justify-around p-1 md:py-3 mt-4 ${leagueCols}`}
+        >
           {league === SimCFB && (
             <>
               <Button size="xs" onClick={() => goToTeamPage(league)}>
@@ -1358,6 +1366,9 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
                   Portal
                 </Button>
               )}
+              <Button size="xs" onClick={() => navigate(routes.HELP)}>
+                Help
+              </Button>
             </>
           )}
           {league === SimPHL && (
