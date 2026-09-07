@@ -1,0 +1,43 @@
+{
+  "None": [
+    { "variant": "h3", "content": "Welcome to SimSN!", "classes": "mb-2" },
+    {
+      "variant": "body-small",
+      "content": "We build online multiplayer sports management simulations. Our simulations are custom-built, with our leagues run directly on the web. Simulation Sports Network is entirely free to play, with zero pay-to-win elements, ensuring a fair and enjoyable experience for everyone.",
+      "classes": "mb-4"
+    },
+    { "variant": "h4", "content": "About Us", "classes": "mb-2" },
+    {
+      "variant": "body-small",
+      "content": "We are an online community that's been around since 2020. SimSN started as a small passion project between a group of friends to build an American Football simulation that could be played together online. Our first leagues were SimCFB and SimNFL, which both began their inaugural seasons in 2021. Since then, we have expanded to include multiple sports including basketball, hockey and baseball.",
+      "classes": "mb-2 text-wrap"
+    },
+    {
+      "variant": "body-small",
+      "content": "Do you see yourself as a Head Coach? Or maybe you want to become a General Manager? Whatever your style, we have you covered and there are roles to suit each and everyone. There are no limits to participation either, meaning you can compete with a college team, while simultaneously being in the front office of a professional team. Recruit players from high school, coach them through college, and watch them thrive in their professional careers. The opportunities are endless, and the journey to build a legendary sports dynasty starts with you!",
+      "classes": "mb-2 text-wrap"
+    },
+    {
+      "variant": "body-small",
+      "content": "Each sports game engine has been custom developed in-house by our dedicated dev team, giving users full control over roster management, gameplanning, and scouting. Games are streamed weekly live for everyone to follow along and react to. Many coaches help develop the sim world through immersive articles, storylines, and other media, bringing life to SimSN.",
+      "classes": "mb-2 text-wrap"
+    },
+    {
+      "variant": "body-small",
+      "content": "Whether you have limited time or ample free time, our streamlined user interface allows you to manage your teams effectively, making it easy to be as hands-on or hands-off as you choose.",
+      "classes": "mb-4 text-wrap"
+    },
+    { "variant": "h4", "content": "Getting Started", "classes": "mb-2" },
+    {
+      "variant": "body-small",
+      "content": "To get started in any of our leagues, navigate to the Available Teams page from the navigation menu that can be clicked from the top-left corner of the screen.",
+      "classes": "mb-4 text-wrap"
+    },
+    { "variant": "h4", "content": "Our Leagues", "classes": "mb-2" },
+    {
+      "variant": "body-small",
+      "content": "We currently support the following leagues: SimCFB, SimNFL, SimCBB, SimNBA, SimCHL, SimPHL, SimCBL, and SimMLB.",
+      "classes": "mb-2 text-wrap"
+    }
+  ]
+}

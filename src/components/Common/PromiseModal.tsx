@@ -284,7 +284,11 @@ export const PromiseModal: FC<PromiseModalProps> = ({
   const ChangePromiseType = (options: SingleValue<SelectOption>) => {
     if (!options) return;
     setPromiseType(() => options.value);
-    setBenchmark(() => 0);
+    if (options.value === "Lineup") {
+      setBenchmark(() => 1); // Reset benchmark when changing to Lineup
+    } else {
+      setBenchmark(() => 0);
+    }
     setHasUserMadeChanges(true); // Mark that user has made changes
   };
 
@@ -746,7 +750,8 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                 {(promiseType === "Wins" ||
                   promiseType === "Time on Ice" ||
                   promiseType === "Minutes" ||
-                  promiseType === "Snap Count") && (
+                  promiseType === "Snap Count" ||
+                  promiseType === "Lineup") && (
                   <Slider
                     value={benchmark}
                     onChange={ChangeBenchmark}
