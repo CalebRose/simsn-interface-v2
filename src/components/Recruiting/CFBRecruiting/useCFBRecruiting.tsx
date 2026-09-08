@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useModal } from "../../../_hooks/useModal";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import {
@@ -39,7 +39,7 @@ export const useCFBRecruiting = () => {
     useState<RecruitingCategory>(Overview);
   const [tableViewType, setTableViewType] = useState<string>(Attributes);
   const [country, setCountry] = useState<string>("");
-  const [stars, setStars] = useState<number[]>([]);
+  const [stars, setStars] = useState<any[]>([]);
   const [positions, setPositions] = useState<string[]>([]);
   const [archetype, setArchetype] = useState<string[]>([]);
   const [regions, setRegions] = useState<string[]>([]);
@@ -54,6 +54,13 @@ export const useCFBRecruiting = () => {
     HockeyCroot | FootballCroot | BasketballCroot
   >({} as FootballCroot);
   const [modalAction, setModalAction] = useState<ModalAction>(RecruitInfoType);
+
+  // Default to 1 so the page loads pre-sorted by default
+  const [sortVersion, setSortVersion] = useState<number>(1);
+
+  const triggerSort = () => {
+    setSortVersion((prev) => prev + 1);
+  };
 
   useEffect(() => {
     getBootstrapRecruitingData();
@@ -73,25 +80,6 @@ export const useCFBRecruiting = () => {
       boardMap[profile.RecruitID] = true;
     });
     return boardMap;
-  }, [recruitProfiles]);
-
-  const sortedCrootProfiles = useMemo(() => {
-    if (!recruitProfiles) return [];
-    return [...recruitProfiles].sort((a: any, b: any) => {
-      // 1. Prioritize signed/locked recruits to the bottom
-      const aSigned = a.IsSigned || a.IsLocked ? 1 : 0;
-      const bSigned = b.IsSigned || b.IsLocked ? 1 : 0;
-      if (aSigned !== bSigned) return aSigned - bSigned;
-
-      // 2. Sort by CurrentWeeksPoints in descending order (highest points first)
-      const aPoints = a.CurrentWeeksPoints ?? 0;
-      const bPoints = b.CurrentWeeksPoints ?? 0;
-      if (aPoints !== bPoints) {
-        return bPoints - aPoints;
-      }
-
-      return 0;
-    });
   }, [recruitProfiles]);
 
   const regionOptions = useMemo(() => {
@@ -129,8 +117,9 @@ export const useCFBRecruiting = () => {
     selectedClassView,
   });
 
+  // Bypass pre-sorted wrapper so filtering handles raw live profiles cleanly
   const rawFilteredCrootProfiles = useFilteredCrootProfiles({
-    recruitProfiles: sortedCrootProfiles,
+    recruitProfiles: recruitProfiles || [],
     recruitMap,
     positions,
     archetype,
@@ -139,23 +128,57 @@ export const useCFBRecruiting = () => {
     stars,
   });
 
-  const filteredCrootProfiles = useMemo(() => {
-    if (!rawFilteredCrootProfiles) return [];
-    return [...rawFilteredCrootProfiles].sort((a: any, b: any) => {
-      // 1. Keep signed/locked at the bottom
-      const aSigned = a.IsSigned || a.IsLocked ? 1 : 0;
-      const bSigned = b.IsSigned || b.IsLocked ? 1 : 0;
-      if (aSigned !== bSigned) return aSigned - bSigned;
+  const [filteredCrootProfiles, setFilteredCrootProfiles] = useState<any[]>([]);
+  const prevFiltersRef = useRef({ positions, archetype, regions, statuses, stars });
+  const prevSortVersionRef = useRef(sortVersion);
 
-      // 2. Sort by CurrentWeeksPoints descending (highest points first)
-      const aPoints = a.CurrentWeeksPoints ?? 0;
-      const bPoints = b.CurrentWeeksPoints ?? 0;
-      if (aPoints !== bPoints) {
-        return bPoints - aPoints;
-      }
-      return 0;
-    });
-  }, [rawFilteredCrootProfiles]);
+  // Dynamic sort: Default sorted on load, frozen while typing, fully re-sorted on click of triggerSort()
+  useEffect(() => {
+    if (!rawFilteredCrootProfiles) {
+      setFilteredCrootProfiles([]);
+      return;
+    }
+
+    const filtersChanged =
+      JSON.stringify(prevFiltersRef.current.positions) !== JSON.stringify(positions) ||
+      JSON.stringify(prevFiltersRef.current.archetype) !== JSON.stringify(archetype) ||
+      JSON.stringify(prevFiltersRef.current.regions) !== JSON.stringify(regions) ||
+      JSON.stringify(prevFiltersRef.current.statuses) !== JSON.stringify(statuses) ||
+      JSON.stringify(prevFiltersRef.current.stars) !== JSON.stringify(stars);
+
+    const sortTriggered = prevSortVersionRef.current !== sortVersion;
+
+    if (filtersChanged || sortTriggered || filteredCrootProfiles.length === 0) {
+      prevFiltersRef.current = { positions, archetype, regions, statuses, stars };
+      prevSortVersionRef.current = sortVersion;
+
+      // Sort directly using current live points values
+      const sorted = [...rawFilteredCrootProfiles].sort((a: any, b: any) => {
+        const aSigned = a.IsSigned || a.IsLocked ? 1 : 0;
+        const bSigned = b.IsSigned || b.IsLocked ? 1 : 0;
+        if (aSigned !== bSigned) return aSigned - bSigned;
+
+        const aPoints = a.CurrentWeeksPoints ?? 0;
+        const bPoints = b.CurrentWeeksPoints ?? 0;
+        if (aPoints !== bPoints) {
+          return bPoints - aPoints;
+        }
+        return 0;
+      });
+      setFilteredCrootProfiles(sorted);
+    } else {
+      // While typing numbers, update values in-place so rows stay completely still
+      setFilteredCrootProfiles((prevList) => {
+        const rawMap = new Map(
+          rawFilteredCrootProfiles.map((item: any) => [item.ID || item.RecruitID, item])
+        );
+        return prevList.map((item) => {
+          const id = item.ID || item.RecruitID;
+          return rawMap.has(id) ? rawMap.get(id) : item;
+        });
+      });
+    }
+  }, [rawFilteredCrootProfiles, sortVersion, positions, archetype, regions, statuses, stars]);
 
   const pageSize = 100;
 
@@ -296,5 +319,6 @@ export const useCFBRecruiting = () => {
     filteredClass,
     SelectClass,
     SelectCategory,
+    triggerSort,
   };
 };

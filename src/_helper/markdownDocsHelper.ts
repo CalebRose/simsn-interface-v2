@@ -1,4 +1,10 @@
-import { slugify } from "markdown-to-jsx";
+// Local slugify implementation
+export const slugify = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[^\w ]+/g, "")
+    .replace(/ +/g, "-");
+};
 
 export interface TocEntry {
   id: string;
@@ -8,8 +14,7 @@ export interface TocEntry {
 
 /**
  * Parses `#`-style markdown headings into a flat TOC list. IDs are generated
- * with markdown-to-jsx's own `slugify`, matching the ids it assigns to
- * rendered headings so sidebar links line up with in-page anchors.
+ * with a local slugify helper, matching the ids assigned to rendered headings.
  */
 export const parseMarkdownHeadings = (markdown: string): TocEntry[] => {
   const toc: TocEntry[] = [];
@@ -41,8 +46,7 @@ export const parseMarkdownHeadings = (markdown: string): TocEntry[] => {
 
 /**
  * Removes the author's own "Table of Contents" section from the markdown body
- * since the sidebar renders a generated TOC in its place, and the original
- * links/page numbers don't resolve to real in-page anchors.
+ * since the sidebar renders a generated TOC in its place.
  */
 export const stripEmbeddedToc = (markdown: string): string => {
   const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
