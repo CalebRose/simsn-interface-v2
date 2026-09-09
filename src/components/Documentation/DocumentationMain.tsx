@@ -12,6 +12,7 @@ import {
   stripEmbeddedToc,
 } from "../../_helper/markdownDocsHelper";
 import simHockeyDoc from "../../_techdocs/SimHCK.md?raw";
+import simbbaDoc from "../../_techdocs/SimBBA.md?raw";
 
 type Documentation = {
   [key: string]: MainContentItem[];
@@ -27,6 +28,8 @@ type MainContentItem = {
 const leagueMarkdownDocs: Partial<Record<string, string>> = {
   SimCHL: simHockeyDoc,
   SimPHL: simHockeyDoc,
+  SimCBB: simbbaDoc,
+  SimNBA: simbbaDoc,
 };
 
 export const DocumentationMain = () => {
