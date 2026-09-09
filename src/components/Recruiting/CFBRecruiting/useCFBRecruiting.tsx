@@ -132,7 +132,7 @@ export const useCFBRecruiting = () => {
   const prevFiltersRef = useRef({ positions, archetype, regions, statuses, stars });
   const prevSortVersionRef = useRef(sortVersion);
 
-  // Dynamic sort: Default sorted on load, frozen while typing, fully re-sorted on click of triggerSort()
+  // Dynamic sort: Default sorted on load, frozen while typing, fully re-sorted on click of triggerSort() or list changes
   useEffect(() => {
     if (!rawFilteredCrootProfiles) {
       setFilteredCrootProfiles([]);
@@ -147,8 +147,9 @@ export const useCFBRecruiting = () => {
       JSON.stringify(prevFiltersRef.current.stars) !== JSON.stringify(stars);
 
     const sortTriggered = prevSortVersionRef.current !== sortVersion;
+    const lengthChanged = rawFilteredCrootProfiles.length !== filteredCrootProfiles.length;
 
-    if (filtersChanged || sortTriggered || filteredCrootProfiles.length === 0) {
+    if (filtersChanged || sortTriggered || lengthChanged || filteredCrootProfiles.length === 0) {
       prevFiltersRef.current = { positions, archetype, regions, statuses, stars };
       prevSortVersionRef.current = sortVersion;
 
@@ -167,15 +168,17 @@ export const useCFBRecruiting = () => {
       });
       setFilteredCrootProfiles(sorted);
     } else {
-      // While typing numbers, update values in-place so rows stay completely still
+      // While typing numbers, update values in-place so rows stay completely still, filtering out any removed profiles
       setFilteredCrootProfiles((prevList) => {
         const rawMap = new Map(
           rawFilteredCrootProfiles.map((item: any) => [item.ID || item.RecruitID, item])
         );
-        return prevList.map((item) => {
-          const id = item.ID || item.RecruitID;
-          return rawMap.has(id) ? rawMap.get(id) : item;
-        });
+        return prevList
+          .filter((item) => rawMap.has(item.ID || item.RecruitID))
+          .map((item) => {
+            const id = item.ID || item.RecruitID;
+            return rawMap.get(id);
+          });
       });
     }
   }, [rawFilteredCrootProfiles, sortVersion, positions, archetype, regions, statuses, stars]);
