@@ -329,11 +329,9 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                             backgroundColor: state.isFocused
                               ? "#2d3748"
                               : "#1a202c",
-                            borderColor: state.isFocused
-                              ? "#4A90E2"
-                              : "#4A5568",
+                            borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
                             color: "#ffffff",
-                            minWidth: isMobile ? "10rem" : "15rem",
+                            minWidth: isMobile ? "10rem" : "14.25rem", // Shaved down by ~10px to stop bleeding
                             maxWidth: "100%",
                             padding: "0.3rem",
                             fontSize: isMobile ? "0.9rem" : "1rem",
