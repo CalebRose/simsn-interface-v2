@@ -1294,8 +1294,8 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
                   Portal
                 </Button>
               )}
-              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
-                News
+              <Button size="xs" onClick={() => navigate(routes.HELP)}>
+                Help
               </Button>
             </>
           )}
@@ -1329,8 +1329,8 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
                   Draft
                 </Button>
               )}
-              <Button size="xs" onClick={() => navigate(routes.NEWS)}>
-                News
+              <Button size="xs" onClick={() => navigate(routes.HELP)}>
+                Help
               </Button>
             </>
           )}
