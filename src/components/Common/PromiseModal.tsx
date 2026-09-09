@@ -157,7 +157,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
       return 4; // minutes per game
     }
     if (promiseType === "Games Played" && league === SimCHL) {
-      return 34; // minutes per game
+      return 34;
     }
     if (promiseType === "Minutes") {
       return 40; // minutes per game
@@ -751,7 +751,8 @@ export const PromiseModal: FC<PromiseModalProps> = ({
                   promiseType === "Time on Ice" ||
                   promiseType === "Minutes" ||
                   promiseType === "Snap Count" ||
-                  promiseType === "Lineup") && (
+                  promiseType === "Lineup" ||
+                  promiseType === "Games Played") && (
                   <Slider
                     value={benchmark}
                     onChange={ChangeBenchmark}

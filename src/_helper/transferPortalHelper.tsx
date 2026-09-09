@@ -117,9 +117,6 @@ export const getHCKPromiseWeight = (promiseType: string, benchmark: number) => {
     return "Very High";
   }
   if (promiseType === "Games Played") {
-    if (benchmark < 1 || benchmark > 34) {
-      return "Invalid";
-    }
     if (benchmark === 0) return "Why even try?";
     if (benchmark <= 2) return "Extremely Low";
     if (benchmark <= 8) return "Very Low";
