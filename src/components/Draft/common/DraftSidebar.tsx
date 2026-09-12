@@ -155,11 +155,13 @@ export const DraftSidebar: React.FC<DraftSidebarProps> = ({
               </>
             )}
             <div className="mt-2">
-              {teamNeedsList.map((need) => (
-                <Text key={need} variant="xs" classes="text-gray-400">
-                  {need}
-                </Text>
-              ))}
+              {teamNeedsList &&
+                teamNeedsList.length > 0 &&
+                teamNeedsList.map((need) => (
+                  <Text key={need} variant="xs" classes="text-gray-400">
+                    {need}
+                  </Text>
+                ))}
             </div>
           </>
         )}
