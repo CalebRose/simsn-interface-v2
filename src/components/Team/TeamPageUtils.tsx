@@ -273,9 +273,7 @@ export const getPHLAttributes = (
       : [];
 
   const contractAttributes =
-    category === Contracts && phlContract
-      ? getPHLContracts(phlContract)
-      : [];
+    category === Contracts && phlContract ? getPHLContracts(phlContract) : [];
 
   const potentialAttributes =
     !isMobile && category === Potentials
@@ -3173,7 +3171,26 @@ export const getNBAAttributes = (
       ? getAdditionalNBAAttributes(player)
       : [];
 
-  return [...attributes, ...overviewAttributes, ...additionalAttributes];
+  const contractAttributes =
+    !isMobile && category === Contracts
+      ? [
+          { label: "Type", value: player.Contract.ContractType },
+          { label: "Value", value: player.Contract.ContractValue },
+          { label: "Y1", value: player.Contract.Year1Total },
+          { label: "Y2", value: player.Contract.Year2Total },
+          { label: "Y3", value: player.Contract.Year3Total },
+          { label: "Y4", value: player.Contract.Year4Total },
+          { label: "Y5", value: player.Contract.Year5Total },
+          { label: "Yrs", value: player.Contract.YearsRemaining },
+        ]
+      : [];
+
+  return [
+    ...attributes,
+    ...overviewAttributes,
+    ...additionalAttributes,
+    ...contractAttributes,
+  ];
 };
 
 export const getAdditionalNBAAttributes = (player: NBAPlayer) => {

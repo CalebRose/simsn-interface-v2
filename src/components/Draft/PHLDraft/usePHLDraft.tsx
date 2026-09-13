@@ -31,7 +31,7 @@ import { getSecondsByRound } from "./utils/draftHelpers";
 import { useDraftTradeState } from "../hooks/useDraftTradeState";
 import { TradeService } from "../../../_services/tradeService";
 
-export const PHL_PICKS_PER_ROUND = 24;
+export const PHL_PICKS_PER_ROUND = 28;
 
 export interface PHLDraftState {
   currentPickNumber: number;

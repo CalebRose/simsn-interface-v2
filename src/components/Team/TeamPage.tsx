@@ -321,7 +321,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
         showInfo={showInfo}
         setShowInfo={setShowInfo}
       >
-<Border
+        <Border
           direction="col"
           classes="w-full p-2 gap-y-2 sm:gap-y-0 sm:gap-x-2 flex-col sm:flex-row items-start sm:items-center justify-between"
           styles={{
@@ -753,7 +753,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
         showInfo={showInfo}
         setShowInfo={setShowInfo}
       >
-<Border
+        <Border
           direction="col"
           classes="w-full p-2 gap-y-2 sm:gap-y-0 sm:gap-x-2 flex-col sm:flex-row items-start sm:items-center justify-between"
           styles={{
@@ -807,9 +807,10 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
               }}
             />
           </div>
-          
-{/* Buttons sit underneath on mobile, aligned to start. On desktop, they sit right-aligned. */}
-          <div className="flex flex-row flex-nowrap items-center sm:justify-end w-full gap-x-2 overflow-x-auto pb-1">            <Button
+
+          {/* Buttons sit underneath on mobile, aligned to start. On desktop, they sit right-aligned. */}
+          <div className="flex flex-row flex-nowrap items-center sm:justify-end w-full gap-x-2 overflow-x-auto pb-1">
+            <Button
               size={isMobile ? "xs" : "sm"}
               isSelected={category === Overview}
               onClick={() => setCategory(Overview)}
@@ -830,7 +831,6 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
             >
               <Text variant="small">Draft</Text>
             </Button>
-
             {/* Hide these entirely on Mobile screens */}
             {!isMobile && (
               <>
@@ -1191,7 +1191,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
   const { teamId } = useParams<{ teamId?: string }>();
   const { currentUser } = useAuthStore();
   const fbStore = useSimFBAStore();
-  
+
   const {
     nflTeam,
     nflTeams,
@@ -1383,10 +1383,14 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         const pick = userTeamPicks[i];
 
         const matchingDraftee = Object.values(drafteeMap || {}).find(
-          (d: any) => 
+          (d: any) =>
             (d.DraftPickID && Number(d.DraftPickID) === Number(pick.ID)) ||
-            (pick.DrafteeID && Number(pick.DrafteeID) > 0 && Number(d.ID) === Number(pick.DrafteeID)) ||
-            (pick.SelectedPlayerID && Number(pick.SelectedPlayerID) > 0 && Number(d.ID) === Number(pick.SelectedPlayerID))
+            (pick.DrafteeID &&
+              Number(pick.DrafteeID) > 0 &&
+              Number(d.ID) === Number(pick.DrafteeID)) ||
+            (pick.SelectedPlayerID &&
+              Number(pick.SelectedPlayerID) > 0 &&
+              Number(d.ID) === Number(pick.SelectedPlayerID)),
         );
 
         if (matchingDraftee || (pick.DrafteeID && Number(pick.DrafteeID) > 0)) {
@@ -1394,9 +1398,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         }
 
         const originalTeam = nflTeamMap?.[pick.OriginalTeamID];
-        const originalTeamLabel = originalTeam 
-          ? originalTeam.TeamAbbr 
-          : "N/A";
+        const originalTeamLabel = originalTeam ? originalTeam.TeamAbbr : "N/A";
 
         const block: TradeBlockRow = {
           id: pick.ID,
@@ -1416,7 +1418,14 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       }
     }
     return tradeBlockSet;
-  }, [nflRosterMap, nflTeam, nflDraftPickMap, nflContractMap, nflTeamMap, drafteeMap]);
+  }, [
+    nflRosterMap,
+    nflTeam,
+    nflDraftPickMap,
+    nflContractMap,
+    nflTeamMap,
+    drafteeMap,
+  ]);
 
   const selectedTeamTradeBlock = useMemo(() => {
     const tradeBlockSet: TradeBlockRow[] = [];
@@ -1450,10 +1459,14 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         const pick = selectedTeamDraftPicks[i];
 
         const matchingDraftee = Object.values(drafteeMap || {}).find(
-          (d: any) => 
+          (d: any) =>
             (d.DraftPickID && Number(d.DraftPickID) === Number(pick.ID)) ||
-            (pick.DrafteeID && Number(pick.DrafteeID) > 0 && Number(d.ID) === Number(pick.DrafteeID)) ||
-            (pick.SelectedPlayerID && Number(pick.SelectedPlayerID) > 0 && Number(d.ID) === Number(pick.SelectedPlayerID))
+            (pick.DrafteeID &&
+              Number(pick.DrafteeID) > 0 &&
+              Number(d.ID) === Number(pick.DrafteeID)) ||
+            (pick.SelectedPlayerID &&
+              Number(pick.SelectedPlayerID) > 0 &&
+              Number(d.ID) === Number(pick.SelectedPlayerID)),
         );
 
         if (matchingDraftee || (pick.DrafteeID && Number(pick.DrafteeID) > 0)) {
@@ -1461,9 +1474,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         }
 
         const originalTeam = nflTeamMap?.[pick.OriginalTeamID];
-        const originalTeamLabel = originalTeam 
-          ? originalTeam.TeamAbbr 
-          : "N/A";
+        const originalTeamLabel = originalTeam ? originalTeam.TeamAbbr : "N/A";
 
         const block: TradeBlockRow = {
           id: pick.ID,
@@ -1483,7 +1494,13 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       }
     }
     return tradeBlockSet;
-  }, [selectedRoster, selectedTeamDraftPicks, nflContractMap, nflTeamMap, drafteeMap]);
+  }, [
+    selectedRoster,
+    selectedTeamDraftPicks,
+    nflContractMap,
+    nflTeamMap,
+    drafteeMap,
+  ]);
 
   const sentTradeProposals = useMemo(() => {
     const proposals: NFLTradeProposal[] = [];
@@ -1618,7 +1635,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
         showInfo={showInfo}
         setShowInfo={setShowInfo}
       >
-<Border
+        <Border
           direction="col"
           classes="w-full p-2 gap-y-2 sm:gap-y-0 sm:gap-x-2 flex-col sm:flex-row items-start sm:items-center justify-between"
           styles={{
@@ -1668,11 +1685,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
                 >
                   <Text variant="small">Attributes</Text>
                 </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={exportRoster}
-                >
+                <Button variant="primary" size="sm" onClick={exportRoster}>
                   <Text variant="small">Export</Text>
                 </Button>
               </>
@@ -1680,7 +1693,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
           </div>
         </Border>
       </TeamInfo>
-      
+
       <Border
         classes={`px-1 min-[320px]:min-w-full min-[700px]:min-w-full overflow-x-auto max-[400px]:h-[60vh] max-[500px]:h-[55vh]  ${showInfo ? "h-[50vh]" : "h-[70vh]"}`}
         styles={{
@@ -1996,6 +2009,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
   }, [proRosterMap, selectedTeam]);
 
   const nbaCapsheet = useMemo(() => {
+    console.log({ selectedTeam, capsheetMap });
     if (selectedTeam && capsheetMap) {
       return capsheetMap[selectedTeam.ID];
     }
@@ -2071,7 +2085,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
         Roster={selectedRoster}
         Team={selectedTeam}
         TeamProfile={selectedTeamProfile}
-        isPro={false}
+        isPro={true}
         TeamName={`${selectedTeam?.Team}`}
         Mascot={selectedTeam?.Nickname}
         Coach={selectedTeam?.NBACoachName}
@@ -2081,6 +2095,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
         headerColor={headerColor}
         borderColor={borderColor}
         showInfo={showInfo}
+        Capsheet={nbaCapsheet!!}
         setShowInfo={setShowInfo}
       >
         <Border
@@ -2114,6 +2129,15 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
                 onClick={() => setCategory(Attributes)}
               >
                 <Text variant="small">Attributes</Text>
+              </Button>
+            )}
+            {(isDesktop || isUltraWide) && (
+              <Button
+                size="sm"
+                isSelected={category === Contracts}
+                onClick={() => setCategory(Contracts)}
+              >
+                <Text variant="small">Contracts</Text>
               </Button>
             )}
             <Button variant="primary" size="sm" onClick={exportRoster}>

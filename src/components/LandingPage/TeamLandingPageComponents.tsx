@@ -2188,6 +2188,16 @@ const SimCHLPhaseSection = ({
                 {ts?.Week > 0 && ts?.Week < 18 ? "Yes" : "No"}
               </Text>
             </div>
+            {ts?.Week > 0 && ts?.Week < 18 && (
+              <>
+                <div className="text-start col-span-2">
+                  <Text variant="small">When does Recruiting run?</Text>
+                </div>
+                <div className="text-end col-span-2">
+                  <Text variant="small">Wednesdays at Noon EST</Text>
+                </div>
+              </>
+            )}
           </>
         )}
         {isActiveSeason && (
@@ -2243,6 +2253,12 @@ const SimCHLPhaseSection = ({
             </div>
             <div className="text-end">
               <Text variant="small">{transferPortalRound}</Text>
+            </div>
+            <div className="text-start col-span-2">
+              <Text variant="small">When does the Portal run?</Text>
+            </div>
+            <div className="text-end col-span-2">
+              <Text variant="small">Wednesdays at Noon EST</Text>
             </div>
           </>
         )}

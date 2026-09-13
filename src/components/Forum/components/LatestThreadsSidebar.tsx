@@ -69,7 +69,7 @@ export const LatestThreadsSidebar: React.FC<LatestThreadsSidebarProps> = ({
             }
           >
             <Text
-              variant="body-small"
+              variant="small"
               classes="font-medium line-clamp-2 text-start leading-tight"
             >
               {thread.title}

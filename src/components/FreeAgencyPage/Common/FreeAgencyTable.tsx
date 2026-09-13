@@ -97,7 +97,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
   playerType,
 }) => {
   const { currentUser } = useAuthStore();
-  const { isTablet, isDesktop } = useResponsive();
+  const { isTablet, isDesktop, isUltraWide } = useResponsive();
   const backgroundColor = colorOne;
   const rosterColumns = useMemo(() => {
     let columns = [
@@ -123,7 +123,11 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
       ]);
     }
 
-    if (league === SimPHL && isDesktop && category === Attributes) {
+    if (
+      league === SimPHL &&
+      (isDesktop || isUltraWide) &&
+      category === Attributes
+    ) {
       columns = columns.concat([
         { header: "Agi", accessor: "Agility" },
         { header: "FO", accessor: "Faceoffs" },
@@ -144,7 +148,11 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
       ]);
     }
 
-    if (league === SimNBA && isDesktop && category === Attributes) {
+    if (
+      league === SimNBA &&
+      (isDesktop || isUltraWide) &&
+      category === Attributes
+    ) {
       columns = [
         { header: "ID", accessor: "ID" },
         { header: "Name", accessor: "LastName" },
@@ -465,7 +473,11 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
     index: number,
     backgroundColor: string,
   ) => {
-    const attributes = getNBAAttributes(item, !isDesktop, category!) as {
+    const attributes = getNBAAttributes(
+      item,
+      !isDesktop && !isUltraWide,
+      category!,
+    ) as {
       label: string;
       value: number;
       letter: string;
@@ -482,7 +494,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
     return (
       <div
         key={item.ID}
-        className={`table-row border-b dark:border-gray-700 text-left`}
+        className={`table-row border-b dark:border-gray-700 text-start`}
         style={{ backgroundColor }}
       >
         <>
@@ -494,13 +506,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
               <TableCell
                 key={idx}
                 classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full ${
-          category === Attributes && idx === 6
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+        text-wrap sm:max-w-full text-start`}
               >
                 {attr.label === "Name" ? (
                   <span
@@ -522,8 +528,10 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
             );
           })}
         </>
-        <TableCell>{item.MinimumValue}</TableCell>
-        <TableCell classes="w-[5em] 430px:w-[10em]">
+        <TableCell classes="min-[2561px]:w-[3em]">
+          {item.MinimumValue}
+        </TableCell>
+        <TableCell classes="w-[5em] min-[2561px]:w-[10em] 430px:w-[10em]">
           <div className="flex flex-row">
             {!offers || offers === undefined || (offers.length === 0 && "None")}
             {logos.length > 0 &&

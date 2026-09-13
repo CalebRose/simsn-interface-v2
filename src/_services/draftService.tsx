@@ -80,6 +80,14 @@ export const DraftService = {
     return await PostCall(`${hckUrl}phl/draft/export/picks`, dto);
   },
 
+  ExportPHLDraftees: async (): Promise<any> => {
+    return await GetExportCall(
+      `${hckUrl}export/draftable/players`,
+      "blob",
+      "phl_draftees_export",
+    );
+  },
+
   // NBA ENDPOINTS
   GetNBADraftPageData: async (teamID: number): Promise<any> => {
     return await GetCall(`${bbaUrl}nba/draft/page/${teamID}`);

@@ -361,7 +361,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
 
     return (
       <div
-        className="table-row border-b border-gray-800 hover:bg-gray-800/50 transition-colors text-left"
+        className="table-row border-b border-gray-800 hover:bg-gray-800/50 transition-colors text-start"
         style={{ backgroundColor: rowBackgroundColor }}
       >
         <TableCell classes="py-2 px-1 sm:px-3">
@@ -409,22 +409,22 @@ export const DraftBoard: FC<DraftBoardProps> = ({
             {playerCollege}
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-1 sm:px-3">
+        <TableCell classes="text-start py-2 px-1 sm:px-3">
           <Text variant="small" classes="text-gray-300">
             {player.Age}
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-1 sm:px-3">
+        <TableCell classes="text-start py-2 px-1 sm:px-3">
           <Text variant="small" classes="text-gray-300">
             {formatPlayerHeight(player.Height, league)}
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-1 sm:px-3">
+        <TableCell classes="text-start py-2 px-1 sm:px-3">
           <Text variant="small" classes="text-gray-300">
             {player.Weight} lbs
           </Text>
         </TableCell>
-        <TableCell classes="text-center py-2 px-1 sm:px-3">
+        <TableCell classes="text-start py-2 px-1 sm:px-3">
           <Text
             variant="small"
             classes={`font-bold ${getGradeColor(overallGrade)}`}
@@ -433,61 +433,55 @@ export const DraftBoard: FC<DraftBoardProps> = ({
           </Text>
         </TableCell>
         {league === SimPHL && (
-          <TableCell classes="text-center py-2 px-1 sm:px-3">
+          <TableCell classes="justify-start py-2 px-1 sm:px-3">
             <>
               {isGoodOffensiveHCKFit && (
-                <CheckCircle
-                  textColorClass={`w-full text-center ${TextGreen}`}
-                />
+                <CheckCircle textColorClass={`text-start ${TextGreen}`} />
               )}
               {isBadOffensiveHCKFit && (
-                <CrossCircle textColorClass="w-full text-center text-red-500" />
+                <CrossCircle textColorClass="text-start text-red-500" />
               )}
               {!isGoodOffensiveHCKFit && !isBadOffensiveHCKFit && (
-                <DashCircle textColorClass="w-full text-center text-gray-500" />
+                <DashCircle textColorClass="text-start text-gray-500" />
               )}
             </>
           </TableCell>
         )}
         {league === SimPHL && (
-          <TableCell classes="text-center py-2 px-1 sm:px-3">
+          <TableCell classes="justify-start py-2 px-1 sm:px-3">
             <>
               {isGoodDefensiveHCKFit && (
-                <CheckCircle
-                  textColorClass={`w-full text-center ${TextGreen}`}
-                />
+                <CheckCircle textColorClass={`text-start ${TextGreen}`} />
               )}
               {isBadDefensiveHCKFit && (
-                <CrossCircle textColorClass="w-full text-center text-red-500" />
+                <CrossCircle textColorClass="text-start text-red-500" />
               )}
               {!isGoodDefensiveHCKFit && !isBadDefensiveHCKFit && (
-                <DashCircle textColorClass="w-full text-center text-gray-500" />
+                <DashCircle textColorClass="text-start text-gray-500" />
               )}
             </>
           </TableCell>
         )}
         {league === SimNFL && (
           <>
-            <TableCell classes="text-center py-2 px-1 sm:px-3">
+            <TableCell classes="text-start py-2 px-1 sm:px-3">
               <>
                 {isGoodFBFit && (
-                  <CheckCircle
-                    textColorClass={`w-full text-center ${TextGreen}`}
-                  />
+                  <CheckCircle textColorClass={`text-start ${TextGreen}`} />
                 )}
                 {isBadFBFit && (
-                  <CrossCircle textColorClass="w-full text-center text-red-500" />
+                  <CrossCircle textColorClass="text-start text-red-500" />
                 )}
                 {!isGoodFBFit && !isBadFBFit && (
-                  <DashCircle textColorClass="w-full text-center text-gray-500" />
+                  <DashCircle textColorClass="text-start text-gray-500" />
                 )}
               </>
             </TableCell>
           </>
         )}
 
-        <TableCell classes="text-center py-2 px-1 sm:px-3">
-          <div className="flex items-center justify-center space-x-2">
+        <TableCell classes="justify-start py-2 px-1 sm:px-3">
+          <div className="flex items-center justify-start space-x-2">
             {!isScouted && (
               <Button
                 variant="secondary"
@@ -545,7 +539,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
             </Button>
           </div>
           <div className="flex items-center space-x-6">
-            <div className="text-center">
+            <div className="text-start">
               <Text variant="xs" classes="text-gray-400">
                 Points Available
               </Text>
@@ -553,7 +547,7 @@ export const DraftBoard: FC<DraftBoardProps> = ({
                 {(scoutingPoints || 0) - (spentPoints || 0)}
               </Text>
             </div>
-            <div className="text-center">
+            <div className="text-start">
               <Text variant="xs" classes="text-gray-400">
                 Points Spent
               </Text>
