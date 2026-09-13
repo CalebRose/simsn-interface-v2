@@ -211,11 +211,23 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
     }
     if (category === Promises) {
       columns = columns.concat([
-        { header: !isDesktop ? "Risk" : "Transfer Likeliness", accessor: "TransferLikeliness" },
-        { header: !isDesktop ? "Type" : "Promise Type", accessor: "PromiseType" },
-        { header: !isDesktop ? "Wgt" : "Promise Weight", accessor: "PromiseWeight" },
+        {
+          header: !isDesktop ? "Risk" : "Transfer Likeliness",
+          accessor: "TransferLikeliness",
+        },
+        {
+          header: !isDesktop ? "Type" : "Promise Type",
+          accessor: "PromiseType",
+        },
+        {
+          header: !isDesktop ? "Wgt" : "Promise Weight",
+          accessor: "PromiseWeight",
+        },
         { header: !isDesktop ? "BM1" : "Benchmark", accessor: "Benchmark" },
-        { header: !isDesktop ? "BM2" : "Benchmark 2", accessor: "BenchmarkStr" },
+        {
+          header: !isDesktop ? "BM2" : "Benchmark 2",
+          accessor: "BenchmarkStr",
+        },
         { header: !isDesktop ? "Made" : "Committed", accessor: "PromiseMade" },
         { header: !isDesktop ? "Act" : "Active", accessor: "IsActive" },
       ]);
@@ -776,10 +788,16 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
       ]);
     }
 
-if (category === Contracts) {
+    if (category === Contracts) {
       columns = columns.concat([
-        { header: !isDesktop ? "Off" : "Offensive Fit", accessor: "OffensiveFit" },
-        { header: !isDesktop ? "Def" : "Defensive Fit", accessor: "DefensiveFit" },
+        {
+          header: !isDesktop ? "Off" : "Offensive Fit",
+          accessor: "OffensiveFit",
+        },
+        {
+          header: !isDesktop ? "Def" : "Defensive Fit",
+          accessor: "DefensiveFit",
+        },
         { header: !isDesktop ? "Y1 S" : "Y1 Salary", accessor: "Y1BaseSalary" },
         { header: !isDesktop ? "Y2 S" : "Y2 Salary", accessor: "Y2BaseSalary" },
         { header: !isDesktop ? "Y3 S" : "Y3 Salary", accessor: "Y3BaseSalary" },
@@ -1465,13 +1483,25 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
         { header: "INJ", accessor: "Injury" },
       ]);
     }
-if (category === Promises) {
+    if (category === Promises) {
       columns = columns.concat([
-        { header: !isDesktop ? "Risk" : "Transfer Likeliness", accessor: "TransferLikeliness" },
-        { header: !isDesktop ? "Type" : "Promise Type", accessor: "PromiseType" },
-        { header: !isDesktop ? "Wgt" : "Promise Weight", accessor: "PromiseWeight" },
+        {
+          header: !isDesktop ? "Risk" : "Transfer Likeliness",
+          accessor: "TransferLikeliness",
+        },
+        {
+          header: !isDesktop ? "Type" : "Promise Type",
+          accessor: "PromiseType",
+        },
+        {
+          header: !isDesktop ? "Wgt" : "Promise Weight",
+          accessor: "PromiseWeight",
+        },
         { header: !isDesktop ? "BM1" : "Benchmark", accessor: "Benchmark" },
-        { header: !isDesktop ? "BM2" : "Benchmark 2", accessor: "BenchmarkStr" },
+        {
+          header: !isDesktop ? "BM2" : "Benchmark 2",
+          accessor: "BenchmarkStr",
+        },
         { header: !isDesktop ? "Made" : "Committed", accessor: "PromiseMade" },
         { header: !isDesktop ? "Act" : "Active", accessor: "IsActive" },
       ]);
@@ -2446,6 +2476,18 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
         { header: !isUltraWide ? "Min" : "Minutes", accessor: "Minutes" },
       ]);
     }
+    if ((isDesktop || isUltraWide) && category === Contracts) {
+      columns = columns.concat([
+        { header: "Contract Type", accessor: "ContractType" },
+        { header: "Contract Value", accessor: "ContractValue" },
+        { header: !isDesktop ? "Y1" : "Y1 Salary", accessor: "Year1Total" },
+        { header: !isDesktop ? "Y2" : "Y2 Salary", accessor: "Year2Total" },
+        { header: !isDesktop ? "Y3" : "Y3 Salary", accessor: "Year3Total" },
+        { header: !isDesktop ? "Y4" : "Y4 Salary", accessor: "Year4Total" },
+        { header: !isDesktop ? "Y5" : "Y5 Salary", accessor: "Year5Total" },
+        { header: !isDesktop ? "Yrs" : "Years", accessor: "YearsRemaining" },
+      ]);
+    }
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
   }, [isDesktop, isUltraWide, category]);
@@ -2959,9 +3001,10 @@ export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
   );
 
   // Dynamically detect the current draft season (e.g., 2027)
-  const currentDraftSeason = draftPicks.length > 0 
-    ? Math.min(...draftPicks.map((p: any) => Number(p.Season))) 
-    : new Date().getFullYear();
+  const currentDraftSeason =
+    draftPicks.length > 0
+      ? Math.min(...draftPicks.map((p: any) => Number(p.Season)))
+      : new Date().getFullYear();
 
   // Sort picks chronologically by Season, then sequentially by OverallPickNumber
   const sortedDraftPicks = useMemo(() => {
@@ -2978,11 +3021,7 @@ export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
     });
   }, [draftPicks]);
 
-  const rowRenderer = (
-    item: any,
-    index: number,
-    backgroundColor: string,
-  ) => {
+  const rowRenderer = (item: any, index: number, backgroundColor: string) => {
     const originalTeam = teamMap?.[item.OriginalTeamID];
     const originalTeamLabel = originalTeam
       ? `${originalTeam.TeamName} ${originalTeam.Mascot}`
@@ -2995,16 +3034,16 @@ export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
 
     // ONLY lookup players for the current season so future years stay clean
     if (Number(item.Season) <= currentDraftSeason) {
-      
       // The ultimate 1-to-1 matching using database foreign keys:
       // 1. DraftPickID matches the Pick's ID
       // 2. DrafteeID matches the Draftee's ID
       // 3. DraftedPick matches the true overall display number
       const matchingDraftee = Object.values(drafteeMap || {}).find(
-        (d: any) => 
+        (d: any) =>
           (d.DraftPickID > 0 && Number(d.DraftPickID) === Number(item.ID)) ||
           (item.DrafteeID > 0 && Number(d.ID) === Number(item.DrafteeID)) ||
-          (Number(d.DraftedRound) === Number(item.DraftRound) && Number(d.DraftedPick) === Number(displayPickNumber))
+          (Number(d.DraftedRound) === Number(item.DraftRound) &&
+            Number(d.DraftedPick) === Number(displayPickNumber)),
       );
 
       if (matchingDraftee) {
@@ -3012,16 +3051,23 @@ export const NFLDraftPicksTable: FC<NFLDraftPicksTableProps> = ({
       } else {
         // Fallback to active roster if they've already been migrated
         const draftedRosterPlayer = (roster || []).find(
-          (p: any) => 
+          (p: any) =>
             (p.DraftPickID > 0 && Number(p.DraftPickID) === Number(item.ID)) ||
             (item.DrafteeID > 0 && Number(p.ID) === Number(item.DrafteeID)) ||
-            (Number(p.DraftRound) === Number(item.DraftRound) && (Number(p.DraftPick) === Number(displayPickNumber) || Number(p.OverallPickNumber) === Number(displayPickNumber)))
+            (Number(p.DraftRound) === Number(item.DraftRound) &&
+              (Number(p.DraftPick) === Number(displayPickNumber) ||
+                Number(p.OverallPickNumber) === Number(displayPickNumber))),
         );
-        
+
         if (draftedRosterPlayer) {
           resolvedPlayerName = `${draftedRosterPlayer.Position} ${draftedRosterPlayer.FirstName} ${draftedRosterPlayer.LastName}`;
-        } else if (item.SelectedPlayerName || item.PlayerName || item.DrafteeName) {
-          resolvedPlayerName = item.SelectedPlayerName || item.PlayerName || item.DrafteeName;
+        } else if (
+          item.SelectedPlayerName ||
+          item.PlayerName ||
+          item.DrafteeName
+        ) {
+          resolvedPlayerName =
+            item.SelectedPlayerName || item.PlayerName || item.DrafteeName;
         }
       }
     }
