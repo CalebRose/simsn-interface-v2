@@ -2331,7 +2331,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   );
 
   const exportPHLDraftees = useCallback(async () => {
-    // await DraftService.ExportPHLDraftees();
+    await DraftService.ExportNFLDraftees();
     enqueueSnackbar("Exporting PHL Draftees...", {
       variant: "warning",
       autoHideDuration: 3000,
