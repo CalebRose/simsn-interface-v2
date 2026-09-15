@@ -2,6 +2,7 @@ import { useMemo, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import { AuthService } from "../../_services/auth";
+import { LacrosseAdminService } from "../../_services/lacrosseService";
 import { getLogo } from "../../_utility/getLogo";
 import routes from "../../_constants/routes";
 import { useForumStore } from "../../context/ForumContext";
@@ -67,6 +68,7 @@ export const SideMenu = ({}) => {
   const { isDesktop } = useResponsive();
   const [processing, setProcessing] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isLaxAdmin, setIsLaxAdmin] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Close notification dropdown on outside click
@@ -90,13 +92,24 @@ export const SideMenu = ({}) => {
     return currentUser.IsBanned;
   }, [currentUser]);
 
+  useEffect(() => {
+    if (!currentUser) {
+      setIsLaxAdmin(false);
+      return;
+    }
+    LacrosseAdminService.getStatus()
+      .then((status) => setIsLaxAdmin(status.isAdmin))
+      .catch(() => setIsLaxAdmin(false));
+  }, [currentUser]);
+
   const isCommissioner = useMemo(() => {
     if (!currentUser) return false;
     return (
+      isLaxAdmin ||
       currentUser.roleID === "Admin" ||
       currentUser.roleID?.includes("Commissioner")
     );
-  }, [currentUser]);
+  }, [currentUser, isLaxAdmin]);
 
   // ✅ Handle Logout
   const logout = async () => {

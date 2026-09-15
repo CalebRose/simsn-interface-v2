@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { PageContainer } from "../../_design/Container";
 import { Button } from "../../_design/Buttons";
@@ -14,6 +14,7 @@ import {
   SimPHL,
   SimCollegeBaseball,
   SimMLB,
+  SimCLAX,
 } from "../../_constants/constants";
 import { useAuthStore } from "../../context/AuthContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
@@ -27,6 +28,8 @@ import routes from "../../_constants/routes";
 import { LeagueSelector } from "../Common/LeagueSelector";
 import { teamByLeague } from "../../_utility/useLeagueSelector";
 import { BaseballLandingPage } from "../LandingPage/BaseballLandingPage";
+import { LacrosseService, LaxTeam } from "../../_services/lacrosseService";
+import { CollegeLacrosseDashboard } from "../Lacrosse/CollegeLacrosseDashboard";
 
 export const Home = () => {
   const { currentUser } = useAuthStore();
@@ -36,6 +39,19 @@ export const Home = () => {
   const { cbbTeam, nbaTeam } = useSimBBAStore();
   const { chlTeam, phlTeam } = useSimHCKStore();
   const { collegeOrganization, mlbOrganization } = useSimBaseballStore();
+  const [claxTeam, setClaxTeam] = useState<LaxTeam | null>(null);
+  const [claxTeamLoading, setClaxTeamLoading] = useState(Boolean(currentUser));
+
+  useEffect(() => {
+    if (!currentUser?.id) { setClaxTeam(null); setClaxTeamLoading(false); return; }
+    let active=true;
+    setClaxTeamLoading(true);
+    LacrosseService.getUserTeam(currentUser.id)
+      .then((team)=>{if(active)setClaxTeam(team);})
+      .catch(()=>{if(active)setClaxTeam(null);})
+      .finally(()=>{if(active)setClaxTeamLoading(false);});
+    return()=>{active=false;};
+  },[currentUser?.id]);
 
   // Check if selected team matches current league and correct it if needed
   useEffect(() => {
@@ -100,8 +116,6 @@ export const Home = () => {
     SetTeam,
   ]);
 
-  const isLoadingData = !selectedTeam;
-
   const isParticipating = useMemo(() => {
     if (!currentUser) return false;
     if (currentUser.IsBanned) return false;
@@ -116,6 +130,7 @@ export const Home = () => {
       !NBATeamID &&
       !collegeOrganization &&
       !mlbOrganization
+      && !claxTeam
     ) {
       return false;
     }
@@ -128,11 +143,12 @@ export const Home = () => {
       NBATeamID === 0 &&
       !collegeOrganization &&
       !mlbOrganization
+      && !claxTeam
     ) {
       return false;
     }
     return true;
-  }, [currentUser, collegeOrganization, mlbOrganization]);
+  }, [currentUser, collegeOrganization, mlbOrganization, claxTeam]);
 
   const isBanned = useMemo(() => {
     if (!currentUser) return false;
@@ -140,7 +156,7 @@ export const Home = () => {
   }, [currentUser]);
 
   return (
-    <PageContainer isLoading={isLoadingData && isParticipating}>
+    <PageContainer isLoading={claxTeamLoading || (!selectedTeam && isParticipating)}>
       {!isParticipating && !isBanned && (
         <>
           <Border
@@ -241,6 +257,7 @@ export const Home = () => {
                 phlTeam,
                 collegeBaseballOrg: collegeOrganization,
                 mlbOrg: mlbOrganization,
+                claxTeam,
               }}
             />
           </div>
@@ -254,6 +271,11 @@ export const Home = () => {
               />
             )}
           {selectedTeam &&
+            selectedLeague === SimCLAX && (
+              <CollegeLacrosseDashboard team={selectedTeam as LaxTeam} />
+            )}
+          {selectedTeam &&
+            selectedLeague !== SimCLAX &&
             selectedLeague !== SimCollegeBaseball &&
             selectedLeague !== SimMLB && (
               <TeamLandingPage

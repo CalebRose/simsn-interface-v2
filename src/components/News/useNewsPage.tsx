@@ -12,10 +12,13 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimNBA,
   SimNFL,
   SimPHL,
 } from "../../_constants/constants";
+import { NewsLog } from "../../models/footballModels";
+import { LacrosseAdminService, LacrosseNewsService, LaxTeam } from "../../_services/lacrosseService";
 import { usePagination } from "../../_hooks/usePagination";
 import { getFBAWeekID, getHCKWeekID } from "../../_helper/statsPageHelper";
 import { SingleValue } from "react-select";
@@ -62,14 +65,28 @@ export const useNewsPage = () => {
     proNews: phlNews,
     getBootstrapNewsData: getHCKBootstrapNewsData,
   } = useSimHCKStore();
-  const isLoadingData = !selectedTeam;
+  const [claxNews, setClaxNews] = useState<NewsLog[]>([]);
+  const [claxTeam, setClaxTeam] = useState<LaxTeam | null>(null);
+  const [claxTeamMap, setClaxTeamMap] = useState<Record<number, LaxTeam>>({});
+  const [isLaxAdmin, setIsLaxAdmin] = useState(false);
+  const [claxSeason, setClaxSeason] = useState(1);
+  const [claxWeek, setClaxWeek] = useState(1);
+  const newsSelectedTeam = selectedLeague === SimCLAX && claxTeam ? {
+    ID: claxTeam.id,
+    TeamName: claxTeam.name,
+    Mascot: claxTeam.nickname,
+    ColorOne: claxTeam.colors.primary,
+    ColorTwo: claxTeam.colors.secondary,
+    ColorThree: claxTeam.colors.tertiary,
+  } : selectedTeam;
+  const isLoadingData = selectedLeague === SimCLAX ? !claxTeam : !selectedTeam;
   const backgroundColor = "#1f2937";
   let darkerBackgroundColor = getThemeAwareDarkenColor(backgroundColor, -5);
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const teamColors = useTeamColors(
-    selectedTeam?.ColorOne,
-    selectedTeam?.ColorTwo,
-    selectedTeam?.ColorThree,
+    newsSelectedTeam?.ColorOne,
+    newsSelectedTeam?.ColorTwo,
+    newsSelectedTeam?.ColorThree,
   );
   const [selectedWeek, setSelectedWeek] = useState<number>(() => {
     if (selectedLeague === SimCHL || selectedLeague === SimPHL) {
@@ -121,10 +138,37 @@ export const useNewsPage = () => {
     new Set(),
   );
 
+  const loadClaxNews = useCallback(async () => {
+    const data = await LacrosseNewsService.get();
+    setClaxTeam(data.team);
+    setClaxTeamMap(Object.fromEntries(data.teams.map((team) => [team.id, team])));
+    setClaxSeason(data.currentSeason);
+    setClaxWeek(data.currentWeek);
+    setClaxNews(data.news.map((item) => ({
+      ID: item.id,
+      CreatedAt: item.createdAt as any,
+      UpdatedAt: null as any,
+      DeletedAt: null as any,
+      WeekID: item.week,
+      Week: item.week,
+      SeasonID: item.season,
+      TeamID: item.teamId || 0,
+      MessageType: item.messageType,
+      Message: item.message,
+      League: SimCLAX,
+    }) as NewsLog));
+  }, []);
+
   useEffect(() => {
     getFBABootstrapNewsData();
     getBBABootstrapNewsData();
     getHCKBootstrapNewsData();
+    void loadClaxNews();
+    if (currentUser) {
+      void LacrosseAdminService.getStatus()
+        .then((status) => setIsLaxAdmin(status.isAdmin))
+        .catch(() => setIsLaxAdmin(false));
+    }
   }, []);
 
   const RefreshNews = useCallback(() => {
@@ -137,17 +181,22 @@ export const useNewsPage = () => {
     if (isCHLUser || isPHLUser) {
       getHCKBootstrapNewsData();
     }
-  }, [isCFBUser, isNFLUser, isCBBUser, isNBAUser, isCHLUser, isPHLUser]);
+    if (selectedLeague === SimCLAX) {
+      void loadClaxNews();
+    }
+  }, [isCFBUser, isNFLUser, isCBBUser, isNBAUser, isCHLUser, isPHLUser, selectedLeague, loadClaxNews]);
 
   const ts = useMemo(() => {
     if (selectedLeague === SimCHL || selectedLeague === SimPHL) {
       return hck_Timestamp;
+    } else if (selectedLeague === SimCLAX) {
+      return { SeasonID: claxSeason, WeekID: claxWeek } as any;
     } else if (selectedLeague === SimCFB || selectedLeague === SimNFL) {
       return cfb_Timestamp;
     } else if (selectedLeague === SimCBB || selectedLeague === SimNBA) {
       return cbb_Timestamp;
     }
-  }, [selectedLeague, hck_Timestamp, cfb_Timestamp, cbb_Timestamp]);
+  }, [selectedLeague, hck_Timestamp, cfb_Timestamp, cbb_Timestamp, claxSeason, claxWeek]);
 
   const selectedLeagueNews = useMemo(() => {
     switch (selectedLeague) {
@@ -163,10 +212,12 @@ export const useNewsPage = () => {
         return chlNews;
       case SimPHL:
         return phlNews;
+      case SimCLAX:
+        return claxNews;
       default:
         return [];
     }
-  }, [selectedLeague, cfbNews, nflNews, cbbNews, nbaNews, chlNews, phlNews]);
+  }, [selectedLeague, cfbNews, nflNews, cbbNews, nbaNews, chlNews, phlNews, claxNews]);
 
   const filterNewsData = () => {
     return useMemo(() => {
@@ -535,6 +586,9 @@ export const useNewsPage = () => {
     } else if (leagueOption === SimCHL || leagueOption === SimPHL) {
       setSelectedSeason(hck_Timestamp?.SeasonID || 2);
       setSelectedWeek(-1);
+    } else if (leagueOption === SimCLAX) {
+      setSelectedSeason(claxSeason);
+      setSelectedWeek(-1);
     }
     setCurrentPage(0);
   };
@@ -595,7 +649,9 @@ export const useNewsPage = () => {
     selectedWeek,
     setSelectedLeague,
     selectedLeague,
-    selectedTeam,
+    selectedTeam: newsSelectedTeam,
+    claxTeamMap,
+    showSimLax: Boolean(claxTeam) || isLaxAdmin,
     pagedData,
     RefreshNews,
     sortByNewest,

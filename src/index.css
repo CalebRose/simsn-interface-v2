@@ -1790,6 +1790,11 @@ html.dark .high-contrast {
   max-width: 40vw;
 }
 
+/* Preserve OUT/IN and team spacing in lacrosse substitution narration. */
+.min-w-\[360px\] {
+  white-space: pre-line;
+}
+
 @media (min-width: 992px) {
   .modal-xl {
     --bs-modal-width: 85vw;

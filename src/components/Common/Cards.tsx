@@ -36,7 +36,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({
   setSelectedTeam,
   t,
 }) => {
-  const logo = getLogo(league, teamID, retro);
+  const logo = t.LogoURL || getLogo(league, teamID, retro);
   const teamColors = useTeamColors(t.ColorOne, t.ColorTwo, t.ColorThree);
   const backgroundColor = !disable ? teamColors.One : "#4B5563"; // Default to Tailwind's gray-600 if no color provided
   const borderColor = !disable ? teamColors.Two : "#4B5563";
@@ -52,8 +52,8 @@ export const TeamCard: React.FC<TeamCardProps> = ({
       <div
         className={`flex flex-col items-center w-full justify-center h-[15vh] max-h-[18vh] lg:h-[180px] rounded-2xl`}
       >
-        {logo && (
-          <div className="flex flex-col items-center justify-center align-center h-full w-auto max-w-full md:px-4 md:py-4">
+        <div className="flex flex-col items-center justify-center align-center h-full w-auto max-w-full md:px-4 md:py-4">
+          {logo ? (
             <Logo
               label={`${team}`}
               url={logo}
@@ -61,14 +61,16 @@ export const TeamCard: React.FC<TeamCardProps> = ({
               containerClass="md:items-center p-4"
               textClass={`${textColorClass} text-center md:text-[0.8rem]`}
             />
-            <Text
-              variant="small"
-              classes={`font-semibold ${textColorClass} md:text-[0.8rem]`}
-            >
-              {conference}
-            </Text>
-          </div>
-        )}
+          ) : (
+            <div className={`px-3 py-2 text-center font-bold ${textColorClass}`}>
+              <div className="text-lg">{t.Abbreviation || team}</div>
+              <div className="text-xs font-semibold">{team}</div>
+            </div>
+          )}
+          <Text variant="small" classes={`font-semibold ${textColorClass} md:text-[0.8rem]`}>
+            {conference}
+          </Text>
+        </div>
         {disable && <LockIcon textColorClass={textColorClass} />}
       </div>
     </button>

@@ -1,4 +1,5 @@
 import { baseballUrl } from "../_constants/urls";
+import { getFirebaseIdToken } from "../_helper/authToken";
 import { GetCall, PostCall, PUTCall, DELETECall } from "../_helper/fetchHelper";
 import type { TutorialManifest, TutorialArticle } from "../models/baseball/baseballTutorialModels";
 import { BaseballBootstrapLanding, BaseballBootstrapAll, BaseballOrganization, BaseballRosters, PayrollProjectionResponse, ContractOverviewPlayer, ScheduleParams, ScheduleResponse, ListedPositionResponse, OrgFinancialSummaryResponse, LedgerResponse } from "../models/baseball/baseballModels";
@@ -223,14 +224,14 @@ export const BaseballService = {
     },
     // Notification management
     MarkNotificationRead: async (notificationId: number): Promise<void> => {
-        const token = localStorage.getItem("token");
+        const token = await getFirebaseIdToken();
         await fetch(`${baseballUrl}notifications/${notificationId}/read`, {
             method: "PUT",
             headers: { Authorization: `Bearer ${token || ""}` },
         });
     },
     DeleteNotification: async (notificationId: number): Promise<void> => {
-        const token = localStorage.getItem("token");
+        const token = await getFirebaseIdToken();
         await fetch(`${baseballUrl}notifications/${notificationId}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token || ""}` },

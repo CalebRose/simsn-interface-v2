@@ -4,6 +4,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -31,6 +32,7 @@ import {
   ProfileNBATeamCard,
   ProfileCBLTeamCard,
   ProfileMLBTeamCard,
+  ProfileCLAXTeamCard,
 } from "./ProfileTeamCard";
 import { CSSObjectWithLabel } from "react-select";
 import { useSimFBAStore } from "../../context/SimFBAContext";
@@ -47,6 +49,7 @@ import {
 } from "../../models/hockeyModels";
 import { BaseballOrganization } from "../../models/baseball/baseballModels";
 import { ClickableUserLabel } from "../Common/Labels";
+import { LacrosseService, LaxTeam } from "../../_services/lacrosseService";
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -260,6 +263,7 @@ interface PublicProfileContentProps {
   selectedPHLTeam: ProfessionalTeam | null;
   selectedCBLTeam: BaseballOrganization | null | undefined;
   selectedMLBTeam: BaseballOrganization | null | undefined;
+  selectedCLAXTeam: LaxTeam | null;
   viewedTop5: CurrentUser[];
   viewedAchievements: Achievement[];
 }
@@ -277,6 +281,7 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
   selectedPHLTeam,
   selectedCBLTeam,
   selectedMLBTeam,
+  selectedCLAXTeam,
   viewedTop5,
   viewedAchievements,
 }) => (
@@ -330,7 +335,8 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
       selectedCHLTeam ||
       selectedPHLTeam ||
       selectedCBLTeam ||
-      selectedMLBTeam) && (
+      selectedMLBTeam ||
+      selectedCLAXTeam) && (
       <Border classes="w-full p-4">
         <Text variant="h6" classes="mb-3">
           Teams
@@ -359,6 +365,9 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
           )}
           {selectedMLBTeam && (
             <ProfileMLBTeamCard IsUser={false} Org={selectedMLBTeam} />
+          )}
+          {selectedCLAXTeam && (
+            <ProfileCLAXTeamCard IsUser={false} Team={selectedCLAXTeam} />
           )}
         </div>
       </Border>
@@ -496,6 +505,7 @@ export const ProfilePage = () => {
 
   const [viewedUser, setViewedUser] = useState<CurrentUser | null>(null);
   const [viewedUserLoading, setViewedUserLoading] = useState(false);
+  const [selectedCLAXTeam, setSelectedCLAXTeam] = useState<LaxTeam | null>(null);
   const [viewedAchievements, setViewedAchievements] = useState<Achievement[]>(
     [],
   );
@@ -606,6 +616,28 @@ export const ProfilePage = () => {
   }, [currentUser, viewedUser, mlbOrganization, organizationMap]);
 
   // ── Effects ─────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const profileUid =
+      viewedUser && viewedUser.id !== currentUser?.id
+        ? viewedUser.id
+        : currentUser?.id;
+    if (!profileUid) {
+      setSelectedCLAXTeam(null);
+      return;
+    }
+    let cancelled = false;
+    LacrosseService.getUserTeam(profileUid)
+      .then((team) => {
+        if (!cancelled) setSelectedCLAXTeam(team);
+      })
+      .catch(() => {
+        if (!cancelled) setSelectedCLAXTeam(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedUser?.id, currentUser?.id]);
 
   useEffect(() => {
     if (!paramUsername) return;
@@ -982,6 +1014,7 @@ export const ProfilePage = () => {
                   selectedPHLTeam={selectedPHLTeam}
                   selectedCBLTeam={selectedCBLTeam}
                   selectedMLBTeam={selectedMLBTeam}
+                  selectedCLAXTeam={selectedCLAXTeam}
                   viewedTop5={viewedTop5}
                   viewedAchievements={viewedAchievements}
                 />
@@ -1104,6 +1137,13 @@ export const ProfilePage = () => {
                     )}
                     {selectedMLBTeam && (
                       <ProfileMLBTeamCard IsUser={true} Org={selectedMLBTeam} />
+                    )}
+                    {selectedCLAXTeam && (
+                      <ProfileCLAXTeamCard
+                        IsUser={true}
+                        Team={selectedCLAXTeam}
+                        onQuit={() => setSelectedCLAXTeam(null)}
+                      />
                     )}
                   </div>
                 </Border>

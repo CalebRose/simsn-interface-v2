@@ -9,6 +9,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -47,6 +48,7 @@ import { ProfileTeamCardModal } from "./ProfileTeamCardModal";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { CurrentUser } from "../../_hooks/useCurrentUser";
 import { updateUserByUsername } from "../../firebase/firestoreHelper";
+import { getLaxLogoUrl, LacrosseService, LaxTeam } from "../../_services/lacrosseService";
 
 interface ProfileTeamCardProps {
   teamID: number;
@@ -61,6 +63,8 @@ interface ProfileTeamCardProps {
   IsRetro?: boolean;
   removeUser: () => void;
   isUser: boolean;
+  logoUrl?: string;
+  actionLabel?: string;
 }
 
 const ProfileTeamCard: React.FC<ProfileTeamCardProps> = ({
@@ -76,15 +80,17 @@ const ProfileTeamCard: React.FC<ProfileTeamCardProps> = ({
   role,
   textColorClass,
   isUser = false,
+  logoUrl,
+  actionLabel = "Resign",
 }) => {
-  const logoUrl = getLogo(league, teamID, IsRetro);
+  const resolvedLogoUrl = logoUrl || getLogo(league, teamID, IsRetro);
   return (
     <>
       <Border classes="w-full" styles={{ backgroundColor, borderColor }}>
         <div className="grid grid-cols-3 h-24 w-full p-2 items-center">
           <div className="col-span-1 w-full p-4">
             <Logo
-              url={logoUrl}
+              url={resolvedLogoUrl}
               variant="normal"
               classes=""
               containerClass="p-4 items-center justify-center"
@@ -113,11 +119,76 @@ const ProfileTeamCard: React.FC<ProfileTeamCardProps> = ({
               size="xs"
               disabled={!isUser}
             >
-              Resign
+              {actionLabel}
             </Button>
           )}
         </div>
       </Border>
+    </>
+  );
+};
+
+interface ProfileCLAXTeamCardProps {
+  IsUser?: boolean;
+  Team: LaxTeam | null;
+  onQuit?: () => void;
+}
+
+export const ProfileCLAXTeamCard: React.FC<ProfileCLAXTeamCardProps> = ({
+  IsUser,
+  Team,
+  onQuit,
+}) => {
+  const { currentUser } = useAuthStore();
+  const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  if (!Team) return null;
+
+  const backgroundColor = Team.colors.primary || "#4B5563";
+  const borderColor = Team.colors.secondary || "#4B5563";
+  const secondaryBorderColor = Team.colors.tertiary || borderColor;
+  const textColorClass = getTextColorBasedOnBg(backgroundColor);
+
+  const quit = async () => {
+    await LacrosseService.quitTeam();
+    handleCloseModal();
+    onQuit?.();
+  };
+
+  return (
+    <>
+      <ProfileTeamCard
+        teamID={Team.id}
+        teamLabel={`${Team.name} ${Team.nickname}`}
+        conference={Team.conference?.name || ""}
+        role="Coach"
+        backgroundColor={backgroundColor}
+        borderColor={borderColor}
+        secondaryBorderColor={secondaryBorderColor}
+        league={SimCLAX}
+        textColorClass={textColorClass}
+        IsRetro={currentUser?.IsRetro}
+        removeUser={handleOpenModal}
+        isUser={IsUser!!}
+        logoUrl={getLaxLogoUrl(Team.logoFileName)}
+        actionLabel="Quit"
+      />
+      {IsUser && (
+        <ProfileTeamCardModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          title={`Quit ${Team.name}?`}
+          actions={
+            <ButtonGroup>
+              <Button size="sm" onClick={() => void quit()}>Yes</Button>
+              <Button size="sm" onClick={handleCloseModal}>No</Button>
+            </ButtonGroup>
+          }
+        >
+          <Text className="mb-4 text-start">
+            Warning: quitting releases this team immediately and removes your roster and gameplan access. Are you sure you would like to quit?
+          </Text>
+        </ProfileTeamCardModal>
+      )}
     </>
   );
 };

@@ -13,6 +13,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -31,9 +32,11 @@ import { AdminTradesTab } from "./AdminTradesTab";
 import { IFAAdminPanel } from "./IFAAdminPanel";
 import { SimulationControlPanel } from "./SimulationControlPanel";
 import { RecruitingAdminPanel } from "./RecruitingAdminPanel";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { NFLUDFAAdminPanel } from "../Admin/NFLUDFAAdminPanel";
+import { CollegeLacrosseAdminPage } from "../Lacrosse/CollegeLacrosseAdminPage";
+import { LacrosseAdminService, LaxAdminStatus } from "../../_services/lacrosseService";
 
 const IFAAdminSection = () => {
   const { seasonContext } = useSimBaseballStore();
@@ -81,6 +84,23 @@ export const AdminPage = () => {
   const { currentUser } = authStore;
   const { RefreshRequests, selectedTab, setSelectedTab } = useAdminPage();
   const navigate = useNavigate();
+  const [laxAdminStatus, setLaxAdminStatus] = useState<LaxAdminStatus>();
+  const [laxAdminChecked, setLaxAdminChecked] = useState(false);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setLaxAdminStatus(undefined);
+      setLaxAdminChecked(true);
+      return;
+    }
+    setLaxAdminChecked(false);
+    LacrosseAdminService.getStatus()
+      .then(setLaxAdminStatus)
+      .catch(() => setLaxAdminStatus(undefined))
+      .finally(() => setLaxAdminChecked(true));
+  }, [currentUser]);
+
+  const isLaxAdmin = Boolean(laxAdminStatus?.isAdmin);
 
   const isAdmin = useMemo(() => {
     if (!currentUser) return false;
@@ -121,11 +141,15 @@ export const AdminPage = () => {
   const { ts, selectedLeague, setSelectedLeague } = leagueStore;
 
   // Role gating logic
+  if (!laxAdminChecked) {
+    return <PageContainer direction="col" isLoading={true} title="Admin" />;
+  }
   if (
     currentUser &&
     currentUser.roleID &&
     currentUser.roleID !== AdminRole &&
-    !currentUser.roleID.includes("Commissioner")
+    !currentUser.roleID.includes("Commissioner") &&
+    !isLaxAdmin
   ) {
     return <UnAuthAdminPage navigate={navigate} />;
   }
@@ -197,6 +221,15 @@ export const AdminPage = () => {
                   {SimPHL}
                 </PillButton>
               )}
+              {isLaxAdmin && (
+                <PillButton
+                  isSelected={selectedLeague === SimCLAX}
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimCLAX)}
+                >
+                  {SimCLAX}
+                </PillButton>
+              )}
               {isAdmin && (
                 <PillButton
                   isSelected={selectedLeague === SimCollegeBaseball}
@@ -218,7 +251,7 @@ export const AdminPage = () => {
             </ButtonGroup>
           </Border>
         </div>
-        {ts && (
+        {ts && selectedLeague !== SimCLAX && (
           <Border classes="w-full p-4 mt-2">
             <Text variant="h6">{selectedLeague} Controls</Text>
             <div className="flex flex-row justify-between pb-2">
@@ -251,6 +284,7 @@ export const AdminPage = () => {
             </div>
           </Border>
         )}
+        {selectedLeague !== SimCLAX && (
         <Border classes="w-full">
           <div className="flex flex-row flex-wrap justify-between pt-1 pb-2 mb-2">
             <TabGroup classes="flex flex-grow justify-between">
@@ -285,6 +319,9 @@ export const AdminPage = () => {
             {selectedTab === Trades && <AdminTradesTab />}
           </div>
         </Border>
+        )}
+
+        {selectedLeague === SimCLAX && <CollegeLacrosseAdminPage embedded />}
 
         {/* SimNFL Section: Hub + UDFA Panel */}
         {selectedLeague === SimNFL && (

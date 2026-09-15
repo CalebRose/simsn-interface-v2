@@ -9,6 +9,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -19,6 +20,7 @@ import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { useAuthStore } from "../../../context/AuthContext";
 
 import { EngagementButton } from "./EngagementButton";
+import { getLaxLogoUrl, LaxTeam } from "../../../_services/lacrosseService";
 
 interface NewsLogItemProps {
   newsItem: NewsLog;
@@ -29,6 +31,7 @@ interface NewsLogItemProps {
     type: EngagementType,
     userTeamId: number,
   ) => Promise<void>;
+  claxTeamMap?: Record<number, LaxTeam>;
 }
 
 interface EngagementData {
@@ -59,6 +62,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
   league,
   engagementData,
   onEngagementUpdate,
+  claxTeamMap = {},
 }) => {
   const { currentUser } = useAuthStore();
   const { cfbTeamMap, proTeamMap } = useSimFBAStore();
@@ -89,6 +93,9 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
       case SimPHL:
         teamMap = phlTeamMap;
         break;
+      case SimCLAX:
+        teamMap = claxTeamMap;
+        break;
     }
 
     if (teamMap && newsItem.TeamID && newsItem.TeamID > 0) {
@@ -100,7 +107,9 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
 
   const team = getTeamInfo();
   const teamLogo = team
-    ? getLogo(league, newsItem.TeamID, currentUser?.IsRetro)
+    ? league === SimCLAX
+      ? getLaxLogoUrl((team as LaxTeam).logoFileName)
+      : getLogo(league, newsItem.TeamID, currentUser?.IsRetro)
     : null;
 
   // Get team name based on league and team structure
@@ -129,6 +138,8 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
         return (
           teamAny.Nickname || teamAny.TeamName || teamAny.Team || teamAny.Mascot
         );
+      case SimCLAX:
+        return (team as LaxTeam).name;
       default:
         return (
           teamAny.TeamName || teamAny.Team || teamAny.Mascot || teamAny.Nickname

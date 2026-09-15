@@ -1,4 +1,4 @@
-import { Route } from "react-router-dom";
+import { Navigate, Route } from "react-router-dom";
 import { AuthGuard } from "../guards/AuthGuards";
 import { RootRoute } from "../components/Home/RootRoute";
 import routes from "../_constants/routes";
@@ -54,10 +54,59 @@ import { NFLUDFAView } from "../components/NFL/UDFA/NFLUDFAView";
 import LiveRink from "../components/LiveScoreboard/LiveRink/LiveRink";
 import LiveField from "../components/LiveScoreboard/LiveField/LiveField";
 import { DocumentationMain } from "../components/Documentation/DocumentationMain";
+import { LacrossePlaceholderPage } from "../components/Lacrosse/LacrossePlaceholderPage";
+import { CollegeLacrosseRosterPage } from "../components/Lacrosse/CollegeLacrosseRosterPage";
+import { CollegeLacrosseLineupsPage } from "../components/Lacrosse/CollegeLacrosseLineupsPage";
+import { CollegeLacrosseAdminPage } from "../components/Lacrosse/CollegeLacrosseAdminPage";
+import { CollegeLacrosseRecruitingPage } from "../components/Lacrosse/CollegeLacrosseRecruitingPage";
+import { CollegeLacrosseSchedulePage } from "../components/Lacrosse/CollegeLacrosseSchedulePage";
+import { CollegeLacrosseStatisticsPage } from "../components/Lacrosse/CollegeLacrosseStatisticsPage";
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
   <Route key="Home" path={routes.HOME} element={<RootRoute />} />,
+  <Route
+    key="CLAX Home"
+    path={routes.CLAX_HOME}
+    element={
+      <AuthGuard>
+        <LacrossePlaceholderPage league="college" page="home" />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="CLAX Teams"
+    path={routes.CLAX_TEAMS}
+    element={
+      <AuthGuard>
+        <Navigate to={routes.AVAILABLE_TEAMS} replace />
+      </AuthGuard>
+    }
+  />,
+  <Route key="CLAX Team" path={routes.CLAX_TEAM} element={<AuthGuard><CollegeLacrosseRosterPage /></AuthGuard>} />,
+  <Route key="CLAX Lineups" path={routes.CLAX_LINEUPS} element={<AuthGuard><CollegeLacrosseLineupsPage /></AuthGuard>} />,
+  <Route key="CLAX Recruiting" path={routes.CLAX_RECRUITING} element={<AuthGuard><CollegeLacrosseRecruitingPage /></AuthGuard>} />,
+  <Route key="CLAX Schedule" path={routes.CLAX_SCHEDULE} element={<AuthGuard><CollegeLacrosseSchedulePage /></AuthGuard>} />,
+  <Route key="CLAX Statistics" path={routes.CLAX_STATISTICS} element={<AuthGuard><CollegeLacrosseStatisticsPage /></AuthGuard>} />,
+  <Route key="CLAX Admin" path={routes.CLAX_ADMIN} element={<AuthGuard><CollegeLacrosseAdminPage /></AuthGuard>} />,
+  <Route
+    key="PLAX Home"
+    path={routes.PLAX_HOME}
+    element={
+      <AuthGuard>
+        <LacrossePlaceholderPage league="professional" page="home" />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="PLAX Teams"
+    path={routes.PLAX_TEAMS}
+    element={
+      <AuthGuard>
+        <LacrossePlaceholderPage league="professional" page="teams" />
+      </AuthGuard>
+    }
+  />,
   <Route
     key="Available"
     path={routes.AVAILABLE_TEAMS}

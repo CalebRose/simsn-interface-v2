@@ -3,6 +3,7 @@ export const SimNFL = "SimNFL";
 export const SimCBB = "SimCBB";
 export const SimNBA = "SimNBA";
 export const SimCHL = "SimCHL";
+export const SimCLAX = "SimCLAX";
 export const SimPHL = "SimPHL";
 export const SimFBA = "SimFBA";
 export const SimBBA = "SimBBA";
@@ -17,6 +18,7 @@ export type League =
   | typeof SimCBB
   | typeof SimNBA
   | typeof SimCHL
+  | typeof SimCLAX
   | typeof SimPHL
   | typeof SimCollegeBaseball
   | typeof SimMLB;
@@ -1150,6 +1152,8 @@ export const LeagueTypeOptions = [
   { label: SimCBB, value: SimCBB },
   { label: SimNBA, value: SimNBA },
   { label: SimCHL, value: SimCHL },
+  // SimLAX public launch: restore SimCLAX here for users without a team/admin role.
+  // { label: SimCLAX, value: SimCLAX },
   { label: SimPHL, value: SimPHL },
 ];
 
