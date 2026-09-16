@@ -5,7 +5,6 @@ import {
   LacrosseAdminService,
   LaxAdmin,
   LaxAdminClaim,
-  LaxAdminStatus,
   LaxCoachedTeam,
   LaxBadNoodle,
   LaxScheduledJob,
@@ -21,6 +20,7 @@ import {
   LaxAdminCollegeTeamWrite,
   getLaxLogoUrl,
 } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 import { RemoveUserModal } from "../AvailableTeams/RemoveUserModal";
 import { getLacrosseSeasonYear } from "./lacrosseFormatting";
 
@@ -82,10 +82,10 @@ const US_STATE_CODES = ["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "G
 export const CollegeLacrosseAdminPage = ({
   embedded = false,
 }: CollegeLacrosseAdminPageProps) => {
+  const { laxAdminStatus: access, laxAdminChecked, refreshClaxTeams, refreshClaxTeam } = useSimLAXStore();
   const [claims, setClaims] = useState<LaxAdminClaim[]>([]);
   const [claimBusy, setClaimBusy] = useState<number>();
   const [admins, setAdmins] = useState<LaxAdmin[]>([]);
-  const [access, setAccess] = useState<LaxAdminStatus>();
   const [coachedTeams, setCoachedTeams] = useState<LaxCoachedTeam[]>([]);
   const [badNoodles, setBadNoodles] = useState<LaxBadNoodle[]>([]);
   const [removingTeam, setRemovingTeam] = useState<LaxCoachedTeam>();
@@ -149,7 +149,6 @@ export const CollegeLacrosseAdminPage = ({
 
   const refresh = async () => {
     try {
-      const status = await LacrosseAdminService.getStatus();
       const [claimRows, adminRows, teamRows, noodleRows, job, recruitingJob, syncJob, simulateJob, publishJob, advanceJob, pendingScheduleRequests, generationStatus, currentGameState, tournamentStatus, nationalStatus, offseasonStatus, preseasonStatus] = await Promise.all([
         LacrosseAdminService.getClaims(),
         LacrosseAdminService.getAdmins(),
@@ -172,7 +171,6 @@ export const CollegeLacrosseAdminPage = ({
           throw reason;
         }),
       ]);
-      setAccess(status);
       setClaims(claimRows);
       setAdmins(adminRows);
       setCoachedTeams(teamRows);
@@ -196,7 +194,6 @@ export const CollegeLacrosseAdminPage = ({
       setSelectedConferenceId((current) => current ?? tournamentStatus.conferences[0]?.conferenceId);
       setError("");
     } catch (reason) {
-      setAccess(undefined);
       setError(detail(reason));
     }
   };
@@ -210,8 +207,8 @@ export const CollegeLacrosseAdminPage = ({
   };
 
   useEffect(() => {
-    void refresh();
-  }, []);
+    if (laxAdminChecked && access?.isAdmin) void refresh();
+  }, [laxAdminChecked, access?.isAdmin]);
 
   const loadTeamDirectory = async () => {
     const result = await LacrosseAdminService.getCollegeTeams();
@@ -254,6 +251,8 @@ export const CollegeLacrosseAdminPage = ({
         await LacrosseAdminService.uploadCollegeTeamLogo(saved.id, imageBase64);
       }
       const directory = await loadTeamDirectory();
+      void refreshClaxTeams();
+      void refreshClaxTeam();
       const updated = directory.teams.find((row) => row.id === saved.id) || saved;
       setTeamMode("edit"); setSelectedTeamId(saved.id); setTeamSearch(`${updated.team} · ${updated.abbreviation}`); setTeamForm(teamFormFrom(updated)); setTeamLogo(undefined);
       setTeamNotice(teamLogo ? "Team saved and logo uploaded." : "Team saved.");
@@ -497,6 +496,10 @@ export const CollegeLacrosseAdminPage = ({
     try {
       if (approve) await LacrosseAdminService.approve(id);
       else await LacrosseAdminService.reject(id);
+      if (approve) {
+        void refreshClaxTeams();
+        void refreshClaxTeam();
+      }
       // Remove the completed application immediately, then refresh only the
       // data affected by this decision. A failure in an unrelated admin panel
       // must not leave a successfully handled application visible.
@@ -570,6 +573,8 @@ export const CollegeLacrosseAdminPage = ({
     if (!removingTeam) return;
     try {
       await LacrosseAdminService.removeCoach(removingTeam.teamId);
+      void refreshClaxTeams();
+      void refreshClaxTeam();
       setRemovingTeam(undefined);
       await refresh();
     } catch (reason) {

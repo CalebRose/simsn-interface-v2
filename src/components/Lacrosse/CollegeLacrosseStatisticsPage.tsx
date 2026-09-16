@@ -4,7 +4,8 @@ import { Button } from "../../_design/Buttons";
 import { PageContainer } from "../../_design/Container";
 import { Logo } from "../../_design/Logo";
 import { SelectDropdown } from "../../_design/Select";
-import { getLaxLogoUrl, LacrosseService, LacrosseStatisticsService, LaxStatisticsCategory, LaxStatisticsResponse, LaxStatisticsType, LaxTeam } from "../../_services/lacrosseService";
+import { getLaxLogoUrl, LaxStatisticsCategory, LaxStatisticsResponse, LaxStatisticsType } from "../../_services/lacrosseService";
+import { claxStatsKey, useSimLAXStore } from "../../context/SimLAXContext";
 import { getLacrosseYearAbbreviation } from "./lacrosseFormatting";
 
 type Row = LaxStatisticsResponse["rows"][number];
@@ -29,8 +30,9 @@ const columnsFor=(category:LaxStatisticsCategory,type:LaxStatisticsType):Column[
 };
 
 export const CollegeLacrosseStatisticsPage=()=>{
-  const [response,setResponse]=useState<LaxStatisticsResponse|null>(null);
-  const [teams,setTeams]=useState<LaxTeam[]>([]);
+  const {claxTeams:teams,refreshClaxTeams,claxStatistics,refreshClaxStatistics}=useSimLAXStore();
+  const [statsKey,setStatsKey]=useState(claxStatsKey(undefined,undefined,"field","player"));
+  const response=claxStatistics[statsKey]??null;
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
   const [view,setView]=useState<StatsView>("season");
@@ -46,11 +48,11 @@ export const CollegeLacrosseStatisticsPage=()=>{
 
   const load=async(nextCategory=category,nextType=statsType)=>{
     setLoading(true);
-    try{const data=await LacrosseStatisticsService.get(season,view==="week"?week:undefined,nextCategory,nextType);setResponse(data);setSeason(data.selectedSeason);setPage(1);setError("");}
+    try{const selectedWeek=view==="week"?week:undefined;const data=await refreshClaxStatistics(season,selectedWeek,nextCategory,nextType);setStatsKey(claxStatsKey(season,selectedWeek,nextCategory,nextType));setSeason(data.selectedSeason);setPage(1);setError("");}
     catch(reason){setError(errorText(reason));}
     finally{setLoading(false);}
   };
-  useEffect(()=>{void load();LacrosseService.getTeams().then((result)=>setTeams(result.teams)).catch(()=>setTeams([]));},[]);
+  useEffect(()=>{void load();void refreshClaxTeams();},[refreshClaxTeams]);
   const chooseCategory=(next:LaxStatisticsCategory)=>{setCategory(next);setSortKey(next==="goalie"?"savePercentage":"goals");setAscending(false);void load(next,statsType);};
   const chooseType=(next:LaxStatisticsType)=>{setStatsType(next);setSortKey(category==="goalie"?"savePercentage":"goals");setAscending(false);void load(category,next);};
   const columns=useMemo(()=>columnsFor(category,statsType),[category,statsType]);

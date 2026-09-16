@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Border } from "../../_design/Borders";
 import { Logo } from "../../_design/Logo";
-import { getLaxLogoUrl, LacrosseService, LacrosseStatisticsService, LaxPlayer, LaxScheduleResponse, LaxTeam } from "../../_services/lacrosseService";
+import { getLaxLogoUrl, LaxPlayer, LaxScheduleResponse, LaxTeam } from "../../_services/lacrosseService";
 import routes from "../../_constants/routes";
+import { claxScheduleKey, claxStatsKey, useSimLAXStore } from "../../context/SimLAXContext";
 import { LacrossePlayerFace } from "./CollegeLacrossePlayerModal";
 
 type StatRow=Record<string,string|number|null>;
@@ -17,37 +18,24 @@ const readableText=(color:string) => {
 
 export const CollegeLacrosseDashboard=({team}:{team:LaxTeam})=>{
   const navigate=useNavigate();
-  const [schedule,setSchedule]=useState<LaxScheduleResponse>();
-  const [fieldStats,setFieldStats]=useState<StatRow[]>([]);
-  const [goalieStats,setGoalieStats]=useState<StatRow[]>([]);
-  const [roster,setRoster]=useState<LaxPlayer[]>([]);
-  const [error,setError]=useState("");
+  const {claxSchedules,claxRosters,claxStatistics}=useSimLAXStore();
+  const schedule=claxSchedules[claxScheduleKey(team.id)];
+  const roster=claxRosters[team.id]?.players??[];
+  const fieldStats:StatRow[]=schedule?claxStatistics[claxStatsKey(schedule.selectedSeason,undefined,"field","player")]?.rows??[]:[];
+  const goalieStats:StatRow[]=schedule?claxStatistics[claxStatsKey(schedule.selectedSeason,undefined,"goalie","player")]?.rows??[]:[];
   const scheduleScrollRef=useRef<HTMLDivElement>(null);
-  useEffect(()=>{
-    let active=true;
-    setSchedule(undefined);setFieldStats([]);setGoalieStats([]);setRoster([]);setError("");
-    LacrosseService.getSchedule(team.id).then(async(response)=>{
-      if(!active)return;
-      setSchedule(response);
-      const [field,goalies,teamRoster]=await Promise.all([
-        LacrosseStatisticsService.get(response.selectedSeason,undefined,"field","player"),
-        LacrosseStatisticsService.get(response.selectedSeason,undefined,"goalie","player"),
-        LacrosseService.getRoster(team.id),
-      ]);
-      if(active){setFieldStats(field.rows);setGoalieStats(goalies.rows);setRoster(teamRoster.players);}
-    }).catch((reason)=>{if(active)setError(reason instanceof Error?reason.message:"The SimLAX dashboard could not be loaded.");});
-    return()=>{active=false;};
-  },[team.id]);
   const primary=team.colors.primary||"#2563eb";
   const heading={backgroundColor:primary,color:readableText(primary)};
   const conference=team.conference?.abbreviation||team.conference?.name||"Conference";
-  const dashboardGame=schedule ? schedule.games.find((game)=>game.week===schedule.currentWeek)
-    || schedule.games.find((game)=>game.week>schedule.currentWeek)
-    || [...schedule.games].reverse().find((game)=>game.status==="Final") : undefined;
+  const orderedGames=[...(schedule?.games||[])].sort((a,b)=>
+    Number(a.gameContext!=="preseason")-Number(b.gameContext!=="preseason")||a.week-b.week||a.id-b.id);
+  const nextGameIndex=orderedGames.findIndex((game)=>game.status!=="Final");
+  const dashboardGame=orderedGames[nextGameIndex>=0?nextGameIndex:orderedGames.length-1];
   const yourStanding=schedule?.standings.find((standing)=>standing.team.id===team.id);
   const opponentStanding=schedule?.conferenceStandings.flatMap((group)=>group.standings).find((standing)=>standing.team.id===dashboardGame?.opponent.id)
     || schedule?.standings.find((standing)=>standing.team.id===dashboardGame?.opponent.id);
   const gameType=dashboardGame ? (()=>{
+    if(dashboardGame.gameContext==="preseason")return "Preseason Game";
     const type=dashboardGame.gameType.toLowerCase();
     if(type.includes("conference tournament"))return "Conference Tournament";
     if(type.includes("national tournament")||type.includes("championship"))return "National Tournament";
@@ -57,8 +45,6 @@ export const CollegeLacrosseDashboard=({team}:{team:LaxTeam})=>{
   const yourScore=dashboardGame?(dashboardGame.isHome?dashboardGame.homeScore:dashboardGame.awayScore):undefined;
   const opponentScore=dashboardGame?(dashboardGame.isHome?dashboardGame.awayScore:dashboardGame.homeScore):undefined;
   const won=isFinal&&Number(yourScore)>Number(opponentScore);
-  const orderedGames=[...(schedule?.games||[])].sort((a,b)=>a.week-b.week||a.id-b.id);
-  const nextGameIndex=orderedGames.findIndex((game)=>game.status!=="Final");
   useEffect(()=>{
     const container=scheduleScrollRef.current;
     if(!container||nextGameIndex<0)return;
@@ -90,7 +76,7 @@ export const CollegeLacrosseDashboard=({team}:{team:LaxTeam})=>{
           const prefix=game.isNeutral||game.isHome?"vs":"@";
           const scheme=gameWon?"border-green-500 bg-green-950/30":gameLost?"border-red-500 bg-red-950/30":"border-slate-600 bg-slate-800/70";
           return <div key={game.id} className={`flex w-36 shrink-0 flex-col items-center rounded-lg border-2 px-2 py-1.5 text-center ${scheme}`} style={next?{borderColor:primary,boxShadow:`0 0 0 1px ${primary}`} : undefined}>
-            <span className="text-[0.65rem] text-slate-400">Wk {game.week}</span>
+            <span className="text-[0.65rem] text-slate-400">{game.gameContext==="preseason"?"Pre Wk":"Wk"} {game.week}</span>
             <div className="my-0.5 flex h-9 w-10 items-center justify-center"><Logo url={getLaxLogoUrl(game.opponent.logoFileName)} variant="tiny" containerClass="items-center justify-center"/></div>
             <span className="text-xs font-semibold">{prefix} {game.opponent.abbreviation||game.opponent.name}</span>
             <span className="text-[0.65rem] text-slate-400">({opponentRecord?.totalWins||0}-{opponentRecord?.totalLosses||0})</span>
@@ -103,7 +89,7 @@ export const CollegeLacrosseDashboard=({team}:{team:LaxTeam})=>{
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
     <Border classes="h-fit overflow-hidden p-4" styles={{borderColor:primary}}>
       <h2 className="rounded px-4 py-2 text-center text-xl font-bold" style={heading}>{conference} Standings</h2>
-      {error?<div className="p-5 text-center text-red-400">{error}</div>:!schedule?<div className="p-5 text-center text-slate-400">Loading standings...</div>:<div className="mt-4 overflow-x-auto"><table className="w-full border-collapse text-sm"><thead><tr className="border-y-2 border-slate-300"><th className="px-2 py-3 text-left">Rank</th><th className="px-2 py-3 text-left">Team</th><th className="px-2 py-3 text-center">C.W</th><th className="px-2 py-3 text-center">C.L</th><th className="px-2 py-3 text-center">T.W</th><th className="px-2 py-3 text-center">T.L</th></tr></thead><tbody>{schedule.standings.map((standing)=><tr key={standing.team.id} className={`border-b border-slate-600 odd:bg-slate-900/20 even:bg-slate-800/40 ${standing.team.id===team.id?"font-bold":""}`}><td className="px-2 py-3">{standing.rank}</td><td className="px-2 py-3"><div className="flex items-center gap-2"><Logo url={getLaxLogoUrl(standing.team.logoFileName)} variant="tiny"/><span>{standing.team.abbreviation||standing.team.name}</span></div></td><td className="px-2 py-3 text-center">{standing.conferenceWins}</td><td className="px-2 py-3 text-center">{standing.conferenceLosses}</td><td className="px-2 py-3 text-center">{standing.totalWins}</td><td className="px-2 py-3 text-center">{standing.totalLosses}</td></tr>)}</tbody></table></div>}
+      {!schedule?<div className="p-5 text-center text-slate-400">Loading standings...</div>:<div className="mt-4 overflow-x-auto"><table className="w-full border-collapse text-sm"><thead><tr className="border-y-2 border-slate-300"><th className="px-2 py-3 text-left">Rank</th><th className="px-2 py-3 text-left">Team</th><th className="px-2 py-3 text-center">C.W</th><th className="px-2 py-3 text-center">C.L</th><th className="px-2 py-3 text-center">T.W</th><th className="px-2 py-3 text-center">T.L</th></tr></thead><tbody>{schedule.standings.map((standing)=><tr key={standing.team.id} className={`border-b border-slate-600 odd:bg-slate-900/20 even:bg-slate-800/40 ${standing.team.id===team.id?"font-bold":""}`}><td className="px-2 py-3">{standing.rank}</td><td className="px-2 py-3"><div className="flex items-center gap-2"><Logo url={getLaxLogoUrl(standing.team.logoFileName)} variant="tiny"/><span>{standing.team.abbreviation||standing.team.name}</span></div></td><td className="px-2 py-3 text-center">{standing.conferenceWins}</td><td className="px-2 py-3 text-center">{standing.conferenceLosses}</td><td className="px-2 py-3 text-center">{standing.totalWins}</td><td className="px-2 py-3 text-center">{standing.totalLosses}</td></tr>)}</tbody></table></div>}
     </Border>
     <div className="space-y-4" aria-label="SimLAX dashboard center column">
       <Border classes="h-fit overflow-hidden p-4" styles={{borderColor:primary}}>
@@ -115,7 +101,7 @@ export const CollegeLacrosseDashboard=({team}:{team:LaxTeam})=>{
             <DashboardTeam team={dashboardGame.opponent} standing={opponentStanding}/>
           </div>
           {isFinal&&<div className={`mt-5 text-xl font-bold ${won?"text-green-500":"text-red-500"}`}>{yourScore} - {opponentScore}</div>}
-          <div className={`${isFinal?"mt-1":"mt-5"} font-semibold`}>Week {dashboardGame.week}</div>
+          <div className={`${isFinal?"mt-1":"mt-5"} font-semibold`}>{dashboardGame.gameContext==="preseason"?"Preseason Week":"Week"} {dashboardGame.week}</div>
           <div>{gameType}</div>
           <button type="button" onClick={()=>navigate(routes.CLAX_LINEUPS)} className="mt-4 rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700">Gameplan</button>
         </div>}

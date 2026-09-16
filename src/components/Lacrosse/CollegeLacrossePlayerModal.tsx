@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { display } from "facesjs";
 import { Button } from "../../_design/Buttons";
 import { Logo } from "../../_design/Logo";
-import { getLaxLogoUrl, LacrosseStatisticsService, LaxPlayer, LaxPlayerCareerStatistics, LaxTeam } from "../../_services/lacrosseService";
+import { getLaxLogoUrl, LaxPlayer, LaxPlayerCareerStatistics, LaxTeam } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 import { ProfileTeamCardModal } from "../Profile/ProfileTeamCardModal";
 import { getLacrosseSeasonYear, getLacrosseYearAbbreviation } from "./lacrosseFormatting";
 
@@ -29,16 +30,21 @@ export const LacrossePlayerFace = ({ player, team, size = "large" }: { player: L
 };
 
 export const CollegeLacrossePlayerModal = ({ player, team, onClose }: CollegeLacrossePlayerModalProps) => {
+  const { claxPlayerCareerStatistics, refreshClaxPlayerCareerStatistics } = useSimLAXStore();
+  const stats = player ? claxPlayerCareerStatistics[player.id] : undefined;
   const [tab, setTab] = useState<"attributes" | "stats">("attributes");
-  const [stats,setStats]=useState<LaxPlayerCareerStatistics>();
+  const requestedPlayerId = useRef<number | null>(null);
   const [statsLoading,setStatsLoading]=useState(false);
   const [statsError,setStatsError]=useState("");
-  useEffect(() => { if (player) { setTab("attributes"); setStats(undefined); setStatsError(""); } }, [player?.id]);
+  useEffect(() => { if (player) { setTab("attributes"); requestedPlayerId.current=null; setStatsLoading(false); setStatsError(""); } }, [player?.id]);
   useEffect(()=>{
-    if(tab!=="stats"||!player||stats||statsLoading)return;
+    if(tab!=="stats"||!player||requestedPlayerId.current===player.id)return;
+    let active=true;
+    requestedPlayerId.current=player.id;
     setStatsLoading(true);
-    LacrosseStatisticsService.getPlayerCareer(player.id).then((result)=>{setStats(result);setStatsError("");}).catch((error)=>setStatsError(error instanceof Error?error.message:"Player statistics could not be loaded.")).finally(()=>setStatsLoading(false));
-  },[tab,player?.id,stats,statsLoading]);
+    refreshClaxPlayerCareerStatistics(player.id).then(()=>{if(active)setStatsError("");}).catch((error)=>{if(active)setStatsError(error instanceof Error?error.message:"Player statistics could not be loaded.");}).finally(()=>{if(active)setStatsLoading(false);});
+    return()=>{active=false;};
+  },[tab,player?.id,refreshClaxPlayerCareerStatistics]);
 
   return <ProfileTeamCardModal
     isOpen={Boolean(player && team)}

@@ -7,7 +7,8 @@ import { Logo } from "../../_design/Logo";
 import { InformationCircle } from "../../_design/Icons";
 import { SelectDropdown } from "../../_design/Select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
-import { getLaxConferenceLogoUrl, getLaxLogoUrl, LacrosseService, LaxScheduleResponse, LaxTeam } from "../../_services/lacrosseService";
+import { getLaxConferenceLogoUrl, getLaxLogoUrl, LacrosseService } from "../../_services/lacrosseService";
+import { claxScheduleKey, useSimLAXStore } from "../../context/SimLAXContext";
 import { exportToCsv } from "../../_utility/csvExport";
 import { getLacrosseSeasonYear } from "./lacrosseFormatting";
 import { CollegeLacrosseScheduleRequestModal } from "./CollegeLacrosseScheduleRequestModal";
@@ -24,8 +25,9 @@ const readableText=(color:string) => {
 const detail=(error:unknown)=>error instanceof Error?error.message:"The SimLAX schedule could not be reached.";
 
 export const CollegeLacrosseSchedulePage=()=>{
-  const [teams,setTeams]=useState<LaxTeam[]>([]);
-  const [schedule,setSchedule]=useState<LaxScheduleResponse>();
+  const {claxTeams:teams,refreshClaxTeams,claxSchedules,refreshClaxSchedule}=useSimLAXStore();
+  const [scheduleKey,setScheduleKey]=useState(claxScheduleKey());
+  const schedule=claxSchedules[scheduleKey];
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState("");
   const [requestWeek,setRequestWeek]=useState<number|null>(null);
@@ -34,8 +36,9 @@ export const CollegeLacrosseSchedulePage=()=>{
   const [boxScoreGameId,setBoxScoreGameId]=useState<number|null>(null);
   const [weeklyGames,setWeeklyGames]=useState(false);
   const [selectedWeek,setSelectedWeek]=useState(1);
-  const load=async(teamId?:number,season?:number)=>{try{const response=await LacrosseService.getSchedule(teamId,season);setSchedule(response);setError("");}catch(reason){setError(detail(reason));}};
-  useEffect(()=>{Promise.all([LacrosseService.getTeams(),LacrosseService.getSchedule()]).then(([directory,response])=>{setTeams(directory.teams);setSchedule(response);setError("");}).catch((reason)=>setError(detail(reason))).finally(()=>setLoading(false));},[]);
+  const load=async(teamId?:number,season?:number)=>{try{await refreshClaxSchedule(teamId,season);setScheduleKey(claxScheduleKey(teamId,season));setError("");}catch(reason){setError(detail(reason));}};
+  useEffect(()=>{void refreshClaxTeams();},[refreshClaxTeams]);
+  useEffect(()=>{void load().finally(()=>setLoading(false));},[]);
   useEffect(()=>{if((view==="conferenceTournament"&&!schedule?.hasConferenceTournament)||(view==="nationalTournament"&&!schedule?.hasNationalTournament))setView("overview");},[schedule?.hasConferenceTournament,schedule?.hasNationalTournament,view]);
   const primary=schedule?.team.colors.primary||"#2563eb";
   const headerStyle={backgroundColor:primary,color:readableText(primary)};

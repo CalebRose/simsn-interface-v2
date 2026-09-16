@@ -7,8 +7,8 @@ import { PageContainer } from "../../_design/Container";
 import { Logo } from "../../_design/Logo";
 import { SelectDropdown } from "../../_design/Select";
 import routes from "../../_constants/routes";
-import { LacrosseAdminService, LacrosseService, LaxGameplan, LaxLineupAssignment, LaxPlayer, LaxTeam, getLaxLogoUrl } from "../../_services/lacrosseService";
-import { useAuthStore } from "../../context/AuthContext";
+import { LaxGameplan, LaxLineupAssignment, LaxPlayer, LaxTeam, getLaxLogoUrl } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { CollegeLacrossePlayerModal, LacrossePlayerFace } from "./CollegeLacrossePlayerModal";
 import { getLacrosseGradeColor, getLacrosseYearAbbreviation } from "./lacrosseFormatting";
@@ -149,9 +149,9 @@ export const CollegeLacrosseLineupsPage = () => {
   const { teamId } = useParams<{ teamId?: string }>();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const { currentUser } = useAuthStore();
-  const [teams, setTeams] = useState<LaxTeam[]>([]);
-  const [ownedTeam, setOwnedTeam] = useState<LaxTeam | null>(null);
+  const { claxTeam: ownedTeam, claxTeamLoading, claxTeams: teams, laxAdminStatus, refreshClaxTeams,
+    refreshClaxRoster, refreshClaxGameplan, autoClaxLineup, setClaxAiControl, saveClaxLineup, saveClaxGameplan } = useSimLAXStore();
+  const isAdmin = Boolean(laxAdminStatus?.isAdmin);
   const [team, setTeam] = useState<LaxTeam | null>(null);
   const [players, setPlayers] = useState<LaxPlayer[]>([]);
   const [savedPlayers, setSavedPlayers] = useState<LaxPlayer[]>([]);
@@ -169,35 +169,23 @@ export const CollegeLacrosseLineupsPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
   const [adminMode, setAdminMode] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    LacrosseAdminService.getStatus()
-      .then((status) => { if (!cancelled) setIsAdmin(status.isAdmin); })
-      .catch(() => { if (!cancelled) setIsAdmin(false); });
-    return () => { cancelled = true; };
-  }, [currentUser?.id]);
+  useEffect(() => { void refreshClaxTeams(); }, [refreshClaxTeams]);
 
   useEffect(() => {
+    if (claxTeamLoading) return;
     let cancelled = false;
     setAdminMode(false);
     setLoading(true);
-    Promise.all([
-      LacrosseService.getTeams(),
-      currentUser?.id ? LacrosseService.getUserTeam(currentUser.id) : Promise.resolve(null),
-    ]).then(([response, mine]) => {
-      if (cancelled) return;
-      setTeams(response.teams);
-      setOwnedTeam(mine);
+    Promise.resolve().then(() => {
       const requested = Number(teamId);
-      const selected = Number.isInteger(requested) && requested > 0 ? requested : mine?.id;
+      const selected = Number.isInteger(requested) && requested > 0 ? requested : ownedTeam?.id;
       if (!selected) throw new Error("You do not currently coach a SimCLAX team. Select a team from Available Teams first.");
       return Promise.all([
-        LacrosseService.getRoster(selected),
-        mine?.id === selected
-          ? LacrosseService.getGameplan(selected).catch(() => defaultGameplan(selected))
+        refreshClaxRoster(selected),
+        ownedTeam?.id === selected
+          ? refreshClaxGameplan(selected).catch(() => defaultGameplan(selected))
           : Promise.resolve(null),
       ]);
     }).then((result) => {
@@ -211,7 +199,7 @@ export const CollegeLacrosseLineupsPage = () => {
     }).catch((reason) => !cancelled && setLoadError(errorText(reason)))
       .finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
-  }, [currentUser?.id, teamId]);
+  }, [claxTeamLoading, ownedTeam?.id, teamId, refreshClaxRoster, refreshClaxGameplan]);
 
   const isOwner = Boolean(team && ownedTeam?.id === team.id);
   const canEdit = isOwner || (isAdmin && adminMode);
@@ -319,7 +307,7 @@ export const CollegeLacrosseLineupsPage = () => {
     if (!team || !canEdit) return;
     setSaving(true);
     try {
-      const response = await LacrosseService.autoLineup(team.id, adminMode);
+      const response = await autoClaxLineup(team.id, adminMode);
       const normalized = response.players.map(normalize);
       setPlayers(normalized); setSavedPlayers(normalized); setAiControl(response.aiControl);
       enqueueSnackbar("AI lineup generated and saved.", { variant: "success", autoHideDuration: 4000 });
@@ -329,7 +317,7 @@ export const CollegeLacrosseLineupsPage = () => {
     if (!team || !canEdit) return;
     setAiControlSaving(true);
     try {
-      const response = await LacrosseService.setAiControl(team.id, enabled, adminMode);
+      const response = await setClaxAiControl(team.id, enabled, adminMode);
       const normalized = response.players.map(normalize);
       setAiControl(response.aiControl); setPlayers(normalized); setSavedPlayers(normalized);
       enqueueSnackbar(enabled ? "AI Control enabled. The lineup will be regenerated by the weekly AI job." : "AI Control disabled. Your saved lineup will remain under manual control.", { variant: "success", autoHideDuration: 4500 });
@@ -347,7 +335,7 @@ export const CollegeLacrosseLineupsPage = () => {
         usage: player.roster.usage, longShotProportion: player.position === "Goalie" ? undefined : player.roster.longShotProportion,
         closeShotProportion: player.position === "Goalie" ? undefined : player.roster.closeShotProportion,
       }));
-      const response = await LacrosseService.saveLineup(team.id, assignments, adminMode);
+      const response = await saveClaxLineup(team.id, assignments, adminMode);
       const normalized = response.players.map(normalize);
       setPlayers(normalized); setSavedPlayers(normalized);
       enqueueSnackbar("Lineup saved!", { variant: "success", autoHideDuration: 3000 });
@@ -358,7 +346,7 @@ export const CollegeLacrosseLineupsPage = () => {
     setGameplanSaving(true);
     try {
       const { teamId: _teamId, ...payload } = gameplan;
-      const response = await LacrosseService.saveGameplan(team.id, payload, adminMode);
+      const response = await saveClaxGameplan(team.id, payload, adminMode);
       setGameplan(response); setSavedGameplan(response);
       enqueueSnackbar("Gameplan saved!", { variant: "success", autoHideDuration: 3000 });
     } catch (reason) { enqueueSnackbar(errorText(reason), { variant: "error", autoHideDuration: 5000 }); } finally { setGameplanSaving(false); }
@@ -367,7 +355,7 @@ export const CollegeLacrosseLineupsPage = () => {
     if (!team || !isAdmin || isOwner) return;
     setSaving(true);
     try {
-      const loadedGameplan = await LacrosseService.getGameplan(team.id, true);
+      const loadedGameplan = await refreshClaxGameplan(team.id, true);
       setGameplan(loadedGameplan);
       setSavedGameplan(loadedGameplan);
       setAdminMode(true);

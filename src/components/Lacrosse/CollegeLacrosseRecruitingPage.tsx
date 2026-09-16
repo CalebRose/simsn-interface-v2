@@ -5,7 +5,8 @@ import { Scholarship, TrashCan } from "../../_design/Icons";
 import { Logo } from "../../_design/Logo";
 import { SelectDropdown } from "../../_design/Select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
-import { LacrosseRecruitingService, LaxBoardRecruit, LaxRecruit, LaxRecruitingAISettings, LaxRecruitingRanking, LaxRecruitingTeamInfo, getLaxLogoUrl } from "../../_services/lacrosseService";
+import { LaxBoardRecruit, LaxRecruit, LaxRecruitingAISettings, LaxRecruitingRanking, getLaxLogoUrl } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 import { CollegeLacrosseRecruitingSidebar } from "./CollegeLacrosseRecruitingSidebar";
 import { CollegeLacrosseRecruitModal } from "./CollegeLacrosseRecruitModal";
 
@@ -20,10 +21,13 @@ const isUnitedStates = (country:string) => ["US","USA","United States","United S
 const originFor = (recruit:LaxRecruit) => isUnitedStates(recruit.country) ? (recruit.state ? `${recruit.state}, USA` : "USA") : recruit.country;
 
 export const CollegeLacrosseRecruitingPage = () => {
-  const [recruits,setRecruits] = useState<LaxRecruit[]>([]);
-  const [board,setBoard] = useState<LaxBoardRecruit[]>([]);
-  const [rankings,setRankings] = useState<LaxRecruitingRanking[]>([]);
-  const [team,setTeam] = useState<LaxRecruitingTeamInfo | null>(null);
+  const { claxRecruitingOverview, claxRecruitingBoard, claxRecruitingRankings, claxRecruitingTeam: team,
+    refreshClaxRecruitingOverview, refreshClaxRecruitingBoard, refreshClaxRecruitingRankings,
+    addClaxRecruitToBoard, removeClaxRecruitFromBoard, toggleClaxScholarship,
+    saveClaxRecruitingPoints, saveClaxRecruitingAiSettings } = useSimLAXStore();
+  const recruits = claxRecruitingOverview?.recruits ?? [];
+  const board = claxRecruitingBoard?.recruits ?? [];
+  const rankings = claxRecruitingRankings?.rankings ?? [];
   const [selectedRecruit,setSelectedRecruit] = useState<LaxRecruit | null>(null);
   const [revokeCandidate,setRevokeCandidate] = useState<LaxBoardRecruit | null>(null);
   const [view,setView] = useState<RecruitingView>("overview");
@@ -42,10 +46,10 @@ export const CollegeLacrosseRecruitingPage = () => {
   const [showAiSettings,setShowAiSettings] = useState(false);
   const [pointDraft,setPointDraft] = useState<Record<number,number>>({});
 
-  const loadOverview = async () => { const response=await LacrosseRecruitingService.getOverview(); setRecruits(response.recruits); setTeam(response.team); };
-  const loadBoard = async () => { const response=await LacrosseRecruitingService.getBoard(); setBoard(response.recruits); setPointDraft(Object.fromEntries(response.recruits.map((recruit)=>[recruit.id,recruit.currentWeekPoints]))); setTeam(response.team); };
-  const loadRankings = async () => { const response=await LacrosseRecruitingService.getRankings(); setRankings(response.rankings); };
-  useEffect(() => { loadOverview().then(() => setError("")).catch((reason) => setError(errorText(reason))).finally(() => setLoading(false)); }, []);
+  const loadOverview = refreshClaxRecruitingOverview;
+  const loadBoard = async () => { const response=await refreshClaxRecruitingBoard(); setPointDraft(Object.fromEntries(response.recruits.map((recruit)=>[recruit.id,recruit.currentWeekPoints]))); };
+  const loadRankings = refreshClaxRecruitingRankings;
+  useEffect(() => { refreshClaxRecruitingOverview().then(() => setError("")).catch((reason) => setError(errorText(reason))).finally(() => setLoading(false)); }, [refreshClaxRecruitingOverview]);
   useEffect(() => { if(team&&!classSchoolId)setClassSchoolId(String(team.teamId)); }, [team,classSchoolId]);
 
   const source:LaxRecruit[] = view === "board" ? board : view === "class" ? recruits.filter((recruit)=>String(recruit.committedTeamId??"")===classSchoolId) : recruits;
@@ -81,7 +85,7 @@ export const CollegeLacrosseRecruitingPage = () => {
   const selectView=async(next:RecruitingView) => { if(next!==view&&hasUnsavedChanges){if(!window.confirm("Discard your unsaved recruiting point changes?"))return;setPointDraft(Object.fromEntries(board.map((recruit)=>[recruit.id,recruit.currentWeekPoints])));}setView(next);setPage(1);setActionError("");try{if(next==="board")await loadBoard();if(next==="rankings")await loadRankings();}catch(reason){setActionError(errorText(reason));} };
   const runAction=async(action:()=>Promise<unknown>) => { try{await action(); await loadOverview(); if(view==="board") await loadBoard(); setActionError("");}catch(reason){setActionError(errorText(reason));} };
   const runBoardAction=async(action:()=>Promise<unknown>) => { if(hasUnsavedChanges&&!window.confirm("Discard your unsaved recruiting point changes?"))return;await runAction(action); };
-  const savePoints=async() => { if(!team||!hasUnsavedChanges)return;if(changedAllocations.some(({points})=>points<0||points>20)){setActionError("Recruiting points must be between 0 and 20 per recruit.");return;}if(draftSpent>team.weeklyPoints){setActionError(`Weekly point allocation cannot exceed ${team.weeklyPoints}.`);return;}try{await LacrosseRecruitingService.savePoints(changedAllocations);await loadOverview();await loadBoard();setActionError("");}catch(reason){setActionError(errorText(reason));} };
+  const savePoints=async() => { if(!team||!hasUnsavedChanges)return;if(changedAllocations.some(({points})=>points<0||points>20)){setActionError("Recruiting points must be between 0 and 20 per recruit.");return;}if(draftSpent>team.weeklyPoints){setActionError(`Weekly point allocation cannot exceed ${team.weeklyPoints}.`);return;}try{await saveClaxRecruitingPoints(changedAllocations);await loadOverview();await loadBoard();setActionError("");}catch(reason){setActionError(errorText(reason));} };
   const sortBy=(key:BoardSortKey) => { if(sortKey===key)setSortDirection((current)=>current==="asc"?"desc":"asc"); else{setSortKey(key);setSortDirection("asc");} setPage(1); };
   const exportRecruiting=() => {
     const headers=["Player ID","First Name","Last Name","Position","Archetype","Stars","School Committed to","State","Country","Overall","Potential","Signing Expectation","Signing Status","Leading Teams"];
@@ -130,14 +134,14 @@ export const CollegeLacrosseRecruitingPage = () => {
         </Border>}
         {actionError && <div className="rounded border border-red-500 p-3 text-center text-red-500">{actionError}</div>}
         <Border classes="overflow-hidden" styles={{borderColor:team.primaryColor}}>
-          <div className="overflow-x-auto">{view==="overview" ? <OverviewTable recruits={visible} open={setSelectedRecruit} add={(id)=>runAction(()=>LacrosseRecruitingService.addToBoard(id))}/> : view==="board" ? <BoardTable recruits={visible as LaxBoardRecruit[]} open={setSelectedRecruit} sortKey={sortKey} direction={sortDirection} sortBy={sortBy} pointDraft={pointDraft} changePoints={(id,value)=>{setPointDraft((current)=>({...current,[id]:value}));setActionError("");}} scholarship={(recruit)=>recruit.scholarship?setRevokeCandidate(recruit):runBoardAction(()=>LacrosseRecruitingService.toggleScholarship(recruit.id))} remove={(id)=>runBoardAction(()=>LacrosseRecruitingService.removeFromBoard(id))}/> : view==="class" ? <ClassTable recruits={visible} open={setSelectedRecruit}/> : <RankingsTable rankings={rankings}/>}</div>
+          <div className="overflow-x-auto">{view==="overview" ? <OverviewTable recruits={visible} open={setSelectedRecruit} add={(id)=>runAction(()=>addClaxRecruitToBoard(id))}/> : view==="board" ? <BoardTable recruits={visible as LaxBoardRecruit[]} open={setSelectedRecruit} sortKey={sortKey} direction={sortDirection} sortBy={sortBy} pointDraft={pointDraft} changePoints={(id,value)=>{setPointDraft((current)=>({...current,[id]:value}));setActionError("");}} scholarship={(recruit)=>recruit.scholarship?setRevokeCandidate(recruit):runBoardAction(()=>toggleClaxScholarship(recruit.id))} remove={(id)=>runBoardAction(()=>removeClaxRecruitFromBoard(id))}/> : view==="class" ? <ClassTable recruits={visible} open={setSelectedRecruit}/> : <RankingsTable rankings={rankings}/>}</div>
           {view!=="rankings"&&<div className="flex items-center justify-center gap-3 border-t border-slate-600 p-3"><button type="button" disabled={page===1} onClick={()=>setPage((current)=>current-1)} className="rounded bg-slate-600 px-4 py-2 disabled:opacity-40">Prev</button><span>Page {page} of {pageCount}</span><button type="button" disabled={page===pageCount} onClick={()=>setPage((current)=>current+1)} className="rounded bg-blue-600 px-4 py-2 disabled:opacity-40">Next</button></div>}
         </Border>
       </main>
     </div>}
     <CollegeLacrosseRecruitModal recruit={selectedRecruit} onClose={()=>setSelectedRecruit(null)}/>
-    <ScholarshipRevocationModal recruit={revokeCandidate} close={()=>setRevokeCandidate(null)} confirm={async()=>{if(!revokeCandidate)return;const recruitId=revokeCandidate.id;setRevokeCandidate(null);await runBoardAction(()=>LacrosseRecruitingService.toggleScholarship(recruitId));}}/>
-    {showAiSettings&&team&&<AiSettingsModal settings={team.aiSettings} close={()=>setShowAiSettings(false)} save={async(settings)=>{try{await LacrosseRecruitingService.saveAiSettings(settings);await loadBoard();setShowAiSettings(false);setActionError("");}catch(reason){setActionError(errorText(reason));}}}/>} 
+    <ScholarshipRevocationModal recruit={revokeCandidate} close={()=>setRevokeCandidate(null)} confirm={async()=>{if(!revokeCandidate)return;const recruitId=revokeCandidate.id;setRevokeCandidate(null);await runBoardAction(()=>toggleClaxScholarship(recruitId));}}/>
+    {showAiSettings&&team&&<AiSettingsModal settings={team.aiSettings} close={()=>setShowAiSettings(false)} save={async(settings)=>{try{await saveClaxRecruitingAiSettings(settings);await loadBoard();setShowAiSettings(false);setActionError("");}catch(reason){setActionError(errorText(reason));}}}/>}
   </PageContainer>;
 };
 

@@ -7,8 +7,8 @@ import { ScissorIcon, User } from "../../_design/Icons";
 import { Logo } from "../../_design/Logo";
 import { SelectDropdown } from "../../_design/Select";
 import routes from "../../_constants/routes";
-import { LacrosseAdminService, LacrosseService, LaxPlayer, LaxTeam, LaxTeamPreview, getLaxLogoUrl } from "../../_services/lacrosseService";
-import { useAuthStore } from "../../context/AuthContext";
+import { LacrosseService, LaxPlayer, LaxTeamPreview, getLaxLogoUrl } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { ProfileTeamCardModal } from "../Profile/ProfileTeamCardModal";
 import { CollegeLacrossePlayerModal } from "./CollegeLacrossePlayerModal";
@@ -51,13 +51,13 @@ const injuryGrade = (rating: number, year: number) => {
 export const CollegeLacrosseRosterPage = () => {
   const { teamId } = useParams<{ teamId?: string }>();
   const navigate = useNavigate();
-  const { currentUser } = useAuthStore();
-  const [teams, setTeams] = useState<LaxTeam[]>([]);
-  const [ownedTeam, setOwnedTeam] = useState<LaxTeam | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [team, setTeam] = useState<LaxTeam>();
+  const { claxTeam: ownedTeam, claxTeamLoading, claxTeams: teams, claxRosters, laxAdminStatus, refreshClaxTeams, refreshClaxRoster, cutClaxPlayer } = useSimLAXStore();
+  const isAdmin = Boolean(laxAdminStatus?.isAdmin);
+  const requestedId = Number(teamId);
+  const selectedId = Number.isInteger(requestedId) && requestedId > 0 ? requestedId : ownedTeam?.id;
+  const team = selectedId ? claxRosters[selectedId]?.team : undefined;
+  const players = selectedId ? claxRosters[selectedId]?.players ?? [] : [];
   const [teamGrades, setTeamGrades] = useState<Pick<LaxTeamPreview, "overallGrade" | "offenseGrade" | "defenseGrade">>({});
-  const [players, setPlayers] = useState<LaxPlayer[]>([]);
   const [view, setView] = useState<RosterView>("overview");
   const [cutCandidate, setCutCandidate] = useState<LaxPlayer | null>(null);
   const [profilePlayer, setProfilePlayer] = useState<LaxPlayer | null>(null);
@@ -67,25 +67,18 @@ export const CollegeLacrosseRosterPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => { void refreshClaxTeams(); }, [refreshClaxTeams]);
+
   useEffect(() => {
+    if (claxTeamLoading) return;
     let cancelled = false;
     setLoading(true);
-    Promise.all([
-      LacrosseService.getTeams(),
-      currentUser?.id ? LacrosseService.getUserTeam(currentUser.id) : Promise.resolve(null),
-    ]).then(([teamResponse, mine]) => {
-      if (cancelled) return;
-      setTeams(teamResponse.teams);
-      setOwnedTeam(mine);
-      const requestedId = Number(teamId);
-      const selectedId = Number.isInteger(requestedId) && requestedId > 0 ? requestedId : mine?.id;
+    Promise.resolve().then(() => {
       if (!selectedId) throw new Error("You do not currently coach a SimCLAX team. Select a team from Available Teams first.");
-      return Promise.all([LacrosseService.getRoster(selectedId), LacrosseService.getPreview(selectedId)]);
+      return Promise.all([refreshClaxRoster(selectedId), LacrosseService.getPreview(selectedId)]);
     }).then((result) => {
       if (!result || cancelled) return;
-      const [roster, preview] = result;
-      setTeam(roster.team);
-      setPlayers(roster.players);
+      const [, preview] = result;
       setTeamGrades({ overallGrade: preview.overallGrade, offenseGrade: preview.offenseGrade, defenseGrade: preview.defenseGrade });
       setError("");
     }).catch((reason) => {
@@ -94,15 +87,7 @@ export const CollegeLacrosseRosterPage = () => {
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [currentUser?.id, teamId]);
-
-  useEffect(() => {
-    let cancelled = false;
-    LacrosseAdminService.getStatus()
-      .then((status) => { if (!cancelled) setIsAdmin(status.isAdmin); })
-      .catch(() => { if (!cancelled) setIsAdmin(false); });
-    return () => { cancelled = true; };
-  }, [currentUser?.id]);
+  }, [claxTeamLoading, selectedId, refreshClaxRoster]);
 
   const options = useMemo(() => teams.map((item) => ({
     value: String(item.id),
@@ -172,8 +157,7 @@ export const CollegeLacrosseRosterPage = () => {
     if (!team || !cutCandidate) return;
     setCutting(true);
     try {
-      await LacrosseService.cutPlayer(team.id, cutCandidate.id);
-      setPlayers((current) => current.filter((player) => player.id !== cutCandidate.id));
+      await cutClaxPlayer(team.id, cutCandidate.id);
       setCutCandidate(null);
       setError("");
     } catch (reason) {

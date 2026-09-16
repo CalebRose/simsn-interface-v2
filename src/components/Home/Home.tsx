@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo, useEffect, useState } from "react";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { PageContainer } from "../../_design/Container";
 import { Button } from "../../_design/Buttons";
@@ -35,11 +35,66 @@ export const Home = () => {
   const { currentUser } = useAuthStore();
   const { selectedLeague, ts, selectedTeam, SetTeam } = useLeagueStore();
   const navigate = useNavigate();
-  const { cfbTeam, nflTeam } = useSimFBAStore();
-  const { cbbTeam, nbaTeam } = useSimBBAStore();
-  const { chlTeam, phlTeam } = useSimHCKStore();
-  const { collegeOrganization, mlbOrganization } = useSimBaseballStore();
-  const { claxTeam, claxTeamLoading } = useSimLAXStore();
+  const { cfbTeam, nflTeam, isLoading: footballLoading } = useSimFBAStore();
+  const { cbbTeam, nbaTeam, isLoading: basketballLoading } = useSimBBAStore();
+  const { chlTeam, phlTeam, isLoading: hockeyLoading } = useSimHCKStore();
+  const { collegeOrganization, mlbOrganization, isLoading: baseballLoading } = useSimBaseballStore();
+  const { claxTeam, claxTeamLoading, refreshClaxSchedule, refreshClaxStatistics, refreshClaxRoster } = useSimLAXStore();
+  const [claxDashboardReadyKey, setClaxDashboardReadyKey] = useState<string | null>(null);
+  const [claxDashboardError, setClaxDashboardError] = useState("");
+  const [readyLogoKey, setReadyLogoKey] = useState<string | null>(null);
+  const [homeLoadTimedOut, setHomeLoadTimedOut] = useState(false);
+  const claxDashboardKey = selectedLeague === SimCLAX && claxTeam ? `${currentUser?.id}:${claxTeam.id}` : null;
+  const logoKey = useMemo(() => [
+    currentUser?.teamId && cfbTeam ? simLogos.SimCFB : null,
+    currentUser?.NFLTeamID && nflTeam ? simLogos.SimNFL : null,
+    currentUser?.cbb_id && cbbTeam ? simLogos.SimCBB : null,
+    currentUser?.NBATeamID && nbaTeam ? simLogos.SimNBA : null,
+    currentUser?.CHLTeamID && chlTeam ? simLogos.SimCHL : null,
+    currentUser?.PHLTeamID && phlTeam ? simLogos.SimPHL : null,
+    collegeOrganization ? simLogos.SimCBL : null,
+    mlbOrganization ? simLogos.SimMLB : null,
+    claxTeam ? simLogos.SimCLAX : null,
+  ].filter(Boolean).join("|"), [currentUser, cfbTeam, nflTeam, cbbTeam, nbaTeam, chlTeam, phlTeam, collegeOrganization, mlbOrganization, claxTeam]);
+
+  useEffect(() => {
+    if (!logoKey) { setReadyLogoKey(""); return; }
+    let active = true;
+    const logoUrls = logoKey.split("|");
+    const images = logoUrls.map(() => new Image());
+    void Promise.all(images.map((image, index) => new Promise<void>((resolve) => {
+      image.onload = () => resolve();
+      image.onerror = () => resolve();
+      image.src = logoUrls[index];
+      if (image.complete) resolve();
+    }))).then(() => { if (active) setReadyLogoKey(logoKey); });
+    return () => {
+      active = false;
+      images.forEach((image) => { image.onload = null; image.onerror = null; });
+    };
+  }, [logoKey]);
+
+  useEffect(() => {
+    if (!claxDashboardKey || !claxTeam || claxDashboardReadyKey === claxDashboardKey) return;
+    let active = true;
+    setClaxDashboardError("");
+    const loadDashboard = async () => {
+      try {
+        const schedule = await refreshClaxSchedule(claxTeam.id);
+        await Promise.all([
+          refreshClaxStatistics(schedule.selectedSeason, undefined, "field", "player"),
+          refreshClaxStatistics(schedule.selectedSeason, undefined, "goalie", "player"),
+          refreshClaxRoster(claxTeam.id),
+        ]);
+      } catch (reason) {
+        if (active) setClaxDashboardError(reason instanceof Error ? reason.message : "The SimLAX dashboard could not be loaded.");
+      } finally {
+        if (active) setClaxDashboardReadyKey(claxDashboardKey);
+      }
+    };
+    void loadDashboard();
+    return () => { active = false; };
+  }, [claxDashboardKey, claxDashboardReadyKey, claxTeam?.id, refreshClaxSchedule, refreshClaxStatistics, refreshClaxRoster]);
 
   // Check if selected team matches current league and correct it if needed
   useEffect(() => {
@@ -143,8 +198,33 @@ export const Home = () => {
     return currentUser.IsBanned;
   }, [currentUser]);
 
+  const participatingTeamsMissing = Boolean(currentUser && (
+    (currentUser.teamId && !cfbTeam) || (currentUser.NFLTeamID && !nflTeam) ||
+    (currentUser.cbb_id && !cbbTeam) || (currentUser.NBATeamID && !nbaTeam) ||
+    (currentUser.CHLTeamID && !chlTeam) || (currentUser.PHLTeamID && !phlTeam)
+  ));
+  const teamButtonsLoading = Boolean(currentUser && (
+    footballLoading || basketballLoading || hockeyLoading || baseballLoading || participatingTeamsMissing || readyLogoKey !== logoKey
+  ));
+  const homeLoading = claxTeamLoading || teamButtonsLoading ||
+    (!selectedTeam && !claxTeam && isParticipating) ||
+    (claxDashboardKey !== null && claxDashboardReadyKey !== claxDashboardKey);
+
+  useEffect(() => {
+    if (!homeLoading) { setHomeLoadTimedOut(false); return; }
+    const timer = window.setTimeout(() => setHomeLoadTimedOut(true), 30000);
+    return () => window.clearTimeout(timer);
+  }, [homeLoading]);
+
+  if (homeLoadTimedOut && homeLoading) return <PageContainer>
+    <Border classes="p-5 text-center text-red-400">
+      <p>Some team information could not be loaded.</p>
+      <Button onClick={() => window.location.reload()}>Retry</Button>
+    </Border>
+  </PageContainer>;
+
   return (
-    <PageContainer isLoading={claxTeamLoading || (!selectedTeam && !claxTeam && isParticipating)}>
+    <PageContainer isLoading={homeLoading}>
       {!isParticipating && !isBanned && (
         <>
           <Border
@@ -258,10 +338,12 @@ export const Home = () => {
                 ts={ts}
               />
             )}
-          {claxTeam &&
-            selectedLeague === SimCLAX && (
-              <CollegeLacrosseDashboard team={claxTeam} />
-            )}
+          {claxTeam && selectedLeague === SimCLAX && (
+            claxDashboardError ? <Border classes="p-5 text-center text-red-400">
+              <p>SimLAX dashboard could not be loaded: {claxDashboardError}</p>
+              <Button onClick={() => setClaxDashboardReadyKey(null)}>Retry</Button>
+            </Border> : <CollegeLacrosseDashboard team={claxTeam} />
+          )}
           {selectedTeam &&
             selectedLeague !== SimCLAX &&
             selectedLeague !== SimCollegeBaseball &&
