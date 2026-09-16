@@ -88,7 +88,9 @@ const EditorialCard: React.FC<{
         }`}
       >
         <div className="relative flex items-start justify-between gap-3 p-5 pb-0 lg:p-6 lg:pb-0">
-          <div className="inline-flex items-center gap-2 rounded-md border-white/10 border bg-black/20 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-widest">
+          <div
+            className={`inline-flex items-center gap-2 rounded-md border-white/10 border bg-black/20 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-widest ${item.heroImageUrl ? "text-white" : ""}`}
+          >
             <span className="h-1.5 w-1.5 rounded-md bg-white" />
             {item.forum?.name ?? "Forum"}
           </div>
@@ -100,8 +102,10 @@ const EditorialCard: React.FC<{
         <div className="relative flex h-full flex-col justify-end gap-3 p-5 lg:p-6">
           <div className="space-y-2">
             <h3
-              className={`max-w-3xl font-semibold tracking-wide text-balance text-center lg:text-left ${
-                featured ? "text-3xl sm:text-4xl lg:text-5xl" : "text-2xl sm:text-3xl"
+              className={`max-w-3xl font-semibold tracking-wide ${item.heroImageUrl ? "text-white" : ""} text-balance text-center lg:text-left ${
+                featured
+                  ? "text-3xl sm:text-4xl lg:text-5xl"
+                  : "text-2xl sm:text-3xl"
               }`}
               style={{
                 fontFamily: "Georgia, 'Times New Roman', serif",
@@ -112,8 +116,10 @@ const EditorialCard: React.FC<{
             </h3>
             {item.thread.contentPreview && (
               <p
-                className={`hidden line-clamp-3 text-white/78 sm:block ${
-                  featured ? "max-w-2xl text-sm sm:text-base" : "max-w-xl text-sm"
+                className={`hidden line-clamp-3 ${item.heroImageUrl ? "text-white/90" : ""} sm:block ${
+                  featured
+                    ? "max-w-2xl text-sm sm:text-base"
+                    : "max-w-xl text-sm"
                 }`}
                 style={{ textShadow: "0 3px 14px rgba(0, 0, 0, 0.5)" }}
               >
@@ -124,14 +130,23 @@ const EditorialCard: React.FC<{
 
           <div className="flex items-end justify-between gap-4 border-t border-white/10 pt-4">
             <div className="min-w-0">
-              <Text variant="body-small" classes="text-white/70 font-semibold text-start">
+              <Text
+                variant="body-small"
+                classes={`${item.heroImageUrl ? "text-white/70" : ""} font-semibold text-start`}
+              >
                 by {item.thread.author.username}
               </Text>
-              <Text variant="xs" classes="text-white/60 uppercase tracking-[0.18em] text-start">
+              <Text
+                variant="xs"
+                classes={`${item.heroImageUrl ? "text-white/60" : ""} uppercase tracking-[0.18em] text-start`}
+              >
                 Media Spotlight
               </Text>
             </div>
-            <Text variant="body-small" classes="shrink-0 text-[#fff4df] text-right">
+            <Text
+              variant="body-small"
+              classes="shrink-0 text-[#fff4df] text-right"
+            >
               {formatRelativeTime(
                 item.thread.latestActivityAt as unknown as { seconds: number },
               )}

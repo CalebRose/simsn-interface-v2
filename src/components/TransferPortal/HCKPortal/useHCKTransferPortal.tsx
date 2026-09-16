@@ -48,6 +48,7 @@ export const useHCKTransferPortal = () => {
   const [country, setCountry] = useState<string>("");
   const [stars, setStars] = useState<number[]>([]);
   const [previousTeams, setPreviousTeamIDs] = useState<number[]>([]);
+  const [ages, setAges] = useState<number[]>([]);
   const [positions, setPositions] = useState<string[]>([]);
   const [archetype, setArchetype] = useState<string[]>([]);
   const [regions, setRegions] = useState<string[]>([]);
@@ -133,6 +134,7 @@ export const useHCKTransferPortal = () => {
     regions,
     stars,
     previousTeams,
+    ages,
   });
 
   const pageSize = 100;
@@ -160,6 +162,12 @@ export const useHCKTransferPortal = () => {
   const SelectPrevTeamOptions = (opts: any) => {
     const options = [...opts.map((x: any) => Number(x.value))];
     setPreviousTeamIDs(options);
+    setCurrentPage(0);
+  };
+
+  const SelectAgeOptions = (opts: any) => {
+    const options = [...opts.map((x: any) => Number(x.value))];
+    setAges(options);
     setCurrentPage(0);
   };
 
@@ -256,5 +264,7 @@ export const useHCKTransferPortal = () => {
     chlTeamOptions,
     offensiveSystemsInformation,
     defensiveSystemsInformation,
+    ages,
+    SelectAgeOptions,
   };
 };

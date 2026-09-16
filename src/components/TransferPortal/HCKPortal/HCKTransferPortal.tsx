@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import {
   Attributes,
+  CollegeAgeOptions,
   CountryOptions,
   Help1,
   HockeyArchetypeOptions,
@@ -84,6 +85,7 @@ export const HCKTransferPortal = () => {
     currentSpentPoints,
     chlTeamOptions,
     SelectPrevTeamOptions,
+    SelectAgeOptions,
     offensiveSystemsInformation,
     defensiveSystemsInformation,
   } = useHCKTransferPortal();
@@ -357,6 +359,13 @@ export const HCKTransferPortal = () => {
                     label="Prev. Teams"
                     options={chlTeamOptions}
                     change={SelectPrevTeamOptions}
+                    isMulti={true}
+                    isMobile={isMobile}
+                  />
+                  <CategoryDropdown
+                    label="Age"
+                    options={CollegeAgeOptions}
+                    change={SelectAgeOptions}
                     isMulti={true}
                     isMobile={isMobile}
                   />
