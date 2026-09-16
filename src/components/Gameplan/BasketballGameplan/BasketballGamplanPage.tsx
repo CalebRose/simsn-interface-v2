@@ -96,7 +96,7 @@ export const BasketballGameplanPage = () => {
               <>
                 <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
                   <Text variant="h6" classes="text-start">
-                    Total Minutes Allocated: {totalMinutesAllocated}
+                    Shot Allocations across team
                   </Text>
                 </div>
                 <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
@@ -116,7 +116,7 @@ export const BasketballGameplanPage = () => {
                   </Text>
                 </div>
                 {viewingUserTeam && (
-                  <div className="flex flex-col gap-x-2 flex-wrap w-full text-start my-2">
+                  <div className="flex flex-col gap-x-2 flex-wrap w-full text-start my-2 space-y-2">
                     <TeamLabel
                       team="Gameplan"
                       variant="h5"
@@ -126,6 +126,7 @@ export const BasketballGameplanPage = () => {
                     />
                     <CategoryDropdown
                       label="Pace"
+                      value={pace}
                       options={paceOptions}
                       change={SelectPace}
                       isMulti={false}
@@ -133,6 +134,7 @@ export const BasketballGameplanPage = () => {
                     />
                     <CategoryDropdown
                       label="Offensive System"
+                      value={offensiveSystem}
                       options={offensiveSystemOptions}
                       change={SelectOffensiveSystem}
                       isMulti={false}
@@ -140,6 +142,7 @@ export const BasketballGameplanPage = () => {
                     />
                     <CategoryDropdown
                       label="Defensive System"
+                      value={defensiveSystem}
                       options={defensiveSystemOptions}
                       change={SelectDefensiveSystem}
                       isMulti={false}

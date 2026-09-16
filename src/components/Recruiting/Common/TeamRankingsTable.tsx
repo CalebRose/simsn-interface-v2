@@ -10,7 +10,7 @@ import {
   Team as CBBTeam,
   TeamRecruitingProfile,
 } from "../../../models/basketballModels";
-import { ClickableUserLabel } from "../../Common/Labels";
+import { ClickableTeamLabel, ClickableUserLabel } from "../../Common/Labels";
 
 const getRankingsColumns = (league: League, isMobile: boolean) => {
   let columns: { header: string; accessor: string }[] = [
@@ -88,9 +88,13 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
         <div className="table-cell px-2 py-1 whitespace-nowrap items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Logo url={logo} variant="xs" containerClass="p-4" />
-            <span className={`text-sm ${textColorClass}`}>
-              {cfbTeam.TeamName}
-            </span>
+            <ClickableTeamLabel
+              label={cfbTeam.TeamName}
+              teamID={cfbTeam.ID}
+              textColorClass={textColorClass}
+              league={league}
+              textVariant="small"
+            />
           </div>
         </div>
         <div className="table-cell px-2 py-1 whitespace-nowrap">
@@ -171,9 +175,13 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
         <div className="table-cell px-2 py-1 whitespace-nowrap items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Logo url={logo} variant="xs" containerClass="p-3" />
-            <span className={`text-sm ${textColorClass}`}>
-              {chlTeam.TeamName}
-            </span>
+            <ClickableTeamLabel
+              label={chlTeam.TeamName}
+              teamID={chlTeam.ID}
+              textColorClass={textColorClass}
+              league={league}
+              textVariant="small"
+            />
           </div>
         </div>
         <div className="table-cell px-2 py-1 whitespace-nowrap">
@@ -251,7 +259,13 @@ export const TeamRankingsTable: FC<TeamRankingsTableProps> = ({
         <div className="table-cell px-2 py-1 whitespace-nowrap items-center space-x-2">
           <div className="flex items-center space-x-2">
             <Logo url={logo} variant="xs" containerClass="p-3" />
-            <span className={`text-sm ${textColorClass}`}>{cbbTeam.Team}</span>
+            <ClickableTeamLabel
+              label={cbbTeam.Team}
+              teamID={cbbTeam.ID}
+              textColorClass={textColorClass}
+              league={league}
+              textVariant="xs"
+            />
           </div>
         </div>
         <div className="table-cell px-2 py-1 whitespace-nowrap">

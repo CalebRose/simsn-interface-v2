@@ -48,6 +48,7 @@ import { Timestamp as FBTimestamp } from "../../models/footballModels";
 import { Timestamp as HCKTimestamp } from "../../models/hockeyModels";
 import { useSimBBAStore } from "../../context/SimBBAContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
+import { useSnackbar } from "notistack";
 
 interface GamesBarProps {
   games: any[];
@@ -1175,6 +1176,11 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
   ts,
 }) => {
   const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
+  const [showNumber, setShowNumber] = useState(() => {
+    const num = Math.floor(Math.random() * 1000) + 1;
+    return num === 1;
+  });
   const { goToTeamPage } = useDeepLink();
   const draftListModal = useModal();
   const leagueCols = useMemo(() => {
@@ -1183,6 +1189,12 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
     }
     return "grid-cols-4 md:grid-cols-6";
   }, [league]);
+
+  const clickTheButton = () => {
+    enqueueSnackbar("I'm sorry, we're not ready yet.", { variant: "info" });
+    setShowNumber(false);
+  };
+
   return (
     <>
       <SectionCards
@@ -1410,6 +1422,11 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
                 Help
               </Button>
             </>
+          )}
+          {showNumber && (
+            <Button size="xs" onClick={clickTheButton}>
+              Ready?
+            </Button>
           )}
         </ButtonGrid>
       </SectionCards>

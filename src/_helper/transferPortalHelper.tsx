@@ -25,6 +25,7 @@ export const useFilteredHockeyTransferPlayers = ({
   regions,
   stars,
   previousTeams,
+  ages,
 }: {
   portalPlayers: HockeyPlayer[];
   country: string;
@@ -33,6 +34,7 @@ export const useFilteredHockeyTransferPlayers = ({
   regions: string[];
   stars: number[];
   previousTeams: number[];
+  ages: number[];
 }) => {
   // 1) build Sets once per-change
   const positionSet = useMemo(() => new Set(positions), [positions]);
@@ -43,6 +45,7 @@ export const useFilteredHockeyTransferPlayers = ({
     () => new Set(previousTeams),
     [previousTeams],
   );
+  const agesSet = useMemo(() => new Set(ages), [ages]);
   // 2) filter in one pass, rejecting any row that fails an active filter
   return useMemo(
     () => {
@@ -79,6 +82,11 @@ export const useFilteredHockeyTransferPlayers = ({
           return false;
         }
 
+        // ages
+        if (agesSet.size > 0 && !agesSet.has(p.Age)) {
+          return false;
+        }
+
         // passed all active filters
         return true;
       });
@@ -92,6 +100,7 @@ export const useFilteredHockeyTransferPlayers = ({
       regionSet,
       starsSet,
       previousTeamsSet,
+      agesSet,
     ],
   );
 };

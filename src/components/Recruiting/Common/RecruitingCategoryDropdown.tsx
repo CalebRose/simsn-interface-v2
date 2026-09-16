@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Button } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
 import { SelectDropdown } from "../../../_design/Select";
@@ -9,6 +9,7 @@ interface RecruitingCategoryDropdownProps {
   change: (opts: any) => void;
   isMulti: boolean;
   isMobile?: boolean;
+  value?: string;
 }
 
 export const CategoryDropdown: FC<RecruitingCategoryDropdownProps> = ({
@@ -17,7 +18,13 @@ export const CategoryDropdown: FC<RecruitingCategoryDropdownProps> = ({
   change,
   isMulti,
   isMobile = false,
+  value = "",
 }) => {
+  const currentSelectedOption = useMemo(() => {
+    if (value === "") return undefined;
+    return { label: value, value };
+  }, [value]);
+
   return (
     <div className="flex flex-col">
       <Text variant="h6" classes="text-start mb-1">
@@ -27,6 +34,7 @@ export const CategoryDropdown: FC<RecruitingCategoryDropdownProps> = ({
         options={options}
         onChange={change}
         isMulti={isMulti}
+        value={currentSelectedOption}
         placeholder="Select..."
         styles={{
           control: (provided, state) => ({
