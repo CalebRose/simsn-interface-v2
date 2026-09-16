@@ -54,7 +54,6 @@ export const ForumCard: React.FC<ForumCardProps> = ({
   ) {
     return <></>;
   }
-
   return (
     <ForumBorder classes="p-4 cursor-pointer hover:opacity-90 transition-opacity flex flex-col h-full">
       {/* Top: name + description (clickable) */}
@@ -98,7 +97,7 @@ export const ForumCard: React.FC<ForumCardProps> = ({
       </div>
 
       {/* Bottom: stats row */}
-      <div className="flex items-center justify-between pt-3 mt-auto border-t border-gray-700 text-sm">
+      <div className="flex items-center justify-between pt-3 mt-auto border-t text-sm border-(--border-secondary)">
         <div className="flex gap-4">
           <span className="text-gray-400">
             <span className="text-white font-medium">
@@ -117,19 +116,19 @@ export const ForumCard: React.FC<ForumCardProps> = ({
         </div>
         {forum.latestActivityAt ? (
           <div className="text-right">
-            <Text variant="xs" classes="text-gray-400">
+            <Text variant="xs" classes="text-(--text-secondary)">
               {formatTimestamp(
                 forum.latestActivityAt as unknown as { seconds: number },
               )}
             </Text>
             {forum.latestActivityBy && (
-              <Text variant="xs" classes="text-gray-500">
+              <Text variant="xs" classes="text-(--text-secondary)">
                 by {forum.latestActivityBy.username}
               </Text>
             )}
           </div>
         ) : (
-          <Text variant="xs" classes="text-gray-600">
+          <Text variant="xs" classes="text-(--text-secondary)">
             No activity
           </Text>
         )}

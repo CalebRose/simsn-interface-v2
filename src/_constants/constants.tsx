@@ -921,10 +921,8 @@ export const FootballArchetypeOptions = [
 ];
 
 export const BasketballPositionOptions = [
-  { label: "Point Guards", value: "PG" },
-  { label: "Shooting Guards", value: "SG" },
-  { label: "Small Forwards", value: "SF" },
-  { label: "Power Forwards", value: "PF" },
+  { label: "Guards", value: "G" },
+  { label: "Forwards", value: "F" },
   { label: "Centers", value: "C" },
 ];
 
@@ -945,6 +943,17 @@ export const BasketballArchetypeOptions = [
   { label: "Rim Protector", value: "Rim Protector" },
   { label: "Stretch Bigs", value: "Stretch Bigs" },
   { label: "Lob Threat", value: "Lob Threat" },
+];
+
+export const CollegeAgeOptions = [
+  { label: "17", value: "17" },
+  { label: "18", value: "18" },
+  { label: "19", value: "19" },
+  { label: "20", value: "20" },
+  { label: "21", value: "21" },
+  { label: "22", value: "22" },
+  { label: "23", value: "23" },
+  { label: "24", value: "24" },
 ];
 
 export const DraftAgeOptions = [

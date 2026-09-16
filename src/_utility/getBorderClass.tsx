@@ -71,9 +71,35 @@ export const getTextColorBasedOnBg = (bgColor: string = ""): string => {
   // Calculate luminance
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   // Return a text color class based on luminance
+  if (luminance === undefined || luminance === null || isNaN(luminance))
+    return "border-black";
   return luminance > 0.83
     ? "text-black"
     : luminance > 0.5
       ? "text-gray-800"
       : "text-white";
+};
+
+export const getBorderColorBasedOnBg = (bgColor: string = ""): string => {
+  if (!bgColor) return "border-black";
+
+  // Remove the # if present
+  const hex = bgColor.replace("#", "");
+
+  // Convert HEX to RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  // Return a border color class based on luminance
+  console.log({ luminance, bgColor });
+  if (luminance === undefined || luminance === null || isNaN(luminance))
+    return "border-black";
+  return luminance > 0.83
+    ? "border-black"
+    : luminance > 0.5
+      ? "border-gray-800"
+      : "border-white";
 };

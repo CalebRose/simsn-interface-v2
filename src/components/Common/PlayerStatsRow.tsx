@@ -19,6 +19,7 @@ import {
   CollegePlayerSeasonStats as CHLPlayerSeasonStats,
   ProfessionalPlayerSeasonStats,
 } from "../../models/hockeyModels";
+import { getBorderColorBasedOnBg } from "../../_utility/getBorderClass";
 
 interface FBPlayerStatsRowProps {
   item: CFBPlayerSeasonStats | NFLPlayerSeasonStats;
@@ -38,11 +39,12 @@ export const FBPlayerStatsRow: React.FC<FBPlayerStatsRowProps> = ({
   statsView,
 }) => {
   const isCareerRow = (item as any).isCareer;
+  const borderColorClass = getBorderColorBasedOnBg(backgroundColor);
 
   return (
     <div
       key={index}
-      className={`table-row border-b dark:border-gray-700 text-left ${
+      className={`table-row border-b  text-left ${borderColorClass} ${
         isCareerRow ? "font-semibold" : ""
       }`}
       style={{ backgroundColor }}
