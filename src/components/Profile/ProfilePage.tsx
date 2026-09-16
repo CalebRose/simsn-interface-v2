@@ -50,6 +50,7 @@ import {
 import { BaseballOrganization } from "../../models/baseball/baseballModels";
 import { ClickableUserLabel } from "../Common/Labels";
 import { LacrosseService, LaxTeam } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -497,6 +498,7 @@ export const ProfilePage = () => {
   const { chlTeam, phlTeam, chlTeamMap, phlTeamMap } = useSimHCKStore();
   const { collegeOrganization, mlbOrganization, organizationMap } =
     useSimBaseballStore();
+  const { claxTeam, refreshClaxTeam } = useSimLAXStore();
 
   const isOwnProfile =
     !paramUsername || paramUsername === currentUser?.username;
@@ -505,7 +507,8 @@ export const ProfilePage = () => {
 
   const [viewedUser, setViewedUser] = useState<CurrentUser | null>(null);
   const [viewedUserLoading, setViewedUserLoading] = useState(false);
-  const [selectedCLAXTeam, setSelectedCLAXTeam] = useState<LaxTeam | null>(null);
+  const [viewedCLAXTeam, setViewedCLAXTeam] = useState<LaxTeam | null>(null);
+  const selectedCLAXTeam = isOwnProfile ? claxTeam : viewedCLAXTeam;
   const [viewedAchievements, setViewedAchievements] = useState<Achievement[]>(
     [],
   );
@@ -618,26 +621,23 @@ export const ProfilePage = () => {
   // ── Effects ─────────────────────────────────────────────────────
 
   useEffect(() => {
-    const profileUid =
-      viewedUser && viewedUser.id !== currentUser?.id
-        ? viewedUser.id
-        : currentUser?.id;
-    if (!profileUid) {
-      setSelectedCLAXTeam(null);
+    const profileUid = viewedUser?.id;
+    if (isOwnProfile || !profileUid) {
+      setViewedCLAXTeam(null);
       return;
     }
     let cancelled = false;
     LacrosseService.getUserTeam(profileUid)
       .then((team) => {
-        if (!cancelled) setSelectedCLAXTeam(team);
+        if (!cancelled) setViewedCLAXTeam(team);
       })
       .catch(() => {
-        if (!cancelled) setSelectedCLAXTeam(null);
+        if (!cancelled) setViewedCLAXTeam(null);
       });
     return () => {
       cancelled = true;
     };
-  }, [viewedUser?.id, currentUser?.id]);
+  }, [viewedUser?.id, isOwnProfile]);
 
   useEffect(() => {
     if (!paramUsername) return;
@@ -1142,7 +1142,7 @@ export const ProfilePage = () => {
                       <ProfileCLAXTeamCard
                         IsUser={true}
                         Team={selectedCLAXTeam}
-                        onQuit={() => setSelectedCLAXTeam(null)}
+                        onQuit={() => void refreshClaxTeam()}
                       />
                     )}
                   </div>

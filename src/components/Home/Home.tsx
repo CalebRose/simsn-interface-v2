@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from "react";
+import React, { useMemo, useEffect } from "react";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { PageContainer } from "../../_design/Container";
 import { Button } from "../../_design/Buttons";
@@ -28,7 +28,7 @@ import routes from "../../_constants/routes";
 import { LeagueSelector } from "../Common/LeagueSelector";
 import { teamByLeague } from "../../_utility/useLeagueSelector";
 import { BaseballLandingPage } from "../LandingPage/BaseballLandingPage";
-import { LacrosseService, LaxTeam } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 import { CollegeLacrosseDashboard } from "../Lacrosse/CollegeLacrosseDashboard";
 
 export const Home = () => {
@@ -39,19 +39,7 @@ export const Home = () => {
   const { cbbTeam, nbaTeam } = useSimBBAStore();
   const { chlTeam, phlTeam } = useSimHCKStore();
   const { collegeOrganization, mlbOrganization } = useSimBaseballStore();
-  const [claxTeam, setClaxTeam] = useState<LaxTeam | null>(null);
-  const [claxTeamLoading, setClaxTeamLoading] = useState(Boolean(currentUser));
-
-  useEffect(() => {
-    if (!currentUser?.id) { setClaxTeam(null); setClaxTeamLoading(false); return; }
-    let active=true;
-    setClaxTeamLoading(true);
-    LacrosseService.getUserTeam(currentUser.id)
-      .then((team)=>{if(active)setClaxTeam(team);})
-      .catch(()=>{if(active)setClaxTeam(null);})
-      .finally(()=>{if(active)setClaxTeamLoading(false);});
-    return()=>{active=false;};
-  },[currentUser?.id]);
+  const { claxTeam, claxTeamLoading } = useSimLAXStore();
 
   // Check if selected team matches current league and correct it if needed
   useEffect(() => {
@@ -156,7 +144,7 @@ export const Home = () => {
   }, [currentUser]);
 
   return (
-    <PageContainer isLoading={claxTeamLoading || (!selectedTeam && isParticipating)}>
+    <PageContainer isLoading={claxTeamLoading || (!selectedTeam && !claxTeam && isParticipating)}>
       {!isParticipating && !isBanned && (
         <>
           <Border
@@ -270,9 +258,9 @@ export const Home = () => {
                 ts={ts}
               />
             )}
-          {selectedTeam &&
+          {claxTeam &&
             selectedLeague === SimCLAX && (
-              <CollegeLacrosseDashboard team={selectedTeam as LaxTeam} />
+              <CollegeLacrosseDashboard team={claxTeam} />
             )}
           {selectedTeam &&
             selectedLeague !== SimCLAX &&

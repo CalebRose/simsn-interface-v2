@@ -18,7 +18,8 @@ import {
   SimPHL,
 } from "../../_constants/constants";
 import { NewsLog } from "../../models/footballModels";
-import { LacrosseAdminService, LacrosseNewsService, LaxTeam } from "../../_services/lacrosseService";
+import { LaxTeam } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 import { usePagination } from "../../_hooks/usePagination";
 import { getFBAWeekID, getHCKWeekID } from "../../_helper/statsPageHelper";
 import { SingleValue } from "react-select";
@@ -38,7 +39,6 @@ import { firestore } from "../../firebase/firebase";
 
 export const useNewsPage = () => {
   const {
-    currentUser,
     isCFBUser,
     isCBBUser,
     isCHLUser,
@@ -65,12 +65,26 @@ export const useNewsPage = () => {
     proNews: phlNews,
     getBootstrapNewsData: getHCKBootstrapNewsData,
   } = useSimHCKStore();
-  const [claxNews, setClaxNews] = useState<NewsLog[]>([]);
-  const [claxTeam, setClaxTeam] = useState<LaxTeam | null>(null);
-  const [claxTeamMap, setClaxTeamMap] = useState<Record<number, LaxTeam>>({});
-  const [isLaxAdmin, setIsLaxAdmin] = useState(false);
-  const [claxSeason, setClaxSeason] = useState(1);
-  const [claxWeek, setClaxWeek] = useState(1);
+  const { claxTeam, laxAdminStatus, claxNews: claxNewsResponse, refreshClaxNews } = useSimLAXStore();
+  const claxTeamMap = useMemo<Record<number, LaxTeam>>(
+    () => Object.fromEntries((claxNewsResponse?.teams ?? []).map((team) => [team.id, team])),
+    [claxNewsResponse],
+  );
+  const claxSeason = claxNewsResponse?.currentSeason ?? 1;
+  const claxWeek = claxNewsResponse?.currentWeek ?? 1;
+  const claxNews = useMemo<NewsLog[]>(() => (claxNewsResponse?.news ?? []).map((item) => ({
+    ID: item.id,
+    CreatedAt: item.createdAt as any,
+    UpdatedAt: null as any,
+    DeletedAt: null as any,
+    WeekID: item.week,
+    Week: item.week,
+    SeasonID: item.season,
+    TeamID: item.teamId || 0,
+    MessageType: item.messageType,
+    Message: item.message,
+    League: SimCLAX,
+  }) as NewsLog), [claxNewsResponse]);
   const newsSelectedTeam = selectedLeague === SimCLAX && claxTeam ? {
     ID: claxTeam.id,
     TeamName: claxTeam.name,
@@ -138,37 +152,11 @@ export const useNewsPage = () => {
     new Set(),
   );
 
-  const loadClaxNews = useCallback(async () => {
-    const data = await LacrosseNewsService.get();
-    setClaxTeam(data.team);
-    setClaxTeamMap(Object.fromEntries(data.teams.map((team) => [team.id, team])));
-    setClaxSeason(data.currentSeason);
-    setClaxWeek(data.currentWeek);
-    setClaxNews(data.news.map((item) => ({
-      ID: item.id,
-      CreatedAt: item.createdAt as any,
-      UpdatedAt: null as any,
-      DeletedAt: null as any,
-      WeekID: item.week,
-      Week: item.week,
-      SeasonID: item.season,
-      TeamID: item.teamId || 0,
-      MessageType: item.messageType,
-      Message: item.message,
-      League: SimCLAX,
-    }) as NewsLog));
-  }, []);
-
   useEffect(() => {
     getFBABootstrapNewsData();
     getBBABootstrapNewsData();
     getHCKBootstrapNewsData();
-    void loadClaxNews();
-    if (currentUser) {
-      void LacrosseAdminService.getStatus()
-        .then((status) => setIsLaxAdmin(status.isAdmin))
-        .catch(() => setIsLaxAdmin(false));
-    }
+    void refreshClaxNews();
   }, []);
 
   const RefreshNews = useCallback(() => {
@@ -182,9 +170,9 @@ export const useNewsPage = () => {
       getHCKBootstrapNewsData();
     }
     if (selectedLeague === SimCLAX) {
-      void loadClaxNews();
+      void refreshClaxNews();
     }
-  }, [isCFBUser, isNFLUser, isCBBUser, isNBAUser, isCHLUser, isPHLUser, selectedLeague, loadClaxNews]);
+  }, [isCFBUser, isNFLUser, isCBBUser, isNBAUser, isCHLUser, isPHLUser, selectedLeague, refreshClaxNews]);
 
   const ts = useMemo(() => {
     if (selectedLeague === SimCHL || selectedLeague === SimPHL) {
@@ -651,7 +639,7 @@ export const useNewsPage = () => {
     selectedLeague,
     selectedTeam: newsSelectedTeam,
     claxTeamMap,
-    showSimLax: Boolean(claxTeam) || isLaxAdmin,
+    showSimLax: Boolean(claxTeam) || Boolean(laxAdminStatus?.isAdmin),
     pagedData,
     RefreshNews,
     sortByNewest,

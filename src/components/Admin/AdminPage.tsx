@@ -32,11 +32,11 @@ import { AdminTradesTab } from "./AdminTradesTab";
 import { IFAAdminPanel } from "./IFAAdminPanel";
 import { SimulationControlPanel } from "./SimulationControlPanel";
 import { RecruitingAdminPanel } from "./RecruitingAdminPanel";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { NFLUDFAAdminPanel } from "../Admin/NFLUDFAAdminPanel";
 import { CollegeLacrosseAdminPage } from "../Lacrosse/CollegeLacrosseAdminPage";
-import { LacrosseAdminService, LaxAdminStatus } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 
 const IFAAdminSection = () => {
   const { seasonContext } = useSimBaseballStore();
@@ -84,21 +84,7 @@ export const AdminPage = () => {
   const { currentUser } = authStore;
   const { RefreshRequests, selectedTab, setSelectedTab } = useAdminPage();
   const navigate = useNavigate();
-  const [laxAdminStatus, setLaxAdminStatus] = useState<LaxAdminStatus>();
-  const [laxAdminChecked, setLaxAdminChecked] = useState(false);
-
-  useEffect(() => {
-    if (!currentUser) {
-      setLaxAdminStatus(undefined);
-      setLaxAdminChecked(true);
-      return;
-    }
-    setLaxAdminChecked(false);
-    LacrosseAdminService.getStatus()
-      .then(setLaxAdminStatus)
-      .catch(() => setLaxAdminStatus(undefined))
-      .finally(() => setLaxAdminChecked(true));
-  }, [currentUser]);
+  const { laxAdminStatus, laxAdminChecked } = useSimLAXStore();
 
   const isLaxAdmin = Boolean(laxAdminStatus?.isAdmin);
 
@@ -142,7 +128,7 @@ export const AdminPage = () => {
 
   // Role gating logic
   if (!laxAdminChecked) {
-    return <PageContainer direction="col" isLoading={true} title="Admin" />;
+    return <PageContainer direction="col" isLoading={true} title="Admin">{null}</PageContainer>;
   }
   if (
     currentUser &&

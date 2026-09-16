@@ -30,6 +30,7 @@ import { getPrimaryBaseballTeam } from "../../_utility/baseballHelpers";
 import { ForumService } from "../../_services/forumService";
 import type { BaseballOrganization } from "../../models/baseball/baseballModels";
 import { getLaxLogoUrl, LacrosseService } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 
 const buildBaseballOptions = (
   orgs: BaseballOrganization[],
@@ -85,8 +86,20 @@ export const AvailableTeams = () => {
     phlConferenceOptions,
   } = useSimHCKStore();
   const { organizations: mlbOrganizations } = useSimBaseballStore();
-  const [claxTeams, setClaxTeams] = useState<any[]>([]);
-  const [claxLoadError, setClaxLoadError] = useState("");
+  const { claxTeams: laxTeams, claxTeamsError: claxLoadError, refreshClaxTeams } = useSimLAXStore();
+  const claxTeams = useMemo(() => laxTeams.map((team) => ({
+    ID: team.id, TeamName: team.name, Mascot: team.nickname,
+    Abbreviation: team.abbreviation, City: team.city, State: team.state,
+    Arena: team.venue, Coach: team.coach || "None",
+    LogoURL: getLaxLogoUrl(team.logoFileName),
+    ConferenceID: team.conference?.id ?? 0,
+    Conference: team.conference?.name ?? "Independent",
+    ColorOne: team.colors.primary || "#374151",
+    ColorTwo: team.colors.secondary || "#9CA3AF",
+    ColorThree: team.colors.tertiary || "#FFFFFF",
+    IsUserCoached: team.isUserControlled,
+    OverallGrade: "—", OffenseGrade: "—", DefenseGrade: "—",
+  })), [laxTeams]);
   const [teamOptions, setTeamOptions] = useState(cfbTeamOptions);
   const [conferenceOptions, setConferenceOptions] =
     useState(cfbConferenceOptions);
@@ -109,31 +122,11 @@ export const AvailableTeams = () => {
   const IsRetro = currentUser?.IsRetro;
 
   useEffect(() => {
-    LacrosseService.getTeams()
-      .then((result) => {
-        setClaxTeams(result.teams.map((team) => ({
-          ID: team.id, TeamName: team.name, Mascot: team.nickname,
-          Abbreviation: team.abbreviation, City: team.city, State: team.state,
-          Arena: team.venue, Coach: team.coach || "None",
-          LogoURL: getLaxLogoUrl(team.logoFileName),
-          ConferenceID: team.conference?.id ?? 0,
-          Conference: team.conference?.name ?? "Independent",
-          ColorOne: team.colors.primary || "#374151",
-          ColorTwo: team.colors.secondary || "#9CA3AF",
-          ColorThree: team.colors.tertiary || "#FFFFFF",
-          IsUserCoached: team.isUserControlled,
-          OverallGrade: "—", OffenseGrade: "—", DefenseGrade: "—",
-        })));
-        setClaxLoadError("");
-      })
-      .catch(() => {
-        setClaxTeams([]);
-        setClaxLoadError("SimCLAX teams could not be loaded. Please refresh after the local database is running.");
-      });
+    void refreshClaxTeams();
     LacrosseService.getMyClaim()
       .then((claim) => setSentRequestCLAX(claim?.status === "pending"))
       .catch(() => setSentRequestCLAX(false));
-  }, []);
+  }, [refreshClaxTeams]);
   useEffect(() => {
     setTimeout(() => {
       setIsLoading(() => false);
