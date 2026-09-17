@@ -319,7 +319,7 @@ const CHLRow: React.FC<CHLRowProps> = ({
           {attr.label === "Name" ? (
             <span
               className={`text-xs cursor-pointer font-semibold ${
-                item.IsCustomCroot ? "text-blue-400" : ""
+                item.DraftedTeamID > 0 ? "text-yellow-400" : ""
               }`}
               onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
                 (e.target as HTMLElement).style.color = "#fcd53f";

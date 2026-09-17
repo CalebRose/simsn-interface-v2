@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import {
@@ -24,6 +24,10 @@ import {
   getDefensiveSystemFromMap,
   getOffensiveSystemFromMap,
 } from "../../Gameplan/HockeyLineups/useLineupUtils";
+import { useSimFBAStore } from "../../../context/SimFBAContext";
+import { useSimHCKStore } from "../../../context/SimHockeyContext";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
+import { TeamNeeds } from "../../Common/TeamNeedsComponent";
 
 interface RecruitingSideBarProps {
   TeamProfile: BasketballTeamProfile | HockeyTeamProfile | FootballTeamProfile;
@@ -39,6 +43,9 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
   league,
 }) => {
   const { backgroundColor } = useBackgroundColor();
+  const { chlRosterMap, chlTeam } = useSimHCKStore();
+  const { cfbRosterMap, cfbTeam } = useSimFBAStore();
+  const { cbbRosterMap, cbbTeam } = useSimBBAStore();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
   let teamLabel = "";
   let classRank = 0;
@@ -115,6 +122,42 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
     default:
       break;
   }
+
+  const currentRoster = useMemo(() => {
+    if (league === SimCFB && cfbRosterMap) {
+      return cfbRosterMap[cfbTeam?.ID || 0] || [];
+    }
+    if (league === SimCHL && chlRosterMap) {
+      return chlRosterMap[chlTeam?.ID || 0] || [];
+    }
+    if (league === SimCBB && cbbRosterMap) {
+      return cbbRosterMap[cbbTeam?.ID || 0] || [];
+    }
+    return [];
+  }, [
+    league,
+    cfbTeam,
+    cfbRosterMap,
+    chlTeam,
+    chlRosterMap,
+    cbbTeam,
+    cbbRosterMap,
+  ]);
+
+  const rosterByPositionAndYear = useMemo(() => {
+    const byPositionAndYear: Record<string, Record<string, any[]>> = {};
+    currentRoster.forEach((player) => {
+      if (!byPositionAndYear[player.Position]) {
+        byPositionAndYear[player.Position] = {};
+      }
+      if (!byPositionAndYear[player.Position][player.Year.toString()]) {
+        byPositionAndYear[player.Position][player.Year.toString()] = [];
+      }
+      byPositionAndYear[player.Position][player.Year.toString()].push(player);
+    });
+    return byPositionAndYear;
+  }, [currentRoster]);
+
   return (
     <div className="flex flex-col w-full h-full max-[1024px]:gap-y-2">
       <Border
@@ -143,36 +186,12 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
             Spots Remaining:{" "}
             {TeamProfile!.RecruitClassSize - TeamProfile!.TotalCommitments}
           </Text>
-          {res > 0 && <Text variant="xs">RES: {res.toFixed(3)}%</Text>}
-        </div>
-        {league === SimCFB && (
-          <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
-            <TeamLabel
-              team="Affinities"
-              variant="h5"
-              backgroundColor={teamColors.One}
-              borderColor={teamColors.One}
-              headerTextColorClass={headerTextColorClass}
-            />
-            {affinities.map((x) => (
-              <Text variant="xs">{x}</Text>
-            ))}
-          </div>
-        )}
-        <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
-          <TeamLabel
-            team="Recruiting Needs"
-            variant="h5"
-            backgroundColor={teamColors.One}
-            borderColor={teamColors.One}
-            headerTextColorClass={headerTextColorClass}
-          />
           <Text variant="xs">Rank: {classRank}</Text>
           <Text variant="xs">Five Stars: {TeamProfile?.FiveStars}</Text>
           <Text variant="xs">Four Stars: {TeamProfile?.FourStars}</Text>
           <Text variant="xs">Three Stars: {TeamProfile?.ThreeStars}</Text>
+          {/* {res > 0 && <Text variant="xs">RES: {res.toFixed(3)}%</Text>} */}
         </div>
-
         <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
           <TeamLabel
             team="Team Values"
@@ -198,6 +217,16 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
           <Text variant="xs">Season Momentum: {season}</Text>
           <Text variant="xs">Campus Life: {campusLife}</Text>
           <Text variant="xs">Media Spotlight: {mediaSpotlight}</Text>
+        </div>
+        <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
+          <TeamLabel
+            team="Current Roster"
+            variant="h5"
+            backgroundColor={teamColors.One}
+            borderColor={teamColors.One}
+            headerTextColorClass={headerTextColorClass}
+          />
+          <TeamNeeds rosterByPositionAndYear={rosterByPositionAndYear} />
         </div>
       </Border>
     </div>

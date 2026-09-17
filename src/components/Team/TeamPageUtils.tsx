@@ -2979,6 +2979,10 @@ export const getAdditionalBBAPortalAttributes = (
       value: player.FreeThrow,
     },
     {
+      label: "Basketball IQ",
+      value: player.BasketballIQ,
+    },
+    {
       label: "Agility",
       value: player.Agility,
     },

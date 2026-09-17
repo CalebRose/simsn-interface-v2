@@ -2654,7 +2654,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full">
+      <div className="grid grid-cols-4 grid-rows-[auto auto auto auto] space-4 w-full space-y-4">
         <div className="row-span-3 flex flex-col items-center">
           <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
             <PlayerPicture
@@ -2672,6 +2672,18 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
               containerClass="p-4"
               textClass="text-small"
             />
+          )}
+          {player.DraftedTeamID > 0 && (
+            <div className="flex flex-row mt-2">
+              <Text variant="xs">
+                <span className="font-semibold text-red-500">WARNING:</span>{" "}
+                <span>
+                  This player has been drafted by {player.DraftedTeam}. There is
+                  a possibility they will be called up this offseason. Recruit
+                  with caution.
+                </span>
+              </Text>
+            </div>
           )}
         </div>
         <div className="flex flex-col">
@@ -2750,7 +2762,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
               : player.Stars}
           </Text>
         </div>
-        <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
+        <div className="mt-2 flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
           <TabGroup classes="mb-3 w-full">
             <Tab
               label="Attributes"
