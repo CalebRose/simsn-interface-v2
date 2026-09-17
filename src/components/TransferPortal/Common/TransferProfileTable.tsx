@@ -165,7 +165,11 @@ const getTransferProfileTableColumns = (
         { header: "Mid", accessor: "Shooting2" },
         { header: "3pt", accessor: "Shooting3" },
         { header: "FT", accessor: "FreeThrow" },
+        { header: "BIQ", accessor: "BasketballIQ" },
+        { header: "Agi", accessor: "Agility" },
         { header: "BW", accessor: "Ballwork" },
+        { header: "St", accessor: "Stealing" },
+        { header: "Blk", accessor: "Blocking" },
         { header: "RB", accessor: "Rebounding" },
         { header: "Int. D", accessor: "InteriorDefense" },
         { header: "Per. D", accessor: "PerimeterDefense" },
@@ -417,7 +421,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
       </TableCell>
       <TableCell>
         <span
-          className={`text-xs cursor-pointer font-semibold`}
+          className={`text-xs cursor-pointer font-semibold ${player.DraftedTeamID > 0 ? "text-yellow-400" : ""}`}
           onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
             (e.target as HTMLElement).style.color = "#fcd53f";
           }}

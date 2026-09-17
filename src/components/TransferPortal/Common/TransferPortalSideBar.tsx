@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { League, SimCBB, SimCFB, SimCHL } from "../../../_constants/constants";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import {
@@ -18,6 +18,10 @@ import { getAffinityList } from "../../../_helper/recruitingHelper";
 import { Text } from "../../../_design/Typography";
 import { TeamLabel } from "../../Common/Labels";
 import { Border } from "../../../_design/Borders";
+import { useSimHCKStore } from "../../../context/SimHockeyContext";
+import { useSimFBAStore } from "../../../context/SimFBAContext";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
+import { TeamNeeds } from "../../Common/TeamNeedsComponent";
 
 interface TPSideBarProps {
   TeamProfile: HockeyProfile | BasketballProfile | FootballProfile;
@@ -35,6 +39,9 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
   rosterCount,
 }) => {
   const { backgroundColor } = useBackgroundColor();
+  const { chlRosterMap, chlTeam } = useSimHCKStore();
+  const { cfbRosterMap, cfbTeam } = useSimFBAStore();
+  const { cbbRosterMap, cbbTeam } = useSimBBAStore();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
   let teamLabel = "";
   let classRank = 0;
@@ -73,9 +80,9 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
     case SimCBB:
       const cbbtp = TeamProfile as BasketballProfile;
       const cbbt = Team as BasketballTeam;
-      portalReputation = cbbtp.PortalReputation;
       teamLabel = cbbt.Team;
       if (cbbtp) {
+        portalReputation = cbbtp.PortalReputation;
         region = cbbtp.Region;
       }
       spotsRemaining = 15 - rosterCount.rosterCount;
@@ -97,6 +104,41 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
     default:
       break;
   }
+
+  const currentRoster = useMemo(() => {
+    if (league === SimCFB && cfbRosterMap) {
+      return cfbRosterMap[cfbTeam?.ID || 0] || [];
+    }
+    if (league === SimCHL && chlRosterMap) {
+      return chlRosterMap[chlTeam?.ID || 0] || [];
+    }
+    if (league === SimCBB && cbbRosterMap) {
+      return cbbRosterMap[cbbTeam?.ID || 0] || [];
+    }
+    return [];
+  }, [
+    league,
+    cfbTeam,
+    cfbRosterMap,
+    chlTeam,
+    chlRosterMap,
+    cbbTeam,
+    cbbRosterMap,
+  ]);
+
+  const rosterByPositionAndYear = useMemo(() => {
+    const byPositionAndYear: Record<string, Record<string, any[]>> = {};
+    currentRoster.forEach((player) => {
+      if (!byPositionAndYear[player.Position]) {
+        byPositionAndYear[player.Position] = {};
+      }
+      if (!byPositionAndYear[player.Position][player.Year.toString()]) {
+        byPositionAndYear[player.Position][player.Year.toString()] = [];
+      }
+      byPositionAndYear[player.Position][player.Year.toString()].push(player);
+    });
+    return byPositionAndYear;
+  }, [currentRoster]);
   return (
     <div className="flex flex-col w-full h-full max-[1024px]:gap-y-2">
       <Border
@@ -121,20 +163,6 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
           <Text variant="xs">Spots Remaining: {spotsRemaining}</Text>
           <Text variant="xs">Portal Reputation: {portalReputation}</Text>
         </div>
-        {league === SimCFB && (
-          <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
-            <TeamLabel
-              team="Affinities"
-              variant="h5"
-              backgroundColor={teamColors.One}
-              borderColor={teamColors.One}
-              headerTextColorClass={headerTextColorClass}
-            />
-            {affinities.map((x) => (
-              <Text variant="xs">{x}</Text>
-            ))}
-          </div>
-        )}
         <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
           <TeamLabel
             team="Team Needs"
@@ -143,14 +171,7 @@ export const TransferPortalSideBar: FC<TPSideBarProps> = ({
             borderColor={teamColors.One}
             headerTextColorClass={headerTextColorClass}
           />
-          {league === SimCHL && (
-            <>
-              <Text variant="xs">Center Count: {rosterCount.C}</Text>
-              <Text variant="xs">Forward Count: {rosterCount.F}</Text>
-              <Text variant="xs">Defender Count: {rosterCount.D}</Text>
-              <Text variant="xs">Goalie Count: {rosterCount.G}</Text>
-            </>
-          )}
+          <TeamNeeds rosterByPositionAndYear={rosterByPositionAndYear} />
         </div>
         {league === SimCHL && (
           <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mt-2">
