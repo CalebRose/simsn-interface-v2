@@ -1,5 +1,8 @@
 import { GetCall, GetExportCall, PostBase64Call, PostCall, PUTCall } from "../_helper/fetchHelper";
-const base = import.meta.env.VITE_SIMLAX_API_URL || "http://127.0.0.1:8000/api/v1";
+const base = import.meta.env.VITE_SIMLAX_API_URL?.trim().replace(/\/+$/, "");
+if (!base) {
+  throw new Error("VITE_SIMLAX_API_URL must be configured for SimLAX.");
+}
 const apiOrigin = base.replace(/\/api\/v1\/?$/, "");
 export const getLaxLogoUrl = (fileName?: string) =>
   fileName ? `${apiOrigin}/static/team-logos/${encodeURIComponent(fileName)}` : "";
