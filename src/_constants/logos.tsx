@@ -10,6 +10,7 @@ export const simLogos = {
   SimCHL: `${baseUrl}/icons/simchl.webp`,
   SimPHL: `${baseUrl}/icons/simphl.webp`,
   SimMLB: `${baseUrl}/icons/simplb.png`,
+  SimCLAX: "/simlax-logo.png",
   SimCBL: `${baseUrl}/icons/simcbl.png`,
   SimMiLB: `${baseUrl}/icons/simmilb.png`,
 };

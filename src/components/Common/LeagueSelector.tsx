@@ -5,6 +5,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -55,6 +56,7 @@ interface LeagueSelectorProps {
     phlTeam?: any;
     collegeBaseballOrg?: any;
     mlbOrg?: any;
+    claxTeam?: any;
   };
   /** Whether to show league logos (default: true) */
   showLogos?: boolean;
@@ -82,6 +84,7 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
     phlTeam,
     collegeBaseballOrg,
     mlbOrg,
+    claxTeam,
   } = teams;
 
   const getTeamDisplayName = (league: League, team: any) => {
@@ -111,6 +114,8 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
         const mlbTeam = team?.teams?.["mlb"] as any;
         return mlbTeam?.team_nickname || team?.org_abbrev;
       }
+      case SimCLAX:
+        return team?.nickname;
       default:
         return "";
     }
@@ -134,6 +139,8 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
         return simLogos.SimMLB;
       case SimCollegeBaseball:
         return simLogos.SimCBL;
+      case SimCLAX:
+        return simLogos.SimCLAX;
       default:
         return "";
     }
@@ -196,6 +203,12 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
       isUser: isMlbUser,
       displayName: getTeamDisplayName(SimMLB as League, mlbOrg),
     },
+    {
+      league: SimCLAX as League,
+      team: claxTeam,
+      isUser: Boolean(claxTeam),
+      displayName: getTeamDisplayName(SimCLAX as League, claxTeam),
+    },
   ];
 
   return (
@@ -208,7 +221,7 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
             <PillButton
               key={league}
               variant="primaryOutline"
-              classes="flex flex-col px-8 py-2"
+              classes="flex h-[5.25rem] w-[8.5rem] shrink-0 flex-col px-3 py-2 text-center leading-tight"
               size="md"
               isSelected={selectedLeague === league}
               onClick={() => onLeagueSelect(league, team)}
@@ -216,7 +229,7 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
               {showLogos && (
                 <img
                   src={getLeagueLogo(league)}
-                  className="hidden md:block w-[4em] h-auto"
+                  className="hidden h-10 w-16 object-contain md:block"
                   alt={`${league} logo`}
                 />
               )}

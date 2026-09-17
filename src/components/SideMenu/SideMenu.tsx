@@ -2,6 +2,7 @@ import { useMemo, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import { AuthService } from "../../_services/auth";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 import { getLogo } from "../../_utility/getLogo";
 import routes from "../../_constants/routes";
 import { useForumStore } from "../../context/ForumContext";
@@ -67,6 +68,8 @@ export const SideMenu = ({}) => {
   const { isDesktop } = useResponsive();
   const [processing, setProcessing] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const { laxAdminStatus } = useSimLAXStore();
+  const isLaxAdmin = Boolean(laxAdminStatus?.isAdmin);
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Close notification dropdown on outside click
@@ -93,10 +96,11 @@ export const SideMenu = ({}) => {
   const isCommissioner = useMemo(() => {
     if (!currentUser) return false;
     return (
+      isLaxAdmin ||
       currentUser.roleID === "Admin" ||
       currentUser.roleID?.includes("Commissioner")
     );
-  }, [currentUser]);
+  }, [currentUser, isLaxAdmin]);
 
   // ✅ Handle Logout
   const logout = async () => {

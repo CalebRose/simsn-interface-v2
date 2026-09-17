@@ -8,6 +8,7 @@ import {
   SimPHL,
 } from "../_constants/constants";
 import { baseballUrl, bbaUrl, fbaUrl, hckUrl } from "../_constants/urls";
+import { getFirebaseIdToken } from "../_helper/authToken";
 import { GetCall, GetSportAbbr, PostCall } from "../_helper/fetchHelper";
 import {
   MLBTeamRequest,
@@ -98,7 +99,7 @@ export const RequestService = {
   ApproveCFBRequest: async (payload: CFBTeamRequest): Promise<Response> => {
     return await fetch(`${fbaUrl}requests/approve/`, {
       headers: {
-        authorization: localStorage.getItem("token") || "",
+        authorization: `Bearer ${(await getFirebaseIdToken()) || ""}`,
         "Content-Type": "application/json",
       },
       method: "PUT",
@@ -148,7 +149,7 @@ export const RequestService = {
   RejectCFBRequest: async (payload: any): Promise<void> => {
     await fetch(`${fbaUrl}requests/reject/`, {
       headers: {
-        authorization: localStorage.getItem("token") || "",
+        authorization: `Bearer ${(await getFirebaseIdToken()) || ""}`,
         "Content-Type": "application/json",
       },
       method: "POST",
@@ -159,7 +160,7 @@ export const RequestService = {
   RejectNFLRequest: async (payload: any): Promise<void> => {
     await fetch(`${fbaUrl}nfl/requests/reject/`, {
       headers: {
-        authorization: localStorage.getItem("token") || "",
+        authorization: `Bearer ${(await getFirebaseIdToken()) || ""}`,
         "Content-Type": "application/json",
       },
       method: "POST",
@@ -170,7 +171,7 @@ export const RequestService = {
   RemoveUserFromNFLTeamRequest: async (teamID: number): Promise<Response> => {
     return await fetch(`${fbaUrl}nfl/requests/remove/${teamID}`, {
       headers: {
-        authorization: localStorage.getItem("token") || "",
+        authorization: `Bearer ${(await getFirebaseIdToken()) || ""}`,
         "Content-Type": "application/json",
       },
       method: "POST",
@@ -193,7 +194,7 @@ export const RequestService = {
   ApproveCBBRequest: async (payload: Request): Promise<Response> => {
     return await fetch(`${bbaUrl}requests/approveTeamRequest`, {
       headers: {
-        authorization: localStorage.getItem("token") || "",
+        authorization: `Bearer ${(await getFirebaseIdToken()) || ""}`,
         "Content-Type": "application/json",
       },
       method: "PUT",
@@ -204,7 +205,7 @@ export const RequestService = {
   RejectCBBTeamRequest: async (payload: Request): Promise<Response> => {
     return await fetch(`${bbaUrl}requests/rejectTeamRequest`, {
       headers: {
-        authorization: localStorage.getItem("token") || "",
+        authorization: `Bearer ${(await getFirebaseIdToken()) || ""}`,
         "Content-Type": "application/json",
       },
       method: "DELETE",
@@ -215,7 +216,7 @@ export const RequestService = {
   RevokeUserFromCBBTeamRequest: async (teamId: number): Promise<Response> => {
     return await fetch(`${bbaUrl}team/removeUserFromTeam/${teamId}`, {
       headers: {
-        authorization: localStorage.getItem("token") || "",
+        authorization: `Bearer ${(await getFirebaseIdToken()) || ""}`,
         "Content-Type": "application/json",
       },
       method: "PUT",

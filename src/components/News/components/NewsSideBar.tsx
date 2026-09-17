@@ -7,6 +7,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -49,6 +50,7 @@ interface NewsSideBarProps {
   refreshNews: () => void;
   sortByNewest: boolean;
   setSortByNewest: React.Dispatch<React.SetStateAction<boolean>>;
+  showSimLax: boolean;
 }
 
 export const NewsSideBar: FC<NewsSideBarProps> = ({
@@ -68,9 +70,16 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   refreshNews,
   setSortByNewest,
   sortByNewest,
+  showSimLax,
 }) => {
   const { backgroundColor } = useBackgroundColor();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
+  const leagueOptions = useMemo(
+    () => showSimLax
+      ? [...LeagueTypeOptions, { label: SimCLAX, value: SimCLAX }]
+      : LeagueTypeOptions,
+    [showSimLax],
+  );
 
   const teamLabel = useMemo(() => {
     let label = "";
@@ -92,6 +101,9 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
         const fbTeam = selectedTeam as CollegeTeam;
         label = fbTeam?.TeamName ?? "";
         break;
+      case SimCLAX:
+        label = selectedTeam?.TeamName ?? "";
+        break;
       default:
         break;
     }
@@ -100,6 +112,12 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
 
   const seasonOptions = useMemo(() => {
     const noneOption = { label: "None", value: "-1" };
+    if (league === SimCLAX) {
+      const currentSeason = Number(ts?.SeasonID || 1);
+      return [noneOption, ...Array.from({ length: currentSeason }, (_, index) => ({
+        label: String(2026 + index), value: String(index + 1),
+      }))];
+    }
     if (!ts) {
       return [noneOption, { label: "2025", value: "1" }];
     }
@@ -119,7 +137,9 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   const weekOptions = useMemo(() => {
     const noneOption = { label: "None", value: "-1" };
     let options = [];
-    if (league === SimCHL || league === SimPHL) {
+    if (league === SimCLAX) {
+      options = Array.from({ length: 14 }, (_, index) => ({ label: `Week ${index + 1}`, value: String(index + 1) }));
+    } else if (league === SimCHL || league === SimPHL) {
       options = MakeHCKWeeksOptionList(selectedSeason);
     } else if (league === SimCFB || league === SimNFL) {
       options = MakeFBAWeeksOptionList(selectedSeason);
@@ -155,7 +175,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
           <div className="hidden min-[769px]:flex flex-col gap-y-2">
             <CategoryDropdown
               label="Active League"
-              options={LeagueTypeOptions}
+              options={leagueOptions}
               isMulti={false}
               isMobile={false}
               change={changeLeagueOption}
@@ -188,7 +208,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
             <div className="flex gap-x-1 w-full">
               <NewsDropdown
                 label="League"
-                options={LeagueTypeOptions}
+                options={leagueOptions}
                 isMulti={false}
                 isMobile={true}
                 change={changeLeagueOption}

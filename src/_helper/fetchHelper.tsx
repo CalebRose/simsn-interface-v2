@@ -7,6 +7,7 @@ import {
   SimNFL,
   SimPHL,
 } from "../_constants/constants";
+import { getFirebaseIdToken } from "./authToken";
 
 // 🔥 Custom Error for API Calls
 export class ApiError extends Error {
@@ -20,13 +21,20 @@ export class ApiError extends Error {
   }
 }
 
+const apiErrorMessage = (body: any, fallback: string): string => {
+  const detail = body?.detail || body?.message || body?.error;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((item) => item?.msg || String(item)).join("; ");
+  return fallback;
+};
+
 // ✅ POST Request with Type Safety (Simplified)
 export const PostCall = async <TRequest, TResponse>(
   url: string,
   dto: TRequest,
 ): Promise<TResponse> => {
   try {
-    const token = getSafeToken();
+    const token = await getFirebaseIdToken();
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -39,8 +47,8 @@ export const PostCall = async <TRequest, TResponse>(
     if (!response.ok) {
       let errorBody: any;
       try { errorBody = await response.json(); } catch {}
-      const msg = errorBody?.message || `HTTP Error: ${response.statusText}`;
-      throw new ApiError(response.status, msg);
+      const msg = apiErrorMessage(errorBody, `HTTP Error: ${response.statusText}`);
+      throw new ApiError(response.status, msg, errorBody);
     }
 
     const data = (await response.json()) as TResponse;
@@ -56,7 +64,7 @@ export const DELETECall = async <TRequest, TResponse>(
   dto: TRequest,
 ): Promise<TResponse> => {
   try {
-    const token = getSafeToken();
+    const token = await getFirebaseIdToken();
     const response = await fetch(url, {
       method: "DELETE",
       headers: {
@@ -83,7 +91,7 @@ export const PUTCall = async <TRequest, TResponse>(
   dto: TRequest,
 ): Promise<TResponse> => {
   try {
-    const token = getSafeToken();
+    const token = await getFirebaseIdToken();
     const response = await fetch(url, {
       method: "PUT",
       headers: {
@@ -96,7 +104,7 @@ export const PUTCall = async <TRequest, TResponse>(
     if (!response.ok) {
       let errorBody: any;
       try { errorBody = await response.json(); } catch {}
-      const msg = errorBody?.message || errorBody?.error || `HTTP Error: ${response.statusText}`;
+      const msg = apiErrorMessage(errorBody, `HTTP Error: ${response.statusText}`);
       throw new ApiError(response.status, msg, errorBody);
     }
 
@@ -114,7 +122,7 @@ export const PUTCallNoResponse = async (
   dto: any,
 ): Promise<void> => {
   try {
-    const token = getSafeToken();
+    const token = await getFirebaseIdToken();
     const response = await fetch(url, {
       method: "PUT",
       headers: {
@@ -139,7 +147,7 @@ export const PostCallNoResponse = async (
   dto: any,
 ): Promise<void> => {
   try {
-    const token = getSafeToken();
+    const token = await getFirebaseIdToken();
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -158,22 +166,10 @@ export const PostCallNoResponse = async (
   }
 };
 
-// ✅ Safari-safe token retrieval
-const getSafeToken = (): string | null => {
-  try {
-    if (typeof window !== "undefined" && window.localStorage) {
-      return localStorage.getItem("token");
-    }
-  } catch (error) {
-    console.warn("Unable to access localStorage for token:", error);
-  }
-  return null;
-};
-
 // ✅ GET Request with JSON Response
 export const GetCall = async <T,>(url: string): Promise<T> => {
   try {
-    const token = getSafeToken();
+    const token = await getFirebaseIdToken();
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token || ""}`,
@@ -195,7 +191,7 @@ export const GetCall = async <T,>(url: string): Promise<T> => {
 export const GetActionCall = async (url: string): Promise<Response | false> => {
   const response = await fetch(url, {
     headers: {
-      authorization: "Bearer " + (getSafeToken() || ""),
+      authorization: "Bearer " + ((await getFirebaseIdToken()) || ""),
     },
     method: "GET",
   });
@@ -225,7 +221,7 @@ export async function GetExportCall<T>(
   responseType: ResponseType = "json",
   filename?: string,
 ): Promise<T | Blob> {
-  const token = getSafeToken();
+  const token = await getFirebaseIdToken();
   const response = await fetch(url, {
     headers: {
       Authorization: token ? `Bearer ${token}` : "",
@@ -307,4 +303,27 @@ export const GetSportAbbr = (league: League): string => {
     default:
       return "";
   }
+};
+
+// Authenticated JSON upload for small image payloads. Keeping this as JSON
+// avoids introducing multipart handling solely for team-logo administration.
+export const PostBase64Call = async <TResponse,>(
+  url: string,
+  imageBase64: string,
+): Promise<TResponse> => {
+  const token = await getFirebaseIdToken();
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token || ""}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ image_base64: imageBase64 }),
+  });
+  if (!response.ok) {
+    let errorBody: any;
+    try { errorBody = await response.json(); } catch {}
+    throw new ApiError(response.status, apiErrorMessage(errorBody, `HTTP Error: ${response.statusText}`), errorBody);
+  }
+  return (await response.json()) as TResponse;
 };

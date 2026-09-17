@@ -4,6 +4,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -31,6 +32,7 @@ import {
   ProfileNBATeamCard,
   ProfileCBLTeamCard,
   ProfileMLBTeamCard,
+  ProfileCLAXTeamCard,
 } from "./ProfileTeamCard";
 import { CSSObjectWithLabel } from "react-select";
 import { useSimFBAStore } from "../../context/SimFBAContext";
@@ -47,6 +49,8 @@ import {
 } from "../../models/hockeyModels";
 import { BaseballOrganization } from "../../models/baseball/baseballModels";
 import { ClickableUserLabel } from "../Common/Labels";
+import { LacrosseService, LaxTeam } from "../../_services/lacrosseService";
+import { useSimLAXStore } from "../../context/SimLAXContext";
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -260,6 +264,7 @@ interface PublicProfileContentProps {
   selectedPHLTeam: ProfessionalTeam | null;
   selectedCBLTeam: BaseballOrganization | null | undefined;
   selectedMLBTeam: BaseballOrganization | null | undefined;
+  selectedCLAXTeam: LaxTeam | null;
   viewedTop5: CurrentUser[];
   viewedAchievements: Achievement[];
 }
@@ -277,6 +282,7 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
   selectedPHLTeam,
   selectedCBLTeam,
   selectedMLBTeam,
+  selectedCLAXTeam,
   viewedTop5,
   viewedAchievements,
 }) => (
@@ -330,7 +336,8 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
       selectedCHLTeam ||
       selectedPHLTeam ||
       selectedCBLTeam ||
-      selectedMLBTeam) && (
+      selectedMLBTeam ||
+      selectedCLAXTeam) && (
       <Border classes="w-full p-4">
         <Text variant="h6" classes="mb-3">
           Teams
@@ -359,6 +366,9 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
           )}
           {selectedMLBTeam && (
             <ProfileMLBTeamCard IsUser={false} Org={selectedMLBTeam} />
+          )}
+          {selectedCLAXTeam && (
+            <ProfileCLAXTeamCard IsUser={false} Team={selectedCLAXTeam} />
           )}
         </div>
       </Border>
@@ -488,6 +498,7 @@ export const ProfilePage = () => {
   const { chlTeam, phlTeam, chlTeamMap, phlTeamMap } = useSimHCKStore();
   const { collegeOrganization, mlbOrganization, organizationMap } =
     useSimBaseballStore();
+  const { claxTeam, refreshClaxTeam } = useSimLAXStore();
 
   const isOwnProfile =
     !paramUsername || paramUsername === currentUser?.username;
@@ -496,6 +507,8 @@ export const ProfilePage = () => {
 
   const [viewedUser, setViewedUser] = useState<CurrentUser | null>(null);
   const [viewedUserLoading, setViewedUserLoading] = useState(false);
+  const [viewedCLAXTeam, setViewedCLAXTeam] = useState<LaxTeam | null>(null);
+  const selectedCLAXTeam = isOwnProfile ? claxTeam : viewedCLAXTeam;
   const [viewedAchievements, setViewedAchievements] = useState<Achievement[]>(
     [],
   );
@@ -606,6 +619,25 @@ export const ProfilePage = () => {
   }, [currentUser, viewedUser, mlbOrganization, organizationMap]);
 
   // ── Effects ─────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const profileUid = viewedUser?.id;
+    if (isOwnProfile || !profileUid) {
+      setViewedCLAXTeam(null);
+      return;
+    }
+    let cancelled = false;
+    LacrosseService.getUserTeam(profileUid)
+      .then((team) => {
+        if (!cancelled) setViewedCLAXTeam(team);
+      })
+      .catch(() => {
+        if (!cancelled) setViewedCLAXTeam(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedUser?.id, isOwnProfile]);
 
   useEffect(() => {
     if (!paramUsername) return;
@@ -982,6 +1014,7 @@ export const ProfilePage = () => {
                   selectedPHLTeam={selectedPHLTeam}
                   selectedCBLTeam={selectedCBLTeam}
                   selectedMLBTeam={selectedMLBTeam}
+                  selectedCLAXTeam={selectedCLAXTeam}
                   viewedTop5={viewedTop5}
                   viewedAchievements={viewedAchievements}
                 />
@@ -1104,6 +1137,13 @@ export const ProfilePage = () => {
                     )}
                     {selectedMLBTeam && (
                       <ProfileMLBTeamCard IsUser={true} Org={selectedMLBTeam} />
+                    )}
+                    {selectedCLAXTeam && (
+                      <ProfileCLAXTeamCard
+                        IsUser={true}
+                        Team={selectedCLAXTeam}
+                        onQuit={() => void refreshClaxTeam()}
+                      />
                     )}
                   </div>
                 </Border>

@@ -15,6 +15,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -36,7 +37,7 @@ interface SelectedTeamCardProps {
   retro: boolean | undefined;
   data: any;
   sentRequest?: boolean;
-  sendRequest?: (dto: any) => void;
+  sendRequest?: (dto: any) => Promise<void>;
 }
 
 const isTeamDisabled = (team: any | undefined, league: string): boolean => {
@@ -47,6 +48,7 @@ const isTeamDisabled = (team: any | undefined, league: string): boolean => {
       return team.Coach !== "AI";
     case SimCBB:
     case SimCHL:
+    case SimCLAX:
       return team.IsUserCoached || false;
     case SimCollegeBaseball:
       return team.coach != null && team.coach !== "AI" && team.coach.length > 0;
@@ -104,6 +106,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   selectedTeam,
   data,
   retro,
+  sentRequest = false,
   sendRequest,
 }) => {
   if (!selectedTeam) {
@@ -121,6 +124,8 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   const [howDidYouHearAboutSimSN, setHowDidYouHearAboutSimSN] = useState("");
   const [communityReference, setCommunityReference] = useState("");
   const [aboutYourself, setAboutYourself] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
 
   const isBaseball = league === SimMLB || league === SimCollegeBaseball;
   const primaryBaseballTeam = isBaseball
@@ -129,8 +134,8 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   const teamID = isBaseball
     ? (primaryBaseballTeam?.team_id ?? selectedTeam?.id)
     : selectedTeam?.ID;
-  const logo = getLogo(league as League, teamID, retro);
-  const disable = isTeamDisabled(selectedTeam, league);
+  const logo = selectedTeam.LogoURL || getLogo(league as League, teamID, retro);
+  const disable = sentRequest || isTeamDisabled(selectedTeam, league);
   const colorOne = isBaseball
     ? primaryBaseballTeam?.color_one || ""
     : selectedTeam.ColorOne || "";
@@ -160,8 +165,12 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   );
 
   const handleClick = useCallback(
-    (role: string) => {
-      if (sendRequest) {
+    async (role: string) => {
+      if (!sendRequest || isSubmitting) return;
+
+      setIsSubmitting(true);
+      setSubmissionError("");
+      try {
         const dto = {
           league,
           team: selectedTeam,
@@ -173,9 +182,17 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
           communityReference,
           aboutYourself,
         };
-        sendRequest(dto);
+        await sendRequest(dto);
+        handleCloseModal();
+      } catch (error) {
+        setSubmissionError(
+          error instanceof Error
+            ? error.message
+            : "The application could not be submitted. Please try again.",
+        );
+      } finally {
+        setIsSubmitting(false);
       }
-      handleCloseModal();
     },
     [
       sendRequest,
@@ -187,6 +204,8 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
       howDidYouHearAboutSimSN,
       communityReference,
       aboutYourself,
+      isSubmitting,
+      handleCloseModal,
     ],
   );
 
@@ -200,12 +219,18 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
       <>
         <div className="flex flex-row mb-2 justify-start items-center">
           <div className="">
-            <Logo
-              url={logo}
-              variant="normal"
-              classes="h-32 w-32"
-              containerClass="p-4"
-            />
+            {logo ? (
+              <Logo
+                url={logo}
+                variant="normal"
+                classes="h-32 w-32"
+                containerClass="p-4"
+              />
+            ) : (
+              <div className="m-4 flex h-24 w-24 items-center justify-center rounded-full border-4 text-2xl font-bold">
+                {selectedTeam.Abbreviation || "LAX"}
+              </div>
+            )}
           </div>
           <div className="flex-col ml-4">
             <div className="flex-row text-start">
@@ -220,7 +245,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                   {conferenceLabel ? " Conference" : ""}
                 </Text>
               </div>
-              {(league === SimCFB || league === SimCBB || league === SimCHL) &&
+              {(league === SimCFB || league === SimCBB || league === SimCHL || league === SimCLAX) &&
                 selectedTeam.Coach !== "AI" && (
                   <div className="flex-col">
                     <Text variant="small" classes="font-semibold text-start">
@@ -432,6 +457,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             </div>
           )}
         </div>
+        {league !== SimCLAX && (
         <Border>
           <div className="flex flex-row gap-4 justify-between sm:relative">
             <div className="flex flex-col">
@@ -463,6 +489,58 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             </div>
           </div>
         </Border>
+        )}
+        {league === SimCLAX && (
+          <>
+            <Border>
+              <div className="flex flex-row gap-4 justify-between sm:relative">
+                <div className="flex flex-col">
+                  <Text variant="alternate" classes="font-semibold whitespace-nowrap">Overall Grade</Text>
+                  <Text variant="small">{data?.overallGrade || "—"}</Text>
+                </div>
+                <div className="flex flex-col sm:mx-auto sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2">
+                  <Text variant="alternate" classes="font-semibold whitespace-nowrap">Offense Grade</Text>
+                  <Text variant="small">{data?.offenseGrade || "—"}</Text>
+                </div>
+                <div className="flex flex-col">
+                  <Text variant="alternate" classes="font-semibold whitespace-nowrap">Defense Grade</Text>
+                  <Text variant="small">{data?.defenseGrade || "—"}</Text>
+                </div>
+              </div>
+            </Border>
+            <Border>
+              <div className="grid grid-cols-1 gap-4 text-start sm:grid-cols-2">
+                <div><Text variant="alternate" classes="font-semibold">Location</Text><Text variant="small">{[selectedTeam.City, selectedTeam.State].filter(Boolean).join(", ") || "—"}</Text></div>
+                <div><Text variant="alternate" classes="font-semibold">Venue</Text><Text variant="small">{selectedTeam.Arena || "—"}</Text></div>
+              </div>
+            </Border>
+            <Border>
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div><Text variant="alternate" classes="font-semibold">Overall Record</Text><Text variant="small">{data?.overallWins || 0} - {data?.overallLosses || 0}</Text></div>
+                <div><Text variant="alternate" classes="font-semibold">Current Record</Text><Text variant="small">{data?.currentWins || 0} - {data?.currentLosses || 0}</Text></div>
+              </div>
+            </Border>
+            <Border>
+              <div className="grid grid-cols-1 gap-4 text-center sm:grid-cols-2">
+                <div><Text variant="alternate" classes="font-semibold">Conference Championships</Text><Text variant="small">{data?.conferenceChampionshipYears?.length ? data.conferenceChampionshipYears.join(", ") : "None"}</Text></div>
+                <div><Text variant="alternate" classes="font-semibold">National Championships</Text><Text variant="small">{data?.nationalChampionshipYears?.length ? data.nationalChampionshipYears.join(", ") : "None"}</Text></div>
+              </div>
+            </Border>
+            <Border>
+              <div className="mb-2 flex flex-row items-center justify-start">
+                <Text variant="alternate" classes="font-semibold">Top Players</Text>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-start sm:grid-cols-4">
+                {(data?.topPlayers || []).map((player: any) => (
+                  <div className="flex flex-col" key={player.id}>
+                    <Text variant="xs">{player.position} {player.firstName} {player.lastName}</Text>
+                    <Text variant="xs">Overall: {player.overallGrade}</Text>
+                  </div>
+                ))}
+              </div>
+            </Border>
+          </>
+        )}
       </>
 
       {data && league === SimCFB && SelectedCFBTeamCard(data)}
@@ -474,16 +552,20 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
       {selectedTeam && data && (
         <SelectedTeamModal
           isOpen={isModalOpen}
-          onClose={handleCloseModal}
+          onClose={isSubmitting ? () => undefined : handleCloseModal}
           title={`Request ${teamLabel}?`}
           actions={
             <>
               {(league === SimCFB ||
                 league === SimCBB ||
                 league === SimCHL ||
+                league === SimCLAX ||
                 league === SimCollegeBaseball) && (
-                <Button onClick={() => handleClick("")} disabled={!canSubmit}>
-                  Confirm
+                <Button
+                  onClick={() => void handleClick("")}
+                  disabled={!canSubmit || isSubmitting}
+                >
+                  {isSubmitting ? "Submitting..." : "Confirm"}
                 </Button>
               )}
               {league === SimNFL && (
@@ -658,6 +740,14 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             </>
           }
         >
+          {submissionError && (
+            <div
+              role="alert"
+              className="mb-3 rounded border border-red-400 bg-red-950/40 px-3 py-2 text-sm text-red-200"
+            >
+              {submissionError}
+            </div>
+          )}
           {currentUser?.teamId === 0 &&
             currentUser.NFLTeamID === 0 &&
             currentUser.CHLTeamID === 0 &&
