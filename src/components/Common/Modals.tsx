@@ -2678,9 +2678,9 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
               <Text variant="xs">
                 <span className="font-semibold text-red-500">WARNING:</span>{" "}
                 <span>
-                  This player has been drafted by {player.DraftedTeam}. There is
-                  a possibility they will be called up this offseason. Recruit
-                  with caution.
+                  {player.DraftedTeam} owns the draft rights for this player.
+                  There is a possibility they will be called up this offseason.
+                  Recruit with caution.
                 </span>
               </Text>
             </div>
