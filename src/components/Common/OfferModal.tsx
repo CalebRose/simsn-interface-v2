@@ -773,8 +773,7 @@ export const OfferModal: FC<OfferModalProps> = ({
             </div>
           </div>
         )}
-        {(isPHL && offer instanceof PHLFreeAgencyOffer) ||
-          (isNFL && offer instanceof NFLFreeAgencyOffer && (
+        {((isPHL && offer instanceof PHLFreeAgencyOffer) || (isNFL && offer instanceof NFLFreeAgencyOffer)) && (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 space-y-2 md:space-y-2 lg:space-y-0 space-x-2 mb-4">
               <div className="flex">
                 <Input
@@ -836,7 +835,7 @@ export const OfferModal: FC<OfferModalProps> = ({
                 />
               </div>
             </div>
-          ))}
+          )}
         {isNFL && offer instanceof NFLFreeAgencyOffer && (
           <div className="grid grid-cols-6 space-x-2 mb-4">
             <div className="flex">
