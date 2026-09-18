@@ -200,7 +200,7 @@ export const SideMenu = ({}) => {
 
                 {/* Notification Dropdown */}
                 {isNotifOpen && (
-                  <div className="absolute right-0 z-50 mt-2 w-[calc(100vw-1rem)] sm:w-[420px] max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800">
+                  <div className="absolute -right-28 z-50 mt-2 w-[calc(100vw-3rem)] sm:w-105 max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800">
                     <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-600">
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         Notifications
@@ -237,13 +237,16 @@ export const SideMenu = ({}) => {
                         No notifications
                       </div>
                     ) : (
-                      <ul>
+                      <ul className="space-y-2 px-2 pt-2">
                         {notifications.map((notif) => (
-                          <li key={notif.id}>
+                          <li
+                            key={notif.id}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-200 dark:hover:text-black rounded-lg"
+                          >
                             <button
                               type="button"
-                              className={`w-full text-left px-4 py-3 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                                notif.isRead ? "opacity-60" : "bg-yellow-500/5"
+                              className={`w-full text-left px-4 py-3 text-sm transition-colors hover:bg-gray-500 dark:hover:bg-gray-200 dark:hover:text-black ${
+                                notif.isRead ? "opacity-70" : "bg-yellow-500/5"
                               }`}
                               onClick={() => {
                                 if (!notif.isRead)
@@ -257,7 +260,7 @@ export const SideMenu = ({}) => {
                                 if (destination) navigate(destination);
                               }}
                             >
-                              <p className="text-gray-800 dark:text-gray-100 leading-snug">
+                              <p className="text-gray-800 dark:text-gray-300 dark:hover:text-black leading-snug">
                                 {notif.message}
                               </p>
                               {!notif.isRead && (
@@ -333,7 +336,7 @@ export const SideMenu = ({}) => {
                       />
                       {isCommissioner && !isBanned && (
                         <NavDropdownItem
-                          label="Admin"
+                          label="League Management"
                           isRoute={true}
                           route="/admin"
                           click={toggleDropdown}
