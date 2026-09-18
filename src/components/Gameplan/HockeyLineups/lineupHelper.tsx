@@ -142,10 +142,10 @@ export const getLineup = (index: number): Lineup => {
 };
 
 export const getLineupDropdownOptions = (
-  roster: CollegePlayer[] | ProfessionalPlayer[]
+  roster: CollegePlayer[] | ProfessionalPlayer[],
 ) => {
   const centerOptions = roster
-    .filter((x) => x.Position === "C")
+    .filter((x) => x.Position === "C" || x.Position === "F")
     .map((x) => {
       return {
         label: `${x.Position} ${x.FirstName} ${x.LastName}`,
@@ -153,7 +153,7 @@ export const getLineupDropdownOptions = (
       };
     });
   const forwardOptions = roster
-    .filter((x) => x.Position === "F")
+    .filter((x) => x.Position === "F" || x.Position === "C")
     .map((x) => {
       return {
         label: `${x.Position} ${x.FirstName} ${x.LastName}`,
@@ -197,7 +197,7 @@ export function updateLineupFieldWithClass<T extends Record<string, any>>(
   setState: React.Dispatch<React.SetStateAction<T>>,
   ClassConstructor: new (data: T) => T,
   key: keyof T,
-  value: T[keyof T]
+  value: T[keyof T],
 ) {
   setState((prevState) => {
     const updated = new ClassConstructor({ ...prevState });
