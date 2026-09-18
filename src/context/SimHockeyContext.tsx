@@ -673,17 +673,15 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
   const chlPlayerMap = useMemo(() => {
     const playerMap: Record<number, CollegePlayer> = {};
-    if (chlRosterMap && chlTeams) {
-      for (let i = 0; i < chlTeams.length; i++) {
-        const team = chlTeams[i];
-        const roster = chlRosterMap[team.ID];
+    if (chlRosterMap) {
+      Object.values(chlRosterMap).forEach(roster => {
         if (roster) {
           for (let j = 0; j < roster.length; j++) {
             const p = roster[j];
             playerMap[p.ID] = p;
           }
         }
-      }
+      });
     }
     if (portalPlayers) {
       for (let i = 0; i < portalPlayers.length; i++) {
@@ -1032,9 +1030,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
     const res = await BootstrapService.GetHCKStatsBootstrapData(chlid, phlid);
 
-    if (chlid > 0) {
-      setHistoricCollegePlayers(res.HistoricCollegePlayers);
-    }
+    setHistoricCollegePlayers(res.HistoricCollegePlayers);
 
     if (phlid > 0) {
       setRetiredPlayers(res.RetiredPlayers);
