@@ -245,18 +245,23 @@ export const useCHLLineupUtils = (
           Number(lineup[`${zone}Shot`] || 0);
         checkAgainstLimits(
           zoneValue,
-          `${zone} Lineup Allocations`,
+          `${lineupLabel} ${zone} Lineup Allocations`,
           limits.min,
           limits.max,
         );
         const defenseValue =
           Number(lineup[`${zone}BodyCheck`] || 0) +
           Number(lineup[`${zone}StickCheck`] || 0);
-        checkAgainstLimits(defenseValue, `${zone} Defense Allocations`, 0, 20);
+        checkAgainstLimits(
+          defenseValue,
+          `${lineupLabel} ${zone} Defense Allocations`,
+          0,
+          20,
+        );
         if (lineup[`${zone}Agility`]) {
           checkAgainstLimits(
             lineup[`${zone}Agility`],
-            `${zone} Agility Allocation`,
+            `${lineupLabel} ${zone} Agility Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -264,7 +269,7 @@ export const useCHLLineupUtils = (
         if (lineup[`${zone}Pass`]) {
           checkAgainstLimits(
             lineup[`${zone}Pass`],
-            `${zone} Pass Allocation`,
+            `${lineupLabel} ${zone} Pass Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -272,7 +277,7 @@ export const useCHLLineupUtils = (
         if (lineup[`${zone}PassBack`]) {
           checkAgainstLimits(
             lineup[`${zone}PassBack`],
-            `${zone} Pass Back Allocation`,
+            `${lineupLabel} ${zone} Pass Back Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -280,7 +285,7 @@ export const useCHLLineupUtils = (
         if (lineup[`${zone}LongPass`]) {
           checkAgainstLimits(
             lineup[`${zone}LongPass`],
-            `${zone} Long Pass Allocation`,
+            `${lineupLabel} ${zone} Long Pass Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -288,7 +293,7 @@ export const useCHLLineupUtils = (
         if (lineup[`${zone}Shot`]) {
           checkAgainstLimits(
             lineup[`${zone}Shot`],
-            `${zone} Shot Allocation`,
+            `${lineupLabel} ${zone} Shot Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -296,7 +301,7 @@ export const useCHLLineupUtils = (
         if (lineup[`${zone}BodyCheck`]) {
           checkAgainstLimits(
             lineup[`${zone}BodyCheck`],
-            `${zone} Body Check Allocation`,
+            `${lineupLabel} ${zone} Body Check Allocation`,
             0,
             15,
           );
@@ -304,7 +309,7 @@ export const useCHLLineupUtils = (
         if (lineup[`${zone}StickCheck`]) {
           checkAgainstLimits(
             lineup[`${zone}StickCheck`],
-            `${zone} Stick Check Allocation`,
+            `${lineupLabel} ${zone} Stick Check Allocation`,
             0,
             15,
           );
@@ -565,18 +570,23 @@ export const usePHLLineupUtils = (
           Number(lineup[`${zone}Shot`] || 0);
         checkAgainstLimits(
           zoneValue,
-          `${zone} Lineup Allocations`,
+          `${lineupLabel} ${zone} Lineup Allocations`,
           limits.min,
           limits.max,
         );
         const defenseValue =
           Number(lineup[`${zone}BodyCheck`] || 0) +
           Number(lineup[`${zone}StickCheck`] || 0);
-        checkAgainstLimits(defenseValue, `${zone} Defense Allocations`, 0, 20);
+        checkAgainstLimits(
+          defenseValue,
+          `${lineupLabel} ${zone} Defense Allocations`,
+          0,
+          20,
+        );
         if (lineup[`${zone}Agility`]) {
           checkAgainstLimits(
             lineup[`${zone}Agility`],
-            `${zone} Agility Allocation`,
+            `${lineupLabel} ${zone} Agility Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -584,7 +594,7 @@ export const usePHLLineupUtils = (
         if (lineup[`${zone}Pass`]) {
           checkAgainstLimits(
             lineup[`${zone}Pass`],
-            `${zone} Pass Allocation`,
+            `${lineupLabel} ${zone} Pass Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -592,7 +602,7 @@ export const usePHLLineupUtils = (
         if (lineup[`${zone}PassBack`]) {
           checkAgainstLimits(
             lineup[`${zone}PassBack`],
-            `${zone} Pass Back Allocation`,
+            `${lineupLabel} ${zone} Pass Back Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -600,7 +610,7 @@ export const usePHLLineupUtils = (
         if (lineup[`${zone}LongPass`]) {
           checkAgainstLimits(
             lineup[`${zone}LongPass`],
-            `${zone} Long Pass Allocation`,
+            `${lineupLabel} ${zone} Long Pass Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -608,7 +618,7 @@ export const usePHLLineupUtils = (
         if (lineup[`${zone}Shot`]) {
           checkAgainstLimits(
             lineup[`${zone}Shot`],
-            `${zone} Shot Allocation`,
+            `${lineupLabel} ${zone} Shot Allocation`,
             individualLimits.min,
             individualLimits.max,
           );
@@ -616,7 +626,7 @@ export const usePHLLineupUtils = (
         if (lineup[`${zone}BodyCheck`]) {
           checkAgainstLimits(
             lineup[`${zone}BodyCheck`],
-            `${zone} Body Check Allocation`,
+            `${lineupLabel} ${zone} Body Check Allocation`,
             0,
             15,
           );
@@ -624,7 +634,7 @@ export const usePHLLineupUtils = (
         if (lineup[`${zone}StickCheck`]) {
           checkAgainstLimits(
             lineup[`${zone}StickCheck`],
-            `${zone} Stick Check Allocation`,
+            `${lineupLabel} ${zone} Stick Check Allocation`,
             0,
             15,
           );

@@ -872,6 +872,10 @@ if (category === Contracts) {
         if (proPlayer && proPlayer.ID > 0) {
           return proPlayer;
         }
+        const proPlayerByPick = Object.values(proPlayerMap).find((p) => p.DraftPickID === item.ID);
+        if (proPlayerByPick) {
+          return proPlayerByPick;
+        }
         return null;
       })();
 
