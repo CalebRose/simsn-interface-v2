@@ -1284,7 +1284,7 @@ export const TeamQuickLinks: FC<TeamQuickLinksProps> = ({
               <Button size="xs" onClick={() => goToTeamPage(league)}>
                 Roster
               </Button>
-              {ts && !ts.IsOffSeason && (
+              {ts && (!ts.IsOffSeason || ts.Phase > 5) && (
                 <Button
                   size="xs"
                   onClick={() => navigate(routes.CBB_RECRUITING)}

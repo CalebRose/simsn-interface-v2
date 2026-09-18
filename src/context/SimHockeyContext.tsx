@@ -2259,15 +2259,49 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   );
 
   const bringUpCollegePlayer = useCallback(
-    async (draftPickID: number) => {
+    async (dto: any) => {
+      const { DraftPickID, CollegePlayer } = dto;
       try {
-        // const res = await DraftService.BringUpCollegePlayer(draftPickID);
-        // if (res) {
-        //   enqueueSnackbar("Player brought up to pro roster!", {
-        //     variant: "success",
-        //     autoHideDuration: 3000,
-        //   });
-        // }
+        const res = await DraftService.BringUpCHLPlayerToPHL(DraftPickID);
+
+        if (res) {
+          enqueueSnackbar("Player brought up to pro roster!", {
+            variant: "success",
+            autoHideDuration: 3000,
+          });
+          // Convert player to pro player and add to pro team roster
+          const proPlayer = new ProfessionalPlayer(CollegePlayer);
+          // Add proPlayer to the pro team roster here
+          setProRosterMap((prev) => {
+            const teamRoster = prev[phlTeam!.ID] || [];
+            return {
+              ...prev,
+              [phlTeam!.ID]: [...teamRoster, proPlayer],
+            };
+          });
+          // Add Contract
+          const contract = new ProContract({
+            IsActive: true,
+            PlayerID: proPlayer.ID,
+            TeamID: phlTeam!.ID,
+            OriginalTeamID: phlTeam!.ID,
+            Y1BaseSalary: 1,
+            Y2BaseSalary: 1,
+            Y3BaseSalary: 1,
+            Y4BaseSalary: 1,
+            ContractLength: 4,
+            ContractType: "Rookie",
+          });
+          if (proContractMap) {
+            setProContractMap((prev) => {
+              if (!prev) return {};
+              return {
+                ...prev,
+                [proPlayer.ID]: contract,
+              };
+            });
+          }
+        }
       } catch (error) {
         console.error("Failed to bring up player:", error);
         enqueueSnackbar("Failed to bring up player", {

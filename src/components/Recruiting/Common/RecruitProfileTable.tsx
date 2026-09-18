@@ -201,6 +201,7 @@ const getRecruitProfileColumns = (
         { header: "Mid", accessor: "Shooting2" },
         { header: "3pt", accessor: "Shooting3" },
         { header: "FT", accessor: "FreeThrow" },
+        { header: "BIQ", accessor: "BasketballIQ" },
         { header: "Agi", accessor: "Agility" },
         { header: "BW", accessor: "Ballwork" },
         { header: "ST", accessor: "Stealing" },
@@ -927,6 +928,9 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
     if (profile.Blocking) {
       count++;
     }
+    if (profile.BasketballIQ) {
+      count++;
+    }
     if (profile.Potential) {
       count++;
     }
@@ -1080,6 +1084,21 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                   variant="secondary"
                   size="xs"
                   onClick={() => scoutAttribute("FreeThrow")}
+                >
+                  ?
+                </Button>
+              )}
+            </span>
+          </TableCell>
+          <TableCell>
+            <span className={`text-xs`}>
+              {profile.BasketballIQ ? (
+                croot.BasketballIQ
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="xs"
+                  onClick={() => scoutAttribute("BasketballIQ")}
                 >
                   ?
                 </Button>

@@ -1089,6 +1089,7 @@ export class Croot {
   FreeThrow: string;
   InsideShooting: string;
   Ballwork: string;
+  BasketballIQ: string;
   Agility: string;
   Stealing: string;
   Blocking: string;
@@ -1145,6 +1146,7 @@ export class Croot {
     this.FreeThrow = source["FreeThrow"];
     this.InsideShooting = source["InsideShooting"];
     this.Ballwork = source["Ballwork"];
+    this.BasketballIQ = source["BasketballIQ"];
     this.Agility = source["Agility"];
     this.Stealing = source["Stealing"];
     this.Blocking = source["Blocking"];
@@ -4194,6 +4196,7 @@ export class RecruitPlayerProfile {
   Blocking: boolean;
   InteriorDefense: boolean;
   PerimeterDefense: boolean;
+  BasketballIQ: boolean;
   Potential: boolean;
 
   constructor(source: any = {}) {
@@ -4233,6 +4236,7 @@ export class RecruitPlayerProfile {
     this.Blocking = source["Blocking"];
     this.InteriorDefense = source["InteriorDefense"];
     this.PerimeterDefense = source["PerimeterDefense"];
+    this.BasketballIQ = source["BasketballIQ"];
     this.Potential = source["Potential"];
   }
 

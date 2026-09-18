@@ -72,6 +72,10 @@ export const DraftService = {
     await GetActionCall(`${hckUrl}phl/draft/remove/${id}`);
   },
 
+  BringUpCHLPlayerToPHL: async (id: number): Promise<any> => {
+    return await GetCall(`${hckUrl}phl/roster/bringup/college/player/${id}`);
+  },
+
   GetPHLScoutingData: async (id: number): Promise<any> => {
     return await GetCall(`${hckUrl}phl/draft/scout/${id}`);
   },

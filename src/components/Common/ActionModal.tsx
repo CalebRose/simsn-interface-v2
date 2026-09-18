@@ -24,6 +24,7 @@ import {
   SimPHL,
   ToggleScholarshipType,
   TradeBlock,
+  PickUp,
 } from "../../_constants/constants";
 import { Modal } from "../../_design/Modal";
 import { Button, ButtonGroup } from "../../_design/Buttons";
@@ -62,6 +63,7 @@ interface ActionModalProps {
   toggleScholarship?: (dto: any) => Promise<void>;
   scoutAttribute?: (dto: any) => Promise<void>;
   cancelFAOffer?: (dto: any) => Promise<void>;
+  pickUpCollegePlayer?: (dto: any) => Promise<void>;
   tagPlayer?: (PlayerID: string, tagType: string) => Promise<void>;
 }
 
@@ -91,6 +93,7 @@ export const ActionModal: FC<ActionModalProps> = ({
   sendToPracticeSquad,
   placeOnInjuryReserve,
   tagPlayer,
+  pickUpCollegePlayer,
   attribute = "",
 }) => {
   const { enqueueSnackbar } = useSnackbar();
@@ -204,6 +207,14 @@ export const ActionModal: FC<ActionModalProps> = ({
               autoHideDuration: 3000,
             },
           );
+        }
+        break;
+      case PickUp:
+        if (pickUpCollegePlayer) {
+          await pickUpCollegePlayer({
+            DraftPickID: player.DraftPickID!,
+            CollegePlayer: player,
+          });
         }
         break;
       case RemoveRecruitType:
@@ -324,6 +335,8 @@ export const ActionModal: FC<ActionModalProps> = ({
         return `Cancel FA Offer for ${playerLabel}?`;
       case FranchiseTag:
         return `Franchise Tag ${playerLabel}?`;
+      case PickUp:
+        return `Bring Up ${playerLabel} to the Pros?`;
       default:
         return "";
     }
@@ -398,6 +411,21 @@ export const ActionModal: FC<ActionModalProps> = ({
               the Affiliate Team.
             </Text>
             <Text className="mb4 text-start">
+              Are you sure you want to confirm this action?
+            </Text>
+          </>
+        )}
+        {modalAction === PickUp && (
+          <>
+            <Text className="mb-4 text-start">
+              WARNING! Once you've confirmed,{" "}
+              <strong>
+                {playerID} {playerLabel}
+              </strong>{" "}
+              will be brought up to your SimPHL. They cannot go back down to the
+              collegiate league. This decision is <strong>final</strong>.
+            </Text>
+            <Text className="mb-4 text-start">
               Are you sure you want to confirm this action?
             </Text>
           </>

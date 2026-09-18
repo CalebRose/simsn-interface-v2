@@ -798,6 +798,7 @@ export class FreeAgencyOffer {
   }
 }
 export class ProContract {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
