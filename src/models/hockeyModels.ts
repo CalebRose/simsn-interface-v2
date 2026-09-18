@@ -7147,6 +7147,7 @@ export class DraftPick {
   PickupStatus: number;
   IsCompensation: boolean;
   IsVoid: boolean;
+  IsCalledUp: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -7174,6 +7175,7 @@ export class DraftPick {
     this.PickupStatus = source["PickupStatus"];
     this.IsCompensation = source["IsCompensation"];
     this.IsVoid = source["IsVoid"];
+    this.IsCalledUp = source["IsCalledUp"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

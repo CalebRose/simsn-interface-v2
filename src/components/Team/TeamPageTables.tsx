@@ -7,6 +7,7 @@ import {
   ProContract as PHLContract,
   CollegeGameplan,
   ProGameplan,
+  DraftPick as PHLDraftPick,
 } from "../../models/hockeyModels";
 import {
   CollegePlayer as CFBPlayer,
@@ -40,7 +41,6 @@ import {
   getTradeBlockAttributes,
 } from "./TeamPageUtils";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
-import { useModal } from "../../_hooks/useModal";
 import {
   Cut,
   InfoType,
@@ -818,6 +818,7 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         { header: "Orig. Team", accessor: "OriginalTeamID" },
         { header: "Offensive Fit", accessor: "OffensiveFit" },
         { header: "Defensive Fit", accessor: "DefensiveFit" },
+        { header: "Has Been Called Up", accessor: "IsCalledUp" },
         { header: "Eligible for Pickup", accessor: "Eligible" },
       ];
     }
@@ -890,7 +891,9 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         if (proPlayer && proPlayer.ID > 0) {
           return proPlayer;
         }
-        const proPlayerByPick = Object.values(proPlayerMap).find((p) => p.DraftPickID === item.ID);
+        const proPlayerByPick = Object.values(proPlayerMap).find(
+          (p) => p.DraftPickID === item.ID,
+        );
         if (proPlayerByPick) {
           return proPlayerByPick;
         }
@@ -954,6 +957,15 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
         if (!hck_Timestamp) return false;
         return item.SeasonID < hck_Timestamp.SeasonID;
       })();
+
+      const hasBeenPickedUp = (() => {
+        if (!hck_Timestamp) return false;
+        const p = item as PHLDraftPick;
+        if (p.DrafteeID === 0) return false;
+        if (p.IsCalledUp) return true;
+        if (!isCollegePlayer) return true;
+        return false;
+      })();
       return (
         <>
           <div
@@ -1014,6 +1026,16 @@ export const PHLRosterTable: FC<PHLRosterTableProps> = ({
                 )}
                 {!isGoodDefensiveFit && !isBadDefensiveFit && (
                   <DashCircle textColorClass="w-full text-gray-500" />
+                )}
+              </Text>
+            </TableCell>
+            <TableCell>
+              <Text variant="small" classes="text-start">
+                {hasBeenPickedUp && (
+                  <CheckCircle textColorClass={`w-full ${TextGreen}`} />
+                )}
+                {!hasBeenPickedUp && (
+                  <CrossCircle textColorClass="w-full text-red-500" />
                 )}
               </Text>
             </TableCell>
