@@ -88,12 +88,16 @@ export const PlayerService = {
     await GetActionCall(`${bbaUrl}nba/players/cut/${playerID}`);
   },
 
-  SendNBAPlayerToGLeague: async (playerID: number): Promise<void> => {
-    await GetActionCall(`${bbaUrl}nba/players/place/gleague/${playerID}`);
+  SendNBAPlayerToNBA: async (playerID: number) => {
+    return await GetActionCall(`${bbaUrl}nba/players/place/nba/${playerID}`);
   },
 
-  AssignNBAPlayerAsTwoWay: async (playerID: number): Promise<void> => {
-    await GetActionCall(`${bbaUrl}nba/players/place/twoway/${playerID}`);
+  SendNBAPlayerToGLeague: async (playerID: number) => {
+    return await GetActionCall(`${bbaUrl}nba/players/place/gleague/${playerID}`);
+  },
+
+  AssignNBAPlayerAsTwoWay: async (playerID: number) => {
+    return await GetActionCall(`${bbaUrl}nba/players/place/twoway/${playerID}`);
   },
 
   SendNBAPlayerToTradeBlock: async (playerID: number): Promise<void> => {

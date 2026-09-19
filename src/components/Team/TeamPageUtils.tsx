@@ -3144,8 +3144,7 @@ export const getNBAAttributes = (
       value: `${player.Position}`,
     },
     { label: "Arch", value: `${player.Archetype}` },
-    { label: "Age", value: player.Age },
-    { label: "Yr", value: player.Year },
+    { label: "Experience", value: `${player.Age} / ${player.Year}` },
     { label: "Ovr", value: player.Overall },
   ];
 
@@ -3153,8 +3152,6 @@ export const getNBAAttributes = (
     !isMobile && category === Overview
       ? [
           { label: "Pot", value: player.PotentialGrade },
-          { label: "Y1T", value: player.Contract.Year1Total },
-          { label: "ContractLength", value: player.Contract.YearsRemaining },
           { label: "Health", value: player.IsInjured },
           {
             label: "Injury",
@@ -3164,9 +3161,11 @@ export const getNBAAttributes = (
                 : `None`
               : "None",
           },
+          { label: "Y1T", value: player.Contract.Year1Total },
+          { label: "ContractLength", value: player.Contract.YearsRemaining },
+          { label: "Designation", value: "" },
           { label: "Personality", value: player.Personality },
           { label: "WorkEthic", value: player.WorkEthic },
-          { label: "AcademicBias", value: player.AcademicBias },
         ]
       : [];
 

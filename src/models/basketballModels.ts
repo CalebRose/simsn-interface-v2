@@ -2459,6 +2459,7 @@ export class NBATeam {
   Division: string;
   ArenaID: number;
   Arena: string;
+  ArenaCapacity: number;
   NBAOwnerID: number;
   NBAOwnerName: string;
   NBACoachID: number;
@@ -2509,6 +2510,7 @@ export class NBATeam {
     this.Division = source["Division"];
     this.ArenaID = source["ArenaID"];
     this.Arena = source["Arena"];
+    this.ArenaCapacity = source["ArenaCapacity"];
     this.NBAOwnerID = source["NBAOwnerID"];
     this.NBAOwnerName = source["NBAOwnerName"];
     this.NBACoachID = source["NBACoachID"];

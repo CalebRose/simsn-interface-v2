@@ -78,6 +78,7 @@ import { ExtensionOfferModal } from "../Common/ExtensionOfferModal";
 import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 import { FranchiseTagModal } from "../Common/FranchiseTagModal";
 import { useFilteredRoster } from "./TeamPageUtils";
+import { PlayerService } from "../../_services/playerService";
 
 interface TeamPageProps {
   league: League;
@@ -1967,6 +1968,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     nbaTeamOptions,
     teamProfileMap,
     cutNBAPlayer,
+    updateNBARosterMap,
     proContractMap,
     getBootstrapRosterData,
     proExtensionMap,
@@ -2041,6 +2043,31 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     setModalPlayer(player);
   };
 
+  const updateDesignation = async (
+    player: NBAPlayer,
+    designation: "nba" | "gLeague" | "twoWay",
+  ) => {
+    if (!selectedTeam || !proRosterMap) return;
+
+    const result = designation === "nba"
+      ? await PlayerService.SendNBAPlayerToNBA(player.ID)
+      : designation === "gLeague"
+        ? await PlayerService.SendNBAPlayerToGLeague(player.ID)
+        : await PlayerService.AssignNBAPlayerAsTwoWay(player.ID);
+    if (!result) return;
+
+    const roster = proRosterMap[selectedTeam.ID] || [];
+    const updatedRoster = roster.map((rosterPlayer) => {
+      if (rosterPlayer.ID !== player.ID) return rosterPlayer;
+      return {
+        ...rosterPlayer,
+        IsGLeague: designation === "gLeague",
+        IsTwoWay: designation === "twoWay",
+      };
+    });
+    updateNBARosterMap({ ...proRosterMap, [selectedTeam.ID]: updatedRoster });
+  };
+
   const exportRoster = async () => {
     await ExportBBRoster(selectedTeam!.ID, true, selectedTeam!.Team);
   };
@@ -2088,9 +2115,13 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
         isPro={true}
         TeamName={`${selectedTeam?.Team}`}
         Mascot={selectedTeam?.Nickname}
+        Owner={selectedTeam?.NBAOwnerName}
+        GM={selectedTeam?.NBAGMName}
         Coach={selectedTeam?.NBACoachName}
+        Scout={selectedTeam?.NBAAssistantName}
         Conference={selectedTeam?.Conference}
         Arena={selectedTeam?.Arena}
+        Capacity={selectedTeam?.ArenaCapacity}
         backgroundColor={backgroundColor}
         headerColor={headerColor}
         borderColor={borderColor}
@@ -2163,6 +2194,9 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
             borderColor={borderColor}
             openModal={openModal}
             openExtensionModal={openExtensionModal}
+            onNBAChange={(player) => updateDesignation(player, "nba")}
+            onGLeagueChange={(player) => updateDesignation(player, "gLeague")}
+            onTwoWayChange={(player) => updateDesignation(player, "twoWay")}
             contracts={proContractMap!!}
             ts={ts}
             disable={nbaTeam!.ID !== selectedTeam!.ID}

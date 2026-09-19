@@ -21,6 +21,7 @@ import { Bell, ChatBubble } from "../../_design/Icons";
 import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 import { ClickableUserLabel } from "../Common/Labels";
 import { ToggleSwitch } from "../../_design/Inputs";
+import { ExclamationCircleIcon } from "@heroicons/react/16/solid";
 
 interface TeamInfoProps {
   id?: number;
@@ -708,50 +709,124 @@ export const AdditionalTeamInfo = ({
         return false;
       }
     }).length || 0;
-  const activeRoster = totalPlayers - specialPlayersCount - injuryReserveCount;
+  const twoWayCount =
+    roster?.filter((player: any) => player.IsTwoWay).length || 0;
+  const gLeagueCount =
+    roster?.filter((player: any) => player.IsGLeague && !player.IsTwoWay)
+      .length || 0;
+  const nbaDesignationCount =
+    roster?.filter((player: any) => player.IsTwoWay || player.IsGLeague)
+      .length || 0;
+  const activeRoster =
+    totalPlayers -
+    specialPlayersCount -
+    injuryReserveCount -
+    (league === SimNBA ? nbaDesignationCount : 0);
+  const hasNBAActiveRosterViolation =
+    league === SimNBA && (activeRoster < 13 || activeRoster > 15);
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-x-2 space-x-4 mb-2">
-        <div className="flex flex-col">
-          <Text variant="small" classes={`${textColorClass} font-semibold`}>
-            {`${home}`}
-          </Text>
-          <Text variant="xs" classes={`${textColorClass}`}>
-            {arena}
-          </Text>
+      {league === SimNBA ? (
+        <>
+          <div className="grid grid-cols-4 gap-x-4 mb-2">
+            <div className="col-span-3 flex min-w-0 flex-col">
+              <Text variant="small" classes={`${textColorClass} font-semibold`}>
+                {home}
+              </Text>
+              <Text variant="xs" classes={`${textColorClass}`}>
+                {arena}
+              </Text>
+            </div>
+            <div className="flex min-w-0 flex-col">
+              <Text variant="small" classes={`${textColorClass} font-semibold`}>
+                Capacity
+              </Text>
+              <Text variant="xs" classes={`${textColorClass}`}>
+                {capacity}
+              </Text>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-x-4 mb-2">
+            <div className="flex flex-col text-nowrap">
+              <Text variant="small" classes={`${textColorClass} font-semibold`}>
+                Active Roster
+              </Text>
+              <div className="flex items-center justify-center gap-1">
+                <Text variant="xs" classes={`${textColorClass}`}>
+                  {activeRoster}
+                </Text>
+                {hasNBAActiveRosterViolation && (
+                  <span
+                    aria-label="Active roster size warning"
+                    className="inline-flex cursor-help text-red-500"
+                    title="NBA teams must have a minimum of 13 and maximum of 15 players on the active roster"
+                  >
+                    <ExclamationCircleIcon className="size-3.5" />
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex flex-col text-nowrap">
+              <Text variant="small" classes={`${textColorClass} font-semibold`}>
+                Two-Way
+              </Text>
+              <Text variant="xs" classes={`${textColorClass}`}>
+                {twoWayCount}
+              </Text>
+            </div>
+            <div className="flex flex-col text-nowrap">
+              <Text variant="small" classes={`${textColorClass} font-semibold`}>
+                G-League
+              </Text>
+              <Text variant="xs" classes={`${textColorClass}`}>
+                {gLeagueCount}
+              </Text>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-4 gap-x-2 space-x-4 mb-2">
+          <div className="flex flex-col">
+            <Text variant="small" classes={`${textColorClass} font-semibold`}>
+              {home}
+            </Text>
+            <Text variant="xs" classes={`${textColorClass}`}>
+              {arena}
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="small" classes={`${textColorClass} font-semibold`}>
+              Capacity
+            </Text>
+            <Text variant="xs" classes={`${textColorClass}`}>
+              {capacity}
+            </Text>
+          </div>
+          <div className="flex flex-col text-nowrap">
+            <Text variant="small" classes={`${textColorClass} font-semibold`}>
+              Active Roster
+            </Text>
+            <Text variant="xs" classes={`${textColorClass}`}>
+              {activeRoster}
+            </Text>
+          </div>
+          <div className="flex flex-col">
+            <Text variant="small" classes={`${textColorClass} font-semibold`}>
+              {isPro
+                ? league === SimNFL
+                  ? "Practice Squad"
+                  : league === SimPHL
+                    ? "Reserves"
+                    : "Unknown"
+                : "Redshirts"}
+            </Text>
+            <Text variant="xs" classes={`${textColorClass}`}>
+              {specialPlayersCount}
+            </Text>
+          </div>
         </div>
-        <div className="flex flex-col">
-          <Text variant="small" classes={`${textColorClass} font-semibold`}>
-            Capacity
-          </Text>
-          <Text variant="xs" classes={`${textColorClass}`}>
-            {capacity}
-          </Text>
-        </div>
-        <div className="flex flex-col text-nowrap">
-          <Text variant="small" classes={`${textColorClass} font-semibold`}>
-            Active Roster
-          </Text>
-          <Text variant="xs" classes={`${textColorClass}`}>
-            {activeRoster}
-          </Text>
-        </div>
-        <div className="flex flex-col">
-          <Text variant="small" classes={`${textColorClass} font-semibold`}>
-            {isPro
-              ? league === SimNFL
-                ? "Practice Squad"
-                : league === SimPHL
-                  ? "Reserves"
-                  : "Unknown"
-              : "Redshirts"}
-          </Text>
-          <Text variant="xs" classes={`${textColorClass}`}>
-            {specialPlayersCount}
-          </Text>
-        </div>
-      </div>
+      )}
       {league === SimCFB && teamProfile && (
         <div className="flex flex-col w-full">
           <div
@@ -771,7 +846,7 @@ export const AdditionalTeamInfo = ({
               variant="small"
               classes={`${textColorClass} font-semibold text-left`}
             >
-              Tradeable Players
+              {league === SimNBA ? "Trade Block" : "Tradeable Players"}
             </Text>
             <Text variant="xs" classes={`${textColorClass}`}>
               {tradeBlockCount}
