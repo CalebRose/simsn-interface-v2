@@ -57,6 +57,45 @@ interface LockIconProps {
   textColorClass?: "text-white" | "text-black" | string; // Add specific classes for better type safety
 }
 
+interface ShieldBadgeProps extends LockIconProps {
+  letter: string;
+}
+
+export const ShieldBadge: React.FC<ShieldBadgeProps> = ({
+  letter,
+  textColorClass = "text-black",
+}) => {
+  const maskId = React.useId();
+
+  return (
+    <svg
+      aria-label={letter}
+      viewBox="0 0 24 24"
+      className={`size-[25px] ${textColorClass}`}
+      role="img"
+    >
+      <mask id={maskId} maskUnits="userSpaceOnUse">
+        <path
+          fill="white"
+          transform="translate(-1.44 -1.44) scale(1.12)"
+          d="M12 1.75 3.5 5v6.21c0 5.25 3.52 9.94 8.5 11.04 4.98-1.1 8.5-5.79 8.5-11.04V5L12 1.75Z"
+        />
+        <text
+          x="12"
+          y="15.25"
+          fill="black"
+          fontSize="9"
+          fontWeight="700"
+          textAnchor="middle"
+        >
+          {letter}
+        </text>
+      </mask>
+      <rect width="24" height="24" fill="currentColor" mask={`url(#${maskId})`} />
+    </svg>
+  );
+};
+
 export const LockIcon: React.FC<LockIconProps> = ({
   textColorClass = "text-black",
 }) => {

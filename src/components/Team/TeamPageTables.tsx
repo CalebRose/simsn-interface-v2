@@ -53,10 +53,11 @@ import {
   CheckCircle,
   CrossCircle,
   DashCircle,
+  ShieldBadge,
   ShieldCheck,
   User,
 } from "../../_design/Icons";
-import { SimNFL } from "../../_constants/constants";
+import { SimCBB, SimNFL } from "../../_constants/constants";
 import {
   CollegePlayer as CBBPlayer,
   CollegePromise as BasketballPromise,
@@ -68,6 +69,7 @@ import { SingleValue } from "react-select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import {
+  getCBBLetterGrade,
   getGeneralLetterGrade,
   getHockeyLetterGrade,
 } from "../../_utility/getLetterGrade";
@@ -77,6 +79,21 @@ import {
   offensiveSystemsInformationList,
 } from "../Gameplan/HockeyLineups/useLineupUtils";
 import { DraftPick } from "../Draft/common";
+
+export const NBA_DESIGNATION_RULES = {
+  twoWay: {
+    maxExperience: 4,
+    maxSalary: null,
+    maxContractLength: 2,
+    maxDesignations: 3,
+  },
+  gLeague: {
+    maxExperience: 3,
+    maxSalary: null,
+    maxContractLength: null,
+    maxDesignations: 12,
+  },
+} as const;
 
 interface CHLRosterTableProps {
   roster: CHLPlayer[];
@@ -2213,7 +2230,6 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
           header: !isUltraWide ? "PTE" : "Playtime Expectations",
           accessor: "PlaytimeExpectations",
         },
-        { header: !isUltraWide ? "Min" : "Minutes", accessor: "Minutes" },
       ]);
     }
     columns.push({ header: "Actions", accessor: "actions" });
@@ -2221,9 +2237,27 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
   }, [isDesktop, isUltraWide, category]);
 
   const sortedRoster = useMemo(() => {
-    return [...roster].sort((a, b) => b.Overall - a.Overall);
+    const gradeOrder = [
+      "A+",
+      "A",
+      "A-",
+      "B+",
+      "B",
+      "B-",
+      "C+",
+      "C",
+      "C-",
+      "D+",
+      "D",
+      "D-",
+      "F",
+    ];
+    return [...roster].sort(
+      (a, b) =>
+        gradeOrder.indexOf(getCBBLetterGrade(a.Overall, a.Year)) -
+        gradeOrder.indexOf(getCBBLetterGrade(b.Overall, b.Year)),
+    );
   }, [roster]);
-
   const rowRenderer = (
     item: CBBPlayer,
     index: number,
@@ -2382,6 +2416,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
       rowRenderer={rowRenderer}
       backgroundColor={backgroundColor}
       team={team}
+      league={SimCBB}
     />
   );
 };
@@ -2397,6 +2432,9 @@ interface NBARosterTableProps {
   category?: string;
   openModal: (action: ModalAction, player: NBAPlayer) => void;
   openExtensionModal: (player: NBAPlayer) => void;
+  onNBAChange: (player: NBAPlayer) => Promise<void>;
+  onGLeagueChange: (player: NBAPlayer) => Promise<void>;
+  onTwoWayChange: (player: NBAPlayer) => Promise<void>;
 
   disable: boolean;
 }
@@ -2412,6 +2450,9 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
   category,
   openModal,
   openExtensionModal,
+  onNBAChange,
+  onGLeagueChange,
+  onTwoWayChange,
   disable,
 }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -2429,8 +2470,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
         header: !isDesktop && !isUltraWide ? "Arch" : "Archetype",
         accessor: "Archetype",
       },
-      { header: !isDesktop && !isUltraWide ? "Age" : "Age", accessor: "Age" },
-      { header: !isDesktop && !isUltraWide ? "Yr" : "Year", accessor: "Year" },
+      { header: "Experience", accessor: "Experience" },
       {
         header: !isDesktop && !isUltraWide ? "Ovr" : "Overall",
         accessor: "Overall",
@@ -2443,19 +2483,19 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
           header: !isDesktop && !isUltraWide ? "Pot" : "Potential",
           accessor: "PotentialGrade",
         },
+        { header: "Health", accessor: "isInjured" },
+        { header: "Injury", accessor: "InjuryType" },
         {
-          header: `${ts.Season} ${!isDesktop && !isUltraWide ? "B" : "Bonus"}`,
+          header: `${ts.Season} ${!isDesktop && !isUltraWide ? "S" : "Salary"}`,
           accessor: "Year1Total",
         },
         {
           header: !isDesktop && !isUltraWide ? "Yrs Left" : "Years Left",
           accessor: "ContractLength",
         },
-        { header: "Health", accessor: "isInjured" },
-        { header: "Injury", accessor: "InjuryType" },
+        { header: "Designation", accessor: "Designation" },
         { header: "Personality", accessor: "Personality" },
         { header: "Work Ethic", accessor: "WorkEthic" },
-        { header: "Mood", accessor: "TransferStatus" },
       ]);
     }
 
@@ -2479,6 +2519,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
           accessor: "ThreePointShooting",
         },
         { header: !isUltraWide ? "FT" : "Freethrow", accessor: "Freethrow" },
+        { header: !isUltraWide ? "BIQ" : "Basketball IQ", accessor: "BasketballIQ" },
         { header: !isUltraWide ? "BW" : "Ballwork", accessor: "Ballwork" },
         { header: !isUltraWide ? "Stl" : "Stealing", accessor: "Stealing" },
         { header: !isUltraWide ? "RB" : "Rebounding", accessor: "Rebounding" },
@@ -2499,7 +2540,6 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
           header: !isUltraWide ? "PTE" : "Playtime Expectations",
           accessor: "PlaytimeExpectations",
         },
-        { header: !isUltraWide ? "Min" : "Minutes", accessor: "Minutes" },
       ]);
     }
     if ((isDesktop || isUltraWide) && category === Contracts) {
@@ -2521,6 +2561,14 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
   const sortedRoster = useMemo(() => {
     return [...roster].sort((a, b) => b.Overall - a.Overall);
   }, [roster]);
+  const twoWayCount = useMemo(
+    () => roster.filter((player) => player.IsTwoWay).length,
+    [roster],
+  );
+  const gLeagueCount = useMemo(
+    () => roster.filter((player) => player.IsGLeague && !player.IsTwoWay).length,
+    [roster],
+  );
 
   const rowRenderer = (
     item: NBAPlayer,
@@ -2530,6 +2578,24 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
     const contract = contracts[item.ID];
     if (!contract) return <></>;
     item.Contract = contract!!;
+    const canAssignTwoWay =
+      !item.IsTwoWay &&
+      item.Year <= NBA_DESIGNATION_RULES.twoWay.maxExperience &&
+      (NBA_DESIGNATION_RULES.twoWay.maxSalary === null ||
+        contract.Year1Total <= NBA_DESIGNATION_RULES.twoWay.maxSalary) &&
+      (NBA_DESIGNATION_RULES.twoWay.maxContractLength === null ||
+        contract.YearsRemaining <=
+          NBA_DESIGNATION_RULES.twoWay.maxContractLength) &&
+      twoWayCount < NBA_DESIGNATION_RULES.twoWay.maxDesignations;
+    const canAssignGLeague =
+      !item.IsGLeague &&
+      item.Year <= NBA_DESIGNATION_RULES.gLeague.maxExperience &&
+      (NBA_DESIGNATION_RULES.gLeague.maxSalary === null ||
+        contract.Year1Total <= NBA_DESIGNATION_RULES.gLeague.maxSalary) &&
+      (NBA_DESIGNATION_RULES.gLeague.maxContractLength === null ||
+        contract.YearsRemaining <=
+          NBA_DESIGNATION_RULES.gLeague.maxContractLength) &&
+      gLeagueCount < NBA_DESIGNATION_RULES.gLeague.maxDesignations;
     const attributes = getNBAAttributes(
       item,
       !isDesktop && !isUltraWide,
@@ -2557,6 +2623,17 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
                   <CrossCircle textColorClass="text-red-500" />
                 )}
               </>
+            ) : attr.label === "Designation" ? (
+              <ShieldBadge
+                letter={item.IsTwoWay ? "T" : item.IsGLeague ? "G" : "N"}
+                textColorClass={
+                  item.IsTwoWay
+                    ? "text-amber-400"
+                    : item.IsGLeague
+                      ? "text-blue-500"
+                      : "text-green-500"
+                }
+              />
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
@@ -2605,19 +2682,21 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
                 value: "extension",
                 label: `Extensions - ${item.FirstName} ${item.LastName}`,
               },
-              {
-                value: "gLeague",
-                label: `GLeague - ${item.FirstName} ${item.LastName}`,
-              },
-              {
-                value: "twoWay",
-                label: `Two-Way - ${item.FirstName} ${item.LastName}`,
-              },
+              ...(item.IsGLeague || item.IsTwoWay
+                ? [{ value: "nba", label: `NBA - ${item.FirstName} ${item.LastName}` }]
+                : []),
+              ...(canAssignTwoWay
+                ? [{ value: "twoWay", label: `Two-Way - ${item.FirstName} ${item.LastName}` }]
+                : []),
+              ...(canAssignGLeague
+                ? [{ value: "gLeague", label: `G-League - ${item.FirstName} ${item.LastName}` }]
+                : []),
               {
                 value: "tradeBlock",
                 label: `Send to Trade Block - ${item.FirstName} ${item.LastName}`,
               },
             ]}
+            isDisabled={disable}
             onChange={(selectedOption) => {
               if (selectedOption?.value === "cut") {
                 openModal(Cut, item);
@@ -2625,6 +2704,12 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
                 openModal(Redshirt, item);
               } else if (selectedOption?.value === "extension") {
                 openExtensionModal(item);
+              } else if (selectedOption?.value === "nba") {
+                void onNBAChange(item);
+              } else if (selectedOption?.value === "gLeague") {
+                void onGLeagueChange(item);
+              } else if (selectedOption?.value === "twoWay") {
+                void onTwoWayChange(item);
               }
               if (selectedOption?.value === "promise") {
                 openModal(Promise, item);

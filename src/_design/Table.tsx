@@ -10,11 +10,12 @@ import { getTextColorBasedOnBg } from "../_utility/getBorderClass";
 import { getThemeAwareDarkenColor } from "../_utility/getDarkerColor";
 import { Text } from "./Typography";
 import { isBrightColor } from "../_utility/isBrightColor";
-import { League, SimCFB, SimNFL, SimPHL } from "../_constants/constants";
+import { League, SimCBB, SimCFB, SimNFL, SimPHL } from "../_constants/constants";
 import { useAuthStore } from "../context/AuthContext";
 import { getThemeColors } from "../_utility/themeHelpers";
 import { getPlayerOverall } from "../components/Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
 import { getOverallGrade } from "../components/Draft/common";
+import { getCBBLetterGrade } from "../_utility/getLetterGrade";
 
 export interface SortState {
   key: string | null;
@@ -123,6 +124,30 @@ export const Table = <T,>({
       if (league === SimNFL && key === "Overall") {
         if (a.ShowLetterGrade && !b.ShowLetterGrade) return 1;
         if (!a.ShowLetterGrade && b.ShowLetterGrade) return -1;
+      }
+      const cbbGradeFields: Record<string, string> = {
+        Overall: "Overall",
+        Agility: "Agility",
+        InsideShooting: "InsideShooting",
+        MidRangeShooting: "MidRangeShooting",
+        ThreePointShooting: "ThreePointShooting",
+        Freethrow: "FreeThrow",
+        Ballwork: "Ballwork",
+        Stealing: "Stealing",
+        Rebounding: "Rebounding",
+        Blocking: "Blocking",
+        InteriorDefense: "InteriorDefense",
+        PerimeterDefense: "PerimeterDefense",
+        InjuryRating: "InjuryRating",
+      };
+      if (league === SimCBB && cbbGradeFields[key]) {
+        const aGrade = getCBBLetterGrade(a[cbbGradeFields[key]], a.Year);
+        const bGrade = getCBBLetterGrade(b[cbbGradeFields[key]], b.Year);
+        const ai = gradeOrder.indexOf(aGrade);
+        const bi = gradeOrder.indexOf(bGrade);
+        if (ai < bi) return order === "asc" ? -1 : 1;
+        if (ai > bi) return order === "asc" ? 1 : -1;
+        return 0;
       }
       if (
         key.includes("Y1") ||
