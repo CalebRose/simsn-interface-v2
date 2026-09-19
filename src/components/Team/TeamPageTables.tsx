@@ -2230,7 +2230,6 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
           header: !isUltraWide ? "PTE" : "Playtime Expectations",
           accessor: "PlaytimeExpectations",
         },
-        { header: !isUltraWide ? "Min" : "Minutes", accessor: "Minutes" },
       ]);
     }
     columns.push({ header: "Actions", accessor: "actions" });
@@ -2520,6 +2519,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
           accessor: "ThreePointShooting",
         },
         { header: !isUltraWide ? "FT" : "Freethrow", accessor: "Freethrow" },
+        { header: !isUltraWide ? "BIQ" : "Basketball IQ", accessor: "BasketballIQ" },
         { header: !isUltraWide ? "BW" : "Ballwork", accessor: "Ballwork" },
         { header: !isUltraWide ? "Stl" : "Stealing", accessor: "Stealing" },
         { header: !isUltraWide ? "RB" : "Rebounding", accessor: "Rebounding" },
@@ -2540,7 +2540,6 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
           header: !isUltraWide ? "PTE" : "Playtime Expectations",
           accessor: "PlaytimeExpectations",
         },
-        { header: !isUltraWide ? "Min" : "Minutes", accessor: "Minutes" },
       ]);
     }
     if ((isDesktop || isUltraWide) && category === Contracts) {

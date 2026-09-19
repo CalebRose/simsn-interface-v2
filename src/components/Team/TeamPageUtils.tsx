@@ -3136,6 +3136,8 @@ export const getNBAAttributes = (
   isMobile: boolean,
   category: string,
 ) => {
+  const formatContractAmount = (value: number) =>
+    value === 0 ? "" : value.toFixed(2);
   const attributes = [
     { label: "ID", value: `${player.ID}` },
     { label: "Name", value: `${player.FirstName} ${player.LastName}` },
@@ -3178,12 +3180,12 @@ export const getNBAAttributes = (
     !isMobile && category === Contracts
       ? [
           { label: "Type", value: player.Contract.ContractType },
-          { label: "Value", value: player.Contract.ContractValue },
-          { label: "Y1", value: player.Contract.Year1Total },
-          { label: "Y2", value: player.Contract.Year2Total },
-          { label: "Y3", value: player.Contract.Year3Total },
-          { label: "Y4", value: player.Contract.Year4Total },
-          { label: "Y5", value: player.Contract.Year5Total },
+          { label: "Value", value: formatContractAmount(player.Contract.ContractValue) },
+          { label: "Y1", value: formatContractAmount(player.Contract.Year1Total) },
+          { label: "Y2", value: formatContractAmount(player.Contract.Year2Total) },
+          { label: "Y3", value: formatContractAmount(player.Contract.Year3Total) },
+          { label: "Y4", value: formatContractAmount(player.Contract.Year4Total) },
+          { label: "Y5", value: formatContractAmount(player.Contract.Year5Total) },
           { label: "Yrs", value: player.Contract.YearsRemaining },
         ]
       : [];
@@ -3199,6 +3201,7 @@ export const getNBAAttributes = (
 export const getAdditionalNBAAttributes = (player: NBAPlayer) => {
   return [
     { label: "POT", value: player.PotentialGrade },
+    { label: "Agi", value: player.Agility },
     {
       label: "Ins",
       value: player.InsideShooting,
@@ -3216,7 +3219,6 @@ export const getAdditionalNBAAttributes = (player: NBAPlayer) => {
       value: player.FreeThrow,
     },
     { label: "BIQ", value: player.BasketballIQ },
-    { label: "Agi", value: player.Agility },
     {
       label: "BW",
       value: player.Ballwork,

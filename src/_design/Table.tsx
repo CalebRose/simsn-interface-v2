@@ -125,9 +125,24 @@ export const Table = <T,>({
         if (a.ShowLetterGrade && !b.ShowLetterGrade) return 1;
         if (!a.ShowLetterGrade && b.ShowLetterGrade) return -1;
       }
-      if (league === SimCBB && key === "Overall") {
-        const aGrade = getCBBLetterGrade(a.Overall, a.Year);
-        const bGrade = getCBBLetterGrade(b.Overall, b.Year);
+      const cbbGradeFields: Record<string, string> = {
+        Overall: "Overall",
+        Agility: "Agility",
+        InsideShooting: "InsideShooting",
+        MidRangeShooting: "MidRangeShooting",
+        ThreePointShooting: "ThreePointShooting",
+        Freethrow: "FreeThrow",
+        Ballwork: "Ballwork",
+        Stealing: "Stealing",
+        Rebounding: "Rebounding",
+        Blocking: "Blocking",
+        InteriorDefense: "InteriorDefense",
+        PerimeterDefense: "PerimeterDefense",
+        InjuryRating: "InjuryRating",
+      };
+      if (league === SimCBB && cbbGradeFields[key]) {
+        const aGrade = getCBBLetterGrade(a[cbbGradeFields[key]], a.Year);
+        const bGrade = getCBBLetterGrade(b[cbbGradeFields[key]], b.Year);
         const ai = gradeOrder.indexOf(aGrade);
         const bi = gradeOrder.indexOf(bGrade);
         if (ai < bi) return order === "asc" ? -1 : 1;
