@@ -427,7 +427,7 @@ export const OfferModal: FC<OfferModalProps> = ({
         PlayerID: player.ID,
         TeamID: capsheet.ID,
       });
-      if (dto.TeamID > 24) {
+      if (dto.TeamID > 32) {
         alert("Invalid Team ID. Reach out out to Toucan for support.");
         return;
       }
@@ -773,69 +773,70 @@ export const OfferModal: FC<OfferModalProps> = ({
             </div>
           </div>
         )}
-        {((isPHL && offer instanceof PHLFreeAgencyOffer) || (isNFL && offer instanceof NFLFreeAgencyOffer)) && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 space-y-2 md:space-y-2 lg:space-y-0 space-x-2 mb-4">
-              <div className="flex">
-                <Input
-                  type="number"
-                  label="Y1 Salary"
-                  name="Y1BaseSalary"
-                  value={offer.Y1BaseSalary || 0}
-                  onChange={ChangeInput}
-                  disabled={playerType === PracticeSquad}
-                />
-              </div>
-              <div className="flex">
-                <Input
-                  type="number"
-                  label="Y2 Salary"
-                  name="Y2BaseSalary"
-                  value={offer.Y2BaseSalary || 0}
-                  onChange={ChangeInput}
-                  disabled={playerType === PracticeSquad}
-                />
-              </div>
-              <div className="flex">
-                <Input
-                  type="number"
-                  label="Y3 Salary"
-                  name="Y3BaseSalary"
-                  value={offer.Y3BaseSalary || 0}
-                  onChange={ChangeInput}
-                  disabled={playerType === PracticeSquad}
-                />
-              </div>
-              <div className="flex">
-                <Input
-                  type="number"
-                  label="Y4 Salary"
-                  name="Y4BaseSalary"
-                  value={offer.Y4BaseSalary || 0}
-                  onChange={ChangeInput}
-                  disabled={playerType === PracticeSquad}
-                />
-              </div>
-              <div className="flex">
-                <Input
-                  type="number"
-                  label="Y5 Salary"
-                  name="Y5BaseSalary"
-                  value={offer.Y5BaseSalary || 0}
-                  onChange={ChangeInput}
-                  disabled={playerType === PracticeSquad}
-                />
-              </div>
-              <div className="flex">
-                <Input
-                  type="text"
-                  label="Total Salary"
-                  name="TotalSalary"
-                  value={totalSalary}
-                  disabled
-                />
-              </div>
+        {((isPHL && offer instanceof PHLFreeAgencyOffer) ||
+          (isNFL && offer instanceof NFLFreeAgencyOffer)) && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 space-y-2 md:space-y-2 lg:space-y-0 space-x-2 mb-4">
+            <div className="flex">
+              <Input
+                type="number"
+                label="Y1 Salary"
+                name="Y1BaseSalary"
+                value={offer.Y1BaseSalary || 0}
+                onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
+              />
             </div>
-          )}
+            <div className="flex">
+              <Input
+                type="number"
+                label="Y2 Salary"
+                name="Y2BaseSalary"
+                value={offer.Y2BaseSalary || 0}
+                onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
+              />
+            </div>
+            <div className="flex">
+              <Input
+                type="number"
+                label="Y3 Salary"
+                name="Y3BaseSalary"
+                value={offer.Y3BaseSalary || 0}
+                onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
+              />
+            </div>
+            <div className="flex">
+              <Input
+                type="number"
+                label="Y4 Salary"
+                name="Y4BaseSalary"
+                value={offer.Y4BaseSalary || 0}
+                onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
+              />
+            </div>
+            <div className="flex">
+              <Input
+                type="number"
+                label="Y5 Salary"
+                name="Y5BaseSalary"
+                value={offer.Y5BaseSalary || 0}
+                onChange={ChangeInput}
+                disabled={playerType === PracticeSquad}
+              />
+            </div>
+            <div className="flex">
+              <Input
+                type="text"
+                label="Total Salary"
+                name="TotalSalary"
+                value={totalSalary}
+                disabled
+              />
+            </div>
+          </div>
+        )}
         {isNFL && offer instanceof NFLFreeAgencyOffer && (
           <div className="grid grid-cols-6 space-x-2 mb-4">
             <div className="flex">
