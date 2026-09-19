@@ -674,7 +674,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const chlPlayerMap = useMemo(() => {
     const playerMap: Record<number, CollegePlayer> = {};
     if (chlRosterMap) {
-      Object.values(chlRosterMap).forEach(roster => {
+      // We need to include players that do not have a team ID. Meaning, include chlRosterMap[0] as well.
+      Object.values(chlRosterMap).forEach((roster) => {
         if (roster) {
           for (let j = 0; j < roster.length; j++) {
             const p = roster[j];
@@ -695,6 +696,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         playerMap[p.ID] = p;
       }
     }
+    console.log({ playerMap });
     return playerMap;
   }, [chlRosterMap, chlTeams, portalPlayers, historicCollegePlayers]);
 
@@ -965,6 +967,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       return;
     }
     const res = await BootstrapService.GetHCKBootstrapData(chlid, phlid);
+    setCHLRosterMap(res.CollegeRosterMap);
+    setPortalPlayers(res.PortalPlayers);
+
     if (chlid > 0) {
       setAllCollegeGames(res.AllCollegeGames);
       setCollegeInjuryReport(res.CollegeInjuryReport);
@@ -976,11 +981,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setCHLGameplanMap(res.CHLGameplanMap);
       setCHLLineups(res.CollegeTeamLineups);
       setCHLShootoutLineup(res.CollegeTeamShootoutLineup);
-      setCHLRosterMap(res.CollegeRosterMap);
       setTopCHLGoals(res.TopCHLGoals);
       setTopCHLAssists(res.TopCHLAssists);
       setTopCHLSaves(res.TopCHLSaves);
-      setPortalPlayers(res.PortalPlayers);
       setProScoutingProfile({});
       setRecruits(res.Recruits);
       setRecruitProfiles(res.RecruitProfiles);
