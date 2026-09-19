@@ -445,6 +445,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     ExportHCKRoster,
     SaveExtensionOffer,
     CancelExtensionOffer,
+    bringUpCollegePlayer,
   } = hkStore;
   const [showInfo, setShowInfo] = useState(true);
 
@@ -723,6 +724,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           affiliatePlayer={affiliatePlayer}
           placeOnInjuryReserve={placePHLPlayerOnInjuryReserve}
           tradeBlockPlayer={PlacePHLPlayerOnTradeBlock}
+          pickUpCollegePlayer={bringUpCollegePlayer}
         />
       )}
       <TeamInfo
