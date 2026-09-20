@@ -10,6 +10,7 @@ interface RecruitingCategoryDropdownProps {
   isMulti: boolean;
   isMobile?: boolean;
   value?: string;
+  selectedOption?: { label: string; value: string };
 }
 
 export const CategoryDropdown: FC<RecruitingCategoryDropdownProps> = ({
@@ -19,11 +20,13 @@ export const CategoryDropdown: FC<RecruitingCategoryDropdownProps> = ({
   isMulti,
   isMobile = false,
   value = "",
+  selectedOption,
 }) => {
   const currentSelectedOption = useMemo(() => {
+    if (selectedOption) return selectedOption;
     if (value === "") return undefined;
     return { label: value, value };
-  }, [value]);
+  }, [selectedOption, value]);
 
   return (
     <div className="flex flex-col">
