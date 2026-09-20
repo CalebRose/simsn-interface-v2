@@ -10,6 +10,44 @@ import { TeamLabel } from "../../Common/Labels";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { BasketballLineup } from "./BasketballLineupComponents";
+import { Input } from "../../../_design/Inputs";
+
+interface ModeOption {
+  label: string;
+  value: number;
+}
+
+const ModeButtonGroup = ({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: ModeOption[];
+  value: number;
+  onChange: (value: number) => void;
+}) => (
+  <div className="flex flex-col gap-y-1">
+    <Text variant="h6" classes="text-start mb-1">
+      {label}
+    </Text>
+    <div className="flex w-full gap-x-1" role="group" aria-label={label}>
+      {options.map((option) => (
+        <Button
+          key={option.value}
+          type="button"
+          variant={value === option.value ? "primary" : "secondary"}
+          size="sm"
+          classes="flex-1"
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </Button>
+      ))}
+    </div>
+  </div>
+);
 
 export const BasketballGameplanPage = () => {
   const {
@@ -45,6 +83,16 @@ export const BasketballGameplanPage = () => {
     SelectDefensiveSystem,
     defensiveSystem,
     defensiveSystemOptions,
+    focusPlayer,
+    setFocusPlayer,
+    focusOpponentName,
+    focusPlayerOptions,
+    preserveTimeouts, setPreserveTimeouts,
+    foulProtectionMode, setFoulProtectionMode, foulProtectionValue, setFoulProtectionValue,
+    opponentLeadEnabled, setOpponentLeadEnabled, opponentLeadValue, setOpponentLeadValue,
+    playerExhaustionEnabled, setPlayerExhaustionEnabled, playerExhaustionId, setPlayerExhaustionId,
+    playerExhaustionValue, setPlayerExhaustionValue,
+    teamExhaustionEnabled, setTeamExhaustionEnabled, teamExhaustionValue, setTeamExhaustionValue,
   } = useBasketballGameplan();
   const { isMobile } = useResponsive();
 
@@ -55,6 +103,39 @@ export const BasketballGameplanPage = () => {
     userTeam?.ColorThree,
   );
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
+  const onOffOptions = useMemo<ModeOption[]>(
+    () => [
+      { label: "Off", value: 0 },
+      { label: "On", value: 1 },
+    ],
+    [],
+  );
+  const foulProtectionOptions = useMemo<ModeOption[]>(
+    () => [
+      { label: "Off", value: 0 },
+      { label: "Player", value: 1 },
+      { label: "Fouls", value: 2 },
+    ],
+    [],
+  );
+  const playerOptions = useMemo(
+    () => [
+      { label: "Select a player", value: "0" },
+      ...selectedTeamRoster.map((player) => ({
+        label: `${player.FirstName} ${player.LastName}`,
+        value: String(player.ID),
+      })),
+    ],
+    [selectedTeamRoster],
+  );
+  const foulCountOptions = useMemo(
+    () =>
+      Array.from({ length: 5 }, (_, index) => ({
+        label: String(index + 1),
+        value: String(index + 1),
+      })),
+    [],
+  );
   const teamLabel = useMemo(() => {
     if (!selectedTeam) {
       if (userTeam) return userTeam.Team || "";
@@ -148,6 +229,141 @@ export const BasketballGameplanPage = () => {
                       isMulti={false}
                       isMobile={isMobile}
                     />
+                    {(defensiveSystem === "Man-to-Man" ||
+                      defensiveSystem === "Box-and-One Zone") && (
+                      <>
+                        <Text variant="small" classes="text-start">
+                          {focusOpponentName
+                            ? `Next Opponent: ${focusOpponentName}`
+                            : "Next Opponent: Not scheduled"}
+                        </Text>
+                        <CategoryDropdown
+                          label="Focus Player"
+                          value={String(focusPlayer)}
+                          options={focusPlayerOptions}
+                          selectedOption={focusPlayerOptions.find(
+                            (option) => option.value === String(focusPlayer),
+                          )}
+                          change={(option) =>
+                            setFocusPlayer(Number(option.value))
+                          }
+                          isMulti={false}
+                          isMobile={isMobile}
+                        />
+                      </>
+                    )}
+                    <ModeButtonGroup
+                      label="Preserve Timeouts"
+                      value={preserveTimeouts ? 1 : 0}
+                      options={onOffOptions}
+                      onChange={(value) => setPreserveTimeouts(value === 1)}
+                    />
+                    <ModeButtonGroup
+                      label="Foul Protection"
+                      value={foulProtectionMode}
+                      options={foulProtectionOptions}
+                      onChange={(value) => {
+                        setFoulProtectionMode(value);
+                        setFoulProtectionValue(0);
+                      }}
+                    />
+                    {foulProtectionMode === 1 && (
+                      <CategoryDropdown
+                        label="Protected Player"
+                        value={String(foulProtectionValue)}
+                        options={playerOptions}
+                        selectedOption={playerOptions.find(
+                          (option) => option.value === String(foulProtectionValue),
+                        )}
+                        change={(option) =>
+                          setFoulProtectionValue(Number(option.value))
+                        }
+                        isMulti={false}
+                        isMobile={isMobile}
+                      />
+                    )}
+                    {foulProtectionMode === 2 && (
+                      <CategoryDropdown
+                        label="Fouls per Half"
+                        value={String(foulProtectionValue)}
+                        options={foulCountOptions}
+                        change={(option) =>
+                          setFoulProtectionValue(Number(option.value))
+                        }
+                        isMulti={false}
+                        isMobile={isMobile}
+                      />
+                    )}
+                    <ModeButtonGroup
+                      label="Opponent Lead Timeout"
+                      value={opponentLeadEnabled ? 1 : 0}
+                      options={onOffOptions}
+                      onChange={(value) => setOpponentLeadEnabled(value === 1)}
+                    />
+                    {opponentLeadEnabled && (
+                      <Input
+                        label="Opponent Lead (points)"
+                        type="number"
+                        min={1}
+                        max={99}
+                        value={opponentLeadValue}
+                        onChange={(event) =>
+                          setOpponentLeadValue(Number(event.target.value))
+                        }
+                      />
+                    )}
+                    <ModeButtonGroup
+                      label="Player Exhaustion Timeout"
+                      value={playerExhaustionEnabled ? 1 : 0}
+                      options={onOffOptions}
+                      onChange={(value) => setPlayerExhaustionEnabled(value === 1)}
+                    />
+                    {playerExhaustionEnabled && (
+                      <>
+                        <CategoryDropdown
+                          label="Monitored Player"
+                          value={String(playerExhaustionId)}
+                          options={playerOptions}
+                          selectedOption={playerOptions.find(
+                            (option) =>
+                              option.value === String(playerExhaustionId),
+                          )}
+                          change={(option) =>
+                            setPlayerExhaustionId(Number(option.value))
+                          }
+                          isMulti={false}
+                          isMobile={isMobile}
+                        />
+                        <Input
+                          label="Exhaustion"
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={playerExhaustionValue}
+                          onChange={(event) =>
+                            setPlayerExhaustionValue(Number(event.target.value))
+                          }
+                        />
+                      </>
+                    )}
+                    <ModeButtonGroup
+                      label="Team Exhaustion"
+                      value={teamExhaustionEnabled ? 1 : 0}
+                      options={onOffOptions}
+                      onChange={(value) => setTeamExhaustionEnabled(value === 1)}
+                    />
+                    {teamExhaustionEnabled && (
+                      <Input
+                        label="Average Exhaustion"
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={teamExhaustionValue}
+                        onChange={(event) =>
+                          setTeamExhaustionValue(Number(event.target.value))
+                        }
+                      />
+                    )}
                   </div>
                 )}
                 <div className="flex flex-col gap-x-2 flex-wrap w-full text-start my-2">

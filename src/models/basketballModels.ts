@@ -2393,6 +2393,17 @@ export class NBAGameplan {
   TogglePD: boolean;
   ToggleP2: boolean;
   ToggleP3: boolean;
+  PreserveTimeouts: boolean;
+  Trigger1Enabled: boolean;
+  Trigger1Type: number;
+  Trigger1Value: number;
+  Trigger2Enabled: boolean;
+  Trigger2Value: number;
+  Trigger3Enabled: boolean;
+  Trigger3Value: number;
+  Trigger3Exhaustion: number;
+  Trigger4Enabled: boolean;
+  Trigger4Value: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -2420,6 +2431,17 @@ export class NBAGameplan {
     this.TogglePD = source["TogglePD"];
     this.ToggleP2 = source["ToggleP2"];
     this.ToggleP3 = source["ToggleP3"];
+    this.PreserveTimeouts = source["PreserveTimeouts"];
+    this.Trigger1Enabled = source["Trigger1Enabled"];
+    this.Trigger1Type = source["Trigger1Type"];
+    this.Trigger1Value = source["Trigger1Value"];
+    this.Trigger2Enabled = source["Trigger2Enabled"];
+    this.Trigger2Value = source["Trigger2Value"];
+    this.Trigger3Enabled = source["Trigger3Enabled"];
+    this.Trigger3Value = source["Trigger3Value"];
+    this.Trigger3Exhaustion = source["Trigger3Exhaustion"];
+    this.Trigger4Enabled = source["Trigger4Enabled"];
+    this.Trigger4Value = source["Trigger4Value"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -4715,6 +4737,17 @@ export class Gameplan {
   TogglePD: boolean;
   ToggleP2: boolean;
   ToggleP3: boolean;
+  PreserveTimeouts: boolean;
+  Trigger1Enabled: boolean;
+  Trigger1Type: number;
+  Trigger1Value: number;
+  Trigger2Enabled: boolean;
+  Trigger2Value: number;
+  Trigger3Enabled: boolean;
+  Trigger3Value: number;
+  Trigger3Exhaustion: number;
+  Trigger4Enabled: boolean;
+  Trigger4Value: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -4742,6 +4775,17 @@ export class Gameplan {
     this.TogglePD = source["TogglePD"];
     this.ToggleP2 = source["ToggleP2"];
     this.ToggleP3 = source["ToggleP3"];
+    this.PreserveTimeouts = source["PreserveTimeouts"];
+    this.Trigger1Enabled = source["Trigger1Enabled"];
+    this.Trigger1Type = source["Trigger1Type"];
+    this.Trigger1Value = source["Trigger1Value"];
+    this.Trigger2Enabled = source["Trigger2Enabled"];
+    this.Trigger2Value = source["Trigger2Value"];
+    this.Trigger3Enabled = source["Trigger3Enabled"];
+    this.Trigger3Value = source["Trigger3Value"];
+    this.Trigger3Exhaustion = source["Trigger3Exhaustion"];
+    this.Trigger4Enabled = source["Trigger4Enabled"];
+    this.Trigger4Value = source["Trigger4Value"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -4890,6 +4934,7 @@ export class Team {
   }
 }
 export class BootstrapData {
+  Arenas: Arena[];
   AllCollegeTeams: Team[];
   CollegeTeam: Team;
   CollegeRosterMap: { [key: number]: CollegePlayer[] };
@@ -4946,6 +4991,7 @@ export class BootstrapData {
   NBAGameplanMap: { [key: number]: NBAGameplan };
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
+    this.Arenas = this.convertValues(source["Arenas"], Arena);
     this.AllCollegeTeams = this.convertValues(source["AllCollegeTeams"], Team);
     this.CollegeTeam = this.convertValues(source["CollegeTeam"], Team);
     this.CollegeRosterMap = source["CollegeRosterMap"];
