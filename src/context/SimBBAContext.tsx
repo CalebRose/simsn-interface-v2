@@ -60,6 +60,7 @@ import {
   NBATeamStats,
   NBATeamSeasonStats,
   TeamStats,
+  Arena,
 } from "../models/basketballModels";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { BootstrapService } from "../_services/bootstrapService";
@@ -96,6 +97,7 @@ interface SimBBAContextProps {
   nbaTeamOptions: { label: string; value: string }[];
   nbaTeamOnlyOptions: { label: string; value: string }[];
   nbaConferenceOptions: { label: string; value: string }[];
+  arenaMap: Record<string, Arena>;
   cbbTeamMap: Record<number, Team> | null;
   currentCBBStandings: CollegeStandings[];
   cbbStandingsMap: Record<number, CollegeStandings> | null;
@@ -272,6 +274,7 @@ const defaultContext: SimBBAContextProps = {
   nbaTeamOptions: [],
   nbaTeamOnlyOptions: [],
   nbaConferenceOptions: [],
+  arenaMap: {},
   cbbTeamMap: {},
   currentCBBStandings: [],
   cbbStandingsMap: {},
@@ -452,6 +455,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   const [nbaConferenceOptions, setNBAConferenceOptions] = useState<
     { label: string; value: string }[]
   >([]);
+  const [arenas, setArenas] = useState<Arena[]>([]);
   const [allCBBStandings, setAllCBBStandings] = useState<CollegeStandings[]>(
     [],
   );
@@ -608,6 +612,13 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       (game) => game.SeasonID === cbb_Timestamp.SeasonID,
     );
   }, [allProGames, cbb_Timestamp]);
+
+  const arenaMap = useMemo(() => {
+    return arenas.reduce<Record<string, Arena>>((map, arena) => {
+      map[arena.ArenaName] = arena;
+      return map;
+    }, {});
+  }, [arenas]);
 
   const collegeTeamsGames = useMemo(() => {
     if (!currentCollegeSeasonGames || !cbb_Timestamp) return [];
@@ -929,6 +940,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       return;
     }
     const res = await BootstrapService.GetBBARosterBootstrapData(cbbID, nbaID);
+    setArenas(res.Arenas ?? []);
     setNBATradeProposals(res.TradeProposals);
     setTradePreferencesMap(res.TradePreferencesMap);
     setProContractMap(res.ContractMap);
@@ -2100,6 +2112,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         nbaTeamOptions,
         nbaTeamOnlyOptions,
         nbaConferenceOptions,
+        arenaMap,
         cbbTeamMap,
         currentCBBStandings,
         cbbStandingsMap,

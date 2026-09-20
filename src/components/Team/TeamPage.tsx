@@ -1749,6 +1749,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     cbbTeamMap,
     cbbRosterMap,
     cbbTeamOptions,
+    arenaMap,
     teamProfileMap,
     collegePromises,
     cutCBBPlayer,
@@ -1888,6 +1889,9 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
         Coach={selectedTeam?.Coach}
         Conference={selectedTeam?.Conference}
         Arena={selectedTeam?.Arena}
+        Capacity={
+          selectedTeam ? arenaMap[selectedTeam.Arena]?.Capacity : undefined
+        }
         backgroundColor={backgroundColor}
         headerColor={headerColor}
         borderColor={borderColor}
@@ -1968,6 +1972,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     nbaTeamMap,
     proRosterMap,
     nbaTeamOptions,
+    arenaMap,
     teamProfileMap,
     cutNBAPlayer,
     updateNBARosterMap,
@@ -2123,7 +2128,9 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
         Scout={selectedTeam?.NBAAssistantName}
         Conference={selectedTeam?.Conference}
         Arena={selectedTeam?.Arena}
-        Capacity={selectedTeam?.ArenaCapacity}
+        Capacity={
+          selectedTeam ? arenaMap[selectedTeam.Arena]?.Capacity : undefined
+        }
         backgroundColor={backgroundColor}
         headerColor={headerColor}
         borderColor={borderColor}
