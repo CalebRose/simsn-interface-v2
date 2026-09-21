@@ -61,6 +61,7 @@ import { SelectDropdown } from "../../_design/Select";
 import { Tab, TabGroup } from "../../_design/Tabs";
 import { getPlayerOverall } from "../Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
 import {
+  BasketballPlayerStatsModalView,
   FootballPlayerStatsModalView,
   HockeyPlayerStatsModalView,
 } from "./PlayerStatsModalView";
@@ -2258,6 +2259,7 @@ interface CBBPlayerInfoModalBodyProps {
 export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
   player,
 }) => {
+  const [selectedTab, setSelectedTab] = useState<string>("Attributes");
   const { currentUser } = useAuthStore();
   const { cbbTeamMap } = useSimBBAStore();
   const team = cbbTeamMap ? cbbTeamMap[player.TeamID] : null;
@@ -2362,19 +2364,38 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
         </Text>
       </div>
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <div className="grid w-full grid-cols-4 gap-3">
-          {priorityAttributes.map((attr, idx) => (
-            <div key={idx} className="flex flex-col px-1 gap-1">
-              <Text
-                variant="small"
-                classes="mb-1 whitespace-nowrap font-semibold"
-              >
-                {attr.label}
-              </Text>
-              <Text variant="small">{attr.value}</Text>
-            </div>
-          ))}
-        </div>
+        <TabGroup classes="mb-3 w-full">
+          <Tab
+            label="Attributes"
+            selected={selectedTab === "Attributes"}
+            setSelected={setSelectedTab}
+          />
+          <Tab
+            label="Stats"
+            selected={selectedTab === "Stats"}
+            setSelected={setSelectedTab}
+          />
+        </TabGroup>
+        {selectedTab === "Attributes" && (
+          <div className="grid w-full grid-cols-4 gap-3">
+            {priorityAttributes.map((attr, idx) => (
+              <div key={idx} className="flex flex-col px-1 gap-1">
+                <Text
+                  variant="small"
+                  classes="mb-1 whitespace-nowrap font-semibold"
+                >
+                  {attr.label}
+                </Text>
+                <Text variant="small">{attr.value}</Text>
+              </div>
+            ))}
+          </div>
+        )}
+        {selectedTab === "Stats" && (
+          <div className="mt-2 overflow-x-auto w-full">
+            <BasketballPlayerStatsModalView player={player} league={SimCBB} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2387,6 +2408,7 @@ interface NBAPlayerInfoModalBodyProps {
 export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
   player,
 }) => {
+  const [selectedTab, setSelectedTab] = useState<string>("Attributes");
   const { currentUser } = useAuthStore();
   const { nbaTeamMap, proContractMap, cbbTeamMap } = useSimBBAStore();
   const heightObj = HeightToFeetAndInches(player.Height);
@@ -2567,19 +2589,50 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
         </>
       )}
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <div className="grid w-full grid-cols-4 gap-3">
-          {priorityAttributes.map((attr, idx) => (
-            <div key={idx} className="flex flex-col px-1 gap-1">
-              <Text
-                variant="small"
-                classes="mb-1 whitespace-nowrap font-semibold"
-              >
-                {attr.label}
-              </Text>
-              <Text variant="small">{attr.value}</Text>
-            </div>
-          ))}
-        </div>
+        <TabGroup classes="mb-3 w-full">
+          <Tab
+            label="Attributes"
+            selected={selectedTab === "Attributes"}
+            setSelected={setSelectedTab}
+          />
+          <Tab
+            label="Stats"
+            selected={selectedTab === "Stats"}
+            setSelected={setSelectedTab}
+          />
+        </TabGroup>
+        {selectedTab === "Attributes" && (
+          <div className="grid w-full grid-cols-4 gap-3">
+            {priorityAttributes.map((attr, idx) => (
+              <div key={idx} className="flex flex-col px-1 gap-1">
+                <Text
+                  variant="small"
+                  classes="mb-1 whitespace-nowrap font-semibold"
+                >
+                  {attr.label}
+                </Text>
+                <Text variant="small">{attr.value}</Text>
+              </div>
+            ))}
+          </div>
+        )}
+        {selectedTab === "Stats" && (
+          <div className="mt-2 flex flex-col gap-5 w-full">
+            <BasketballPlayerStatsModalView
+              player={player}
+              league={SimCBB}
+              statsPlayerID={player.ID}
+              alternateStatsPlayerID={player.PlayerID}
+              hideWhenEmpty
+              title="College Stats"
+            />
+            <BasketballPlayerStatsModalView
+              player={player}
+              league={SimNBA}
+              title="NBA Stats"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

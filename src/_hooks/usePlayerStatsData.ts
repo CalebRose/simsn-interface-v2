@@ -24,6 +24,18 @@ import {
   ProfessionalPlayerSeasonStats,
 } from "../models/hockeyModels";
 import { useSimHCKStore } from "../context/SimHockeyContext";
+import { useSimBBAStore } from "../context/SimBBAContext";
+import {
+  CollegePlayer as CBBPlayer,
+  CollegePlayerSeasonStats,
+  NBAPlayer,
+  NBAPlayerSeasonStats,
+} from "../models/basketballModels";
+import { SimCBB } from "../_constants/constants";
+
+type BasketballPlayerSeasonStats =
+  | CollegePlayerSeasonStats
+  | NBAPlayerSeasonStats;
 
 export const useFootballPlayerStatsData = (
   player: CFBPlayer | NFLPlayer | NFLDraftee,
@@ -308,4 +320,115 @@ export const useHockeyPlayerStatsData = (
     isLoading,
     error,
   };
+};
+
+export const useBasketballPlayerStatsData = (
+  player: CBBPlayer | NBAPlayer,
+  league: League,
+  statsPlayerID = player.ID,
+  alternateStatsPlayerID?: number,
+) => {
+  const {
+    cbbPlayerSeasonStatsMap,
+    nbaPlayerSeasonStatsMap,
+    SearchBasketballStats,
+    cbb_Timestamp,
+  } = useSimBBAStore();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasRequestedStats, setHasRequestedStats] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastRequestedPlayerKey, setLastRequestedPlayerKey] = useState("");
+  const statsPlayerIDs = useMemo(
+    () =>
+      [statsPlayerID, alternateStatsPlayerID].filter(
+        (playerID): playerID is number => Boolean(playerID),
+      ),
+    [statsPlayerID, alternateStatsPlayerID],
+  );
+  const statsPlayerKey = statsPlayerIDs.join(",");
+
+  const playerStats = useMemo(() => {
+    if (statsPlayerIDs.length === 0) return [];
+
+    const seasonStatsMap =
+      league === SimCBB ? cbbPlayerSeasonStatsMap : nbaPlayerSeasonStatsMap;
+
+    return Object.values(seasonStatsMap)
+      .flatMap((seasonStats) =>
+        Array.isArray(seasonStats) ? seasonStats : [],
+      )
+      .filter((stat) =>
+        league === SimCBB
+          ? statsPlayerIDs.includes(
+              (stat as CollegePlayerSeasonStats).CollegePlayerID,
+            )
+          : statsPlayerIDs.includes(
+              (stat as NBAPlayerSeasonStats).NBAPlayerID,
+            ),
+      )
+      .sort((a, b) => a.SeasonID - b.SeasonID) as BasketballPlayerSeasonStats[];
+  }, [
+    cbbPlayerSeasonStatsMap,
+    nbaPlayerSeasonStatsMap,
+    league,
+    statsPlayerIDs,
+  ]);
+
+  useEffect(() => {
+    if (!SearchBasketballStats || !cbb_Timestamp || !statsPlayerKey) return;
+
+    if (lastRequestedPlayerKey !== statsPlayerKey) {
+      setHasRequestedStats(false);
+      setLastRequestedPlayerKey(statsPlayerKey);
+    }
+
+    if (hasRequestedStats) return;
+
+    if (playerStats.length > 0) {
+      setHasRequestedStats(true);
+      return;
+    }
+
+    let isMounted = true;
+    const loadStats = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        setHasRequestedStats(true);
+
+        await Promise.all(
+          Array.from({ length: cbb_Timestamp.SeasonID }, (_, index) => {
+            const seasonId = index + 1;
+            return SearchBasketballStats({
+              League: league,
+              ViewType: SEASON_VIEW,
+              WeekID: getFBAWeekID(1, seasonId),
+              SeasonID: seasonId,
+              GameType: "2",
+            });
+          }),
+        );
+      } catch {
+        if (isMounted) setError("Unable to load stats for this player.");
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadStats();
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    SearchBasketballStats,
+    cbb_Timestamp,
+    league,
+    statsPlayerKey,
+    playerStats.length,
+    hasRequestedStats,
+    lastRequestedPlayerKey,
+  ]);
+
+  return { playerStats, isLoading, error };
 };
