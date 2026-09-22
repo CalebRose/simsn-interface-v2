@@ -4270,6 +4270,13 @@ export class ScoutingProfile {
   ShowAttribute6: boolean;
   ShowAttribute7: boolean;
   ShowAttribute8: boolean;
+  ShowAttribute9: boolean;
+  ShowAttribute10: boolean;
+  ShowAttribute11: boolean;
+  ShowAttribute12: boolean;
+  ShowAttribute13: boolean;
+  ShowAttribute14: boolean;
+  ShowAttribute15: boolean;
   ShowPotAttribute1: boolean;
   ShowPotAttribute2: boolean;
   ShowPotAttribute3: boolean;
@@ -4278,6 +4285,13 @@ export class ScoutingProfile {
   ShowPotAttribute6: boolean;
   ShowPotAttribute7: boolean;
   ShowPotAttribute8: boolean;
+  ShowPotAttribute9: boolean;
+  ShowPotAttribute10: boolean;
+  ShowPotAttribute11: boolean;
+  ShowPotAttribute12: boolean;
+  ShowPotAttribute13: boolean;
+  ShowPotAttribute14: boolean;
+  ShowPotAttribute15: boolean;
   RemovedFromBoard: boolean;
   ShowCount: number;
 
@@ -4297,6 +4311,13 @@ export class ScoutingProfile {
     this.ShowAttribute6 = source["ShowAttribute6"];
     this.ShowAttribute7 = source["ShowAttribute7"];
     this.ShowAttribute8 = source["ShowAttribute8"];
+    this.ShowAttribute9 = source["ShowAttribute9"];
+    this.ShowAttribute10 = source["ShowAttribute10"];
+    this.ShowAttribute11 = source["ShowAttribute11"];
+    this.ShowAttribute12 = source["ShowAttribute12"];
+    this.ShowAttribute13 = source["ShowAttribute13"];
+    this.ShowAttribute14 = source["ShowAttribute14"];
+    this.ShowAttribute15 = source["ShowAttribute15"];
     this.ShowPotAttribute1 = source["ShowPotAttribute1"];
     this.ShowPotAttribute2 = source["ShowPotAttribute2"];
     this.ShowPotAttribute3 = source["ShowPotAttribute3"];
@@ -4305,6 +4326,13 @@ export class ScoutingProfile {
     this.ShowPotAttribute6 = source["ShowPotAttribute6"];
     this.ShowPotAttribute7 = source["ShowPotAttribute7"];
     this.ShowPotAttribute8 = source["ShowPotAttribute8"];
+    this.ShowPotAttribute9 = source["ShowPotAttribute9"];
+    this.ShowPotAttribute10 = source["ShowPotAttribute10"];
+    this.ShowPotAttribute11 = source["ShowPotAttribute11"];
+    this.ShowPotAttribute12 = source["ShowPotAttribute12"];
+    this.ShowPotAttribute13 = source["ShowPotAttribute13"];
+    this.ShowPotAttribute14 = source["ShowPotAttribute14"];
+    this.ShowPotAttribute15 = source["ShowPotAttribute15"];
     this.RemovedFromBoard = source["RemovedFromBoard"];
     this.ShowCount = source["ShowCount"];
   }
