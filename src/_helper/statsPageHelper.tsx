@@ -533,6 +533,7 @@ export const useFilteredFootballStats = ({
         if (!player) return false;
         if (selectedLeague === SimCFB) {
           const team = teamMap[stat.TeamID];
+          if (!team) return false;
           if (selectedLeagueOption === 2 && !team.IsFBS) {
             return false;
           }
@@ -587,7 +588,6 @@ export const useFilteredFootballStats = ({
         const team = teamMap[id];
         if (!team) return false;
         if (selectedLeague === SimCFB) {
-          const team = teamMap[stat.TeamID];
           if (selectedLeagueOption === 2 && !team.IsFBS) {
             return false;
           }
@@ -630,6 +630,7 @@ export const GetFilteredCFBTeamOptions = (
     const opt = cfbTeamOptions[i];
     const teamID = Number(opt.value);
     const team = teamMap[teamID];
+    if (!team) continue;
     if (
       (selectedLeagueOption === 2 && team.IsFBS) ||
       (selectedLeagueOption === 3 && !team.IsFBS)
