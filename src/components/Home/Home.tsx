@@ -39,7 +39,7 @@ export const Home = () => {
   const { cbbTeam, nbaTeam, isLoading: basketballLoading } = useSimBBAStore();
   const { chlTeam, phlTeam, isLoading: hockeyLoading } = useSimHCKStore();
   const { collegeOrganization, mlbOrganization, isLoading: baseballLoading } = useSimBaseballStore();
-  const { claxTeam, claxTeamLoading, refreshClaxSchedule, refreshClaxStatistics, refreshClaxRoster } = useSimLAXStore();
+  const { claxTeam, refreshClaxSchedule, refreshClaxStatistics, refreshClaxRoster } = useSimLAXStore();
   const [claxDashboardReadyKey, setClaxDashboardReadyKey] = useState<string | null>(null);
   const [claxDashboardError, setClaxDashboardError] = useState("");
   const [readyLogoKey, setReadyLogoKey] = useState<string | null>(null);
@@ -206,7 +206,7 @@ export const Home = () => {
   const teamButtonsLoading = Boolean(currentUser && (
     footballLoading || basketballLoading || hockeyLoading || baseballLoading || participatingTeamsMissing || readyLogoKey !== logoKey
   ));
-  const homeLoading = claxTeamLoading || teamButtonsLoading ||
+  const homeLoading = teamButtonsLoading ||
     (!selectedTeam && !claxTeam && isParticipating) ||
     (claxDashboardKey !== null && claxDashboardReadyKey !== claxDashboardKey);
 
