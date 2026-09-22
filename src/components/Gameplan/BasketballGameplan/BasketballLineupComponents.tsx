@@ -6,11 +6,9 @@ import {
   NBAPlayer,
 } from "../../../models/basketballModels";
 import { Text } from "../../../_design/Typography";
-import PlayerPicture from "../../../_utility/usePlayerFaces";
-import { League, SimCBB } from "../../../_constants/constants";
+import { SimCBB } from "../../../_constants/constants";
 import {
   getCBBLetterGrade,
-  getCBBOverall,
 } from "../../../_utility/getLetterGrade";
 import { Input } from "../../../_design/Inputs";
 import { SelectDropdown } from "../../../_design/Select";
@@ -26,7 +24,6 @@ interface BasketballLineupProps {
   position: string;
   selectedString: string;
   selectedStringAbbr: string;
-  selectedTeam: any;
   ChangeLineupInput: (
     playerID: number,
     key: string,
@@ -52,7 +49,6 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
   position,
   selectedString,
   selectedStringAbbr,
-  selectedTeam,
   ChangeLineupInput,
   playerOptions,
   canModify,
@@ -99,7 +95,6 @@ export const BasketballLineup: FC<BasketballLineupProps> = ({
       <BasketballLineupPlayerCard
         id={id}
         rosterMap={selectedRosterMap}
-        team={selectedTeam}
         playerOptions={playerOptions}
         ChangeLineupInput={ChangeLineupInput}
         lineupString={selectedString + "StringID"}
@@ -152,7 +147,6 @@ interface BasketballLineupPlayerCardProps {
   id: number;
   idx: number;
   rosterMap: Record<number, CollegePlayer | NBAPlayer>;
-  team: any;
   playerOptions: { label: string; value: string }[];
   ChangeLineupInput: (
     id: number,
@@ -168,7 +162,6 @@ const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({
   id,
   idx,
   rosterMap,
-  team,
   playerOptions,
   ChangeLineupInput,
   lineupString,
@@ -198,16 +191,6 @@ const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({
 
   return (
     <div className="flex flex-col items-center mb-2 space-y-2">
-      {player && (
-        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture
-            playerID={id}
-            player={player}
-            team={team}
-            league={selectedLeague as League}
-          />
-        </div>
-      )}
       <SelectDropdown
         value={selectedOption}
         onChange={GetValue}

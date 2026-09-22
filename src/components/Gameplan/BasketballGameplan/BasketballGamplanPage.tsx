@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Border } from "../../../_design/Borders";
 import { Button, ButtonGrid } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
@@ -10,7 +10,12 @@ import { TeamLabel } from "../../Common/Labels";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { BasketballLineup } from "./BasketballLineupComponents";
+import { BasketballCourtVision } from "./BasketballCourtVision";
 import { Input } from "../../../_design/Inputs";
+import { Modal } from "../../../_design/Modal";
+import { CBBPlayerInfoModalBody, NBAPlayerInfoModalBody } from "../../Common/Modals";
+import { SimCBB } from "../../../_constants/constants";
+import { CollegePlayer, NBAPlayer } from "../../../models/basketballModels";
 
 interface ModeOption {
   label: string;
@@ -53,6 +58,7 @@ export const BasketballGameplanPage = () => {
   const {
     userLineups,
     selectedTeamRoster,
+    selectedLeague,
     selectedRosterMap,
     selectedTeamLineups,
     lineupFormation,
@@ -94,13 +100,14 @@ export const BasketballGameplanPage = () => {
     playerExhaustionValue, setPlayerExhaustionValue,
     teamExhaustionEnabled, setTeamExhaustionEnabled, teamExhaustionValue, setTeamExhaustionValue,
   } = useBasketballGameplan();
-  const { isMobile } = useResponsive();
+  const { isMobile, isDesktop, isUltraWide } = useResponsive();
+  const [modalPlayer, setModalPlayer] = useState<CollegePlayer | NBAPlayer | null>(null);
 
   const { backgroundColor } = useBackgroundColor();
   const teamColors = useTeamColors(
-    userTeam?.ColorOne,
-    userTeam?.ColorTwo,
-    userTeam?.ColorThree,
+    selectedTeam?.ColorOne || userTeam?.ColorOne,
+    selectedTeam?.ColorTwo || userTeam?.ColorTwo,
+    selectedTeam?.ColorThree || userTeam?.ColorThree,
   );
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
   const onOffOptions = useMemo<ModeOption[]>(
@@ -392,6 +399,18 @@ export const BasketballGameplanPage = () => {
           </Border>
         </div>
         <div className="flex flex-col w-full max-[1024px]:gap-y-2">
+          {(isDesktop || isUltraWide) && (
+            <BasketballCourtVision
+              lineupFormation={lineupFormation}
+              selectedTeamLineups={selectedTeamLineups}
+              selectedRosterMap={selectedRosterMap}
+              team={selectedTeam}
+              league={selectedLeague}
+              primaryColor={teamColors.One}
+              accentColor={teamColors.Two}
+              onPlayerClick={setModalPlayer}
+            />
+          )}
           <div className="flex flex-col sm:flex-row gap-x-2">
             <Border
               direction="row"
@@ -480,7 +499,6 @@ export const BasketballGameplanPage = () => {
                     position={position}
                     selectedString={selectedString}
                     selectedStringAbbr={selectedStringAbbr}
-                    selectedTeam={selectedTeam}
                     ChangeLineupInput={ChangeLineupInput}
                     playerOptions={playerOptions}
                     canModify={viewingUserTeam}
@@ -491,6 +509,18 @@ export const BasketballGameplanPage = () => {
           </Border>
         </div>
       </div>
+      <Modal
+        isOpen={Boolean(modalPlayer)}
+        onClose={() => setModalPlayer(null)}
+        title={modalPlayer ? `${modalPlayer.Position || ""} ${modalPlayer.FirstName} ${modalPlayer.LastName}`.trim() : ""}
+        maxWidth="max-w-4xl"
+      >
+        {modalPlayer && (selectedLeague === SimCBB ? (
+          <CBBPlayerInfoModalBody player={modalPlayer as CollegePlayer} />
+        ) : (
+          <NBAPlayerInfoModalBody player={modalPlayer as NBAPlayer} />
+        ))}
+      </Modal>
     </div>
   );
 };

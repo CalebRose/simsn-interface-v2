@@ -252,7 +252,7 @@ export const useBasketballGameplan = () => {
   }, [selectedLeague, selectedTeamID, cbbLineupMap, nbaLineupMap]);
 
   const lineupFormation = useMemo(() => {
-    return ["C", "F", "F", "G", "G"];
+    return ["G", "G", "F", "F", "C"];
   }, []);
 
   const selectedGuardOptions = useMemo(() => {
@@ -707,6 +707,7 @@ export const useBasketballGameplan = () => {
   ]);
 
   return {
+    selectedLeague,
     selectedTeamID,
     setSelectedTeamID,
     userLineups,
