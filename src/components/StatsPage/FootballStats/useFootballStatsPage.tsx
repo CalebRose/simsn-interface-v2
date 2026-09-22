@@ -122,8 +122,11 @@ export const useFootballStats = () => {
   }, [selectedLeague, cfbPlayerMap, nflPlayerMap]);
 
   const teamMap = useMemo(() => {
-    if (selectedLeague === SimCFB) {
+    if (selectedLeague === SimCFB && cfbTeamMap) {
       return cfbTeamMap!!;
+    }
+    if (selectedLeague === SimNFL && proTeamMap) {
+      return proTeamMap!!;
     }
     return proTeamMap!!;
   }, [selectedLeague, cfbTeamMap, proTeamMap]);
