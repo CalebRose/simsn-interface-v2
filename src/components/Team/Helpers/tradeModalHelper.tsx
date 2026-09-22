@@ -1,3 +1,4 @@
+import { NBATradeProposal } from "../../../models/basketballModels";
 import {
   NFLTradeOption,
   NFLTradeProposal,
@@ -65,6 +66,28 @@ export const mapHCKTradeProposals = (
       ),
       RecepientTeamTradeOptions: item.TeamTradeOptions.filter(
         (x) => x.TeamID !== teamID,
+      ),
+    });
+    list.push(obj);
+  }
+  return list;
+};
+
+export const mapNBATradeProposals = (
+  proposals: NBATradeProposal[],
+  teamID: number,
+): NBATradeProposal[] => {
+  const list: NBATradeProposal[] = [];
+  if (!proposals || proposals.length === 0) return list;
+  for (let i = 0; i < proposals.length; i++) {
+    const item = proposals[i];
+    const obj = new NBATradeProposal({
+      ...item,
+      TeamTradeOptions: item.NBATeamTradeOptions.filter(
+        (x) => x.NBATeamID === teamID,
+      ),
+      RecepientTeamTradeOptions: item.NBATeamTradeOptions.filter(
+        (x) => x.NBATeamID !== teamID,
       ),
     });
     list.push(obj);

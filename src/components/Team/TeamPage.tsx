@@ -2370,6 +2370,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
         Team={selectedTeam}
         TeamProfile={selectedTeamProfile}
         isPro={true}
+        isUserTeam={selectedTeam!.ID === nbaTeam!.ID}
         TeamName={`${selectedTeam?.Team}`}
         Mascot={selectedTeam?.Nickname}
         Owner={selectedTeam?.NBAOwnerName}
@@ -2387,6 +2388,9 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
         showInfo={showInfo}
         Capsheet={nbaCapsheet!!}
         setShowInfo={setShowInfo}
+        draftPickCount={selectedTeamDraftPicks?.length}
+        openTradeModal={manageTradesModal.handleOpenModal}
+        openProposeTradeModal={proposeTradeModal.handleOpenModal}
       >
         <Border
           direction="row"

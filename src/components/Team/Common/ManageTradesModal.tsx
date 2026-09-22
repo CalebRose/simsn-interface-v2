@@ -24,9 +24,10 @@ import {
   NBACapsheet,
   NBAPlayer,
   NBATeam,
+  NBATradeOption,
   NBATradeProposal,
 } from "../../../models/basketballModels";
-import { League, SimNFL, SimPHL } from "../../../_constants/constants";
+import { League, SimNBA, SimNFL, SimPHL } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
 import { TradeBlockRow } from "../TeamPageTypes";
 import { Button } from "../../../_design/Buttons";
@@ -39,6 +40,7 @@ import {
   mapSelectedOptionsToTradeOptions,
   mapHCKTradeProposals,
   mapFBATradeProposals,
+  mapNBATradeProposals,
 } from "../Helpers/tradeModalHelper";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
@@ -51,6 +53,7 @@ import { getLogo } from "../../../_utility/getLogo";
 import { useLeagueStore } from "../../../context/LeagueContext";
 import GameplanInput from "../../Gameplan/FootballGameplan/Gameplan/GameplanInput";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
+import { useSimBBAStore } from "../../../context/SimBBAContext";
 
 interface ManageTradeModalProps {
   isOpen: boolean;
@@ -110,12 +113,22 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     let phlTeam = team as ProfessionalTeam;
     teamName = phlTeam.TeamName;
     title = `Manage ${teamName} Trades`;
+  } else if (league === SimNBA) {
+    let nbaTeam = team as NBATeam;
+    teamName = nbaTeam.Team;
+    title = `Manage ${teamName} Trades`;
   }
 
   const cleanSentTrades = useMemo(() => {
     if (league === SimPHL) {
       return mapHCKTradeProposals(
         sentTradeProposals as HCKTradeProposal[],
+        team.ID,
+      );
+    }
+    if (league === SimNBA) {
+      return mapNBATradeProposals(
+        sentTradeProposals as NBATradeProposal[],
         team.ID,
       );
     }
@@ -130,6 +143,12 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
     if (league === SimPHL) {
       return mapHCKTradeProposals(
         receivedTradeProposals as HCKTradeProposal[],
+        team.ID,
+      );
+    }
+    if (league === SimNBA) {
+      return mapNBATradeProposals(
+        receivedTradeProposals as NBATradeProposal[],
         team.ID,
       );
     }
@@ -251,8 +270,8 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
 };
 
 interface TradeSectionProps {
-  trade: HCKTradeProposal | NFLTradeProposal;
-  otherTeam: ProfessionalTeam | NFLTeam;
+  trade: HCKTradeProposal | NFLTradeProposal | NBATradeProposal;
+  otherTeam: ProfessionalTeam | NFLTeam | NBATeam;
   league: League;
   individualDraftPickMap:
     | Record<number, HCKDraftPick>
@@ -282,6 +301,7 @@ const TradeSection: FC<TradeSectionProps> = ({
   const { nflTeam } = useSimFBAStore();
   const { phlTeam } = useSimHCKStore();
   const otherLogo = getLogo(league, otherTeam.ID, false);
+  const { nbaTeam } = useSimBBAStore();
   const teamLabel = useMemo(() => {
     if (league === SimPHL) {
       let phlTeam = otherTeam as ProfessionalTeam;
@@ -317,7 +337,7 @@ const TradeSection: FC<TradeSectionProps> = ({
       return `${phlTeam!.Abbreviation} Sending`;
     }
     return "Sending";
-  }, [league, nflTeam, isSentTrade, otherTeam]);
+  }, [league, nflTeam, isSentTrade, otherTeam, nbaTeam, phlTeam]);
 
   const receivingLabel = useMemo(() => {
     if (!isSentTrade) {
@@ -423,7 +443,7 @@ const TradeSection: FC<TradeSectionProps> = ({
 };
 
 interface ManageOptionProps {
-  item: HCKTradeOption | NFLTradeOption;
+  item: HCKTradeOption | NFLTradeOption | NBATradeOption;
   player: ProfessionalPlayer | NFLPlayer | NBAPlayer;
   pick: HCKDraftPick | NFLDraftPick | DraftPick;
 }
