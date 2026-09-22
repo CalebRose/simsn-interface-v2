@@ -209,7 +209,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
     columns.push({ header: "Interest", accessor: "LeadingTeams" });
     columns.push({ header: "Actions", accessor: "actions" });
     return columns;
-  }, [isDesktop, category, league, playerType]);
+  }, [isDesktop, category, league, playerType, isUltraWide]);
 
   const NFLRowRenderer = (
     item: NFLPlayer,
@@ -254,27 +254,47 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
       teamLogo = getLogo(SimNFL, item.TeamID, false);
     }
 
+    const minimumDaysRemaining = (() => {
+      if (!offers) return 0;
+      if (offers.length === 0) return 0;
+      // If offers consist of waiver offer types, return 0
+      if (
+        offers.every((x) => x instanceof NFLWaiverOffer) ||
+        offers.every((x) => x instanceof PHLWaiverOffer)
+      )
+        return 0;
+      return Math.min(...offers.map((x) => x.Syncs));
+    })();
+
+    const minimumTextClass = (() => {
+      if (minimumDaysRemaining === 0) return "";
+      if (minimumDaysRemaining === 1) return "text-yellow-500";
+      if (minimumDaysRemaining === 2) return "text-orange-500";
+      return "text-red-500";
+    })();
+
+    // Adds a border column to the top & bottom of a row
+    const minimumBorderClass = (() => {
+      if (minimumDaysRemaining === 0) return "dark:border-gray-700 border-t";
+      if (minimumDaysRemaining === 1) return "border-y border-yellow-500";
+      if (minimumDaysRemaining === 2) return "border-y border-orange-500";
+      return "border-y border-red-500";
+    })();
+
     return (
       <div
         key={item.ID}
-        className={`table-row border-b dark:border-gray-700 text-left`}
+        className={`table-row border-b ${minimumBorderClass}`}
         style={{ backgroundColor }}
       >
         {attributes.map((attr, idx) => (
           <TableCell
             key={idx}
-            classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full ${
-          category === Attributes && idx === 6
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+            classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] text-wrap sm:max-w-full text-start`}
           >
             {attr.label === "Name" ? (
               <span
-                className={`cursor-pointer font-semibold text-left`}
+                className={`cursor-pointer font-semibold ${minimumTextClass}`}
                 onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
                   (e.target as HTMLElement).style.color = "#fcd53f";
                 }}
@@ -365,7 +385,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
   ) => {
     const attributes = getPHLAttributes(
       item,
-      !isDesktop,
+      !isDesktop && !isUltraWide,
       isTablet,
       category!,
       null,
@@ -386,28 +406,44 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
     const disableAddButton =
       !!teamOfferMap[item.ID] || (item.IsAffiliatePlayer && item.Year <= 3);
 
+    const minimumDaysRemaining = (() => {
+      if (!offers) return 0;
+      if (offers.length === 0) return 0;
+      // If offers consist of waiver offer types, return 0
+      if (offers.every((x) => x instanceof PHLWaiverOffer)) return 0;
+      return Math.min(...offers.map((x) => x.Syncs));
+    })();
+
+    const minimumTextClass = (() => {
+      if (minimumDaysRemaining === 0) return "";
+      if (minimumDaysRemaining === 1) return "text-yellow-500";
+      if (minimumDaysRemaining === 2) return "text-orange-500";
+      return "text-red-500";
+    })();
+
+    // Adds a border column to the top & bottom of a row
+    const minimumBorderClass = (() => {
+      if (minimumDaysRemaining === 0) return "dark:border-gray-700 border-t";
+      if (minimumDaysRemaining === 1) return "border-y border-yellow-500";
+      if (minimumDaysRemaining === 2) return "border-y border-orange-500";
+      return "border-y border-red-500";
+    })();
+
     return (
       <div
         key={item.ID}
-        className={`table-row border-b dark:border-gray-700 text-left`}
+        className={`table-row ${minimumBorderClass}`}
         style={{ backgroundColor }}
       >
         <>
           {attributes.map((attr, idx) => (
             <TableCell
               key={idx}
-              classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full ${
-          category === Attributes && idx === 6
-            ? "text-left"
-            : idx !== 0
-              ? "text-center"
-              : ""
-        }`}
+              classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] text-wrap sm:max-w-full text-start`}
             >
               {attr.label === "Name" ? (
                 <span
-                  className={`cursor-pointer font-semibold`}
+                  className={`cursor-pointer font-semibold ${minimumTextClass}`}
                   onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
                     (e.target as HTMLElement).style.color = "#fcd53f";
                   }}
@@ -497,11 +533,33 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
       logos = offers && offerIds.map((id) => getLogo(SimNBA, id, false));
     }
     const actionVariant = !teamOfferMap[item.ID] ? "success" : "secondary";
+    const minimumDaysRemaining = (() => {
+      if (!offers) return 0;
+      if (offers.length === 0) return 0;
+      // If offers consist of waiver offer types, return 0
+      if (offers.every((x) => x instanceof NBAWaiverOffer)) return 0;
+      return Math.min(...offers.map((x) => x.Syncs));
+    })();
+
+    const minimumTextClass = (() => {
+      if (minimumDaysRemaining === 0) return "";
+      if (minimumDaysRemaining === 1) return "text-yellow-500";
+      if (minimumDaysRemaining === 2) return "text-orange-500";
+      return "text-red-500";
+    })();
+
+    // Adds a border column to the top & bottom of a row
+    const minimumBorderClass = (() => {
+      if (minimumDaysRemaining === 0) return "dark:border-gray-700 border-t";
+      if (minimumDaysRemaining === 1) return "border-y border-yellow-500";
+      if (minimumDaysRemaining === 2) return "border-y border-orange-500";
+      return "border-y border-red-500";
+    })();
 
     return (
       <div
         key={item.ID}
-        className={`table-row border-b dark:border-gray-700 text-start`}
+        className={`table-row border-b ${minimumBorderClass}`}
         style={{ backgroundColor }}
       >
         <>
@@ -512,12 +570,11 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
             return (
               <TableCell
                 key={idx}
-                classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
-        text-wrap sm:max-w-full text-start`}
+                classes={`360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] text-wrap sm:max-w-full text-start`}
               >
                 {attr.label === "Name" ? (
                   <span
-                    className={`cursor-pointer font-semibold text-start`}
+                    className={`cursor-pointer font-semibold text-start ${minimumTextClass}`}
                     onMouseEnter={(e: React.MouseEvent<HTMLSpanElement>) => {
                       (e.target as HTMLElement).style.color = "#fcd53f";
                     }}

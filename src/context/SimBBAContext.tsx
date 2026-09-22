@@ -153,7 +153,13 @@ interface SimBBAContextProps {
   redshirtPlayer: (playerID: number, teamID: number) => Promise<void>;
   promisePlayer: (playerID: number, teamID: number) => Promise<void>;
   updateCBBRosterMap: (newMap: Record<number, CollegePlayer[]>) => void;
-  updateNBARosterMap: (newMap: Record<number, NBAPlayer[]>) => void;
+  updateNBARosterMap: (
+    update:
+      | Record<number, NBAPlayer[]>
+      | ((
+          currentMap: Record<number, NBAPlayer[]>,
+        ) => Record<number, NBAPlayer[]>),
+  ) => void;
   scoutCrootAttribute: (dto: any) => Promise<void>;
   saveCBBGameplan: (dto: any) => Promise<void>;
   saveNBAGameplan: (dto: any) => Promise<void>;
@@ -1197,8 +1203,16 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     setCBBRosterMap(newMap);
   };
 
-  const updateNBARosterMap = (newMap: Record<number, NBAPlayer[]>) => {
-    setProRosterMap(newMap);
+  const updateNBARosterMap = (
+    update:
+      | Record<number, NBAPlayer[]>
+      | ((
+          currentMap: Record<number, NBAPlayer[]>,
+        ) => Record<number, NBAPlayer[]>),
+  ) => {
+    setProRosterMap((currentMap) =>
+      typeof update === "function" ? update(currentMap ?? {}) : update,
+    );
   };
 
   const saveCBBGameplan = async (dto: any) => {
