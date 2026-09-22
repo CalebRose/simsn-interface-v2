@@ -20,7 +20,9 @@ import {
   NFLTradeProposalDTO,
 } from "../../../models/footballModels";
 import {
+  DraftPick,
   NBACapsheet,
+  NBAPlayer,
   NBATeam,
   NBATradeProposal,
 } from "../../../models/basketballModels";
@@ -70,8 +72,12 @@ interface ManageTradeModalProps {
   ts: HCKTimestamp;
   individualDraftPickMap:
     | Record<number, HCKDraftPick>
-    | Record<number, NFLDraftPick>;
-  proPlayerMap: Record<number, ProfessionalPlayer> | Record<number, NFLPlayer>;
+    | Record<number, NFLDraftPick>
+    | Record<number, DraftPick>;
+  proPlayerMap:
+    | Record<number, ProfessionalPlayer>
+    | Record<number, NFLPlayer>
+    | Record<number, NBAPlayer>;
   cancelTrade: (dto: any) => Promise<void>;
   acceptTrade: (dto: any) => Promise<void>;
   rejectTrade: (dto: any) => Promise<void>;
@@ -250,8 +256,12 @@ interface TradeSectionProps {
   league: League;
   individualDraftPickMap:
     | Record<number, HCKDraftPick>
-    | Record<number, NFLDraftPick>;
-  proPlayerMap: Record<number, ProfessionalPlayer> | Record<number, NFLPlayer>;
+    | Record<number, NFLDraftPick>
+    | Record<number, DraftPick>;
+  proPlayerMap:
+    | Record<number, ProfessionalPlayer>
+    | Record<number, NFLPlayer>
+    | Record<number, NBAPlayer>;
   cancel: (dto: any) => Promise<void>;
   accept: (dto: any) => Promise<void>;
   reject: (dto: any) => Promise<void>;
@@ -414,8 +424,8 @@ const TradeSection: FC<TradeSectionProps> = ({
 
 interface ManageOptionProps {
   item: HCKTradeOption | NFLTradeOption;
-  player: ProfessionalPlayer | NFLPlayer;
-  pick: HCKDraftPick | NFLDraftPick;
+  player: ProfessionalPlayer | NFLPlayer | NBAPlayer;
+  pick: HCKDraftPick | NFLDraftPick | DraftPick;
 }
 
 export const ManageOption: FC<ManageOptionProps> = ({ item, player, pick }) => {
