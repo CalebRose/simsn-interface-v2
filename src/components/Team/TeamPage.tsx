@@ -331,7 +331,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
           }}
         >
           {/* Dropdown takes full width on mobile, fixed width on desktop */}
-          <div className="w-full sm:w-64 flex-shrink-0">
+          <div className="w-full sm:w-64 shrink-0">
             <SelectDropdown
               options={chlTeamOptions}
               onChange={selectTeamOption}
@@ -765,7 +765,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
           }}
         >
           {/* Dropdown takes full width on mobile, fixed width on desktop */}
-          <div className="w-full sm:w-64 flex-shrink-0">
+          <div className="w-full sm:w-64 shrink-0">
             <SelectDropdown
               options={phlTeamOptions}
               onChange={selectTeamOption}
@@ -1104,14 +1104,14 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
         >
           {/* Group the dropdowns: full width container on mobile, auto/content width on desktop so they aren't squashed */}
           <div className="flex flex-row flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto pb-1 sm:pb-0">
-            <div className="min-w-[150px] flex-1 sm:flex-initial">
+            <div className="min-w-37.5 flex-1 sm:flex-initial">
               <SelectDropdown
                 placeholder="Select Team"
                 options={cfbTeamOptions}
                 onChange={selectTeamOption}
               />
             </div>
-            <div className="min-w-[150px] flex-1 sm:flex-initial">
+            <div className="min-w-37.5 flex-1 sm:flex-initial">
               <SelectDropdown
                 placeholder="Select Position"
                 options={FootballPositionOptions}
@@ -1119,7 +1119,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
                 onChange={handlePositionChange}
               />
             </div>
-            <div className="min-w-[130px] flex-1 sm:flex-initial">
+            <div className="min-w-32.5 flex-1 sm:flex-initial">
               <SelectDropdown
                 placeholder="Select Class"
                 options={YearOptions}
@@ -1647,7 +1647,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
           }}
         >
           {/* Dropdown takes full width on mobile, fixed width on desktop */}
-          <div className="w-full sm:w-64 flex-shrink-0">
+          <div className="w-full sm:w-64 shrink-0">
             <SelectDropdown
               options={nflTeamOptions}
               onChange={selectTeamOption}
