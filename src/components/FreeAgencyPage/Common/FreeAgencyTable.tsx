@@ -99,6 +99,14 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
   const { currentUser } = useAuthStore();
   const { isTablet, isDesktop, isUltraWide } = useResponsive();
   const backgroundColor = colorOne;
+  const sortablePlayers = useMemo(
+    () =>
+      players.map((player) => ({
+        ...player,
+        LeadingTeams: offersByPlayer[player.ID]?.length ?? 0,
+      })),
+    [players, offersByPlayer],
+  );
   const rosterColumns = useMemo(() => {
     let columns = [
       { header: "ID", accessor: "ID" },
@@ -158,7 +166,6 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
         { header: "Name", accessor: "LastName" },
         { header: "Pos", accessor: "Position" },
         { header: !isDesktop ? "Arch" : "Archetype", accessor: "Archetype" },
-        { header: "Age", accessor: "Age" },
         { header: "Exp", accessor: "Year" },
         { header: "Ovr", accessor: "Overall" },
       ];
@@ -572,7 +579,7 @@ export const FreeAgentTable: FC<FreeAgentTableProps> = ({
   return (
     <Table
       columns={rosterColumns}
-      data={players}
+      data={sortablePlayers}
       rowRenderer={rowRenderer(league)}
       backgroundColor={backgroundColor}
       team={team}
