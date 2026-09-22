@@ -2056,23 +2056,30 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
   ) => {
     if (!selectedTeam || !proRosterMap) return;
 
-    const result = designation === "nba"
-      ? await PlayerService.SendNBAPlayerToNBA(player.ID)
-      : designation === "gLeague"
-        ? await PlayerService.SendNBAPlayerToGLeague(player.ID)
-        : await PlayerService.AssignNBAPlayerAsTwoWay(player.ID);
+    const result =
+      designation === "nba"
+        ? await PlayerService.SendNBAPlayerToNBA(player.ID)
+        : designation === "gLeague"
+          ? await PlayerService.SendNBAPlayerToGLeague(player.ID)
+          : await PlayerService.AssignNBAPlayerAsTwoWay(player.ID);
     if (!result) return;
 
-    const roster = proRosterMap[selectedTeam.ID] || [];
-    const updatedRoster = roster.map((rosterPlayer) => {
-      if (rosterPlayer.ID !== player.ID) return rosterPlayer;
+    updateNBARosterMap((currentMap) => {
+      const roster = currentMap[selectedTeam.ID] || [];
+      if (roster.length === 0) return currentMap;
+
       return {
-        ...rosterPlayer,
-        IsGLeague: designation === "gLeague",
-        IsTwoWay: designation === "twoWay",
+        ...currentMap,
+        [selectedTeam.ID]: roster.map((rosterPlayer) => {
+          if (rosterPlayer.ID !== player.ID) return rosterPlayer;
+          return new NBAPlayer({
+            ...rosterPlayer,
+            IsGLeague: designation === "gLeague",
+            IsTwoWay: designation === "twoWay",
+          });
+        }),
       };
     });
-    updateNBARosterMap({ ...proRosterMap, [selectedTeam.ID]: updatedRoster });
   };
 
   const exportRoster = async () => {

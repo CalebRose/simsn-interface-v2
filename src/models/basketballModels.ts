@@ -1208,6 +1208,7 @@ export class Croot {
   }
 }
 export class NBAPlayer {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

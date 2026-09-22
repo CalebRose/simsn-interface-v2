@@ -2519,7 +2519,10 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
           accessor: "ThreePointShooting",
         },
         { header: !isUltraWide ? "FT" : "Freethrow", accessor: "Freethrow" },
-        { header: !isUltraWide ? "BIQ" : "Basketball IQ", accessor: "BasketballIQ" },
+        {
+          header: !isUltraWide ? "BIQ" : "Basketball IQ",
+          accessor: "BasketballIQ",
+        },
         { header: !isUltraWide ? "BW" : "Ballwork", accessor: "Ballwork" },
         { header: !isUltraWide ? "Stl" : "Stealing", accessor: "Stealing" },
         { header: !isUltraWide ? "RB" : "Rebounding", accessor: "Rebounding" },
@@ -2566,7 +2569,8 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
     [roster],
   );
   const gLeagueCount = useMemo(
-    () => roster.filter((player) => player.IsGLeague && !player.IsTwoWay).length,
+    () =>
+      roster.filter((player) => player.IsGLeague && !player.IsTwoWay).length,
     [roster],
   );
 
@@ -2683,13 +2687,28 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
                 label: `Extensions - ${item.FirstName} ${item.LastName}`,
               },
               ...(item.IsGLeague || item.IsTwoWay
-                ? [{ value: "nba", label: `NBA - ${item.FirstName} ${item.LastName}` }]
+                ? [
+                    {
+                      value: "nba",
+                      label: `NBA - ${item.FirstName} ${item.LastName}`,
+                    },
+                  ]
                 : []),
               ...(canAssignTwoWay
-                ? [{ value: "twoWay", label: `Two-Way - ${item.FirstName} ${item.LastName}` }]
+                ? [
+                    {
+                      value: "twoWay",
+                      label: `Two-Way - ${item.FirstName} ${item.LastName}`,
+                    },
+                  ]
                 : []),
               ...(canAssignGLeague
-                ? [{ value: "gLeague", label: `G-League - ${item.FirstName} ${item.LastName}` }]
+                ? [
+                    {
+                      value: "gLeague",
+                      label: `G-League - ${item.FirstName} ${item.LastName}`,
+                    },
+                  ]
                 : []),
               {
                 value: "tradeBlock",
@@ -2755,7 +2774,6 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
                 color: "#ffffff",
               }),
             }}
-            isDisabled={disable}
           />
         </div>
       </div>
