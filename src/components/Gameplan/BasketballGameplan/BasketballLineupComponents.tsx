@@ -1,22 +1,14 @@
-import { FC, useCallback, useMemo } from "react";
-import {
-  CollegeLineup,
-  CollegePlayer,
-  NBALineup,
-  NBAPlayer,
-} from "../../../models/basketballModels";
+import { ChangeEvent, FC, useCallback, useMemo } from "react";
+import { CollegeLineup, CollegePlayer, NBALineup, NBAPlayer } from "../../../models/basketballModels";
 import { Text } from "../../../_design/Typography";
-import PlayerPicture from "../../../_utility/usePlayerFaces";
-import { League, SimCBB } from "../../../_constants/constants";
-import {
-  getCBBLetterGrade,
-  getCBBOverall,
-} from "../../../_utility/getLetterGrade";
+import { SimCBB } from "../../../_constants/constants";
+import { getCBBLetterGrade } from "../../../_utility/getLetterGrade";
 import { Input } from "../../../_design/Inputs";
 import { SelectDropdown } from "../../../_design/Select";
-import { CSSObjectWithLabel, SingleValue } from "react-select";
+import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { useLeagueStore } from "../../../context/LeagueContext";
+import { getRatingBgColor } from "../FootballGameplan/Utils/GameplanPlayerUtils";
 
 interface BasketballLineupProps {
   selectedTeamLineups: CollegeLineup[] | NBALineup[];
@@ -26,123 +18,46 @@ interface BasketballLineupProps {
   position: string;
   selectedString: string;
   selectedStringAbbr: string;
-  selectedTeam: any;
-  ChangeLineupInput: (
-    playerID: number,
-    key: string,
-    value: number,
-    idx: number,
-  ) => void;
+  ChangeLineupInput: (playerID: number, key: string, value: number, idx: number) => void;
   playerOptions: { label: string; value: string }[];
   canModify: boolean;
 }
 
-const allocationList = [
-  "Minutes",
-  "InsideProportion",
-  "MidProportion",
-  "ThreeProportion",
-];
+const allocationList = ["InsideProportion", "MidProportion", "ThreeProportion", "Minutes"];
+const allocationLabel: Record<string, string> = { Minutes: "Usage", InsideProportion: "Inside", MidProportion: "Midrange", ThreeProportion: "3 Point" };
 
-export const BasketballLineup: FC<BasketballLineupProps> = ({
-  selectedTeamLineups,
-  index,
-  selectedRosterMap,
-  selectedTeamRoster,
-  position,
-  selectedString,
-  selectedStringAbbr,
-  selectedTeam,
-  ChangeLineupInput,
-  playerOptions,
-  canModify,
-}) => {
-  const lineup = useMemo(() => {
-    if (!selectedTeamLineups || selectedTeamLineups.length <= index) {
-      return null;
-    }
-    return selectedTeamLineups[index];
-  }, [selectedTeamLineups, index]);
+export const BasketballLineup: FC<BasketballLineupProps> = ({ selectedTeamLineups, index, selectedRosterMap, position, selectedString, selectedStringAbbr, ChangeLineupInput, playerOptions, canModify }) => {
+  const lineup = selectedTeamLineups[index];
+  const id = lineup ? lineup[`${selectedString}StringID`] : -1;
+  const positionLabel = position === "G" ? index + 1 : position === "F" ? index - 1 : 1;
+  const totalInput = lineup ? lineup[`${selectedStringAbbr}InsideProportion`] + lineup[`${selectedStringAbbr}MidProportion`] + lineup[`${selectedStringAbbr}ThreeProportion`] : 0;
+  const playerKey = `${selectedString}StringID`;
+  const eligiblePlayerOptions = useMemo(() => playerOptions.filter((option) => {
+    const candidateID = Number(option.value);
+    if (!candidateID) return true;
 
-  const id = lineup ? lineup[selectedString + "StringID"] : -1;
-
-  const ChangeInput = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      ChangeLineupInput(
-        id,
-        event.target.name,
-        Number(event.target.value),
-        index,
-      );
-    },
-    [ChangeLineupInput, id, index],
-  );
-
-  const totalInput = useMemo(() => {
-    if (!lineup) return 0;
-    return (
-      lineup[selectedStringAbbr + "InsideProportion"] +
-        lineup[selectedStringAbbr + "MidProportion"] +
-        lineup[selectedStringAbbr + "ThreeProportion"] || 0
+    const assignedElsewhereInFirstString = selectedString === "First" && selectedTeamLineups.some(
+      (otherLineup, otherIndex) => otherIndex !== index && otherLineup.FirstStringID === candidateID,
     );
-  }, [lineup, selectedStringAbbr]);
+    const assignedToAnotherStringInThisSlot = ["FirstStringID", "SecondStringID", "ThirdStringID"].some(
+      (stringKey) => stringKey !== playerKey && lineup[stringKey] === candidateID,
+    );
 
-  if (!lineup) return <></>;
+    return !assignedElsewhereInFirstString && !assignedToAnotherStringInThisSlot;
+  }), [index, lineup, playerKey, playerOptions, selectedString, selectedTeamLineups]);
+  const changeInput = useCallback((event: ChangeEvent<HTMLInputElement>) => ChangeLineupInput(id, event.target.name, Number(event.target.value), index), [ChangeLineupInput, id, index]);
+
+  if (!lineup) return null;
 
   return (
-    <div className="flex flex-col mb-4 border-b py-2.5 w-full border-gray-700 md:border-0">
-      <div key={index} className="flex flex-col items-center">
-        <Text variant="body-small" classes="font-semibold">
-          {position}
-        </Text>
-      </div>
-      <BasketballLineupPlayerCard
-        id={id}
-        rosterMap={selectedRosterMap}
-        team={selectedTeam}
-        playerOptions={playerOptions}
-        ChangeLineupInput={ChangeLineupInput}
-        lineupString={selectedString + "StringID"}
-        idx={index}
-        canModify={canModify}
-      />
-      <div>
-        <Text variant="small" className="text-center mb-2 font-semibold">
-          Shot Allocation: {totalInput}%
-        </Text>
-      </div>
-      <div className="space-y-2 mb-2">
-        {allocationList.map((x) => {
-          const label = (() => {
-            switch (x) {
-              case "Minutes":
-                return "Usage";
-              case "InsideProportion":
-                return "Inside Proportion";
-              case "MidProportion":
-                return "Mid Proportion";
-              case "ThreeProportion":
-                return "Three Proportion";
-              default:
-                return x;
-            }
-          })();
-
-          const key = `${selectedStringAbbr}${x}`;
-          if (!canModify) return <></>;
-          return (
-            <Input
-              type="number"
-              key={x}
-              label={label}
-              name={key}
-              value={lineup[key] as number}
-              onChange={ChangeInput}
-              disabled={!canModify}
-              classes="text-center mr-2"
-            />
-          );
-        })}
+    <div className="grid grid-cols-1 items-center gap-3 rounded-lg border border-slate-600 bg-slate-800/70 p-3 xl:grid-cols-[3.5rem_minmax(18rem,1fr)_minmax(22rem,1.2fr)]">
+      <div className="flex items-center justify-center"><span className="rounded-md bg-black/75 px-3 py-2 text-sm font-bold text-white">{position}{positionLabel}</span></div>
+      <BasketballLineupPlayerCard id={id} rosterMap={selectedRosterMap} playerOptions={eligiblePlayerOptions} ChangeLineupInput={ChangeLineupInput} lineupString={playerKey} idx={index} canModify={canModify} />
+      <div className="flex flex-col gap-2">
+        <Text variant="small" classes="text-left font-semibold">Shot Allocation: {totalInput}%</Text>
+        {canModify && <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {allocationList.map((key) => <Input type="number" key={key} label={allocationLabel[key]} name={`${selectedStringAbbr}${key}`} value={lineup[`${selectedStringAbbr}${key}`] as number} onChange={changeInput} classes="w-14 min-w-0 justify-self-end px-1.5 py-1 text-center text-sm" />)}
+        </div>}
       </div>
     </div>
   );
@@ -152,214 +67,68 @@ interface BasketballLineupPlayerCardProps {
   id: number;
   idx: number;
   rosterMap: Record<number, CollegePlayer | NBAPlayer>;
-  team: any;
   playerOptions: { label: string; value: string }[];
-  ChangeLineupInput: (
-    id: number,
-    name: string,
-    value: number,
-    idx: number,
-  ) => void;
+  ChangeLineupInput: (id: number, name: string, value: number, idx: number) => void;
   lineupString: string;
   canModify: boolean;
 }
 
-const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({
-  id,
-  idx,
-  rosterMap,
-  team,
-  playerOptions,
-  ChangeLineupInput,
-  lineupString,
-  canModify,
-}) => {
+const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({ id, idx, rosterMap, playerOptions, ChangeLineupInput, lineupString, canModify }) => {
   const { selectedLeague } = useLeagueStore();
   const player = rosterMap[id];
-
-  const selectedOption = useMemo(() => {
-    if (!player) return null;
-    return playerOptions.find((opt) => Number(opt.value) === player.ID) || null;
-  }, [playerOptions, player]);
-
-  const GetValue = useCallback(
-    (opts: SingleValue<SelectOption>) => {
-      if (opts) {
-        ChangeLineupInput(player.ID, lineupString, Number(opts.value), idx);
-      }
-    },
-    [ChangeLineupInput, player, lineupString, idx],
-  );
-
-  const placeholder = useMemo(() => {
-    if (!player) return "Please select a player";
-    return `${player.ID} ${player.Position} ${player.FirstName} ${player.LastName}`;
-  }, [player]);
+  const selectedOption = useMemo(() => playerOptions.find((option) => Number(option.value) === player?.ID) || null, [player, playerOptions]);
+  const changePlayer = useCallback((option: SingleValue<SelectOption>) => { if (option && player) ChangeLineupInput(player.ID, lineupString, Number(option.value), idx); }, [ChangeLineupInput, idx, lineupString, player]);
+  const placeholder = player ? `${player.ID} ${player.Position} ${player.FirstName} ${player.LastName}` : "Select a player";
+  const rating = (value: number) => selectedLeague === SimCBB ? getCBBLetterGrade(value, player?.Year || 1) : value;
+  const overall = player ? rating(player.Overall) : "";
+  const overallBadgeClass = selectedLeague === SimCBB
+    ? getRatingBgColor(overall)
+    : player && player.Overall >= 40
+      ? "bg-[#00ACC9]"
+      : player && player.Overall >= 35
+        ? "bg-[#00A666]"
+        : player && player.Overall >= 30
+          ? "bg-[#D7C12C]"
+          : player && player.Overall >= 25
+            ? "bg-[#F18831]"
+            : "bg-[#AC2B27]";
+  const primaryAttributes = player ? [
+    ["INS", rating(player.InsideShooting)],
+    ["MID", rating(player.MidRangeShooting)],
+    ["3PT", rating(player.ThreePointShooting)],
+    ["INT D", rating(player.InteriorDefense)],
+    ["PER D", rating(player.PerimeterDefense)],
+  ] : [];
+  const secondaryAttributes = player ? [
+    ["AGI", rating(player.Agility)],
+    ["FT", rating(player.FreeThrow)],
+    ["BH", rating(player.Ballwork)],
+    ["STL", rating(player.Stealing)],
+    ["REB", rating(player.Rebounding)],
+    ["BLK", rating(player.Blocking)],
+  ] : [];
 
   return (
-    <div className="flex flex-col items-center mb-2 space-y-2">
-      {player && (
-        <div className="flex items-center justify-center h-24 w-24 sm:h-32 sm:w-32 px-5 rounded-lg border-2 bg-white">
-          <PlayerPicture
-            playerID={id}
-            player={player}
-            team={team}
-            league={selectedLeague as League}
-          />
+    <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(15rem,1fr)_2.5rem_repeat(5,3.5rem)]">
+      <div className="min-w-0">
+        <SelectDropdown value={selectedOption} onChange={changePlayer} options={playerOptions} isDisabled={!canModify} placeholder={placeholder} />
+        {player && <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-200">
+          {secondaryAttributes.map(([label, value]) => <span key={label}>{label} <strong>{value}</strong></span>)}
+        </div>}
+      </div>
+      {player && <>
+        <div
+          className={`mx-auto flex h-9 w-9 items-center justify-center self-start rounded-full text-sm font-bold text-white ${overallBadgeClass}`}
+          title="Overall rating"
+          style={{ WebkitTextStroke: "0.5px black", textShadow: "0 1px 1px black" }}
+        >
+          {overall}
         </div>
-      )}
-      <SelectDropdown
-        value={selectedOption}
-        onChange={GetValue}
-        options={playerOptions}
-        isDisabled={!canModify}
-        placeholder={placeholder}
-        styles={{
-          control: (base, state) => ({
-            ...base,
-            minHeight: "32px", // shorter control
-            fontSize: "1.5vh", // smaller text
-            backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-            borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
-            color: "#ffffff",
-            padding: "0.6vh",
-            boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
-            borderRadius: "8px",
-            transition: "all 0.2s ease",
-            width: "100%",
-          }),
-          valueContainer: (base: CSSObjectWithLabel) => ({
-            ...base,
-            padding: "0 0.6vh", // tighter padding
-            width: "10rem",
-          }),
-          singleValue: (base: CSSObjectWithLabel) => ({
-            ...base,
-            fontSize: "1.5vh",
-            color: "#fff",
-          }),
-          placeholder: (base: CSSObjectWithLabel) => ({
-            ...base,
-            fontSize: "1.5vh",
-            color: "#fff",
-          }),
-          option: (base: any, state: { isFocused: any }) => ({
-            ...base,
-            backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-            color: "#fff",
-            padding: "10px",
-            cursor: "pointer",
-            // etc.
-          }),
-          menu: (base: CSSObjectWithLabel) => ({
-            ...base,
-            fontSize: "0.75rem",
-            backgroundColor: "#1a202c",
-            borderRadius: "8px",
-            color: "#fff",
-          }),
-          menuList: (provided: any) => ({
-            ...provided,
-            backgroundColor: "#1a202c",
-            padding: "0",
-            color: "#fff",
-          }),
-        }}
-      />
-      {player && (
-        <>
-          <Text variant="body-small">
-            Overall:{" "}
-            <span className="text-xs">
-              {selectedLeague === SimCBB
-                ? getCBBLetterGrade(player.Overall, player.Year)
-                : player.Overall}
-            </span>
-          </Text>
-          <div className="grid grid-cols-2 space-x-4 space-y-2">
-            <Text variant="body-small">
-              Inside:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.InsideShooting, player.Year)
-                  : player.InsideShooting}
-              </span>
-            </Text>
-            <Text variant="body-small">
-              Middle:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.MidRangeShooting, player.Year)
-                  : player.MidRangeShooting}
-              </span>
-            </Text>
-            <Text variant="body-small">
-              3pt:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.ThreePointShooting, player.Year)
-                  : player.ThreePointShooting}
-              </span>
-            </Text>
-            <Text variant="body-small">
-              Ballwork:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.Ballwork, player.Year)
-                  : player.Ballwork}
-              </span>
-            </Text>
-            <Text variant="body-small">
-              Agility:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.Agility, player.Year)
-                  : player.Agility}
-              </span>
-            </Text>
-            <Text variant="body-small">
-              Free Throw:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.FreeThrow, player.Year)
-                  : player.FreeThrow}
-              </span>
-            </Text>
-            <Text variant="body-small">
-              Stealing:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.Stealing, player.Year)
-                  : player.Stealing}
-              </span>
-            </Text>
-            <Text variant="body-small">
-              Blocking:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.Blocking, player.Year)
-                  : player.Blocking}
-              </span>
-            </Text>
-            <Text variant="body-small">
-              Int. Defense:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.InteriorDefense, player.Year)
-                  : player.InteriorDefense}
-              </span>
-            </Text>
-            <Text variant="body-small">
-              Per. Defense:{" "}
-              <span className="text-xs">
-                {selectedLeague === SimCBB
-                  ? getCBBLetterGrade(player.PerimeterDefense, player.Year)
-                  : player.PerimeterDefense}
-              </span>
-            </Text>
-          </div>
-        </>
-      )}
+        {primaryAttributes.map(([label, value]) => <div key={label} className="flex flex-col items-center justify-start text-xs">
+          <span className="whitespace-nowrap text-slate-300">{label}</span>
+          <strong className="mt-1 text-sm">{value}</strong>
+        </div>)}
+      </>}
     </div>
   );
 };
