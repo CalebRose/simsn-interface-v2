@@ -152,6 +152,8 @@ export const getHockeyScoutableAttributes = (
         "Puck Handling",
         "Close Shot Accuracy",
         "Close Shot Power",
+        "Long Shot Accuracy",
+        "Long Shot Power",
         "Strength",
         "Agility",
         "Faceoffs Potential",
@@ -159,8 +161,14 @@ export const getHockeyScoutableAttributes = (
         "Puck Handling Potential",
         "Close Shot Accuracy Potential",
         "Close Shot Power Potential",
+        "Long Shot Accuracy Potential",
+        "Long Shot Power Potential",
         "Strength Potential",
         "Agility Potential",
+        "Body Checking",
+        "Stick Checking",
+        "Body Checking Potential",
+        "Stick Checking Potential",
       ];
     case "LW": // Left Wing
     case "RW": // Right Wing
@@ -173,12 +181,18 @@ export const getHockeyScoutableAttributes = (
         "One Timer",
         "Puck Handling",
         "Agility",
+        "Body Checking",
+        "Stick Checking",
+        "Faceoffs",
         "Long Shot Accuracy Potential",
         "Long Shot Power Potential",
         "Close Shot Accuracy Potential",
         "Close Shot Power Potential",
         "Puck Handling Potential",
         "Agility Potential",
+        "Body Checking Potential",
+        "Stick Checking Potential",
+        "Faceoffs Potential",
       ];
     case "LD": // Left Defenseman
     case "RD": // Right Defenseman
@@ -190,6 +204,8 @@ export const getHockeyScoutableAttributes = (
         "Passing",
         "Long Shot Accuracy",
         "Long Shot Power",
+        "Close Shot Accuracy",
+        "Close Shot Power",
         "Strength",
         "Body Checking Potential",
         "Stick Checking Potential",
@@ -197,6 +213,8 @@ export const getHockeyScoutableAttributes = (
         "Passing Potential",
         "Long Shot Accuracy Potential",
         "Long Shot Power Potential",
+        "Close Shot Accuracy Potential",
+        "Close Shot Power Potential",
         "Strength Potential",
       ];
     case "G": // Goalie
