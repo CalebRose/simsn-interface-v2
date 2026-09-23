@@ -21,7 +21,9 @@ export const PageContainer: React.FC<PageContainerProps> = ({
 }) => {
   return (
     <div
-      className={`w-full max-w-full min-h-screen pt-20 py-3 px-4 overflow-x-hidden${direction ? ` flex ${direction === "row" ? "flex-row" : "flex-col"}` : ""} ${classes}`}
+      // overflow-x-clip (not -hidden) avoids the browser forcing overflow-y to
+      // "auto" on this element, which would break position:sticky descendants.
+      className={`w-full max-w-full min-h-screen pt-20 py-3 px-4 overflow-x-clip${direction ? ` flex ${direction === "row" ? "flex-row" : "flex-col"}` : ""} ${classes}`}
     >
       {title.length > 0 && (
         <div className="flex flex-row mb-1">

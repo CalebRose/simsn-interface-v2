@@ -690,7 +690,7 @@ export const LineupHelpModal: FC<HelpModalProps> = ({
 }) => {
   let title = "Lineup Page";
   if (modalAction === InfoType) {
-    title = `${player.ID} ${player.Position} ${player.FirstName} ${player.LastName}`;
+    title = `${player.ID} ${player.Position} ${player.Archetype} ${player.FirstName} ${player.LastName}`;
   } else if (modalAction === Help2) {
     title = `Zone Input Fields`;
   } else if (modalAction === Help3) {
