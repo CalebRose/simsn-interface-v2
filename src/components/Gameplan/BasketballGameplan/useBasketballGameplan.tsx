@@ -18,6 +18,21 @@ const lineupSnapshotKeys = [
   "FSThreeProportion", "SSThreeProportion", "TSThreeProportion",
 ] as const;
 
+const lineupPositionOrder: Record<string, number> = { G: 0, F: 1, C: 2 };
+
+// The API returns lineup rows in database/creation order (typically C, F, F, G, G).
+// Within a position, the newest (highest-ID) row is the first chart slot.
+const orderLineupsForDisplay = <T extends CollegeLineup | NBALineup>(lineups: T[]): T[] =>
+  lineups
+    .map((lineup) => lineup)
+    .sort(
+      (left, right) =>
+        (lineupPositionOrder[left.Position] ?? Number.MAX_SAFE_INTEGER) -
+          (lineupPositionOrder[right.Position] ?? Number.MAX_SAFE_INTEGER) ||
+        right.ID - left.ID,
+    )
+;
+
 export const useBasketballGameplan = () => {
   const { currentUser } = useAuthStore();
   const { selectedLeague } = useLeagueStore();
@@ -265,13 +280,13 @@ export const useBasketballGameplan = () => {
 
   const selectedTeamLineups = useMemo(() => {
     if (selectedTeamID === 0) {
-      return userLineups;
+      return orderLineupsForDisplay(userLineups);
     }
     if (selectedLeague === SimCBB && cbbLineupMap) {
-      return cbbLineupMap[selectedTeamID] || [];
+      return orderLineupsForDisplay(cbbLineupMap[selectedTeamID] || []);
     }
     if (selectedLeague === SimNBA && nbaLineupMap) {
-      return nbaLineupMap[selectedTeamID] || [];
+      return orderLineupsForDisplay(nbaLineupMap[selectedTeamID] || []);
     }
     return [];
   }, [selectedLeague, selectedTeamID, cbbLineupMap, nbaLineupMap]);
@@ -469,19 +484,25 @@ export const useBasketballGameplan = () => {
       }
       if (selectedLeague === SimCBB) {
         const updatedLineupMap = { ...cbbLineupMap };
-        updatedLineupMap[cbbTeam!.ID] = [...updatedLineupMap[cbbTeam!.ID]];
-        updatedLineupMap[cbbTeam!.ID][index] = new CollegeLineup({
-          ...updatedLineupMap[cbbTeam!.ID][index],
+        const lineups = [...updatedLineupMap[cbbTeam!.ID]];
+        const sourceIndex = lineups.findIndex((lineup) => lineup.ID === selectedTeamLineups[index]?.ID);
+        if (sourceIndex < 0) return;
+        lineups[sourceIndex] = new CollegeLineup({
+          ...lineups[sourceIndex],
           [key]: value,
         });
+        updatedLineupMap[cbbTeam!.ID] = lineups;
         updateCBBLineupMap(updatedLineupMap);
       } else {
         const updatedLineupMap = { ...nbaLineupMap };
-        updatedLineupMap[nbaTeam!.ID] = [...updatedLineupMap[nbaTeam!.ID]];
-        updatedLineupMap[nbaTeam!.ID][index] = new NBALineup({
-          ...updatedLineupMap[nbaTeam!.ID][index],
+        const lineups = [...updatedLineupMap[nbaTeam!.ID]];
+        const sourceIndex = lineups.findIndex((lineup) => lineup.ID === selectedTeamLineups[index]?.ID);
+        if (sourceIndex < 0) return;
+        lineups[sourceIndex] = new NBALineup({
+          ...lineups[sourceIndex],
           [key]: value,
         });
+        updatedLineupMap[nbaTeam!.ID] = lineups;
         updateNBALineupMap(updatedLineupMap);
       }
     },
@@ -496,6 +517,7 @@ export const useBasketballGameplan = () => {
       selectedString,
       lineupFormation,
       isEligibleForLineupSlot,
+      selectedTeamLineups,
     ],
   );
 
@@ -504,8 +526,10 @@ export const useBasketballGameplan = () => {
       if (selectedLeague === SimCBB) {
         const updatedLineupMap = { ...cbbLineupMap };
         const lineups = [...updatedLineupMap[cbbTeam!.ID]];
-        const lineup = lineups[index];
-        lineups[index] = new CollegeLineup({
+        const sourceIndex = lineups.findIndex((lineup) => lineup.ID === selectedTeamLineups[index]?.ID);
+        if (sourceIndex < 0) return;
+        const lineup = lineups[sourceIndex];
+        lineups[sourceIndex] = new CollegeLineup({
           ...lineup,
           [firstKey]: lineup[secondKey],
           [secondKey]: lineup[firstKey],
@@ -515,8 +539,10 @@ export const useBasketballGameplan = () => {
       } else {
         const updatedLineupMap = { ...nbaLineupMap };
         const lineups = [...updatedLineupMap[nbaTeam!.ID]];
-        const lineup = lineups[index];
-        lineups[index] = new NBALineup({
+        const sourceIndex = lineups.findIndex((lineup) => lineup.ID === selectedTeamLineups[index]?.ID);
+        if (sourceIndex < 0) return;
+        const lineup = lineups[sourceIndex];
+        lineups[sourceIndex] = new NBALineup({
           ...lineup,
           [firstKey]: lineup[secondKey],
           [secondKey]: lineup[firstKey],
@@ -525,7 +551,7 @@ export const useBasketballGameplan = () => {
         updateNBALineupMap(updatedLineupMap);
       }
     },
-    [cbbLineupMap, cbbTeam, nbaLineupMap, nbaTeam, selectedLeague, updateCBBLineupMap, updateNBALineupMap],
+    [cbbLineupMap, cbbTeam, nbaLineupMap, nbaTeam, selectedLeague, selectedTeamLineups, updateCBBLineupMap, updateNBALineupMap],
   );
 
   const viewingUserTeam = useMemo(() => {
