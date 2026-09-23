@@ -45,6 +45,7 @@ import { NewsPage } from "../components/News/NewsPage";
 import { DraftPage } from "../components/Draft/DraftPage";
 import { AdminUsersPage } from "../components/AdminUsers/AdminUsersPage";
 import { ForumsHomePage } from "../components/Forum/ForumsHomePage";
+import { ForumSearchPage } from "../components/Forum/ForumSearchPage";
 import { ForumCategoryPage } from "../components/Forum/ForumCategoryPage";
 import { ThreadPage } from "../components/Forum/ThreadPage";
 import { CreateThreadPage } from "../components/Forum/CreateThreadPage";
@@ -83,12 +84,60 @@ export const AuthRoutes = [
       </AuthGuard>
     }
   />,
-  <Route key="CLAX Team" path={routes.CLAX_TEAM} element={<AuthGuard><CollegeLacrosseRosterPage /></AuthGuard>} />,
-  <Route key="CLAX Lineups" path={routes.CLAX_LINEUPS} element={<AuthGuard><CollegeLacrosseLineupsPage /></AuthGuard>} />,
-  <Route key="CLAX Recruiting" path={routes.CLAX_RECRUITING} element={<AuthGuard><CollegeLacrosseRecruitingPage /></AuthGuard>} />,
-  <Route key="CLAX Schedule" path={routes.CLAX_SCHEDULE} element={<AuthGuard><CollegeLacrosseSchedulePage /></AuthGuard>} />,
-  <Route key="CLAX Statistics" path={routes.CLAX_STATISTICS} element={<AuthGuard><CollegeLacrosseStatisticsPage /></AuthGuard>} />,
-  <Route key="CLAX Admin" path={routes.CLAX_ADMIN} element={<AuthGuard><CollegeLacrosseAdminPage /></AuthGuard>} />,
+  <Route
+    key="CLAX Team"
+    path={routes.CLAX_TEAM}
+    element={
+      <AuthGuard>
+        <CollegeLacrosseRosterPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="CLAX Lineups"
+    path={routes.CLAX_LINEUPS}
+    element={
+      <AuthGuard>
+        <CollegeLacrosseLineupsPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="CLAX Recruiting"
+    path={routes.CLAX_RECRUITING}
+    element={
+      <AuthGuard>
+        <CollegeLacrosseRecruitingPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="CLAX Schedule"
+    path={routes.CLAX_SCHEDULE}
+    element={
+      <AuthGuard>
+        <CollegeLacrosseSchedulePage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="CLAX Statistics"
+    path={routes.CLAX_STATISTICS}
+    element={
+      <AuthGuard>
+        <CollegeLacrosseStatisticsPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="CLAX Admin"
+    path={routes.CLAX_ADMIN}
+    element={
+      <AuthGuard>
+        <CollegeLacrosseAdminPage />
+      </AuthGuard>
+    }
+  />,
   <Route
     key="PLAX Home"
     path={routes.PLAX_HOME}
@@ -718,6 +767,15 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <ForumsHomePage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="Forum Search"
+    path={routes.FORUM_SEARCH}
+    element={
+      <AuthGuard>
+        <ForumSearchPage />
       </AuthGuard>
     }
   />,

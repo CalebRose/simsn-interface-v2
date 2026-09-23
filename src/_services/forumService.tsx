@@ -43,6 +43,7 @@ import {
   REACTION_LABELS,
   RichTextDocument,
   Achievement,
+  ThreadSearchParams,
 } from "../models/forumModels";
 import { CurrentUser } from "../_hooks/useCurrentUser";
 import { logFirestoreRead } from "../_utility/firestoreLogger";
@@ -193,6 +194,56 @@ export const ForumService = {
 
     const snap = await getDocs(q);
     logFirestoreRead(`GetThreadsByForum [${forumId}]`, snap.docs.length);
+    const threads = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Thread);
+    const lastDoc =
+      snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;
+    return { threads, lastDoc };
+  },
+
+  // Search threads across forums. Only one field (`title` prefix, when
+  // provided) can carry a range filter alongside the equality filters below,
+  // so date-range/subforum-set narrowing beyond `forumIds` happens client-side.
+  SearchThreads: async (
+    params: ThreadSearchParams,
+    cursor?: QueryDocumentSnapshot,
+  ): Promise<{ threads: Thread[]; lastDoc: QueryDocumentSnapshot | null }> => {
+    const { forumIds, authorUid, titlePrefix, pageSize = 25 } = params;
+    const clauses = [where("isDeleted", "==", false)];
+
+    if (forumIds && forumIds.length > 0) {
+      clauses.push(
+        forumIds.length === 1
+          ? where("forumId", "==", forumIds[0])
+          : where("forumId", "in", forumIds.slice(0, 30)),
+      );
+    }
+    if (authorUid) clauses.push(where("author.uid", "==", authorUid));
+
+    const orderField = titlePrefix ? "title" : "latestActivityAt";
+    const orderDirection = titlePrefix ? "asc" : "desc";
+    if (titlePrefix) {
+      clauses.push(where("title", ">=", titlePrefix));
+      clauses.push(where("title", "<", titlePrefix + "\uf8ff"));
+    }
+
+    const buildQuery = () =>
+      cursor
+        ? query(
+            threadsCol(),
+            ...clauses,
+            orderBy(orderField, orderDirection),
+            startAfter(cursor),
+            limit(pageSize),
+          )
+        : query(
+            threadsCol(),
+            ...clauses,
+            orderBy(orderField, orderDirection),
+            limit(pageSize),
+          );
+
+    const snap = await getDocs(buildQuery());
+    logFirestoreRead("SearchThreads", snap.docs.length);
     const threads = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Thread);
     const lastDoc =
       snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null;

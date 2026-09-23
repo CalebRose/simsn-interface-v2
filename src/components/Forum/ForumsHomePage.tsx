@@ -92,15 +92,24 @@ export const ForumsHomePage: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6 space-x-2">
           <Text variant="h4">Community Forums</Text>
-          {(permissions.canCreateThread || subscriberCanPost) && (
+          <div className="flex items-center gap-2">
             <Button
-              variant="primary"
+              variant="secondaryOutline"
               size="sm"
-              onClick={() => navigate(routes.FORUM_CREATE_THREAD)}
+              onClick={() => navigate(routes.FORUM_SEARCH)}
             >
-              + New Thread
+              Search
             </Button>
-          )}
+            {(permissions.canCreateThread || subscriberCanPost) && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate(routes.FORUM_CREATE_THREAD)}
+              >
+                + New Thread
+              </Button>
+            )}
+          </div>
         </div>
 
         <ForumEditorialSection
@@ -115,6 +124,7 @@ export const ForumsHomePage: React.FC = () => {
           </div>
         ) : (
           <section className="flex w-full flex-col gap-0 text-left">
+            {/* Search Bar Here */}
             {/* Header row — all three column headers share the same row */}
             {!isMobile && (
               <div className="grid grid-cols-12 gap-4 border-b border-white/10 pb-3">
