@@ -84,6 +84,7 @@ export default {
   NEWS: "/news",
   // ─── Forum routes ───────────────────────────
   FORUMS: "/forums",
+  FORUM_SEARCH: "/forums/search",
   FORUM_CATEGORY: "/forums/:forumSlug",
   FORUM_SUBFORUM: "/forums/:forumSlug/:subforumSlug",
   FORUM_THREAD: "/forums/thread",

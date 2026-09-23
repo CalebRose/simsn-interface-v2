@@ -388,6 +388,15 @@ export interface ThreadFilters {
   showPinned?: boolean;
 }
 
+export interface ThreadSearchParams {
+  /** Single forum/subforum id, or multiple ids (parent + children) to search a whole category */
+  forumIds?: string[];
+  authorUid?: string;
+  /** Case-sensitive "starts with" match against thread title */
+  titlePrefix?: string;
+  pageSize?: number;
+}
+
 export interface PostCursor {
   threadId: string;
   startAfterDoc?: unknown;
