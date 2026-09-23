@@ -14,7 +14,7 @@ import { BasketballCourtVision } from "./BasketballCourtVision";
 import { Input } from "../../../_design/Inputs";
 import { Modal } from "../../../_design/Modal";
 import { CBBPlayerInfoModalBody, NBAPlayerInfoModalBody } from "../../Common/Modals";
-import { SimCBB } from "../../../_constants/constants";
+import { League, SimCBB } from "../../../_constants/constants";
 import { CollegePlayer, NBAPlayer } from "../../../models/basketballModels";
 
 interface ModeOption {
@@ -405,7 +405,7 @@ export const BasketballGameplanPage = () => {
               selectedTeamLineups={selectedTeamLineups}
               selectedRosterMap={selectedRosterMap}
               team={selectedTeam}
-              league={selectedLeague}
+              league={selectedLeague as League}
               primaryColor={teamColors.One}
               accentColor={teamColors.Two}
               onPlayerClick={setModalPlayer}
@@ -482,7 +482,7 @@ export const BasketballGameplanPage = () => {
               backgroundColor: backgroundColor,
             }}
           >
-            <div className="grid grid-cols-1 md:grid-cols-5 w-full space-x-4">
+            <div className="w-full space-y-2">
               {lineupFormation.map((position, index) => {
                 const playerOptions = (() => {
                   if (position === "G") return selectedGuardOptions;

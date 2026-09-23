@@ -270,7 +270,6 @@ export const useBasketballGameplan = () => {
   const selectedForwardOptions = useMemo(() => {
     if (!selectedTeamRoster) return [];
     const options = selectedTeamRoster
-      .filter((player) => player.Position === "G" || player.Position === "F")
       .map((player) => ({
         value: player.ID.toString(),
         label: `${player.ID} ${player.Position} ${player.FirstName} ${player.LastName}`,
@@ -278,6 +277,17 @@ export const useBasketballGameplan = () => {
     options.unshift({ value: "0", label: "None" });
     return options;
   }, [selectedTeamRoster]);
+
+  const isEligibleForLineupSlot = useCallback(
+    (slotPosition: string, playerID: number) => {
+      const player = selectedRosterMap[playerID];
+      if (!player) return false;
+      if (slotPosition === "G") return player.Position === "G" || player.Position === "F";
+      if (slotPosition === "C") return player.Position === "C" || player.Position === "F";
+      return true;
+    },
+    [selectedRosterMap],
+  );
 
   const selectedCenterOptions = useMemo(() => {
     if (!selectedTeamRoster) return [];
@@ -350,6 +360,13 @@ export const useBasketballGameplan = () => {
 
   const ChangeLineupInput = useCallback(
     (playerID: number, key: string, value: number, index: number) => {
+      if (
+        key.endsWith("StringID") &&
+        value !== 0 &&
+        !isEligibleForLineupSlot(lineupFormation[index], value)
+      ) {
+        return;
+      }
       if (selectedLeague === SimCBB) {
         const updatedLineupMap = { ...cbbLineupMap };
         updatedLineupMap[cbbTeam!.ID] = [...updatedLineupMap[cbbTeam!.ID]];
@@ -377,6 +394,8 @@ export const useBasketballGameplan = () => {
       nbaTeam,
       updateNBALineupMap,
       selectedString,
+      lineupFormation,
+      isEligibleForLineupSlot,
     ],
   );
 
@@ -417,7 +436,6 @@ export const useBasketballGameplan = () => {
       return errorList;
     }
     const firstStringPlayers = new Set<number>();
-    const secondStringPlayers = new Set<number>();
     let requiredMinutes = 40;
     let requiredShotTotal = 100;
     if (selectedLeague === SimNBA) {
@@ -437,8 +455,21 @@ export const useBasketballGameplan = () => {
       C: 0,
     };
 
-    for (const lineup of selectedTeamLineups) {
-      const position = lineup.Position;
+    for (const [index, lineup] of selectedTeamLineups.entries()) {
+      const position = lineupFormation[index] || lineup.Position;
+      const slotLabel = `${position}${position === "G" ? index + 1 : position === "F" ? index - 1 : 1}`;
+
+      for (const [stringLabel, playerID] of [
+        ["First", lineup.FirstStringID],
+        ["Second", lineup.SecondStringID],
+        ["Third", lineup.ThirdStringID],
+      ] as const) {
+        if (playerID && !isEligibleForLineupSlot(position, playerID)) {
+          errorList.push(
+            `${slotLabel} ${stringLabel} string must use ${position === "G" ? "a Guard or Forward" : position === "C" ? "a Center or Forward" : "any roster player"}.`,
+          );
+        }
+      }
 
       // --- 1. First & second string filled ---
       if (!lineup.FirstStringID) {
@@ -455,10 +486,7 @@ export const useBasketballGameplan = () => {
           firstStringPositionCounts[p.Position] =
             (firstStringPositionCounts[p.Position] || 0) + 1;
         }
-        if (
-          firstStringPlayers.has(lineup.FirstStringID) ||
-          secondStringPlayers.has(lineup.FirstStringID)
-        ) {
+        if (firstStringPlayers.has(lineup.FirstStringID)) {
           errorList.push(
             `${getPlayerName(lineup.FirstStringID, selectedRosterMap)} is assigned as first string at more than one position.`,
           );
@@ -471,16 +499,6 @@ export const useBasketballGameplan = () => {
         if (p) {
           secondStringPositionCounts[p.Position] =
             (secondStringPositionCounts[p.Position] || 0) + 1;
-        }
-        if (
-          secondStringPlayers.has(lineup.SecondStringID) ||
-          firstStringPlayers.has(lineup.SecondStringID)
-        ) {
-          errorList.push(
-            `${getPlayerName(lineup.SecondStringID, selectedRosterMap)} is assigned as second string at more than one position.`,
-          );
-        } else {
-          secondStringPlayers.add(lineup.SecondStringID);
         }
       }
 
@@ -621,7 +639,7 @@ export const useBasketballGameplan = () => {
     if (playerExhaustionEnabled && (!Number.isInteger(playerExhaustionValue) || playerExhaustionValue < 0 || playerExhaustionValue > 100)) errorList.push("Player exhaustion must be 0–100.");
     if (teamExhaustionEnabled && (!Number.isInteger(teamExhaustionValue) || teamExhaustionValue < 0 || teamExhaustionValue > 100)) errorList.push("Team exhaustion must be 0–100.");
     return errorList;
-  }, [selectedLeague, selectedRosterMap, selectedTeamLineups, foulProtectionMode, foulProtectionValue, opponentLeadEnabled, opponentLeadValue, playerExhaustionEnabled, playerExhaustionId, playerExhaustionValue, teamExhaustionEnabled, teamExhaustionValue, defensiveSystem, focusOpponentId, focusOpponentRoster, focusPlayer]);
+  }, [selectedLeague, selectedRosterMap, selectedTeamLineups, lineupFormation, isEligibleForLineupSlot, foulProtectionMode, foulProtectionValue, opponentLeadEnabled, opponentLeadValue, playerExhaustionEnabled, playerExhaustionId, playerExhaustionValue, teamExhaustionEnabled, teamExhaustionValue, defensiveSystem, focusOpponentId, focusOpponentRoster, focusPlayer]);
 
   const totalMinutesAllocated = useMemo(() => {
     let total = 0;
