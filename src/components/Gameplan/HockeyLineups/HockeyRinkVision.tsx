@@ -12,6 +12,7 @@ import { Logo } from "../../../_design/Logo";
 import PlayerPicture from "../../../_utility/usePlayerFaces";
 import { getHockeyLetterGrade } from "../../../_utility/getLetterGrade";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
+import { useResponsive } from "../../../_hooks/useMobile";
 
 type HockeyPlayer = CollegePlayer | ProfessionalPlayer;
 type HockeyLineup = CollegeLineup | ProfessionalLineup;
@@ -149,6 +150,7 @@ export const HockeyRinkVision = ({
   accentColor,
   onPlayerClick,
 }: HockeyRinkVisionProps) => {
+  const { isMobile, isTablet } = useResponsive();
   const logo = team?.ID ? getLogo(league, team.ID, false) : "";
   const teamName = team?.TeamName || "";
 
@@ -198,6 +200,10 @@ export const HockeyRinkVision = ({
       lineup: forwardLineup,
     },
   ];
+
+  if (isMobile || isTablet) {
+    return <></>;
+  }
 
   return (
     <section
