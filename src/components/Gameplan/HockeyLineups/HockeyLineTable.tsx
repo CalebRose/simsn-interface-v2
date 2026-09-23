@@ -5,6 +5,7 @@ import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { Button } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
 import { Info } from "../../../_design/Icons";
+import { useResponsive } from "../../../_hooks/useMobile";
 import { League, Zone } from "../../../_constants/constants";
 import {
   CollegeLineup,
@@ -85,6 +86,7 @@ export const HockeyLineTable: FC<HockeyLineTableProps> = ({
   ChangePlayerInput,
   activatePlayer,
 }) => {
+  const { isMobile } = useResponsive();
   const isGoalieLine = lineup.LineType === 3;
   const slotDefs = isGoalieLine
     ? goalieSlotDefs
@@ -99,6 +101,32 @@ export const HockeyLineTable: FC<HockeyLineTableProps> = ({
   const gridTemplateColumns = `2.5rem minmax(220px,1fr) repeat(${attributeLabels.length}, 6rem)${
     isGoalieLine ? "" : ` repeat(${zoneInputList.length}, 5.5rem)`
   }`;
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-3">
+        {slotDefs.map((slot) => (
+          <HockeyLineRow
+            key={slot.key}
+            slot={slot}
+            lineup={lineup}
+            rosterMap={rosterMap}
+            options={rosterOptions[slot.optionsKey]}
+            zoneCategory={zoneCategory}
+            zoneInputList={zoneInputList}
+            attributeLabels={attributeLabels}
+            league={league}
+            isGoalieLine={isGoalieLine}
+            isMobile
+            gridTemplateColumns={gridTemplateColumns}
+            ChangeState={ChangeState}
+            ChangePlayerInput={ChangePlayerInput}
+            activatePlayer={activatePlayer}
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto">
@@ -152,6 +180,7 @@ interface HockeyLineRowProps {
   attributeLabels: string[];
   league: League;
   isGoalieLine: boolean;
+  isMobile?: boolean;
   gridTemplateColumns: string;
   ChangeState: (value: number, property: string) => void;
   ChangePlayerInput: (playerID: number, key: string, value: number) => void;
@@ -168,6 +197,7 @@ const HockeyLineRow: FC<HockeyLineRowProps> = ({
   attributeLabels,
   league,
   isGoalieLine,
+  isMobile,
   gridTemplateColumns,
   ChangeState,
   ChangePlayerInput,
@@ -211,65 +241,117 @@ const HockeyLineRow: FC<HockeyLineRowProps> = ({
       : getZoneAttributeDisplay(zoneCategory, player, league)
     : attributeLabels.map((label) => ({ label, value: "—" }));
 
+  const selectStyles = {
+    control: (base: any, state: any) => ({
+      ...base,
+      minHeight: "32px",
+      fontSize: "0.8rem",
+      backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+      borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+      color: "#ffffff",
+      boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+      borderRadius: "8px",
+      width: "100%",
+      minWidth: "0",
+    }),
+    singleValue: (base: any) => ({
+      ...base,
+      fontSize: "0.8rem",
+      color: "#fff",
+    }),
+    placeholder: (base: any) => ({
+      ...base,
+      fontSize: "0.8rem",
+      color: "#fff",
+    }),
+    menu: (base: any) => ({
+      ...base,
+      backgroundColor: "#1a202c",
+      borderRadius: "8px",
+    }),
+    menuList: (base: any) => ({
+      ...base,
+      backgroundColor: "#1a202c",
+      padding: "0",
+    }),
+    option: (base: any, state: any) => ({
+      ...base,
+      backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+      color: "#fff",
+      cursor: "pointer",
+    }),
+  };
+
+  const playerSelect = (
+    <div className="flex min-w-0 flex-1 items-center gap-2">
+      {player && (
+        <Button classes="shrink-0" onClick={() => activatePlayer(player)}>
+          <Info />
+        </Button>
+      )}
+      <div className="min-w-0 flex-1">
+        <SelectDropdown
+          value={selectedOption}
+          onChange={GetValue}
+          options={options}
+          placeholder={placeholder}
+          styles={selectStyles}
+        />
+      </div>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-2 rounded-lg bg-slate-800/70 p-3 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="shrink-0 rounded bg-black/40 px-2 py-1 text-xs font-bold">
+            {slot.label}
+          </span>
+          {playerSelect}
+        </div>
+        {attributeDisplay.length > 0 && (
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-slate-700 pt-2 text-xs">
+            {attributeDisplay.map((attr) => (
+              <div
+                key={attr.label}
+                className="flex items-center justify-between gap-2"
+              >
+                <span className="text-slate-400">{attr.label}</span>
+                <span className="font-semibold">{attr.value}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {!isGoalieLine && zoneInputList.length > 0 && (
+          <div className="grid grid-cols-2 gap-2 border-t border-slate-700 pt-2">
+            {zoneInputList.map((input) => (
+              <label key={input.key} className="flex flex-col gap-0.5 text-xs">
+                <span className="text-slate-400">{input.label}</span>
+                <input
+                  aria-label={`${input.label} for ${placeholder}`}
+                  type="number"
+                  name={input.key}
+                  disabled={!player}
+                  value={player ? ((player as any)[input.key] as number) : 0}
+                  onChange={ChangeInput}
+                  className="w-full rounded border border-slate-500 bg-black px-1.5 py-1 text-center text-sm text-white disabled:opacity-60"
+                />
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       className="grid items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm"
       style={{ gridTemplateColumns }}
     >
       <strong>{slot.label}</strong>
-      <div className="flex items-center gap-2 text-left">
-        {player && (
-          <Button classes="shrink-0" onClick={() => activatePlayer(player)}>
-            <Info />
-          </Button>
-        )}
-        <SelectDropdown
-          value={selectedOption}
-          onChange={GetValue}
-          options={options}
-          placeholder={placeholder}
-          styles={{
-            control: (base, state) => ({
-              ...base,
-              minHeight: "32px",
-              fontSize: "0.8rem",
-              backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-              borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
-              color: "#ffffff",
-              boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
-              borderRadius: "8px",
-              width: "100%",
-              minWidth: "12rem",
-            }),
-            singleValue: (base) => ({
-              ...base,
-              fontSize: "0.8rem",
-              color: "#fff",
-            }),
-            placeholder: (base) => ({
-              ...base,
-              fontSize: "0.8rem",
-              color: "#fff",
-            }),
-            menu: (base) => ({
-              ...base,
-              backgroundColor: "#1a202c",
-              borderRadius: "8px",
-            }),
-            menuList: (base) => ({
-              ...base,
-              backgroundColor: "#1a202c",
-              padding: "0",
-            }),
-            option: (base, state) => ({
-              ...base,
-              backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-              color: "#fff",
-              cursor: "pointer",
-            }),
-          }}
-        />
-      </div>
+      {playerSelect}
       {attributeDisplay.map((attr) => (
         <Text key={attr.label} variant="small" classes="font-semibold">
           {attr.value}
