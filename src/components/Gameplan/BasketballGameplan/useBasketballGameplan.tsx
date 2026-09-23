@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthStore } from "../../../context/AuthContext";
 import { useLeagueStore } from "../../../context/LeagueContext";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
@@ -9,6 +9,14 @@ import {
   NBALineup,
   NBAPlayer,
 } from "../../../models/basketballModels";
+
+const lineupSnapshotKeys = [
+  "FirstStringID", "SecondStringID", "ThirdStringID",
+  "FSMinutes", "SSMinutes", "TSMinutes",
+  "FSInsideProportion", "SSInsideProportion", "TSInsideProportion",
+  "FSMidProportion", "SSMidProportion", "TSMidProportion",
+  "FSThreeProportion", "SSThreeProportion", "TSThreeProportion",
+] as const;
 
 export const useBasketballGameplan = () => {
   const { currentUser } = useAuthStore();
@@ -53,6 +61,23 @@ export const useBasketballGameplan = () => {
   const [playerExhaustionValue, setPlayerExhaustionValue] = useState(50);
   const [teamExhaustionEnabled, setTeamExhaustionEnabled] = useState(false);
   const [teamExhaustionValue, setTeamExhaustionValue] = useState(50);
+  const initialGameplanSnapshots = useRef<Record<string, {
+    lineups: (CollegeLineup | NBALineup)[];
+    pace: string;
+    offensiveSystem: string;
+    defensiveSystem: string;
+    focusPlayer: number;
+    preserveTimeouts: boolean;
+    foulProtectionMode: number;
+    foulProtectionValue: number;
+    opponentLeadEnabled: boolean;
+    opponentLeadValue: number;
+    playerExhaustionEnabled: boolean;
+    playerExhaustionId: number;
+    playerExhaustionValue: number;
+    teamExhaustionEnabled: boolean;
+    teamExhaustionValue: number;
+  }>>({});
 
   const paceOptions = useMemo(() => {
     return [
@@ -320,6 +345,81 @@ export const useBasketballGameplan = () => {
     }
   }, [userGameplan]);
 
+  const activeTeamID = selectedTeam?.ID || 0;
+  const snapshotKey = `${selectedLeague}-${activeTeamID}`;
+
+  useEffect(() => {
+    if (!activeTeamID || !userGameplan || !selectedTeamLineups.length || initialGameplanSnapshots.current[snapshotKey]) return;
+    initialGameplanSnapshots.current[snapshotKey] = {
+      lineups: selectedTeamLineups.map((lineup) => ({ ...lineup } as CollegeLineup | NBALineup)),
+      pace: userGameplan.Pace || "",
+      offensiveSystem: userGameplan.OffensiveFormation || "",
+      defensiveSystem: userGameplan.DefensiveFormation || "",
+      focusPlayer: Number(userGameplan.FocusPlayer) || 0,
+      preserveTimeouts: Boolean(userGameplan.PreserveTimeouts),
+      foulProtectionMode: userGameplan.Trigger1Enabled ? userGameplan.Trigger1Type : 0,
+      foulProtectionValue: userGameplan.Trigger1Value || 0,
+      opponentLeadEnabled: Boolean(userGameplan.Trigger2Enabled),
+      opponentLeadValue: userGameplan.Trigger2Value || 10,
+      playerExhaustionEnabled: Boolean(userGameplan.Trigger3Enabled),
+      playerExhaustionId: userGameplan.Trigger3Value || 0,
+      playerExhaustionValue: userGameplan.Trigger3Exhaustion || 50,
+      teamExhaustionEnabled: Boolean(userGameplan.Trigger4Enabled),
+      teamExhaustionValue: userGameplan.Trigger4Value || 50,
+    };
+  }, [activeTeamID, selectedLeague, selectedTeamLineups, snapshotKey, userGameplan]);
+
+  const resetGameplan = useCallback(() => {
+    const snapshot = initialGameplanSnapshots.current[snapshotKey];
+    if (!snapshot || !activeTeamID) return;
+
+    setPace(snapshot.pace);
+    setOffensiveSystem(snapshot.offensiveSystem);
+    setDefensiveSystem(snapshot.defensiveSystem);
+    setFocusPlayer(snapshot.focusPlayer);
+    setPreserveTimeouts(snapshot.preserveTimeouts);
+    setFoulProtectionMode(snapshot.foulProtectionMode);
+    setFoulProtectionValue(snapshot.foulProtectionValue);
+    setOpponentLeadEnabled(snapshot.opponentLeadEnabled);
+    setOpponentLeadValue(snapshot.opponentLeadValue);
+    setPlayerExhaustionEnabled(snapshot.playerExhaustionEnabled);
+    setPlayerExhaustionId(snapshot.playerExhaustionId);
+    setPlayerExhaustionValue(snapshot.playerExhaustionValue);
+    setTeamExhaustionEnabled(snapshot.teamExhaustionEnabled);
+    setTeamExhaustionValue(snapshot.teamExhaustionValue);
+
+    if (selectedLeague === SimCBB) {
+      const updatedLineupMap = { ...cbbLineupMap, [activeTeamID]: snapshot.lineups.map((lineup) => new CollegeLineup(lineup)) };
+      updateCBBLineupMap(updatedLineupMap);
+    } else {
+      const updatedLineupMap = { ...nbaLineupMap, [activeTeamID]: snapshot.lineups.map((lineup) => new NBALineup(lineup)) };
+      updateNBALineupMap(updatedLineupMap);
+    }
+  }, [activeTeamID, cbbLineupMap, nbaLineupMap, selectedLeague, snapshotKey, updateCBBLineupMap, updateNBALineupMap]);
+
+  const hasGameplanChanges = useMemo(() => {
+    const snapshot = initialGameplanSnapshots.current[snapshotKey];
+    if (!snapshot) return false;
+    const lineupsChanged = selectedTeamLineups.length !== snapshot.lineups.length || selectedTeamLineups.some(
+      (lineup, index) => lineupSnapshotKeys.some((key) => lineup[key] !== snapshot.lineups[index]?.[key]),
+    );
+    return lineupsChanged ||
+      pace !== snapshot.pace ||
+      offensiveSystem !== snapshot.offensiveSystem ||
+      defensiveSystem !== snapshot.defensiveSystem ||
+      focusPlayer !== snapshot.focusPlayer ||
+      preserveTimeouts !== snapshot.preserveTimeouts ||
+      foulProtectionMode !== snapshot.foulProtectionMode ||
+      foulProtectionValue !== snapshot.foulProtectionValue ||
+      opponentLeadEnabled !== snapshot.opponentLeadEnabled ||
+      opponentLeadValue !== snapshot.opponentLeadValue ||
+      playerExhaustionEnabled !== snapshot.playerExhaustionEnabled ||
+      playerExhaustionId !== snapshot.playerExhaustionId ||
+      playerExhaustionValue !== snapshot.playerExhaustionValue ||
+      teamExhaustionEnabled !== snapshot.teamExhaustionEnabled ||
+      teamExhaustionValue !== snapshot.teamExhaustionValue;
+  }, [defensiveSystem, focusPlayer, foulProtectionMode, foulProtectionValue, opponentLeadEnabled, opponentLeadValue, offensiveSystem, pace, playerExhaustionEnabled, playerExhaustionId, playerExhaustionValue, preserveTimeouts, selectedTeamLineups, snapshotKey, teamExhaustionEnabled, teamExhaustionValue]);
+
   useEffect(() => {
     getBootstrapGameplanData();
   }, [getBootstrapGameplanData]);
@@ -399,6 +499,35 @@ export const useBasketballGameplan = () => {
     ],
   );
 
+  const SwapLineupPlayers = useCallback(
+    (index: number, firstKey: string, secondKey: string) => {
+      if (selectedLeague === SimCBB) {
+        const updatedLineupMap = { ...cbbLineupMap };
+        const lineups = [...updatedLineupMap[cbbTeam!.ID]];
+        const lineup = lineups[index];
+        lineups[index] = new CollegeLineup({
+          ...lineup,
+          [firstKey]: lineup[secondKey],
+          [secondKey]: lineup[firstKey],
+        });
+        updatedLineupMap[cbbTeam!.ID] = lineups;
+        updateCBBLineupMap(updatedLineupMap);
+      } else {
+        const updatedLineupMap = { ...nbaLineupMap };
+        const lineups = [...updatedLineupMap[nbaTeam!.ID]];
+        const lineup = lineups[index];
+        lineups[index] = new NBALineup({
+          ...lineup,
+          [firstKey]: lineup[secondKey],
+          [secondKey]: lineup[firstKey],
+        });
+        updatedLineupMap[nbaTeam!.ID] = lineups;
+        updateNBALineupMap(updatedLineupMap);
+      }
+    },
+    [cbbLineupMap, cbbTeam, nbaLineupMap, nbaTeam, selectedLeague, updateCBBLineupMap, updateNBALineupMap],
+  );
+
   const viewingUserTeam = useMemo(() => {
     if (!userTeam || !currentUser || !selectedTeam) return false;
     if (selectedTeam?.ID === userTeam.ID) return true;
@@ -436,10 +565,8 @@ export const useBasketballGameplan = () => {
       return errorList;
     }
     const firstStringPlayers = new Set<number>();
-    let requiredMinutes = 40;
     let requiredShotTotal = 100;
     if (selectedLeague === SimNBA) {
-      requiredMinutes = 48;
       requiredShotTotal = 100;
     }
 
@@ -641,14 +768,6 @@ export const useBasketballGameplan = () => {
     return errorList;
   }, [selectedLeague, selectedRosterMap, selectedTeamLineups, lineupFormation, isEligibleForLineupSlot, foulProtectionMode, foulProtectionValue, opponentLeadEnabled, opponentLeadValue, playerExhaustionEnabled, playerExhaustionId, playerExhaustionValue, teamExhaustionEnabled, teamExhaustionValue, defensiveSystem, focusOpponentId, focusOpponentRoster, focusPlayer]);
 
-  const totalMinutesAllocated = useMemo(() => {
-    let total = 0;
-    selectedTeamLineups.forEach((lineup) => {
-      total += lineup.FSMinutes + lineup.SSMinutes + lineup.TSMinutes;
-    });
-    return total;
-  }, [selectedTeamLineups]);
-
   const totalInsideProportionWeighted = useMemo(() => {
     let total = 0;
     selectedTeamLineups.forEach((lineup) => {
@@ -742,15 +861,17 @@ export const useBasketballGameplan = () => {
     selectedString,
     selectedStringAbbr,
     ChangeLineupInput,
+    SwapLineupPlayers,
     selectedGuardOptions,
     selectedForwardOptions,
     selectedCenterOptions,
     errors,
-    totalMinutesAllocated,
     totalInsideProportionWeighted,
     totalMidrangeProportionWeighted,
     totalThreePointProportionWeighted,
     saveLineupChanges,
+    resetGameplan,
+    hasGameplanChanges,
     pace,
     paceOptions,
     SelectPace,

@@ -28,7 +28,7 @@ import { Logo } from "../../_design/Logo";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import {
-  getCBBOverall,
+  getCBBLetterGrade,
   getCFBOverall,
   getHockeyLetterGrade,
 } from "../../_utility/getLetterGrade";
@@ -2342,7 +2342,7 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
           Overall
         </Text>
         <Text variant="small" classes="whitespace-nowrap">
-          {getCBBOverall(player.Overall, player.Year)}
+          {getCBBLetterGrade(player.Overall, player.Year)}
         </Text>
       </div>
       <div className="flex flex-col">

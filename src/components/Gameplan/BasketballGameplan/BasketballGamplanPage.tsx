@@ -9,7 +9,7 @@ import { useBasketballGameplan } from "./useBasketballGameplan";
 import { TeamLabel } from "../../Common/Labels";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { useResponsive } from "../../../_hooks/useMobile";
-import { BasketballLineup } from "./BasketballLineupComponents";
+import { BasketballDepthChart } from "./BasketballDepthChart";
 import { BasketballCourtVision } from "./BasketballCourtVision";
 import { Input } from "../../../_design/Inputs";
 import { Modal } from "../../../_design/Modal";
@@ -74,12 +74,14 @@ export const BasketballGameplanPage = () => {
     selectedForwardOptions,
     selectedCenterOptions,
     ChangeLineupInput,
+    SwapLineupPlayers,
     errors,
-    totalMinutesAllocated,
     totalInsideProportionWeighted,
     totalMidrangeProportionWeighted,
     totalThreePointProportionWeighted,
     saveLineupChanges,
+    resetGameplan,
+    hasGameplanChanges,
     pace,
     paceOptions,
     SelectPace,
@@ -102,6 +104,15 @@ export const BasketballGameplanPage = () => {
   } = useBasketballGameplan();
   const { isMobile, isDesktop, isUltraWide } = useResponsive();
   const [modalPlayer, setModalPlayer] = useState<CollegePlayer | NBAPlayer | null>(null);
+  const [selectedDepthSlots, setSelectedDepthSlots] = useState<number[]>([0]);
+  const toggleDepthSlot = (index: number) => {
+    setSelectedDepthSlots((current) => {
+      if (current.includes(index)) {
+        return current.length === 1 ? current : current.filter((slot) => slot !== index);
+      }
+      return [...current, index].sort((left, right) => left - right);
+    });
+  };
 
   const { backgroundColor } = useBackgroundColor();
   const teamColors = useTeamColors(
@@ -421,29 +432,10 @@ export const BasketballGameplanPage = () => {
               }}
             >
               <ButtonGrid classes="sm:flex sm:flex-auto sm:flex-1">
-                <Button
-                  type="button"
-                  variant={selectedString === "First" ? "primary" : "secondary"}
-                  onClick={() => SelectString("First")}
-                >
-                  First
-                </Button>
-                <Button
-                  type="button"
-                  variant={
-                    selectedString === "Second" ? "primary" : "secondary"
-                  }
-                  onClick={() => SelectString("Second")}
-                >
-                  Second
-                </Button>
-                <Button
-                  type="button"
-                  variant={selectedString === "Third" ? "primary" : "secondary"}
-                  onClick={() => SelectString("Third")}
-                >
-                  Third
-                </Button>
+                {lineupFormation.map((position, index) => {
+                  const label = `${position}${position === "G" ? index + 1 : position === "F" ? index - 1 : 1}`;
+                  return <Button key={label} type="button" variant={selectedDepthSlots.includes(index) ? "primary" : "secondary"} isSelected={selectedDepthSlots.includes(index)} onClick={() => toggleDepthSlot(index)}>{label}</Button>;
+                })}
               </ButtonGrid>
             </Border>
             <Border
@@ -460,6 +452,9 @@ export const BasketballGameplanPage = () => {
                 </Button>
                 <Button type="button" variant={"primary"} onClick={() => {}}>
                   Help
+                </Button>
+                <Button type="button" variant={hasGameplanChanges ? "primary" : "secondary"} onClick={resetGameplan} disabled={!viewingUserTeam || !hasGameplanChanges}>
+                  Reset
                 </Button>
                 <Button
                   type="button"
@@ -482,29 +477,20 @@ export const BasketballGameplanPage = () => {
               backgroundColor: backgroundColor,
             }}
           >
-            <div className="w-full space-y-2">
-              {lineupFormation.map((position, index) => {
-                const playerOptions = (() => {
-                  if (position === "G") return selectedGuardOptions;
-                  if (position === "F") return selectedForwardOptions;
-                  if (position === "C") return selectedCenterOptions;
-                  return [];
-                })();
-                return (
-                  <BasketballLineup
-                    selectedTeamLineups={selectedTeamLineups}
-                    index={index}
-                    selectedRosterMap={selectedRosterMap}
-                    selectedTeamRoster={selectedTeamRoster}
-                    position={position}
-                    selectedString={selectedString}
-                    selectedStringAbbr={selectedStringAbbr}
-                    ChangeLineupInput={ChangeLineupInput}
-                    playerOptions={playerOptions}
-                    canModify={viewingUserTeam}
-                  />
-                );
-              })}
+            <div className="space-y-6">
+              {selectedDepthSlots.map((selectedPositionIndex) => <BasketballDepthChart
+                key={selectedPositionIndex}
+                selectedPositionIndex={selectedPositionIndex}
+                lineupFormation={lineupFormation}
+                selectedTeamLineups={selectedTeamLineups}
+                selectedRosterMap={selectedRosterMap}
+                selectedTeamRoster={selectedTeamRoster}
+                team={selectedTeam}
+                league={selectedLeague as League}
+                canModify={viewingUserTeam}
+                ChangeLineupInput={ChangeLineupInput}
+                SwapLineupPlayers={SwapLineupPlayers}
+              />)}
             </div>
           </Border>
         </div>
