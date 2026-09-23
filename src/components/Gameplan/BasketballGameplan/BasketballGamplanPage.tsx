@@ -13,7 +13,10 @@ import { BasketballDepthChart } from "./BasketballDepthChart";
 import { BasketballCourtVision } from "./BasketballCourtVision";
 import { Input } from "../../../_design/Inputs";
 import { Modal } from "../../../_design/Modal";
-import { CBBPlayerInfoModalBody, NBAPlayerInfoModalBody } from "../../Common/Modals";
+import {
+  CBBPlayerInfoModalBody,
+  NBAPlayerInfoModalBody,
+} from "../../Common/Modals";
 import { League, SimCBB } from "../../../_constants/constants";
 import { CollegePlayer, NBAPlayer } from "../../../models/basketballModels";
 
@@ -56,7 +59,6 @@ const ModeButtonGroup = ({
 
 export const BasketballGameplanPage = () => {
   const {
-    userLineups,
     selectedTeamRoster,
     selectedLeague,
     selectedRosterMap,
@@ -67,12 +69,6 @@ export const BasketballGameplanPage = () => {
     selectedTeam,
     SelectTeam,
     viewingUserTeam,
-    SelectString,
-    selectedString,
-    selectedStringAbbr,
-    selectedGuardOptions,
-    selectedForwardOptions,
-    selectedCenterOptions,
     ChangeLineupInput,
     SwapLineupPlayers,
     errors,
@@ -95,20 +91,38 @@ export const BasketballGameplanPage = () => {
     setFocusPlayer,
     focusOpponentName,
     focusPlayerOptions,
-    preserveTimeouts, setPreserveTimeouts,
-    foulProtectionMode, setFoulProtectionMode, foulProtectionValue, setFoulProtectionValue,
-    opponentLeadEnabled, setOpponentLeadEnabled, opponentLeadValue, setOpponentLeadValue,
-    playerExhaustionEnabled, setPlayerExhaustionEnabled, playerExhaustionId, setPlayerExhaustionId,
-    playerExhaustionValue, setPlayerExhaustionValue,
-    teamExhaustionEnabled, setTeamExhaustionEnabled, teamExhaustionValue, setTeamExhaustionValue,
+    preserveTimeouts,
+    setPreserveTimeouts,
+    foulProtectionMode,
+    setFoulProtectionMode,
+    foulProtectionValue,
+    setFoulProtectionValue,
+    opponentLeadEnabled,
+    setOpponentLeadEnabled,
+    opponentLeadValue,
+    setOpponentLeadValue,
+    playerExhaustionEnabled,
+    setPlayerExhaustionEnabled,
+    playerExhaustionId,
+    setPlayerExhaustionId,
+    playerExhaustionValue,
+    setPlayerExhaustionValue,
+    teamExhaustionEnabled,
+    setTeamExhaustionEnabled,
+    teamExhaustionValue,
+    setTeamExhaustionValue,
   } = useBasketballGameplan();
   const { isMobile, isDesktop, isUltraWide } = useResponsive();
-  const [modalPlayer, setModalPlayer] = useState<CollegePlayer | NBAPlayer | null>(null);
+  const [modalPlayer, setModalPlayer] = useState<
+    CollegePlayer | NBAPlayer | null
+  >(null);
   const [selectedDepthSlots, setSelectedDepthSlots] = useState<number[]>([0]);
   const toggleDepthSlot = (index: number) => {
     setSelectedDepthSlots((current) => {
       if (current.includes(index)) {
-        return current.length === 1 ? current : current.filter((slot) => slot !== index);
+        return current.length === 1
+          ? current
+          : current.filter((slot) => slot !== index);
       }
       return [...current, index].sort((left, right) => left - right);
     });
@@ -291,7 +305,8 @@ export const BasketballGameplanPage = () => {
                         value={String(foulProtectionValue)}
                         options={playerOptions}
                         selectedOption={playerOptions.find(
-                          (option) => option.value === String(foulProtectionValue),
+                          (option) =>
+                            option.value === String(foulProtectionValue),
                         )}
                         change={(option) =>
                           setFoulProtectionValue(Number(option.value))
@@ -334,7 +349,9 @@ export const BasketballGameplanPage = () => {
                       label="Player Exhaustion Timeout"
                       value={playerExhaustionEnabled ? 1 : 0}
                       options={onOffOptions}
-                      onChange={(value) => setPlayerExhaustionEnabled(value === 1)}
+                      onChange={(value) =>
+                        setPlayerExhaustionEnabled(value === 1)
+                      }
                     />
                     {playerExhaustionEnabled && (
                       <>
@@ -368,7 +385,9 @@ export const BasketballGameplanPage = () => {
                       label="Team Exhaustion"
                       value={teamExhaustionEnabled ? 1 : 0}
                       options={onOffOptions}
-                      onChange={(value) => setTeamExhaustionEnabled(value === 1)}
+                      onChange={(value) =>
+                        setTeamExhaustionEnabled(value === 1)
+                      }
                     />
                     {teamExhaustionEnabled && (
                       <Input
@@ -434,7 +453,21 @@ export const BasketballGameplanPage = () => {
               <ButtonGrid classes="sm:flex sm:flex-auto sm:flex-1">
                 {lineupFormation.map((position, index) => {
                   const label = `${position}${position === "G" ? index + 1 : position === "F" ? index - 1 : 1}`;
-                  return <Button key={label} type="button" variant={selectedDepthSlots.includes(index) ? "primary" : "secondary"} isSelected={selectedDepthSlots.includes(index)} onClick={() => toggleDepthSlot(index)}>{label}</Button>;
+                  return (
+                    <Button
+                      key={label}
+                      type="button"
+                      variant={
+                        selectedDepthSlots.includes(index)
+                          ? "primary"
+                          : "secondary"
+                      }
+                      isSelected={selectedDepthSlots.includes(index)}
+                      onClick={() => toggleDepthSlot(index)}
+                    >
+                      {label}
+                    </Button>
+                  );
                 })}
               </ButtonGrid>
             </Border>
@@ -453,7 +486,12 @@ export const BasketballGameplanPage = () => {
                 <Button type="button" variant={"primary"} onClick={() => {}}>
                   Help
                 </Button>
-                <Button type="button" variant={hasGameplanChanges ? "primary" : "secondary"} onClick={resetGameplan} disabled={!viewingUserTeam || !hasGameplanChanges}>
+                <Button
+                  type="button"
+                  variant={hasGameplanChanges ? "primary" : "secondary"}
+                  onClick={resetGameplan}
+                  disabled={!viewingUserTeam || !hasGameplanChanges}
+                >
                   Reset
                 </Button>
                 <Button
@@ -478,19 +516,21 @@ export const BasketballGameplanPage = () => {
             }}
           >
             <div className="space-y-6">
-              {selectedDepthSlots.map((selectedPositionIndex) => <BasketballDepthChart
-                key={selectedPositionIndex}
-                selectedPositionIndex={selectedPositionIndex}
-                lineupFormation={lineupFormation}
-                selectedTeamLineups={selectedTeamLineups}
-                selectedRosterMap={selectedRosterMap}
-                selectedTeamRoster={selectedTeamRoster}
-                team={selectedTeam}
-                league={selectedLeague as League}
-                canModify={viewingUserTeam}
-                ChangeLineupInput={ChangeLineupInput}
-                SwapLineupPlayers={SwapLineupPlayers}
-              />)}
+              {selectedDepthSlots.map((selectedPositionIndex) => (
+                <BasketballDepthChart
+                  key={selectedPositionIndex}
+                  selectedPositionIndex={selectedPositionIndex}
+                  lineupFormation={lineupFormation}
+                  selectedTeamLineups={selectedTeamLineups}
+                  selectedRosterMap={selectedRosterMap}
+                  selectedTeamRoster={selectedTeamRoster}
+                  team={selectedTeam}
+                  league={selectedLeague as League}
+                  canModify={viewingUserTeam}
+                  ChangeLineupInput={ChangeLineupInput}
+                  SwapLineupPlayers={SwapLineupPlayers}
+                />
+              ))}
             </div>
           </Border>
         </div>
@@ -498,14 +538,19 @@ export const BasketballGameplanPage = () => {
       <Modal
         isOpen={Boolean(modalPlayer)}
         onClose={() => setModalPlayer(null)}
-        title={modalPlayer ? `${modalPlayer.Position || ""} ${modalPlayer.FirstName} ${modalPlayer.LastName}`.trim() : ""}
+        title={
+          modalPlayer
+            ? `${modalPlayer.ID} ${modalPlayer.Position || ""} ${modalPlayer.FirstName} ${modalPlayer.LastName}`.trim()
+            : ""
+        }
         maxWidth="max-w-4xl"
       >
-        {modalPlayer && (selectedLeague === SimCBB ? (
-          <CBBPlayerInfoModalBody player={modalPlayer as CollegePlayer} />
-        ) : (
-          <NBAPlayerInfoModalBody player={modalPlayer as NBAPlayer} />
-        ))}
+        {modalPlayer &&
+          (selectedLeague === SimCBB ? (
+            <CBBPlayerInfoModalBody player={modalPlayer as CollegePlayer} />
+          ) : (
+            <NBAPlayerInfoModalBody player={modalPlayer as NBAPlayer} />
+          ))}
       </Modal>
     </div>
   );

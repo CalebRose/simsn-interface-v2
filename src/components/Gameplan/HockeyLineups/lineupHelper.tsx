@@ -3,6 +3,7 @@ import {
   AttackingZone,
   DefendingGoalZone,
   DefendingZone,
+  League,
   Lineup,
   LineupD1,
   LineupD2,
@@ -14,7 +15,10 @@ import {
   LineupG1,
   LineupG2,
   NeutralZone,
+  SimCHL,
+  Zone,
 } from "../../../_constants/constants";
+import { getHockeyLetterGrade } from "../../../_utility/getLetterGrade";
 import {
   CollegePlayer,
   ProfessionalPlayer,
@@ -205,6 +209,87 @@ export function updateLineupFieldWithClass<T extends Record<string, any>>(
     return updated;
   });
 }
+
+// Zone-specific attribute readouts for a skater, extracted from the
+// per-player card so the same values can drive a compact table row.
+export const getZoneAttributeDisplay = (
+  zoneCategory: Zone,
+  player: CollegePlayer | ProfessionalPlayer,
+  league: League,
+): { label: string; value: number | string }[] => {
+  const grade = (value: number) =>
+    league === SimCHL
+      ? getHockeyLetterGrade(value, (player as CollegePlayer).Year)
+      : value;
+
+  if (zoneCategory === DefendingGoalZone || zoneCategory === DefendingZone) {
+    return [
+      { label: "Body Check", value: grade(player.BodyChecking) },
+      { label: "Stick Check", value: grade(player.StickChecking) },
+      { label: "Shot Block", value: grade(player.ShotBlocking) },
+      { label: "Agility", value: grade(player.Agility) },
+    ];
+  }
+  if (zoneCategory === NeutralZone) {
+    return [
+      { label: "Agility", value: grade(player.Agility) },
+      { label: "Passing", value: grade(player.Passing) },
+      { label: "Puck Handling", value: grade(player.PuckHandling) },
+    ];
+  }
+  if (zoneCategory === AttackingZone) {
+    return [
+      { label: "Agility", value: grade(player.Agility) },
+      { label: "Passing", value: grade(player.Passing) },
+      { label: "Long Shot Acc", value: grade(player.LongShotAccuracy) },
+      { label: "Long Shot Pwr", value: grade(player.LongShotPower) },
+    ];
+  }
+  if (zoneCategory === AttackingGoalZone) {
+    return [
+      { label: "Agility", value: grade(player.Agility) },
+      { label: "Passing", value: grade(player.Passing) },
+      { label: "Close Shot Acc", value: grade(player.CloseShotAccuracy) },
+      { label: "Close Shot Pwr", value: grade(player.CloseShotPower) },
+    ];
+  }
+  return [];
+};
+
+// Labels only (no player required) — used to size/render table headers.
+export const getZoneAttributeLabels = (zoneCategory: Zone): string[] => {
+  if (zoneCategory === DefendingGoalZone || zoneCategory === DefendingZone) {
+    return ["Body Check", "Stick Check", "Shot Block", "Agility"];
+  }
+  if (zoneCategory === NeutralZone) {
+    return ["Agility", "Passing", "Puck Handling"];
+  }
+  if (zoneCategory === AttackingZone) {
+    return ["Agility", "Passing", "Long Shot Acc", "Long Shot Pwr"];
+  }
+  if (zoneCategory === AttackingGoalZone) {
+    return ["Agility", "Passing", "Close Shot Acc", "Close Shot Pwr"];
+  }
+  return [];
+};
+
+// Read-only goalie attribute readouts shown in place of editable zone inputs.
+export const getGoalieAttributeDisplay = (
+  player: CollegePlayer | ProfessionalPlayer,
+  league: League,
+): { label: string; value: number | string }[] => {
+  const grade = (value: number) =>
+    league === SimCHL
+      ? getHockeyLetterGrade(value, (player as CollegePlayer).Year)
+      : value;
+  return [
+    { label: "Agility", value: grade(player.Agility) },
+    { label: "Strength", value: grade(player.Strength) },
+    { label: "Goalie Vision", value: grade(player.GoalieVision) },
+    { label: "Goalkeeping", value: grade(player.Goalkeeping) },
+    { label: "Stamina", value: `${player.GoalieStamina}/100` },
+  ];
+};
 
 export const getHCKAIGameplanOptionsOptions = () => {
   const shotPreferenceOptions = [
