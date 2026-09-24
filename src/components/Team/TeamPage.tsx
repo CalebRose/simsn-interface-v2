@@ -2108,6 +2108,20 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     });
   };
 
+  const sendNBAPlayerToTradeBlock = async (
+    playerID: number,
+    teamID: number,
+  ) => {
+    if (!proRosterMap) return;
+
+    await PlayerService.SendNBAPlayerToTradeBlock(playerID);
+    const roster = proRosterMap[teamID] || [];
+    const updatedRoster = roster.map((player) =>
+      player.ID === playerID ? { ...player, IsOnTradeBlock: true } : player,
+    );
+    updateNBARosterMap({ ...proRosterMap, [teamID]: updatedRoster });
+  };
+
   const exportRoster = async () => {
     await ExportBBRoster(selectedTeam!.ID, true, selectedTeam!.Team);
   };
@@ -2359,6 +2373,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
           modalAction={modalAction}
           player={modalPlayer}
           cutPlayer={cutNBAPlayer}
+          tradeBlockPlayer={sendNBAPlayerToTradeBlock}
         />
       )}
       <TeamInfo

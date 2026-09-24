@@ -2719,6 +2719,8 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
             onChange={(selectedOption) => {
               if (selectedOption?.value === "cut") {
                 openModal(Cut, item);
+              } else if (selectedOption?.value === "tradeBlock") {
+                openModal(TradeBlock, item);
               } else if (selectedOption?.value === "redshirt") {
                 openModal(Redshirt, item);
               } else if (selectedOption?.value === "extension") {
