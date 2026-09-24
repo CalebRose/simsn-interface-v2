@@ -736,7 +736,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         playerMap[p.ID] = p;
       }
     }
-    console.log({ playerMap });
     return playerMap;
   }, [chlRosterMap, chlTeams, portalPlayers, historicCollegePlayers]);
 
@@ -1045,7 +1044,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setPHLLineups(res.ProTeamLineups);
       setPHLGameplanMap(res.PHLGameplanMap);
       setPHLShootoutLineup(res.ProTeamShootoutLineup);
-      setAllProStandings(Array.isArray(res.ProStandings) ? res.ProStandings : []);
+      setAllProStandings(
+        Array.isArray(res.ProStandings) ? res.ProStandings : [],
+      );
       setProRosterMap(res.ProRosterMap);
       setFreeAgentOffers(res.FreeAgentOffers);
       setWaiverOffers(res.WaiverWireOffers);
