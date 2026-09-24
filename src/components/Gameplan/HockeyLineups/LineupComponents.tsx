@@ -473,6 +473,7 @@ interface ShootoutPlayerProps {
   property: string;
   shootoutProperty: string;
   activatePlayer: (player: CollegePlayer | ProfessionalPlayer) => void;
+  canModify?: boolean;
 }
 
 export const ShootoutPlayer: FC<ShootoutPlayerProps> = ({
@@ -486,6 +487,7 @@ export const ShootoutPlayer: FC<ShootoutPlayerProps> = ({
   shootoutProperty,
   lineCategory,
   activatePlayer,
+  canModify = true,
 }) => {
   // if (playerID === 0) {
   //   return <></>;
@@ -544,102 +546,116 @@ export const ShootoutPlayer: FC<ShootoutPlayerProps> = ({
         >
           <Info />
         </Button>
-        <SelectDropdown
-          key={`${property}-${playerID}`}
-          value={selectedOption}
-          onChange={GetValue}
-          options={optionList}
-          placeholder={`${placeHolder}`}
-          styles={{
-            control: (provided, state) => ({
-              ...provided,
-              backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-              borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
-              color: "#ffffff",
-              width: "15rem",
-              maxWidth: "300px",
-              padding: "0.3rem",
-              boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
-              borderRadius: "8px",
-              transition: "all 0.2s ease",
-            }),
-            menu: (provided) => ({
-              ...provided,
-              backgroundColor: "#1a202c",
-              borderRadius: "8px",
-            }),
-            menuList: (provided) => ({
-              ...provided,
-              backgroundColor: "#1a202c",
-              padding: "0",
-            }),
-            option: (provided, state) => ({
-              ...provided,
-              backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-              color: "#ffffff",
-              padding: "10px",
-              cursor: "pointer",
-            }),
-            singleValue: (provided) => ({
-              ...provided,
-              color: "#ffffff",
-            }),
-            placeholder: (provided) => ({
-              ...provided,
-              color: "#ffffff",
-            }),
-          }}
-        />
+        {canModify ? (
+          <SelectDropdown
+            key={`${property}-${playerID}`}
+            value={selectedOption}
+            onChange={GetValue}
+            options={optionList}
+            placeholder={`${placeHolder}`}
+            styles={{
+              control: (provided, state) => ({
+                ...provided,
+                backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                color: "#ffffff",
+                width: "15rem",
+                maxWidth: "300px",
+                padding: "0.3rem",
+                boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+                borderRadius: "8px",
+                transition: "all 0.2s ease",
+              }),
+              menu: (provided) => ({
+                ...provided,
+                backgroundColor: "#1a202c",
+                borderRadius: "8px",
+              }),
+              menuList: (provided) => ({
+                ...provided,
+                backgroundColor: "#1a202c",
+                padding: "0",
+              }),
+              option: (provided, state) => ({
+                ...provided,
+                backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                color: "#ffffff",
+                padding: "10px",
+                cursor: "pointer",
+              }),
+              singleValue: (provided) => ({
+                ...provided,
+                color: "#ffffff",
+              }),
+              placeholder: (provided) => ({
+                ...provided,
+                color: "#ffffff",
+              }),
+            }}
+          />
+        ) : (
+          <Text variant="small" classes="flex-1 truncate text-left">
+            {player
+              ? `${player.Position} ${player.FirstName} ${player.LastName}`
+              : "Unassigned"}
+          </Text>
+        )}
       </div>
       <div className="flex flex-col w-full">
         <label className="flex items-center min-[1025px]:justify-start mr-2">
           Shot Type {idx}
         </label>
-        <SelectDropdown
-          value={shotTypeSelectedOption}
-          onChange={GetShootoutValue}
-          options={getShootoutOptionList()}
-          placeholder={shootoutPlaceholder}
-          styles={{
-            control: (provided, state) => ({
-              ...provided,
-              backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-              borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
-              color: "#ffffff",
-              width: "100%",
-              maxWidth: "300px",
-              padding: "0.3rem",
-              boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
-              borderRadius: "8px",
-              transition: "all 0.2s ease",
-            }),
-            menu: (provided) => ({
-              ...provided,
-              backgroundColor: "#1a202c",
-              borderRadius: "8px",
-            }),
-            menuList: (provided) => ({
-              ...provided,
-              backgroundColor: "#1a202c",
-              padding: "0",
-            }),
-            option: (provided, state) => ({
-              ...provided,
-              backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-              color: "#ffffff",
-              padding: "10px",
-              cursor: "pointer",
-            }),
-            singleValue: (provided) => ({
-              ...provided,
-              color: "#ffffff",
-            }),
-            placeholder: (provided) => ({
-              ...provided,
-              color: "#ffffff",
-            }),
-          }}
-        />
+        {canModify ? (
+          <SelectDropdown
+            value={shotTypeSelectedOption}
+            onChange={GetShootoutValue}
+            options={getShootoutOptionList()}
+            placeholder={shootoutPlaceholder}
+            styles={{
+              control: (provided, state) => ({
+                ...provided,
+                backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                color: "#ffffff",
+                width: "100%",
+                maxWidth: "300px",
+                padding: "0.3rem",
+                boxShadow: state.isFocused ? "0 0 0 1px #4A90E2" : "none",
+                borderRadius: "8px",
+                transition: "all 0.2s ease",
+              }),
+              menu: (provided) => ({
+                ...provided,
+                backgroundColor: "#1a202c",
+                borderRadius: "8px",
+              }),
+              menuList: (provided) => ({
+                ...provided,
+                backgroundColor: "#1a202c",
+                padding: "0",
+              }),
+              option: (provided, state) => ({
+                ...provided,
+                backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
+                color: "#ffffff",
+                padding: "10px",
+                cursor: "pointer",
+              }),
+              singleValue: (provided) => ({
+                ...provided,
+                color: "#ffffff",
+              }),
+              placeholder: (provided) => ({
+                ...provided,
+                color: "#ffffff",
+              }),
+            }}
+          />
+        ) : (
+          <Text variant="small" classes="text-left">
+            {shootoutPlaceholder}
+          </Text>
+        )}
       </div>
       {player && (
         <div className="grid grid-cols-2 w-[80%]">

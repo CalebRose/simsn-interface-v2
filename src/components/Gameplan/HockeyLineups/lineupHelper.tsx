@@ -273,6 +273,65 @@ export const getZoneAttributeLabels = (zoneCategory: Zone): string[] => {
   return [];
 };
 
+export const getFullAttributeDisplay = (
+  player: CollegePlayer | ProfessionalPlayer,
+  league: League,
+): { label: string; value: number | string }[] => {
+  const grade = (value: number) =>
+    league === SimCHL
+      ? getHockeyLetterGrade(value, (player as CollegePlayer).Year)
+      : value;
+  const attributes = [
+    ["Agility", player.Agility],
+    ["Faceoffs", player.Faceoffs],
+    ["Passing", player.Passing],
+    ["Puck Handling", player.PuckHandling],
+    ["Body Check", player.BodyChecking],
+    ["Stick Check", player.StickChecking],
+    ["Shot Block", player.ShotBlocking],
+    ["Long Shot Acc", player.LongShotAccuracy],
+    ["Long Shot Pwr", player.LongShotPower],
+    ["Close Shot Acc", player.CloseShotAccuracy],
+    ["Close Shot Pwr", player.CloseShotPower],
+    ["One Timer", player.OneTimer],
+    ["Strength", player.Strength],
+    ["Discipline", player.Discipline],
+    ["Aggression", player.Aggression],
+  ] as [string, number][];
+
+  if (player.Position === "G") {
+    attributes.push(
+      ["Goalkeeping", player.Goalkeeping],
+      ["Goalie Vision", player.GoalieVision],
+      ["Rebound Control", player.GoalieReboundControl],
+      ["Goalie Stamina", player.GoalieStamina],
+    );
+  }
+
+  return attributes.map(([label, value]) => ({ label, value: grade(value) }));
+};
+
+export const getFullAttributeLabels = (isGoalie: boolean): string[] => [
+  "Agility",
+  "Faceoffs",
+  "Passing",
+  "Puck Handling",
+  "Body Check",
+  "Stick Check",
+  "Shot Block",
+  "Long Shot Acc",
+  "Long Shot Pwr",
+  "Close Shot Acc",
+  "Close Shot Pwr",
+  "One Timer",
+  "Strength",
+  "Discipline",
+  "Aggression",
+  ...(isGoalie
+    ? ["Goalkeeping", "Goalie Vision", "Rebound Control", "Goalie Stamina"]
+    : []),
+];
+
 // Read-only goalie attribute readouts shown in place of editable zone inputs.
 export const getGoalieAttributeDisplay = (
   player: CollegePlayer | ProfessionalPlayer,

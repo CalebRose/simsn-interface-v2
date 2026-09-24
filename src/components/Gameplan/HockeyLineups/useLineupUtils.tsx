@@ -34,13 +34,17 @@ export const useCHLLineupUtils = (
   chlRosterMap?: Record<number, CollegePlayer[]>,
   currentLineups?: CollegeLineup[],
   shootoutLineup?: CollegeShootoutLineup,
+  selectedTeamID?: number,
 ) => {
   const chlTeamRoster = useMemo(() => {
+    if (chlRosterMap && selectedTeamID) {
+      return chlRosterMap[selectedTeamID];
+    }
     if (chlTeam && chlRosterMap) {
       return chlRosterMap[chlTeam.ID];
     }
     return null;
-  }, [chlRosterMap, chlTeam]);
+  }, [chlRosterMap, chlTeam, selectedTeamID]);
 
   const eligiblePlayers = useMemo(() => {
     if (!chlTeamRoster) return [];
@@ -358,13 +362,17 @@ export const usePHLLineupUtils = (
   phlRosterMap?: Record<number, ProfessionalPlayer[]>,
   currentLineups?: ProfessionalLineup[],
   shootoutLineup?: ProfessionalShootoutLineup,
+  selectedTeamID?: number,
 ) => {
   const phlTeamRoster = useMemo(() => {
+    if (phlRosterMap && selectedTeamID) {
+      return phlRosterMap[selectedTeamID];
+    }
     if (phlTeam && phlRosterMap) {
       return phlRosterMap[phlTeam.ID];
     }
     return null;
-  }, [phlRosterMap, phlTeam]);
+  }, [phlRosterMap, phlTeam, selectedTeamID]);
 
   const eligiblePlayers = useMemo(() => {
     if (!phlTeamRoster) return [];
