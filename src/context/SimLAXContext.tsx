@@ -73,7 +73,7 @@ interface SimLAXContextValue {
 const SimLAXContext = createContext<SimLAXContextValue | null>(null);
 
 export const SimLAXProvider = ({ children }: { children: ReactNode }) => {
-  const { currentUser } = useAuthStore();
+  const { currentUser, isAdmin } = useAuthStore();
   const userId = currentUser?.id;
   const identityRequest = useRef(0);
   const adminRequest = useRef(0);
@@ -284,14 +284,18 @@ export const SimLAXProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshLaxAdminStatus = useCallback(async () => {
     const request = ++adminRequest.current;
-    if (!userId) { setLaxAdminStatus(null); setLaxAdminChecked(true); return; }
+    if (!userId || !isAdmin) {
+      setLaxAdminStatus(null);
+      setLaxAdminChecked(true);
+      return;
+    }
     setLaxAdminChecked(false);
     try {
       const status = await LacrosseAdminService.getStatus();
       if (request === adminRequest.current) setLaxAdminStatus(status);
     } catch { if (request === adminRequest.current) setLaxAdminStatus(null); }
     finally { if (request === adminRequest.current) setLaxAdminChecked(true); }
-  }, [userId]);
+  }, [userId, isAdmin]);
 
   const refreshClaxNews = useCallback(async () => {
     const request = ++newsRequest.current;
