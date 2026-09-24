@@ -34,6 +34,7 @@ interface HockeyLineBlockProps {
   ChangeLineupValue: (value: number, key: string, index: number) => void;
   ChangePlayerInput: (playerID: number, key: string, value: number) => void;
   activatePlayer: (player: HockeyPlayer) => void;
+  canModify?: boolean;
 }
 
 export const HockeyLineBlock: FC<HockeyLineBlockProps> = ({
@@ -47,6 +48,7 @@ export const HockeyLineBlock: FC<HockeyLineBlockProps> = ({
   ChangeLineupValue,
   ChangePlayerInput,
   activatePlayer,
+  canModify = true,
 }) => {
   const isGoalieLine = lineCategory === LineupG1 || lineCategory === LineupG2;
   const effectiveZoneCategory = isGoalieLine ? DefendingGoalZone : zoneCategory;
@@ -69,23 +71,28 @@ export const HockeyLineBlock: FC<HockeyLineBlockProps> = ({
           {lineCategory} Players
         </Text>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-[14rem_1fr] gap-2 w-full pb-3">
-        <div className="flex flex-col gap-y-2">
-          <Text variant="body-small">
-            <strong>{effectiveZoneCategory} Totals</strong>
-          </Text>
-          {zoneInputList.map((x) => (
-            <Input
-              key={x.key}
-              type="number"
-              classes="w-16 text-xs"
-              label={x.label}
-              name={x.key}
-              value={lineup[x.key] as number}
-              onChange={handleZoneTotalChange}
-            />
-          ))}
-        </div>
+      <div
+        className={`grid grid-cols-1 ${canModify ? "lg:grid-cols-[14rem_1fr]" : ""} gap-2 w-full pb-3`}
+      >
+        {canModify && (
+          <div className="flex flex-col gap-y-2">
+            <Text variant="body-small">
+              <strong>{effectiveZoneCategory} Totals</strong>
+            </Text>
+            {canModify &&
+              zoneInputList.map((x) => (
+                <Input
+                  key={x.key}
+                  type="number"
+                  classes="w-16 text-xs"
+                  label={x.label}
+                  name={x.key}
+                  value={lineup[x.key] as number}
+                  onChange={handleZoneTotalChange}
+                />
+              ))}
+          </div>
+        )}
         <HockeyLineTable
           lineup={lineup}
           rosterMap={rosterMap}
@@ -96,6 +103,7 @@ export const HockeyLineBlock: FC<HockeyLineBlockProps> = ({
           ChangeState={(value, key) => ChangeLineupValue(value, key, lineIdx)}
           ChangePlayerInput={ChangePlayerInput}
           activatePlayer={activatePlayer}
+          canModify={canModify}
         />
       </div>
     </div>

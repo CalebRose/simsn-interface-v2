@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useModal } from "../../../_hooks/useModal";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import {
@@ -56,19 +56,33 @@ import { TeamLabel } from "../../Common/Labels";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
+import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
+import { useResponsive } from "../../../_hooks/useMobile";
 
 export const CHLLineupPage = () => {
-  const hkStore = useSimHCKStore();
   const {
     chlTeam,
+    chlTeamMap,
+    chlTeamOptions,
     chlRosterMap,
     updateCHLRosterMap,
+    chlLineupsMap,
+    chlShootoutLineupsMap,
     chlLineups,
     chlShootoutLineup,
     saveCHLGameplan,
     chlGameplan,
     saveCHLAIGameplan,
-  } = hkStore;
+    getBootstrapLineupData,
+  } = useSimHCKStore();
+
+  console.log({ chlRosterMap });
+
+  useEffect(() => {
+    getBootstrapLineupData();
+  }, []);
+
+  const [selectedTeamID, setSelectedTeamID] = useState(chlTeam?.ID);
   const [selectedForwardLine, setSelectedForwardLine] =
     useState<Lineup>(LineupF1);
   const [selectedDefenderLine, setSelectedDefenderLine] =
@@ -88,29 +102,64 @@ export const CHLLineupPage = () => {
     CollegePlayer | ProfessionalPlayer
   >({} as CollegePlayer);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const { isMobile } = useResponsive();
+
+  const isUserTeam = useMemo(() => {
+    return chlTeam?.ID === selectedTeamID;
+  }, [chlTeam?.ID, selectedTeamID]);
+
+  const selectedTeam = useMemo(
+    () => (selectedTeamID ? (chlTeamMap[selectedTeamID] ?? chlTeam) : chlTeam),
+    [chlTeam, chlTeamMap, selectedTeamID],
+  );
+  useEffect(() => {
+    if (chlTeam?.ID && !selectedTeamID) setSelectedTeamID(chlTeam.ID);
+  }, [chlTeam?.ID, selectedTeamID]);
+  useEffect(() => {
+    if (!selectedTeamID) return;
+    const lineups =
+      chlLineupsMap[selectedTeamID] ??
+      (selectedTeamID === chlTeam?.ID ? chlLineups : []);
+    setCurrentLineups(lineups);
+    setOriginalLineups(lineups);
+    setCurrentShootoutLineups(
+      chlShootoutLineupsMap[selectedTeamID] ??
+        (selectedTeamID === chlTeam?.ID
+          ? chlShootoutLineup
+          : ({} as CollegeShootoutLineup)),
+    );
+    setOriginalShootoutLineups(
+      chlShootoutLineupsMap[selectedTeamID] ??
+        (selectedTeamID === chlTeam?.ID
+          ? chlShootoutLineup
+          : ({} as CollegeShootoutLineup)),
+    );
+  }, [
+    chlLineups,
+    chlShootoutLineup,
+    chlLineupsMap,
+    chlShootoutLineupsMap,
+    chlTeam?.ID,
+    selectedTeamID,
+  ]);
 
   const teamColors = useTeamColors(
-    chlTeam?.ColorOne,
-    chlTeam?.ColorTwo,
-    chlTeam?.ColorThree,
+    selectedTeam?.ColorOne,
+    selectedTeam?.ColorTwo,
+    selectedTeam?.ColorThree,
   );
   const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const backgroundColor = teamColors.One;
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
 
-  const {
-    chlTeamRosterMap,
-    chlTeamRoster,
-    eligiblePlayers,
-    lineupCategories,
-    zoneCategories,
-    errors,
-  } = useCHLLineupUtils(
-    chlTeam!,
-    chlRosterMap,
-    currentLineups,
-    currentShootoutLineups,
-  );
+  const { chlTeamRosterMap, eligiblePlayers, zoneCategories, errors } =
+    useCHLLineupUtils(
+      chlTeam!,
+      chlRosterMap,
+      currentLineups,
+      currentShootoutLineups,
+      selectedTeamID,
+    );
 
   const chlTeamRosterOptions = useMemo(() => {
     if (eligiblePlayers) {
@@ -146,7 +195,7 @@ export const CHLLineupPage = () => {
   );
 
   const Save = async () => {
-    if (chlTeam) {
+    if (chlTeam && isUserTeam) {
       setOriginalLineups(currentLineups);
       setOriginalShootoutLineups(currentShootoutLineups);
       const dto = {
@@ -159,13 +208,20 @@ export const CHLLineupPage = () => {
     }
   };
 
+  const SelectTeam = (options: any) => {
+    const opts = Number(options.value);
+    setSelectedTeamID(() => opts);
+  };
+
   const ResetLineups = () => {
+    if (!isUserTeam) return;
     setCurrentLineups(originalLineups);
     setCurrentShootoutLineups(originalShootoutLineups);
     // Will need to also reset the player ids -- actually, those will be reset automatically. Or should be.
   };
 
   const ChangeValueInShootoutLineup = (value: number, key: string) => {
+    if (!isUserTeam) return;
     updateLineupFieldWithClass(
       setCurrentShootoutLineups,
       CollegeShootoutLineup,
@@ -176,6 +232,7 @@ export const CHLLineupPage = () => {
 
   const ChangeLineupValue = useCallback(
     (value: number, key: string, index: number) => {
+      if (!isUserTeam) return;
       setCurrentLineups((prevLineups) =>
         prevLineups.map((lineup, idx) =>
           idx === index
@@ -184,11 +241,12 @@ export const CHLLineupPage = () => {
         ),
       );
     },
-    [],
+    [isUserTeam],
   );
 
   const ChangePlayerInput = useCallback(
     (playerID: number, key: string, value: number) => {
+      if (!isUserTeam || !chlTeam) return;
       const updatedRosterMap = { ...chlRosterMap };
       updatedRosterMap[chlTeam!.ID] = [...updatedRosterMap[chlTeam!.ID]];
       const playerIdx = updatedRosterMap[chlTeam!.ID]?.findIndex(
@@ -202,7 +260,7 @@ export const CHLLineupPage = () => {
         updateCHLRosterMap(updatedRosterMap);
       }
     },
-    [chlRosterMap, updateCHLRosterMap, chlTeam],
+    [chlRosterMap, updateCHLRosterMap, chlTeam, isUserTeam],
   );
 
   const activatePlayerModal = (player: CollegePlayer | ProfessionalPlayer) => {
@@ -259,11 +317,20 @@ export const CHLLineupPage = () => {
           >
             <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mb-2">
               <TeamLabel
-                team={chlTeam?.TeamName || ""}
+                team={selectedTeam?.TeamName || ""}
                 variant="h5"
                 backgroundColor={teamColors.One}
                 borderColor={teamColors.One}
                 headerTextColorClass={headerTextColorClass}
+              />
+            </div>
+            <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mb-3">
+              <CategoryDropdown
+                label=""
+                options={chlTeamOptions}
+                change={SelectTeam}
+                isMulti={false}
+                isMobile={isMobile}
               />
             </div>
             <ButtonGrid classes="grid grid-cols-2 gap-2 w-full mb-2">
@@ -271,6 +338,7 @@ export const CHLLineupPage = () => {
                 type="button"
                 variant="primary"
                 size="xs"
+                disabled={!isUserTeam}
                 onClick={aiGameplanModal.handleOpenModal}
               >
                 Settings
@@ -285,14 +353,19 @@ export const CHLLineupPage = () => {
               >
                 Help
               </Button>
-              <Button type="button" size="xs" onClick={ResetLineups}>
+              <Button
+                type="button"
+                size="xs"
+                onClick={ResetLineups}
+                disabled={!isUserTeam}
+              >
                 Reset
               </Button>
               <Button
                 type="button"
                 variant={errors.length > 0 ? "danger" : "success"}
                 size="xs"
-                disabled={errors.length > 0}
+                disabled={errors.length > 0 || !isUserTeam}
                 onClick={Save}
               >
                 Save
@@ -481,7 +554,7 @@ export const CHLLineupPage = () => {
             defenseLineup={selectedDefenderLineup}
             goalieLineup={selectedGoalieLineup}
             rosterMap={chlTeamRosterMap || {}}
-            team={chlTeam!!}
+            team={selectedTeam!!}
             league={SimCHL}
             primaryColor={teamColors.One}
             accentColor={teamColors.Two}
@@ -509,6 +582,7 @@ export const CHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
+                    canModify={isUserTeam}
                   />
                 </div>
               )}
@@ -525,6 +599,7 @@ export const CHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
+                    canModify={isUserTeam}
                   />
                 </div>
               )}
@@ -541,6 +616,7 @@ export const CHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
+                    canModify={isUserTeam}
                   />
                 </div>
               )}
@@ -565,6 +641,7 @@ export const CHLLineupPage = () => {
                         ChangeState={ChangeValueInShootoutLineup}
                         lineCategory={currentShootoutLineups}
                         activatePlayer={activatePlayerModal}
+                        canModify={isUserTeam}
                       />
                     ))}
                   </div>
@@ -582,14 +659,24 @@ export const PHLLineupPage = () => {
   const hkStore = useSimHCKStore();
   const {
     phlTeam,
+    phlTeamMap,
+    phlTeamOptions,
     proRosterMap,
     updateProRosterMap,
     phlLineups,
+    phlLineupsMap,
     phlShootoutLineup,
+    phlShootoutLineupsMap,
     savePHLGameplan,
     phlGameplan,
     savePHLAIGameplan,
+    getBootstrapLineupData,
   } = hkStore;
+  useEffect(() => {
+    getBootstrapLineupData();
+  }, [getBootstrapLineupData]);
+
+  const [selectedTeamID, setSelectedTeamID] = useState(phlTeam?.ID);
   const [selectedForwardLine, setSelectedForwardLine] =
     useState<Lineup>(LineupF1);
   const [selectedDefenderLine, setSelectedDefenderLine] =
@@ -609,11 +696,49 @@ export const PHLLineupPage = () => {
     CollegePlayer | ProfessionalPlayer
   >({} as ProfessionalPlayer);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const isUserTeam = useMemo(
+    () => phlTeam?.ID === selectedTeamID,
+    [phlTeam?.ID, selectedTeamID],
+  );
+  const selectedTeam = useMemo(
+    () => (selectedTeamID ? (phlTeamMap[selectedTeamID] ?? phlTeam) : phlTeam),
+    [phlTeam, phlTeamMap, selectedTeamID],
+  );
+  useEffect(() => {
+    if (phlTeam?.ID && !selectedTeamID) setSelectedTeamID(phlTeam.ID);
+  }, [phlTeam?.ID, selectedTeamID]);
+  useEffect(() => {
+    if (!selectedTeamID) return;
+    const lineups =
+      phlLineupsMap[selectedTeamID] ??
+      (selectedTeamID === phlTeam?.ID ? phlLineups : []);
+    setCurrentLineups(lineups);
+    setOriginalLineups(lineups);
+    setCurrentShootoutLineups(
+      phlShootoutLineupsMap[selectedTeamID] ??
+        (selectedTeamID === phlTeam?.ID
+          ? phlShootoutLineup
+          : ({} as ProfessionalShootoutLineup)),
+    );
+    setOriginalShootoutLineups(
+      phlShootoutLineupsMap[selectedTeamID] ??
+        (selectedTeamID === phlTeam?.ID
+          ? phlShootoutLineup
+          : ({} as ProfessionalShootoutLineup)),
+    );
+  }, [
+    phlLineups,
+    phlShootoutLineup,
+    phlLineupsMap,
+    phlShootoutLineupsMap,
+    phlTeam?.ID,
+    selectedTeamID,
+  ]);
 
   const teamColors = useTeamColors(
-    phlTeam?.ColorOne,
-    phlTeam?.ColorTwo,
-    phlTeam?.ColorThree,
+    selectedTeam?.ColorOne,
+    selectedTeam?.ColorTwo,
+    selectedTeam?.ColorThree,
   );
   const { backgroundColor: themeBackgroundColor } = useBackgroundColor();
   const backgroundColor = teamColors.One;
@@ -630,6 +755,7 @@ export const PHLLineupPage = () => {
     proRosterMap,
     currentLineups,
     currentShootoutLineups,
+    selectedTeamID,
   );
 
   const phlTeamRosterOptions = useMemo(() => {
@@ -637,6 +763,10 @@ export const PHLLineupPage = () => {
       return getLineupDropdownOptions(eligiblePlayers);
     }
   }, [eligiblePlayers]);
+
+  const SelectTeam = (options: any) => {
+    setSelectedTeamID(Number(options.value));
+  };
 
   // Rink vision mirrors whichever forward/defense/goalie line is currently
   // selected in the sidebar.
@@ -666,7 +796,7 @@ export const PHLLineupPage = () => {
   );
 
   const Save = async () => {
-    if (phlTeam) {
+    if (phlTeam && isUserTeam) {
       setOriginalLineups(currentLineups);
       setOriginalShootoutLineups(currentShootoutLineups);
       const dto = {
@@ -680,12 +810,14 @@ export const PHLLineupPage = () => {
   };
 
   const ResetLineups = () => {
+    if (!isUserTeam) return;
     setCurrentLineups(originalLineups);
     setCurrentShootoutLineups(originalShootoutLineups);
     // Will need to also reset the player ids -- actually, those will be reset automatically. Or should be.
   };
 
   const ChangeValueInShootoutLineup = (value: number, key: string) => {
+    if (!isUserTeam) return;
     updateLineupFieldWithClass(
       setCurrentShootoutLineups,
       ProfessionalShootoutLineup,
@@ -696,6 +828,7 @@ export const PHLLineupPage = () => {
 
   const ChangeLineupValue = useCallback(
     (value: number, key: string, index: number) => {
+      if (!isUserTeam) return;
       setCurrentLineups((prevLineups) =>
         prevLineups.map((lineup, idx) =>
           idx === index
@@ -704,11 +837,12 @@ export const PHLLineupPage = () => {
         ),
       );
     },
-    [],
+    [isUserTeam],
   );
 
   const ChangePlayerInput = useCallback(
     (playerID: number, key: string, value: number) => {
+      if (!isUserTeam || !phlTeam) return;
       const updatedRosterMap = { ...proRosterMap };
       updatedRosterMap[phlTeam!.ID] = [...updatedRosterMap[phlTeam!.ID]];
       const playerIdx = updatedRosterMap[phlTeam!.ID]?.findIndex(
@@ -723,7 +857,7 @@ export const PHLLineupPage = () => {
         updateProRosterMap(updatedRosterMap);
       }
     },
-    [proRosterMap, updateProRosterMap, phlTeam],
+    [proRosterMap, updateProRosterMap, phlTeam, isUserTeam],
   );
 
   const activatePlayerModal = (player: CollegePlayer | ProfessionalPlayer) => {
@@ -780,11 +914,20 @@ export const PHLLineupPage = () => {
           >
             <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mb-2">
               <TeamLabel
-                team={phlTeam?.TeamName || ""}
+                team={selectedTeam?.TeamName || ""}
                 variant="h5"
                 backgroundColor={teamColors.One}
                 borderColor={teamColors.One}
                 headerTextColorClass={headerTextColorClass}
+              />
+            </div>
+            <div className="flex flex-col gap-x-2 flex-wrap w-full text-start mb-3">
+              <CategoryDropdown
+                label=""
+                options={phlTeamOptions}
+                change={SelectTeam}
+                isMulti={false}
+                isMobile={false}
               />
             </div>
             <ButtonGrid classes="grid grid-cols-2 gap-2 w-full mb-2">
@@ -792,6 +935,7 @@ export const PHLLineupPage = () => {
                 type="button"
                 variant="primary"
                 size="xs"
+                disabled={!isUserTeam}
                 onClick={aiGameplanModal.handleOpenModal}
               >
                 Settings
@@ -806,14 +950,19 @@ export const PHLLineupPage = () => {
               >
                 Help
               </Button>
-              <Button type="button" size="xs" onClick={ResetLineups}>
+              <Button
+                type="button"
+                size="xs"
+                onClick={ResetLineups}
+                disabled={!isUserTeam}
+              >
                 Reset
               </Button>
               <Button
                 type="button"
                 variant={errors.length > 0 ? "danger" : "success"}
                 size="xs"
-                disabled={errors.length > 0}
+                disabled={errors.length > 0 || !isUserTeam}
                 onClick={Save}
               >
                 Save
@@ -1002,7 +1151,7 @@ export const PHLLineupPage = () => {
             defenseLineup={selectedDefenderLineup}
             goalieLineup={selectedGoalieLineup}
             rosterMap={phlTeamRosterMap || {}}
-            team={phlTeam!!}
+            team={selectedTeam!!}
             league={SimPHL}
             primaryColor={teamColors.One}
             accentColor={teamColors.Two}
@@ -1030,6 +1179,7 @@ export const PHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
+                    canModify={isUserTeam}
                   />
                 </div>
               )}
@@ -1046,6 +1196,7 @@ export const PHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
+                    canModify={isUserTeam}
                   />
                 </div>
               )}
@@ -1062,6 +1213,7 @@ export const PHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
+                    canModify={isUserTeam}
                   />
                 </div>
               )}
@@ -1086,6 +1238,7 @@ export const PHLLineupPage = () => {
                         ChangeState={ChangeValueInShootoutLineup}
                         lineCategory={currentShootoutLineups}
                         activatePlayer={activatePlayerModal}
+                        canModify={isUserTeam}
                       />
                     ))}
                   </div>

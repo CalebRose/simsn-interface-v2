@@ -64,6 +64,9 @@ import {
   ScoutingProfile,
   HistoricCollegePlayer,
   RetiredPlayer,
+  HockeyInvitational,
+  HockeyInvitationalRequest,
+  CHLGameRequest,
 } from "../models/hockeyModels";
 import { TeamService } from "../_services/teamService";
 import {
@@ -101,17 +104,24 @@ interface SimHCKContextProps {
   chlTeamMap: Record<number, CollegeTeam>;
   chlTeamOptions: { label: string; value: string }[];
   chlConferenceOptions: { label: string; value: string }[];
+  hockeyInvitationals: HockeyInvitational[];
+  hockeyInvitationalRequests: HockeyInvitationalRequest[];
+  chlGameRequests: CHLGameRequest[];
   allCHLStandings: CollegeStandings[];
   currentCHLStandings: CollegeStandings[];
   chlStandingsMap: Record<number, CollegeStandings>;
   chlRosterMap: Record<number, CollegePlayer[]>;
   chlPlayerMap: Record<number, CollegePlayer>;
   chlGameplan: CollegeGameplan;
+  chlLineupsMap: Record<number, CollegeLineup[]>;
   chlLineups: CollegeLineup[];
+  chlShootoutLineupsMap: Record<number, CollegeShootoutLineup>;
   chlShootoutLineup: CollegeShootoutLineup;
   phlGameplan: ProGameplan;
   chlGameplanMap: Record<number, CollegeGameplan>;
   phlGameplanMap: Record<number, ProGameplan>;
+  phlLineupsMap: Record<number, ProfessionalLineup[]>;
+  phlShootoutLineupsMap: Record<number, ProfessionalShootoutLineup>;
   phlLineups: ProfessionalLineup[];
   phlShootoutLineup: ProfessionalShootoutLineup;
   recruits: Croot[]; // Replace with a more specific type if available
@@ -261,6 +271,8 @@ interface SimHCKContextProps {
   phlScoutProfiles: ScoutingProfile[];
   phlAllDraftPicks: DraftPick[];
   getBootstrapDraftData: () => Promise<void>;
+  getBootstrapScheduleData: () => Promise<void>;
+  getBootstrapLineupData: () => Promise<void>;
   addPlayerToScoutBoard: (dto: any, playerData?: any) => Promise<void>;
   revealScoutingAttribute: (dto: any) => Promise<void>;
   removePlayerFromScoutBoard: (id: number) => Promise<void>;
@@ -287,10 +299,14 @@ const defaultContext: SimHCKContextProps = {
   chlPlayerMap: {},
   chlGameplan: {} as CollegeGameplan,
   chlGameplanMap: {},
+  chlLineupsMap: {},
+  chlShootoutLineupsMap: {},
   chlLineups: [],
   chlShootoutLineup: {} as CollegeShootoutLineup,
   phlGameplan: {} as ProGameplan,
   phlGameplanMap: {},
+  phlLineupsMap: {},
+  phlShootoutLineupsMap: {},
   phlLineups: [],
   phlShootoutLineup: {} as ProfessionalShootoutLineup,
   recruits: [],
@@ -332,6 +348,9 @@ const defaultContext: SimHCKContextProps = {
   collegePromiseMap: {},
   teamTransferPortalProfiles: [],
   transferProfileMapByPlayerID: {},
+  hockeyInvitationals: [],
+  hockeyInvitationalRequests: [],
+  chlGameRequests: [],
   addTransferPlayerToBoard: async () => {},
   removeTransferPlayerFromBoard: async () => {},
   saveTransferPortalBoard: async () => {},
@@ -415,6 +434,8 @@ const defaultContext: SimHCKContextProps = {
   phlAllDraftPicks: [],
   getBootstrapDraftData: async () => {},
   getBootstrapStatsData: async () => {},
+  getBootstrapScheduleData: async () => {},
+  getBootstrapLineupData: async () => {},
   addPlayerToScoutBoard: async () => {},
   revealScoutingAttribute: async () => {},
   removePlayerFromScoutBoard: async () => {},
@@ -564,6 +585,25 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const [topPHLGoals, setTopPHLGoals] = useState<ProfessionalPlayer[]>([]);
   const [topPHLAssists, setTopPHLAssists] = useState<ProfessionalPlayer[]>([]);
   const [topPHLSaves, setTopPHLSaves] = useState<ProfessionalPlayer[]>([]);
+  const [hockeyInvitationals, setHockeyInvitationals] = useState<
+    HockeyInvitational[]
+  >([]);
+  const [hockeyInvitationalRequests, setHockeyInvitationalRequests] = useState<
+    HockeyInvitationalRequest[]
+  >([]);
+  const [chlGameRequests, setChlGameRequests] = useState<CHLGameRequest[]>([]);
+  const [chlLineupsMap, setChlLineupsMap] = useState<
+    Record<number, CollegeLineup[]>
+  >({});
+  const [chlShootoutLineupsMap, setChlShootoutLineupsMap] = useState<
+    Record<number, CollegeShootoutLineup>
+  >({});
+  const [phlLineupsMap, setPhlLineupsMap] = useState<
+    Record<number, ProfessionalLineup[]>
+  >({});
+  const [phlShootoutLineupsMap, setPhlShootoutLineupsMap] = useState<
+    Record<number, ProfessionalShootoutLineup>
+  >({});
   const [chlPlayerGameStatsMap, setChlPlayerGameStatsMap] = useState<
     Record<number, CollegePlayerGameStats[]>
   >({});
@@ -572,28 +612,28 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   >({});
   const [chlTeamGameStatsMap, setChlTeamGameStats] = useState<
     Record<number, CollegeTeamGameStats[]>
-  >([]);
+  >({});
   const [chlTeamSeasonStatsMap, setChlTeamSeasonStats] = useState<
     Record<number, CollegeTeamSeasonStats[]>
-  >([]);
+  >({});
   const [phlPlayerGameStatsMap, setPhlPlayerGameStats] = useState<
     Record<number, ProfessionalPlayerGameStats[]>
-  >([]);
+  >({});
   const [phlPlayerSeasonStatsMap, setPhlPlayerSeasonStats] = useState<
     Record<number, ProfessionalPlayerSeasonStats[]>
-  >([]);
+  >({});
   const [phlTeamGameStatsMap, setPhlTeamGameStats] = useState<
     Record<number, ProfessionalTeamGameStats[]>
-  >([]);
+  >({});
   const [phlTeamSeasonStatsMap, setPhlTeamSeasonStats] = useState<
     Record<number, ProfessionalTeamSeasonStats[]>
-  >([]);
+  >({});
   const [tradeProposalsMap, setTradeProposalsMap] = useState<
     Record<number, TradeProposal[]>
-  >([]);
+  >({});
   const [tradePreferencesMap, setTradePreferencesMap] = useState<
     Record<number, TradePreferences>
-  >([]);
+  >({});
   const [phlDraftPicks, setPHLDraftPicks] = useState<
     Record<number, DraftPick[]>
   >({});
@@ -974,8 +1014,6 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setAllCollegeGames(res.AllCollegeGames);
       setCollegeInjuryReport(res.CollegeInjuryReport);
       setCHLTeam(res.CollegeTeam);
-      setCollegePolls(res.OfficialPolls);
-      setCollegePollSubmission(res.CollegePoll);
       setCollegeNotifications(res.CollegeNotifications);
       setAllCHLStandings(res.CollegeStandings);
       setCHLGameplanMap(res.CHLGameplanMap);
@@ -1018,6 +1056,64 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     setIsLoading(false);
     isFetching.current = false;
   };
+
+  const getBootstrapLineupData = useCallback(async () => {
+    let chlid = 0;
+    let phlid = 0;
+    if (currentUser && currentUser.CHLTeamID) {
+      chlid = currentUser.CHLTeamID;
+    }
+    if (currentUser && currentUser.PHLTeamID) {
+      phlid = currentUser.PHLTeamID;
+    }
+    // if the user has no hockey teams, skip all HCK bootstrapping
+    if (chlid == 0 && phlid == 0) {
+      setIsLoading(false);
+      return;
+    }
+    const res = await BootstrapService.GetHCKBootstrapLineupData(chlid, phlid);
+
+    if (chlid > 0) {
+      setChlLineupsMap(res.CollegeLineupsMap);
+      setChlShootoutLineupsMap(res.CollegeShootoutLineupsMap);
+    }
+    if (phlid > 0) {
+      setPhlLineupsMap(res.ProLineupsMap);
+      setPhlShootoutLineupsMap(res.ProShootoutLineupsMap);
+    }
+  }, [currentUser?.CHLTeamID, currentUser?.PHLTeamID]);
+
+  const getBootstrapScheduleData = useCallback(async () => {
+    let chlid = 0;
+    let phlid = 0;
+    if (!currentUser) {
+      setIsLoading(false);
+      return;
+    }
+    if (currentUser && currentUser.CHLTeamID) {
+      chlid = currentUser.CHLTeamID;
+    }
+    if (currentUser && currentUser.PHLTeamID) {
+      phlid = currentUser.PHLTeamID;
+    }
+    // if the user has no hockey teams, skip all HCK bootstrapping
+    if (chlid == 0 && phlid == 0) {
+      setIsLoading(false);
+      return;
+    }
+    const res = await BootstrapService.GetHCKBootstrapScheduleData(
+      chlid,
+      currentUser!.username,
+    );
+
+    if (chlid > 0) {
+      setHockeyInvitationals(res.HockeyInvitationals);
+      setHockeyInvitationalRequests(res.HockeyInvitationalRequests);
+      setChlGameRequests(res.CollegeGameRequests);
+      setCollegePollSubmission(res.CollegePoll);
+      setCollegePolls(res.OfficialPolls);
+    }
+  }, [currentUser?.CHLTeamID, currentUser?.PHLTeamID, currentUser?.username]);
 
   const getBootstrapStatsData = useCallback(async () => {
     let chlid = 0;
@@ -2396,12 +2492,19 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         chlStandingsMap,
         chlRosterMap,
         chlPlayerMap,
+        hockeyInvitationalRequests,
+        hockeyInvitationals,
+        chlGameRequests,
         chlGameplan,
         chlGameplanMap,
         phlGameplanMap,
+        chlLineupsMap,
+        chlShootoutLineupsMap,
         chlLineups,
         chlShootoutLineup,
         phlGameplan,
+        phlLineupsMap,
+        phlShootoutLineupsMap,
         phlLineups,
         phlShootoutLineup,
         recruits,
@@ -2525,6 +2628,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         phlScoutProfiles,
         phlAllDraftPicks,
         getBootstrapDraftData,
+        getBootstrapLineupData,
+        getBootstrapScheduleData,
         addPlayerToScoutBoard,
         revealScoutingAttribute,
         removePlayerFromScoutBoard,

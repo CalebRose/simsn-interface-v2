@@ -15,6 +15,8 @@ import {
 } from "../../../models/hockeyModels";
 import {
   getGoalieAttributeDisplay,
+  getFullAttributeDisplay,
+  getFullAttributeLabels,
   getZoneAttributeDisplay,
   getZoneAttributeLabels,
 } from "./lineupHelper";
@@ -73,6 +75,7 @@ interface HockeyLineTableProps {
   ChangeState: (value: number, property: string) => void;
   ChangePlayerInput: (playerID: number, key: string, value: number) => void;
   activatePlayer: (player: HockeyPlayer) => void;
+  canModify?: boolean;
 }
 
 export const HockeyLineTable: FC<HockeyLineTableProps> = ({
@@ -85,6 +88,7 @@ export const HockeyLineTable: FC<HockeyLineTableProps> = ({
   ChangeState,
   ChangePlayerInput,
   activatePlayer,
+  canModify = true,
 }) => {
   const { isMobile } = useResponsive();
   const isGoalieLine = lineup.LineType === 3;
@@ -94,12 +98,14 @@ export const HockeyLineTable: FC<HockeyLineTableProps> = ({
       ? defenseSlotDefs
       : forwardSlotDefs;
 
-  const attributeLabels = isGoalieLine
-    ? ["Agility", "Strength", "Goalie Vision", "Goalkeeping", "Stamina"]
-    : getZoneAttributeLabels(zoneCategory);
+  const attributeLabels = !canModify
+    ? getFullAttributeLabels(isGoalieLine)
+    : isGoalieLine
+      ? ["Agility", "Strength", "Goalie Vision", "Goalkeeping", "Stamina"]
+      : getZoneAttributeLabels(zoneCategory);
 
   const gridTemplateColumns = `2.5rem minmax(220px,1fr) repeat(${attributeLabels.length}, 6rem)${
-    isGoalieLine ? "" : ` repeat(${zoneInputList.length}, 5.5rem)`
+    !canModify || isGoalieLine ? "" : ` repeat(${zoneInputList.length}, 5.5rem)`
   }`;
 
   if (isMobile) {
@@ -122,6 +128,7 @@ export const HockeyLineTable: FC<HockeyLineTableProps> = ({
             ChangeState={ChangeState}
             ChangePlayerInput={ChangePlayerInput}
             activatePlayer={activatePlayer}
+            canModify={canModify}
           />
         ))}
       </div>
@@ -130,17 +137,18 @@ export const HockeyLineTable: FC<HockeyLineTableProps> = ({
 
   return (
     <div className="overflow-x-auto">
-      <div className="min-w-205">
+      <div className="w-max min-w-205">
         <div
-          className="grid items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300"
-          style={{ gridTemplateColumns }}
+          className="grid w-max items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300"
+          style={{ gridTemplateColumns, minWidth: "100%" }}
         >
           <span>#</span>
           <span className="text-left">Player</span>
           {attributeLabels.map((label) => (
             <span key={label}>{label}</span>
           ))}
-          {!isGoalieLine &&
+          {canModify &&
+            !isGoalieLine &&
             zoneInputList.map((input) => (
               <span key={input.key}>{input.label}</span>
             ))}
@@ -162,6 +170,7 @@ export const HockeyLineTable: FC<HockeyLineTableProps> = ({
               ChangeState={ChangeState}
               ChangePlayerInput={ChangePlayerInput}
               activatePlayer={activatePlayer}
+              canModify={canModify}
             />
           ))}
         </div>
@@ -185,6 +194,7 @@ interface HockeyLineRowProps {
   ChangeState: (value: number, property: string) => void;
   ChangePlayerInput: (playerID: number, key: string, value: number) => void;
   activatePlayer: (player: HockeyPlayer) => void;
+  canModify?: boolean;
 }
 
 const HockeyLineRow: FC<HockeyLineRowProps> = ({
@@ -202,6 +212,7 @@ const HockeyLineRow: FC<HockeyLineRowProps> = ({
   ChangeState,
   ChangePlayerInput,
   activatePlayer,
+  canModify = true,
 }) => {
   const playerID = (lineup as unknown as Record<LineupPositionKey, number>)[
     slot.key
@@ -236,9 +247,11 @@ const HockeyLineRow: FC<HockeyLineRowProps> = ({
   );
 
   const attributeDisplay = player
-    ? isGoalieLine
-      ? getGoalieAttributeDisplay(player, league)
-      : getZoneAttributeDisplay(zoneCategory, player, league)
+    ? !canModify
+      ? getFullAttributeDisplay(player, league)
+      : isGoalieLine
+        ? getGoalieAttributeDisplay(player, league)
+        : getZoneAttributeDisplay(zoneCategory, player, league)
     : attributeLabels.map((label) => ({ label, value: "—" }));
 
   const selectStyles = {
@@ -282,7 +295,7 @@ const HockeyLineRow: FC<HockeyLineRowProps> = ({
     }),
   };
 
-  const playerSelect = (
+  const playerSelect = canModify ? (
     <div className="flex min-w-0 flex-1 items-center gap-2">
       {player && (
         <Button classes="shrink-0" onClick={() => activatePlayer(player)}>
@@ -298,6 +311,12 @@ const HockeyLineRow: FC<HockeyLineRowProps> = ({
           styles={selectStyles}
         />
       </div>
+    </div>
+  ) : (
+    <div className="min-w-0 flex-1 truncate text-left text-sm font-semibold">
+      {player
+        ? `${player.Position} ${player.FirstName} ${player.LastName}`
+        : "Unassigned"}
     </div>
   );
 
@@ -323,7 +342,7 @@ const HockeyLineRow: FC<HockeyLineRowProps> = ({
             ))}
           </div>
         )}
-        {!isGoalieLine && zoneInputList.length > 0 && (
+        {canModify && !isGoalieLine && zoneInputList.length > 0 && (
           <div className="grid grid-cols-2 gap-2 border-t border-slate-700 pt-2">
             {zoneInputList.map((input) => (
               <label key={input.key} className="flex flex-col gap-0.5 text-xs">
@@ -347,8 +366,8 @@ const HockeyLineRow: FC<HockeyLineRowProps> = ({
 
   return (
     <div
-      className="grid items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm"
-      style={{ gridTemplateColumns }}
+      className="grid w-max items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm"
+      style={{ gridTemplateColumns, minWidth: "100%" }}
     >
       <strong>{slot.label}</strong>
       {playerSelect}
@@ -357,7 +376,8 @@ const HockeyLineRow: FC<HockeyLineRowProps> = ({
           {attr.value}
         </Text>
       ))}
-      {!isGoalieLine &&
+      {canModify &&
+        !isGoalieLine &&
         zoneInputList.map((input) => (
           <input
             key={input.key}
