@@ -478,7 +478,7 @@ export const ActionModal: FC<ActionModalProps> = ({
               <strong>
                 {playerID} {playerLabel}
               </strong>{" "}
-              will be {player.IsOnTradeBlock ? "placed on" : "taken off"} your
+              will be {player.IsOnTradeBlock ? "taken off" : "placed on"} your
               team's trade block.
             </Text>
             <Text className="mb4 text-start">

@@ -2494,6 +2494,7 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
           accessor: "ContractLength",
         },
         { header: "Designation", accessor: "Designation" },
+        { header: "Trade Block", accessor: "IsOnTradeBlock" },
         { header: "Personality", accessor: "Personality" },
         { header: "Work Ethic", accessor: "WorkEthic" },
       ]);
@@ -2638,6 +2639,14 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
                       : "text-green-500"
                 }
               />
+            ) : attr.label === "IsOnTradeBlock" ? (
+              <>
+                {attr.value === true ? (
+                  <CheckCircle textColorClass={`${TextGreen}`} />
+                ) : (
+                  <CrossCircle textColorClass="text-red-500" />
+                )}
+              </>
             ) : attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
@@ -2712,7 +2721,9 @@ export const NBARosterTable: FC<NBARosterTableProps> = ({
                 : []),
               {
                 value: "tradeBlock",
-                label: `Send to Trade Block - ${item.FirstName} ${item.LastName}`,
+                label: `${
+                  item.IsOnTradeBlock ? "Remove from" : "Send to"
+                } Trade Block - ${item.FirstName} ${item.LastName}`,
               },
             ]}
             isDisabled={disable}

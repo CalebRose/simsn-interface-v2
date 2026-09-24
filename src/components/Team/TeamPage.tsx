@@ -2117,7 +2117,9 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     await PlayerService.SendNBAPlayerToTradeBlock(playerID);
     const roster = proRosterMap[teamID] || [];
     const updatedRoster = roster.map((player) =>
-      player.ID === playerID ? { ...player, IsOnTradeBlock: true } : player,
+      player.ID === playerID
+        ? { ...player, IsOnTradeBlock: !player.IsOnTradeBlock }
+        : player,
     );
     updateNBARosterMap({ ...proRosterMap, [teamID]: updatedRoster });
   };
@@ -2146,7 +2148,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
           name: `${player.FirstName} ${player.LastName}`,
           position: player.Position,
           arch: player.Archetype,
-          year: player.Experience.toString(),
+          year: player.Year.toString(),
           overall: player.Overall.toString(),
           draftRound: "N/A",
           draftPick: "N/A",
@@ -2223,7 +2225,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
           name: `${player.FirstName} ${player.LastName}`,
           position: player.Position,
           arch: player.Archetype,
-          year: player.Experience.toString(),
+          year: player.Year.toString(),
           overall: player.Overall.toString(),
           draftRound: "N/A",
           draftPick: "N/A",

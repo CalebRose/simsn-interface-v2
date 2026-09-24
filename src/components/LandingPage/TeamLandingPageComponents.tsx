@@ -202,6 +202,10 @@ export const GamesBar = ({
               }
 
               const isNextGame = index === firstUpcomingIdx;
+              const gameDay =
+                league === SimCBB || league === SimNBA
+                  ? game.MatchOfWeek
+                  : game.GameDay;
 
               return (
                 <div
@@ -220,7 +224,7 @@ export const GamesBar = ({
                   {/* Week */}
                   <span className="text-[0.6rem] text-gray-500 dark:text-gray-400">
                     Wk {game.Week}
-                    {game.GameDay ? ` ${game.GameDay.toUpperCase()}` : ""}
+                    {gameDay ? String(gameDay).toUpperCase() : ""}
                   </span>
 
                   {/* Opponent logo */}
