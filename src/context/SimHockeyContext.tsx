@@ -843,8 +843,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
   const collegeStandingsMapBySeason = useMemo(() => {
     const map: Record<number, CollegeStandings[]> = {};
-    for (let i = 0; i < allCHLStandings.length; i++) {
-      const standing = allCHLStandings[i];
+    const standings = Array.isArray(allCHLStandings) ? allCHLStandings : [];
+    for (let i = 0; i < standings.length; i++) {
+      const standing = standings[i];
       if (!standing) continue;
       if (!map[standing.SeasonID]) {
         map[standing.SeasonID] = [standing];
@@ -871,8 +872,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
   const proStandingsMapBySeason = useMemo(() => {
     const map: Record<number, ProfessionalStandings[]> = {};
-    for (let i = 0; i < allProStandings.length; i++) {
-      const standing = allProStandings[i];
+    const standings = Array.isArray(allProStandings) ? allProStandings : [];
+    for (let i = 0; i < standings.length; i++) {
+      const standing = standings[i];
       if (!standing) continue;
       if (!map[standing.SeasonID]) {
         map[standing.SeasonID] = [standing];
@@ -899,8 +901,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
   const collegeGamesMapBySeason = useMemo(() => {
     const map: Record<number, CollegeGame[]> = {};
-    for (let i = 0; i < allCollegeGames.length; i++) {
-      const game = allCollegeGames[i];
+    const games = Array.isArray(allCollegeGames) ? allCollegeGames : [];
+    for (let i = 0; i < games.length; i++) {
+      const game = games[i];
       if (!game) continue;
       if (!map[game.SeasonID]) {
         map[game.SeasonID] = [game];
@@ -925,8 +928,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
 
   const proGamesMapBySeason = useMemo(() => {
     const map: Record<number, ProfessionalGame[]> = {};
-    for (let i = 0; i < allProGames.length; i++) {
-      const game = allProGames[i];
+    const games = Array.isArray(allProGames) ? allProGames : [];
+    for (let i = 0; i < games.length; i++) {
+      const game = games[i];
       if (!game) continue;
       if (!map[game.SeasonID]) {
         map[game.SeasonID] = [game];
@@ -1011,11 +1015,15 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     setPortalPlayers(res.PortalPlayers);
 
     if (chlid > 0) {
-      setAllCollegeGames(res.AllCollegeGames);
+      setAllCollegeGames(
+        Array.isArray(res.AllCollegeGames) ? res.AllCollegeGames : [],
+      );
       setCollegeInjuryReport(res.CollegeInjuryReport);
       setCHLTeam(res.CollegeTeam);
       setCollegeNotifications(res.CollegeNotifications);
-      setAllCHLStandings(res.CollegeStandings);
+      setAllCHLStandings(
+        Array.isArray(res.CollegeStandings) ? res.CollegeStandings : [],
+      );
       setCHLGameplanMap(res.CHLGameplanMap);
       setCHLLineups(res.CollegeTeamLineups);
       setCHLShootoutLineup(res.CollegeTeamShootoutLineup);
@@ -1030,14 +1038,14 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       setCollegePromises(res.CollegePromises);
     }
     if (phlid > 0) {
-      setAllProGames(res.AllProGames);
+      setAllProGames(Array.isArray(res.AllProGames) ? res.AllProGames : []);
       setCapsheetMap(res.CapsheetMap);
       setProInjuryReport(res.ProInjuryReport);
       setPHLTeam(res.ProTeam);
       setPHLLineups(res.ProTeamLineups);
       setPHLGameplanMap(res.PHLGameplanMap);
       setPHLShootoutLineup(res.ProTeamShootoutLineup);
-      setAllProStandings(res.ProStandings);
+      setAllProStandings(Array.isArray(res.ProStandings) ? res.ProStandings : []);
       setProRosterMap(res.ProRosterMap);
       setFreeAgentOffers(res.FreeAgentOffers);
       setWaiverOffers(res.WaiverWireOffers);

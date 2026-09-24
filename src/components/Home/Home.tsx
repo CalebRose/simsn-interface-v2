@@ -45,7 +45,6 @@ export const Home = () => {
   } = useSimBaseballStore();
   const {
     claxTeam,
-    claxTeamLoading,
     refreshClaxSchedule,
     refreshClaxStatistics,
     refreshClaxRoster,
@@ -290,11 +289,12 @@ export const Home = () => {
       participatingTeamsMissing ||
       readyLogoKey !== logoKey),
   );
+  // SimLAX dashboard data is intentionally background work. A slow or
+  // unavailable SimLAX API must not hold the entire SimSN dashboard behind its
+  // loading screen; the lacrosse panel consumes the store as each request
+  // eventually resolves.
   const homeLoading =
-    claxTeamLoading ||
-    teamButtonsLoading ||
-    (!selectedTeam && !claxTeam && isParticipating) ||
-    (claxDashboardKey !== null && claxDashboardReadyKey !== claxDashboardKey);
+    teamButtonsLoading || (!selectedTeam && !claxTeam && isParticipating);
 
   useEffect(() => {
     if (!homeLoading) {
