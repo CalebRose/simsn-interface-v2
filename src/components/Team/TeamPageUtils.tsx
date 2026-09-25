@@ -3166,6 +3166,7 @@ export const getNBAAttributes = (
           { label: "Y1T", value: player.Contract.Year1Total },
           { label: "ContractLength", value: player.Contract.YearsRemaining },
           { label: "Designation", value: "" },
+          { label: "IsOnTradeBlock", value: player.IsOnTradeBlock },
           { label: "Personality", value: player.Personality },
           { label: "WorkEthic", value: player.WorkEthic },
         ]
