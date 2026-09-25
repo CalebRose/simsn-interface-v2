@@ -184,7 +184,7 @@ interface SimBBAContextProps {
   ExportCBBRecruits: () => Promise<void>;
   ExportPlayByPlay: (dto: any) => Promise<void>;
   submitCollegePoll: (dto: any) => Promise<void>;
-  proposeTrade: (dto: NBATradeProposal) => Promise<void>;
+  proposeTrade: (dto: NBATradeProposalDTO) => Promise<void>;
   acceptTrade: (dto: NBATradeProposal) => Promise<void>;
   rejectTrade: (dto: NBATradeProposal) => Promise<void>;
   cancelTrade: (dto: NBATradeProposal) => Promise<void>;
@@ -1529,9 +1529,9 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     await RecruitService.ExportCBBCroots();
   }, []);
 
-  const proposeTrade = useCallback(async (dto: NBATradeProposal) => {
-    const thisDTO = new NBATradeProposalDTO({ dto });
-    const res = await TradeService.BBACreateTradeProposal(thisDTO);
+  const proposeTrade = useCallback(async (dto: NBATradeProposalDTO) => {
+    await TradeService.BBACreateTradeProposal(dto);
+    await getBootstrapRosterData();
     enqueueSnackbar(
       `Sent trade proposal to ${nbaTeamMap![dto.RecepientTeamID].Team}!`,
       {
@@ -1547,43 +1547,52 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         [dto.NBATeamID]: [...tp[dto.NBATeamID], dto],
       };
     });
-  }, []);
+  }, [enqueueSnackbar, getBootstrapRosterData, nbaTeamMap]);
 
   const acceptTrade = useCallback(async (dto: NBATradeProposal) => {
     const res = await TradeService.BBAAcceptTradeProposal(dto.ID);
 
-    setTradeProposalsMap((tp) => {
-      const team = tp[dto.NBATeamID];
-      if (!team) return tp;
+    setNBATradeProposals((proposals) => {
       return {
-        ...tp,
-        [dto.NBATeamID]: [...tp[dto.NBATeamID]].filter((x) => x.ID !== dto.ID),
+        ...proposals,
+        SentTradeProposals: (proposals.SentTradeProposals ?? []).filter(
+          (proposal) => proposal.ID !== dto.ID,
+        ),
+        ReceivedTradeProposals: (proposals.ReceivedTradeProposals ?? []).filter(
+          (proposal) => proposal.ID !== dto.ID,
+        ),
       };
     });
   }, []);
 
   const rejectTrade = useCallback(async (dto: NBATradeProposal) => {
-    const res = await TradeService.FBARejectTradeProposal(dto.ID);
+    const res = await TradeService.BBARejectTradeProposal(dto.ID);
 
-    setTradeProposalsMap((tp) => {
-      const team = tp[dto.NBATeamID];
-      if (!team) return tp;
+    setNBATradeProposals((proposals) => {
       return {
-        ...tp,
-        [dto.NBATeamID]: [...tp[dto.NBATeamID]].filter((x) => x.ID !== dto.ID),
+        ...proposals,
+        SentTradeProposals: (proposals.SentTradeProposals ?? []).filter(
+          (proposal) => proposal.ID !== dto.ID,
+        ),
+        ReceivedTradeProposals: (proposals.ReceivedTradeProposals ?? []).filter(
+          (proposal) => proposal.ID !== dto.ID,
+        ),
       };
     });
   }, []);
 
   const cancelTrade = useCallback(async (dto: NBATradeProposal) => {
-    const res = await TradeService.FBACancelTradeProposal(dto.ID);
+    const res = await TradeService.BBACancelTradeProposal(dto.ID);
 
-    setTradeProposalsMap((tp) => {
-      const team = tp[dto.NBATeamID];
-      if (!team) return tp;
+    setNBATradeProposals((proposals) => {
       return {
-        ...tp,
-        [dto.NBATeamID]: [...tp[dto.NBATeamID]].filter((x) => x.ID !== dto.ID),
+        ...proposals,
+        SentTradeProposals: (proposals.SentTradeProposals ?? []).filter(
+          (proposal) => proposal.ID !== dto.ID,
+        ),
+        ReceivedTradeProposals: (proposals.ReceivedTradeProposals ?? []).filter(
+          (proposal) => proposal.ID !== dto.ID,
+        ),
       };
     });
   }, []);

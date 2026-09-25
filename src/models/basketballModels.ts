@@ -781,18 +781,18 @@ export class NBATradeProposalDTO {
   }
 }
 export class NBATeamProposals {
-  SentTradeProposals: NBATradeProposalDTO[];
-  ReceivedTradeProposals: NBATradeProposalDTO[];
+  SentTradeProposals: NBATradeProposal[];
+  ReceivedTradeProposals: NBATradeProposal[];
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
     this.SentTradeProposals = this.convertValues(
       source["SentTradeProposals"],
-      NBATradeProposalDTO,
+      NBATradeProposal,
     );
     this.ReceivedTradeProposals = this.convertValues(
       source["ReceivedTradeProposals"],
-      NBATradeProposalDTO,
+      NBATradeProposal,
     );
   }
 
@@ -6853,11 +6853,11 @@ export class NBATradeProposal {
     this.NBATeamTradeOptions = this.convertValues(
       source["NBATeamTradeOptions"],
       NBATradeOption,
-    );
+    ) ?? [];
     this.RecepientTeamTradeOptions = this.convertValues(
       source["RecepientTeamTradeOptions"],
       NBATradeOption,
-    );
+    ) ?? [];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

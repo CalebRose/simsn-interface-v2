@@ -26,6 +26,7 @@ import {
   NBATeam,
   NBATradeOption,
   NBATradeProposal,
+  NBATradeProposalDTO,
 } from "../../../models/basketballModels";
 import { League, SimNBA, SimNFL, SimPHL } from "../../../_constants/constants";
 import { Text } from "../../../_design/Typography";
@@ -40,7 +41,6 @@ import {
   mapSelectedOptionsToTradeOptions,
   mapHCKTradeProposals,
   mapFBATradeProposals,
-  mapNBATradeProposals,
 } from "../Helpers/tradeModalHelper";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
@@ -106,6 +106,7 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
 }) => {
   const { phlTeamMap } = useSimHCKStore();
   const { proTeamMap } = useSimFBAStore();
+  const { nbaTeamMap } = useSimBBAStore();
   const sectionBg = darkenColor("#1f2937", -5);
   let title = "";
   let teamName = "";
@@ -127,10 +128,7 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
       );
     }
     if (league === SimNBA) {
-      return mapNBATradeProposals(
-        sentTradeProposals as NBATradeProposal[],
-        team.ID,
-      );
+      return sentTradeProposals as NBATradeProposal[];
     }
     return mapFBATradeProposals(
       sentTradeProposals as NFLTradeProposal[],
@@ -147,10 +145,7 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
       );
     }
     if (league === SimNBA) {
-      return mapNBATradeProposals(
-        receivedTradeProposals as NBATradeProposal[],
-        team.ID,
-      );
+      return receivedTradeProposals as NBATradeProposal[];
     }
     return mapFBATradeProposals(
       receivedTradeProposals as NFLTradeProposal[],
@@ -211,7 +206,10 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
                 otherTeam = phlTeamMap[trade.RecepientTeamID];
               } else if (league === SimNFL) {
                 otherTeam = proTeamMap![trade.RecepientTeamID];
+              } else if (league === SimNBA) {
+                otherTeam = nbaTeamMap?.[trade.RecepientTeamID];
               }
+              if (!otherTeam) return null;
               return (
                 <TradeSection
                   key={trade.ID}
@@ -247,7 +245,10 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
               } else if (league === SimNFL) {
                 const nflTeamID = (trade as NFLTradeProposal).NFLTeamID;
                 otherTeam = proTeamMap![nflTeamID];
+              } else if (league === SimNBA) {
+                otherTeam = nbaTeamMap?.[trade.NBATeamID];
               }
+              if (!otherTeam) return null;
               return (
                 <TradeSection
                   key={trade.ID}
@@ -317,6 +318,8 @@ const TradeSection: FC<TradeSectionProps> = ({
       return (trade as HCKTradeProposal).TeamTradeOptions;
     } else if (league === SimNFL) {
       return (trade as NFLTradeProposal).NFLTeamTradeOptions;
+    } else if (league === SimNBA) {
+      return (trade as NBATradeProposal).NBATeamTradeOptions;
     }
     return [];
   }, [league, trade]);
@@ -382,6 +385,13 @@ const TradeSection: FC<TradeSectionProps> = ({
               }
               playerID = item.NFLPlayerID;
               draftPickID = item.NFLDraftPickID;
+            } else if (league === SimNBA) {
+              item = item as NBATradeOption;
+              if (item.NBATeamID === trade.RecepientTeamID) {
+                return;
+              }
+              playerID = item.NBAPlayerID;
+              draftPickID = item.NBADraftPickID;
             }
             return (
               <ManageOption
@@ -411,6 +421,13 @@ const TradeSection: FC<TradeSectionProps> = ({
               }
               playerID = item.NFLPlayerID;
               draftPickID = item.NFLDraftPickID;
+            } else if (league === SimNBA) {
+              item = item as NBATradeOption;
+              if (item.NBATeamID !== trade.RecepientTeamID) {
+                return;
+              }
+              playerID = item.NBAPlayerID;
+              draftPickID = item.NBADraftPickID;
             }
             return (
               <ManageOption
@@ -691,6 +708,30 @@ export const ProposeTradeModal: FC<ProposeTradeModalProps> = ({
       recipientTeam.ID,
       recipientItemSalaryPercentages,
     );
+    if (league === SimNBA) {
+      const sendingTeam = userTeam as NBATeam;
+      const receivingTeam = recipientTeam as NBATeam;
+      const toNBAOptions = (options: any[]) =>
+        options.map((option) => ({
+          NBATeamID: option.TeamID,
+          NBAPlayerID: option.PlayerID,
+          NBADraftPickID: option.DraftPickID,
+          OptionType: option.OptionType,
+          CashTransfer: option.CashTransfer,
+          SalaryPercentage: option.SalaryPercentage,
+        }));
+      const dto = new NBATradeProposalDTO({
+        NBATeamID: sendingTeam.ID,
+        NBATeam: sendingTeam.Team,
+        RecepientTeamID: receivingTeam.ID,
+        RecepientTeam: receivingTeam.Team,
+        NBATeamTradeOptions: toNBAOptions(userOptions),
+        RecepientTeamTradeOptions: toNBAOptions(recepientOptions),
+      });
+      onClose();
+      return await proposeTrade(dto);
+    }
+
     const dto = {
       TeamID: userTeam.ID,
       RecepientTeamID: recipientTeam.ID,
