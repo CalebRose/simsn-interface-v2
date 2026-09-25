@@ -67,7 +67,6 @@ import {
   CollegePlayer,
   CollegePromise as BasketballPromise,
   NBAPlayer,
-  NBATradeProposal,
 } from "../../models/basketballModels";
 import { TradeBlockRow } from "./TeamPageTypes";
 import {
@@ -1979,7 +1978,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     nbaTeamOptions,
     arenaMap,
     teamProfileMap,
-    tradeProposalsMap,
+    nbaTradeProposals,
     cutNBAPlayer,
     updateNBARosterMap,
     proContractMap,
@@ -2282,40 +2281,12 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
   ]);
 
   const sentTradeProposals = useMemo(() => {
-    const proposals: NBATradeProposal[] = [];
-    for (let i = 0; i < nbaTeams.length; i++) {
-      const team = nbaTeams[i];
-      const proposalsList = tradeProposalsMap[team.ID];
-      if (proposalsList) {
-        for (let j = 0; j < proposalsList.length; j++) {
-          const proposal = proposalsList[j];
-          if (proposal.IsTradeAccepted || proposal.IsTradeRejected) continue;
-          if (proposal.NBATeamID === nbaTeam!.ID) {
-            proposals.push(proposal);
-          }
-        }
-      }
-    }
-    return proposals;
-  }, [nbaTeam, nbaTeams, tradeProposalsMap]);
+    return nbaTradeProposals?.SentTradeProposals ?? [];
+  }, [nbaTradeProposals]);
 
   const receivedTradeProposals = useMemo(() => {
-    const proposals: NBATradeProposal[] = [];
-    for (let i = 0; i < nbaTeams.length; i++) {
-      const team = nbaTeams[i];
-      const proposalsList = tradeProposalsMap[team.ID];
-      if (proposalsList) {
-        for (let j = 0; j < proposalsList.length; j++) {
-          const proposal = proposalsList[j];
-          if (proposal.IsTradeAccepted || proposal.IsTradeRejected) continue;
-          if (proposal.RecepientTeamID === nbaTeam!.ID) {
-            proposals.push(proposal);
-          }
-        }
-      }
-    }
-    return proposals;
-  }, [nbaTeam, nbaTeams, tradeProposalsMap]);
+    return nbaTradeProposals?.ReceivedTradeProposals ?? [];
+  }, [nbaTradeProposals]);
 
   return (
     <>
@@ -2325,7 +2296,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
         team={nbaTeam!!}
         league={SimNBA}
         userCapSheet={capsheetMap![nbaTeam!.ID]}
-        sentTradeProposals={tradeProposalsMap[nbaTeam!.ID]}
+        sentTradeProposals={sentTradeProposals}
         receivedTradeProposals={receivedTradeProposals}
         ts={ts}
         individualDraftPickMap={individualDraftPickMap}
