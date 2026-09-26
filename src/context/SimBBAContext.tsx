@@ -1598,7 +1598,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   }, []);
 
   const syncAcceptedTrade = useCallback(async (dto: NBATradeProposal) => {
-    const res = await TradeService.FBAConfirmAcceptedTrade(dto.ID);
+    await TradeService.BBAConfirmAcceptedTrade(dto.ID);
 
     setTradeProposalsMap((tp) => {
       const team = tp[dto.NBATeamID];
@@ -1611,7 +1611,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   }, []);
 
   const vetoTrade = useCallback(async (dto: NBATradeProposal) => {
-    const res = await TradeService.FBAVetoAcceptedTrade(dto.ID);
+    await TradeService.BBAVetoAcceptedTrade(dto.ID);
 
     setTradeProposalsMap((tp) => {
       const team = tp[dto.NBATeamID];

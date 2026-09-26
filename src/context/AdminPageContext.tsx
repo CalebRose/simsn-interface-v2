@@ -47,6 +47,7 @@ import { TradeProposal as BaseballTradeProposal } from "../models/baseball/baseb
 import { useLeagueStore } from "./LeagueContext";
 import { RequestService } from "../_services/requestService";
 import { BaseballService } from "../_services/baseballService";
+import { TradeService } from "../_services/tradeService";
 import { updateUserByUsername } from "../firebase/firestoreHelper";
 import { useSimHCKStore } from "./SimHockeyContext";
 import { useSimFBAStore } from "./SimFBAContext";
@@ -58,6 +59,7 @@ interface AdminPageContextType {
   hckPHLRequests: ProTeamRequest[];
   hckTradeProposals: HCKTradeProposal[];
   refreshHCKTradeProposals: (id: number) => void;
+  refreshBBATradeProposals: (id: number) => void;
   acceptCHLRequest: (request: CollegeTeamRequest) => Promise<void>;
   rejectCHLRequest: (request: CollegeTeamRequest) => Promise<void>;
   acceptPHLRequest: (request: ProTeamRequest) => Promise<void>;
@@ -168,6 +170,9 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
     ) {
       getBasketballRequests();
     }
+    if (selectedLeague === SimNBA) {
+      getBasketballTradeProposals();
+    }
     if (
       (selectedLeague === SimCHL || selectedLeague === SimPHL) &&
       (hckCHLRequests.length === 0 || hckPHLRequests.length === 0)
@@ -224,6 +229,19 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
     }
   };
 
+  const getBasketballTradeProposals = async () => {
+    try {
+      const proposals = await TradeService.BBAGetAllAcceptedTrades();
+      setBBATradePropsals(
+        Array.isArray(proposals)
+          ? proposals.map((proposal) => new NBATradeProposal(proposal))
+          : [],
+      );
+    } catch (e) {
+      console.error("Failed to load NBA accepted trades", e);
+    }
+  };
+
   const getBaseballRequests = async () => {
     const cbRes = await RequestService.GetLeagueRequests(
       SimCollegeBaseball as League,
@@ -250,6 +268,12 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
 
   const refreshBaseballTradeProposals = useCallback(async () => {
     await getBaseballTradeProposals();
+  }, []);
+
+  const refreshBBATradeProposals = useCallback((id: number) => {
+    setBBATradePropsals((proposals) =>
+      proposals.filter((proposal) => proposal.ID !== id),
+    );
   }, []);
 
   const acceptCBBaseballRequest = useCallback(
@@ -532,6 +556,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
         hckCHLRequests,
         hckPHLRequests,
         hckTradeProposals,
+        refreshBBATradeProposals,
         bbaCBBRequests,
         bbaNBARequests,
         baseballCBRequests,
