@@ -1,8 +1,9 @@
-import { League, SimNFL, SimPHL } from "../../_constants/constants";
+import { League, SimNBA, SimNFL, SimPHL } from "../../_constants/constants";
 import { Border } from "../../_design/Borders";
 import { Button } from "../../_design/Buttons";
 import { Logo } from "../../_design/Logo";
 import { Text } from "../../_design/Typography";
+import { NBATradeOption } from "../../models/basketballModels";
 import { NFLTradeOption } from "../../models/footballModels";
 import { TradeOption } from "../../models/hockeyModels";
 import { ManageOption } from "../Team/Common/ManageTradesModal";
@@ -97,7 +98,7 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
         </div>
 
         {/* Last activity */}
-        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-[120px]">
+        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-30">
           <Text variant="xs" classes="mb-1 lg:mb-2">
             Last Activity
           </Text>
@@ -113,7 +114,7 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
         </div>
 
         {/* Penalty marks / weeks missed */}
-        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-[100px]">
+        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-25">
           {penaltyMarks && (
             <>
               <Text variant="xs" classes="mb-1 lg:mb-2">
@@ -208,9 +209,9 @@ export const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 
 interface AdminTradeCardProps {
   sendingTeamLabel: string;
-  sendingTradeOptions: TradeOption[] | NFLTradeOption[];
+  sendingTradeOptions: TradeOption[] | NFLTradeOption[] | NBATradeOption[];
   receivingTeamLabel: string;
-  receivingTradeOptions: TradeOption[] | NFLTradeOption[];
+  receivingTradeOptions: TradeOption[] | NFLTradeOption[] | NBATradeOption[];
   sendingTeamLogo: string;
   receivingTeamLogo: string;
   accept: () => Promise<void>;
@@ -273,6 +274,10 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
                 const i = item as TradeOption;
                 playerID = i.PlayerID;
                 draftPickID = i.DraftPickID;
+              } else if (league === SimNBA) {
+                const i = item as NBATradeOption;
+                playerID = i.NBAPlayerID;
+                draftPickID = i.NBADraftPickID;
               }
               return (
                 <ManageOption
@@ -298,6 +303,10 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
                 const i = item as TradeOption;
                 playerID = i.PlayerID;
                 draftPickID = i.DraftPickID;
+              } else if (league === SimNBA) {
+                const i = item as NBATradeOption;
+                playerID = i.NBAPlayerID;
+                draftPickID = i.NBADraftPickID;
               }
               return (
                 <ManageOption

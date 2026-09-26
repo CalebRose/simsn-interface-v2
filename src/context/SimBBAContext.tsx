@@ -951,7 +951,10 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     setTradePreferencesMap(res.TradePreferencesMap);
     setProContractMap(res.ContractMap);
     setProExtensionMap(res.ExtensionMap);
-    setNBADraftPicks(res.DraftPicks);
+    const filteredDraftPicks = (res.DraftPicks ?? []).filter(
+      (x) => x.DrafteeID == 0,
+    );
+    setNBADraftPicks(filteredDraftPicks);
   };
 
   const getBootstrapRecruitingData = async () => {
@@ -1529,31 +1532,41 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     await RecruitService.ExportCBBCroots();
   }, []);
 
-  const proposeTrade = useCallback(async (dto: NBATradeProposalDTO) => {
-    await TradeService.BBACreateTradeProposal(dto);
-    await getBootstrapRosterData();
-    enqueueSnackbar(
-      `Sent trade proposal to ${nbaTeamMap![dto.RecepientTeamID].Team}!`,
-      {
-        variant: "success",
-        autoHideDuration: 3000,
-      },
-    );
-    setTradeProposalsMap((tp) => {
-      const team = tp[dto.NBATeamID];
-      if (!team) return tp;
-      return {
-        ...tp,
-        [dto.NBATeamID]: [...tp[dto.NBATeamID], dto],
-      };
-    });
-  }, [enqueueSnackbar, getBootstrapRosterData, nbaTeamMap]);
+  const proposeTrade = useCallback(
+    async (dto: NBATradeProposalDTO) => {
+      await TradeService.BBACreateTradeProposal(dto);
+      await getBootstrapRosterData();
+      enqueueSnackbar(
+        `Sent trade proposal to ${nbaTeamMap![dto.RecepientTeamID].Team}!`,
+        {
+          variant: "success",
+          autoHideDuration: 3000,
+        },
+      );
+      setTradeProposalsMap((tp) => {
+        const team = tp[dto.NBATeamID];
+        if (!team) return tp;
+        const proposal = new NBATradeProposal({
+          ...dto,
+          CreatedAt: {},
+          UpdatedAt: {},
+          DeletedAt: {},
+          IsSynced: false,
+        });
+        return {
+          ...tp,
+          [dto.NBATeamID]: [...team, proposal],
+        };
+      });
+    },
+    [enqueueSnackbar, getBootstrapRosterData, nbaTeamMap],
+  );
 
   const acceptTrade = useCallback(async (dto: NBATradeProposal) => {
     const res = await TradeService.BBAAcceptTradeProposal(dto.ID);
 
     setNBATradeProposals((proposals) => {
-      return {
+      return new NBATeamProposals({
         ...proposals,
         SentTradeProposals: (proposals.SentTradeProposals ?? []).filter(
           (proposal) => proposal.ID !== dto.ID,
@@ -1561,7 +1574,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         ReceivedTradeProposals: (proposals.ReceivedTradeProposals ?? []).filter(
           (proposal) => proposal.ID !== dto.ID,
         ),
-      };
+      });
     });
   }, []);
 
@@ -1569,7 +1582,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     const res = await TradeService.BBARejectTradeProposal(dto.ID);
 
     setNBATradeProposals((proposals) => {
-      return {
+      return new NBATeamProposals({
         ...proposals,
         SentTradeProposals: (proposals.SentTradeProposals ?? []).filter(
           (proposal) => proposal.ID !== dto.ID,
@@ -1577,7 +1590,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         ReceivedTradeProposals: (proposals.ReceivedTradeProposals ?? []).filter(
           (proposal) => proposal.ID !== dto.ID,
         ),
-      };
+      });
     });
   }, []);
 
@@ -1585,7 +1598,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     const res = await TradeService.BBACancelTradeProposal(dto.ID);
 
     setNBATradeProposals((proposals) => {
-      return {
+      return new NBATeamProposals({
         ...proposals,
         SentTradeProposals: (proposals.SentTradeProposals ?? []).filter(
           (proposal) => proposal.ID !== dto.ID,
@@ -1593,7 +1606,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         ReceivedTradeProposals: (proposals.ReceivedTradeProposals ?? []).filter(
           (proposal) => proposal.ID !== dto.ID,
         ),
-      };
+      });
     });
   }, []);
 
