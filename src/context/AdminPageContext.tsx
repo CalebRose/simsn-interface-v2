@@ -59,6 +59,7 @@ interface AdminPageContextType {
   hckPHLRequests: ProTeamRequest[];
   hckTradeProposals: HCKTradeProposal[];
   refreshHCKTradeProposals: (id: number) => void;
+  refreshFBATradeProposals: (id: number) => void;
   refreshBBATradeProposals: (id: number) => void;
   acceptCHLRequest: (request: CollegeTeamRequest) => Promise<void>;
   rejectCHLRequest: (request: CollegeTeamRequest) => Promise<void>;
@@ -123,19 +124,19 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
     [],
   );
   const [hckPHLRequests, setHCKPHLRequests] = useState<ProTeamRequest[]>([]);
-  const [hckTradeProposals, setHCKTradePropsals] = useState<HCKTradeProposal[]>(
-    [],
-  );
+  const [hckTradeProposals, setHCKTradeProposals] = useState<
+    HCKTradeProposal[]
+  >([]);
   const [fbaCFBRequests, setFBACFBRequests] = useState<CFBRequest[]>([]);
   const [fbaNFLRequests, setFBANFLRequests] = useState<NFLRequest[]>([]);
-  const [fbaTradeProposals, setFBATradePropsals] = useState<NFLTradeProposal[]>(
-    [],
-  );
+  const [fbaTradeProposals, setFBATradeProposals] = useState<
+    NFLTradeProposal[]
+  >([]);
   const [bbaCBBRequests, setBBACBBRequests] = useState<CBBRequest[]>([]);
   const [bbaNBARequests, setBBANBARequests] = useState<NBARequest[]>([]);
-  const [bbaTradeProposals, setBBATradePropsals] = useState<NBATradeProposal[]>(
-    [],
-  );
+  const [bbaTradeProposals, setBBATradeProposals] = useState<
+    NBATradeProposal[]
+  >([]);
   const [baseballCBRequests, setBaseballCBRequests] = useState<
     CollegeBaseballTeamRequest[]
   >([]);
@@ -196,7 +197,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       const model = res as HCKRequestResponse;
       setHCKCHLRequests(model.CollegeRequests ?? []);
       setHCKPHLRequests(model.ProRequest ?? []);
-      setHCKTradePropsals(model.AcceptedTrades ?? []);
+      setHCKTradeProposals(model.AcceptedTrades ?? []);
     } catch (e) {
       console.error("Failed to load hockey requests", e);
     }
@@ -212,7 +213,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
       );
       setFBACFBRequests(filteredCFBRequests);
       setFBANFLRequests(model.ProRequests ?? []);
-      setFBATradePropsals(model.AcceptedTrades ?? []);
+      setFBATradeProposals(model.AcceptedTrades ?? []);
       setNFLDraftPicks(model.DraftPicks ?? []);
     } catch (e) {
       console.error("Failed to load football requests", e);
@@ -232,7 +233,7 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   const getBasketballTradeProposals = async () => {
     try {
       const proposals = await TradeService.BBAGetAllAcceptedTrades();
-      setBBATradePropsals(
+      setBBATradeProposals(
         Array.isArray(proposals)
           ? proposals.map((proposal) => new NBATradeProposal(proposal))
           : [],
@@ -268,12 +269,6 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
 
   const refreshBaseballTradeProposals = useCallback(async () => {
     await getBaseballTradeProposals();
-  }, []);
-
-  const refreshBBATradeProposals = useCallback((id: number) => {
-    setBBATradePropsals((proposals) =>
-      proposals.filter((proposal) => proposal.ID !== id),
-    );
   }, []);
 
   const acceptCBBaseballRequest = useCallback(
@@ -545,7 +540,19 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
   }, []);
 
   const refreshHCKTradeProposals = useCallback((id: number) => {
-    setHCKTradePropsals((proposals) =>
+    setHCKTradeProposals((proposals) =>
+      proposals.filter((item) => item.ID !== id),
+    );
+  }, []);
+
+  const refreshBBATradeProposals = useCallback((id: number) => {
+    setBBATradeProposals((proposals) =>
+      proposals.filter((item) => item.ID !== id),
+    );
+  }, []);
+
+  const refreshFBATradeProposals = useCallback((id: number) => {
+    setFBATradeProposals((proposals) =>
       proposals.filter((item) => item.ID !== id),
     );
   }, []);
@@ -556,7 +563,6 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
         hckCHLRequests,
         hckPHLRequests,
         hckTradeProposals,
-        refreshBBATradeProposals,
         bbaCBBRequests,
         bbaNBARequests,
         baseballCBRequests,
@@ -587,6 +593,8 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
         setSelectedTab,
         RefreshRequests,
         refreshHCKTradeProposals,
+        refreshBBATradeProposals,
+        refreshFBATradeProposals,
       }}
     >
       {children}

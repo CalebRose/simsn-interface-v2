@@ -3,8 +3,8 @@ import { Border } from "../../_design/Borders";
 import { Button } from "../../_design/Buttons";
 import { Logo } from "../../_design/Logo";
 import { Text } from "../../_design/Typography";
-import { NFLTradeOption } from "../../models/footballModels";
 import { NBATradeOption } from "../../models/basketballModels";
+import { NFLTradeOption } from "../../models/footballModels";
 import { TradeOption } from "../../models/hockeyModels";
 import { ManageOption } from "../Team/Common/ManageTradesModal";
 
@@ -98,7 +98,7 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
         </div>
 
         {/* Last activity */}
-        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-[120px]">
+        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-30">
           <Text variant="xs" classes="mb-1 lg:mb-2">
             Last Activity
           </Text>
@@ -114,7 +114,7 @@ export const AdminTeamCard: React.FC<AdminTeamCardProps> = ({
         </div>
 
         {/* Penalty marks / weeks missed */}
-        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-[100px]">
+        <div className="flex flex-col pt-1 px-1 lg:pt-2 lg:px-2 lg:min-w-25">
           {penaltyMarks && (
             <>
               <Text variant="xs" classes="mb-1 lg:mb-2">

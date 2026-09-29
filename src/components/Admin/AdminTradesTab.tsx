@@ -19,11 +19,13 @@ import {
   mapTradeOptions,
   mapHCKTradeProposals,
   mapNFLTradeOptions,
+  mapNBATradeOptions,
 } from "../Team/Helpers/tradeModalHelper";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { NFLTeam, NFLTradeProposal } from "../../models/footballModels";
 import { NBATeam, NBATradeProposal } from "../../models/basketballModels";
 import { BaseballAdminTradesPanel } from "./BaseballAdminTradesPanel";
+import { useSimBBAStore } from "../../context/SimBBAContext";
 
 export const AdminTradesTab = () => {
   const { selectedLeague } = useLeagueStore();
@@ -31,8 +33,13 @@ export const AdminTradesTab = () => {
     useAdminPage();
   const { phlTeamMap, isLoading: hkLoading } = useSimHCKStore();
   const { proTeamMap, isLoading: fbLoading } = useSimFBAStore();
-  const { nbaTeamMap, proPlayerMap, individualDraftPickMap, syncAcceptedTrade, vetoTrade } =
-    useSimBBAStore();
+  const {
+    nbaTeamMap,
+    proPlayerMap,
+    individualDraftPickMap,
+    syncAcceptedTrade,
+    vetoTrade,
+  } = useSimBBAStore();
 
   const isBaseballLeague =
     selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball;
@@ -108,8 +115,16 @@ const NBAAdminTradeCard: React.FC<NBAAdminTradeCardProps> = ({
 }) => {
   const { refreshBBATradeProposals } = useAdminPage();
   const { currentUser } = useAuthStore();
-  const sendingTeamLogo = getLogo(SimNBA as League, sendingTeam?.ID, currentUser?.IsRetro);
-  const receivingTeamLogo = getLogo(SimNBA as League, receivingTeam?.ID, currentUser?.IsRetro);
+  const sendingTeamLogo = getLogo(
+    SimNBA as League,
+    sendingTeam!.ID,
+    currentUser?.IsRetro,
+  );
+  const receivingTeamLogo = getLogo(
+    SimNBA as League,
+    receivingTeam!.ID,
+    currentUser?.IsRetro,
+  );
   const teamColors = useTeamColors(
     sendingTeam?.ColorOne || "#1f2937",
     sendingTeam?.ColorTwo || "#111827",
@@ -286,6 +301,77 @@ export const NFLTradeCard: React.FC<NFLTradeCardProps> = ({
       proPlayerMap={proPlayerMap}
       draftPickMap={individualDraftPickMap}
       league={SimNFL}
+    />
+  );
+};
+
+interface NBATradeCardProps {
+  trade: NBATradeProposal;
+  sendingTeam: NBATeam;
+  receivingTeam: NBATeam;
+  oneItem: boolean;
+}
+
+export const NBATradeCard: React.FC<NBATradeCardProps> = ({
+  trade,
+  sendingTeam,
+  receivingTeam,
+  oneItem,
+}) => {
+  const { proPlayerMap, individualDraftPickMap, syncAcceptedTrade, vetoTrade } =
+    useSimBBAStore();
+  const { refreshBBATradeProposals } = useAdminPage();
+  const authStore = useAuthStore();
+  const { currentUser } = authStore;
+  const sendingTeamLogo = getLogo(
+    SimNBA as League,
+    sendingTeam.ID,
+    currentUser?.IsRetro,
+  );
+  const receivingTeamLogo = getLogo(
+    SimNBA as League,
+    receivingTeam.ID,
+    currentUser?.IsRetro,
+  );
+  const teamColors = useTeamColors(
+    sendingTeam.ColorOne,
+    sendingTeam.ColorTwo,
+    sendingTeam.ColorThree,
+  );
+  const backgroundColor = teamColors.One;
+  const borderColor = teamColors.Two;
+  const accept = async () => {
+    await syncAcceptedTrade(trade);
+    refreshBBATradeProposals(trade.ID);
+  };
+  const reject = async () => {
+    await vetoTrade(trade);
+    refreshBBATradeProposals(trade.ID);
+  };
+
+  const sentTradeOptions = useMemo(() => {
+    return mapNBATradeOptions(trade.NBATeamTradeOptions, trade.NBATeamID);
+  }, [trade]);
+
+  const recepientTradeOptions = useMemo(() => {
+    return mapNBATradeOptions(trade.NBATeamTradeOptions, trade.RecepientTeamID);
+  }, [trade]);
+
+  return (
+    <AdminTradeCard
+      sendingTradeOptions={sentTradeOptions}
+      receivingTradeOptions={recepientTradeOptions}
+      sendingTeamLabel={`${sendingTeam.Team} ${sendingTeam.Nickname}`}
+      receivingTeamLabel={`${receivingTeam.Team} ${receivingTeam.Nickname}`}
+      sendingTeamLogo={sendingTeamLogo}
+      receivingTeamLogo={receivingTeamLogo}
+      accept={accept}
+      veto={reject}
+      backgroundColor={backgroundColor}
+      borderColor={borderColor}
+      proPlayerMap={proPlayerMap}
+      draftPickMap={individualDraftPickMap}
+      league={SimNBA}
     />
   );
 };
