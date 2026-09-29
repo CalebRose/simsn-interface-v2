@@ -1,9 +1,10 @@
-import { League, SimNFL, SimPHL } from "../../_constants/constants";
+import { League, SimNBA, SimNFL, SimPHL } from "../../_constants/constants";
 import { Border } from "../../_design/Borders";
 import { Button } from "../../_design/Buttons";
 import { Logo } from "../../_design/Logo";
 import { Text } from "../../_design/Typography";
 import { NFLTradeOption } from "../../models/footballModels";
+import { NBATradeOption } from "../../models/basketballModels";
 import { TradeOption } from "../../models/hockeyModels";
 import { ManageOption } from "../Team/Common/ManageTradesModal";
 
@@ -208,9 +209,9 @@ export const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
 
 interface AdminTradeCardProps {
   sendingTeamLabel: string;
-  sendingTradeOptions: TradeOption[] | NFLTradeOption[];
+  sendingTradeOptions: TradeOption[] | NFLTradeOption[] | NBATradeOption[];
   receivingTeamLabel: string;
-  receivingTradeOptions: TradeOption[] | NFLTradeOption[];
+  receivingTradeOptions: TradeOption[] | NFLTradeOption[] | NBATradeOption[];
   sendingTeamLogo: string;
   receivingTeamLogo: string;
   accept: () => Promise<void>;
@@ -269,6 +270,10 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
                 const i = item as NFLTradeOption;
                 playerID = i.NFLPlayerID;
                 draftPickID = i.NFLDraftPickID;
+              } else if (league === SimNBA) {
+                const i = item as NBATradeOption;
+                playerID = i.NBAPlayerID;
+                draftPickID = i.NBADraftPickID;
               } else if (league === SimPHL) {
                 const i = item as TradeOption;
                 playerID = i.PlayerID;
@@ -294,6 +299,10 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
                 const i = item as NFLTradeOption;
                 playerID = i.NFLPlayerID;
                 draftPickID = i.NFLDraftPickID;
+              } else if (league === SimNBA) {
+                const i = item as NBATradeOption;
+                playerID = i.NBAPlayerID;
+                draftPickID = i.NBADraftPickID;
               } else if (league === SimPHL) {
                 const i = item as TradeOption;
                 playerID = i.PlayerID;
