@@ -2795,7 +2795,7 @@ export const setPriorityNFLAttributes = (
 };
 
 export const getShotgunRating = (
-  player: CFBPlayer | NFLPlayer | NFLDraftee,
+  player: CFBPlayer | NFLPlayer | NFLDraftee | FBCroot,
 ) => {
   if (player.Shotgun === 1) {
     return "Shotgun";
