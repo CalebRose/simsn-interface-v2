@@ -41,6 +41,7 @@ import {
   getPriorityNBAAttributes,
   getPriorityCBBCrootAttributes,
   getAdditionalBBAPortalAttributes,
+  getShotgunRating,
 } from "../Team/TeamPageUtils";
 import { HeightToFeetAndInches } from "../../_utility/getHeightByFeetAndInches";
 import { getYear } from "../../_utility/getYear";
@@ -1923,6 +1924,14 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
             <Text classes="font-semibold mb-1 whitespace-nowrap">Croot By</Text>
             <Text variant="xs" classes="whitespace-nowrap pt-0.5">
               {player.CustomCrootFor}
+            </Text>
+          </div>
+        )}
+        {(player.Position === "QB" || (player.Position === "ATH" && (player.Archetype === "Field General" || player.Archetype === "Triple-Threat" || player.Archetype === "Soccer Player"))) && (
+          <div className="flex flex-col">
+            <Text classes="font-semibold mb-1 whitespace-nowrap">Shotgun Rating</Text>
+            <Text variant="xs" classes="whitespace-nowrap pt-0.5">
+              {getShotgunRating(player)}
             </Text>
           </div>
         )}

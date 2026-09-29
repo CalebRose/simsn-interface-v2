@@ -2871,6 +2871,7 @@ export class Croot {
   ServiceAcademyPref: number;
   SmallTownPref: number;
   BigCityPref: number;
+  Shotgun: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -2921,6 +2922,7 @@ export class Croot {
     this.ServiceAcademyPref = source["ServiceAcademyPref"];
     this.SmallTownPref = source["SmallTownPref"];
     this.BigCityPref = source["BigCityPref"];
+    this.Shotgun = source["Shotgun"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

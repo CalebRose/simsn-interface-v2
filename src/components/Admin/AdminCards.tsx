@@ -270,14 +270,14 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
                 const i = item as NFLTradeOption;
                 playerID = i.NFLPlayerID;
                 draftPickID = i.NFLDraftPickID;
-              } else if (league === SimPHL) {
-                const i = item as TradeOption;
-                playerID = i.PlayerID;
-                draftPickID = i.DraftPickID;
               } else if (league === SimNBA) {
                 const i = item as NBATradeOption;
                 playerID = i.NBAPlayerID;
                 draftPickID = i.NBADraftPickID;
+              } else if (league === SimPHL) {
+                const i = item as TradeOption;
+                playerID = i.PlayerID;
+                draftPickID = i.DraftPickID;
               }
               return (
                 <ManageOption
@@ -299,14 +299,14 @@ export const AdminTradeCard: React.FC<AdminTradeCardProps> = ({
                 const i = item as NFLTradeOption;
                 playerID = i.NFLPlayerID;
                 draftPickID = i.NFLDraftPickID;
-              } else if (league === SimPHL) {
-                const i = item as TradeOption;
-                playerID = i.PlayerID;
-                draftPickID = i.DraftPickID;
               } else if (league === SimNBA) {
                 const i = item as NBATradeOption;
                 playerID = i.NBAPlayerID;
                 draftPickID = i.NBADraftPickID;
+              } else if (league === SimPHL) {
+                const i = item as TradeOption;
+                playerID = i.PlayerID;
+                draftPickID = i.DraftPickID;
               }
               return (
                 <ManageOption

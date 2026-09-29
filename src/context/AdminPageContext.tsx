@@ -47,6 +47,7 @@ import { TradeProposal as BaseballTradeProposal } from "../models/baseball/baseb
 import { useLeagueStore } from "./LeagueContext";
 import { RequestService } from "../_services/requestService";
 import { BaseballService } from "../_services/baseballService";
+import { TradeService } from "../_services/tradeService";
 import { updateUserByUsername } from "../firebase/firestoreHelper";
 import { useSimHCKStore } from "./SimHockeyContext";
 import { useSimFBAStore } from "./SimFBAContext";
@@ -170,6 +171,9 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
     ) {
       getBasketballRequests();
     }
+    if (selectedLeague === SimNBA) {
+      getBasketballTradeProposals();
+    }
     if (
       (selectedLeague === SimCHL || selectedLeague === SimPHL) &&
       (hckCHLRequests.length === 0 || hckPHLRequests.length === 0)
@@ -223,6 +227,19 @@ export const AdminPageProvider: React.FC<AdminPageProviderProps> = ({
     const nbaRes = await RequestService.GetNBATeamRequests();
     if (nbaRes) {
       setBBANBARequests(nbaRes);
+    }
+  };
+
+  const getBasketballTradeProposals = async () => {
+    try {
+      const proposals = await TradeService.BBAGetAllAcceptedTrades();
+      setBBATradeProposals(
+        Array.isArray(proposals)
+          ? proposals.map((proposal) => new NBATradeProposal(proposal))
+          : [],
+      );
+    } catch (e) {
+      console.error("Failed to load NBA accepted trades", e);
     }
   };
 
