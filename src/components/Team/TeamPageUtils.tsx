@@ -3163,7 +3163,7 @@ export const getNBAAttributes = (
                 : `None`
               : "None",
           },
-          { label: "Y1T", value: player.Contract.Year1Total },
+          { label: "Y1T", value: player.Contract.Year1Total.toFixed(2) },
           { label: "ContractLength", value: player.Contract.YearsRemaining },
           { label: "Designation", value: "" },
           { label: "IsOnTradeBlock", value: player.IsOnTradeBlock },
@@ -3181,12 +3181,30 @@ export const getNBAAttributes = (
     !isMobile && category === Contracts
       ? [
           { label: "Type", value: player.Contract.ContractType },
-          { label: "Value", value: formatContractAmount(player.Contract.ContractValue) },
-          { label: "Y1", value: formatContractAmount(player.Contract.Year1Total) },
-          { label: "Y2", value: formatContractAmount(player.Contract.Year2Total) },
-          { label: "Y3", value: formatContractAmount(player.Contract.Year3Total) },
-          { label: "Y4", value: formatContractAmount(player.Contract.Year4Total) },
-          { label: "Y5", value: formatContractAmount(player.Contract.Year5Total) },
+          {
+            label: "Value",
+            value: formatContractAmount(player.Contract.ContractValue),
+          },
+          {
+            label: "Y1",
+            value: formatContractAmount(player.Contract.Year1Total),
+          },
+          {
+            label: "Y2",
+            value: formatContractAmount(player.Contract.Year2Total),
+          },
+          {
+            label: "Y3",
+            value: formatContractAmount(player.Contract.Year3Total),
+          },
+          {
+            label: "Y4",
+            value: formatContractAmount(player.Contract.Year4Total),
+          },
+          {
+            label: "Y5",
+            value: formatContractAmount(player.Contract.Year5Total),
+          },
           { label: "Yrs", value: player.Contract.YearsRemaining },
         ]
       : [];
