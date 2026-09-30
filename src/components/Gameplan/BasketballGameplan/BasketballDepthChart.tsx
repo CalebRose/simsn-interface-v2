@@ -22,7 +22,7 @@ const stringSlots: { key: StringKey; label: string; abbreviation: string }[] = [
   { key: "ThirdStringID", label: "3", abbreviation: "TS" },
 ];
 
-const statColumns = ["AGI", "INS", "MID", "3PT", "FT", "BH", "STL", "REB", "BLK", "INT D", "PER D"];
+const statColumns = ["AGI", "INS", "MID", "3PT", "FT", "BH", "STL", "REB", "BLK", "INT D", "PER D", "STA"];
 
 interface BasketballDepthChartProps {
   selectedPositionIndex: number;
@@ -116,7 +116,7 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({ selectedPo
     </div>
     <div className="overflow-x-auto">
       <div className="min-w-[1320px]">
-        <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(11,3.25rem)_repeat(5,4.75rem)] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
+        <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
           <span>#</span><span className="text-left">Player</span><span>OVR</span>{statColumns.map((label) => <span key={label}>{label}</span>)}<span>Inside</span><span>Midrange</span><span>3 Pt</span><span>Shot Total</span><span>Usage</span>
         </div>
         <div className="space-y-2 pt-2">
@@ -147,14 +147,14 @@ const DepthRow: FC<{
   ChangeLineupInput: (playerID: number, key: string, value: number, index: number) => void;
 }> = ({ label, player, playerID, lineup, abbreviation, team, league, canModify, lineupIndex, ChangeLineupInput }) => {
   if (!player) return <div className="grid grid-cols-[2rem_1fr] gap-2 rounded-lg bg-slate-800/70 p-3"><strong>{label}</strong><span className="text-slate-400">Empty</span></div>;
-  const values = [player.Agility, player.InsideShooting, player.MidRangeShooting, player.ThreePointShooting, player.FreeThrow, player.Ballwork, player.Stealing, player.Rebounding, player.Blocking, player.InteriorDefense, player.PerimeterDefense];
+  const values = [player.Agility, player.InsideShooting, player.MidRangeShooting, player.ThreePointShooting, player.FreeThrow, player.Ballwork, player.Stealing, player.Rebounding, player.Blocking, player.InteriorDefense, player.PerimeterDefense, player.Stamina];
   const overall = displayRating(player, player.Overall, league);
   const year = league === SimCBB
     ? getYear((player as CollegePlayer).Year, (player as CollegePlayer).IsRedshirt)
     : `${(player as NBAPlayer).Year || 0} Exp`;
   const allocationKeys = ["InsideProportion", "MidProportion", "ThreeProportion", "Minutes"];
   const shotTotal = lineup[`${abbreviation}InsideProportion`] + lineup[`${abbreviation}MidProportion`] + lineup[`${abbreviation}ThreeProportion`];
-  return <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(11,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm"><strong>{label}</strong><div className="text-left"><span>{player.Archetype} {player.Position} </span><strong>{player.FirstName} {player.LastName}</strong><span>, <em>{year}</em></span></div><span className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white ${overallBadgeClass(overall, player, league)}`} style={{ WebkitTextStroke: "0.5px black", textShadow: "0 1px 1px black" }}>{overall}</span>{values.map((value, index) => <strong key={index}>{displayRating(player, value, league)}</strong>)}{allocationKeys.map((key) => <Fragment key={key}>{key === "Minutes" && <strong className={shotTotal === 100 ? "text-green-400" : "text-amber-400"}>{shotTotal}%</strong>}<input aria-label={`${key} for ${player.FirstName} ${player.LastName}`} disabled={!canModify} type="number" value={lineup[`${abbreviation}${key}`] as number} onChange={(event) => ChangeLineupInput(playerID, `${abbreviation}${key}`, Number(event.target.value), lineupIndex)} className="w-14 justify-self-center rounded border border-slate-500 bg-black px-1.5 py-1 text-center text-sm text-white disabled:opacity-60" /></Fragment>)}</div>;
+  return <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm"><strong>{label}</strong><div className="text-left"><span>{player.Archetype} {player.Position} </span><strong>{player.FirstName} {player.LastName}</strong><span>, <em>{year}</em></span></div><span className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white ${overallBadgeClass(overall, player, league)}`} style={{ WebkitTextStroke: "0.5px black", textShadow: "0 1px 1px black" }}>{overall}</span>{values.map((value, index) => <strong key={index}>{displayRating(player, value, league)}</strong>)}{allocationKeys.map((key) => <Fragment key={key}>{key === "Minutes" && <strong className={shotTotal === 100 ? "text-green-400" : "text-amber-400"}>{shotTotal}%</strong>}<input aria-label={`${key} for ${player.FirstName} ${player.LastName}`} disabled={!canModify} type="number" value={lineup[`${abbreviation}${key}`] as number} onChange={(event) => ChangeLineupInput(playerID, `${abbreviation}${key}`, Number(event.target.value), lineupIndex)} className="w-14 justify-self-center rounded border border-slate-500 bg-black px-1.5 py-1 text-center text-sm text-white disabled:opacity-60" /></Fragment>)}</div>;
 };
 
 const ModalPlayerCard: FC<{ player?: BasketballPlayer; level?: string; selected?: boolean; showAttributes: boolean; team: any; league: League; onClick: () => void; onRemove?: () => void }> = ({ player, level, selected, showAttributes, team, league, onClick, onRemove }) => <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onClick(); } }} className={`relative cursor-pointer select-none text-left transition-transform hover:scale-[1.02] ${selected ? "animate-pulse rounded-lg ring-2 ring-blue-400" : ""}`}>{!player ? <div className="flex h-40 items-center justify-center rounded-lg border-2 border-dashed border-slate-500 bg-slate-800/70 text-slate-400">Empty</div> : showAttributes ? <AttributeCard player={player} team={team} league={league} /> : <PlayerCard player={player} team={team} league={league} />}{level && <><span className="absolute -left-1 -top-2 rounded-full bg-blue-500 px-1.5 py-1 text-xs font-bold text-white">{level}</span><span className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-sm bg-blue-500 px-2 py-1 text-xs font-semibold text-white">{selected ? "SELECTED" : "SWAP"}</span>{onRemove && <button type="button" onClick={(event) => { event.stopPropagation(); onRemove(); }} className="absolute -bottom-3 right-0 rounded-sm bg-red-600 px-2 py-1 text-xs font-semibold text-white hover:bg-red-500">Remove</button>}</>}</div>;
