@@ -30,19 +30,7 @@ const stringSlots: { key: StringKey; label: string; abbreviation: string }[] = [
   { key: "ThirdStringID", label: "3", abbreviation: "TS" },
 ];
 
-const statColumns = [
-  "AGI",
-  "INS",
-  "MID",
-  "3PT",
-  "FT",
-  "BH",
-  "STL",
-  "REB",
-  "BLK",
-  "INT D",
-  "PER D",
-];
+const statColumns = ["AGI", "INS", "MID", "3PT", "FT", "BH", "STL", "REB", "BLK", "INT D", "PER D", "STA"];
 
 interface BasketballDepthChartProps {
   selectedPositionIndex: number;
@@ -184,13 +172,19 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
 
   if (!lineup) return null;
 
-  return (
-    <>
-      <div className="mb-3 flex w-full items-center gap-3">
-        <div className="text-left">
-          <Text variant="h5" classes="text-left font-semibold">
-            {slotLabel} Depth Chart
-          </Text>
+
+  return <>
+    <div className="mb-3 flex w-full items-center gap-3">
+      <div className="text-left"><Text variant="h5" classes="text-left font-semibold">{slotLabel} Depth Chart</Text></div>
+      {canModify && <Button size="sm" classes="ml-auto" onClick={openModal}>Swap</Button>}
+    </div>
+    <div className="overflow-x-auto">
+      <div className="min-w-[1320px]">
+        <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
+          <span>#</span><span className="text-left">Player</span><span>OVR</span>{statColumns.map((label) => <span key={label}>{label}</span>)}<span>Inside</span><span>Midrange</span><span>3 Pt</span><span>Shot Total</span><span>Usage</span>
+        </div>
+        <div className="space-y-2 pt-2">
+          {stringSlots.map((slot) => <DepthRow key={slot.key} label={slot.label} player={selectedRosterMap[lineup[slot.key]]} playerID={lineup[slot.key]} lineup={lineup} abbreviation={slot.abbreviation} team={team} league={league} canModify={canModify} lineupIndex={selectedPositionIndex} ChangeLineupInput={ChangeLineupInput} />)}
         </div>
         {canModify && (
           <Button size="sm" classes="ml-auto" onClick={openModal}>
@@ -341,118 +335,17 @@ const DepthRow: FC<{
   league: League;
   canModify: boolean;
   lineupIndex: number;
-  ChangeLineupInput: (
-    playerID: number,
-    key: string,
-    value: number,
-    index: number,
-  ) => void;
-}> = ({
-  label,
-  player,
-  playerID,
-  lineup,
-  abbreviation,
-  team,
-  league,
-  canModify,
-  lineupIndex,
-  ChangeLineupInput,
-}) => {
-  if (!player)
-    return (
-      <div className="grid grid-cols-[2rem_1fr] gap-2 rounded-lg bg-slate-800/70 p-3">
-        <strong>{label}</strong>
-        <span className="text-slate-400">Empty</span>
-      </div>
-    );
-  const values = [
-    player.Agility,
-    player.InsideShooting,
-    player.MidRangeShooting,
-    player.ThreePointShooting,
-    player.FreeThrow,
-    player.Ballwork,
-    player.Stealing,
-    player.Rebounding,
-    player.Blocking,
-    player.InteriorDefense,
-    player.PerimeterDefense,
-  ];
+  ChangeLineupInput: (playerID: number, key: string, value: number, index: number) => void;
+}> = ({ label, player, playerID, lineup, abbreviation, team, league, canModify, lineupIndex, ChangeLineupInput }) => {
+  if (!player) return <div className="grid grid-cols-[2rem_1fr] gap-2 rounded-lg bg-slate-800/70 p-3"><strong>{label}</strong><span className="text-slate-400">Empty</span></div>;
+  const values = [player.Agility, player.InsideShooting, player.MidRangeShooting, player.ThreePointShooting, player.FreeThrow, player.Ballwork, player.Stealing, player.Rebounding, player.Blocking, player.InteriorDefense, player.PerimeterDefense, player.Stamina];
   const overall = displayRating(player, player.Overall, league);
-  const year =
-    league === SimCBB
-      ? getYear(
-          (player as CollegePlayer).Year,
-          (player as CollegePlayer).IsRedshirt,
-        )
-      : `${(player as NBAPlayer).Year || 0} Exp`;
-  const allocationKeys = [
-    "InsideProportion",
-    "MidProportion",
-    "ThreeProportion",
-    "Minutes",
-  ];
-  const shotTotal =
-    lineup[`${abbreviation}InsideProportion`] +
-    lineup[`${abbreviation}MidProportion`] +
-    lineup[`${abbreviation}ThreeProportion`];
-  return (
-    <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(11,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm">
-      <strong>{label}</strong>
-      <div className="text-left">
-        <span>
-          {player.Archetype} {player.Position}{" "}
-        </span>
-        <strong>
-          {player.FirstName} {player.LastName}
-        </strong>
-        <span>
-          , <em>{year}</em>
-        </span>
-      </div>
-      <span
-        className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white ${overallBadgeClass(overall, player, league)}`}
-        style={{
-          WebkitTextStroke: "0.5px black",
-          textShadow: "0 1px 1px black",
-        }}
-      >
-        {overall}
-      </span>
-      {values.map((value, index) => (
-        <strong key={index}>{displayRating(player, value, league)}</strong>
-      ))}
-      {allocationKeys.map((key) => (
-        <Fragment key={key}>
-          {key === "Minutes" && (
-            <strong
-              className={
-                shotTotal === 100 ? "text-green-400" : "text-amber-400"
-              }
-            >
-              {shotTotal}%
-            </strong>
-          )}
-          <input
-            aria-label={`${key} for ${player.FirstName} ${player.LastName}`}
-            disabled={!canModify}
-            type="number"
-            value={lineup[`${abbreviation}${key}`] as number}
-            onChange={(event) =>
-              ChangeLineupInput(
-                playerID,
-                `${abbreviation}${key}`,
-                Number(event.target.value),
-                lineupIndex,
-              )
-            }
-            className="w-14 justify-self-center rounded border border-slate-500 bg-black px-1.5 py-1 text-center text-sm text-white disabled:opacity-60"
-          />
-        </Fragment>
-      ))}
-    </div>
-  );
+  const year = league === SimCBB
+    ? getYear((player as CollegePlayer).Year, (player as CollegePlayer).IsRedshirt)
+    : `${(player as NBAPlayer).Year || 0} Exp`;
+  const allocationKeys = ["InsideProportion", "MidProportion", "ThreeProportion", "Minutes"];
+  const shotTotal = lineup[`${abbreviation}InsideProportion`] + lineup[`${abbreviation}MidProportion`] + lineup[`${abbreviation}ThreeProportion`];
+  return <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm"><strong>{label}</strong><div className="text-left"><span>{player.Archetype} {player.Position} </span><strong>{player.FirstName} {player.LastName}</strong><span>, <em>{year}</em></span></div><span className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white ${overallBadgeClass(overall, player, league)}`} style={{ WebkitTextStroke: "0.5px black", textShadow: "0 1px 1px black" }}>{overall}</span>{values.map((value, index) => <strong key={index}>{displayRating(player, value, league)}</strong>)}{allocationKeys.map((key) => <Fragment key={key}>{key === "Minutes" && <strong className={shotTotal === 100 ? "text-green-400" : "text-amber-400"}>{shotTotal}%</strong>}<input aria-label={`${key} for ${player.FirstName} ${player.LastName}`} disabled={!canModify} type="number" value={lineup[`${abbreviation}${key}`] as number} onChange={(event) => ChangeLineupInput(playerID, `${abbreviation}${key}`, Number(event.target.value), lineupIndex)} className="w-14 justify-self-center rounded border border-slate-500 bg-black px-1.5 py-1 text-center text-sm text-white disabled:opacity-60" /></Fragment>)}</div>;
 };
 
 const ModalPlayerCard: FC<{
