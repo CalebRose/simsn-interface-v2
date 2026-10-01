@@ -2023,7 +2023,6 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
 
   const revealScoutingAttribute = useCallback(
     async (dto: any) => {
-      console.log({ dto });
       try {
         const res = await DraftService.RevealNBAAttribute(dto);
         // Testing purposes

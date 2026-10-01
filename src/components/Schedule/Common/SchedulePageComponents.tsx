@@ -1,21 +1,48 @@
-import { useMemo, useState } from "react";
+import { FC, ReactNode, useMemo, useState } from "react";
 import { useResponsive } from "../../../_hooks/useMobile";
 import { getLogo } from "../../../_utility/getLogo";
 import { Text } from "../../../_design/Typography";
 import { Logo } from "../../../_design/Logo";
 import { Button } from "../../../_design/Buttons";
-import { League, SimCHL, SimNBA, SimPHL } from "../../../_constants/constants";
+import {
+  League,
+  SimCBB,
+  SimCHL,
+  SimNBA,
+  SimPHL,
+} from "../../../_constants/constants";
 import { SectionCards } from "../../../_design/SectionCards";
 import { InformationCircle } from "../../../_design/Icons";
 import PlayerPicture from "../../../_utility/usePlayerFaces";
 import { processLeagueStandings } from "./SchedulePageHelper";
-import { ClickableGameLabel, ClickableTeamLabel } from "../../Common/Labels";
+import {
+  ClickableGameLabel,
+  ClickableTeamLabel,
+  ClickableUserLabel,
+  TeamLabel,
+} from "../../Common/Labels";
 import { useModal } from "../../../_hooks/useModal";
 import { SchedulePageGameModal } from "./GameModal";
 import { SimCFB, SimNFL } from "../../../_constants/constants";
 import { useAuthStore } from "../../../context/AuthContext";
 import { getThemeColors } from "../../../_utility/themeHelpers";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
+import {
+  CollegeGame as CFBGame,
+  NFLGame,
+} from "../../../models/footballModels";
+import {
+  CollegeGame as CHLGame,
+  ProfessionalGame as PHLGame,
+} from "../../../models/hockeyModels";
+import {
+  Match as CBBGame,
+  NBAMatch as NBAGame,
+} from "../../../models/basketballModels";
+import { useAdvancedSchedule } from "./useAdvancedSchedule";
+import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
+import { Table, TableCell } from "../../../_design/Table";
+import { Span } from "../../../_design/Span";
 
 interface TeamScheduleProps {
   team: any;
@@ -945,5 +972,345 @@ export const LeagueStats = ({
       {renderStatCard(titles[1], topRushers)}
       {renderStatCard(titles[2], topReceivers)}
     </div>
+  );
+};
+
+interface AdvandedScheduleProps {
+  team: any;
+  processedSchedule:
+    | CFBGame[]
+    | NFLGame[]
+    | CHLGame[]
+    | PHLGame[]
+    | CBBGame[]
+    | NBAGame[];
+  league: League;
+  currentWeek: number;
+  backgroundColor: string;
+  headerColor: string;
+  borderColor: string;
+  textColorClass: string;
+  darkerBackgroundColor: string;
+  isLoading: boolean;
+}
+
+const HCKAdvancedGameRow: FC<{
+  league: League;
+  game: CHLGame | PHLGame;
+  idx: number;
+  bg: string;
+  setSelectedGame: (game: CHLGame | PHLGame) => void;
+  openModal: () => void;
+  playerMap: Record<number, any>;
+}> = ({ league, game, idx, bg, setSelectedGame, openModal, playerMap }) => {
+  const handleClick = () => {
+    if (!game.GameComplete || !game.IsRevealed) return;
+    setSelectedGame(game);
+    openModal();
+  };
+  const homeTeamColor = (() => {
+    if (!game.IsRevealed) return "text-gray-500";
+    if (game.HomeTeamScore > game.AwayTeamScore) return "text-green-500";
+    if (game.HomeTeamScore < game.AwayTeamScore) return "text-red-500";
+    if (game.HomeTeamShootoutScore > game.AwayTeamShootoutScore)
+      return "text-green-500";
+    if (game.HomeTeamShootoutScore < game.AwayTeamShootoutScore)
+      return "text-red-500";
+    return "text-gray-500";
+  })();
+
+  const awayTeamColor = (() => {
+    if (!game.IsRevealed) return "text-gray-500";
+    if (game.AwayTeamScore > game.HomeTeamScore) return "text-green-500";
+    if (game.AwayTeamScore < game.HomeTeamScore) return "text-red-500";
+    if (game.AwayTeamShootoutScore > game.HomeTeamShootoutScore)
+      return "text-green-500";
+    if (game.AwayTeamShootoutScore < game.HomeTeamShootoutScore)
+      return "text-red-500";
+    return "text-gray-500";
+  })();
+  const starOneLabel = (() => {
+    const player = playerMap[game.StarOne];
+    if (!player) return "";
+    return `${player.Position} ${player.FirstName} ${player.LastName}`;
+  })();
+  const starTwoLabel = (() => {
+    const player = playerMap[game.StarTwo];
+    if (!player) return "";
+    return `${player.Position} ${player.FirstName} ${player.LastName}`;
+  })();
+  const starThreeLabel = (() => {
+    const player = playerMap[game.StarThree];
+    if (!player) return "";
+    return `${player.Position} ${player.FirstName} ${player.LastName}`;
+  })();
+  const homeTeamLogo = (() => {
+    let logo = getLogo(league, game.HomeTeamID, false);
+    return logo;
+  })();
+  const awayTeamLogo = (() => {
+    let logo = getLogo(league, game.AwayTeamID, false);
+    return logo;
+  })();
+
+  const homeScoreLabel = (() => {
+    if (!game.IsRevealed) return "-";
+    return `${game.HomeTeamScore}${game.IsShootout ? ` (${game.HomeTeamShootoutScore})` : ""}`;
+  })();
+  const awayScoreLabel = (() => {
+    if (!game.IsRevealed) return "-";
+    return `${game.AwayTeamScore}${game.IsShootout ? ` (${game.AwayTeamShootoutScore})` : ""}`;
+  })();
+  return (
+    <div
+      key={idx}
+      className="table-row border-b dark:border-gray-700 text-start"
+      style={{ backgroundColor: bg }}
+    >
+      <TableCell>
+        <Span onClick={handleClick}>{game.ID}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>
+          {game.Week}
+          {game.GameDay}
+        </Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.GameTitle}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.HomeTeamRank || "-"}</Span>
+      </TableCell>
+      <TableCell>
+        <ClickableUserLabel
+          coach={game.HomeTeamCoach || "AI"}
+          label={game.HomeTeamCoach || "AI"}
+          textVariant="xs"
+        />
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-row space-x-2 items-center">
+          <Logo url={homeTeamLogo} variant="tiny" />
+          <ClickableTeamLabel
+            label={game.HomeTeam}
+            textVariant="xs"
+            teamID={game.HomeTeamID}
+            league={league}
+          />
+        </div>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick} classes={`${homeTeamColor}`}>
+          {homeScoreLabel}
+        </Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick} classes={`${awayTeamColor}`}>
+          {awayScoreLabel}
+        </Span>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-row space-x-2 items-center">
+          <ClickableTeamLabel
+            label={game.AwayTeam}
+            textVariant="xs"
+            teamID={game.AwayTeamID}
+            league={league}
+          />
+          <Logo url={awayTeamLogo} variant="tiny" />
+        </div>
+      </TableCell>
+      <TableCell>
+        <ClickableUserLabel
+          coach={game.AwayTeamCoach || "AI"}
+          label={game.AwayTeamCoach || "AI"}
+          textVariant="xs"
+        />
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.AwayTeamRank || "-"}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.Arena}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.City}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.State}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.Country}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.AttendanceCount}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{starOneLabel}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{starTwoLabel}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{starThreeLabel}</Span>
+      </TableCell>
+    </div>
+  );
+};
+
+const FBAdvancedGameRow: FC<{
+  game: CFBGame | NFLGame;
+  idx: number;
+  bg: string;
+  setSelectedGame: (game: CFBGame | NFLGame) => void;
+  openModal: () => void;
+}> = ({ game, idx, bg, setSelectedGame, openModal }) => {
+  return (
+    <div key={idx} style={{ backgroundColor: bg }}>
+      {/* Render your football game row here */}
+    </div>
+  );
+};
+
+const BBAdvancedGameRow: FC<{
+  game: CBBGame | NBAGame;
+  idx: number;
+  bg: string;
+  setSelectedGame: (game: CBBGame | NBAGame) => void;
+  openModal: () => void;
+}> = ({ game, idx, bg, setSelectedGame, openModal }) => {
+  return (
+    <div key={idx} style={{ backgroundColor: bg }}>
+      {/* Render your basketball game row here */}
+    </div>
+  );
+};
+
+export const AdvandedSchedule: FC<AdvandedScheduleProps> = ({
+  team,
+  processedSchedule,
+  league,
+  currentWeek,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  textColorClass,
+  darkerBackgroundColor,
+  isLoading,
+}) => {
+  const {
+    leagueTeamOptions,
+    leagueConferenceOptions,
+    leagueTeamMap,
+    leaguePlayerMap,
+    selectedTeamIDs,
+    selectedConferenceIDs,
+    filteredGames,
+    standingsBySeason,
+    isFootball,
+    isBasketball,
+    isHockey,
+    selectedGame,
+    setSelectedGame,
+    SelectConferences,
+    SelectTeams,
+    tableColumns,
+    gamePlayerMap,
+  } = useAdvancedSchedule(league, currentWeek, processedSchedule);
+  const { isMobile } = useResponsive();
+  const gameModal = useModal();
+  const rowRenderer = (
+    league: League,
+  ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
+    if (league === SimCHL || league === SimPHL) {
+      return (game: CHLGame | PHLGame, idx: number, bg: string) => {
+        return (
+          <HCKAdvancedGameRow
+            league={league}
+            game={game}
+            idx={idx}
+            bg={bg}
+            setSelectedGame={setSelectedGame}
+            openModal={gameModal.handleOpenModal}
+            playerMap={leaguePlayerMap}
+          />
+        );
+      };
+    }
+    if (league === SimCFB) {
+      return (game: CFBGame | NFLGame, idx: number, bg: string) => {
+        return (
+          <FBAdvancedGameRow
+            game={game}
+            idx={idx}
+            bg={bg}
+            setSelectedGame={setSelectedGame}
+            openModal={gameModal.handleOpenModal}
+          />
+        );
+      };
+    }
+    return (game: CBBGame | NBAGame, idx: number, bg: string) => {
+      return (
+        <BBAdvancedGameRow
+          game={game}
+          idx={idx}
+          bg={bg}
+          setSelectedGame={setSelectedGame}
+          openModal={gameModal.handleOpenModal}
+        />
+      );
+    };
+  };
+
+  return (
+    <>
+      <div className="w-full col-span-5">
+        <SectionCards
+          header={`Advanced Schedule View | Week ${currentWeek}`}
+          team={team}
+          classes={`w-full ${textColorClass}`}
+          backgroundColor={backgroundColor}
+          headerColor={headerColor}
+          borderColor={borderColor}
+          textColorClass={textColorClass}
+          darkerBackgroundColor={darkerBackgroundColor}
+        >
+          <SchedulePageGameModal
+            isOpen={gameModal.isModalOpen}
+            onClose={gameModal.handleCloseModal}
+            league={league}
+            game={selectedGame}
+            title={`${!selectedGame ? "" : `${selectedGame.ID} ${selectedGame?.HomeTeam} vs ${selectedGame?.AwayTeam}`}`}
+            playerMap={gamePlayerMap}
+            teamMap={leagueTeamMap}
+          />
+          <div className="grid grid-cols-2 space-x-4 py-4 px-2">
+            <CategoryDropdown
+              label="Conferences"
+              options={leagueConferenceOptions}
+              change={SelectConferences}
+              isMulti={true}
+              isMobile={isMobile}
+            />
+            <CategoryDropdown
+              label="Teams"
+              options={leagueTeamOptions}
+              change={SelectTeams}
+              isMulti={true}
+              isMobile={isMobile}
+            />
+          </div>
+          <Table
+            columns={tableColumns}
+            data={filteredGames}
+            rowRenderer={rowRenderer(league)}
+            page={`${league}AdvancedSchedule`}
+            team={team}
+          />
+        </SectionCards>
+      </div>
+    </>
   );
 };

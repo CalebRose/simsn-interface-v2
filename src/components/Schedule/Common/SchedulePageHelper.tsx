@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CollegeStandings as CFBStandings,
   NFLStandings,
-  CollegeGame,
+  CollegeGame as CFBGame,
   NFLGame,
   CollegeTeam,
   NFLTeam,
@@ -99,7 +99,7 @@ export const getScheduleCFBData = (
   selectedSeason: any,
   league: League,
   allCFBStandings: CFBStandings[],
-  allCollegeGames: CollegeGame[],
+  allCollegeGames: CFBGame[],
   allCollegeTeams: CollegeTeam[],
   isSpringGames: boolean,
 ) => {
@@ -927,4 +927,42 @@ const sortFootballGames = (games: any[], league: League) => {
 
     return priorityA - priorityB;
   });
+};
+
+export const useFilteredGames = (
+  games: CFBGame[] | NFLGame[] | CHLGame[] | PHLGame[] | CBBGame[] | NBAMatch[],
+  week: number,
+  league: League,
+  selectedTeamIDs: number[],
+  selectedConferenceIDs: number[],
+  teamMap: any,
+) => {
+  if (!games) return [];
+  const teamsSet = useMemo(() => new Set(selectedTeamIDs), [selectedTeamIDs]);
+  const conferencesSet = useMemo(
+    () => new Set(selectedConferenceIDs),
+    [selectedConferenceIDs],
+  );
+
+  return useMemo(() => {
+    return games
+      .filter((game) => {
+        if (
+          teamsSet.size > 0 &&
+          !teamsSet.has(game.HomeTeamID) &&
+          !teamsSet.has(game.AwayTeamID)
+        ) {
+          return false;
+        }
+        if (
+          conferencesSet.size > 0 &&
+          !conferencesSet.has(teamMap[game.HomeTeamID]?.ConferenceID) &&
+          !conferencesSet.has(teamMap[game.AwayTeamID]?.ConferenceID)
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .filter((game) => game.Week === week);
+  }, [games, teamsSet, conferencesSet, week, teamMap]);
 };

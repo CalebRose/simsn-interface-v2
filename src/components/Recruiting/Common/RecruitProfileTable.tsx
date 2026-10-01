@@ -359,7 +359,7 @@ export const CHLProfileRow: FC<CHLProfileRowProps> = ({
 
   return (
     <div
-      className="table-row border-b dark:border-gray-700 text-left"
+      className="table-row border-b dark:border-gray-700 text-start"
       style={{ backgroundColor }}
     >
       <TableCell>

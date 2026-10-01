@@ -44,7 +44,7 @@ const orderLineupsForDisplay = <T extends CollegeLineup | NBALineup>(
         right.ID - left.ID,
     );
 export const useBasketballGameplan = () => {
-  const { currentUser } = useAuthStore();
+  const { currentUser, isAdmin } = useAuthStore();
   const { selectedLeague } = useLeagueStore();
   const {
     getBootstrapGameplanData,
@@ -69,6 +69,7 @@ export const useBasketballGameplan = () => {
     cbb_Timestamp,
   } = useSimBBAStore();
 
+  const [aiToggleOverride, setAIToggleOverride] = useState(false);
   const [selectedTeamID, setSelectedTeamID] = useState<number>(0);
   const [selectedString, setSelectedString] = useState<string>("First");
   const [selectedStringAbbr, setSelectedStringAbbr] = useState<string>("FS");
@@ -1091,5 +1092,8 @@ export const useBasketballGameplan = () => {
     setTeamExhaustionEnabled,
     teamExhaustionValue,
     setTeamExhaustionValue,
+    aiToggleOverride,
+    setAIToggleOverride,
+    isAdmin,
   };
 };

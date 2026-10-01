@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import {
   League,
   Overview,
@@ -10,12 +10,14 @@ import {
   Conferences,
   AdminRole,
   SimCHL,
+  AdvSchedule,
+  AdvStandings,
 } from "../../../_constants/constants";
 import { useAuthStore } from "../../../context/AuthContext";
 import { SelectDropdown } from "../../../_design/Select";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
-import { Button, ButtonGroup } from "../../../_design/Buttons";
+import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
@@ -34,6 +36,7 @@ import {
   TeamStandings,
   LeagueStandings,
   WeeklySchedule,
+  AdvandedSchedule,
 } from "../Common/SchedulePageComponents";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { darkenColor } from "../../../_utility/getDarkerColor";
@@ -44,6 +47,7 @@ import { SubmitPollModal } from "../Common/SubmitPollModal";
 import { CollegePollModal } from "../Common/CollegePollModal";
 import { getHCKWeekID } from "../../../_helper/statsPageHelper";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
+import { SectionCards } from "../../../_design/SectionCards";
 
 interface SchedulePageProps {
   league: League;
@@ -52,7 +56,6 @@ interface SchedulePageProps {
 
 export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const { currentUser } = useAuthStore();
-  const hkStore = useSimHCKStore();
   const currentWeek = GetCurrentWeek(league, ts);
   const currentSeason = ts.SeasonID;
   const {
@@ -67,7 +70,12 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     collegePollSubmission,
     submitCollegePoll,
     ExportHockeySchedule,
-  } = hkStore;
+    getBootstrapScheduleData,
+  } = useSimHCKStore();
+
+  useEffect(() => {
+    getBootstrapScheduleData();
+  }, []);
 
   const [selectedTeam, setSelectedTeam] = useState(chlTeam);
   const [category, setCategory] = useState(Overview);
@@ -215,29 +223,47 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         <div className="sm:grid sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-6 sm:gap-4 w-full h-[82vh]">
           <div className="flex flex-col w-full sm:col-span-1 md:col-span-2 lg:col-span-1 items-center gap-4 pb-2">
             <div className="flex gap-4 justify-center items-center sm:w-full">
-              <ButtonGroup classes="flex justify-center w-full">
+              <ButtonGrid classes="grid-cols-2 justify-center w-full">
                 <Button
                   size="md"
                   variant="primary"
                   onClick={() => setCategory(Overview)}
                   isSelected={category === Overview}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                 >
-                  <Text variant="small">Overview</Text>
+                  <Text variant="small">Schedule</Text>
                 </Button>
                 <Button
                   size="md"
                   variant="primary"
                   onClick={() => setCategory(Standings)}
                   isSelected={category === Standings}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                 >
                   <Text variant="small">Standings</Text>
                 </Button>
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  onClick={() => setCategory(AdvSchedule)}
+                  isSelected={category === AdvSchedule}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Adv. Schedule</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(AdvStandings)}
+                  isSelected={category === AdvStandings}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Adv. Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2"
                   onClick={submitPollModal.handleOpenModal}
                 >
                   <Text variant="small">Submit Poll</Text>
@@ -245,12 +271,12 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                   onClick={collegePollModal.handleOpenModal}
                 >
                   <Text variant="small">Official Poll</Text>
                 </Button>
-              </ButtonGroup>
+              </ButtonGrid>
             </div>
             <div className="flex flex-col gap-2 sm:gap-4 items-center">
               {category === Overview && (
@@ -280,7 +306,9 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               )}
               <div className="flex items-center gap-2 justify-around sm:flex-col">
                 <div className="flex flex-col items-center gap-2 justify-center">
-                  {view === TeamGames ? (
+                  {view === TeamGames &&
+                  category !== AdvSchedule &&
+                  category !== AdvStandings ? (
                     <>
                       <Text variant="body">Teams</Text>
                       <SelectDropdown
@@ -610,6 +638,20 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               />
             </div>
           )}
+          {category === AdvSchedule && (
+            <AdvandedSchedule
+              team={selectedTeam}
+              league={league}
+              processedSchedule={collegeGamesBySelectedSeason}
+              currentWeek={selectedWeekValue || 0}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+            />
+          )}
         </div>
       </div>
     </>
@@ -618,7 +660,6 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
 export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const { currentUser } = useAuthStore();
-  const hkStore = useSimHCKStore();
   const currentWeek = GetCurrentWeek(league, ts);
   const currentSeason = ts.Season;
   const {
@@ -631,8 +672,8 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     proGamesMapBySeason,
     isLoading,
     ExportHockeySchedule,
-  } = hkStore;
-
+    getBootstrapScheduleData,
+  } = useSimHCKStore();
   const [selectedTeam, setSelectedTeam] = useState(phlTeam);
   const [category, setCategory] = useState(Overview);
   const [scheduleView, setScheduleView] = useState(TeamGames);
@@ -738,32 +779,54 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     await ExportHockeySchedule(dto);
   };
 
+  useEffect(() => {
+    getBootstrapScheduleData();
+  }, []);
+
   return (
     <>
       <div className="flex flex-col w-full">
         <div className="sm:grid sm:grid-cols-6 sm:gap-4 w-full h-[82vh]">
           <div className="flex flex-col w-full sm:col-span-1 items-center gap-4 pb-2">
             <div className="flex gap-4 justify-center items-center sm:w-full">
-              <ButtonGroup classes="flex justify-center w-full">
+              <ButtonGrid classes="grid-cols-2">
                 <Button
                   size="md"
                   variant="primary"
                   onClick={() => setCategory(Overview)}
                   isSelected={category === Overview}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                 >
-                  <Text variant="small">Overview</Text>
+                  <Text variant="xs">Overview</Text>
                 </Button>
                 <Button
                   size="md"
                   variant="primary"
                   onClick={() => setCategory(Standings)}
                   isSelected={category === Standings}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                 >
-                  <Text variant="small">Standings</Text>
+                  <Text variant="xs">Standings</Text>
                 </Button>
-              </ButtonGroup>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(AdvSchedule)}
+                  isSelected={category === AdvSchedule}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="xs">Adv. Schedule</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(AdvStandings)}
+                  isSelected={category === AdvStandings}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="xs">Adv. Standings</Text>
+                </Button>
+              </ButtonGrid>
             </div>
             {category === Overview && (
               <>
@@ -804,7 +867,9 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
             )}
             <div className="flex items-center gap-2 justify-around sm:flex-col">
               <div className="flex flex-col items-center gap-2 justify-center">
-                {scheduleView === TeamGames ? (
+                {scheduleView === TeamGames &&
+                category !== AdvSchedule &&
+                category !== AdvStandings ? (
                   <>
                     <Text variant="body">Teams</Text>
                     <SelectDropdown
@@ -1114,6 +1179,20 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 isLoading={isLoading}
               />
             </div>
+          )}
+          {category === AdvSchedule && (
+            <AdvandedSchedule
+              team={selectedTeam}
+              league={league}
+              processedSchedule={proGamesBySelectedSeason}
+              currentWeek={selectedWeekValue || 0}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+            />
           )}
         </div>
       </div>

@@ -8,6 +8,7 @@ export interface CurrentUser {
   id: string;
   username: string;
   teamId?: number;
+  team_id?: number;
   NFLTeamID?: number;
   NFLRole?: string;
   cbb_id?: number;

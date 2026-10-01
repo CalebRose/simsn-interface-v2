@@ -97,6 +97,8 @@ export const OPEN_FORUM_IDS: ReadonlySet<string> = new Set([
   "welcome",
   "welcome-intro-help",
   "welcome-job-applications",
+  "media",
+  "daily-discussion",
 ]);
 
 /**
@@ -128,6 +130,7 @@ function deriveForumRole(currentUser: CurrentUser | null): ForumRole {
     return "commissioner";
   const hasMemberTeam =
     (currentUser.teamId && currentUser.teamId > 0) ||
+    (currentUser.team_id && currentUser.team_id > 0) ||
     (currentUser.NFLTeamID && currentUser.NFLTeamID > 0) ||
     (currentUser.cbb_id && currentUser.cbb_id > 0) ||
     (currentUser.NBATeamID && currentUser.NBATeamID > 0) ||
