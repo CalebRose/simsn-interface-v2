@@ -4448,6 +4448,8 @@ export class BootstrapData {
   RecruitProfiles: RecruitPlayerProfile[];
   TeamProfileMap: { [key: number]: RecruitingTeamProfile };
   PortalPlayers: CollegePlayer[];
+  HistoricCollegePlayers: CollegePlayer[];
+  RetiredProPlayers: ProfessionalPlayer[];
   TransferPortalProfiles: TransferPortalProfile[];
   CollegePromises: CollegePromise[];
   CollegeInjuryReport: CollegePlayer[];
@@ -4680,6 +4682,16 @@ export class BootstrapData {
     this.ProShootoutLineupsMap = this.convertValues(
       source["ProShootoutLineupsMap"],
       ProfessionalShootoutLineup,
+      true,
+    );
+    this.HistoricCollegePlayers = this.convertValues(
+      source["RetiredCollegePlayrs"],
+      CollegePlayer,
+      true,
+    );
+    this.RetiredProPlayers = this.convertValues(
+      source["RetiredProPlayers"],
+      ProfessionalPlayer,
       true,
     );
   }

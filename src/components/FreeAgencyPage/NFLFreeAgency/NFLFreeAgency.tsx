@@ -83,7 +83,6 @@ export const NFLFreeAgency = () => {
   );
   const helpModal = useModal();
   const aiSettingsModal = useModal();
-  console.log({ proContractMap });
   return (
     <>
       {modalPlayer && (

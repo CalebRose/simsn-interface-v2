@@ -29,10 +29,11 @@ export const BootstrapService = {
 
   GetHCKBootstrapScheduleData: async (
     collegeID: number,
+    proID: number,
     username: string,
   ): Promise<HockeyBootstrap> => {
     return await GetCall<HockeyBootstrap>(
-      `${hckUrl}bootstrap/schedule/${collegeID}/${username}`,
+      `${hckUrl}bootstrap/schedule/${collegeID}/${proID}/${username}`,
     );
   },
 

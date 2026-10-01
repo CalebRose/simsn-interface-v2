@@ -154,8 +154,6 @@ export const useNBAFreeAgency = () => {
     return freeAgentOfferMapByPlayer;
   }, [freeAgentOfferMapByPlayer, waiverOfferMapByPlayer, playerType]);
 
-  console.log({ offerMapByPlayerType });
-
   const teamOfferMap = useMemo(() => {
     if (playerType === Waivers) {
       return teamWaiverOfferMap;

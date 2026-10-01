@@ -150,8 +150,6 @@ export const OfferModal: FC<OfferModalProps> = ({
     return new PHLFreeAgencyOffer();
   });
 
-  console.log({ offer });
-
   useEffect(() => {
     if (
       league === SimNFL &&

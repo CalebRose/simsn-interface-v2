@@ -687,7 +687,6 @@ export const GenerateNBAFAErrorList = (
 
   // 5) Rule3: no huge jumps (>50% or >$3M)
   if (!ValidateNBARule3(TotalYears, y1, y2, y3, y4, y5)) {
-    console.log({ TotalYears, y1, y2, y3, y4, y5 });
     errors.push("Year-to-year increases must be ≤50% or ≤$3 million.");
   }
 

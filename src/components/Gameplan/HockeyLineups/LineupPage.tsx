@@ -76,8 +76,6 @@ export const CHLLineupPage = () => {
     getBootstrapLineupData,
   } = useSimHCKStore();
 
-  console.log({ chlRosterMap });
-
   useEffect(() => {
     getBootstrapLineupData();
   }, []);
