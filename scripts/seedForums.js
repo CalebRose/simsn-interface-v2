@@ -389,11 +389,19 @@ const forums = [
     "Apply for open positions within the league",
   ),
   subforum(
+    "welcome-jobs-board",
+    "jobs-board",
+    "Jobs Board",
+    "welcome",
+    2,
+    "Pro League Teams may post job openings and recruit staff here. Encouraging new users to look here before applying for pro teams.",
+  ),
+  subforum(
     "welcome-league-proposals",
     "league-proposals",
     "League Proposals",
     "welcome",
-    2,
+    3,
     "Propose new leagues or major league changes",
   ),
   subforum(
@@ -401,7 +409,7 @@ const forums = [
     "suggestions-fixes",
     "Suggestions / Fixes",
     "welcome",
-    3,
+    4,
     "Submit suggestions, bug reports, and fix requests",
   ),
 ];

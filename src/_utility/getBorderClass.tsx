@@ -94,7 +94,6 @@ export const getBorderColorBasedOnBg = (bgColor: string = ""): string => {
   // Calculate luminance
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   // Return a border color class based on luminance
-  console.log({ luminance, bgColor });
   if (luminance === undefined || luminance === null || isNaN(luminance))
     return "border-black";
   return luminance > 0.83

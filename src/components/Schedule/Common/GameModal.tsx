@@ -1246,7 +1246,9 @@ export const HockeyGameModal = ({
                     <Text variant="small" classes="opacity-50">
                       {game.HomeTeamRank > 0 ? `#${game.HomeTeamRank}` : "NR"}
                     </Text>
-                    <Text variant="alternate">{game.HomeTeamName}</Text>
+                    <Text variant="alternate">
+                      {game.HomeTeamName || game.HomeTeam || ""}
+                    </Text>
                     <Text variant="h3-alt" classes="font-semibold">
                       {game.HomeTeamMascot}
                     </Text>
@@ -1316,7 +1318,9 @@ export const HockeyGameModal = ({
                     } gap-3`}
                   >
                     <div className="text-left col-span-2">
-                      <Text variant="body-small">{game.HomeTeamAbbr}</Text>
+                      <Text variant="body-small">
+                        {game.HomeTeamAbbr || game.HomeTeam || ""}
+                      </Text>
                     </div>
                     <div className="text-center col-span-1">
                       <Text variant="body-small">{score.P1Home}</Text>
@@ -1355,7 +1359,9 @@ export const HockeyGameModal = ({
                     } gap-3`}
                   >
                     <div className="text-left col-span-2">
-                      <Text variant="body-small">{game.AwayTeamAbbr}</Text>
+                      <Text variant="body-small">
+                        {game.AwayTeamAbbr || game.AwayTeam || ""}
+                      </Text>
                     </div>
                     <div className="text-center col-span-1">
                       <Text variant="body-small">{score.P1Away}</Text>
@@ -1418,7 +1424,9 @@ export const HockeyGameModal = ({
                     <Text variant="small" classes="opacity-50">
                       {game.AwayTeamRank > 0 ? `#${game.AwayTeamRank}` : "NR"}
                     </Text>
-                    <Text variant="alternate">{game.AwayTeamName}</Text>
+                    <Text variant="alternate">
+                      {game.AwayTeamName || game.AwayTeam || ""}
+                    </Text>
                     <Text variant="h3-alt" classes="font-semibold">
                       {game.AwayTeamMascot}
                     </Text>

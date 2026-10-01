@@ -29,6 +29,7 @@ import { ThemeToggle } from "../Common/ThemeToggle";
 import { useResponsive } from "../../_hooks/useMobile";
 import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
+import { ChatIcon, DMIcon, NotificationIcon } from "../../_design/Icons";
 
 export const SideMenu = ({}) => {
   const {
@@ -178,20 +179,7 @@ export const SideMenu = ({}) => {
                   className="relative p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-hidden"
                 >
                   {/* Bell SVG */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                    />
-                  </svg>
+                  <NotificationIcon />
                   {/* Red dot for unread */}
                   {unreadCount > 0 && (
                     <span className="absolute top-0.5 right-0.5 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800" />
@@ -282,20 +270,7 @@ export const SideMenu = ({}) => {
                 onClick={openInbox}
                 className="relative p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-hidden"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                  />
-                </svg>
+                <DMIcon />
                 {totalUnreadDMs > 0 && (
                   <span className="absolute top-0.5 right-0.5 block h-2 w-2 rounded-full bg-blue-500 ring-2 ring-white dark:ring-gray-800" />
                 )}

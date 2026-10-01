@@ -3,6 +3,7 @@ import {
   League,
   SimCollegeBaseball,
   SimMLB,
+  SimNBA,
   SimNFL,
   SimPHL,
 } from "../../_constants/constants";
@@ -18,10 +19,13 @@ import {
   mapTradeOptions,
   mapHCKTradeProposals,
   mapNFLTradeOptions,
+  mapNBATradeOptions,
 } from "../Team/Helpers/tradeModalHelper";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { NFLTeam, NFLTradeProposal } from "../../models/footballModels";
+import { NBATeam, NBATradeProposal } from "../../models/basketballModels";
 import { BaseballAdminTradesPanel } from "./BaseballAdminTradesPanel";
+import { useSimBBAStore } from "../../context/SimBBAContext";
 
 export const AdminTradesTab = () => {
   const { selectedLeague } = useLeagueStore();
@@ -29,6 +33,13 @@ export const AdminTradesTab = () => {
     useAdminPage();
   const { phlTeamMap, isLoading: hkLoading } = useSimHCKStore();
   const { proTeamMap, isLoading: fbLoading } = useSimFBAStore();
+  const {
+    nbaTeamMap,
+    proPlayerMap,
+    individualDraftPickMap,
+    syncAcceptedTrade,
+    vetoTrade,
+  } = useSimBBAStore();
 
   const isBaseballLeague =
     selectedLeague === SimMLB || selectedLeague === SimCollegeBaseball;
@@ -66,7 +77,87 @@ export const AdminTradesTab = () => {
             oneItem={fbaTradeProposals.length === 1}
           />
         ))}
+      {selectedLeague === SimNBA &&
+        bbaTradeProposals.map((trade) => (
+          <NBAAdminTradeCard
+            trade={trade}
+            sendingTeam={nbaTeamMap?.[trade.NBATeamID]}
+            key={trade.ID}
+            receivingTeam={nbaTeamMap?.[trade.RecepientTeamID]}
+            proPlayerMap={proPlayerMap}
+            draftPickMap={individualDraftPickMap}
+            syncAcceptedTrade={syncAcceptedTrade}
+            vetoTrade={vetoTrade}
+          />
+        ))}
     </div>
+  );
+};
+
+interface NBAAdminTradeCardProps {
+  trade: NBATradeProposal;
+  sendingTeam?: NBATeam;
+  receivingTeam?: NBATeam;
+  proPlayerMap: Record<number, any>;
+  draftPickMap: Record<number, any>;
+  syncAcceptedTrade: (trade: NBATradeProposal) => Promise<void>;
+  vetoTrade: (trade: NBATradeProposal) => Promise<void>;
+}
+
+const NBAAdminTradeCard: React.FC<NBAAdminTradeCardProps> = ({
+  trade,
+  sendingTeam,
+  receivingTeam,
+  proPlayerMap,
+  draftPickMap,
+  syncAcceptedTrade,
+  vetoTrade,
+}) => {
+  const { refreshBBATradeProposals } = useAdminPage();
+  const { currentUser } = useAuthStore();
+  const sendingTeamLogo = getLogo(
+    SimNBA as League,
+    sendingTeam!.ID,
+    currentUser?.IsRetro,
+  );
+  const receivingTeamLogo = getLogo(
+    SimNBA as League,
+    receivingTeam!.ID,
+    currentUser?.IsRetro,
+  );
+  const teamColors = useTeamColors(
+    sendingTeam?.ColorOne || "#1f2937",
+    sendingTeam?.ColorTwo || "#111827",
+    sendingTeam?.ColorThree,
+  );
+
+  if (!sendingTeam || !receivingTeam) return null;
+
+  const approve = async () => {
+    await syncAcceptedTrade(trade);
+    refreshBBATradeProposals(trade.ID);
+  };
+  const veto = async () => {
+    await vetoTrade(trade);
+    refreshBBATradeProposals(trade.ID);
+  };
+
+  return (
+    <AdminTradeCard
+      sendingTradeOptions={trade.NBATeamTradeOptions}
+      receivingTradeOptions={trade.RecepientTeamTradeOptions}
+      sendingTeamLabel={`${sendingTeam.Team} ${sendingTeam.Nickname}`}
+      receivingTeamLabel={`${receivingTeam.Team} ${receivingTeam.Nickname}`}
+      sendingTeamLogo={sendingTeamLogo}
+      receivingTeamLogo={receivingTeamLogo}
+      accept={approve}
+      veto={veto}
+      backgroundColor={teamColors.One}
+      borderColor={teamColors.Two}
+      proPlayerMap={proPlayerMap}
+      draftPickMap={draftPickMap}
+      league={SimNBA}
+    />
   );
 };
 
@@ -210,6 +301,77 @@ export const NFLTradeCard: React.FC<NFLTradeCardProps> = ({
       proPlayerMap={proPlayerMap}
       draftPickMap={individualDraftPickMap}
       league={SimNFL}
+    />
+  );
+};
+
+interface NBATradeCardProps {
+  trade: NBATradeProposal;
+  sendingTeam: NBATeam;
+  receivingTeam: NBATeam;
+  oneItem: boolean;
+}
+
+export const NBATradeCard: React.FC<NBATradeCardProps> = ({
+  trade,
+  sendingTeam,
+  receivingTeam,
+  oneItem,
+}) => {
+  const { proPlayerMap, individualDraftPickMap, syncAcceptedTrade, vetoTrade } =
+    useSimBBAStore();
+  const { refreshBBATradeProposals } = useAdminPage();
+  const authStore = useAuthStore();
+  const { currentUser } = authStore;
+  const sendingTeamLogo = getLogo(
+    SimNBA as League,
+    sendingTeam.ID,
+    currentUser?.IsRetro,
+  );
+  const receivingTeamLogo = getLogo(
+    SimNBA as League,
+    receivingTeam.ID,
+    currentUser?.IsRetro,
+  );
+  const teamColors = useTeamColors(
+    sendingTeam.ColorOne,
+    sendingTeam.ColorTwo,
+    sendingTeam.ColorThree,
+  );
+  const backgroundColor = teamColors.One;
+  const borderColor = teamColors.Two;
+  const accept = async () => {
+    await syncAcceptedTrade(trade);
+    refreshBBATradeProposals(trade.ID);
+  };
+  const reject = async () => {
+    await vetoTrade(trade);
+    refreshBBATradeProposals(trade.ID);
+  };
+
+  const sentTradeOptions = useMemo(() => {
+    return mapNBATradeOptions(trade.NBATeamTradeOptions, trade.NBATeamID);
+  }, [trade]);
+
+  const recepientTradeOptions = useMemo(() => {
+    return mapNBATradeOptions(trade.NBATeamTradeOptions, trade.RecepientTeamID);
+  }, [trade]);
+
+  return (
+    <AdminTradeCard
+      sendingTradeOptions={sentTradeOptions}
+      receivingTradeOptions={recepientTradeOptions}
+      sendingTeamLabel={`${sendingTeam.Team} ${sendingTeam.Nickname}`}
+      receivingTeamLabel={`${receivingTeam.Team} ${receivingTeam.Nickname}`}
+      sendingTeamLogo={sendingTeamLogo}
+      receivingTeamLogo={receivingTeamLogo}
+      accept={accept}
+      veto={reject}
+      backgroundColor={backgroundColor}
+      borderColor={borderColor}
+      proPlayerMap={proPlayerMap}
+      draftPickMap={individualDraftPickMap}
+      league={SimNBA}
     />
   );
 };

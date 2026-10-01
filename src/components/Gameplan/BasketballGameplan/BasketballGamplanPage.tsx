@@ -11,7 +11,7 @@ import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDrop
 import { useResponsive } from "../../../_hooks/useMobile";
 import { BasketballDepthChart } from "./BasketballDepthChart";
 import { BasketballCourtVision } from "./BasketballCourtVision";
-import { Input } from "../../../_design/Inputs";
+import { Input, ToggleSwitch } from "../../../_design/Inputs";
 import { Modal } from "../../../_design/Modal";
 import {
   CBBPlayerInfoModalBody,
@@ -111,6 +111,9 @@ export const BasketballGameplanPage = () => {
     setTeamExhaustionEnabled,
     teamExhaustionValue,
     setTeamExhaustionValue,
+    aiToggleOverride,
+    setAIToggleOverride,
+    isAdmin,
   } = useBasketballGameplan();
   const { isMobile, isDesktop, isUltraWide } = useResponsive();
   const [modalPlayer, setModalPlayer] = useState<
@@ -204,8 +207,19 @@ export const BasketballGameplanPage = () => {
                 isMulti={false}
                 isMobile={isMobile}
               />
+              {isAdmin && !viewingUserTeam && (
+                <div className="flex flex-row space-x-2 mt-2">
+                  <Text variant="small" classes="text-start font-semibold">
+                    AI Override
+                  </Text>
+                  <ToggleSwitch
+                    checked={aiToggleOverride}
+                    onChange={setAIToggleOverride}
+                  />
+                </div>
+              )}
             </div>
-            {viewingUserTeam && (
+            {(viewingUserTeam || aiToggleOverride) && (
               <>
                 <div className="flex flex-col gap-x-2 flex-wrap w-full text-start">
                   <Text variant="h6" classes="text-start">
@@ -228,7 +242,7 @@ export const BasketballGameplanPage = () => {
                     3pt Weight: {totalThreePointProportionWeighted.toFixed(2)}
                   </Text>
                 </div>
-                {viewingUserTeam && (
+                {(viewingUserTeam || aiToggleOverride) && (
                   <div className="flex flex-col gap-x-2 flex-wrap w-full text-start my-2 space-y-2">
                     <TeamLabel
                       team="Gameplan"
@@ -500,7 +514,9 @@ export const BasketballGameplanPage = () => {
                     errors.length > 0 || !viewingUserTeam ? "danger" : "success"
                   }
                   onClick={saveLineupChanges}
-                  disabled={errors.length > 0 || !viewingUserTeam}
+                  disabled={
+                    errors.length > 0 || (!viewingUserTeam && !aiToggleOverride)
+                  }
                 >
                   Save
                 </Button>
@@ -526,7 +542,9 @@ export const BasketballGameplanPage = () => {
                   selectedTeamRoster={selectedTeamRoster}
                   team={selectedTeam}
                   league={selectedLeague as League}
-                  canModify={viewingUserTeam}
+                  canModify={
+                    viewingUserTeam || (!viewingUserTeam && aiToggleOverride)
+                  }
                   ChangeLineupInput={ChangeLineupInput}
                   SwapLineupPlayers={SwapLineupPlayers}
                 />

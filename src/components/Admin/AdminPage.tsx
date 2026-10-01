@@ -105,12 +105,18 @@ export const AdminPage = () => {
 
   const isCBBCommissioner = useMemo(() => {
     if (!currentUser) return false;
-    return currentUser.roleID?.includes("CBB Commissioner");
+    return (
+      currentUser.roleID?.includes("CBB Commissioner") ||
+      currentUser.roleID?.includes("NBA Commissioner")
+    );
   }, [currentUser]);
 
   const isNBACommissioner = useMemo(() => {
     if (!currentUser) return false;
-    return currentUser.roleID?.includes("NBA Commissioner");
+    return (
+      currentUser.roleID?.includes("CBB Commissioner") ||
+      currentUser.roleID?.includes("NBA Commissioner")
+    );
   }, [currentUser]);
 
   const isCHLCommissioner = useMemo(() => {
@@ -128,7 +134,11 @@ export const AdminPage = () => {
 
   // Role gating logic
   if (!laxAdminChecked) {
-    return <PageContainer direction="col" isLoading={true} title="Admin">{null}</PageContainer>;
+    return (
+      <PageContainer direction="col" isLoading={true} title="Admin">
+        {null}
+      </PageContainer>
+    );
   }
   if (
     currentUser &&
@@ -271,40 +281,40 @@ export const AdminPage = () => {
           </Border>
         )}
         {selectedLeague !== SimCLAX && (
-        <Border classes="w-full">
-          <div className="flex flex-row flex-wrap justify-between pt-1 pb-2 mb-2">
-            <TabGroup classes="flex flex-grow justify-between">
-              <Tab
-                label={Requests}
-                selected={selectedTab === Requests}
-                setSelected={setSelectedTab}
-              />
-              <Tab
-                label={Teams}
-                selected={selectedTab === Teams}
-                setSelected={setSelectedTab}
-              />
-              {(selectedLeague === SimPHL ||
-                selectedLeague === SimNFL ||
-                selectedLeague === SimNBA ||
-                selectedLeague === SimMLB ||
-                selectedLeague === SimCollegeBaseball) && (
-                <>
-                  <Tab
-                    label={Trades}
-                    selected={selectedTab === Trades}
-                    setSelected={setSelectedTab}
-                  />
-                </>
-              )}
-            </TabGroup>
-          </div>
-          <div className="flex sm:flex-col md:flex-row md:justify-evenly flex-wrap md:gap-2 w-full max-h-[calc(65vh-10rem)] overflow-y-auto">
-            {selectedTab === Requests && <AdminRequestsTab />}
-            {selectedTab === Teams && <AdminTeamsTab />}
-            {selectedTab === Trades && <AdminTradesTab />}
-          </div>
-        </Border>
+          <Border classes="w-full">
+            <div className="flex flex-row flex-wrap justify-between pt-1 pb-2 mb-2">
+              <TabGroup classes="flex flex-grow justify-between">
+                <Tab
+                  label={Requests}
+                  selected={selectedTab === Requests}
+                  setSelected={setSelectedTab}
+                />
+                <Tab
+                  label={Teams}
+                  selected={selectedTab === Teams}
+                  setSelected={setSelectedTab}
+                />
+                {(selectedLeague === SimPHL ||
+                  selectedLeague === SimNFL ||
+                  selectedLeague === SimNBA ||
+                  selectedLeague === SimMLB ||
+                  selectedLeague === SimCollegeBaseball) && (
+                  <>
+                    <Tab
+                      label={Trades}
+                      selected={selectedTab === Trades}
+                      setSelected={setSelectedTab}
+                    />
+                  </>
+                )}
+              </TabGroup>
+            </div>
+            <div className="flex sm:flex-col md:flex-row md:justify-evenly flex-wrap md:gap-2 w-full max-h-[calc(65vh-10rem)] overflow-y-auto">
+              {selectedTab === Requests && <AdminRequestsTab />}
+              {selectedTab === Teams && <AdminTeamsTab />}
+              {selectedTab === Trades && <AdminTradesTab />}
+            </div>
+          </Border>
         )}
 
         {selectedLeague === SimCLAX && <CollegeLacrosseAdminPage embedded />}
