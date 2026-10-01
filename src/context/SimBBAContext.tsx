@@ -1220,6 +1220,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
 
   const saveCBBGameplan = async (dto: any) => {
     const res = await GameplanService.SaveCBBGameplan(dto);
+    console.log({ dto });
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,
@@ -1228,6 +1229,7 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
 
   const saveNBAGameplan = async (dto: any) => {
     const res = await GameplanService.SaveNBAGameplan(dto);
+    console.log({ dto });
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,
