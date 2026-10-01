@@ -646,7 +646,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               team={selectedTeam}
               league={league}
               processedSchedule={collegeGamesBySelectedSeason}
-              currentWeek={selectedWeekValue || 0}
+              currentWeek={selectedWeekValue || 1}
               backgroundColor={backgroundColor}
               headerColor={headerColor}
               borderColor={borderColor}

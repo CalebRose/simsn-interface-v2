@@ -613,11 +613,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   >({});
 
   const currentCollegeSeasonGames = useMemo(() => {
-    if (!allProGames || !cbb_Timestamp) return [];
+    if (!allCollegeGames || !cbb_Timestamp) return [];
     return allCollegeGames.filter(
       (game) => game.SeasonID === cbb_Timestamp.SeasonID,
     );
-  }, [allProGames, cbb_Timestamp]);
+  }, [allCollegeGames, cbb_Timestamp]);
 
   const arenaMap = useMemo(() => {
     return arenas.reduce<Record<string, Arena>>((map, arena) => {
@@ -1014,6 +1014,12 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       );
       setCollegePolls(res.CollegePolls);
       setCollegePollSubmission(res.PollSubmission);
+      if (res.AllCollegeGames.length > 0) {
+        setAllCollegeGames(res.AllCollegeGames);
+      }
+      if (res.AllProGames.length > 0) {
+        setAllProGames(res.AllProGames);
+      }
     } finally {
       isScheduleDataFetching.current = false;
     }

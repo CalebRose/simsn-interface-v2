@@ -280,7 +280,7 @@ export const useAdvancedSchedule = (
         { header: "City", accessor: "City" },
         { header: "State", accessor: "State" },
         { header: "Country", accessor: "Country" },
-        { header: "Attendance", accessor: "Attendance" },
+        { header: "Attendance", accessor: "AttendanceCount" },
         { header: "Star One", accessor: "StarOne" },
         { header: "Star Two", accessor: "StarTwo" },
         { header: "Star Three", accessor: "StarThree" },
@@ -291,14 +291,14 @@ export const useAdvancedSchedule = (
         { header: "City", accessor: "City" },
         { header: "State", accessor: "State" },
         { header: "Country", accessor: "Country" },
-        { header: "Attendance", accessor: "Attendance" },
+        { header: "Attendance", accessor: "AttendanceCount" },
       ]);
     } else {
       columns = columns.concat([
         { header: "Stadium", accessor: "Stadium" },
         { header: "City", accessor: "City" },
         { header: "State", accessor: "State" },
-        { header: "Attendance", accessor: "Attendance" },
+        { header: "Attendance", accessor: "AttendanceCount" },
         { header: "MVP", accessor: "MVP" },
       ]);
     }

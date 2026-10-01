@@ -493,7 +493,9 @@ export const getScheduleCBBData = (
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allCollegeGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.SeasonID === selectedSeason - 2020,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability
@@ -574,7 +576,9 @@ export const getScheduleNBAData = (
   // Team Schedule - Fixed sorting for mobile Safari consistency
   const teamSchedule = allNBAGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.SeasonID === selectedSeason - 2020,
     )
     .sort((a, b) => {
       // Ensure consistent ordering by week, then by ID for stability

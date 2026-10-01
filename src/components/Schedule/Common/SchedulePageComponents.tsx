@@ -1386,9 +1386,135 @@ const BBAdvancedGameRow: FC<BBAdvancedGameRowProps> = ({
   league,
   resultsOverride,
 }) => {
+  const handleClick = () => {
+    if (!game.GameComplete || !game.IsRevealed || resultsOverride) return;
+    setSelectedGame(game);
+    openModal();
+  };
+
+  const homeTeamColor = (() => {
+    if (!game.IsRevealed && !resultsOverride) return "text-gray-500";
+    if (game.HomeTeamScore > game.AwayTeamScore) return "text-green-500";
+    if (game.HomeTeamScore < game.AwayTeamScore) return "text-red-500";
+    return "text-gray-500";
+  })();
+
+  const awayTeamColor = (() => {
+    if (!game.IsRevealed && !resultsOverride) return "text-gray-500";
+    if (game.AwayTeamScore > game.HomeTeamScore) return "text-green-500";
+    if (game.AwayTeamScore < game.HomeTeamScore) return "text-red-500";
+    return "text-gray-500";
+  })();
+  const mvpLabel = (() => {
+    const player = playerMap[game.MVP];
+    if (!player) return "";
+    return `${player.Position} ${player.FirstName} ${player.LastName}`;
+  })();
+  const homeTeamLogo = (() => {
+    let logo = getLogo(league, game.HomeTeamID, false);
+    return logo;
+  })();
+  const awayTeamLogo = (() => {
+    let logo = getLogo(league, game.AwayTeamID, false);
+    return logo;
+  })();
+
+  const homeScoreLabel = (() => {
+    if (!game.IsRevealed && !resultsOverride) return "-";
+    return `${game.HomeTeamScore}`;
+  })();
+  const awayScoreLabel = (() => {
+    if (!game.IsRevealed && !resultsOverride) return "-";
+    return `${game.AwayTeamScore}`;
+  })();
   return (
-    <div key={idx} style={{ backgroundColor: bg }}>
-      {/* Render your basketball game row here */}
+    <div
+      key={idx}
+      className="table-row border-b dark:border-gray-700 text-start"
+      style={{ backgroundColor: bg }}
+    >
+      <TableCell>
+        <Span onClick={handleClick}>{game.ID}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>
+          {game.Week}
+          {game.MatchOfWeek}
+        </Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.MatchName}</Span>
+      </TableCell>
+      <TableCell>
+        <ClickableUserLabel
+          coach={game.AwayTeamCoach || "AI"}
+          label={game.AwayTeamCoach || "AI"}
+          textVariant="xs"
+        />
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-row space-x-2 items-center">
+          <Logo url={awayTeamLogo} variant="tiny" />
+          <ClickableTeamLabel
+            label={game.AwayTeam}
+            textVariant="xs"
+            teamID={game.AwayTeamID}
+            league={league}
+          />
+        </div>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.AwayTeamRank || "NR"}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick} classes={`${awayTeamColor}`}>
+          {awayScoreLabel}
+        </Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick} classes={`${homeTeamColor}`}>
+          {homeScoreLabel}
+        </Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.HomeTeamRank || "NR"}</Span>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-row space-x-2 items-center">
+          <ClickableTeamLabel
+            label={game.HomeTeam}
+            textVariant="xs"
+            teamID={game.HomeTeamID}
+            league={league}
+          />
+          <Logo url={homeTeamLogo} variant="tiny" />
+        </div>
+      </TableCell>
+      <TableCell>
+        <ClickableUserLabel
+          coach={game.HomeTeamCoach || "AI"}
+          label={game.HomeTeamCoach || "AI"}
+          textVariant="xs"
+        />
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.Arena}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.City}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.State}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.Country}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{game.AttendanceCount || 0}</Span>
+      </TableCell>
+      <TableCell>
+        <Span onClick={handleClick}>{mvpLabel}</Span>
+      </TableCell>
     </div>
   );
 };

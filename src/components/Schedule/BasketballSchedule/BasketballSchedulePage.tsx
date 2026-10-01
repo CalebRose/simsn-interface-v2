@@ -9,6 +9,8 @@ import {
   Standings,
   FootballSeasons,
   AdminRole,
+  AdvStandings,
+  AdvSchedule,
 } from "../../../_constants/constants";
 import { useAuthStore } from "../../../context/AuthContext";
 import { SingleValue } from "react-select";
@@ -32,6 +34,7 @@ import {
 import { useModal } from "../../../_hooks/useModal";
 import { getFBAWeekID } from "../../../_helper/statsPageHelper";
 import {
+  AdvancedSchedule,
   LeagueStandings,
   TeamSchedule,
   TeamStandings,
@@ -39,7 +42,7 @@ import {
 } from "../Common/SchedulePageComponents";
 import { SelectDropdown } from "../../../_design/Select";
 import { ToggleSwitch } from "../../../_design/Inputs";
-import { Button, ButtonGroup } from "../../../_design/Buttons";
+import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import { CollegePollModal } from "../Common/CollegePollModal";
 import { SubmitPollModal } from "../Common/SubmitPollModal";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
@@ -51,7 +54,6 @@ interface SchedulePageProps {
 
 export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
   const { currentUser } = useAuthStore();
-  const bbStore = useSimBBAStore();
   const currentWeek = GetCurrentWeek(league, ts);
   const currentSeason = ts.Season;
   const {
@@ -67,7 +69,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     submitCollegePoll,
     ExportBasketballSchedule,
     getBootstrapScheduleData,
-  } = bbStore;
+  } = useSimBBAStore();
 
   const [selectedTeam, setSelectedTeam] = useState(cbbTeam);
   const [category, setCategory] = useState(Overview);
@@ -92,6 +94,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
       value: numVal,
     };
   }, [selectedSeason]);
+
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
@@ -109,6 +112,14 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
 
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const darkerBackgroundColor = darkenColor(backgroundColor, -5);
+  const selectedSeasonID = useMemo(() => {
+    return selectedSeason - 2020;
+  }, [selectedSeason]);
+  const collegeGamesBySelectedSeason = useMemo(() => {
+    return allCBBGames
+      .filter((game) => game.SeasonID === selectedSeasonID)
+      .sort((a, b) => a.Week - b.Week);
+  }, [allCBBGames, selectedSeasonID]);
 
   const playerMap = useMemo(() => {
     if (!cbbRosterMap) return {};
@@ -135,7 +146,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
             LastName: player.LastName,
             Position: player.Position,
             TeamID: player.TeamID,
-            Team: player.TeamAbbr,
+            Team: player.Team,
           };
           return acc;
         },
@@ -159,7 +170,12 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     const value = Number(opts?.value);
     const nextTeam = cbbTeamMap ? cbbTeamMap[value] : null;
     setSelectedTeam(nextTeam);
-    setCategory(Overview);
+    if (category === Standings) {
+      setCategory(Overview);
+    }
+    if (category === AdvStandings) {
+      setCategory(AdvSchedule);
+    }
   };
 
   const { teamStandings, teamSchedule, groupedWeeklyGames } = useMemo(() => {
@@ -246,13 +262,13 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
         <div className="sm:grid sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-6 sm:gap-4 w-full h-[82vh]">
           <div className="flex flex-col w-full sm:col-span-1 md:col-span-2 lg:col-span-1 items-center gap-4 pb-2">
             <div className="flex gap-4 justify-center items-center sm:w-full">
-              <ButtonGroup classes="flex justify-center w-full">
+              <ButtonGrid classes="grid-cols-2 justify-center w-full">
                 <Button
                   size="md"
                   variant="primary"
                   onClick={() => setCategory(Overview)}
                   isSelected={category === Overview}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-3 py-2"
                 >
                   <Text variant="small">Overview</Text>
                 </Button>
@@ -261,14 +277,32 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
                   variant="primary"
                   onClick={() => setCategory(Standings)}
                   isSelected={category === Standings}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-3 py-2"
                 >
                   <Text variant="small">Standings</Text>
                 </Button>
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  onClick={() => setCategory(AdvSchedule)}
+                  isSelected={category === AdvSchedule}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Adv. Schedule</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(AdvStandings)}
+                  isSelected={category === AdvStandings}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Adv. Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-3 py-2"
                   onClick={submitPollModal.handleOpenModal}
                 >
                   <Text variant="small">Submit Poll</Text>
@@ -276,15 +310,15 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[92%] sm:max-w-[350px]"
+                  classes="px-3 py-2"
                   onClick={collegePollModal.handleOpenModal}
                 >
                   <Text variant="small">College Poll</Text>
                 </Button>
-              </ButtonGroup>
+              </ButtonGrid>
             </div>
             <div className="flex flex-col gap-2 sm:gap-4 items-center">
-              {category === Overview && (
+              {(category === Overview || category === AdvSchedule) && (
                 <>
                   <div className="flex justify-center items-center gap-2">
                     <ToggleSwitch
@@ -635,6 +669,22 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               />
             </div>
           )}
+          {category === AdvSchedule && (
+            <AdvancedSchedule
+              team={selectedTeam}
+              league={league}
+              processedSchedule={collegeGamesBySelectedSeason}
+              currentWeek={selectedWeek || 1}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={view}
+              resultsOverride={resultsOverride}
+            />
+          )}
         </div>
       </div>
     </>
@@ -681,6 +731,17 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
       value: numVal,
     };
   }, [selectedSeason]);
+
+  const selectedSeasonID = useMemo(() => {
+    return selectedSeason - 2020;
+  }, [selectedSeason]);
+
+  const proGamesBySelectedSeason = useMemo(() => {
+    return allNBAGames
+      .filter((game) => game.SeasonID === selectedSeasonID)
+      .sort((a, b) => a.Week - b.Week);
+  }, [allNBAGames, selectedSeasonID]);
+
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
@@ -748,7 +809,12 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
     const value = Number(opts?.value);
     const nextTeam = nbaTeamMap ? nbaTeamMap[value] : null;
     setSelectedTeam(nextTeam);
-    setCategory(Overview);
+    if (category === Standings) {
+      setCategory(Overview);
+    }
+    if (category === AdvStandings) {
+      setCategory(AdvSchedule);
+    }
   };
 
   const { teamStandings, teamSchedule, groupedWeeklyGames } = useMemo(() => {
@@ -814,13 +880,13 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
         <div className="sm:grid sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-6 sm:gap-4 w-full h-[82vh]">
           <div className="flex flex-col w-full sm:col-span-1 md:col-span-2 lg:col-span-1 items-center gap-4 pb-2">
             <div className="flex gap-4 justify-center items-center sm:w-full">
-              <ButtonGroup classes="flex justify-center w-full">
+              <ButtonGrid classes="grid-cols-2 justify-center w-full">
                 <Button
                   size="md"
                   variant="primary"
                   onClick={() => setCategory(Overview)}
                   isSelected={category === Overview}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-3 py-2"
                 >
                   <Text variant="small">Overview</Text>
                 </Button>
@@ -829,14 +895,32 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
                   variant="primary"
                   onClick={() => setCategory(Standings)}
                   isSelected={category === Standings}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-3 py-2"
                 >
                   <Text variant="small">Standings</Text>
                 </Button>
-              </ButtonGroup>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(AdvSchedule)}
+                  isSelected={category === AdvSchedule}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Adv. Schedule</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(AdvStandings)}
+                  isSelected={category === AdvStandings}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Adv. Standings</Text>
+                </Button>
+              </ButtonGrid>
             </div>
             <div className="flex flex-col gap-2 sm:gap-4 items-center">
-              {category === Overview && (
+              {(category === Overview || category === AdvSchedule) && (
                 <>
                   <div className="flex justify-center items-center gap-2">
                     <ToggleSwitch
@@ -1186,6 +1270,22 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
                 isLoading={isLoading}
               />
             </div>
+          )}
+          {category === AdvSchedule && (
+            <AdvancedSchedule
+              team={selectedTeam}
+              league={league}
+              processedSchedule={proGamesBySelectedSeason}
+              currentWeek={selectedWeek || 1}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={view}
+              resultsOverride={resultsOverride}
+            />
           )}
         </div>
       </div>
