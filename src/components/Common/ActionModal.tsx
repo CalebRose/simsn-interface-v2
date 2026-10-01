@@ -530,8 +530,7 @@ export const ActionModal: FC<ActionModalProps> = ({
             </Text>
             <Text classes="mb-3">
               <strong>
-                {playerID} {player.Stars} ⭐ {playerLabel} (
-                {player.PotentialGrade} Pot.)
+                {playerID} {player.Stars} ⭐ {playerLabel}
               </strong>
             </Text>
             {attribute === ScholarshipOffered && (
