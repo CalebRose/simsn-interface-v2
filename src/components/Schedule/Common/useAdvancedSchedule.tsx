@@ -22,6 +22,9 @@ export const useAdvancedSchedule = (
   league: League,
   week: number,
   games: any[],
+  view: string,
+  selectedTeamID: number,
+  isPreseason?: boolean,
 ) => {
   const { ts } = useLeagueStore();
   const [selectedGame, setSelectedGame] = useState<any>(null);
@@ -226,11 +229,16 @@ export const useAdvancedSchedule = (
   const filteredGames = useFilteredGames(
     games,
     week,
+    view,
     league,
     selectedTeamIDs,
+    selectedTeamID,
     selectedConferenceIDs,
     leagueTeamMap,
+    isPreseason,
   );
+
+  console.log({ games, filteredGames, isPreseason });
 
   const SelectConferences = (options: any) => {
     const opts = [...options.map((x: any) => Number(x.value))];
@@ -252,18 +260,19 @@ export const useAdvancedSchedule = (
     } else if (isBasketball) {
       columns.push({ header: "Game Title", accessor: "GameTitle" });
     } else {
+      columns.push({ header: "Time", accessor: "TimeSlot" });
       columns.push({ header: "Game Title", accessor: "GameTitle" });
     }
 
     columns = columns.concat([
-      { header: "Home Rank", accessor: "HomeTeamRank" },
-      { header: "Home Coach", accessor: "HomeTeamCoach" },
-      { header: "Home Team", accessor: "HomeTeam" },
-      { header: "Home Score", accessor: "HomeTeamScore" },
-      { header: "Away Score", accessor: "AwayTeamScore" },
-      { header: "Away Team", accessor: "AwayTeam" },
-      { header: "Away Coach", accessor: "AwayTeamCoach" },
-      { header: "Away Rank", accessor: "AwayTeamRank" },
+      { header: "A.Coach", accessor: "AwayTeamCoach" },
+      { header: "A.Team", accessor: "AwayTeam" },
+      { header: "A.R.", accessor: "AwayTeamRank" },
+      { header: "A.Score", accessor: "AwayTeamScore" },
+      { header: "H.Score", accessor: "HomeTeamScore" },
+      { header: "H.R.", accessor: "HomeTeamRank" },
+      { header: "H.Team", accessor: "HomeTeam" },
+      { header: "H.Coach", accessor: "HomeTeamCoach" },
     ]);
     if (isHockey) {
       columns = columns.concat([
@@ -290,6 +299,7 @@ export const useAdvancedSchedule = (
         { header: "City", accessor: "City" },
         { header: "State", accessor: "State" },
         { header: "Attendance", accessor: "Attendance" },
+        { header: "MVP", accessor: "MVP" },
       ]);
     }
     return columns;

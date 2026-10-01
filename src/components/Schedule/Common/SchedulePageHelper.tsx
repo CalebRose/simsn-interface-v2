@@ -17,7 +17,12 @@ import {
   CollegePlayer as CHLPlayer,
   ProfessionalPlayer as PHLPlayer,
 } from "../../../models/hockeyModels";
-import { League, SimCBB, SimNBA } from "../../../_constants/constants";
+import {
+  League,
+  SimCBB,
+  SimNBA,
+  TeamGames,
+} from "../../../_constants/constants";
 import {
   RevealFBResults,
   RevealHCKResults,
@@ -932,10 +937,13 @@ const sortFootballGames = (games: any[], league: League) => {
 export const useFilteredGames = (
   games: CFBGame[] | NFLGame[] | CHLGame[] | PHLGame[] | CBBGame[] | NBAMatch[],
   week: number,
+  view: string,
   league: League,
   selectedTeamIDs: number[],
+  selectedTeamID: number,
   selectedConferenceIDs: number[],
   teamMap: any,
+  isPreseason?: boolean,
 ) => {
   if (!games) return [];
   const teamsSet = useMemo(() => new Set(selectedTeamIDs), [selectedTeamIDs]);
@@ -963,6 +971,77 @@ export const useFilteredGames = (
         }
         return true;
       })
-      .filter((game) => game.Week === week);
-  }, [games, teamsSet, conferencesSet, week, teamMap]);
+      .filter((game) => {
+        if (view === TeamGames) {
+          return (
+            game.HomeTeamID === selectedTeamID ||
+            game.AwayTeamID === selectedTeamID
+          );
+        }
+        return game.Week === week;
+      })
+      .filter((game) => {
+        if (league === SimCFB) {
+          const g = game as CFBGame;
+          if (
+            (isPreseason && !g.IsSpringGame) ||
+            (!isPreseason && g.IsSpringGame)
+          ) {
+            return false;
+          }
+          return true;
+        }
+        if (league === SimNFL) {
+          const g = game as NFLGame;
+          if (
+            (isPreseason && !g.IsPreseasonGame) ||
+            (!isPreseason && g.IsPreseasonGame)
+          ) {
+            return false;
+          }
+          return true;
+        }
+        if (league === SimNBA) {
+          const g = game as NBAMatch;
+          if (
+            (isPreseason && !g.IsPreseason) ||
+            (!isPreseason && g.IsPreseason)
+          ) {
+            return false;
+          }
+          return true;
+        }
+        if (league === SimCHL) {
+          const g = game as CHLGame;
+          if (
+            (isPreseason && !g.IsPreseason) ||
+            (!isPreseason && g.IsPreseason)
+          ) {
+            return false;
+          }
+          return true;
+        }
+        if (league === SimPHL) {
+          const g = game as PHLGame;
+          if (
+            (isPreseason && !g.IsPreseason) ||
+            (!isPreseason && g.IsPreseason)
+          ) {
+            return false;
+          }
+          return true;
+        }
+        return true;
+      });
+  }, [
+    games,
+    league,
+    isPreseason,
+    teamsSet,
+    conferencesSet,
+    week,
+    teamMap,
+    view,
+    selectedTeamID,
+  ]);
 };

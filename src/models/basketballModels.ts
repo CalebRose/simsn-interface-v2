@@ -907,6 +907,7 @@ export class NBAMatch {
   IsTheFinals: boolean;
   IsRivalryGame: boolean;
   GameComplete: boolean;
+  IsPreseason: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -952,6 +953,7 @@ export class NBAMatch {
     this.IsTheFinals = source["IsTheFinals"];
     this.IsRivalryGame = source["IsRivalryGame"];
     this.GameComplete = source["GameComplete"];
+    this.IsPreseason = source["IsPreseason"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -6850,14 +6852,11 @@ export class NBATradeProposal {
     this.IsTradeAccepted = source["IsTradeAccepted"];
     this.IsTradeRejected = source["IsTradeRejected"];
     this.IsSynced = source["IsSynced"];
-    this.NBATeamTradeOptions = this.convertValues(
-      source["NBATeamTradeOptions"],
-      NBATradeOption,
-    ) ?? [];
-    this.RecepientTeamTradeOptions = this.convertValues(
-      source["RecepientTeamTradeOptions"],
-      NBATradeOption,
-    ) ?? [];
+    this.NBATeamTradeOptions =
+      this.convertValues(source["NBATeamTradeOptions"], NBATradeOption) ?? [];
+    this.RecepientTeamTradeOptions =
+      this.convertValues(source["RecepientTeamTradeOptions"], NBATradeOption) ??
+      [];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

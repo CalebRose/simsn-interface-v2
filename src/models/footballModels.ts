@@ -114,7 +114,7 @@ export class NFLGame {
   AwayTeam: string;
   AwayTeamCoach: string;
   AwayTeamWin: boolean;
-  MVP: string;
+  MVP: number;
   HomeTeamScore: number;
   AwayTeamScore: number;
   TimeSlot: string;
@@ -146,6 +146,7 @@ export class NFLGame {
   NextGameHOA: string;
   HomePreviousBye: boolean;
   AwayPreviousBye: boolean;
+  IsRevealed: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -196,6 +197,7 @@ export class NFLGame {
     this.NextGameHOA = source["NextGameHOA"];
     this.HomePreviousBye = source["HomePreviousBye"];
     this.AwayPreviousBye = source["AwayPreviousBye"];
+    this.IsRevealed = source["IsRevealed"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -2612,7 +2614,7 @@ export class CollegeGame {
   AwayTeam: string;
   AwayTeamCoach: string;
   AwayTeamWin: boolean;
-  MVP: string;
+  MVP: number;
   HomeTeamScore: number;
   AwayTeamScore: number;
   TimeSlot: string;
@@ -2646,6 +2648,7 @@ export class CollegeGame {
   HomePreviousBye: boolean;
   AwayPreviousBye: boolean;
   ConferenceID: number;
+  IsRevealed: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -2697,6 +2700,7 @@ export class CollegeGame {
     this.GameTitle = source["GameTitle"];
     this.NextGameID = source["NextGameID"];
     this.NextGameHOA = source["NextGameHOA"];
+    this.IsRevealed = source["IsRevealed"];
     this.HomePreviousBye = source["HomePreviousBye"];
     this.AwayPreviousBye = source["AwayPreviousBye"];
     this.ConferenceID = source["ConferenceID"];
