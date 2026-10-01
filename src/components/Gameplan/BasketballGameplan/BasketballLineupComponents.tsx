@@ -98,6 +98,7 @@ const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({ id, i
     ["3PT", rating(player.ThreePointShooting)],
     ["INT D", rating(player.InteriorDefense)],
     ["PER D", rating(player.PerimeterDefense)],
+    ["STA", rating(player.Stamina)],
   ] : [];
   const secondaryAttributes = player ? [
     ["AGI", rating(player.Agility)],
@@ -109,7 +110,7 @@ const BasketballLineupPlayerCard: FC<BasketballLineupPlayerCardProps> = ({ id, i
   ] : [];
 
   return (
-    <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(15rem,1fr)_2.5rem_repeat(5,3.5rem)]">
+    <div className="grid min-w-0 grid-cols-1 gap-3 xl:grid-cols-[minmax(15rem,1fr)_2.5rem_repeat(6,3.5rem)]">
       <div className="min-w-0">
         <SelectDropdown value={selectedOption} onChange={changePlayer} options={playerOptions} isDisabled={!canModify} placeholder={placeholder} />
         {player && <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-200">

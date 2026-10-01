@@ -217,18 +217,23 @@ export const useBasketballGameplan = () => {
   ]);
 
   const selectedTeamRoster = useMemo(() => {
+    const eligibleCBBRoster = (roster: CollegePlayer[]) =>
+      roster.filter((player) => !player.IsRedshirting);
+    const eligibleNBARoster = (roster: NBAPlayer[]) =>
+      roster.filter((player) => !player.IsGLeague);
+
     if (selectedTeamID === 0) {
       return userTeam
         ? selectedLeague === SimCBB
-          ? cbbRosterMap![userTeam.ID] || []
-          : proRosterMap![userTeam.ID] || []
+          ? eligibleCBBRoster(cbbRosterMap![userTeam.ID] || [])
+          : eligibleNBARoster(proRosterMap![userTeam.ID] || [])
         : [];
     }
     if (selectedLeague === SimCBB) {
-      return cbbRosterMap![selectedTeamID] || [];
+      return eligibleCBBRoster(cbbRosterMap![selectedTeamID] || []);
     }
     if (selectedLeague === SimNBA) {
-      return proRosterMap![selectedTeamID] || [];
+      return eligibleNBARoster(proRosterMap![selectedTeamID] || []);
     }
     return [];
   }, [selectedLeague, selectedTeamID, cbbRosterMap, proRosterMap]);
@@ -286,8 +291,12 @@ export const useBasketballGameplan = () => {
   const focusOpponentRoster = useMemo(() => {
     if (!focusOpponentId) return [];
     return selectedLeague === SimCBB
-      ? cbbRosterMap?.[focusOpponentId] || []
-      : proRosterMap?.[focusOpponentId] || [];
+      ? (cbbRosterMap?.[focusOpponentId] || []).filter(
+          (player) => !player.IsRedshirting,
+        )
+      : (proRosterMap?.[focusOpponentId] || []).filter(
+          (player) => !player.IsGLeague,
+        );
   }, [selectedLeague, focusOpponentId, cbbRosterMap, proRosterMap]);
 
   const focusPlayerOptions = useMemo(
