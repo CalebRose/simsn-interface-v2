@@ -11,12 +11,14 @@ import {
   Conferences,
   AdminRole,
   SimCFB,
+  AdvStandings,
+  AdvSchedule,
 } from "../../../_constants/constants";
 import { useAuthStore } from "../../../context/AuthContext";
 import { SelectDropdown } from "../../../_design/Select";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
-import { Button, ButtonGroup } from "../../../_design/Buttons";
+import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
@@ -34,6 +36,7 @@ import {
   TeamStandings,
   LeagueStandings,
   WeeklySchedule,
+  AdvancedSchedule,
 } from "../Common/SchedulePageComponents";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { darkenColor } from "../../../_utility/getDarkerColor";
@@ -133,7 +136,12 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const value = Number(opts?.value);
     const nextTeam = cfbTeamMap ? cfbTeamMap[value] : null;
     setSelectedTeam(nextTeam);
-    setCategory(Overview);
+    if (category === Standings) {
+      setCategory(Overview);
+    }
+    if (category === AdvStandings) {
+      setCategory(AdvSchedule);
+    }
   };
 
   const { teamStandings, teamSchedule, groupedWeeklyGames } = useMemo(() => {
@@ -217,13 +225,13 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         <div className="sm:grid sm:grid-cols-6 sm:gap-4 w-full h-[82vh]">
           <div className="flex flex-col w-full sm:col-span-1 items-center gap-4 pb-2">
             <div className="flex gap-4 justify-center items-center sm:w-full">
-              <ButtonGroup classes="flex justify-center w-full">
+              <ButtonGrid classes="grid-cols-2">
                 <Button
                   size="md"
                   variant="primary"
                   onClick={() => setCategory(Overview)}
                   isSelected={category === Overview}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                 >
                   <Text variant="small">Overview</Text>
                 </Button>
@@ -232,14 +240,32 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   variant="primary"
                   onClick={() => setCategory(Standings)}
                   isSelected={category === Standings}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                 >
                   <Text variant="small">Standings</Text>
                 </Button>
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  onClick={() => setCategory(AdvSchedule)}
+                  isSelected={category === AdvSchedule}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Adv.Schedule</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(AdvStandings)}
+                  isSelected={category === AdvStandings}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Adv.Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2"
                   onClick={submitPollModal.handleOpenModal}
                 >
                   <Text variant="small">Submit Poll</Text>
@@ -247,7 +273,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                   onClick={collegePollModal.handleOpenModal}
                 >
                   <Text variant="small">Official Poll</Text>
@@ -255,7 +281,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[13%] sm:max-w-[100px]"
+                  classes="px-5 py-2"
                   onClick={getBootstrapScheduleData}
                 >
                   <div className="flex text-center items-center justify-center">
@@ -270,16 +296,16 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[75%] sm:max-w-[250px]"
+                  classes="px-5 py-2"
                   onClick={gameRequestModal.handleOpenModal}
                   disabled={ts.CollegeWeek > 0}
                 >
                   <Text variant="small">Request Game</Text>
                 </Button>
-              </ButtonGroup>
+              </ButtonGrid>
             </div>
             <div className="flex flex-col gap-2 sm:gap-4 items-center">
-              {category === Overview && (
+              {(category === Overview || category === AdvSchedule) && (
                 <>
                   <div className="flex justify-center items-center gap-2">
                     <ToggleSwitch
@@ -329,7 +355,9 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                             backgroundColor: state.isFocused
                               ? "#2d3748"
                               : "#1a202c",
-                            borderColor: state.isFocused ? "#4A90E2" : "#4A5568",
+                            borderColor: state.isFocused
+                              ? "#4A90E2"
+                              : "#4A5568",
                             color: "#ffffff",
                             minWidth: isMobile ? "10rem" : "14.25rem", // Shaved down by ~10px to stop bleeding
                             maxWidth: "100%",
@@ -536,6 +564,23 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               />
             </div>
           )}
+          {category === AdvSchedule && (
+            <AdvancedSchedule
+              team={selectedTeam}
+              league={league}
+              processedSchedule={seasonCFBGames}
+              currentWeek={selectedWeek || 0}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={view}
+              isPreseason={isSpringGames}
+              resultsOverride={resultsOverride}
+            />
+          )}
         </div>
       </div>
     </>
@@ -623,7 +668,12 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const value = Number(opts?.value);
     const nextTeam = nflTeamMap ? nflTeamMap[value] : null;
     setSelectedTeam(nextTeam);
-    setCategory(Overview);
+    if (category === Standings) {
+      setCategory(Overview);
+    }
+    if (category === AdvStandings) {
+      setCategory(AdvSchedule);
+    }
   };
 
   const { teamStandings, teamSchedule, groupedWeeklyGames, teamAbbrMap } =
@@ -697,13 +747,13 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         <div className="sm:grid sm:grid-cols-6 sm:gap-4 w-full h-[82vh]">
           <div className="flex flex-col w-full sm:col-span-1 items-center gap-4 pb-2">
             <div className="flex gap-4 justify-center items-center sm:w-full">
-              <ButtonGroup classes="flex justify-center w-full">
+              <ButtonGrid classes="grid-cols-2">
                 <Button
                   size="md"
                   variant="primary"
                   onClick={() => setCategory(Overview)}
                   isSelected={category === Overview}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                 >
                   <Text variant="small">Overview</Text>
                 </Button>
@@ -712,14 +762,32 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   variant="primary"
                   onClick={() => setCategory(Standings)}
                   isSelected={category === Standings}
-                  classes="px-5 py-2 sm:w-[45%] sm:max-w-[175px]"
+                  classes="px-5 py-2"
                 >
                   <Text variant="small">Standings</Text>
                 </Button>
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[13%] sm:max-w-[100px]"
+                  onClick={() => setCategory(AdvSchedule)}
+                  isSelected={category === AdvSchedule}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Adv. Schedule</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(AdvStandings)}
+                  isSelected={category === AdvStandings}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Adv. Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2"
                   onClick={getBootstrapScheduleData}
                 >
                   <div className="flex text-center items-center justify-center">
@@ -734,15 +802,15 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 sm:w-[75%] sm:max-w-[250px]"
+                  classes="px-5 py-2"
                   onClick={gameRequestModal.handleOpenModal}
                   disabled={ts.NFLWeek > 0}
                 >
                   <Text variant="small">Request Game</Text>
                 </Button>
-              </ButtonGroup>
+              </ButtonGrid>
             </div>
-            {category === Overview && (
+            {(category === Overview || category === AdvSchedule) && (
               <>
                 <div className="flex justify-center items-center gap-2">
                   <ToggleSwitch
@@ -1007,6 +1075,23 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 isLoading={isLoading}
               />
             </div>
+          )}
+          {category === AdvSchedule && (
+            <AdvancedSchedule
+              team={selectedTeam}
+              league={league}
+              processedSchedule={seasonNFLGames}
+              currentWeek={selectedWeek || 0}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={scheduleView}
+              isPreseason={isPreseason}
+              resultsOverride={resultsOverride}
+            />
           )}
         </div>
       </div>

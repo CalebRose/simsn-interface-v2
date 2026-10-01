@@ -30,7 +30,20 @@ const stringSlots: { key: StringKey; label: string; abbreviation: string }[] = [
   { key: "ThirdStringID", label: "3", abbreviation: "TS" },
 ];
 
-const statColumns = ["AGI", "INS", "MID", "3PT", "FT", "BH", "STL", "REB", "BLK", "INT D", "PER D", "STA"];
+const statColumns = [
+  "AGI",
+  "INS",
+  "MID",
+  "3PT",
+  "FT",
+  "BH",
+  "STL",
+  "REB",
+  "BLK",
+  "INT D",
+  "PER D",
+  "STA",
+];
 
 interface BasketballDepthChartProps {
   selectedPositionIndex: number;
@@ -172,19 +185,13 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
 
   if (!lineup) return null;
 
-
-  return <>
-    <div className="mb-3 flex w-full items-center gap-3">
-      <div className="text-left"><Text variant="h5" classes="text-left font-semibold">{slotLabel} Depth Chart</Text></div>
-      {canModify && <Button size="sm" classes="ml-auto" onClick={openModal}>Swap</Button>}
-    </div>
-    <div className="overflow-x-auto">
-      <div className="min-w-[1320px]">
-        <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
-          <span>#</span><span className="text-left">Player</span><span>OVR</span>{statColumns.map((label) => <span key={label}>{label}</span>)}<span>Inside</span><span>Midrange</span><span>3 Pt</span><span>Shot Total</span><span>Usage</span>
-        </div>
-        <div className="space-y-2 pt-2">
-          {stringSlots.map((slot) => <DepthRow key={slot.key} label={slot.label} player={selectedRosterMap[lineup[slot.key]]} playerID={lineup[slot.key]} lineup={lineup} abbreviation={slot.abbreviation} team={team} league={league} canModify={canModify} lineupIndex={selectedPositionIndex} ChangeLineupInput={ChangeLineupInput} />)}
+  return (
+    <>
+      <div className="mb-3 flex w-full items-center gap-3">
+        <div className="text-left">
+          <Text variant="h5" classes="text-left font-semibold">
+            {slotLabel} Depth Chart
+          </Text>
         </div>
         {canModify && (
           <Button size="sm" classes="ml-auto" onClick={openModal}>
@@ -194,7 +201,7 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
       </div>
       <div className="overflow-x-auto">
         <div className="min-w-330">
-          <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(11,3.25rem)_repeat(5,4.75rem)] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
+          <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
             <span>#</span>
             <span className="text-left">Player</span>
             <span>OVR</span>
@@ -224,103 +231,108 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
               />
             ))}
           </div>
-        </div>
-      </div>
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={`Manage ${slotLabel} Depth Chart`}
-        maxWidth="max-w-6xl"
-      >
-        <div className="mb-4 flex items-center justify-center gap-3 rounded-lg bg-slate-800/70 p-3">
-          <Text variant="body" classes="font-semibold">
-            View:
-          </Text>
-          <ButtonGroup>
-            <Button
-              size="xs"
-              isSelected={!showAttributes}
-              onClick={() => setShowAttributes(false)}
-            >
-              Player Cards
+          {canModify && (
+            <Button size="sm" classes="ml-auto" onClick={openModal}>
+              Swap
             </Button>
-            <Button
-              size="xs"
-              isSelected={showAttributes}
-              onClick={() => setShowAttributes(true)}
-            >
-              Attributes
-            </Button>
-          </ButtonGroup>
+          )}
         </div>
-        <div className="max-h-[70vh] space-y-6 overflow-y-auto">
-          <div>
-            <Text variant="h5" classes="mb-3 font-semibold">
-              Current Position Levels ↕
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title={`Manage ${slotLabel} Depth Chart`}
+          maxWidth="max-w-6xl"
+        >
+          <div className="mb-4 flex items-center justify-center gap-3 rounded-lg bg-slate-800/70 p-3">
+            <Text variant="body" classes="font-semibold">
+              View:
             </Text>
-            <div className="mb-3 rounded-lg bg-[#23439b] p-3 text-center text-sm text-slate-200">
-              {targetKey
-                ? `${slotLabel} ${stringSlots.find((slot) => slot.key === targetKey)?.label} selected. Choose another level to swap, or choose an eligible player.`
-                : "Select a position level or an available player to begin swapping."}
-            </div>
-            <div
-              className={`grid gap-3 ${showAttributes ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"}`}
-            >
-              {stringSlots.map((slot) => (
-                <ModalPlayerCard
-                  key={slot.key}
-                  player={selectedRosterMap[lineup[slot.key]]}
-                  level={`${slotLabel}-${slot.label}S`}
-                  selected={targetKey === slot.key}
-                  showAttributes={showAttributes}
-                  team={team}
-                  league={league}
-                  onClick={() => selectSlot(slot.key)}
-                  onRemove={
-                    canModify &&
-                    slot.key === "ThirdStringID" &&
-                    lineup[slot.key]
-                      ? () => {
-                          ChangeLineupInput(
-                            lineup[slot.key],
-                            slot.key,
-                            0,
-                            selectedPositionIndex,
-                          );
-                          setTargetKey(null);
-                        }
-                      : undefined
-                  }
-                />
-              ))}
-            </div>
+            <ButtonGroup>
+              <Button
+                size="xs"
+                isSelected={!showAttributes}
+                onClick={() => setShowAttributes(false)}
+              >
+                Player Cards
+              </Button>
+              <Button
+                size="xs"
+                isSelected={showAttributes}
+                onClick={() => setShowAttributes(true)}
+              >
+                Attributes
+              </Button>
+            </ButtonGroup>
           </div>
-          <div>
-            <Text variant="h5" classes="mb-3 font-semibold">
-              Available Players
-            </Text>
-            <div
-              className={`grid gap-3 ${showAttributes ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"}`}
-            >
-              {availablePlayers.map((player) => (
-                <ModalPlayerCard
-                  key={player.ID}
-                  player={player}
-                  showAttributes={showAttributes}
-                  team={team}
-                  league={league}
-                  onClick={() => selectAvailablePlayer(player)}
-                />
-              ))}
-            </div>
-            {!availablePlayers.length && (
-              <Text variant="body" classes="py-8 text-center text-slate-400">
-                No available players for this position.
+          <div className="max-h-[70vh] space-y-6 overflow-y-auto">
+            <div>
+              <Text variant="h5" classes="mb-3 font-semibold">
+                Current Position Levels ↕
               </Text>
-            )}
+              <div className="mb-3 rounded-lg bg-[#23439b] p-3 text-center text-sm text-slate-200">
+                {targetKey
+                  ? `${slotLabel} ${stringSlots.find((slot) => slot.key === targetKey)?.label} selected. Choose another level to swap, or choose an eligible player.`
+                  : "Select a position level or an available player to begin swapping."}
+              </div>
+              <div
+                className={`grid gap-3 ${showAttributes ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"}`}
+              >
+                {stringSlots.map((slot) => (
+                  <ModalPlayerCard
+                    key={slot.key}
+                    player={selectedRosterMap[lineup[slot.key]]}
+                    level={`${slotLabel}-${slot.label}S`}
+                    selected={targetKey === slot.key}
+                    showAttributes={showAttributes}
+                    team={team}
+                    league={league}
+                    onClick={() => selectSlot(slot.key)}
+                    onRemove={
+                      canModify &&
+                      slot.key === "ThirdStringID" &&
+                      lineup[slot.key]
+                        ? () => {
+                            ChangeLineupInput(
+                              lineup[slot.key],
+                              slot.key,
+                              0,
+                              selectedPositionIndex,
+                            );
+                            setTargetKey(null);
+                          }
+                        : undefined
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+            <div>
+              <Text variant="h5" classes="mb-3 font-semibold">
+                Available Players
+              </Text>
+              <div
+                className={`grid gap-3 ${showAttributes ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"}`}
+              >
+                {availablePlayers.map((player) => (
+                  <ModalPlayerCard
+                    key={player.ID}
+                    player={player}
+                    showAttributes={showAttributes}
+                    team={team}
+                    league={league}
+                    onClick={() => selectAvailablePlayer(player)}
+                  />
+                ))}
+              </div>
+              {!availablePlayers.length && (
+                <Text variant="body" classes="py-8 text-center text-slate-400">
+                  No available players for this position.
+                </Text>
+              )}
+            </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
+      </div>
     </>
   );
 };
@@ -335,17 +347,119 @@ const DepthRow: FC<{
   league: League;
   canModify: boolean;
   lineupIndex: number;
-  ChangeLineupInput: (playerID: number, key: string, value: number, index: number) => void;
-}> = ({ label, player, playerID, lineup, abbreviation, team, league, canModify, lineupIndex, ChangeLineupInput }) => {
-  if (!player) return <div className="grid grid-cols-[2rem_1fr] gap-2 rounded-lg bg-slate-800/70 p-3"><strong>{label}</strong><span className="text-slate-400">Empty</span></div>;
-  const values = [player.Agility, player.InsideShooting, player.MidRangeShooting, player.ThreePointShooting, player.FreeThrow, player.Ballwork, player.Stealing, player.Rebounding, player.Blocking, player.InteriorDefense, player.PerimeterDefense, player.Stamina];
+  ChangeLineupInput: (
+    playerID: number,
+    key: string,
+    value: number,
+    index: number,
+  ) => void;
+}> = ({
+  label,
+  player,
+  playerID,
+  lineup,
+  abbreviation,
+  team,
+  league,
+  canModify,
+  lineupIndex,
+  ChangeLineupInput,
+}) => {
+  if (!player)
+    return (
+      <div className="grid grid-cols-[2rem_1fr] gap-2 rounded-lg bg-slate-800/70 p-3">
+        <strong>{label}</strong>
+        <span className="text-slate-400">Empty</span>
+      </div>
+    );
+  const values = [
+    player.Agility,
+    player.InsideShooting,
+    player.MidRangeShooting,
+    player.ThreePointShooting,
+    player.FreeThrow,
+    player.Ballwork,
+    player.Stealing,
+    player.Rebounding,
+    player.Blocking,
+    player.InteriorDefense,
+    player.PerimeterDefense,
+    player.Stamina,
+  ];
   const overall = displayRating(player, player.Overall, league);
-  const year = league === SimCBB
-    ? getYear((player as CollegePlayer).Year, (player as CollegePlayer).IsRedshirt)
-    : `${(player as NBAPlayer).Year || 0} Exp`;
-  const allocationKeys = ["InsideProportion", "MidProportion", "ThreeProportion", "Minutes"];
-  const shotTotal = lineup[`${abbreviation}InsideProportion`] + lineup[`${abbreviation}MidProportion`] + lineup[`${abbreviation}ThreeProportion`];
-  return <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm"><strong>{label}</strong><div className="text-left"><span>{player.Archetype} {player.Position} </span><strong>{player.FirstName} {player.LastName}</strong><span>, <em>{year}</em></span></div><span className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white ${overallBadgeClass(overall, player, league)}`} style={{ WebkitTextStroke: "0.5px black", textShadow: "0 1px 1px black" }}>{overall}</span>{values.map((value, index) => <strong key={index}>{displayRating(player, value, league)}</strong>)}{allocationKeys.map((key) => <Fragment key={key}>{key === "Minutes" && <strong className={shotTotal === 100 ? "text-green-400" : "text-amber-400"}>{shotTotal}%</strong>}<input aria-label={`${key} for ${player.FirstName} ${player.LastName}`} disabled={!canModify} type="number" value={lineup[`${abbreviation}${key}`] as number} onChange={(event) => ChangeLineupInput(playerID, `${abbreviation}${key}`, Number(event.target.value), lineupIndex)} className="w-14 justify-self-center rounded border border-slate-500 bg-black px-1.5 py-1 text-center text-sm text-white disabled:opacity-60" /></Fragment>)}</div>;
+  const year =
+    league === SimCBB
+      ? getYear(
+          (player as CollegePlayer).Year,
+          (player as CollegePlayer).IsRedshirt,
+        )
+      : `${(player as NBAPlayer).Year || 0} Exp`;
+  const allocationKeys = [
+    "InsideProportion",
+    "MidProportion",
+    "ThreeProportion",
+    "Minutes",
+  ];
+  const shotTotal =
+    lineup[`${abbreviation}InsideProportion`] +
+    lineup[`${abbreviation}MidProportion`] +
+    lineup[`${abbreviation}ThreeProportion`];
+  return (
+    <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm">
+      <strong>{label}</strong>
+      <div className="text-left">
+        <span>
+          {player.Archetype} {player.Position}{" "}
+        </span>
+        <strong>
+          {player.FirstName} {player.LastName}
+        </strong>
+        <span>
+          , <em>{year}</em>
+        </span>
+      </div>
+      <span
+        className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white ${overallBadgeClass(overall, player, league)}`}
+        style={{
+          WebkitTextStroke: "0.5px black",
+          textShadow: "0 1px 1px black",
+        }}
+      >
+        {overall}
+      </span>
+      {values.map((value, index) => (
+        <strong key={index}>{displayRating(player, value, league)}</strong>
+      ))}
+      {allocationKeys.map((key) => (
+        <Fragment key={key}>
+          {key === "Minutes" && (
+            <strong
+              className={
+                shotTotal === 100 ? "text-green-400" : "text-amber-400"
+              }
+            >
+              {shotTotal}%
+            </strong>
+          )}
+          <input
+            aria-label={`${key} for ${player.FirstName} ${player.LastName}`}
+            disabled={!canModify}
+            type="number"
+            value={lineup[`${abbreviation}${key}`] as number}
+            onChange={(event) =>
+              ChangeLineupInput(
+                playerID,
+                `${abbreviation}${key}`,
+                Number(event.target.value),
+                lineupIndex,
+              )
+            }
+            className="w-14 justify-self-center rounded border border-slate-500 bg-black px-1.5 py-1 text-center text-sm text-white disabled:opacity-60"
+          />
+        </Fragment>
+      ))}
+    </div>
+  );
 };
 
 const ModalPlayerCard: FC<{

@@ -613,11 +613,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
   >({});
 
   const currentCollegeSeasonGames = useMemo(() => {
-    if (!allProGames || !cbb_Timestamp) return [];
+    if (!allCollegeGames || !cbb_Timestamp) return [];
     return allCollegeGames.filter(
       (game) => game.SeasonID === cbb_Timestamp.SeasonID,
     );
-  }, [allProGames, cbb_Timestamp]);
+  }, [allCollegeGames, cbb_Timestamp]);
 
   const arenaMap = useMemo(() => {
     return arenas.reduce<Record<string, Arena>>((map, arena) => {
@@ -1014,6 +1014,12 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       );
       setCollegePolls(res.CollegePolls);
       setCollegePollSubmission(res.PollSubmission);
+      if (res.AllCollegeGames.length > 0) {
+        setAllCollegeGames(res.AllCollegeGames);
+      }
+      if (res.AllProGames.length > 0) {
+        setAllProGames(res.AllProGames);
+      }
     } finally {
       isScheduleDataFetching.current = false;
     }
@@ -1224,10 +1230,62 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       variant: "success",
       autoHideDuration: 3000,
     });
+    setCollegeGameplanMap((prev) => ({
+      ...prev,
+      [dto.TeamID]: new Gameplan({
+        DefensiveFormation: dto.DefensiveFormation,
+        FocusPlayer: dto.FocusPlayer,
+        OffensiveFormation: dto.OffensiveFormation,
+        Pace: dto.Pace,
+        PreserveTimeouts: dto.PreserveTimeouts,
+        Trigger1Enabled: dto.Trigger1Enabled,
+        Trigger1Type: dto.Trigger1Type,
+        Trigger1Value: dto.Trigger1Value,
+        Trigger2Enabled: dto.Trigger2Enabled,
+        Trigger2Type: dto.Trigger2Type,
+        Trigger2Value: dto.Trigger2Value,
+        Trigger3Enabled: dto.Trigger3Enabled,
+        Trigger3Type: dto.Trigger3Type,
+        Trigger3Value: dto.Trigger3Value,
+        Trigger4Enabled: dto.Trigger4Enabled,
+        Trigger4Type: dto.Trigger4Type,
+        Trigger4Value: dto.Trigger4Value,
+      }),
+    }));
+    setCBBLineupMap((prev) => ({
+      ...prev,
+      [dto.TeamID]: [...dto.CollegeLineups],
+    }));
   };
 
   const saveNBAGameplan = async (dto: any) => {
     const res = await GameplanService.SaveNBAGameplan(dto);
+    setNBAGameplanMap((prev) => ({
+      ...prev,
+      [dto.TeamID]: new NBAGameplan({
+        DefensiveFormation: dto.DefensiveFormation,
+        FocusPlayer: dto.FocusPlayer,
+        OffensiveFormation: dto.OffensiveFormation,
+        Pace: dto.Pace,
+        PreserveTimeouts: dto.PreserveTimeouts,
+        Trigger1Enabled: dto.Trigger1Enabled,
+        Trigger1Type: dto.Trigger1Type,
+        Trigger1Value: dto.Trigger1Value,
+        Trigger2Enabled: dto.Trigger2Enabled,
+        Trigger2Type: dto.Trigger2Type,
+        Trigger2Value: dto.Trigger2Value,
+        Trigger3Enabled: dto.Trigger3Enabled,
+        Trigger3Type: dto.Trigger3Type,
+        Trigger3Value: dto.Trigger3Value,
+        Trigger4Enabled: dto.Trigger4Enabled,
+        Trigger4Type: dto.Trigger4Type,
+        Trigger4Value: dto.Trigger4Value,
+      }),
+    }));
+    setNBALineupMap((prev) => ({
+      ...prev,
+      [dto.TeamID]: [...dto.NBALineups],
+    }));
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,

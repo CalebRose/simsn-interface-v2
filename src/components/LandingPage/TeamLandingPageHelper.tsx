@@ -293,7 +293,7 @@ export const getLandingNFLData = (
     TopReceiver: topReceiver,
   };
 
-// Team Injuries
+  // Team Injuries
   const teamInjuries =
     proRosterMap && team?.ID && proRosterMap[team.ID]
       ? proRosterMap[team.ID].filter((player) => player.IsInjured)
@@ -364,6 +364,7 @@ export const getLandingCBBData = (
     const nextMatch = allCBBGames.filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.SeasonID === timestamp.SeasonID &&
         game.Week === testWeek &&
         game.MatchOfWeek === nextGameDay,
     );
@@ -409,8 +410,11 @@ export const getLandingCBBData = (
   // Team Schedule
   const teamSchedule = allCBBGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.SeasonID === timestamp.SeasonID,
     )
+    .sort((a, b) => a.Week - b.Week)
     .map((game) => ({
       ...game,
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),
@@ -502,6 +506,7 @@ export const getLandingNBAData = (
     const nextMatch = allNBAGames.filter(
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.SeasonID === timestamp.SeasonID &&
         game.Week === testWeek &&
         game.MatchOfWeek === nextGameDay,
     );
@@ -547,8 +552,11 @@ export const getLandingNBAData = (
   // Team Schedule
   const teamSchedule = allNBAGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.SeasonID === timestamp.SeasonID,
     )
+    .sort((a, b) => a.Week - b.Week)
     .map((game) => ({
       ...game,
       HomeTeamAbbr: teamAbbrMap.get(game.HomeTeamID),

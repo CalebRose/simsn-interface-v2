@@ -36,7 +36,7 @@ import {
   TeamStandings,
   LeagueStandings,
   WeeklySchedule,
-  AdvandedSchedule,
+  AdvancedSchedule,
 } from "../Common/SchedulePageComponents";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { darkenColor } from "../../../_utility/getDarkerColor";
@@ -125,7 +125,12 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const value = Number(opts?.value);
     const nextTeam = chlTeamMap ? chlTeamMap[value] : null;
     setSelectedTeam(nextTeam);
-    setCategory(Overview);
+    if (category === Standings) {
+      setCategory(Overview);
+    }
+    if (category === AdvStandings) {
+      setCategory(AdvSchedule);
+    }
   };
 
   const collegeGamesBySelectedSeason = useMemo(() => {
@@ -279,7 +284,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               </ButtonGrid>
             </div>
             <div className="flex flex-col gap-2 sm:gap-4 items-center">
-              {category === Overview && (
+              {(category === Overview || category === AdvSchedule) && (
                 <>
                   <div className="flex justify-center items-center gap-2">
                     <ToggleSwitch
@@ -306,9 +311,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               )}
               <div className="flex items-center gap-2 justify-around sm:flex-col">
                 <div className="flex flex-col items-center gap-2 justify-center">
-                  {view === TeamGames &&
-                  category !== AdvSchedule &&
-                  category !== AdvStandings ? (
+                  {view === TeamGames ? (
                     <>
                       <Text variant="body">Teams</Text>
                       <SelectDropdown
@@ -639,17 +642,19 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
             </div>
           )}
           {category === AdvSchedule && (
-            <AdvandedSchedule
+            <AdvancedSchedule
               team={selectedTeam}
               league={league}
               processedSchedule={collegeGamesBySelectedSeason}
-              currentWeek={selectedWeekValue || 0}
+              currentWeek={selectedWeekValue || 1}
               backgroundColor={backgroundColor}
               headerColor={headerColor}
               borderColor={borderColor}
               textColorClass={textColorClass}
               darkerBackgroundColor={darkerBackgroundColor}
               isLoading={isLoading}
+              view={view}
+              resultsOverride={resultsOverride}
             />
           )}
         </div>
@@ -730,7 +735,12 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     const value = Number(opts?.value);
     const nextTeam = phlTeamMap ? phlTeamMap[value] : null;
     setSelectedTeam(nextTeam);
-    setCategory(Overview);
+    if (category === Standings) {
+      setCategory(Overview);
+    }
+    if (category === AdvStandings) {
+      setCategory(AdvSchedule);
+    }
   };
 
   const { teamStandings, teamSchedule, groupedWeeklyGames } = useMemo(() => {
@@ -828,7 +838,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 </Button>
               </ButtonGrid>
             </div>
-            {category === Overview && (
+            {(category === Overview || category === AdvSchedule) && (
               <>
                 <div className="flex justify-center items-center gap-2">
                   <ToggleSwitch
@@ -867,9 +877,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
             )}
             <div className="flex items-center gap-2 justify-around sm:flex-col">
               <div className="flex flex-col items-center gap-2 justify-center">
-                {scheduleView === TeamGames &&
-                category !== AdvSchedule &&
-                category !== AdvStandings ? (
+                {scheduleView === TeamGames ? (
                   <>
                     <Text variant="body">Teams</Text>
                     <SelectDropdown
@@ -1181,7 +1189,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
             </div>
           )}
           {category === AdvSchedule && (
-            <AdvandedSchedule
+            <AdvancedSchedule
               team={selectedTeam}
               league={league}
               processedSchedule={proGamesBySelectedSeason}
@@ -1192,6 +1200,8 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               textColorClass={textColorClass}
               darkerBackgroundColor={darkerBackgroundColor}
               isLoading={isLoading}
+              view={scheduleView}
+              resultsOverride={resultsOverride}
             />
           )}
         </div>

@@ -437,7 +437,9 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                         {game.HomeTeamRank > 0 ? `#${game.HomeTeamRank}` : "NR"}
                       </Text>
                     )}
-                    <Text variant="alternate">{game.HomeTeamName}</Text>
+                    <Text variant="alternate">
+                      {game.HomeTeamName || game.HomeTeam}
+                    </Text>
                     <Text variant="h3-alt" classes="font-semibold">
                       {game.HomeTeamMascot}
                     </Text>
@@ -489,7 +491,9 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                     } gap-2 sm:gap-3`}
                   >
                     <div className="text-left col-span-2">
-                      <Text variant="body-small">{game.HomeTeamAbbr}</Text>
+                      <Text variant="body-small">
+                        {game.HomeTeamAbbr || game.HomeTeam}
+                      </Text>
                     </div>
                     <div className="text-center col-span-1">
                       <Text variant="body-small">{score.Q1Home}</Text>
@@ -518,7 +522,9 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                     } gap-2 sm:gap-3`}
                   >
                     <div className="text-left col-span-2">
-                      <Text variant="body-small">{game.AwayTeamAbbr}</Text>
+                      <Text variant="body-small">
+                        {game.AwayTeamAbbr || game.AwayTeam}
+                      </Text>
                     </div>
                     <div className="text-center col-span-1">
                       <Text variant="body-small">{score.Q1Away}</Text>
@@ -573,7 +579,9 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                         {game.AwayTeamRank > 0 ? `#${game.AwayTeamRank}` : "NR"}
                       </Text>
                     )}
-                    <Text variant="alternate">{game.AwayTeamName}</Text>
+                    <Text variant="alternate">
+                      {game.AwayTeamName || game.AwayTeam}
+                    </Text>
                     <Text variant="h3-alt" classes="font-semibold">
                       {game.AwayTeamMascot}
                     </Text>
@@ -635,7 +643,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.HomeTeamName} Strategy
+                            {game.HomeTeamName || game.HomeTeam} Strategy
                           </Text>
                         </div>
                         <FBGameModalStrategy
@@ -659,7 +667,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.AwayTeamName} Strategy
+                            {game.AwayTeamName || game.AwayTeam} Strategy
                           </Text>
                         </div>
                         <FBGameModalStrategy
@@ -684,7 +692,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.HomeTeamName} Passing
+                            {game.HomeTeamName || game.HomeTeam} Passing
                           </Text>
                         </div>
                         <FBGameModalPassing
@@ -705,7 +713,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.AwayTeamName} Passing
+                            {game.AwayTeamName || game.AwayTeam} Passing
                           </Text>
                         </div>
                         <FBGameModalPassing
@@ -728,7 +736,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.HomeTeamName} Rushing
+                            {game.HomeTeamName || game.HomeTeam} Rushing
                           </Text>
                         </div>
                         <FBGameModalRushing
@@ -749,7 +757,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.AwayTeamName} Rushing
+                            {game.AwayTeamName || game.AwayTeam} Rushing
                           </Text>
                         </div>
                         <FBGameModalRushing
@@ -772,7 +780,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.HomeTeamName} Receiving
+                            {game.HomeTeamName || game.HomeTeam} Receiving
                           </Text>
                         </div>
                         <FBGameModalReceiving
@@ -793,7 +801,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.AwayTeamName} Receiving
+                            {game.AwayTeamName || game.AwayTeam} Receiving
                           </Text>
                         </div>
                         <FBGameModalReceiving
@@ -816,7 +824,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.HomeTeamName} Offensive Line
+                            {game.HomeTeamName || game.HomeTeam} Offensive Line
                           </Text>
                         </div>
                         <FBGameModalOffensiveLine
@@ -837,7 +845,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.AwayTeamName} Offensive Line
+                            {game.AwayTeamName || game.AwayTeam} Offensive Line
                           </Text>
                         </div>
                         <FBGameModalOffensiveLine
@@ -860,7 +868,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.HomeTeamName} Defensive
+                            {game.HomeTeamName || game.HomeTeam} Defensive
                           </Text>
                         </div>
                         <FBGameModalDefensive
@@ -881,7 +889,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.AwayTeamName} Defensive
+                            {game.AwayTeamName || game.AwayTeam} Defensive
                           </Text>
                         </div>
                         <FBGameModalDefensive
@@ -904,7 +912,8 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.HomeTeamName} Kicking and Punting
+                            {game.HomeTeamName || game.HomeTeam} Kicking and
+                            Punting
                           </Text>
                         </div>
                         <FBGameModalKicking
@@ -925,7 +934,8 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.AwayTeamName} Kicking and Punting
+                            {game.AwayTeamName || game.AwayTeam} Kicking and
+                            Punting
                           </Text>
                         </div>
                         <FBGameModalKicking
@@ -948,7 +958,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={homeTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.HomeTeamName} Returning
+                            {game.HomeTeamName || game.HomeTeam} Returning
                           </Text>
                         </div>
                         <FBGameModalReturning
@@ -969,7 +979,7 @@ export const FootballGameModal = ({ league, game, isPro }: GameModalProps) => {
                             url={awayTeamLogo}
                           />
                           <Text variant="body-small" classes="font-semibold">
-                            {game.AwayTeamName} Returning
+                            {game.AwayTeamName || game.AwayTeam} Returning
                           </Text>
                         </div>
                         <FBGameModalReturning

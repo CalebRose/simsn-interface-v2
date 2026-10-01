@@ -10,7 +10,13 @@ import { getTextColorBasedOnBg } from "../_utility/getBorderClass";
 import { getThemeAwareDarkenColor } from "../_utility/getDarkerColor";
 import { Text } from "./Typography";
 import { isBrightColor } from "../_utility/isBrightColor";
-import { League, SimCBB, SimCFB, SimNFL, SimPHL } from "../_constants/constants";
+import {
+  League,
+  SimCBB,
+  SimCFB,
+  SimNFL,
+  SimPHL,
+} from "../_constants/constants";
 import { useAuthStore } from "../context/AuthContext";
 import { getThemeColors } from "../_utility/themeHelpers";
 import { getPlayerOverall } from "../components/Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
@@ -42,6 +48,7 @@ export interface TableProps<T> {
   enablePagination?: boolean;
   currentPage?: number;
   page?: string;
+  disableSorting?: boolean;
 }
 
 export const Table = <T,>({
@@ -55,6 +62,7 @@ export const Table = <T,>({
   enablePagination = false,
   currentPage = 0,
   page = "",
+  disableSorting = false,
 }: TableProps<T>): JSX.Element => {
   const { isDarkMode } = useAuthStore();
   const themeColors = getThemeColors(isDarkMode);
@@ -121,6 +129,12 @@ export const Table = <T,>({
     return [...indices].sort((ai, bi) => {
       const a = source[ai] as any;
       const b = source[bi] as any;
+      if (
+        page.includes("AdvancedSchedule") &&
+        (key === "HomeTeamScore" || key === "AwayTeamScore")
+      ) {
+        if (!a.IsRevealed || !b.IsRevealed) return 0;
+      }
       if (league === SimNFL && key === "Overall") {
         if (a.ShowLetterGrade && !b.ShowLetterGrade) return 1;
         if (!a.ShowLetterGrade && b.ShowLetterGrade) return -1;
