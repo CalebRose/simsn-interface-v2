@@ -297,6 +297,18 @@ export const ActionModal: FC<ActionModalProps> = ({
     }
     onClose();
   };
+
+  const handleConfirm = async () => {
+    try {
+      await action();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "The requested action could not be completed.";
+      enqueueSnackbar(message, { variant: "error", autoHideDuration: 5000 });
+    }
+  };
   const title = useMemo(() => {
     switch (modalAction) {
       case Affiliate:
@@ -359,7 +371,11 @@ export const ActionModal: FC<ActionModalProps> = ({
                       <Text variant="small">Cancel</Text>
                     </Button>
                     {/* Disable confirm if countdown is active */}
-                    <Button size="sm" onClick={action} disabled={!canConfirm}>
+                    <Button
+                      size="sm"
+                      onClick={handleConfirm}
+                      disabled={!canConfirm}
+                    >
                       <Text variant="small">
                         {canConfirm ? "Confirm" : `${countdownTime}...`}
                       </Text>

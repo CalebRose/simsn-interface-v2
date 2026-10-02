@@ -197,8 +197,15 @@ export const GetActionCall = async (url: string): Promise<Response | false> => {
   });
 
   if (!response.ok) {
-    console.error("HTTP-Error:", response.status);
-    return false;
+    let errorBody: any;
+    try {
+      errorBody = await response.json();
+    } catch {}
+    throw new ApiError(
+      response.status,
+      apiErrorMessage(errorBody, `HTTP Error: ${response.statusText}`),
+      errorBody,
+    );
   }
 
   return response;
