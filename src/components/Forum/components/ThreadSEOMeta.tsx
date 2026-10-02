@@ -9,7 +9,8 @@ interface Props {
 
 const SITE_NAME = "Sim Sports Network";
 const BASE_URL = "https://simulationsports.net";
-const DEFAULT_IMAGE = `${BASE_URL}/og-default.png`;
+const DEFAULT_IMAGE =
+  "https://calebrose.io/simfba-logo-cdn/icons/simsn_logo.webp";
 const MAX_DESCRIPTION = 200;
 
 function truncate(text: string, max: number): string {
