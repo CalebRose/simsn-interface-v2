@@ -8,7 +8,7 @@ interface Props {
 }
 
 const SITE_NAME = "Sim Sports Network";
-const BASE_URL = "https://calebrose.io/simsn-interface-v2";
+const BASE_URL = "https://simulationsports.net";
 const DEFAULT_IMAGE = `${BASE_URL}/og-default.png`;
 const MAX_DESCRIPTION = 200;
 
