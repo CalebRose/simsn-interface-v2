@@ -49,6 +49,7 @@ export interface TableProps<T> {
   currentPage?: number;
   page?: string;
   disableSorting?: boolean;
+  freezeFirstColumn?: boolean;
 }
 
 export const Table = <T,>({
@@ -63,6 +64,7 @@ export const Table = <T,>({
   currentPage = 0,
   page = "",
   disableSorting = false,
+  freezeFirstColumn = false,
 }: TableProps<T>): JSX.Element => {
   const { isDarkMode } = useAuthStore();
   const themeColors = getThemeColors(isDarkMode);
@@ -134,6 +136,17 @@ export const Table = <T,>({
         (key === "HomeTeamScore" || key === "AwayTeamScore")
       ) {
         if (!a.IsRevealed || !b.IsRevealed) return 0;
+      }
+      if (
+        page.includes("AdvancedStandings") &&
+        (key === "PreseasonRank" || key === "Rank" || key === "RPI Rank")
+      ) {
+        // Sort by asc order with 0s at the very back
+        if (a[key] === 0 && b[key] !== 0) return 1;
+        if (a[key] !== 0 && b[key] === 0) return -1;
+        if (a[key] < b[key]) return order === "asc" ? -1 : 1;
+        if (a[key] > b[key]) return order === "asc" ? 1 : -1;
+        return 0;
       }
       if (league === SimNFL && key === "Overall") {
         if (a.ShowLetterGrade && !b.ShowLetterGrade) return 1;
@@ -361,7 +374,11 @@ export const Table = <T,>({
   };
 
   return (
-    <div className="overflow-x-auto w-full">
+    <div
+      className={`overflow-x-auto w-full ${
+        freezeFirstColumn ? "table-freeze-first-column" : ""
+      }`}
+    >
       <div
         className={`table table-auto w-full border-b-2`}
         style={{

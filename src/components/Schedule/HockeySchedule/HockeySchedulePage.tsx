@@ -37,6 +37,7 @@ import {
   LeagueStandings,
   WeeklySchedule,
   AdvancedSchedule,
+  AdvancedStandings,
 } from "../Common/SchedulePageComponents";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { darkenColor } from "../../../_utility/getDarkerColor";
@@ -657,6 +658,20 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               resultsOverride={resultsOverride}
             />
           )}
+          {category === AdvStandings && (
+            <AdvancedStandings
+              team={selectedTeam}
+              league={league}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={view}
+              selectedSeasonID={selectedSeasonValue}
+            />
+          )}
         </div>
       </div>
     </>
@@ -1202,6 +1217,20 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={scheduleView}
               resultsOverride={resultsOverride}
+            />
+          )}
+          {category === AdvStandings && (
+            <AdvancedStandings
+              team={selectedTeam}
+              league={league}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={scheduleView}
+              selectedSeasonID={selectedSeasonValue}
             />
           )}
         </div>

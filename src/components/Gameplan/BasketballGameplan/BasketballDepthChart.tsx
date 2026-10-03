@@ -199,9 +199,9 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
           </Button>
         )}
       </div>
-      <div className="overflow-x-auto">
-        <div className="min-w-330">
-          <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
+      <div className="lg:overflow-x-auto">
+        <div className="lg:min-w-330">
+          <div className="hidden lg:grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
             <span>#</span>
             <span className="text-left">Player</span>
             <span>OVR</span>
@@ -404,61 +404,136 @@ const DepthRow: FC<{
     lineup[`${abbreviation}InsideProportion`] +
     lineup[`${abbreviation}MidProportion`] +
     lineup[`${abbreviation}ThreeProportion`];
+  const inputClass =
+    "w-14 justify-self-center rounded border border-slate-500 bg-black px-1.5 py-1 text-center text-sm text-white disabled:opacity-60";
+  const allocationLabels: Record<string, string> = {
+    InsideProportion: "Inside",
+    MidProportion: "Midrange",
+    ThreeProportion: "3 Pt",
+    Minutes: "Usage",
+  };
   return (
-    <div className="grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm">
-      <strong>{label}</strong>
-      <div className="text-left">
-        <span>
-          {player.Archetype} {player.Position}{" "}
-        </span>
-        <strong>
-          {player.FirstName} {player.LastName}
-        </strong>
-        <span>
-          , <em>{year}</em>
-        </span>
-      </div>
-      <span
-        className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white ${overallBadgeClass(overall, player, league)}`}
-        style={{
-          WebkitTextStroke: "0.5px black",
-          textShadow: "0 1px 1px black",
-        }}
-      >
-        {overall}
-      </span>
-      {values.map((value, index) => (
-        <strong key={index}>{displayRating(player, value, league)}</strong>
-      ))}
-      {allocationKeys.map((key) => (
-        <Fragment key={key}>
-          {key === "Minutes" && (
-            <strong
-              className={
-                shotTotal === 100 ? "text-green-400" : "text-amber-400"
-              }
-            >
-              {shotTotal}%
+    <>
+      <div className="rounded-lg bg-slate-800/70 p-3 text-sm lg:hidden">
+        <div className="flex items-center gap-2 text-left">
+          <strong>{label}</strong>
+          <div className="min-w-0 flex-1">
+            <span>
+              {player.Archetype} {player.Position}{" "}
+            </span>
+            <strong>
+              {player.FirstName} {player.LastName}
             </strong>
-          )}
-          <input
-            aria-label={`${key} for ${player.FirstName} ${player.LastName}`}
-            disabled={!canModify}
-            type="number"
-            value={lineup[`${abbreviation}${key}`] as number}
-            onChange={(event) =>
-              ChangeLineupInput(
-                playerID,
-                `${abbreviation}${key}`,
-                Number(event.target.value),
-                lineupIndex,
-              )
-            }
-            className="w-14 justify-self-center rounded border border-slate-500 bg-black px-1.5 py-1 text-center text-sm text-white disabled:opacity-60"
-          />
-        </Fragment>
-      ))}
-    </div>
+            <span>
+              , <em>{year}</em>
+            </span>
+          </div>
+          <span
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white ${overallBadgeClass(overall, player, league)}`}
+            style={{
+              WebkitTextStroke: "0.5px black",
+              textShadow: "0 1px 1px black",
+            }}
+          >
+            {overall}
+          </span>
+        </div>
+        <div className="mt-3 grid grid-cols-6 gap-2 text-center text-xs">
+          {statColumns.map((statLabel, index) => (
+            <div key={statLabel} className="flex flex-col">
+              <span className="text-slate-300">{statLabel}</span>
+              <strong className="text-sm">
+                {displayRating(player, values[index], league)}
+              </strong>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs">
+          {allocationKeys.map((key) => (
+            <label
+              key={key}
+              className="flex flex-col items-center gap-1 text-slate-300"
+            >
+              {allocationLabels[key]}
+              <input
+                disabled={!canModify}
+                type="number"
+                inputMode="numeric"
+                value={lineup[`${abbreviation}${key}`] as number}
+                onChange={(event) =>
+                  ChangeLineupInput(
+                    playerID,
+                    `${abbreviation}${key}`,
+                    Number(event.target.value),
+                    lineupIndex,
+                  )
+                }
+                className="w-full min-w-0 rounded border border-slate-500 bg-black px-1 py-1 text-center text-sm text-white disabled:opacity-60"
+              />
+            </label>
+          ))}
+        </div>
+        <div
+          className={`mt-2 text-left text-xs font-semibold ${shotTotal === 100 ? "text-green-400" : "text-amber-400"}`}
+        >
+          Shot Total: {shotTotal}%
+        </div>
+      </div>
+      <div className="hidden grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm lg:grid">
+        <strong>{label}</strong>
+        <div className="text-left">
+          <span>
+            {player.Archetype} {player.Position}{" "}
+          </span>
+          <strong>
+            {player.FirstName} {player.LastName}
+          </strong>
+          <span>
+            , <em>{year}</em>
+          </span>
+        </div>
+        <span
+          className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold text-white ${overallBadgeClass(overall, player, league)}`}
+          style={{
+            WebkitTextStroke: "0.5px black",
+            textShadow: "0 1px 1px black",
+          }}
+        >
+          {overall}
+        </span>
+        {values.map((value, index) => (
+          <strong key={index}>{displayRating(player, value, league)}</strong>
+        ))}
+        {allocationKeys.map((key) => (
+          <Fragment key={key}>
+            {key === "Minutes" && (
+              <strong
+                className={
+                  shotTotal === 100 ? "text-green-400" : "text-amber-400"
+                }
+              >
+                {shotTotal}%
+              </strong>
+            )}
+            <input
+              aria-label={`${key} for ${player.FirstName} ${player.LastName}`}
+              disabled={!canModify}
+              type="number"
+              value={lineup[`${abbreviation}${key}`] as number}
+              onChange={(event) =>
+                ChangeLineupInput(
+                  playerID,
+                  `${abbreviation}${key}`,
+                  Number(event.target.value),
+                  lineupIndex,
+                )
+              }
+              className={inputClass}
+            />
+          </Fragment>
+        ))}
+      </div>
+    </>
   );
 };
 

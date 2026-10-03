@@ -25,26 +25,41 @@ import {
 import { useModal } from "../../../_hooks/useModal";
 import { SchedulePageGameModal } from "./GameModal";
 import { SimCFB, SimNFL } from "../../../_constants/constants";
-import { useAuthStore } from "../../../context/AuthContext";
-import { getThemeColors } from "../../../_utility/themeHelpers";
-import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import {
+  CollegeTeam as CFBTeam,
   CollegeGame as CFBGame,
+  CollegeStandings as CFBStandings,
+  NFLTeam,
   NFLGame,
+  NFLStandings,
 } from "../../../models/footballModels";
 import {
+  CollegeTeam as CHLTeam,
   CollegeGame as CHLGame,
   ProfessionalGame as PHLGame,
+  CollegeStandings as CHLStandings,
+  ProfessionalStandings as PHLStandings,
+  ProfessionalTeam,
 } from "../../../models/hockeyModels";
 import {
+  Team as CBBTeam,
   Match as CBBGame,
   NBAMatch as NBAGame,
+  NBATeam,
+  NBAStandings,
+  CollegeStandings as CBBStandings,
 } from "../../../models/basketballModels";
 import { useAdvancedSchedule } from "./useAdvancedSchedule";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { Table, TableCell } from "../../../_design/Table";
 import { Span } from "../../../_design/Span";
 import { Player } from "../../../models/baseball/baseballModels";
+import { useAdvancedStandings } from "./useAdvancedStandings";
+import {
+  getSimCHLConference,
+  getSimPHLDivision,
+  getSimPHLConference,
+} from "./SchedulePageHelper";
 
 interface TeamScheduleProps {
   team: any;
@@ -1664,6 +1679,427 @@ export const AdvancedSchedule: FC<AdvancedScheduleProps> = ({
             rowRenderer={rowRenderer(league)}
             page={`${league}AdvancedSchedule`}
             team={team}
+          />
+        </SectionCards>
+      </div>
+    </>
+  );
+};
+
+interface AdvancedStandingsProps {
+  team: any;
+  league: League;
+  backgroundColor: string;
+  headerColor: string;
+  borderColor: string;
+  textColorClass: string;
+  darkerBackgroundColor: string;
+  isLoading: boolean;
+  view: string;
+  selectedSeasonID: number;
+}
+
+interface HCKAdvancedStandingsRowProps {
+  league: League;
+  standings: CHLStandings | PHLStandings;
+  idx: number;
+  bg: string;
+  teamMap: Record<number, CHLTeam> | Record<number, ProfessionalTeam>;
+}
+
+const HCKAdvancedStandingsRow: FC<HCKAdvancedStandingsRowProps> = ({
+  league,
+  standings,
+  idx,
+  bg,
+  teamMap,
+}) => {
+  const teamLogo = (() => {
+    let logo = getLogo(league, standings.TeamID, false);
+    return logo;
+  })();
+
+  const standing = useMemo(() => {
+    if (league === SimCHL) {
+      return standings as CHLStandings;
+    }
+    if (league === SimPHL) {
+      return standings as PHLStandings;
+    }
+    return standings;
+  }, [standings, league]);
+
+  const team = useMemo(() => {
+    if (league === SimCHL) {
+      return teamMap ? (teamMap[standings.TeamID] as CHLTeam) : null;
+    }
+    if (league === SimPHL) {
+      return teamMap ? teamMap[standings.TeamID] : null;
+    }
+    return teamMap ? teamMap[standings.TeamID] : null;
+  }, [teamMap, standings.TeamID]);
+
+  const conference = useMemo(() => {
+    if (league === SimCHL) {
+      return getSimCHLConference((standings as CHLStandings).ConferenceID);
+    }
+    if (league === SimPHL) {
+      return getSimPHLConference((standings as PHLStandings).ConferenceID);
+    }
+    return "";
+  }, [standings]);
+
+  const division = useMemo(() => {
+    if (league === SimPHL) {
+      return getSimPHLDivision((standings as PHLStandings).DivisionID);
+    }
+    return "";
+  }, [standings, league]);
+
+  const rank = useMemo(() => {
+    if (league === SimCHL) {
+      return (standings as CHLStandings).Rank;
+    }
+    return 0;
+  }, [standings, league]);
+
+  const chlRankingStats = useMemo(() => {
+    if (league === SimPHL) return null;
+    if (league === SimCHL) {
+      return {
+        PreseasonRank: (standings as CHLStandings).PreseasonRank,
+        PairwiseRank: (standings as CHLStandings).PairwiseRank,
+        RPIRank: (standings as CHLStandings).RPIRank,
+        RPI: (standings as CHLStandings).RPI,
+        SOS: (standings as CHLStandings).SOS,
+        SOR: (standings as CHLStandings).SOR,
+        Tier1Wins: (standings as CHLStandings).Tier1Wins,
+        Tier2Wins: (standings as CHLStandings).Tier2Wins,
+        BadLosses: (standings as CHLStandings).BadLosses,
+        ConferenceStrengthAdj: (standings as CHLStandings)
+          .ConferenceStrengthAdj,
+      };
+    }
+    return null;
+  }, [league, standings]);
+
+  const teamLabel = useMemo(() => {
+    if (league === SimCHL && teamMap) {
+      const t = teamMap[standings.TeamID] as CHLTeam;
+      return t?.TeamName || "";
+    }
+    if (league === SimPHL && teamMap) {
+      const t = teamMap[standings.TeamID] as ProfessionalTeam;
+      return `${t.TeamName} ${t.Mascot}`;
+    }
+    return standings.TeamName || "";
+  }, [league, standings, teamMap]);
+
+  return (
+    <div
+      key={idx}
+      className="table-row border-b dark:border-gray-700 text-start"
+      style={{ backgroundColor: bg }}
+    >
+      <TableCell>
+        <div className="flex items-center space-x-4">
+          <Logo url={teamLogo} variant="tiny" />
+          <ClickableTeamLabel
+            teamID={standings.TeamID}
+            league={league}
+            label={teamLabel}
+          />
+        </div>
+      </TableCell>
+      <TableCell>
+        <Span>{conference}</Span>
+      </TableCell>
+      {league === SimPHL && (
+        <TableCell>
+          <Span>{division}</Span>
+        </TableCell>
+      )}
+      <TableCell>
+        <ClickableUserLabel
+          coach={standings.Coach || "AI"}
+          label={standings.Coach || "AI"}
+          textVariant="xs"
+        />
+      </TableCell>
+      <TableCell>
+        <Span>{standings.Points}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalLosses}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalOTWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalOTLosses}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ShootoutWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ShootoutLosses}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceLosses}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceOTWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceOTLosses}</Span>
+      </TableCell>
+      {league === SimCHL && (
+        <>
+          <TableCell>
+            <Span>{rank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{standings.RankedWins}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{standings.RankedLosses}</Span>
+          </TableCell>
+        </>
+      )}
+      <TableCell>
+        <Span>{standings.GoalsFor}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.GoalsAgainst}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.GoalsFor - standings.GoalsAgainst}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.Streak}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.HomeWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.AwayWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PostSeasonStatus}</Span>
+      </TableCell>
+      {league === SimCHL && (
+        <>
+          <TableCell>
+            <Span>{chlRankingStats?.PreseasonRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{chlRankingStats?.PairwiseRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{chlRankingStats?.RPIRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{chlRankingStats?.RPI.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{chlRankingStats?.SOS.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{chlRankingStats?.SOR.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{chlRankingStats?.Tier1Wins}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{chlRankingStats?.Tier2Wins}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{chlRankingStats?.BadLosses}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{chlRankingStats?.ConferenceStrengthAdj.toFixed(3)}</Span>
+          </TableCell>
+        </>
+      )}
+    </div>
+  );
+};
+
+interface FBAdvancedStandingsRowProps {
+  standings: CFBStandings | NFLStandings;
+  idx: number;
+  bg: string;
+  league: League;
+}
+
+const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
+  standings,
+  idx,
+  bg,
+
+  league,
+}) => {
+  return (
+    <div
+      key={idx}
+      className="table-row border-b dark:border-gray-700 text-start"
+      style={{ backgroundColor: bg }}
+    ></div>
+  );
+};
+
+interface BBAdvancedStandingsRowProps {
+  game: CBBStandings | NBAStandings;
+  idx: number;
+  bg: string;
+  league: League;
+}
+
+const BBAdvancedStandingsRow: FC<BBAdvancedStandingsRowProps> = ({
+  game,
+  idx,
+  bg,
+  league,
+}) => {
+  return (
+    <div
+      key={idx}
+      className="table-row border-b dark:border-gray-700 text-start"
+      style={{ backgroundColor: bg }}
+    ></div>
+  );
+};
+
+export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
+  view,
+  team,
+  league,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  textColorClass,
+  darkerBackgroundColor,
+  isLoading,
+  selectedSeasonID,
+}) => {
+  const {
+    filteredStandings,
+    tableColumns,
+    seasonID,
+    standingsBySeason,
+    leagueTeamMap,
+    hockeyTeamMap,
+    leagueTeamOptions,
+    leagueConferenceOptions,
+    leagueOptions,
+    leagueDivisionOptions,
+    SelectDivisions,
+    SelectTeams,
+    SelectConferences,
+    SelectLeague,
+  } = useAdvancedStandings(league, view, team?.ID, selectedSeasonID);
+  const { isMobile } = useResponsive();
+  const gameModal = useModal();
+  const rowRenderer = (
+    league: League,
+  ): ((item: any, index: number, backgroundColor: string) => ReactNode) => {
+    if (league === SimCHL || league === SimPHL) {
+      return (
+        standings: CHLStandings | PHLStandings,
+        idx: number,
+        bg: string,
+      ) => {
+        return (
+          <HCKAdvancedStandingsRow
+            standings={standings}
+            idx={idx}
+            bg={bg}
+            league={league}
+            teamMap={hockeyTeamMap}
+          />
+        );
+      };
+    }
+    if (league === SimCFB || league === SimNFL) {
+      return (game: CFBStandings | NFLStandings, idx: number, bg: string) => {
+        return <></>;
+      };
+    }
+    return (game: CBBStandings | NBAStandings, idx: number, bg: string) => {
+      return <></>;
+    };
+  };
+
+  const dropdownColumns = useMemo(() => {
+    if (league === SimCHL || league === SimNFL) {
+      return "grid-cols-3";
+    }
+    if (league === SimNBA || league === SimPHL) {
+      return "grid-cols-4";
+    }
+    return "grid-cols-2";
+  }, [league]);
+
+  return (
+    <>
+      <div className="w-full col-span-5">
+        <SectionCards
+          header={`Advanced Standings View`}
+          team={team}
+          classes={`w-full ${textColorClass}`}
+          backgroundColor={backgroundColor}
+          headerColor={headerColor}
+          borderColor={borderColor}
+          textColorClass={textColorClass}
+          darkerBackgroundColor={darkerBackgroundColor}
+        >
+          <div className={`grid ${dropdownColumns} space-x-4 py-4 px-2`}>
+            {league === SimCHL && (
+              <CategoryDropdown
+                label="Leagues"
+                options={leagueOptions}
+                change={SelectLeague}
+                isMulti={false}
+                isMobile={isMobile}
+              />
+            )}
+            <CategoryDropdown
+              label="Conferences"
+              options={leagueConferenceOptions}
+              change={SelectConferences}
+              isMulti={true}
+              isMobile={isMobile}
+            />
+            {(league === SimNFL || league === SimPHL || league === SimNBA) && (
+              <CategoryDropdown
+                label="Divisions"
+                options={leagueDivisionOptions}
+                change={SelectDivisions}
+                isMulti={true}
+                isMobile={isMobile}
+              />
+            )}
+            <CategoryDropdown
+              label="Teams"
+              options={leagueTeamOptions}
+              change={SelectTeams}
+              isMulti={true}
+              isMobile={isMobile}
+            />
+          </div>
+          <Table
+            columns={tableColumns}
+            data={filteredStandings}
+            rowRenderer={rowRenderer(league)}
+            page={`${league}AdvancedStandings`}
+            team={team}
+            freezeFirstColumn
           />
         </SectionCards>
       </div>

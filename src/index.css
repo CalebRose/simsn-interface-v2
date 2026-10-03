@@ -520,6 +520,29 @@ html.deepsea #root {
   z-index: 1;
 }
 
+.table-freeze-first-column
+  .table-header-group
+  .table-row
+  > .table-cell:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
+.table-freeze-first-column .table-header-group {
+  z-index: 3;
+}
+
+.table-freeze-first-column
+  .table-row-group
+  .table-row
+  > .table-cell:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: inherit;
+}
+
 /* Forum thread list items - themed surface */
 .forum-thread-item {
   background-color: var(--bg-secondary);

@@ -53,7 +53,7 @@ import {
   MondayNightFootball,
 } from "../../../_constants/constants";
 import {
-  CollegeStandings,
+  CollegeStandings as CBBStandings,
   Match as CBBGame,
   Team as CBBTeam,
   NBAStandings,
@@ -465,7 +465,7 @@ export const getScheduleCBBData = (
   selectedWeek: any,
   selectedSeason: any,
   league: League,
-  allCHLStandings: CollegeStandings[],
+  allCHLStandings: CBBStandings[],
   allCollegeGames: CBBGame[],
   allCollegeTeams: CBBTeam[],
 ) => {
@@ -1048,4 +1048,104 @@ export const useFilteredGames = (
     view,
     selectedTeamID,
   ]);
+};
+
+export const useFilteredStandings = (
+  standings:
+    | CFBStandings[]
+    | NFLStandings[]
+    | CHLStandings[]
+    | PHLStandings[]
+    | CBBStandings[]
+    | NBAStandings[],
+  view: string,
+  league: League,
+  selectedLeague: number,
+  selectedTeamIDs: number[],
+  selectedTeamID: number,
+  selectedConferenceIDs: number[],
+  selectedDivisionIDs: number[],
+  teamMap: any,
+) => {
+  if (!standings) return [];
+  const teamsSet = useMemo(() => new Set(selectedTeamIDs), [selectedTeamIDs]);
+  const conferencesSet = useMemo(
+    () => new Set(selectedConferenceIDs),
+    [selectedConferenceIDs],
+  );
+  const divisionsSet = useMemo(
+    () => new Set(selectedDivisionIDs),
+    [selectedDivisionIDs],
+  );
+
+  return useMemo(() => {
+    console.log({ conferencesSet, divisionsSet });
+    return standings
+      .filter((s) => {
+        if (teamsSet.size > 0 && !teamsSet.has(s.TeamID)) {
+          return false;
+        }
+        if (conferencesSet.size > 0 && !conferencesSet.has(s.ConferenceID)) {
+          return false;
+        }
+        if (
+          divisionsSet.size > 0 &&
+          !divisionsSet.has(teamMap[s.TeamID]?.DivisionID)
+        ) {
+          return false;
+        }
+        if (league === SimCHL) {
+          return teamMap[s.TeamID]?.LeagueID === selectedLeague;
+        }
+        return true;
+      })
+      .sort((a, b) => a.ConferenceID - b.ConferenceID);
+  }, [
+    standings,
+    league,
+    teamsSet,
+    conferencesSet,
+    divisionsSet,
+    teamMap,
+    view,
+    selectedTeamID,
+    selectedLeague,
+  ]);
+};
+
+export const getSimCHLConference = (conferenceID: number) => {
+  const conferenceMap: Record<number, string> = {
+    1: "AHA",
+    2: "Big Ten",
+    3: "CCHA",
+    4: "ECAC",
+    5: "Hockey East",
+    6: "NCHC",
+    7: "Independent",
+    8: "OHL",
+    9: "WHL",
+    10: "QMJHL",
+  };
+
+  return conferenceMap[conferenceID];
+};
+
+export const getSimPHLDivision = (divisionID: number) => {
+  const divisionMap: Record<number, string> = {
+    1: "Atlantic",
+    2: "Metropolitan",
+    3: "Central",
+    4: "Pacific",
+  };
+
+  return divisionMap[divisionID];
+};
+
+export const getSimPHLConference = (conferenceID: number) => {
+  const conferenceMap: Record<number, string> = {
+    1: "Eastern",
+    2: "Western",
+  };
+
+  return conferenceMap[conferenceID];
 };
