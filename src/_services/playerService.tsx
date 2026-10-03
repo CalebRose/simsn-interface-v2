@@ -77,7 +77,10 @@ export const PlayerService = {
   },
 
   RedshirtCBBPlayer: async (playerID: number): Promise<void> => {
-    await GetActionCall(`${bbaUrl}cbb/players/redshirt/${playerID}`);
+    await PostCall(`${bbaUrl}cbb/player/assign/redshirt/`, {
+      PlayerID: playerID,
+      RedshirtStatus: true,
+    });
   },
 
   PromiseCBBPlayer: async (dto: any): Promise<void> => {
