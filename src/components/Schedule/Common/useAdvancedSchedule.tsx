@@ -238,8 +238,6 @@ export const useAdvancedSchedule = (
     isPreseason,
   );
 
-  console.log({ games, filteredGames, isPreseason });
-
   const SelectConferences = (options: any) => {
     const opts = [...options.map((x: any) => Number(x.value))];
     setSelectedConferenceIDs(() => opts);

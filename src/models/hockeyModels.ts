@@ -2813,7 +2813,8 @@ export class ProfessionalStandings {
   HomeWins: number;
   AwayWins: number;
   PostSeasonStatus: string;
-
+  Coach: string;
+  DivisionID: number;
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
     this.ID = source["ID"];
@@ -2845,6 +2846,8 @@ export class ProfessionalStandings {
     this.IsWinStreak = source["IsWinStreak"];
     this.HomeWins = source["HomeWins"];
     this.AwayWins = source["AwayWins"];
+    this.DivisionID = source["DivisionID"];
+    this.Coach = source["Coach"];
     this.PostSeasonStatus = source["PostSeasonStatus"];
   }
 
@@ -3898,6 +3901,23 @@ export class CollegeStandings {
   AwayWins: number;
   PostSeasonStatus: string;
   Rank: number;
+  Coach: string;
+  IsRunnerUp: boolean;
+  IsNationalChampion: boolean;
+  IsConferenceTournamentChampion: boolean;
+  IsPostSeasonQualified: boolean;
+  IsQuarterfinals: boolean;
+  IsFrozenFour: boolean;
+  PreseasonRank: number;
+  PairwiseRank: number;
+  RPIRank: number;
+  RPI: number;
+  SOS: number;
+  SOR: number;
+  Tier1Wins: number;
+  Tier2Wins: number;
+  BadLosses: number;
+  ConferenceStrengthAdj: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -3932,6 +3952,24 @@ export class CollegeStandings {
     this.AwayWins = source["AwayWins"];
     this.PostSeasonStatus = source["PostSeasonStatus"];
     this.Rank = source["Rank"];
+    this.Coach = source["Coach"];
+    this.IsRunnerUp = source["IsRunnerUp"];
+    this.IsNationalChampion = source["IsNationalChampion"];
+    this.IsConferenceTournamentChampion =
+      source["IsConferenceTournamentChampion"];
+    this.IsPostSeasonQualified = source["IsPostSeasonQualified"];
+    this.IsQuarterfinals = source["IsQuarterfinals"];
+    this.IsFrozenFour = source["IsFrozenFour"];
+    this.PreseasonRank = source["PreseasonRank"];
+    this.PairwiseRank = source["PairwiseRank"];
+    this.RPIRank = source["RPIRank"];
+    this.RPI = source["RPI"];
+    this.SOS = source["SOS"];
+    this.SOR = source["SOR"];
+    this.Tier1Wins = source["Tier1Wins"];
+    this.Tier2Wins = source["Tier2Wins"];
+    this.BadLosses = source["BadLosses"];
+    this.ConferenceStrengthAdj = source["ConferenceStrengthAdj"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
