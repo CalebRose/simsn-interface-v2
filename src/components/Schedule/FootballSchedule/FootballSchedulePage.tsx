@@ -37,6 +37,7 @@ import {
   LeagueStandings,
   WeeklySchedule,
   AdvancedSchedule,
+  AdvancedStandings,
 } from "../Common/SchedulePageComponents";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { darkenColor } from "../../../_utility/getDarkerColor";
@@ -64,10 +65,10 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     cfbTeams,
     cfbTeamMap,
     cfbTeamOptions,
-    allCFBStandings,
     allCollegeGames: allCFBGames,
     isLoading,
     collegePollSubmission,
+    collegeStandingsMapBySeason,
     submitCollegePoll,
     getBootstrapScheduleData,
     ExportFootballSchedule,
@@ -81,7 +82,6 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [selectedSeason, setSelectedSeason] = useState(currentSeason ?? 2025);
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
   const [isSpringGames, setIsSpringGames] = useState<boolean>(false);
-  const [seasonCFBGames, setSeasonCFBGames] = useState<any[]>([]);
   const submitPollModal = useModal();
   const collegePollModal = useModal();
   const gameRequestModal = useModal();
@@ -106,31 +106,23 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
   const darkerBackgroundColor = darkenColor(backgroundColor, -5);
 
-  useEffect(() => {
+  const seasonCFBGames = useMemo(() => {
     const seasonID = (selectedSeason ?? 0) - 2020;
-    if (!selectedSeason || seasonID <= 0) return;
+    if (!selectedSeason || seasonID <= 0) return [];
     const availableSeasons = new Set(
       (allCFBGames || []).map((g: any) => g.SeasonID),
     );
     if (availableSeasons.has(seasonID)) {
-      const filtered = (allCFBGames || []).filter(
-        (g: any) => g.SeasonID === seasonID,
-      );
-      setSeasonCFBGames(filtered);
-      return;
+      return (allCFBGames || []).filter((g: any) => g.SeasonID === seasonID);
     }
-    const load = async () => {
-      try {
-        const service = new FBAScheduleService();
-        const res = await service.GetAllCollegeGamesInASeason(seasonID);
-        const games = res?.AllCollegeGames ?? res ?? [];
-        setSeasonCFBGames(games);
-      } catch (e) {
-        setSeasonCFBGames([]);
-      }
-    };
-    load();
-  }, [selectedSeason, allCFBGames]);
+    return [];
+  }, [allCFBGames, selectedSeason]);
+
+  const seasonCFBStandings = useMemo(() => {
+    const seasonID = (selectedSeason ?? 0) - 2020;
+    if (!selectedSeason || seasonID <= 0) return [];
+    return collegeStandingsMapBySeason?.[seasonID] ?? [];
+  }, [collegeStandingsMapBySeason, selectedSeason]);
 
   const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
@@ -144,14 +136,19 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     }
   };
 
-  const { teamStandings, teamSchedule, groupedWeeklyGames } = useMemo(() => {
+  const {
+    teamStandings,
+    teamSchedule,
+    groupedWeeklyGames,
+    teamStandingsRecordThatSeason,
+  } = useMemo(() => {
     return getScheduleCFBData(
       selectedTeam,
       currentWeek,
       selectedWeek,
       selectedSeason,
       league,
-      allCFBStandings,
+      seasonCFBStandings,
       seasonCFBGames.length > 0 ? seasonCFBGames : allCFBGames,
       cfbTeams,
       isSpringGames,
@@ -162,7 +159,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     selectedWeek,
     selectedSeason,
     league,
-    allCFBStandings,
+    seasonCFBStandings,
     allCFBGames,
     seasonCFBGames,
     cfbTeams,
@@ -183,13 +180,13 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   const teamRecordMap = useMemo(() => {
     const map: Record<number, string> = {};
-    (allCFBStandings || []).forEach((s: any) => {
+    (seasonCFBStandings || []).forEach((s: any) => {
       if (s?.TeamID != null) {
         map[s.TeamID] = `${s.TotalWins}-${s.TotalLosses}`;
       }
     });
     return map;
-  }, [allCFBStandings]);
+  }, [seasonCFBStandings]);
 
   const onExportSchedule = async (weekID: SingleValue<SelectOption>) => {
     const numericWeekID = getFBAWeekID(
@@ -494,7 +491,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               <LeagueStandings
                 currentUser={currentUser}
                 league={league}
-                standings={allCFBStandings}
+                standings={seasonCFBStandings}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
@@ -561,6 +558,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 textColorClass={textColorClass}
                 darkerBackgroundColor={darkerBackgroundColor}
                 isLoading={isLoading}
+                teamStandingsRecordThatSeason={teamStandingsRecordThatSeason}
               />
             </div>
           )}
@@ -579,6 +577,20 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               view={view}
               isPreseason={isSpringGames}
               resultsOverride={resultsOverride}
+            />
+          )}
+          {category === AdvStandings && (
+            <AdvancedStandings
+              team={selectedTeam}
+              league={league}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={view}
+              selectedSeasonID={selectedSeason - 2020}
             />
           )}
         </div>

@@ -39,6 +39,8 @@ export const useAdvancedStandings = (
     nflConferenceOptions,
     cfbTeamMap,
     proTeamMap,
+    collegeStandingsMapBySeason: cfbStandingsMapBySeason,
+    proStandingsMapBySeason: nflStandingsMapBySeason,
   } = useSimFBAStore();
   const {
     cbbTeamOptions,
@@ -80,6 +82,10 @@ export const useAdvancedStandings = (
 
   const standingsBySeason = useMemo(() => {
     switch (league) {
+      case SimCFB:
+        return cfbStandingsMapBySeason[seasonID] || [];
+      case SimNFL:
+        return nflStandingsMapBySeason[seasonID] || [];
       case SimCHL:
         return chlStandingsMapBySeason[seasonID] || [];
       case SimPHL:
@@ -87,7 +93,14 @@ export const useAdvancedStandings = (
       default:
         return [];
     }
-  }, [league, seasonID, chlStandingsMapBySeason, phlStandingsMapBySeason]);
+  }, [
+    league,
+    seasonID,
+    cfbStandingsMapBySeason,
+    nflStandingsMapBySeason,
+    chlStandingsMapBySeason,
+    phlStandingsMapBySeason,
+  ]);
 
   const leagueTeamMap = useMemo(() => {
     switch (league) {
@@ -143,8 +156,9 @@ export const useAdvancedStandings = (
     [league, chlTeamMap, phlTeamMap],
   );
 
+  // Ensure that this is not nullable
   const footballTeamMap = useMemo(
-    () => (league === SimCFB ? cfbTeamMap : proTeamMap),
+    () => (league === SimCFB && cfbTeamMap ? cfbTeamMap : proTeamMap),
     [league, cfbTeamMap, proTeamMap],
   );
 
@@ -311,6 +325,43 @@ export const useAdvancedStandings = (
     } else if (isBasketball) {
       columns = columns.concat([]);
     } else if (isFootball) {
+      if (league === SimCFB) {
+        columns = columns.concat([
+          { header: "T. W.", accessor: "TotalWins" },
+          { header: "T. L.", accessor: "TotalLosses" },
+          { header: "C. W.", accessor: "ConferenceWins" },
+          { header: "C. L.", accessor: "ConferenceLosses" },
+          { header: "R.", accessor: "Rank" },
+          { header: "R. W.", accessor: "RankedWins" },
+          { header: "R. L.", accessor: "RankedLosses" },
+          { header: "PF", accessor: "PointsFor" },
+          { header: "PA", accessor: "PointsAgainst" },
+          { header: "PD", accessor: "PointsDifference" },
+          { header: "Strk.", accessor: "Streak" },
+          { header: "HW.", accessor: "HomeWins" },
+          { header: "AW.", accessor: "AwayWins" },
+          { header: "Status", accessor: "PostSeasonStatus" },
+          { header: "W%", accessor: "TotalWinPercentage" },
+          { header: "Conf W.%", accessor: "ConfWinPercentage" },
+          { header: "Preseason Rank", accessor: "PreseasonRank" },
+          { header: "Toucan Rank", accessor: "ToucanRank" },
+          { header: "SOS", accessor: "SOS" },
+          { header: "SOR", accessor: "SOR" },
+          { header: "RPI", accessor: "RPI" },
+          { header: "T1W", accessor: "Tier1Wins" },
+          { header: "T2W", accessor: "Tier2Wins" },
+          { header: "BL", accessor: "BadLosses" },
+          { header: "Conf. SOS", accessor: "ConferenceStrengthAdj" },
+        ]);
+      }
+      if (league === SimNFL) {
+        columns = columns.concat([
+          { header: "T. W.", accessor: "TotalWins" },
+          { header: "T. L.", accessor: "TotalLosses" },
+          { header: "C. W.", accessor: "ConferenceWins" },
+          { header: "C. L.", accessor: "ConferenceLosses" },
+        ]);
+      }
       columns = columns.concat([]);
     }
     return columns;
