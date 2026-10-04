@@ -609,7 +609,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     nflTeams,
     proTeamMap: nflTeamMap,
     nflTeamOptions,
-    allProStandings: allNFLStandings,
+    proStandingsMapBySeason,
     allProGames: allNFLGames,
     isLoading,
     ExportFootballSchedule,
@@ -628,7 +628,11 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
   const [seasonNFLGames, setSeasonNFLGames] = useState<any[]>([]);
   const [isPreseason, setIsPreseason] = useState<boolean>(false);
-
+  const seasonNFLStandings = useMemo(() => {
+    const seasonID = (selectedSeason ?? 0) - 2020;
+    if (!selectedSeason || seasonID <= 0) return [];
+    return proStandingsMapBySeason?.[seasonID] ?? [];
+  }, [proStandingsMapBySeason, selectedSeason]);
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
     selectedTeam?.ColorTwo,
@@ -696,7 +700,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         selectedWeek,
         selectedSeason,
         league,
-        allNFLStandings,
+        seasonNFLStandings,
         seasonNFLGames.length > 0 ? seasonNFLGames : allNFLGames,
         nflTeams,
         isPreseason,
@@ -707,7 +711,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       selectedWeek,
       selectedSeason,
       league,
-      allNFLStandings,
+      seasonNFLStandings,
       allNFLGames,
       seasonNFLGames,
       nflTeams,
@@ -736,7 +740,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   const teamRecordMap = useMemo(() => {
     const map: Record<number, string> = {};
-    (allNFLStandings || []).forEach((s: any) => {
+    (seasonNFLStandings || []).forEach((s: any) => {
       if (s?.TeamID != null) {
         const ties =
           typeof s.TotalTies === "number" && s.TotalTies > 0
@@ -746,7 +750,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
       }
     });
     return map;
-  }, [allNFLStandings]);
+  }, [seasonNFLStandings]);
 
   return (
     <>
@@ -1018,7 +1022,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 currentUser={currentUser}
                 league={league}
                 category={standingsView}
-                standings={allNFLStandings}
+                standings={seasonNFLStandings}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
@@ -1103,6 +1107,20 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               view={scheduleView}
               isPreseason={isPreseason}
               resultsOverride={resultsOverride}
+            />
+          )}
+          {category === AdvStandings && (
+            <AdvancedStandings
+              team={selectedTeam}
+              league={league}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={scheduleView}
+              selectedSeasonID={selectedSeason - 2020}
             />
           )}
         </div>

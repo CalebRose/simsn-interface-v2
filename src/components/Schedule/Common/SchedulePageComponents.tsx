@@ -2002,6 +2002,26 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
     }
     return standings.TeamName || "";
   }, [league, standings, teamMap]);
+
+  const nflStandingsData = useMemo(() => {
+    if (league === SimNFL) {
+      const s = standings as NFLStandings;
+      return {
+        TotalTies: s.TotalTies,
+        ConferenceTies: s.ConferenceTies,
+        DivisionWins: s.DivisionWins,
+        DivisionLosses: s.DivisionLosses,
+        DivisionTies: s.DivisionTies,
+      };
+    }
+    return {
+      TotalTies: 0,
+      ConferenceTies: 0,
+      DivisionWins: 0,
+      DivisionLosses: 0,
+      DivisionTies: 0,
+    };
+  }, [league, standings]);
   return (
     <div
       key={idx}
@@ -2039,12 +2059,35 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
       <TableCell>
         <Span>{standings.TotalLosses}</Span>
       </TableCell>
+      {league === SimNFL && (
+        <>
+          <TableCell>
+            <Span>{nflStandingsData.TotalTies}</Span>
+          </TableCell>
+        </>
+      )}
       <TableCell>
         <Span>{standings.ConferenceWins}</Span>
       </TableCell>
       <TableCell>
         <Span>{standings.ConferenceLosses}</Span>
       </TableCell>
+      {league === SimNFL && (
+        <>
+          <TableCell>
+            <Span>{nflStandingsData.ConferenceTies}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{nflStandingsData.DivisionWins}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{nflStandingsData.DivisionLosses}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{nflStandingsData.DivisionTies}</Span>
+          </TableCell>
+        </>
+      )}
       {league === SimCFB && (
         <>
           <TableCell>
@@ -2079,6 +2122,16 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
       <TableCell>
         <Span>{standings.PostSeasonStatus}</Span>
       </TableCell>
+      {league === SimNFL && (
+        <>
+          <TableCell>
+            <Span>{standings.TotalWinPercentage.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{standings.ConfWinPercentage.toFixed(3)}</Span>
+          </TableCell>
+        </>
+      )}
       {league === SimCFB && (
         <>
           <TableCell>

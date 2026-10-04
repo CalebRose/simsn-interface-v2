@@ -65,12 +65,16 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     collegeNotifications,
     proNotifications,
     allCFBStandings,
+    collegeStandingsMapBySeason,
     allProStandings,
+    proStandingsMapBySeason,
     cfbRosterMap,
     cfbTeamMap,
     proRosterMap,
     allCollegeGames,
+    currentCollegeSeasonGames: currentCFBSeasonGames,
     allProGames,
+    currentProSeasonGames: currentNFLSeasonGames,
     collegeNews,
     proNews,
     cfbTeams,
@@ -264,6 +268,18 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     nbaRosterMap,
   ]);
 
+  const seasonCFBStandings = useMemo(() => {
+    const seasonID = ts?.CollegeSeasonID || -1;
+    if (!seasonID || seasonID <= 0) return [];
+    return collegeStandingsMapBySeason?.[seasonID] ?? [];
+  }, [collegeStandingsMapBySeason, ts]);
+
+  const seasonNFLStandings = useMemo(() => {
+    const seasonID = ts?.NFLSeasonID || -1;
+    if (!seasonID || seasonID <= 0) return [];
+    return proStandingsMapBySeason?.[seasonID] ?? [];
+  }, [proStandingsMapBySeason, ts]);
+
   const {
     teamStandings = [],
     teamNotifications = [],
@@ -286,9 +302,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           currentWeek,
           league,
           currentUser,
-          allCFBStandings,
+          seasonCFBStandings,
           collegeNotifications,
-          allCollegeGames,
+          currentCFBSeasonGames,
           cfbTeams,
           topCFBPassers,
           topCFBRushers,
@@ -305,9 +321,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           currentWeek,
           league,
           currentUser,
-          allProStandings,
+          seasonNFLStandings,
           proNotifications,
-          allProGames,
+          currentNFLSeasonGames,
           nflTeams,
           topNFLPassers,
           topNFLRushers,

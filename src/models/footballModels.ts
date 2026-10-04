@@ -579,6 +579,8 @@ export class NFLStandings {
   AwayWins: number;
   Coach: string;
   TeamAbbr: string;
+  TotalWinPercentage: number;
+  ConfWinPercentage: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -616,6 +618,8 @@ export class NFLStandings {
     this.AwayWins = source["AwayWins"];
     this.Coach = source["Coach"];
     this.TeamAbbr = source["TeamAbbr"];
+    this.TotalWinPercentage = source["TotalWinPercentage"];
+    this.ConfWinPercentage = source["ConfWinPercentage"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -358,8 +358,22 @@ export const useAdvancedStandings = (
         columns = columns.concat([
           { header: "T. W.", accessor: "TotalWins" },
           { header: "T. L.", accessor: "TotalLosses" },
+          { header: "T. T.", accessor: "TotalTies" },
           { header: "C. W.", accessor: "ConferenceWins" },
           { header: "C. L.", accessor: "ConferenceLosses" },
+          { header: "C. T.", accessor: "ConferenceTies" },
+          { header: "D. W.", accessor: "DivisionWins" },
+          { header: "D. L.", accessor: "DivisionLosses" },
+          { header: "D. T.", accessor: "DivisionTies" },
+          { header: "PF", accessor: "PointsFor" },
+          { header: "PA", accessor: "PointsAgainst" },
+          { header: "PD", accessor: "PointsDifference" },
+          { header: "Strk.", accessor: "Streak" },
+          { header: "HW.", accessor: "HomeWins" },
+          { header: "AW.", accessor: "AwayWins" },
+          { header: "Status", accessor: "PostSeasonStatus" },
+          { header: "W%", accessor: "TotalWinPercentage" },
+          { header: "Conf W.%", accessor: "ConfWinPercentage" },
         ]);
       }
       columns = columns.concat([]);
