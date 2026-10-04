@@ -15,7 +15,10 @@ import {
 import { SectionCards } from "../../../_design/SectionCards";
 import { InformationCircle } from "../../../_design/Icons";
 import PlayerPicture from "../../../_utility/usePlayerFaces";
-import { processLeagueStandings } from "./SchedulePageHelper";
+import {
+  getSimNFLDivision,
+  processLeagueStandings,
+} from "./SchedulePageHelper";
 import {
   ClickableGameLabel,
   ClickableTeamLabel,
@@ -515,6 +518,7 @@ interface TeamStandingsProps {
   borderColor: string;
   textColorClass: string;
   darkerBackgroundColor: string;
+  teamStandingsRecordThatSeason?: any | null;
 }
 
 export const TeamStandings = ({
@@ -528,11 +532,12 @@ export const TeamStandings = ({
   borderColor,
   textColorClass,
   darkerBackgroundColor,
+  teamStandingsRecordThatSeason,
 }: TeamStandingsProps) => {
   return (
     <SectionCards
       team={team}
-      header={`${team.Conference} Standings`}
+      header={`${teamStandingsRecordThatSeason?.ConferenceName || team.Conference} Standings`}
       classes={`${textColorClass}, h-full`}
       backgroundColor={backgroundColor}
       headerColor={headerColor}
@@ -1719,16 +1724,6 @@ const HCKAdvancedStandingsRow: FC<HCKAdvancedStandingsRowProps> = ({
     return logo;
   })();
 
-  const standing = useMemo(() => {
-    if (league === SimCHL) {
-      return standings as CHLStandings;
-    }
-    if (league === SimPHL) {
-      return standings as PHLStandings;
-    }
-    return standings;
-  }, [standings, league]);
-
   const team = useMemo(() => {
     if (league === SimCHL) {
       return teamMap ? (teamMap[standings.TeamID] as CHLTeam) : null;
@@ -1936,21 +1931,192 @@ interface FBAdvancedStandingsRowProps {
   idx: number;
   bg: string;
   league: League;
+  teamMap: Record<number, CFBTeam> | Record<number, NFLTeam>;
 }
 
 const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
   standings,
   idx,
   bg,
-
+  teamMap,
   league,
 }) => {
+  const teamLogo = (() => {
+    let logo = getLogo(league, standings.TeamID, false);
+    return logo;
+  })();
+
+  const team = useMemo(() => {
+    if (league === SimCFB) {
+      return teamMap ? (teamMap[standings.TeamID] as CFBTeam) : null;
+    }
+    if (league === SimNFL) {
+      return teamMap ? teamMap[standings.TeamID] : null;
+    }
+    return teamMap ? teamMap[standings.TeamID] : null;
+  }, [teamMap, standings.TeamID]);
+
+  const division = useMemo(() => {
+    if (league === SimNFL) {
+      return getSimNFLDivision((standings as NFLStandings).DivisionID);
+    }
+    return "";
+  }, [standings, league]);
+
+  const rank = useMemo(() => {
+    if (league === SimCFB) {
+      return (standings as CFBStandings).Rank;
+    }
+    return 0;
+  }, [standings, league]);
+
+  const cfbRankingStats = useMemo(() => {
+    if (league === SimNFL) return null;
+    if (league === SimCFB) {
+      return {
+        TotalWinPercentage: (standings as CFBStandings).TotalWinPercentage,
+        ConfWinPercentage: (standings as CFBStandings).ConfWinPercentage,
+        PreseasonRank: (standings as CFBStandings).PreseasonRank,
+        ToucanRank: (standings as CFBStandings).ToucanRank,
+        RPI: (standings as CFBStandings).RPI,
+        SOS: (standings as CFBStandings).SOS,
+        SOR: (standings as CFBStandings).SOR,
+        Tier1Wins: (standings as CFBStandings).Tier1Wins,
+        Tier2Wins: (standings as CFBStandings).Tier2Wins,
+        BadLosses: (standings as CFBStandings).BadLosses,
+        ConferenceStrengthAdj: (standings as CFBStandings)
+          .ConferenceStrengthAdj,
+      };
+    }
+    return null;
+  }, [league, standings]);
+
+  const teamLabel = useMemo(() => {
+    if (league === SimCFB && teamMap) {
+      const t = teamMap[standings.TeamID] as CFBTeam;
+      return t?.TeamName || "";
+    }
+    if (league === SimNFL && teamMap) {
+      const t = teamMap[standings.TeamID] as NFLTeam;
+      return `${t.TeamName} ${t.Mascot}`;
+    }
+    return standings.TeamName || "";
+  }, [league, standings, teamMap]);
   return (
     <div
       key={idx}
       className="table-row border-b dark:border-gray-700 text-start"
       style={{ backgroundColor: bg }}
-    ></div>
+    >
+      <TableCell>
+        <div className="flex items-center space-x-4">
+          <Logo url={teamLogo} variant="tiny" />
+          <ClickableTeamLabel
+            teamID={standings.TeamID}
+            league={league}
+            label={teamLabel}
+          />
+        </div>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceName}</Span>
+      </TableCell>
+      {league === SimNFL && (
+        <TableCell>
+          <Span>{division}</Span>
+        </TableCell>
+      )}
+      <TableCell>
+        <ClickableUserLabel
+          coach={standings.Coach || "AI"}
+          label={standings.Coach || "AI"}
+          textVariant="xs"
+        />
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalLosses}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceLosses}</Span>
+      </TableCell>
+      {league === SimCFB && (
+        <>
+          <TableCell>
+            <Span>{rank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{standings.RankedWins}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{standings.RankedLosses}</Span>
+          </TableCell>
+        </>
+      )}
+      <TableCell>
+        <Span>{standings.PointsFor}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PointsAgainst}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PointsFor - standings.PointsAgainst}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.Streak}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.HomeWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.AwayWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PostSeasonStatus}</Span>
+      </TableCell>
+      {league === SimCFB && (
+        <>
+          <TableCell>
+            <Span>{cfbRankingStats?.TotalWinPercentage.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.ConfWinPercentage.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.PreseasonRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.ToucanRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.RPI.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.SOS.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.SOR.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.Tier1Wins}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.Tier2Wins}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.BadLosses}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cfbRankingStats?.ConferenceStrengthAdj.toFixed(3)}</Span>
+          </TableCell>
+        </>
+      )}
+    </div>
   );
 };
 
@@ -1995,6 +2161,7 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
     standingsBySeason,
     leagueTeamMap,
     hockeyTeamMap,
+    footballTeamMap,
     leagueTeamOptions,
     leagueConferenceOptions,
     leagueOptions,
@@ -2027,8 +2194,20 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
       };
     }
     if (league === SimCFB || league === SimNFL) {
-      return (game: CFBStandings | NFLStandings, idx: number, bg: string) => {
-        return <></>;
+      return (
+        standings: CFBStandings | NFLStandings,
+        idx: number,
+        bg: string,
+      ) => {
+        return (
+          <FBAdvancedStandingsRow
+            standings={standings}
+            idx={idx}
+            bg={bg}
+            league={league}
+            teamMap={footballTeamMap!!}
+          />
+        );
       };
     }
     return (game: CBBStandings | NBAStandings, idx: number, bg: string) => {

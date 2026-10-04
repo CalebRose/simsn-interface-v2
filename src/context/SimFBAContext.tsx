@@ -315,6 +315,8 @@ interface SimFBAContextProps {
   addPlayerToUDFABoard: (player: any) => Promise<void>;
   saveUDFABoard: (board: any) => Promise<void>;
   removePlayerFromUDFABoard: (profileID: number) => Promise<void>;
+  collegeStandingsMapBySeason: Record<number, CollegeStandings[]>;
+  proStandingsMapBySeason: Record<number, NFLStandings[]>;
 }
 
 // ✅ Initial Context State
@@ -491,6 +493,8 @@ const defaultContext: SimFBAContextProps = {
   saveUDFABoard: async () => {},
   removePlayerFromUDFABoard: async () => {},
   processUDFAs: async () => {},
+  collegeStandingsMapBySeason: {},
+  proStandingsMapBySeason: {},
 };
 
 export const SimFBAContext = createContext<SimFBAContextProps>(defaultContext);
@@ -979,6 +983,36 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     return [];
   }, [currentProSeasonGames, nflTeam]);
 
+  const collegeStandingsMapBySeason = useMemo(() => {
+    const map: Record<number, CollegeStandings[]> = {};
+    const standings = Array.isArray(allCFBStandings) ? allCFBStandings : [];
+    for (let i = 0; i < standings.length; i++) {
+      const standing = standings[i];
+      if (!standing) continue;
+      if (!map[standing.SeasonID]) {
+        map[standing.SeasonID] = [standing];
+      } else {
+        map[standing.SeasonID].push(standing);
+      }
+    }
+    return map;
+  }, [allCFBStandings, cfb_Timestamp?.CollegeSeasonID]);
+
+  const proStandingsMapBySeason = useMemo(() => {
+    const map: Record<number, NFLStandings[]> = {};
+    const standings = Array.isArray(allProStandings) ? allProStandings : [];
+    for (let i = 0; i < standings.length; i++) {
+      const standing = standings[i];
+      if (!standing) continue;
+      if (!map[standing.SeasonID]) {
+        map[standing.SeasonID] = [standing];
+      } else {
+        map[standing.SeasonID].push(standing);
+      }
+    }
+    return map;
+  }, [allProStandings, cfb_Timestamp?.NFLSeasonID]);
+
   const bootstrapAllData = async () => {
     await getLandingBootstrapData();
     // await fetchAllHistory();
@@ -1096,10 +1130,14 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
 
     let cfbID = 0;
+    let proID = 0;
     const seasonId = cfb_Timestamp?.CollegeSeasonID || 0;
     const username = currentUser?.username || "";
     if (currentUser && currentUser.teamId) {
       cfbID = currentUser.teamId;
+    }
+    if (currentUser && currentUser.NFLTeamID) {
+      proID = currentUser.NFLTeamID;
     }
     if (seasonId === 0 || username === "") {
       return;
@@ -1112,8 +1150,13 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       const res = await BootstrapService.GetFBASchedulingBootstrapData(
         username,
         cfbID,
+        proID,
         seasonId,
       );
+      setAllCollegeGames(res.AllCollegeGames);
+      setAllProGames(res.AllProGames);
+      setAllCFBStandings(res.CollegeStandings);
+      setAllProStandings(res.ProStandings);
       setCollegePolls(res.OfficialPolls);
       setCollegePollSubmission(res.PollSubmission);
       setHistoricCollegePlayers(res.HistoricCollegePlayers);
@@ -1130,6 +1173,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     cfb_Timestamp?.CollegeSeasonID,
     currentUser?.username,
     currentUser?.teamId,
+    currentUser?.NFLTeamID,
   ]);
 
   const getBootstrapStatsData = useCallback(async () => {
@@ -2992,6 +3036,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         saveUDFABoard,
         removePlayerFromUDFABoard,
         processUDFAs,
+        collegeStandingsMapBySeason,
+        proStandingsMapBySeason,
       }}
     >
       {children}

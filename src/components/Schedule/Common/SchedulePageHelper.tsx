@@ -111,11 +111,28 @@ export const getScheduleCFBData = (
   const seasonYear = Number(selectedSeason);
   const seasonID = seasonYear - 2020; // backend SeasonID mapping
 
+  const teamStandingsRecordThatSeasonIdx = allCFBStandings.findIndex(
+    (standings) =>
+      standings.Season === seasonYear && standings.TeamID === team.ID,
+  );
+
+  if (teamStandingsRecordThatSeasonIdx === -1) {
+    return {
+      teamStandings: [],
+      teamSchedule: [],
+      groupedWeeklyGames: {},
+      teamStandingsRecordThatSeason: null,
+    };
+  }
+
+  const teamStandingsRecordThatSeason =
+    allCFBStandings[teamStandingsRecordThatSeasonIdx];
+
   const teamStandings = allCFBStandings
     .filter(
       (standings) =>
         standings.Season === seasonYear &&
-        standings.ConferenceID === team.ConferenceID,
+        standings.ConferenceID === teamStandingsRecordThatSeason.ConferenceID,
     )
     .map((standings, index) => ({ ...standings, Rank: index + 1 }));
 
@@ -189,6 +206,7 @@ export const getScheduleCFBData = (
     teamStandings,
     teamSchedule,
     groupedWeeklyGames,
+    teamStandingsRecordThatSeason,
   };
 };
 
@@ -1079,7 +1097,7 @@ export const useFilteredStandings = (
   );
 
   return useMemo(() => {
-    console.log({ conferencesSet, divisionsSet });
+    console.log({ conferencesSet, divisionsSet, standings });
     return standings
       .filter((s) => {
         if (teamsSet.size > 0 && !teamsSet.has(s.TeamID)) {
@@ -1148,4 +1166,16 @@ export const getSimPHLConference = (conferenceID: number) => {
   };
 
   return conferenceMap[conferenceID];
+};
+
+export const getSimNFLDivision = (divisionID: number) => {
+  const divisionMap: Record<number, string> = {
+    1: "East",
+    2: "North",
+    3: "South",
+    4: "West",
+    5: "Unknown",
+  };
+
+  return divisionMap[divisionID];
 };

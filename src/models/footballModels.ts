@@ -2977,6 +2977,17 @@ export class CollegeStandings {
   AwayWins: number;
   Coach: string;
   TeamAbbr: string;
+  PreseasonRank: number;
+  ToucanRank: number;
+  RPI: number;
+  SOS: number;
+  SOR: number;
+  Tier1Wins: number;
+  Tier2Wins: number;
+  BadLosses: number;
+  ConferenceStrengthAdj: number;
+  TotalWinPercentage: number;
+  ConfWinPercentage: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -3009,6 +3020,17 @@ export class CollegeStandings {
     this.AwayWins = source["AwayWins"];
     this.Coach = source["Coach"];
     this.TeamAbbr = source["TeamAbbr"];
+    this.PreseasonRank = source["PreseasonRank"];
+    this.ToucanRank = source["ToucanRank"];
+    this.RPI = source["RPI"];
+    this.SOS = source["SOS"];
+    this.SOR = source["SOR"];
+    this.Tier1Wins = source["Tier1Wins"];
+    this.Tier2Wins = source["Tier2Wins"];
+    this.BadLosses = source["BadLosses"];
+    this.ConferenceStrengthAdj = source["ConferenceStrengthAdj"];
+    this.TotalWinPercentage = source["TotalWinPercentage"];
+    this.ConfWinPercentage = source["ConfWinPercentage"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
