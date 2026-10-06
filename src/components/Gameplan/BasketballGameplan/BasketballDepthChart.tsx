@@ -195,7 +195,7 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
             {slotLabel} Depth Chart
           </Text>
         </div>
-        {canModify && isMobile && (
+        {canModify && (
           <Button size="sm" classes="ml-auto" onClick={openModal}>
             Swap
           </Button>
