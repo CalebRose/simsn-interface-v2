@@ -19,6 +19,7 @@ import {
 import PlayerPicture from "../../../_utility/usePlayerFaces";
 import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { getRatingColor } from "../FootballGameplan/Utils/UIUtils";
+import { useResponsive } from "../../../_hooks/useMobile";
 
 type BasketballPlayer = CollegePlayer | NBAPlayer;
 type Lineup = CollegeLineup | NBALineup;
@@ -127,6 +128,7 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
   ChangeLineupInput,
   SwapLineupPlayers,
 }) => {
+  const { isMobile } = useResponsive();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showAttributes, setShowAttributes] = useState(false);
   const [targetKey, setTargetKey] = useState<StringKey | null>(null);
@@ -193,7 +195,7 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
             {slotLabel} Depth Chart
           </Text>
         </div>
-        {canModify && (
+        {canModify && isMobile && (
           <Button size="sm" classes="ml-auto" onClick={openModal}>
             Swap
           </Button>
@@ -231,11 +233,6 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
               />
             ))}
           </div>
-          {canModify && (
-            <Button size="sm" classes="ml-auto" onClick={openModal}>
-              Swap
-            </Button>
-          )}
         </div>
         <Modal
           isOpen={isModalOpen}
