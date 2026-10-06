@@ -816,9 +816,9 @@ export const useBasketballGameplan = () => {
             `${position} ${label}: Shot allocation cannot be negative.`,
           );
         }
-        if (inside > 50 || mid > 50 || three > 50) {
+        if (inside > 75 || mid > 75 || three > 75) {
           errorList.push(
-            `${position} ${label}: Shot allocation cannot exceed 50%.`,
+            `${position} ${label}: Shot allocation cannot exceed 75%.`,
           );
         }
       };
