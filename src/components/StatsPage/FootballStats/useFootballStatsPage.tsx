@@ -118,17 +118,19 @@ export const useFootballStats = () => {
     } else if (selectedLeague === SimNFL) {
       return nflPlayerMap;
     }
-    return [];
+    return {};
   }, [selectedLeague, cfbPlayerMap, nflPlayerMap]);
 
   const teamMap = useMemo(() => {
     if (selectedLeague === SimCFB && cfbTeamMap) {
+      if (!cfbTeamMap) return {};
       return cfbTeamMap!!;
     }
     if (selectedLeague === SimNFL && proTeamMap) {
+      if (!proTeamMap) return {};
       return proTeamMap!!;
     }
-    return proTeamMap!!;
+    return {};
   }, [selectedLeague, cfbTeamMap, proTeamMap]);
 
   const selectedStats = useMemo(() => {
@@ -196,6 +198,7 @@ export const useFootballStats = () => {
 
   const teamOptions = useMemo(() => {
     if (selectedLeague === SimCFB) {
+      if (!cfbTeamMap) return {};
       return GetFilteredCFBTeamOptions(
         selectedLeagueOption,
         cfbTeamOptions,
