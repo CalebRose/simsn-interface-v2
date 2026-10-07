@@ -49,6 +49,8 @@ export const useAdvancedStandings = (
     nbaConferenceOptions,
     cbbTeamMap,
     nbaTeamMap,
+    cbbStandingsMapBySeason,
+    proStandingsMapBySeason: nbaStandingsMapBySeason,
   } = useSimBBAStore();
   const {
     chlTeamOptions,
@@ -90,6 +92,10 @@ export const useAdvancedStandings = (
         return chlStandingsMapBySeason[seasonID] || [];
       case SimPHL:
         return phlStandingsMapBySeason[seasonID] || [];
+      case SimCBB:
+        return cbbStandingsMapBySeason[seasonID] || [];
+      case SimNBA:
+        return nbaStandingsMapBySeason[seasonID] || [];
       default:
         return [];
     }
@@ -100,6 +106,8 @@ export const useAdvancedStandings = (
     nflStandingsMapBySeason,
     chlStandingsMapBySeason,
     phlStandingsMapBySeason,
+    cbbStandingsMapBySeason,
+    nbaStandingsMapBySeason,
   ]);
 
   const leagueTeamMap = useMemo(() => {
@@ -146,6 +154,30 @@ export const useAdvancedStandings = (
         { label: "Metropolitan", value: "2" },
         { label: "Central", value: "3" },
         { label: "Pacific", value: "4" },
+      ];
+    }
+    if (league === SimNFL) {
+      return [
+        { label: "Atlantic", value: "1" },
+        { label: "Central", value: "2" },
+        { label: "Northeast", value: "3" },
+        { label: "Southeast", value: "4" },
+        { label: "Southwest", value: "5" },
+        { label: "Mountain", value: "6" },
+        { label: "Pacific", value: "7" },
+        { label: "Northwest", value: "8" },
+      ];
+    }
+    if (league === SimNBA) {
+      return [
+        { label: "AFC East", value: "1" },
+        { label: "AFC North", value: "2" },
+        { label: "AFC South", value: "3" },
+        { label: "AFC West", value: "4" },
+        { label: "NFC East", value: "5" },
+        { label: "NFC North", value: "6" },
+        { label: "NFC South", value: "7" },
+        { label: "NFC West", value: "8" },
       ];
     }
     return [];

@@ -1,5 +1,6 @@
 import React, { FC, useState } from "react";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { Timestamp } from "firebase/firestore";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
@@ -110,8 +111,9 @@ const ForumMuteControls: React.FC<ForumMuteControlsProps> = ({
       const expires = new Date();
       expires.setDate(expires.getDate() + days);
       const iso = expires.toISOString();
-      await updateUser(user.id, { forumMutedUntil: iso });
-      setViewingUser({ ...user, forumMutedUntil: iso });
+      const forumMutedUntilAt = Timestamp.fromDate(expires);
+      await updateUser(user.id, { forumMutedUntil: iso, forumMutedUntilAt });
+      setViewingUser({ ...user, forumMutedUntil: iso, forumMutedUntilAt });
       setMuteDays("");
       notify(
         `${user.username} muted for ${days} day${days === 1 ? "" : "s"} (until ${expires.toLocaleDateString()})`,
@@ -125,8 +127,15 @@ const ForumMuteControls: React.FC<ForumMuteControlsProps> = ({
   const handleClearMute = async () => {
     setMuteBusy(true);
     try {
-      await updateUser(user.id, { forumMutedUntil: null });
-      setViewingUser({ ...user, forumMutedUntil: null });
+      await updateUser(user.id, {
+        forumMutedUntil: null,
+        forumMutedUntilAt: null,
+      });
+      setViewingUser({
+        ...user,
+        forumMutedUntil: null,
+        forumMutedUntilAt: null,
+      });
       notify(`${user.username}'s forum mute has been lifted`, "success");
     } finally {
       setMuteBusy(false);

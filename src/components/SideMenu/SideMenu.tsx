@@ -30,6 +30,7 @@ import { useResponsive } from "../../_hooks/useMobile";
 import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { ChatIcon, DMIcon, NotificationIcon } from "../../_design/Icons";
+import { ChatDrawer } from "../PublicChat/ChatDrawer";
 
 export const SideMenu = ({}) => {
   const {
@@ -66,9 +67,10 @@ export const SideMenu = ({}) => {
     clearNotifications,
   } = useForumStore();
   const { totalUnreadDMs, isInboxOpen, openInbox, closeInbox } = useDMStore();
-  const { isDesktop } = useResponsive();
+  const { isDesktop, isMobile } = useResponsive();
   const [processing, setProcessing] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const { laxAdminStatus } = useSimLAXStore();
   const isLaxAdmin = Boolean(laxAdminStatus?.isAdmin);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -146,14 +148,17 @@ export const SideMenu = ({}) => {
                 <path d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z" />
               </svg>
             </button>
-            <button onClick={() => navigate(routes.HOME)} className="flex ml-2">
+            <button
+              onClick={() => navigate(routes.HOME)}
+              className="flex ml-2 items-center"
+            >
               <img
                 src={`${simLogos.SimSN_Icon}`}
-                className="h-8 mr-3"
+                className={`${isMobile ? "h-6 mr-2" : "h-8 mr-3"}`}
                 alt="SimSNLogo"
               />
               <span
-                className={`self-center text-xl font-semibold sm:text-2xl ${textColor}`}
+                className={`self-center text-${isMobile ? "sm" : "xl"} font-semibold sm:text-2xl ${textColor}`}
               >
                 SimSN
               </span>
@@ -188,7 +193,7 @@ export const SideMenu = ({}) => {
 
                 {/* Notification Dropdown */}
                 {isNotifOpen && (
-                  <div className="absolute -right-28 z-50 mt-2 w-[calc(100vw-3rem)] sm:w-105 max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800">
+                  <div className="absolute -right-40 z-50 mt-2 w-[calc(100vw-3rem)] sm:w-105 max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-xl dark:border-gray-600 dark:bg-gray-800">
                     <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-600">
                       <span className="text-sm font-semibold text-gray-900 dark:text-white">
                         Notifications
@@ -262,6 +267,16 @@ export const SideMenu = ({}) => {
                   </div>
                 )}
               </div>
+              {/* Chatroom Button */}
+              <button
+                type="button"
+                aria-label="Chat"
+                aria-expanded={isChatOpen}
+                onClick={() => setIsChatOpen(true)}
+                className="relative rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 focus:outline-hidden dark:text-gray-400 dark:hover:bg-gray-700"
+              >
+                <ChatIcon />
+              </button>
 
               {/* Inbox (DMs) Button */}
               <button
@@ -469,6 +484,7 @@ export const SideMenu = ({}) => {
         </div>
       </aside>
 
+      <ChatDrawer isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
       <InboxModal isOpen={isInboxOpen} onClose={closeInbox} />
     </>
   );

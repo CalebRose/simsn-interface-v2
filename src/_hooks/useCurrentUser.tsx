@@ -28,6 +28,7 @@ export interface CurrentUser {
   Reports?: number;
   createdAt: Timestamp;
   forumMutedUntil?: string | null;
+  forumMutedUntilAt?: Timestamp | null;
   SimCFBMediaPoints?: number;
   SimNFLMediaPoints?: number;
   SimCBBMediaPoints?: number;

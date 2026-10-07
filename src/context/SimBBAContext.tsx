@@ -108,6 +108,7 @@ interface SimBBAContextProps {
   portalPlayers: TransferPlayerResponse[];
   collegeInjuryReport: CollegePlayer[];
   allCBBStandings: CollegeStandings[];
+  cbbStandingsMapBySeason: Record<number, CollegeStandings[]>;
   allCollegeGames: Match[];
   currentCollegeSeasonGames: Match[];
   collegeTeamsGames: Match[];
@@ -116,6 +117,7 @@ interface SimBBAContextProps {
   nbaTeamMap: Record<number, NBATeam> | null;
   allProStandings: NBAStandings[];
   currentProStandings: NBAStandings[];
+  proStandingsMapBySeason: Record<number, NBAStandings[]>;
   proRosterMap: {
     [key: number]: NBAPlayer[];
   } | null;
@@ -402,6 +404,8 @@ const defaultContext: SimBBAContextProps = {
   nbaPlayerSeasonStatsMap: {},
   nbaTeamGameStatsMap: {},
   nbaTeamSeasonStatsMap: {},
+  cbbStandingsMapBySeason: {},
+  proStandingsMapBySeason: {},
   getLandingBootstrapData: async () => {},
   getBootstrapRosterData: async () => {},
   getBootstrapRecruitingData: async () => {},
@@ -768,6 +772,34 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     }
     return transferProfileMap;
   }, [portalPlayers, transferPortalProfiles]);
+
+  const cbbStandingsMapBySeason = useMemo(() => {
+    const map: Record<number, CollegeStandings[]> = {};
+    if (allCBBStandings) {
+      for (let i = 0; i < allCBBStandings.length; i++) {
+        const standing = allCBBStandings[i];
+        if (!map[standing.Season]) {
+          map[standing.Season] = [];
+        }
+        map[standing.Season].push(standing);
+      }
+    }
+    return map;
+  }, [allCBBStandings]);
+
+  const proStandingsMapBySeason = useMemo(() => {
+    const map: Record<number, NBAStandings[]> = {};
+    if (allProStandings) {
+      for (let i = 0; i < allProStandings.length; i++) {
+        const standing = allProStandings[i];
+        if (!map[standing.Season]) {
+          map[standing.Season] = [];
+        }
+        map[standing.Season].push(standing);
+      }
+    }
+    return map;
+  }, [allProStandings]);
 
   useEffect(() => {
     getFaceData();
@@ -2347,6 +2379,8 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
         revealScoutingAttribute,
         removePlayerFromScoutBoard,
         exportDraftPicks,
+        cbbStandingsMapBySeason,
+        proStandingsMapBySeason,
       }}
     >
       {children}

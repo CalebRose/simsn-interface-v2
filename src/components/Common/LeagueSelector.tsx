@@ -1,5 +1,5 @@
 import React from "react";
-import { ButtonGroup, PillButton } from "../../_design/Buttons";
+import { ButtonGrid, ButtonGroup, PillButton } from "../../_design/Buttons";
 import {
   League,
   SimCBB,
@@ -15,6 +15,7 @@ import {
 import { simLogos } from "../../_constants/logos";
 import { useAuthStore } from "../../context/AuthContext";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
+import { useResponsive } from "../../_hooks/useMobile";
 
 /**
  * LeagueSelector - A reusable component for selecting between different sport leagues
@@ -74,6 +75,8 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
   const { isCFBUser, isCBBUser, isCHLUser, isNFLUser, isNBAUser, isPHLUser } =
     useAuthStore();
   const { isCollegeBaseballUser, isMlbUser } = useSimBaseballStore();
+
+  const { isMobile } = useResponsive();
 
   const {
     cfbTeam,
@@ -213,7 +216,7 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
 
   return (
     <div className={className}>
-      <ButtonGroup classes="mb-1">
+      <ButtonGrid classes={`${isMobile ? "grid-cols-4" : "grid-cols-12"} mb-1`}>
         {leagues.map(({ league, team, isUser, displayName }) => {
           if (!isUser || !team) return null;
 
@@ -221,8 +224,8 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
             <PillButton
               key={league}
               variant="primaryOutline"
-              classes="flex h-[5.25rem] w-[8.5rem] shrink-0 flex-col px-3 py-2 text-center leading-tight"
-              size="md"
+              classes={`flex ${isMobile ? "h-[3.5rem] w-[5.5rem]" : "h-[5.25rem] w-[8.75rem]"} shrink-0 flex-col px-3 py-2 text-center leading-tight`}
+              size={isMobile ? "sm" : "md"}
               isSelected={selectedLeague === league}
               onClick={() => onLeagueSelect(league, team)}
             >
@@ -237,7 +240,7 @@ export const LeagueSelector: React.FC<LeagueSelectorProps> = ({
             </PillButton>
           );
         })}
-      </ButtonGroup>
+      </ButtonGrid>
     </div>
   );
 };

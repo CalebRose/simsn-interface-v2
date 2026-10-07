@@ -6,7 +6,6 @@ import { fieldImage } from "../../_utility/getField";
 import { AuthService } from "../../_services/auth";
 import { simLogos } from "../../_constants/logos";
 import { useAuthStore } from "../../context/AuthContext";
-import { CurrentUser } from "../../_hooks/useCurrentUser";
 import { AvailableTeamsModal } from "./AvailableTeamsModal";
 import { useModal } from "../../_hooks/useModal";
 
