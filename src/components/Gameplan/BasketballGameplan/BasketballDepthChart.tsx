@@ -445,36 +445,40 @@ const DepthRow: FC<{
             </div>
           ))}
         </div>
-        <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs">
-          {allocationKeys.map((key) => (
-            <label
-              key={key}
-              className="flex flex-col items-center gap-1 text-slate-300"
-            >
-              {allocationLabels[key]}
-              <input
-                disabled={!canModify}
-                type="number"
-                inputMode="numeric"
-                value={lineup[`${abbreviation}${key}`] as number}
-                onChange={(event) =>
-                  ChangeLineupInput(
-                    playerID,
-                    `${abbreviation}${key}`,
-                    Number(event.target.value),
-                    lineupIndex,
-                  )
-                }
-                className="w-full min-w-0 rounded border border-slate-500 bg-black px-1 py-1 text-center text-sm text-white disabled:opacity-60"
-              />
-            </label>
-          ))}
-        </div>
-        <div
-          className={`mt-2 text-left text-xs font-semibold ${shotTotal === 100 ? "text-green-400" : "text-amber-400"}`}
-        >
-          Shot Total: {shotTotal}%
-        </div>
+        {canModify && (
+          <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs">
+            {allocationKeys.map((key) => (
+              <label
+                key={key}
+                className="flex flex-col items-center gap-1 text-slate-300"
+              >
+                {allocationLabels[key]}
+                <input
+                  disabled={!canModify}
+                  type="number"
+                  inputMode="numeric"
+                  value={lineup[`${abbreviation}${key}`] as number}
+                  onChange={(event) =>
+                    ChangeLineupInput(
+                      playerID,
+                      `${abbreviation}${key}`,
+                      Number(event.target.value),
+                      lineupIndex,
+                    )
+                  }
+                  className="w-full min-w-0 rounded border border-slate-500 bg-black px-1 py-1 text-center text-sm text-white disabled:opacity-60"
+                />
+              </label>
+            ))}
+          </div>
+        )}
+        {canModify && (
+          <div
+            className={`mt-2 text-left text-xs font-semibold ${shotTotal === 100 ? "text-green-400" : "text-amber-400"}`}
+          >
+            Shot Total: {shotTotal}%
+          </div>
+        )}
       </div>
       <div className="hidden grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm lg:grid">
         <strong>{label}</strong>
@@ -501,34 +505,35 @@ const DepthRow: FC<{
         {values.map((value, index) => (
           <strong key={index}>{displayRating(player, value, league)}</strong>
         ))}
-        {allocationKeys.map((key) => (
-          <Fragment key={key}>
-            {key === "Minutes" && (
-              <strong
-                className={
-                  shotTotal === 100 ? "text-green-400" : "text-amber-400"
+        {canModify &&
+          allocationKeys.map((key) => (
+            <Fragment key={key}>
+              {key === "Minutes" && (
+                <strong
+                  className={
+                    shotTotal === 100 ? "text-green-400" : "text-amber-400"
+                  }
+                >
+                  {shotTotal}%
+                </strong>
+              )}
+              <input
+                aria-label={`${key} for ${player.FirstName} ${player.LastName}`}
+                disabled={!canModify}
+                type="number"
+                value={lineup[`${abbreviation}${key}`] as number}
+                onChange={(event) =>
+                  ChangeLineupInput(
+                    playerID,
+                    `${abbreviation}${key}`,
+                    Number(event.target.value),
+                    lineupIndex,
+                  )
                 }
-              >
-                {shotTotal}%
-              </strong>
-            )}
-            <input
-              aria-label={`${key} for ${player.FirstName} ${player.LastName}`}
-              disabled={!canModify}
-              type="number"
-              value={lineup[`${abbreviation}${key}`] as number}
-              onChange={(event) =>
-                ChangeLineupInput(
-                  playerID,
-                  `${abbreviation}${key}`,
-                  Number(event.target.value),
-                  lineupIndex,
-                )
-              }
-              className={inputClass}
-            />
-          </Fragment>
-        ))}
+                className={inputClass}
+              />
+            </Fragment>
+          ))}
       </div>
     </>
   );
