@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { X } from "lucide-react";
+import type { ReactNode } from "react";
+import { Flag, X } from "lucide-react";
 import { Timestamp } from "firebase/firestore";
 import { useAuthStore } from "../../context/AuthContext";
 import {
@@ -15,12 +16,15 @@ import type {
   ChatMessage,
   ChatMute,
   ChatRateLimit,
+  ChatReportTarget,
 } from "../../models/chatModels";
 import type { CurrentUser } from "../../_hooks/useCurrentUser";
 import { ImageKitService } from "../../_services/imagekitService";
 import { getUserLogoUrl } from "../../_utility/getLogo";
 import { ChatComposer } from "./ChatComposer";
 import { ChatMessageBody } from "./ChatMessageBody";
+import { ChatUserTrigger } from "./ChatUserTrigger";
+import { ChatReportModal } from "./ChatReportModal";
 
 interface ChatDrawerProps {
   isOpen: boolean;
@@ -88,6 +92,9 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [reportTarget, setReportTarget] = useState<ChatReportTarget | null>(
+    null,
+  );
   const [cutoffMillis, setCutoffMillis] = useState(
     Date.now() - CHAT_RETENTION_DAYS * 24 * 60 * 60 * 1000,
   );
@@ -444,35 +451,74 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
               ? candidateAvatarUrl
               : null;
 
+            const openReport = () =>
+              setReportTarget({
+                roomId: CHAT_ROOM_ID,
+                messageId: message.id,
+                messageBody: message.body,
+                reportedUid: message.senderId,
+                reportedUsername: message.senderUsername,
+              });
+            const canReport =
+              !!currentUser && message.senderId !== currentUser.id;
+            const trigger = (children: ReactNode) => (
+              <ChatUserTrigger
+                uid={message.senderId}
+                username={message.senderUsername}
+                logoUrl={avatarUrl ?? undefined}
+                onNavigate={onClose}
+                onReport={canReport ? openReport : undefined}
+              >
+                {children}
+              </ChatUserTrigger>
+            );
+
             return (
               <article
                 key={message.id}
-                className={`flex gap-2.5 ${grouped ? "mt-1" : "mt-4"} text-start`}
+                className={`group relative flex gap-2.5 ${grouped ? "mt-1" : "mt-4"} text-start`}
               >
+                {canReport && (
+                  <button
+                    type="button"
+                    aria-label={`Report message from ${message.senderUsername}`}
+                    title="Report message"
+                    onClick={openReport}
+                    className="absolute right-0 top-0 rounded p-1 text-gray-400 opacity-0 hover:bg-gray-100 hover:text-red-500 focus:opacity-100 group-hover:opacity-100 dark:hover:bg-gray-800"
+                  >
+                    <Flag size={14} aria-hidden="true" />
+                  </button>
+                )}
                 <div className="w-9 shrink-0">
                   {!grouped &&
-                    (avatarUrl ? (
-                      <img
-                        src={avatarUrl}
-                        alt=""
-                        className="h-9 w-9 rounded-full bg-gray-200 object-cover dark:bg-gray-700"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div
-                        aria-hidden="true"
-                        className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
-                      >
-                        {initialsFor(message.senderUsername)}
-                      </div>
-                    ))}
+                    trigger(
+                      avatarUrl ? (
+                        <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gray-200 p-1.5 dark:bg-gray-700">
+                          <img
+                            src={avatarUrl}
+                            alt=""
+                            className="h-full w-full object-contain"
+                            loading="lazy"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          aria-hidden="true"
+                          className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+                        >
+                          {initialsFor(message.senderUsername)}
+                        </div>
+                      ),
+                    )}
                 </div>
                 <div className="min-w-0 flex-1">
                   {!grouped && (
                     <div className="mb-0.5 flex items-baseline gap-2">
-                      <span className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        {message.senderUsername || "User"}
-                      </span>
+                      {trigger(
+                        <span className="truncate text-sm font-semibold text-gray-900 hover:text-blue-500 dark:text-gray-100">
+                          {message.senderUsername || "User"}
+                        </span>,
+                      )}
                       <time
                         className="shrink-0 text-[11px] text-gray-400"
                         dateTime={message.createdAt?.toDate?.().toISOString()}
@@ -481,7 +527,7 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
                       </time>
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap break-words text-sm text-gray-800 dark:text-gray-200">
+                  <p className="whitespace-pre-wrap wrap-break-word text-sm text-gray-800 dark:text-gray-200">
                     <ChatMessageBody
                       body={message.body}
                       hasMentions={(message.mentionedUserIds?.length ?? 0) > 0}
@@ -526,6 +572,14 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
           onSend={handleSend}
         />
       </section>
+      {currentUser && (
+        <ChatReportModal
+          target={reportTarget}
+          reporterUid={currentUser.id}
+          reporterUsername={currentUser.username ?? ""}
+          onClose={() => setReportTarget(null)}
+        />
+      )}
     </div>
   );
 };

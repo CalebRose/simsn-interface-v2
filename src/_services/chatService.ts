@@ -1,4 +1,5 @@
 import {
+  addDoc,
   doc,
   collection,
   documentId,
@@ -22,6 +23,8 @@ import type {
   ChatMessage,
   ChatMute,
   ChatRateLimit,
+  ChatReportCategory,
+  ChatReportTarget,
 } from "../models/chatModels";
 import { logFirestoreRead } from "../_utility/firestoreLogger";
 
@@ -128,6 +131,29 @@ export const ChatService = {
       rateLimitUnsubscribe();
       muteUnsubscribe();
     };
+  },
+
+  // Messages expire after 3 days, so the reported text is stored with the report.
+  reportMessage: async (
+    target: ChatReportTarget,
+    category: ChatReportCategory,
+    reason: string,
+    reporterUid: string,
+    reporterUsername: string,
+  ): Promise<void> => {
+    await addDoc(collection(firestore, "chatReports"), {
+      ...target,
+      messageBody: target.messageBody.slice(0, CHAT_MESSAGE_MAX_LENGTH),
+      category,
+      reason: reason.trim().slice(0, 500),
+      reporterUid,
+      reporterUsername,
+      status: "pending",
+      reviewedBy: null,
+      reviewedAt: null,
+      adminNote: null,
+      createdAt: serverTimestamp(),
+    });
   },
 
   getOlderMessages: async (

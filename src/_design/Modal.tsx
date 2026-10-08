@@ -19,6 +19,8 @@ export interface ModalProps {
   classes?: string;
   /** Override classes on the scrollable content wrapper (default: "mt-4 overflow-y-auto text-gray-700 dark:text-gray-300"). Use "overflow-hidden" for split-panel layouts that manage their own scroll. */
   bodyClass?: string;
+  /** Override the overlay stacking class (default "z-50"), e.g. to open above full-screen drawers. */
+  zIndexClass?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -30,6 +32,7 @@ export const Modal: React.FC<ModalProps> = ({
   classes = "",
   maxWidth = "max-w-xl",
   bodyClass,
+  zIndexClass = "z-50",
 }) => {
   // ✅ Strongly Typed Ref
   const modalRef = useRef<HTMLDivElement | null>(null);
@@ -81,7 +84,9 @@ export const Modal: React.FC<ModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div
+      className={`fixed inset-0 ${zIndexClass} flex items-center justify-center bg-black/50`}
+    >
       <div
         ref={modalRef}
         className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full ${maxWidth} max-h-[90vh] flex flex-col p-4 ${classes}`}

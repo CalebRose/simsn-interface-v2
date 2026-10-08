@@ -25,6 +25,14 @@ interface UserProfileCardProps {
   children: ReactNode;
   /** If true, open the hover popover immediately on mount (used for lazy activation). */
   triggerHover?: boolean;
+  /** If true, open the full profile modal immediately on mount. */
+  openModalOnMount?: boolean;
+  /** Stacking class for the profile modal (default "z-50"). */
+  modalZIndexClass?: string;
+  /** Called when the card navigates away (e.g. to close a drawer). */
+  onNavigate?: () => void;
+  /** Extra buttons rendered next to the profile modal actions. */
+  extraActions?: ReactNode;
 }
 
 const LEAGUE_FIELDS: { key: keyof CurrentUser; label: string }[] = [
@@ -53,6 +61,10 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
   logoUrl,
   children,
   triggerHover = false,
+  openModalOnMount = false,
+  modalZIndexClass,
+  onNavigate,
+  extraActions,
 }) => {
   const navigate = useNavigate();
   const { currentUser } = useAuthStore();
@@ -66,7 +78,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
   }, [uid, getOrFetchUserById]);
 
   const [isHovered, setIsHovered] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(openModalOnMount);
   const [activeTab, setActiveTab] = useState<"threads" | "posts">("threads");
   const [recentThreads, setRecentThreads] = useState<Thread[]>([]);
   const [popoverPos, setPopoverPos] = useState({ top: 0, left: 0 });
@@ -142,8 +154,9 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
 
   const handleViewProfile = useCallback(() => {
     setIsModalOpen(false);
+    onNavigate?.();
     navigate(routes.USER.replace(":username", username));
-  }, [navigate, username]);
+  }, [navigate, onNavigate, username]);
 
   const joinDate = useMemo(() => {
     if (!user?.createdAt) return "—";
@@ -250,6 +263,7 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
         onClose={() => setIsModalOpen(false)}
         title={`${username}'s Profile`}
         maxWidth="max-w-lg"
+        zIndexClass={modalZIndexClass}
       >
         {/* Header */}
         <div className="flex items-start gap-3 mb-4 text-start">
@@ -374,7 +388,10 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
                   >
                     <Link
                       to={`/forums/thread/${t.id}`}
-                      onClick={() => setIsModalOpen(false)}
+                      onClick={() => {
+                        setIsModalOpen(false);
+                        onNavigate?.();
+                      }}
                       className="font-semibold text-white hover:text-blue-400 transition-colors"
                     >
                       {t.title}
@@ -401,7 +418,10 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
                 >
                   <Link
                     to={`/forums/thread/${p.threadId}`}
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      onNavigate?.();
+                    }}
                     className="text-gray-300 line-clamp-2 hover:text-blue-400 transition-colors block"
                   >
                     {p.bodyText}
@@ -428,12 +448,14 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
               size="sm"
               onClick={() => {
                 setIsModalOpen(false);
+                onNavigate?.();
                 navigate(routes.USER);
               }}
             >
               Edit Profile
             </Button>
           )}
+          {extraActions}
         </div>
       </Modal>
     </>

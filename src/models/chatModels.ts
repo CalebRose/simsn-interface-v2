@@ -30,6 +30,21 @@ export interface ChatMute {
   createdAt: Timestamp;
 }
 
+export type ChatReportCategory =
+  | "inflammatory"
+  | "abusive"
+  | "spam"
+  | "inappropriate"
+  | "other";
+
+export interface ChatReportTarget {
+  roomId: string;
+  messageId: string;
+  messageBody: string;
+  reportedUid: string;
+  reportedUsername: string;
+}
+
 export interface ChatMessage {
   id: string;
   type: "Message" | "Player" | "Team" | "Game";
