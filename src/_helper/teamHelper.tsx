@@ -169,7 +169,8 @@ export const RevealFBResults = (
   resultsOverride: boolean,
 ): boolean => {
   if (resultsOverride) return true;
-  const { TimeSlot, Week, SeasonID } = game;
+  const { TimeSlot, Week, SeasonID, IsRevealed } = game;
+  if (IsRevealed) return true;
   let gameDay = "";
   let currentWeek = 0,
     currentSeasonID = 0;
