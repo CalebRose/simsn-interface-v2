@@ -82,6 +82,7 @@ const profileSnapshot = (user: CurrentUser): ChatAvatarProfile => ({
 
 export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
   const { currentUser, isLoading: isUserLoading } = useAuthStore();
+  const currentUserId = currentUser?.id;
   const [recentMessages, setRecentMessages] = useState<ChatMessage[]>([]);
   const [olderMessages, setOlderMessages] = useState<ChatMessage[]>([]);
   const [rateLimit, setRateLimit] = useState<ChatRateLimit | null>(null);
@@ -119,7 +120,7 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
     shouldStickToBottom.current = true;
     const timer = window.setTimeout(() => {
       if (isUserLoading) return;
-      if (!currentUser) {
+      if (!currentUserId) {
         setError(new Error("Sign in to view public chat."));
         setIsLoading(false);
         return;
@@ -143,7 +144,7 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
       );
       const unsubscribeSendState = ChatService.subscribeToSendState(
         CHAT_ROOM_ID,
-        currentUser.id,
+        currentUserId,
         (nextRateLimit) => {
           setRateLimit(nextRateLimit);
           rateStateReceived.current = true;
@@ -174,7 +175,7 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
       subscriptionRef.current?.();
       subscriptionRef.current = null;
     };
-  }, [currentUser, isOpen, isUserLoading]);
+  }, [currentUserId, isOpen, isUserLoading]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -297,12 +298,13 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
         senderProfile: profileSnapshot(currentUser),
         body,
         mentionedUserIds,
+        knownSequence: Number(rateLimit?.seq) || 0,
         ...(image && attachmentUrl
           ? { attachment: { url: attachmentUrl, name: image.name } }
           : {}),
       });
     },
-    [currentUser, disabledMessage],
+    [currentUser, disabledMessage, rateLimit],
   );
 
   useEffect(() => {

@@ -72,6 +72,8 @@ export interface SendChatMessageInput {
   body: string;
   mentionedUserIds: string[];
   attachment?: ChatAttachment;
+  // Sequence from the already-subscribed rate-limit doc; avoids a read per send.
+  knownSequence?: number;
 }
 
 const retentionCutoff = () =>
@@ -192,10 +194,15 @@ export const ChatService = {
 
     const rateLimitRef = rateLimitDocument(senderId);
     for (let attempt = 0; attempt < 2; attempt += 1) {
-      const rateLimitSnapshot = await getDoc(rateLimitRef);
-      const previousSequence = rateLimitSnapshot.exists()
-        ? Number(rateLimitSnapshot.data().seq) || 0
-        : 0;
+      let previousSequence: number;
+      if (attempt === 0 && input.knownSequence !== undefined) {
+        previousSequence = input.knownSequence;
+      } else {
+        const rateLimitSnapshot = await getDoc(rateLimitRef);
+        previousSequence = rateLimitSnapshot.exists()
+          ? Number(rateLimitSnapshot.data().seq) || 0
+          : 0;
+      }
       const nextSequence = previousSequence + 1;
       const batch = writeBatch(firestore);
       const messageRef = doc(

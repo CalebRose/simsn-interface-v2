@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   collection,
+  getDocs,
   limit,
-  onSnapshot,
   orderBy,
   query,
   Timestamp,
@@ -10,8 +10,10 @@ import {
 } from "firebase/firestore";
 import { firestore } from "../firebase/firebase";
 import { CHAT_RETENTION_DAYS, CHAT_ROOM_ID } from "../_services/chatService";
+import { logFirestoreRead } from "../_utility/firestoreLogger";
 
-const UNREAD_QUERY_LIMIT = 50;
+const UNREAD_QUERY_LIMIT = 20;
+const UNREAD_POLL_INTERVAL_MS = 15_000;
 
 const storageKey = (userId: string) => `simfba-chat-last-read-${userId}`;
 
@@ -41,7 +43,8 @@ interface UnreadMessage {
 /**
  * Tracks unread chat messages and mentions for the signed-in user.
  * The last-read marker lives in localStorage, so no extra Firestore writes
- * are needed. The listener only fetches messages newer than that marker.
+ * are needed. While the drawer is closed the hook polls every 30 seconds
+ * (paused when the tab is hidden); no listener stays open.
  */
 export const useChatUnread = (
   userId: string | undefined,
@@ -49,71 +52,86 @@ export const useChatUnread = (
 ) => {
   const [lastReadMillis, setLastReadMillis] = useState(0);
   const [messages, setMessages] = useState<UnreadMessage[]>([]);
-  const latestSeenMillis = useRef(0);
 
   useEffect(() => {
     if (!userId) {
       setMessages([]);
       return;
     }
+    // While the drawer is open its own listener receives every message, so
+    // this one is paused to avoid reading each message twice.
+    if (isChatOpen) {
+      return () => {
+        const now = Date.now();
+        writeLastRead(userId, now);
+        setLastReadMillis(now);
+        setMessages([]);
+      };
+    }
     const retentionFloor =
       Date.now() - CHAT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
     const baseline = Math.max(readLastRead(userId), retentionFloor);
     setLastReadMillis(baseline);
-    latestSeenMillis.current = baseline;
     writeLastRead(userId, baseline);
 
-    const unreadQuery = query(
-      collection(firestore, "chatRooms", CHAT_ROOM_ID, "chatMessages"),
-      where("createdAt", ">", Timestamp.fromMillis(baseline)),
-      orderBy("createdAt", "desc"),
-      limit(UNREAD_QUERY_LIMIT),
-    );
+    // Poll instead of listening. Each poll only fetches messages newer than
+    // the last one already seen, so a message is read at most once.
+    let cancelled = false;
+    let inFlight = false;
+    let cursor = baseline;
+    setMessages([]);
 
-    return onSnapshot(
-      unreadQuery,
-      (snapshot) => {
-        const next: UnreadMessage[] = [];
-        for (const document of snapshot.docs) {
-          const data = document.data();
+    const poll = async () => {
+      if (cancelled || inFlight || document.hidden) return;
+      inFlight = true;
+      try {
+        const snapshot = await getDocs(
+          query(
+            collection(firestore, "chatRooms", CHAT_ROOM_ID, "chatMessages"),
+            where("createdAt", ">", Timestamp.fromMillis(cursor)),
+            orderBy("createdAt", "asc"),
+            limit(UNREAD_QUERY_LIMIT),
+          ),
+        );
+        logFirestoreRead("pollUnreadChatMessages", snapshot.size);
+        if (cancelled || snapshot.empty) return;
+        const fresh: UnreadMessage[] = [];
+        for (const messageDoc of snapshot.docs) {
+          const data = messageDoc.data();
           const createdAt = data.createdAt as Timestamp | null;
-          // Null while the server timestamp of a local write is pending.
-          if (!createdAt || data.senderId === userId) continue;
-          next.push({
+          if (!createdAt) continue;
+          cursor = Math.max(cursor, createdAt.toMillis());
+          if (data.senderId === userId) continue;
+          fresh.push({
             createdAtMillis: createdAt.toMillis(),
             mentioned:
               Array.isArray(data.mentionedUserIds) &&
               data.mentionedUserIds.includes(userId),
           });
         }
-        if (next.length > 0) {
-          latestSeenMillis.current = Math.max(
-            latestSeenMillis.current,
-            ...next.map((message) => message.createdAtMillis),
-          );
+        if (fresh.length > 0) {
+          setMessages((current) => [...current, ...fresh].slice(-100));
         }
-        setMessages(next);
-      },
-      (error) => {
-        console.error("Unable to track unread chat messages:", error);
-      },
-    );
-  }, [userId]);
+      } catch (error) {
+        console.error("Unable to check for unread chat messages:", error);
+      } finally {
+        inFlight = false;
+      }
+    };
 
-  const markRead = useCallback(() => {
-    if (!userId) return;
-    const next = latestSeenMillis.current;
-    setLastReadMillis(next);
-    writeLastRead(userId, next);
-  }, [userId]);
+    void poll();
+    const interval = window.setInterval(poll, UNREAD_POLL_INTERVAL_MS);
+    const onVisibility = () => {
+      if (!document.hidden) void poll();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
 
-  // Messages that arrive while the drawer is open count as read, and the
-  // marker is advanced again when it closes.
-  useEffect(() => {
-    if (!isChatOpen) return;
-    markRead();
-    return markRead;
-  }, [isChatOpen, markRead, messages]);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [userId, isChatOpen]);
 
   const unread = isChatOpen
     ? []
