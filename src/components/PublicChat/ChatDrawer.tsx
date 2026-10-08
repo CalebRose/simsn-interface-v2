@@ -20,6 +20,7 @@ import type { CurrentUser } from "../../_hooks/useCurrentUser";
 import { ImageKitService } from "../../_services/imagekitService";
 import { getUserLogoUrl } from "../../_utility/getLogo";
 import { ChatComposer } from "./ChatComposer";
+import { ChatMessageBody } from "./ChatMessageBody";
 
 interface ChatDrawerProps {
   isOpen: boolean;
@@ -208,13 +209,18 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
       return "Chat send status is unavailable. Try again later.";
     if (isSendStateLoading) return "Checking chat permissions…";
 
-    const createdAt = currentUser.createdAt;
-    if (!(createdAt instanceof Timestamp)) {
-      return "Your account profile is missing its creation time. Contact support.";
-    }
-    const accountUnlockAt = timestampMillis(createdAt) + 10 * 60 * 1000;
-    if (accountUnlockAt > nowMillis) {
-      return `New accounts can chat in ${formatCountdown(accountUnlockAt - nowMillis)}.`;
+    const createdAtRaw: unknown = currentUser.createdAt;
+    const createdAtMillis =
+      createdAtRaw instanceof Timestamp
+        ? createdAtRaw.toMillis()
+        : createdAtRaw
+          ? Date.parse(String(createdAtRaw))
+          : NaN;
+    if (!Number.isNaN(createdAtMillis)) {
+      const accountUnlockAt = createdAtMillis + 10 * 60 * 1000;
+      if (accountUnlockAt > nowMillis) {
+        return `New accounts can chat in ${formatCountdown(accountUnlockAt - nowMillis)}.`;
+      }
     }
 
     const forumMuteUntil =
@@ -476,7 +482,11 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
                     </div>
                   )}
                   <p className="whitespace-pre-wrap break-words text-sm text-gray-800 dark:text-gray-200">
-                    {message.body}
+                    <ChatMessageBody
+                      body={message.body}
+                      hasMentions={(message.mentionedUserIds?.length ?? 0) > 0}
+                      currentUsername={currentUser?.username}
+                    />
                   </p>
                   {message.attachments.map((attachment, attachmentIndex) =>
                     safeImageUrl(attachment.url) ? (

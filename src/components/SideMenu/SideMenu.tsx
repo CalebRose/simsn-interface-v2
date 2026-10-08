@@ -31,6 +31,7 @@ import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { ChatIcon, DMIcon, NotificationIcon } from "../../_design/Icons";
 import { ChatDrawer } from "../PublicChat/ChatDrawer";
+import { useChatUnread } from "../../_hooks/useChatUnread";
 
 export const SideMenu = ({}) => {
   const {
@@ -71,6 +72,8 @@ export const SideMenu = ({}) => {
   const [processing, setProcessing] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const { unreadCount: chatUnreadCount, hasMention: chatHasMention } =
+    useChatUnread(currentUser?.id, isChatOpen);
   const { laxAdminStatus } = useSimLAXStore();
   const isLaxAdmin = Boolean(laxAdminStatus?.isAdmin);
   const notifRef = useRef<HTMLDivElement>(null);
@@ -150,7 +153,7 @@ export const SideMenu = ({}) => {
             </button>
             <button
               onClick={() => navigate(routes.HOME)}
-              className="flex ml-2 items-center"
+              className="flex ml-2 mr-2 items-center"
             >
               <img
                 src={`${simLogos.SimSN_Icon}`}
@@ -166,7 +169,7 @@ export const SideMenu = ({}) => {
           </div>
           {/* User Dropdown */}
           {currentUser && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center space-x-3">
               {/* Theme Toggle */}
               {isDesktop && <ThemeToggle />}
 
@@ -276,6 +279,18 @@ export const SideMenu = ({}) => {
                 className="relative rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 focus:outline-hidden dark:text-gray-400 dark:hover:bg-gray-700"
               >
                 <ChatIcon />
+                {chatUnreadCount > 0 &&
+                  (chatHasMention ? (
+                    <span
+                      aria-label="New chat messages"
+                      className="absolute top-0.5 right-0.5 block h-2 w-2 rounded-full bg-yellow-400 ring-2 ring-white dark:ring-gray-800"
+                    />
+                  ) : (
+                    <span
+                      aria-label="New chat messages"
+                      className="absolute top-0.5 right-0.5 block h-2 w-2 rounded-full bg-blue-500 ring-2 ring-white dark:ring-gray-800"
+                    />
+                  ))}
               </button>
 
               {/* Inbox (DMs) Button */}
