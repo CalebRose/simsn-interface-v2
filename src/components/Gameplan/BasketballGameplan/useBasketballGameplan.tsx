@@ -31,6 +31,8 @@ const lineupSnapshotKeys = [
   "TSShotVolume",
 ] as const;
 
+const minimumDepthChartPlayers = 8;
+
 const lineupPositionOrder: Record<string, number> = { G: 0, F: 1, C: 2 };
 
 // The API returns lineup rows in database/creation order (typically C, F, F, G, G).
@@ -709,6 +711,8 @@ export const useBasketballGameplan = () => {
       return errorList;
     }
     const firstStringPlayers = new Set<number>();
+    // Every player placed anywhere in the depth chart; a thin chart leaves no fallback when starters foul out.
+    const depthChartPlayers = new Set<number>();
     let requiredShotTotal = 100;
     if (selectedLeague === SimNBA) {
       requiredShotTotal = 100;
@@ -740,6 +744,14 @@ export const useBasketballGameplan = () => {
             `${slotLabel} ${stringLabel} string must use ${position === "G" ? "a Guard or Forward" : position === "C" ? "a Center or Forward" : "any roster player"}.`,
           );
         }
+      }
+
+      for (const playerID of [
+        lineup.FirstStringID,
+        lineup.SecondStringID,
+        lineup.ThirdStringID,
+      ]) {
+        if (playerID) depthChartPlayers.add(playerID);
       }
 
       // --- 1. First & second string filled ---
@@ -879,6 +891,12 @@ export const useBasketballGameplan = () => {
           `Third string must have at most 10 usage allocated, currently has ${lineup.TSMinutes}.`,
         );
       }
+    }
+
+    if (depthChartPlayers.size < minimumDepthChartPlayers) {
+      errorList.push(
+        `The depth chart must include at least ${minimumDepthChartPlayers} different players so there is a fallback if players foul out, currently has ${depthChartPlayers.size}.`,
+      );
     }
 
     if (firstStringPositionCounts["G"] === 0) {
