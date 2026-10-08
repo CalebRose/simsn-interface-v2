@@ -6559,16 +6559,19 @@ export class CollegeLineup {
   FSInsideProportion: number;
   FSMidProportion: number;
   FSThreeProportion: number;
+  FSShotVolume: number;
   SecondStringID: number;
   SSMinutes: number;
   SSInsideProportion: number;
   SSMidProportion: number;
   SSThreeProportion: number;
+  SSShotVolume: number;
   ThirdStringID: number;
   TSMinutes: number;
   TSInsideProportion: number;
   TSMidProportion: number;
   TSThreeProportion: number;
+  TSShotVolume: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -6583,16 +6586,19 @@ export class CollegeLineup {
     this.FSInsideProportion = source["FSInsideProportion"];
     this.FSMidProportion = source["FSMidProportion"];
     this.FSThreeProportion = source["FSThreeProportion"];
+    this.FSShotVolume = source["FSShotVolume"];
     this.SecondStringID = source["SecondStringID"];
     this.SSMinutes = source["SSMinutes"];
     this.SSInsideProportion = source["SSInsideProportion"];
     this.SSMidProportion = source["SSMidProportion"];
     this.SSThreeProportion = source["SSThreeProportion"];
+    this.SSShotVolume = source["SSShotVolume"];
     this.ThirdStringID = source["ThirdStringID"];
     this.TSMinutes = source["TSMinutes"];
     this.TSInsideProportion = source["TSInsideProportion"];
     this.TSMidProportion = source["TSMidProportion"];
     this.TSThreeProportion = source["TSThreeProportion"];
+    this.TSShotVolume = source["TSShotVolume"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -6627,16 +6633,19 @@ export class NBALineup {
   FSInsideProportion: number;
   FSMidProportion: number;
   FSThreeProportion: number;
+  FSShotVolume: number;
   SecondStringID: number;
   SSMinutes: number;
   SSInsideProportion: number;
   SSMidProportion: number;
   SSThreeProportion: number;
+  SSShotVolume: number;
   ThirdStringID: number;
   TSMinutes: number;
   TSInsideProportion: number;
   TSMidProportion: number;
   TSThreeProportion: number;
+  TSShotVolume: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -6651,16 +6660,19 @@ export class NBALineup {
     this.FSInsideProportion = source["FSInsideProportion"];
     this.FSMidProportion = source["FSMidProportion"];
     this.FSThreeProportion = source["FSThreeProportion"];
+    this.FSShotVolume = source["FSShotVolume"];
     this.SecondStringID = source["SecondStringID"];
     this.SSMinutes = source["SSMinutes"];
     this.SSInsideProportion = source["SSInsideProportion"];
     this.SSMidProportion = source["SSMidProportion"];
     this.SSThreeProportion = source["SSThreeProportion"];
+    this.SSShotVolume = source["SSShotVolume"];
     this.ThirdStringID = source["ThirdStringID"];
     this.TSMinutes = source["TSMinutes"];
     this.TSInsideProportion = source["TSInsideProportion"];
     this.TSMidProportion = source["TSMidProportion"];
     this.TSThreeProportion = source["TSThreeProportion"];
+    this.TSShotVolume = source["TSShotVolume"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -203,7 +203,7 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
       </div>
       <div className="lg:overflow-x-auto">
         <div className="lg:min-w-330">
-          <div className="hidden lg:grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
+          <div className="hidden lg:grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)_7rem] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
             <span>#</span>
             <span className="text-left">Player</span>
             <span>OVR</span>
@@ -215,6 +215,7 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
             <span>3 Pt</span>
             <span>Shot Total</span>
             <span>Usage</span>
+            <span>Shot Volume</span>
           </div>
           <div className="space-y-2 pt-2">
             {stringSlots.map((slot) => (
@@ -333,6 +334,18 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
     </>
   );
 };
+
+const shotVolumeOptions = [
+  { value: 1, label: "Rarely" },
+  { value: 2, label: "Reduced" },
+  { value: 3, label: "Normal" },
+  { value: 4, label: "Aggressive" },
+  { value: 5, label: "Green Light" },
+];
+
+// 0 means the lineup row predates Shot Volume; the sim treats it as Normal.
+const getShotVolumeValue = (lineup: Lineup, abbreviation: string): number =>
+  (lineup[`${abbreviation}ShotVolume`] as number) || 3;
 
 const DepthRow: FC<{
   label: string;
@@ -479,8 +492,31 @@ const DepthRow: FC<{
             Shot Total: {shotTotal}%
           </div>
         )}
+        {canModify && (
+          <label className="mt-2 flex items-center justify-between gap-2 text-xs text-slate-300">
+            Shot Volume
+            <select
+              value={getShotVolumeValue(lineup, abbreviation)}
+              onChange={(event) =>
+                ChangeLineupInput(
+                  playerID,
+                  `${abbreviation}ShotVolume`,
+                  Number(event.target.value),
+                  lineupIndex,
+                )
+              }
+              className="rounded border border-slate-500 bg-black px-2 py-1 text-sm text-white"
+            >
+              {shotVolumeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
-      <div className="hidden grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm lg:grid">
+      <div className="hidden grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)_7rem] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm lg:grid">
         <strong>{label}</strong>
         <div className="text-left">
           <span>
@@ -534,6 +570,27 @@ const DepthRow: FC<{
               />
             </Fragment>
           ))}
+        {canModify && (
+          <select
+            aria-label={`Shot Volume for ${player.FirstName} ${player.LastName}`}
+            value={getShotVolumeValue(lineup, abbreviation)}
+            onChange={(event) =>
+              ChangeLineupInput(
+                playerID,
+                `${abbreviation}ShotVolume`,
+                Number(event.target.value),
+                lineupIndex,
+              )
+            }
+            className="w-full min-w-0 rounded border border-slate-500 bg-black px-1 py-1 text-center text-sm text-white"
+          >
+            {shotVolumeOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
     </>
   );

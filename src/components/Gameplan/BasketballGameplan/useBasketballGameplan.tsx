@@ -26,6 +26,9 @@ const lineupSnapshotKeys = [
   "FSThreeProportion",
   "SSThreeProportion",
   "TSThreeProportion",
+  "FSShotVolume",
+  "SSShotVolume",
+  "TSShotVolume",
 ] as const;
 
 const lineupPositionOrder: Record<string, number> = { G: 0, F: 1, C: 2 };
