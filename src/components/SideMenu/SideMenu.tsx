@@ -153,15 +153,15 @@ export const SideMenu = ({}) => {
             </button>
             <button
               onClick={() => navigate(routes.HOME)}
-              className="flex ml-2 mr-2 items-center"
+              className={`inline-flex ${isMobile ? "px-2 py-2" : ""} mx-2 items-center`}
             >
               <img
                 src={`${simLogos.SimSN_Icon}`}
-                className={`${isMobile ? "h-6 mr-2" : "h-8 mr-3"}`}
+                className={`${isMobile ? "h-6 mr-2" : "h-8 mr-3"} px-0`}
                 alt="SimSNLogo"
               />
               <span
-                className={`self-center text-${isMobile ? "sm" : "xl"} font-semibold sm:text-2xl ${textColor}`}
+                className={`self-center text-${isMobile ? "sm" : "xl"} font-semibold ${textColor}`}
               >
                 SimSN
               </span>
@@ -169,7 +169,7 @@ export const SideMenu = ({}) => {
           </div>
           {/* User Dropdown */}
           {currentUser && (
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               {/* Theme Toggle */}
               {isDesktop && <ThemeToggle />}
 
@@ -313,7 +313,7 @@ export const SideMenu = ({}) => {
                   className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
                 >
                   <img
-                    className="w-8 h-8 rounded-full"
+                    className="w-8 h-8 rounded-full object-contain"
                     src={logo}
                     alt="User Avatar"
                   />
