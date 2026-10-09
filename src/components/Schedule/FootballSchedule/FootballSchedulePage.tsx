@@ -577,6 +577,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               view={view}
               isPreseason={isSpringGames}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
             />
           )}
           {category === AdvStandings && (
@@ -591,6 +592,7 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={view}
               selectedSeasonID={selectedSeason - 2020}
+              currentUser={currentUser}
             />
           )}
         </div>
@@ -1107,6 +1109,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               view={scheduleView}
               isPreseason={isPreseason}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
             />
           )}
           {category === AdvStandings && (
@@ -1121,6 +1124,7 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={scheduleView}
               selectedSeasonID={selectedSeason - 2020}
+              currentUser={currentUser}
             />
           )}
         </div>
