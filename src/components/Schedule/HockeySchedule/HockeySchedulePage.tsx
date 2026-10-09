@@ -656,6 +656,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={view}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
             />
           )}
           {category === AdvStandings && (
@@ -670,6 +671,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={view}
               selectedSeasonID={selectedSeasonValue}
+              currentUser={currentUser}
             />
           )}
         </div>
@@ -1217,6 +1219,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={scheduleView}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
             />
           )}
           {category === AdvStandings && (
@@ -1231,6 +1234,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={scheduleView}
               selectedSeasonID={selectedSeasonValue}
+              currentUser={currentUser}
             />
           )}
         </div>

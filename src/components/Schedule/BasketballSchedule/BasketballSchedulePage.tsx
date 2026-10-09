@@ -690,6 +690,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               isLoading={isLoading}
               view={view}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
             />
           )}
           {category === AdvStandings && (
@@ -704,6 +705,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               isLoading={isLoading}
               view={view}
               selectedSeasonID={selectedSeason - 2020}
+              currentUser={currentUser}
             />
           )}
         </div>
@@ -1311,6 +1313,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
               isLoading={isLoading}
               view={view}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
             />
           )}
           {category === AdvStandings && (
@@ -1325,6 +1328,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
               isLoading={isLoading}
               view={view}
               selectedSeasonID={selectedSeason - 2020}
+              currentUser={currentUser}
             />
           )}
         </div>

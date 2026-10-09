@@ -1018,6 +1018,7 @@ interface AdvancedScheduleProps {
   view: string;
   isPreseason?: boolean;
   resultsOverride?: boolean;
+  currentUser: any;
 }
 
 interface HCKAdvancedGameRowProps {
@@ -1029,6 +1030,7 @@ interface HCKAdvancedGameRowProps {
   openModal: () => void;
   playerMap: Record<number, any>;
   resultsOverride: boolean;
+  currentUser: any;
 }
 
 const HCKAdvancedGameRow: FC<HCKAdvancedGameRowProps> = ({
@@ -1040,6 +1042,7 @@ const HCKAdvancedGameRow: FC<HCKAdvancedGameRowProps> = ({
   openModal,
   playerMap,
   resultsOverride,
+  currentUser,
 }) => {
   const handleClick = () => {
     if (!game.GameComplete || !game.IsRevealed || resultsOverride) return;
@@ -1083,11 +1086,11 @@ const HCKAdvancedGameRow: FC<HCKAdvancedGameRowProps> = ({
     return `${player.Position} ${player.FirstName} ${player.LastName}`;
   })();
   const homeTeamLogo = (() => {
-    let logo = getLogo(league, game.HomeTeamID, false);
+    let logo = getLogo(league, game.HomeTeamID, currentUser?.IsRetro);
     return logo;
   })();
   const awayTeamLogo = (() => {
-    let logo = getLogo(league, game.AwayTeamID, false);
+    let logo = getLogo(league, game.AwayTeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -1206,6 +1209,7 @@ interface FBAdvancedGameRowProps {
   playerMap: Record<number, any>;
   league: League;
   resultsOverride: boolean;
+  currentUser: any;
 }
 
 const FBAdvancedGameRow: FC<FBAdvancedGameRowProps> = ({
@@ -1217,6 +1221,7 @@ const FBAdvancedGameRow: FC<FBAdvancedGameRowProps> = ({
   playerMap,
   league,
   resultsOverride,
+  currentUser,
 }) => {
   const handleClick = () => {
     if (!game.GameComplete || !game.IsRevealed) return;
@@ -1237,16 +1242,17 @@ const FBAdvancedGameRow: FC<FBAdvancedGameRowProps> = ({
     return "text-gray-500";
   })();
   const mvpLabel = (() => {
+    if (!game.IsRevealed && !resultsOverride) return "";
     const player = playerMap[game.MVP];
     if (!player) return "";
     return `${player.Position} ${player.FirstName} ${player.LastName}`;
   })();
   const homeTeamLogo = (() => {
-    let logo = getLogo(league, game.HomeTeamID, false);
+    let logo = getLogo(league, game.HomeTeamID, currentUser?.IsRetro);
     return logo;
   })();
   const awayTeamLogo = (() => {
-    let logo = getLogo(league, game.AwayTeamID, false);
+    let logo = getLogo(league, game.AwayTeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -1395,6 +1401,7 @@ interface BBAdvancedGameRowProps {
   playerMap: Record<number, any>;
   league: League;
   resultsOverride: boolean;
+  currentUser: any;
 }
 
 const BBAdvancedGameRow: FC<BBAdvancedGameRowProps> = ({
@@ -1406,6 +1413,7 @@ const BBAdvancedGameRow: FC<BBAdvancedGameRowProps> = ({
   playerMap,
   league,
   resultsOverride,
+  currentUser,
 }) => {
   const handleClick = () => {
     if (!game.GameComplete || !game.IsRevealed || resultsOverride) return;
@@ -1427,16 +1435,17 @@ const BBAdvancedGameRow: FC<BBAdvancedGameRowProps> = ({
     return "text-gray-500";
   })();
   const mvpLabel = (() => {
+    if (!game.IsRevealed && !resultsOverride) return "";
     const player = playerMap[game.MVP];
     if (!player) return "";
     return `${player.Position} ${player.FirstName} ${player.LastName}`;
   })();
   const homeTeamLogo = (() => {
-    let logo = getLogo(league, game.HomeTeamID, false);
+    let logo = getLogo(league, game.HomeTeamID, currentUser?.IsRetro);
     return logo;
   })();
   const awayTeamLogo = (() => {
-    let logo = getLogo(league, game.AwayTeamID, false);
+    let logo = getLogo(league, game.AwayTeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -1554,6 +1563,7 @@ export const AdvancedSchedule: FC<AdvancedScheduleProps> = ({
   isLoading,
   isPreseason,
   resultsOverride = false,
+  currentUser,
 }) => {
   const {
     leagueTeamOptions,
@@ -1598,6 +1608,7 @@ export const AdvancedSchedule: FC<AdvancedScheduleProps> = ({
             openModal={gameModal.handleOpenModal}
             playerMap={leaguePlayerMap}
             resultsOverride={resultsOverride}
+            currentUser={currentUser}
           />
         );
       };
@@ -1614,6 +1625,7 @@ export const AdvancedSchedule: FC<AdvancedScheduleProps> = ({
             playerMap={leaguePlayerMap}
             league={league}
             resultsOverride={resultsOverride}
+            currentUser={currentUser}
           />
         );
       };
@@ -1629,6 +1641,7 @@ export const AdvancedSchedule: FC<AdvancedScheduleProps> = ({
           playerMap={leaguePlayerMap}
           league={league}
           resultsOverride={resultsOverride}
+          currentUser={currentUser}
         />
       );
     };
@@ -1703,6 +1716,7 @@ interface AdvancedStandingsProps {
   isLoading: boolean;
   view: string;
   selectedSeasonID: number;
+  currentUser: any;
 }
 
 interface HCKAdvancedStandingsRowProps {
@@ -1711,6 +1725,7 @@ interface HCKAdvancedStandingsRowProps {
   idx: number;
   bg: string;
   teamMap: Record<number, CHLTeam> | Record<number, ProfessionalTeam>;
+  currentUser: any;
 }
 
 const HCKAdvancedStandingsRow: FC<HCKAdvancedStandingsRowProps> = ({
@@ -1719,9 +1734,10 @@ const HCKAdvancedStandingsRow: FC<HCKAdvancedStandingsRowProps> = ({
   idx,
   bg,
   teamMap,
+  currentUser,
 }) => {
   const teamLogo = (() => {
-    let logo = getLogo(league, standings.TeamID, false);
+    let logo = getLogo(league, standings.TeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -1933,6 +1949,7 @@ interface FBAdvancedStandingsRowProps {
   bg: string;
   league: League;
   teamMap: Record<number, CFBTeam> | Record<number, NFLTeam>;
+  currentUser: any;
 }
 
 const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
@@ -1941,9 +1958,10 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
   bg,
   teamMap,
   league,
+  currentUser,
 }) => {
   const teamLogo = (() => {
-    let logo = getLogo(league, standings.TeamID, false);
+    let logo = getLogo(league, standings.TeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -2180,6 +2198,7 @@ interface BBAdvancedStandingsRowProps {
   bg: string;
   league: League;
   teamMap: Record<number, CBBTeam> | Record<number, NBATeam>;
+  currentUser: any;
 }
 
 const BBAdvancedStandingsRow: FC<BBAdvancedStandingsRowProps> = ({
@@ -2188,9 +2207,10 @@ const BBAdvancedStandingsRow: FC<BBAdvancedStandingsRowProps> = ({
   bg,
   league,
   teamMap,
+  currentUser,
 }) => {
   const teamLogo = (() => {
-    let logo = getLogo(league, standings.TeamID, false);
+    let logo = getLogo(league, standings.TeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -2402,6 +2422,7 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
   darkerBackgroundColor,
   isLoading,
   selectedSeasonID,
+  currentUser,
 }) => {
   const {
     filteredStandings,
@@ -2439,6 +2460,7 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
             bg={bg}
             league={league}
             teamMap={hockeyTeamMap}
+            currentUser={currentUser}
           />
         );
       };
@@ -2456,6 +2478,7 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
             bg={bg}
             league={league}
             teamMap={footballTeamMap!!}
+            currentUser={currentUser}
           />
         );
       };
@@ -2472,6 +2495,7 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
           bg={bg}
           league={league}
           teamMap={basketballTeamMap!!}
+          currentUser={currentUser}
         />
       );
     };
