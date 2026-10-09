@@ -1507,6 +1507,8 @@ export class NBAStandings {
   DivisionName: string;
   PostSeasonStatus: string;
   IsConferenceChampion: boolean;
+  TotalWinPercentage: number;
+  ConfWinPercentage: number;
   TotalWins: number;
   TotalLosses: number;
   ConferenceWins: number;
@@ -1515,6 +1517,7 @@ export class NBAStandings {
   RankedLosses: number;
   PointsFor: number;
   PointsAgainst: number;
+  PointsDifferential: number;
   Streak: number;
   HomeWins: number;
   AwayWins: number;
@@ -1551,6 +1554,9 @@ export class NBAStandings {
     this.HomeWins = source["HomeWins"];
     this.AwayWins = source["AwayWins"];
     this.Coach = source["Coach"];
+    this.ConfWinPercentage = source["ConfWinPercentage"];
+    this.PointsDifferential = source["PointsDifferential"];
+    this.TotalWinPercentage = source["TotalWinPercentage"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1589,6 +1595,26 @@ export class CollegeStandings {
   Invitational: string;
   InvitationalChampion: boolean;
   Rank: number;
+  PreseasonRank: number;
+  ToucanRank: number;
+  KenPomRank: number;
+  KenPomRating: number;
+  RPIRank: number;
+  RPIRating: number;
+  SOS: number;
+  SOR: number;
+  Q1Wins: number;
+  Q2Wins: number;
+  Q3Wins: number;
+  Q4Wins: number;
+  Q1Losses: number;
+  Q2Losses: number;
+  Q3Losses: number;
+  Q4Losses: number;
+  QuadrantRating: number;
+  ConferenceStrengthAdj: number;
+  TotalWinPercentage: number;
+  ConfWinPercentage: number;
   TotalWins: number;
   TotalLosses: number;
   ConferenceWins: number;
@@ -1597,6 +1623,7 @@ export class CollegeStandings {
   RankedLosses: number;
   PointsFor: number;
   PointsAgainst: number;
+  PointsDifferential: number;
   Streak: number;
   HomeWins: number;
   AwayWins: number;
@@ -1621,6 +1648,26 @@ export class CollegeStandings {
     this.Invitational = source["Invitational"];
     this.InvitationalChampion = source["InvitationalChampion"];
     this.Rank = source["Rank"];
+    this.PreseasonRank = source["PreseasonRank"];
+    this.ToucanRank = source["ToucanRank"];
+    this.KenPomRank = source["KenPomRank"];
+    this.KenPomRating = source["KenPomRating"];
+    this.RPIRank = source["RPIRank"];
+    this.RPIRating = source["RPIRating"];
+    this.SOS = source["SOS"];
+    this.SOR = source["SOR"];
+    this.Q1Wins = source["Q1Wins"];
+    this.Q2Wins = source["Q2Wins"];
+    this.Q3Wins = source["Q3Wins"];
+    this.Q4Wins = source["Q4Wins"];
+    this.Q1Losses = source["Q1Losses"];
+    this.Q2Losses = source["Q2Losses"];
+    this.Q3Losses = source["Q3Losses"];
+    this.Q4Losses = source["Q4Losses"];
+    this.QuadrantRating = source["QuadrantRating"];
+    this.ConferenceStrengthAdj = source["ConferenceStrengthAdj"];
+    this.TotalWinPercentage = source["TotalWinPercentage"];
+    this.ConfWinPercentage = source["ConfWinPercentage"];
     this.TotalWins = source["TotalWins"];
     this.TotalLosses = source["TotalLosses"];
     this.ConferenceWins = source["ConferenceWins"];
@@ -1629,6 +1676,7 @@ export class CollegeStandings {
     this.RankedLosses = source["RankedLosses"];
     this.PointsFor = source["PointsFor"];
     this.PointsAgainst = source["PointsAgainst"];
+    this.PointsDifferential = source["PointsDifferential"];
     this.Streak = source["Streak"];
     this.HomeWins = source["HomeWins"];
     this.AwayWins = source["AwayWins"];
