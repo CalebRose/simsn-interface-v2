@@ -35,6 +35,7 @@ import { useModal } from "../../../_hooks/useModal";
 import { getFBAWeekID } from "../../../_helper/statsPageHelper";
 import {
   AdvancedSchedule,
+  AdvancedStandings,
   LeagueStandings,
   TeamSchedule,
   TeamStandings,
@@ -63,6 +64,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     cbbRosterMap,
     cbbTeamOptions,
     allCBBStandings,
+    cbbStandingsMapBySeason,
     allCollegeGames: allCBBGames,
     isLoading,
     collegePollSubmission,
@@ -115,11 +117,16 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
   const selectedSeasonID = useMemo(() => {
     return selectedSeason - 2020;
   }, [selectedSeason]);
+
   const collegeGamesBySelectedSeason = useMemo(() => {
     return allCBBGames
       .filter((game) => game.SeasonID === selectedSeasonID)
       .sort((a, b) => a.Week - b.Week);
   }, [allCBBGames, selectedSeasonID]);
+
+  const collegeStandingsBySelectedSeason = useMemo(() => {
+    return cbbStandingsMapBySeason?.[selectedSeasonID] ?? [];
+  }, [cbbStandingsMapBySeason, selectedSeasonID]);
 
   const playerMap = useMemo(() => {
     if (!cbbRosterMap) return {};
@@ -185,7 +192,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
       selectedWeek,
       selectedSeason,
       league,
-      allCBBStandings,
+      collegeStandingsBySelectedSeason,
       allCBBGames,
       cbbTeams,
     );
@@ -195,7 +202,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedWeek,
     selectedSeason,
     league,
-    allCBBStandings,
+    collegeStandingsBySelectedSeason,
     allCBBGames,
     cbbTeams,
   ]);
@@ -685,6 +692,20 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               resultsOverride={resultsOverride}
             />
           )}
+          {category === AdvStandings && (
+            <AdvancedStandings
+              team={selectedTeam}
+              league={league}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={view}
+              selectedSeasonID={selectedSeason - 2020}
+            />
+          )}
         </div>
       </div>
     </>
@@ -704,6 +725,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
     nbaTeamOptions,
     allProStandings: allNBAStandings,
     allProGames: allNBAGames,
+    proStandingsMapBySeason,
     isLoading,
     ExportBasketballSchedule,
   } = bbStore;
@@ -741,6 +763,10 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
       .filter((game) => game.SeasonID === selectedSeasonID)
       .sort((a, b) => a.Week - b.Week);
   }, [allNBAGames, selectedSeasonID]);
+
+  const proStandingsBySelectedSeason = useMemo(() => {
+    return proStandingsMapBySeason?.[selectedSeasonID] ?? [];
+  }, [proStandingsMapBySeason, selectedSeasonID]);
 
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -824,7 +850,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
       selectedWeek,
       selectedSeason,
       league,
-      allNBAStandings,
+      proStandingsBySelectedSeason,
       allNBAGames,
       nbaTeams,
     );
@@ -834,7 +860,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedWeek,
     selectedSeason,
     league,
-    allNBAStandings,
+    proStandingsBySelectedSeason,
     allNBAGames,
     nbaTeams,
   ]);
@@ -1285,6 +1311,20 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
               isLoading={isLoading}
               view={view}
               resultsOverride={resultsOverride}
+            />
+          )}
+          {category === AdvStandings && (
+            <AdvancedStandings
+              team={selectedTeam}
+              league={league}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={view}
+              selectedSeasonID={selectedSeason - 2020}
             />
           )}
         </div>

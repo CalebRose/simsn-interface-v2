@@ -1097,7 +1097,6 @@ export const useFilteredStandings = (
   );
 
   return useMemo(() => {
-    console.log({ conferencesSet, divisionsSet, standings });
     return standings
       .filter((s) => {
         if (teamsSet.size > 0 && !teamsSet.has(s.TeamID)) {
@@ -1178,6 +1177,21 @@ export const getSimNFLDivision = (divisionID: number) => {
     6: "North",
     7: "South",
     8: "West",
+  };
+
+  return divisionMap[divisionID];
+};
+
+export const getSimNBADivision = (divisionID: number) => {
+  const divisionMap: Record<number, string> = {
+    1: "Atlantic",
+    2: "Central",
+    3: "Northeast",
+    4: "Southeast",
+    5: "Southwest",
+    6: "Mountain",
+    7: "Pacific",
+    8: "Northwest",
   };
 
   return divisionMap[divisionID];

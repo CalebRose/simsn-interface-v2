@@ -95,7 +95,9 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     collegeNotifications: cbbNotifications,
     proNotifications: nbaNotifications,
     allCBBStandings,
+    cbbStandingsMapBySeason,
     allProStandings: allNBAStandings,
+    proStandingsMapBySeason: nbaStandingsMapBySeason,
     cbbRosterMap,
     proRosterMap: nbaRosterMap,
     allCollegeGames: allCBBGames,
@@ -280,6 +282,18 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     return proStandingsMapBySeason?.[seasonID] ?? [];
   }, [proStandingsMapBySeason, ts]);
 
+  const seasonCBBStandings = useMemo(() => {
+    const seasonID = ts?.SeasonID || -1;
+    if (!seasonID || seasonID <= 0) return [];
+    return cbbStandingsMapBySeason?.[seasonID] ?? [];
+  }, [cbbStandingsMapBySeason, ts]);
+
+  const seasonNBAStandings = useMemo(() => {
+    const seasonID = ts?.SeasonID || -1;
+    if (!seasonID || seasonID <= 0) return [];
+    return nbaStandingsMapBySeason?.[seasonID] ?? [];
+  }, [nbaStandingsMapBySeason, ts]);
+
   const {
     teamStandings = [],
     teamNotifications = [],
@@ -342,7 +356,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           ts,
           league,
           currentUser,
-          allCBBStandings,
+          seasonCBBStandings,
           cbbNotifications,
           allCBBGames,
           cbbTeams,
@@ -362,7 +376,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           ts,
           league,
           currentUser,
-          allNBAStandings,
+          seasonNBAStandings,
           nbaNotifications,
           allNBAGames,
           nbaTeams,
@@ -423,7 +437,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     team,
     currentWeek,
     currentUser,
-    allCFBStandings,
+    seasonCFBStandings,
     collegeNotifications,
     allCollegeGames,
     cfbTeams,
@@ -432,7 +446,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topCFBReceivers,
     collegeNews,
     cfbRosterMap,
-    allProStandings,
+    seasonNFLStandings,
     proNotifications,
     allProGames,
     nflTeams,
@@ -441,7 +455,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topNFLReceivers,
     proNews,
     proRosterMap,
-    allCBBStandings,
+    seasonCBBStandings,
     cbbNotifications,
     allCBBGames,
     cbbTeams,
@@ -450,7 +464,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topCBBRebounds,
     cbbNews,
     cbbRosterMap,
-    allNBAStandings,
+    seasonNBAStandings,
     nbaNotifications,
     allNBAGames,
     nbaTeams,

@@ -355,7 +355,40 @@ export const useAdvancedStandings = (
         ]);
       }
     } else if (isBasketball) {
-      columns = columns.concat([]);
+      columns = columns.concat([
+        { header: "T. W.", accessor: "TotalWins" },
+        { header: "T. L.", accessor: "TotalLosses" },
+        { header: "C. W.", accessor: "ConferenceWins" },
+        { header: "C. L.", accessor: "ConferenceLosses" },
+        { header: "PF", accessor: "PointsFor" },
+        { header: "PA", accessor: "PointsAgainst" },
+        { header: "PD", accessor: "PointsDifferential" },
+        { header: "Strk.", accessor: "Streak" },
+        { header: "HW.", accessor: "HomeWins" },
+        { header: "AW.", accessor: "AwayWins" },
+        { header: "Status", accessor: "PostSeasonStatus" },
+      ]);
+      if (league === SimCBB) {
+        columns = columns.concat([
+          { header: "R.", accessor: "Rank" },
+          { header: "RW", accessor: "RankedWins" },
+          { header: "RL", accessor: "RankedLosses" },
+          { header: "Preseason Rank", accessor: "PreseasonRank" },
+          { header: "Toucan Rank", accessor: "ToucanRank" },
+          { header: "KenPom Rank", accessor: "KenPomRank" },
+          { header: "KenPom", accessor: "KenPomRating" },
+          { header: "RPI", accessor: "RPIRank" },
+          { header: "RPI", accessor: "RPIRating" },
+          { header: "SOS", accessor: "SOS" },
+          { header: "SOR", accessor: "SOR" },
+          { header: "Q1", accessor: "Q1Wins" },
+          { header: "Q2", accessor: "Q2Wins" },
+          { header: "Q3", accessor: "Q3Wins" },
+          { header: "Q4", accessor: "Q4Wins" },
+          { header: "QR", accessor: "QuadrantRating" },
+          { header: "Conf. SOS", accessor: "ConferenceStrengthAdj" },
+        ]);
+      }
     } else if (isFootball) {
       if (league === SimCFB) {
         columns = columns.concat([

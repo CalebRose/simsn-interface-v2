@@ -16,6 +16,7 @@ import { SectionCards } from "../../../_design/SectionCards";
 import { InformationCircle } from "../../../_design/Icons";
 import PlayerPicture from "../../../_utility/usePlayerFaces";
 import {
+  getSimNBADivision,
   getSimNFLDivision,
   processLeagueStandings,
 } from "./SchedulePageHelper";
@@ -2174,24 +2175,219 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
 };
 
 interface BBAdvancedStandingsRowProps {
-  game: CBBStandings | NBAStandings;
+  standings: CBBStandings | NBAStandings;
   idx: number;
   bg: string;
   league: League;
+  teamMap: Record<number, CBBTeam> | Record<number, NBATeam>;
 }
 
 const BBAdvancedStandingsRow: FC<BBAdvancedStandingsRowProps> = ({
-  game,
+  standings,
   idx,
   bg,
   league,
+  teamMap,
 }) => {
+  const teamLogo = (() => {
+    let logo = getLogo(league, standings.TeamID, false);
+    return logo;
+  })();
+
+  const team = useMemo(() => {
+    if (league === SimCBB) {
+      return teamMap ? (teamMap[standings.TeamID] as CBBTeam) : null;
+    }
+    if (league === SimNBA) {
+      return teamMap ? teamMap[standings.TeamID] : null;
+    }
+    return teamMap ? teamMap[standings.TeamID] : null;
+  }, [teamMap, standings.TeamID]);
+
+  const division = useMemo(() => {
+    if (league === SimNBA) {
+      return getSimNBADivision((standings as NBAStandings).DivisionID);
+    }
+    return "";
+  }, [standings, league]);
+
+  const rank = useMemo(() => {
+    if (league === SimCBB) {
+      return (standings as CBBStandings).Rank;
+    }
+    return 0;
+  }, [standings, league]);
+
+  const cbbRankingStats = useMemo(() => {
+    if (league === SimNBA) return null;
+    if (league === SimCBB) {
+      return {
+        TotalWinPercentage: (standings as CBBStandings).TotalWinPercentage,
+        ConfWinPercentage: (standings as CBBStandings).ConfWinPercentage,
+        PreseasonRank: (standings as CBBStandings).PreseasonRank,
+        ToucanRank: (standings as CBBStandings).ToucanRank,
+        KenPomRank: (standings as CBBStandings).KenPomRank,
+        KP: (standings as CBBStandings).KenPomRating,
+        RPI: (standings as CBBStandings).RPIRating,
+        RPIRank: (standings as CBBStandings).RPIRank,
+        SOS: (standings as CBBStandings).SOS,
+        SOR: (standings as CBBStandings).SOR,
+        Q1Wins: (standings as CBBStandings).Q1Wins,
+        Q1Losses: (standings as CBBStandings).Q1Losses,
+        Q2Wins: (standings as CBBStandings).Q2Wins,
+        Q2Losses: (standings as CBBStandings).Q2Losses,
+        Q3Wins: (standings as CBBStandings).Q3Wins,
+        Q3Losses: (standings as CBBStandings).Q3Losses,
+        Q4Wins: (standings as CBBStandings).Q4Wins,
+        Q4Losses: (standings as CBBStandings).Q4Losses,
+        QR: (standings as CBBStandings).QuadrantRating,
+        ConferenceStrengthAdj: (standings as CBBStandings)
+          .ConferenceStrengthAdj,
+      };
+    }
+    return null;
+  }, [league, standings]);
+
+  const teamLabel = useMemo(() => {
+    if (league === SimCBB && teamMap) {
+      const t = teamMap[standings.TeamID] as CBBTeam;
+      return t?.Team || "";
+    }
+    if (league === SimNBA && teamMap) {
+      const t = teamMap[standings.TeamID] as NBATeam;
+      return `${t.Team} ${t.Nickname}`;
+    }
+    return standings.TeamName || "";
+  }, [league, standings, teamMap]);
+
   return (
     <div
       key={idx}
       className="table-row border-b dark:border-gray-700 text-start"
       style={{ backgroundColor: bg }}
-    ></div>
+    >
+      <TableCell>
+        <div className="flex items-center space-x-4">
+          <Logo url={teamLogo} variant="tiny" />
+          <ClickableTeamLabel
+            teamID={standings.TeamID}
+            league={league}
+            label={teamLabel}
+          />
+        </div>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceName}</Span>
+      </TableCell>
+      {league === SimNBA && (
+        <TableCell>
+          <Span>{division}</Span>
+        </TableCell>
+      )}
+      <TableCell>
+        <ClickableUserLabel
+          coach={standings.Coach || "AI"}
+          label={standings.Coach || "AI"}
+          textVariant="xs"
+        />
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalLosses}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceLosses}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PointsFor}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PointsAgainst}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PointsDifferential}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.Streak}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.HomeWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.AwayWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PostSeasonStatus}</Span>
+      </TableCell>
+      {league === SimCBB && (
+        <>
+          <TableCell>
+            <Span>{rank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{standings.RankedWins}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{standings.RankedLosses}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.PreseasonRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.ToucanRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.KenPomRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.KP.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.RPIRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.RPI.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.SOS.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.SOR.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>
+              {cbbRankingStats?.Q1Wins}-{cbbRankingStats?.Q1Losses}
+            </Span>
+          </TableCell>
+          <TableCell>
+            <Span>
+              {cbbRankingStats?.Q2Wins}-{cbbRankingStats?.Q2Losses}
+            </Span>
+          </TableCell>
+          <TableCell>
+            <Span>
+              {cbbRankingStats?.Q3Wins}-{cbbRankingStats?.Q3Losses}
+            </Span>
+          </TableCell>
+          <TableCell>
+            <Span>
+              {cbbRankingStats?.Q4Wins}-{cbbRankingStats?.Q4Losses}
+            </Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.QR.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.ConferenceStrengthAdj.toFixed(3)}</Span>
+          </TableCell>
+        </>
+      )}
+    </div>
   );
 };
 
@@ -2215,6 +2411,7 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
     leagueTeamMap,
     hockeyTeamMap,
     footballTeamMap,
+    basketballTeamMap,
     leagueTeamOptions,
     leagueConferenceOptions,
     leagueOptions,
@@ -2263,8 +2460,20 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
         );
       };
     }
-    return (game: CBBStandings | NBAStandings, idx: number, bg: string) => {
-      return <></>;
+    return (
+      standings: CBBStandings | NBAStandings,
+      idx: number,
+      bg: string,
+    ) => {
+      return (
+        <BBAdvancedStandingsRow
+          standings={standings}
+          idx={idx}
+          bg={bg}
+          league={league}
+          teamMap={basketballTeamMap!!}
+        />
+      );
     };
   };
 
