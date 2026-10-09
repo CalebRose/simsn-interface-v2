@@ -202,8 +202,8 @@ export const BasketballDepthChart: FC<BasketballDepthChartProps> = ({
         )}
       </div>
       <div className="lg:overflow-x-auto">
-        <div className="lg:min-w-330">
-          <div className="hidden lg:grid grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)_7rem] items-end gap-2 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
+        <div className="lg:min-w-[80rem]">
+          <div className="hidden lg:grid grid-cols-[1.5rem_minmax(170px,2fr)_2.25rem_repeat(12,minmax(2.75rem,1fr))_repeat(5,minmax(3.75rem,1fr))_minmax(6.5rem,1.5fr)] items-end gap-1 border-b border-slate-600 px-3 pb-2 text-center text-xs font-semibold text-slate-300">
             <span>#</span>
             <span className="text-left">Player</span>
             <span>OVR</span>
@@ -516,7 +516,7 @@ const DepthRow: FC<{
           </label>
         )}
       </div>
-      <div className="hidden grid-cols-[2rem_minmax(220px,1fr)_2.5rem_repeat(12,3.25rem)_repeat(5,4.75rem)_7rem] items-center gap-2 rounded-lg bg-slate-800/70 p-3 text-center text-sm lg:grid">
+      <div className="hidden grid-cols-[1.5rem_minmax(170px,2fr)_2.25rem_repeat(12,minmax(2.75rem,1fr))_repeat(5,minmax(3.75rem,1fr))_minmax(6.5rem,1.5fr)] items-center gap-1 rounded-lg bg-slate-800/70 p-3 text-center text-sm lg:grid">
         <strong>{label}</strong>
         <div className="text-left">
           <span>
@@ -582,7 +582,7 @@ const DepthRow: FC<{
                 lineupIndex,
               )
             }
-            className="w-full min-w-0 rounded border border-slate-500 bg-black px-1 py-1 text-center text-sm text-white"
+            className="w-full min-w-0 rounded border border-slate-500 bg-black px-0.5 py-1 text-center text-xs text-white"
           >
             {shotVolumeOptions.map((option) => (
               <option key={option.value} value={option.value}>
