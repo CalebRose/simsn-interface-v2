@@ -47,6 +47,14 @@ import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import { CollegePollModal } from "../Common/CollegePollModal";
 import { SubmitPollModal } from "../Common/SubmitPollModal";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
+import { CBBConferenceTournamentBracket } from "./CBBConferenceTournamentBracket";
+import { CBBPostseasonPage } from "./CBBNationalTournamentBracket";
+import { findConferenceTournamentGames } from "./cbbBracketLayout";
+import { NBAPostseasonPage } from "./NBAPostseasonBracket";
+
+const ConfTournament = "Conference Tournament";
+const Postseason = "Postseason";
+const NBAPostseason = "Postseason";
 
 interface SchedulePageProps {
   league: League;
@@ -127,6 +135,11 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
   const collegeStandingsBySelectedSeason = useMemo(() => {
     return cbbStandingsMapBySeason?.[selectedSeasonID] ?? [];
   }, [cbbStandingsMapBySeason, selectedSeasonID]);
+
+  const conferenceTournamentGames = useMemo(
+    () => findConferenceTournamentGames(collegeGamesBySelectedSeason),
+    [collegeGamesBySelectedSeason],
+  );
 
   const playerMap = useMemo(() => {
     if (!cbbRosterMap) return {};
@@ -305,6 +318,24 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
                   classes="px-3 py-2"
                 >
                   <Text variant="small">Adv. Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(ConfTournament)}
+                  isSelected={category === ConfTournament}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Conf. Tourney</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(Postseason)}
+                  isSelected={category === Postseason}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Natl. Tourney</Text>
                 </Button>
                 <Button
                   size="md"
@@ -676,6 +707,37 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               />
             </div>
           )}
+          {category === ConfTournament && (
+            <CBBConferenceTournamentBracket
+              games={conferenceTournamentGames}
+              standings={
+                collegeStandingsBySelectedSeason.length
+                  ? collegeStandingsBySelectedSeason
+                  : allCBBStandings
+              }
+              season={selectedSeason}
+              teamMap={cbbTeamMap}
+              defaultConferenceId={selectedTeam?.ConferenceID}
+              ts={ts}
+              playerMap={playerMap}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
+          )}
+          {category === Postseason && (
+            <CBBPostseasonPage
+              games={collegeGamesBySelectedSeason}
+              teamMap={cbbTeamMap}
+              ts={ts}
+              playerMap={playerMap}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
+          )}
           {category === AdvSchedule && (
             <AdvancedSchedule
               team={selectedTeam}
@@ -944,6 +1006,15 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
                   classes="px-3 py-2"
                 >
                   <Text variant="small">Adv. Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(NBAPostseason)}
+                  isSelected={category === NBAPostseason}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Postseason</Text>
                 </Button>
               </ButtonGrid>
             </div>
@@ -1298,6 +1369,18 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
                 isLoading={isLoading}
               />
             </div>
+          )}
+          {category === NBAPostseason && (
+            <NBAPostseasonPage
+              games={proGamesBySelectedSeason}
+              teamMap={nbaTeamMap}
+              ts={ts}
+              playerMap={playerMap}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
           )}
           {category === AdvSchedule && (
             <AdvancedSchedule
