@@ -93,6 +93,8 @@ const BracketCanvas: FC<{
   labelFromMatchName?: boolean;
   winnerLabel?: string;
   hideWinner?: boolean;
+  showTitles?: boolean;
+  hideSeeds?: boolean;
   league: League;
 }> = ({
   layout,
@@ -102,17 +104,22 @@ const BracketCanvas: FC<{
   labelFromMatchName,
   winnerLabel = "Winner",
   hideWinner,
+  showTitles,
+  hideSeeds,
   league,
 }) => {
   const { roundCount, nodes, minGap, seeds } = layout;
-  const unit = PITCH / minGap;
+  const captionH = showTitles ? 16 : 0;
+  const unit = (PITCH + captionH) / minGap;
   const ys = nodes.map((n) => n.y);
   const minY = Math.min(...ys);
-  const colX = (round: number) => (round - 1) * (CARD_W + COL_GAP);
-  const centre = (y: number) => (y - minY) * unit + CARD_H / 2;
-  const height = (Math.max(...ys) - minY) * unit + CARD_H;
+  const groups = (layout.groups ?? []).filter((g) => g.label);
+  const labelW = groups.length ? 36 : 0;
+  const colX = (round: number) => labelW + (round - 1) * (CARD_W + COL_GAP);
+  const centre = (y: number) => (y - minY) * unit + CARD_H / 2 + captionH;
+  const height = (Math.max(...ys) - minY) * unit + CARD_H + captionH;
   const columnCount = roundCount + (hideWinner ? 0 : 1);
-  const width = columnCount * (CARD_W + COL_GAP) - COL_GAP;
+  const width = labelW + columnCount * (CARD_W + COL_GAP) - COL_GAP;
   const byID = new Map(nodes.map((n) => [n.game.ID, n]));
   const final = nodes.find((n) => n.round === roundCount);
   const champion = !hideWinner && final?.game.GameComplete
@@ -129,7 +136,8 @@ const BracketCanvas: FC<{
         (labelFromMatchName
           ? nodes
               .find((n) => n.round === i + 1)
-              ?.game.MatchName?.replace(/^(NIT|CBI|NCAA) /, "")
+              ?.game.MatchName?.replace(/^(NIT|CBI|NCAA|FCS Playoffs|FCS) /, "")
+              .replace(/ Game$/, "")
           : undefined) ??
         roundName(roundCount, i + 1),
     ),
@@ -146,7 +154,11 @@ const BracketCanvas: FC<{
           <div
             key={label}
             className="absolute text-center font-bold"
-            style={{ left: i * (CARD_W + COL_GAP), width: CARD_W, top: 0 }}
+            style={{
+              left: labelW + i * (CARD_W + COL_GAP),
+              width: CARD_W,
+              top: 0,
+            }}
           >
             {label}
           </div>
@@ -186,6 +198,36 @@ const BracketCanvas: FC<{
           })}
         </svg>
         <div className="absolute left-0" style={{ top: HEADER_H }}>
+          {groups.map((g) => (
+            <div
+              key={`group-${g.label}`}
+              className="absolute flex items-center justify-center rounded bg-slate-700 text-sm font-bold tracking-widest text-white"
+              style={{
+                left: 0,
+                width: labelW - 8,
+                top: centre(g.fromY) - CARD_H / 2,
+                height: centre(g.toY) - centre(g.fromY) + CARD_H,
+                writingMode: "vertical-rl",
+                transform: "rotate(180deg)",
+              }}
+            >
+              {g.label}
+            </div>
+          ))}
+          {showTitles &&
+            nodes.map((n) => (
+              <div
+                key={`title-${n.game.ID}`}
+                className="absolute truncate text-center text-xs text-slate-400"
+                style={{
+                  left: colX(n.round),
+                  top: centre(n.y) - CARD_H / 2 - captionH,
+                  width: CARD_W,
+                }}
+              >
+                {(n.game as any).GameTitle?.replace(/^\d{4}\s+/, "")}
+              </div>
+            ))}
           {nodes.map((n) => (
             <div
               key={n.game.ID}
@@ -207,7 +249,7 @@ const BracketCanvas: FC<{
                 game={n.game}
                 home
                 team={teamMap?.[n.game.HomeTeamID]}
-                seed={seeds.get(n.game.HomeTeamID)}
+                seed={hideSeeds ? undefined : seeds.get(n.game.HomeTeamID)}
                 league={league}
               />
               <div className="border-t border-slate-600" />
@@ -215,7 +257,7 @@ const BracketCanvas: FC<{
                 game={n.game}
                 home={false}
                 team={teamMap?.[n.game.AwayTeamID]}
-                seed={seeds.get(n.game.AwayTeamID)}
+                seed={hideSeeds ? undefined : seeds.get(n.game.AwayTeamID)}
                 league={league}
               />
             </div>
@@ -257,6 +299,9 @@ export interface TournamentEntry {
   // Series / play-in entries: no per-game box score, no champion column.
   noClick?: boolean;
   hideWinner?: boolean;
+  // Show each game's title (e.g. bowl name) above its card; hide seed numbers.
+  showTitles?: boolean;
+  hideSeeds?: boolean;
   layout?: BracketLayout;
   // Extra brackets shown under this one on the same page (e.g. play-in).
   below?: TournamentEntry[];
@@ -264,11 +309,15 @@ export interface TournamentEntry {
 
 // Hide results the schedule page hasn't revealed yet, including the winner,
 // so a live tournament can't be read ahead of the sim timeslots.
-export const useRevealedGames = (games: Match[], ts: any) =>
+export const useRevealedGames = (
+  games: Match[],
+  ts: any,
+  reveal: (g: Match) => boolean = (g) => RevealBBAResults(g, ts, false),
+) =>
   useMemo(
     () =>
       games.map((g) =>
-        RevealBBAResults(g, ts, false)
+        reveal(g)
           ? g
           : (Object.assign(Object.create(Object.getPrototypeOf(g)), g, {
               GameComplete: false,
@@ -278,6 +327,7 @@ export const useRevealedGames = (games: Match[], ts: any) =>
               AwayTeamScore: 0,
             }) as Match),
       ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [games, ts],
   );
 
@@ -290,6 +340,7 @@ interface ViewProps {
   winnerLabel?: string;
   topControls?: ReactNode;
   league?: League;
+  modalTeamMap?: any;
   teamMap: Record<number, Team> | null;
   ts: any;
   playerMap: any;
@@ -308,6 +359,7 @@ export const TournamentBracketView: FC<ViewProps> = ({
   winnerLabel,
   topControls,
   league = SimCBB,
+  modalTeamMap,
   teamMap,
   ts,
   playerMap,
@@ -379,7 +431,7 @@ export const TournamentBracketView: FC<ViewProps> = ({
         game={selectedGame}
         title={`${selectedGame?.HomeTeamAbbr} vs ${selectedGame?.AwayTeamAbbr}`}
         playerMap={playerMap}
-        teamMap={teamMap}
+        teamMap={modalTeamMap ?? teamMap}
       />
       <h2
         className={`rounded px-4 py-2 text-center text-xl font-bold ${textColorClass}`}
@@ -429,6 +481,8 @@ export const TournamentBracketView: FC<ViewProps> = ({
           onGame={entry?.noClick ? undefined : openBoxScore}
           league={league}
           hideWinner={entry?.hideWinner}
+          showTitles={entry?.showTitles}
+          hideSeeds={entry?.hideSeeds}
           roundLabels={entry?.roundLabels}
           labelFromMatchName={entry?.labelFromMatchName}
           winnerLabel={winnerLabel}

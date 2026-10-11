@@ -19,6 +19,10 @@ import { SelectDropdown } from "../../../_design/Select";
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
+import { CFBPlayoffBracket } from "./CFBPlayoffBracket";
+import { NFLPlayoffBracket } from "./NFLPlayoffBracket";
+
+const Playoffs = "Playoffs";
 import { Text } from "../../../_design/Typography";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
@@ -258,6 +262,15 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   classes="px-5 py-2"
                 >
                   <Text variant="small">Adv.Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(Playoffs)}
+                  isSelected={category === Playoffs}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Playoffs</Text>
                 </Button>
                 <Button
                   size="md"
@@ -562,6 +575,17 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               />
             </div>
           )}
+          {category === Playoffs && (
+            <CFBPlayoffBracket
+              games={seasonCFBGames}
+              teamMap={cfbTeamMap}
+              ts={ts}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
+          )}
           {category === AdvSchedule && (
             <AdvancedSchedule
               team={selectedTeam}
@@ -801,6 +825,15 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   classes="px-5 py-2"
                 >
                   <Text variant="small">Adv. Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(Playoffs)}
+                  isSelected={category === Playoffs}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Playoffs</Text>
                 </Button>
                 <Button
                   size="md"
@@ -1093,6 +1126,17 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 isLoading={isLoading}
               />
             </div>
+          )}
+          {category === Playoffs && (
+            <NFLPlayoffBracket
+              games={seasonNFLGames}
+              teamMap={nflTeamMap}
+              ts={ts}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
           )}
           {category === AdvSchedule && (
             <AdvancedSchedule
