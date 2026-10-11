@@ -266,15 +266,6 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  onClick={() => setCategory(Playoffs)}
-                  isSelected={category === Playoffs}
-                  classes="px-5 py-2"
-                >
-                  <Text variant="small">Playoffs</Text>
-                </Button>
-                <Button
-                  size="md"
-                  variant="primary"
                   classes="px-5 py-2"
                   onClick={submitPollModal.handleOpenModal}
                 >
@@ -311,6 +302,15 @@ export const CFBSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   disabled={ts.CollegeWeek > 0}
                 >
                   <Text variant="small">Request Game</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(Playoffs)}
+                  isSelected={category === Playoffs}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Playoffs</Text>
                 </Button>
               </ButtonGrid>
             </div>
@@ -829,15 +829,6 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  onClick={() => setCategory(Playoffs)}
-                  isSelected={category === Playoffs}
-                  classes="px-5 py-2"
-                >
-                  <Text variant="small">Playoffs</Text>
-                </Button>
-                <Button
-                  size="md"
-                  variant="primary"
                   classes="px-5 py-2"
                   onClick={getBootstrapScheduleData}
                 >
@@ -858,6 +849,15 @@ export const NFLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   disabled={ts.NFLWeek > 0}
                 >
                   <Text variant="small">Request Game</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(Playoffs)}
+                  isSelected={category === Playoffs}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Playoffs</Text>
                 </Button>
               </ButtonGrid>
             </div>
