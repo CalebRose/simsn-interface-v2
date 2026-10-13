@@ -4535,6 +4535,7 @@ export class BootstrapData {
   CollegePoll: CollegePollSubmission;
   OfficialPolls: CollegePollOfficial[];
   DraftablePlayers: DraftablePlayer[];
+  Arenas: Arena[];
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -4732,6 +4733,7 @@ export class BootstrapData {
       ProfessionalPlayer,
       true,
     );
+    this.Arenas = this.convertValues(source["Arenas"], Arena, true);
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -7811,6 +7813,7 @@ export class CollegePromise {
 }
 
 export class CHLGameRequest {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;

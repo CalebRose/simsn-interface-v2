@@ -67,6 +67,7 @@ import {
   HockeyInvitational,
   HockeyInvitationalRequest,
   CHLGameRequest,
+  Arena,
 } from "../models/hockeyModels";
 import { TeamService } from "../_services/teamService";
 import {
@@ -272,6 +273,8 @@ interface SimHCKContextProps {
   proScoutingProfile: Record<number, ScoutingProfile | null>;
   phlScoutProfiles: ScoutingProfile[];
   phlAllDraftPicks: DraftPick[];
+  arenas: Arena[];
+  arenaMap: Record<number, Arena>;
   getBootstrapDraftData: () => Promise<void>;
   getBootstrapScheduleData: () => Promise<void>;
   getBootstrapLineupData: () => Promise<void>;
@@ -436,6 +439,8 @@ const defaultContext: SimHCKContextProps = {
   proScoutingProfile: {},
   phlScoutProfiles: [],
   phlAllDraftPicks: [],
+  arenas: [],
+  arenaMap: {},
   getBootstrapDraftData: async () => {},
   getBootstrapStatsData: async () => {},
   getBootstrapScheduleData: async () => {},
@@ -649,6 +654,16 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   const [phlDraftPickMap, setPhlDraftPickMap] = useState<
     Record<number, DraftPick[]>
   >({});
+  const [arenas, setArenas] = useState<Arena[]>([]);
+
+  const arenaMap = useMemo(() => {
+    const map: Record<number, Arena> = {};
+    for (let i = 0; i < arenas.length; i++) {
+      const arena = arenas[i];
+      map[arena.ID] = arena;
+    }
+    return map;
+  }, [arenas]);
 
   const chlGameplan = useMemo(() => {
     if (!chlTeam) return {} as CollegeGameplan;
@@ -1121,6 +1136,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       phlid,
       currentUser!.username,
     );
+
+    setArenas(res.Arenas);
 
     if (chlid > 0) {
       setHockeyInvitationals(res.HockeyInvitationals);
@@ -2570,6 +2587,8 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         transferProfileMapByPlayerID,
         historicCollegePlayers,
         retiredProPlayers,
+        arenas,
+        arenaMap,
         removeUserfromCHLTeamCall,
         removeUserfromPHLTeamCall,
         addUserToCHLTeam,

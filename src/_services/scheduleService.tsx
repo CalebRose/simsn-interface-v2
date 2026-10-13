@@ -47,6 +47,46 @@ export default class FBAScheduleService {
     return await GetCall(`${hckUrl}games/result/phl/${id}/`);
   }
 
+  async HCKCreateCHLGameRequest(dto: any): Promise<void> {
+    await PostCall(`${hckUrl}chl/schedule/game/request/create`, dto);
+  }
+
+  async HCKAcceptCHLGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${hckUrl}chl/schedule/game/request/accept/${requestID}`);
+  }
+
+  async HCKRejectCHLGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${hckUrl}chl/schedule/game/request/reject/${requestID}`);
+  }
+
+  async HCKProcessCHLGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${hckUrl}chl/schedule/game/request/process/${requestID}`);
+  }
+
+  async HCKVetoCHLGameRequest(requestID: number): Promise<void> {
+    await GetCall(`${hckUrl}chl/schedule/game/request/veto/${requestID}`);
+  }
+
+  async HCKCreateInvitationalRequest(dto: any): Promise<void> {
+    await PostCall(`${hckUrl}chl/schedule/invitational/request/create`, dto);
+  }
+
+  async HCKProcessHockeyInvitationalRequest(dto: any): Promise<void> {
+    await GetCall(
+      `${hckUrl}chl/schedule/invitational/request/process/${dto.ID}`,
+    );
+  }
+
+  async HCKVetoHockeyInvitationalRequest(dto: any): Promise<void> {
+    await GetCall(`${hckUrl}chl/schedule/invitational/request/veto/${dto.ID}`);
+  }
+
+  async HCKCancelHockeyInvitationalRequest(dto: any): Promise<void> {
+    await GetCall(
+      `${hckUrl}chl/schedule/invitational/request/cancel/${dto.ID}`,
+    );
+  }
+
   async FBATimeslotExport(dto: any): Promise<void> {
     await GetExportCall(
       `${fbaUrl}games/export/results/${dto.SeasonID}/${dto.WeekID}/${dto.WeekID}/${dto.Timeslot}/`,
