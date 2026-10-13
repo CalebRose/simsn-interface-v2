@@ -48,15 +48,15 @@ export default class FBAScheduleService {
   }
 
   async HCKCreateCHLGameRequest(dto: any): Promise<void> {
-    await PostCall(`${hckUrl}chl/schedule/game/request/create`, dto);
+    await PostCall(`${hckUrl}chl/scheduler/game/request/create`, dto);
   }
 
   async HCKAcceptCHLGameRequest(requestID: number): Promise<void> {
-    await GetCall(`${hckUrl}chl/schedule/game/request/accept/${requestID}`);
+    await GetCall(`${hckUrl}chl/scheduler/game/request/accept/${requestID}`);
   }
 
   async HCKRejectCHLGameRequest(requestID: number): Promise<void> {
-    await GetCall(`${hckUrl}chl/schedule/game/request/reject/${requestID}`);
+    await GetCall(`${hckUrl}chl/scheduler/game/request/reject/${requestID}`);
   }
 
   async HCKProcessCHLGameRequest(requestID: number): Promise<void> {
@@ -64,26 +64,26 @@ export default class FBAScheduleService {
   }
 
   async HCKVetoCHLGameRequest(requestID: number): Promise<void> {
-    await GetCall(`${hckUrl}chl/schedule/game/request/veto/${requestID}`);
+    await GetCall(`${hckUrl}chl/scheduler/game/request/veto/${requestID}`);
   }
 
   async HCKCreateInvitationalRequest(dto: any): Promise<void> {
-    await PostCall(`${hckUrl}chl/schedule/invitational/request/create`, dto);
+    await PostCall(`${hckUrl}chl/scheduler/invitational/request/create`, dto);
   }
 
   async HCKProcessHockeyInvitationalRequest(dto: any): Promise<void> {
     await GetCall(
-      `${hckUrl}chl/schedule/invitational/request/process/${dto.ID}`,
+      `${hckUrl}chl/scheduler/invitational/request/process/${dto.ID}`,
     );
   }
 
   async HCKVetoHockeyInvitationalRequest(dto: any): Promise<void> {
-    await GetCall(`${hckUrl}chl/schedule/invitational/request/veto/${dto.ID}`);
+    await GetCall(`${hckUrl}chl/scheduler/invitational/request/veto/${dto.ID}`);
   }
 
   async HCKCancelHockeyInvitationalRequest(dto: any): Promise<void> {
     await GetCall(
-      `${hckUrl}chl/schedule/invitational/request/cancel/${dto.ID}`,
+      `${hckUrl}chl/scheduler/invitational/request/cancel/${dto.ID}`,
     );
   }
 

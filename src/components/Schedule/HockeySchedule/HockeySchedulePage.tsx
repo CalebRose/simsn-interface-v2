@@ -50,6 +50,7 @@ import { getHCKWeekID } from "../../../_helper/statsPageHelper";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { SectionCards } from "../../../_design/SectionCards";
 import { GameRequestModal } from "../Common/GameRequestModal";
+import { Refresh } from "../../../_design/Icons";
 
 interface SchedulePageProps {
   league: League;
@@ -291,7 +292,16 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                 <Button
                   size="md"
                   variant="primary"
-                  classes="px-5 py-2 col-span-2"
+                  classes="px-5 py-2 justify-center text-center flex"
+                  onClick={getBootstrapScheduleData}
+                  disabled={ts.CollegeWeek > 0}
+                >
+                  <Refresh />
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2"
                   onClick={gameRequestModal.handleOpenModal}
                   disabled={ts.CollegeWeek > 0}
                 >
