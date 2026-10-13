@@ -2267,7 +2267,7 @@ const CHLGameRequestModal = () => {
     };
     setIsSubmitting(true);
     try {
-      await scheduleService.FBACreateCFBGameRequest(dto);
+      await scheduleService.HCKCreateCHLGameRequest(dto);
       // Reset form on success
       setSelectedOpponent(null);
       setSelectedWeek(null);
@@ -2290,17 +2290,17 @@ const CHLGameRequestModal = () => {
   ]);
 
   const handleAcceptRequest = useCallback(async (requestID: number) => {
-    await scheduleService.FBAAcceptCFBGameRequest(requestID);
+    await scheduleService.HCKAcceptCHLGameRequest(requestID);
     setLocalRequests((prev) => prev.filter((r) => r.ID !== requestID));
   }, []);
 
   const handleRejectRequest = useCallback(async (requestID: number) => {
-    await scheduleService.FBARejectCFBGameRequest(requestID);
+    await scheduleService.HCKRejectCHLGameRequest(requestID);
     setLocalRequests((prev) => prev.filter((r) => r.ID !== requestID));
   }, []);
 
   const handleProcessRequest = useCallback(async (requestID: number) => {
-    await scheduleService.FBAProcessCFBGameRequest(requestID);
+    await scheduleService.HCKProcessCHLGameRequest(requestID);
     setLocalRequests((prev) =>
       prev.map((r) =>
         r.ID === requestID
@@ -2311,7 +2311,7 @@ const CHLGameRequestModal = () => {
   }, []);
 
   const handleVetoRequest = useCallback(async (requestID: number) => {
-    await scheduleService.FBAVetoCFBGameRequest(requestID);
+    await scheduleService.HCKVetoCHLGameRequest(requestID);
     setLocalRequests((prev) => prev.filter((r) => r.ID !== requestID));
   }, []);
 
