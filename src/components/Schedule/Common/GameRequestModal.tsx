@@ -35,6 +35,7 @@ import {
   getDefensiveSystemFromMap,
 } from "../../Gameplan/HockeyLineups/useLineupUtils";
 import { useResponsive } from "../../../_hooks/useMobile";
+import { League } from "../../../_constants/constants";
 
 export interface GameRequestModalProps {
   isOpen: boolean;
@@ -1665,6 +1666,7 @@ const CFBGameRequestModal = () => {
             incomingRequests.map((req) => (
               <IncomingRequestCard
                 key={req.ID}
+                league={SimCFB}
                 request={req}
                 cfbTeamMap={cfbTeamMap}
                 onAccept={handleAcceptRequest}
@@ -1684,6 +1686,7 @@ const CFBGameRequestModal = () => {
             outgoingRequests.map((req) => (
               <SentRequestCard
                 key={req.ID}
+                league={SimCFB}
                 request={req}
                 cfbTeamMap={cfbTeamMap}
               />
@@ -1702,6 +1705,7 @@ const CFBGameRequestModal = () => {
               <AcceptedRequestCard
                 key={req.ID}
                 request={req}
+                league={SimCFB}
                 teamMap={cfbTeamMap}
                 hasWeekConflict={getCFBWeekConflict(req)}
                 onProcess={handleProcessRequest}
@@ -2864,6 +2868,7 @@ const CHLGameRequestModal = () => {
                 key={req.ID}
                 request={req}
                 cfbTeamMap={chlTeamMap}
+                league={SimCHL}
                 onAccept={handleAcceptRequest}
                 onReject={handleRejectRequest}
               />
@@ -2881,6 +2886,7 @@ const CHLGameRequestModal = () => {
             outgoingRequests.map((req) => (
               <SentRequestCard
                 key={req.ID}
+                league={SimCHL}
                 request={req}
                 cfbTeamMap={chlTeamMap}
               />
@@ -2900,6 +2906,7 @@ const CHLGameRequestModal = () => {
                 key={req.ID}
                 request={req}
                 teamMap={chlTeamMap}
+                league={SimCHL}
                 hasWeekConflict={getCHLWeekConflict(req)}
                 onProcess={handleProcessRequest}
                 onVeto={handleVetoRequest}
@@ -2917,6 +2924,7 @@ const CHLGameRequestModal = () => {
 interface IncomingRequestCardProps {
   request: CFBGameRequest | CHLGameRequest;
   cfbTeamMap: Record<number, any> | null;
+  league: League;
   onAccept: (id: number) => void;
   onReject: (id: number) => void;
 }
@@ -2924,18 +2932,26 @@ interface IncomingRequestCardProps {
 const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
   request,
   cfbTeamMap,
+  league,
   onAccept,
   onReject,
 }) => {
   const sendingTeam = cfbTeamMap?.[request.SendingTeamID];
   const homeTeam = cfbTeamMap?.[request.HomeTeamID];
   const awayTeam = cfbTeamMap?.[request.AwayTeamID];
+  const timeSlot = useMemo(() => {
+    if (league === SimCHL) {
+      const req = request as CHLGameRequest;
+      return req.Timeslot;
+    }
+    return "";
+  }, [request, league]);
 
   return (
     <div className="border border-gray-600 border-l-4 border-l-blue-500 rounded-lg p-3 flex items-center gap-4">
       {/* Logo */}
       <div className="shrink-0">
-        <Logo url={getLogo(SimCFB, request.SendingTeamID, false)} />
+        <Logo url={getLogo(league, request.SendingTeamID, false)} />
       </div>
 
       {/* Content */}
@@ -2986,7 +3002,7 @@ const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
             Week
           </Text>
           <Text variant="small" classes="font-semibold">
-            Week {request.Week}
+            Week {request.Week} {timeSlot}
           </Text>
           <div className="flex gap-1 flex-wrap justify-end">
             {request.IsSpringGame && <Tag variant="indigo">Spring</Tag>}
@@ -3022,6 +3038,7 @@ interface AcceptedRequestCardProps {
   hasWeekConflict: boolean;
   onProcess: (id: number) => void;
   onVeto: (id: number) => void;
+  league: League;
 }
 
 const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
@@ -3030,11 +3047,19 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
   hasWeekConflict,
   onProcess,
   onVeto,
+  league,
 }) => {
   const sendingTeam = teamMap?.[request.SendingTeamID];
   const requestingTeam = teamMap?.[request.RequestingTeamID];
   const homeTeam = teamMap?.[request.HomeTeamID];
   const awayTeam = teamMap?.[request.AwayTeamID];
+  const timeSlot = useMemo(() => {
+    if (league === SimCHL) {
+      const req = request as CHLGameRequest;
+      return req.Timeslot;
+    }
+    return "";
+  }, [request, league]);
 
   return (
     <div
@@ -3042,7 +3067,7 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
     >
       {/* Logo */}
       <div className="shrink-0">
-        <Logo url={getLogo(SimCFB, request.SendingTeamID, false)} />
+        <Logo url={getLogo(league, request.SendingTeamID, false)} />
       </div>
 
       {/* Content */}
@@ -3098,6 +3123,7 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
           </Text>
           <Text variant="small" classes="font-semibold">
             Week {request.Week}
+            {timeSlot && ` – ${timeSlot}`}
           </Text>
           <div className="flex gap-1 flex-wrap justify-end">
             {request.IsSpringGame && <Tag variant="indigo">Spring</Tag>}
@@ -3128,11 +3154,13 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
 interface SentRequestCardProps {
   request: CFBGameRequest | CHLGameRequest;
   cfbTeamMap: Record<number, any> | null;
+  league: League;
 }
 
 const SentRequestCard: React.FC<SentRequestCardProps> = ({
   request,
   cfbTeamMap,
+  league,
 }) => {
   const requestingTeam = cfbTeamMap?.[request.RequestingTeamID];
   const homeTeam = cfbTeamMap?.[request.HomeTeamID];
@@ -3156,13 +3184,21 @@ const SentRequestCard: React.FC<SentRequestCardProps> = ({
       ? "border-l-yellow-500"
       : "border-l-gray-500";
 
+  const timeSlot = useMemo(() => {
+    if (league === SimCHL) {
+      const req = request as CHLGameRequest;
+      return req.Timeslot;
+    }
+    return "";
+  }, [request, league]);
+
   return (
     <div
       className={`border border-gray-600 border-l-4 ${statusBorderAccent} rounded-lg p-3 flex items-center gap-4`}
     >
       {/* Logo */}
       <div className="shrink-0">
-        <Logo url={getLogo(SimCFB, request.RequestingTeamID, false)} />
+        <Logo url={getLogo(league, request.RequestingTeamID, false)} />
       </div>
 
       {/* Content */}
@@ -3215,6 +3251,7 @@ const SentRequestCard: React.FC<SentRequestCardProps> = ({
           </Text>
           <Text variant="small" classes="font-semibold">
             Week {request.Week}
+            {timeSlot && ` - ${timeSlot}`}
           </Text>
           <div className="flex gap-1 flex-wrap justify-end">
             {request.IsSpringGame && <Tag variant="indigo">Spring</Tag>}
