@@ -16,6 +16,9 @@ export interface BracketLayout {
   // Smallest vertical gap (units) between two games in one round.
   minGap: number;
   seeds: Map<number, number>;
+  // Optional labelled sections down the side (e.g. AFC / NFC): the games in the
+  // section and the vertical rows it spans.
+  groups?: { label?: string; gameIDs: number[]; fromY: number; toY: number }[];
 }
 
 const winnerOf = (g: Match): number | undefined =>
@@ -183,6 +186,10 @@ const inferSeeds = (nodes: BracketNode[], roundCount: number) => {
   // If every team's first-game rank is exactly 1..N, they are all real seeds.
   const ranks = Array.from(firstRank.values()).sort((a, b) => a - b);
   if (ranks.every((r, i) => r === i + 1)) return new Map(firstRank);
+
+  // Nothing to anchor on (e.g. every rank is 0): leave seeds blank rather than
+  // inventing 1..k for whichever teams happen to enter late.
+  if (seeds.size === 0) return seeds;
 
   const byes = Array.from(firstSeen.entries())
     .filter(([id]) => !seeds.has(id))
