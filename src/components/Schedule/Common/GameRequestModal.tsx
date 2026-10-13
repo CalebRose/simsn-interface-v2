@@ -2404,7 +2404,7 @@ const CHLGameRequestModal = () => {
                   />
                 </div>
                 <div className="flex flex-row space-x-2">
-                  <Text>Is Spring Game</Text>
+                  <Text>Is Preseason</Text>
                   <ToggleSwitch
                     onChange={(checked) => setIsPreseason(checked)}
                     checked={isPreseason}
@@ -2421,9 +2421,9 @@ const CHLGameRequestModal = () => {
               {totalGames < CHL_MAX_GAMES && (
                 <div>
                   <Text variant="primary">
-                    Games remaining: {CHL_MAX_GAMES - totalGames} (Home:{" "}
-                    {CHL_MAX_HOME_GAMES - homeCount} | Away:{" "}
-                    {CHL_MAX_AWAY_GAMES - awayCount})
+                    {!isPreseason
+                      ? `Games remaining: ${CHL_MAX_GAMES - totalGames} (Home: ${CHL_MAX_HOME_GAMES - homeCount} | Away: ${CHL_MAX_AWAY_GAMES - awayCount})`
+                      : `Games remaining: ${3 - totalGames} (Home: ${3 - totalGames} | Away: ${3 - totalGames})`}
                   </Text>
                 </div>
               )}
