@@ -1997,7 +1997,7 @@ const CHLGameRequestModal = () => {
     ) {
       return "A team from your conference is already approved for this inter-conference invitational.";
     }
-    const gamesThatWeek = (allCollegeGames ?? []).filter(
+    const gamesThatWeek = (currentSeasonGames ?? []).filter(
       (g) =>
         g.SeasonID === hck_Timestamp?.SeasonID &&
         !g.IsPreseason &&
@@ -2016,7 +2016,7 @@ const CHLGameRequestModal = () => {
     selectedInvitationalData,
     myInvitationalRequest,
     approvedInvitationalRequests,
-    allCollegeGames,
+    currentSeasonGames,
     hck_Timestamp,
   ]);
 
@@ -2077,15 +2077,15 @@ const CHLGameRequestModal = () => {
 
   /** Set of team IDs already on my team's schedule (any week, scoped to game type). */
   const alreadyScheduledOpponents = useMemo<Set<number>>(() => {
-    if (!chlTeam || !allCollegeGames) return new Set();
+    if (!chlTeam || !currentSeasonGames) return new Set();
     const set = new Set<number>();
-    for (const game of allCollegeGames) {
+    for (const game of currentSeasonGames) {
       if (game.IsPreseason !== isPreseason) continue;
       if (game.HomeTeamID === chlTeam.ID) set.add(game.AwayTeamID);
       else if (game.AwayTeamID === chlTeam.ID) set.add(game.HomeTeamID);
     }
     return set;
-  }, [chlTeam, allCollegeGames, isPreseason]);
+  }, [chlTeam, currentSeasonGames, isPreseason]);
 
   /**
    * Out-of-conference opponents available for the selected week.
