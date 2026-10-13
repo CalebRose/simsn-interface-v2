@@ -49,6 +49,7 @@ import { CollegePollModal } from "../Common/CollegePollModal";
 import { getHCKWeekID } from "../../../_helper/statsPageHelper";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { SectionCards } from "../../../_design/SectionCards";
+import { GameRequestModal } from "../Common/GameRequestModal";
 
 interface SchedulePageProps {
   league: League;
@@ -196,7 +197,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   const submitPollModal = useModal();
   const collegePollModal = useModal();
-
+  const gameRequestModal = useModal();
   const handleScheduleExport = async (opts: any) => {
     const dto = {
       SeasonID: selectedSeasonValue,
@@ -224,6 +225,11 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         pollSubmission={collegePollSubmission}
         submitPoll={submitCollegePoll}
         timestamp={ts}
+      />
+      <GameRequestModal
+        title="Request a CHL OOC Game"
+        isOpen={gameRequestModal.isModalOpen}
+        onClose={gameRequestModal.handleCloseModal}
       />
       <div className="flex flex-col w-full">
         <div className="sm:grid sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-6 sm:gap-4 w-full h-[82vh]">
@@ -281,6 +287,15 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   onClick={collegePollModal.handleOpenModal}
                 >
                   <Text variant="small">Official Poll</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2 col-span-2"
+                  onClick={gameRequestModal.handleOpenModal}
+                  disabled={ts.CollegeWeek > 0}
+                >
+                  <Text variant="small">Request Game</Text>
                 </Button>
               </ButtonGrid>
             </div>

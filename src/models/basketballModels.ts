@@ -1702,6 +1702,7 @@ export class CollegeStandings {
   }
 }
 export class CollegePollOfficial {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
