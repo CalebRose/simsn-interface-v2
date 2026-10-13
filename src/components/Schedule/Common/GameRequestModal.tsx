@@ -34,6 +34,7 @@ import {
   getOffensiveSystemFromMap,
   getDefensiveSystemFromMap,
 } from "../../Gameplan/HockeyLineups/useLineupUtils";
+import { useResponsive } from "../../../_hooks/useMobile";
 
 export interface GameRequestModalProps {
   isOpen: boolean;
@@ -1787,6 +1788,8 @@ const CHLGameRequestModal = () => {
     hockeyInvitationalRequests,
   } = useSimHCKStore();
 
+  const { isMobile } = useResponsive();
+
   const { currentUser } = useAuthStore();
 
   // ── Local state ────────────────────────────────────────────────────────────
@@ -2395,7 +2398,9 @@ const CHLGameRequestModal = () => {
         <>
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-3 justify-between items-center">
-              <div className="flex flex-row space-x-4">
+              <div
+                className={`flex ${isMobile ? "col-span-3 flex-col space-y-4" : "flex-row space-x-4"}`}
+              >
                 <div className="flex flex-row space-x-2">
                   <Text>Is Neutral Site</Text>
                   <ToggleSwitch
@@ -2419,7 +2424,9 @@ const CHLGameRequestModal = () => {
                 </div>
               </div>
               {totalGames < CHL_MAX_GAMES && (
-                <div>
+                <div
+                  className={`${isMobile ? "col-span-3 flex flex-col" : "flex flex-row"}`}
+                >
                   <Text variant="primary">
                     {!isPreseason
                       ? `Games remaining: ${CHL_MAX_GAMES - totalGames} (Home: ${CHL_MAX_HOME_GAMES - homeCount} | Away: ${CHL_MAX_AWAY_GAMES - awayCount})`
