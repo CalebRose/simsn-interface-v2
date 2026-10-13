@@ -60,7 +60,7 @@ export default class FBAScheduleService {
   }
 
   async HCKProcessCHLGameRequest(requestID: number): Promise<void> {
-    await GetCall(`${hckUrl}chl/schedule/game/request/process/${requestID}`);
+    await GetCall(`${hckUrl}chl/scheduler/game/request/process/${requestID}`);
   }
 
   async HCKVetoCHLGameRequest(requestID: number): Promise<void> {
