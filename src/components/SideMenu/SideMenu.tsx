@@ -134,6 +134,11 @@ export const SideMenu = ({}) => {
   const navigateToNews = () => navigate(routes.NEWS);
   const navigateToHelp = () => navigate(routes.HELP);
 
+  const clickToHelp = () => {
+    navigateToHelp();
+    toggleDropdown();
+  };
+
   return (
     <>
       {/* ✅ Top Navigation Bar */}
@@ -339,6 +344,10 @@ export const SideMenu = ({}) => {
                         )}
                         click={toggleDropdown}
                       />
+                      <NavDropdownItem
+                        click={clickToHelp}
+                        label="How to Play"
+                      />
                       {isCommissioner && !isBanned && (
                         <NavDropdownItem
                           label="League Management"
@@ -392,6 +401,11 @@ export const SideMenu = ({}) => {
               label="Forums"
               toggle={toggleMenu}
               click={() => navigate(routes.FORUMS)}
+            />
+            <SideMenuItem
+              click={navigateToHelp}
+              label="How to Play"
+              toggle={toggleMenu}
             />
             {isCFBUser && (
               <SideMenuItem
@@ -481,11 +495,6 @@ export const SideMenu = ({}) => {
             <SideMenuItem
               click={navigateToNews}
               label="News"
-              toggle={toggleMenu}
-            />
-            <SideMenuItem
-              click={navigateToHelp}
-              label="Help"
               toggle={toggleMenu}
             />
             <SideMenuItem
