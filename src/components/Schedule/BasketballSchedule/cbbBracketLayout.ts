@@ -277,3 +277,82 @@ export const splitRegionalTournament = (
     finals: games.filter((g) => finalNames.includes(g.MatchName)),
   };
 };
+
+// Pushes the lower half of a bracket down so two conferences don't run together:
+// everything feeding the second game of the round before the final moves down by
+// `gap` rows, and the final is re-centred between its two feeders.
+export const separateHalves = (layout: BracketLayout, gap = 1): BracketLayout => {
+  const byID = new Map(layout.nodes.map((n) => [n.game.ID, n]));
+  const halfRound = layout.roundCount - 1;
+  if (halfRound < 1) return layout;
+
+  const halfOf = (node: BracketNode): number | undefined => {
+    let cur: BracketNode | undefined = node;
+    while (cur && cur.round < halfRound)
+      cur = cur.parentID ? byID.get(cur.parentID) : undefined;
+    return cur && cur.round === halfRound ? cur.game.ID : undefined;
+  };
+  const halves = layout.nodes
+    .filter((n) => n.round === halfRound)
+    .sort((a, b) => a.y - b.y)
+    .map((n) => n.game.ID);
+
+  let nodes = layout.nodes.map((n) => {
+    const i = halves.indexOf(halfOf(n) ?? -1);
+    return i > 0 ? { ...n, y: n.y + i * gap } : n;
+  });
+  nodes = nodes.map((n) => {
+    if (n.round !== layout.roundCount) return n;
+    const feeders = nodes.filter((f) => f.parentID === n.game.ID);
+    return feeders.length
+      ? { ...n, y: feeders.reduce((sum, f) => sum + f.y, 0) / feeders.length }
+      : n;
+  });
+  return { ...layout, nodes };
+};
+
+// Label each half of the bracket (the games feeding one semifinal) with the
+// conference most of its teams are in.
+export const labelHalves = (
+  layout: BracketLayout,
+  teamMap: Record<number, any> | null,
+): BracketLayout => {
+  const byID = new Map(layout.nodes.map((n) => [n.game.ID, n]));
+  const halfRound = layout.roundCount - 1;
+  if (halfRound < 1) return layout;
+
+  const halfOf = (node: BracketNode) => {
+    let cur: BracketNode | undefined = node;
+    while (cur && cur.round < halfRound)
+      cur = cur.parentID ? byID.get(cur.parentID) : undefined;
+    return cur && cur.round === halfRound ? cur.game.ID : undefined;
+  };
+  const halves = layout.nodes
+    .filter((n) => n.round === halfRound)
+    .sort((a, b) => a.y - b.y)
+    .map((n) => n.game.ID);
+
+  const groups = halves.flatMap((id) => {
+    const members = layout.nodes.filter((n) => halfOf(n) === id);
+    if (!members.length) return [];
+    const votes = new Map<string, number>();
+    members.forEach((n) =>
+      [n.game.HomeTeamID, n.game.AwayTeamID].forEach((teamID) => {
+        const conference = teamMap?.[teamID]?.Conference;
+        if (conference) votes.set(conference, (votes.get(conference) ?? 0) + 1);
+      }),
+    );
+    const top = Array.from(votes.entries()).sort((a, b) => b[1] - a[1])[0];
+    const ys = members.map((n) => n.y);
+    return [
+      {
+        label: top?.[0],
+        gameIDs: members.map((n) => n.game.ID),
+        fromY: Math.min(...ys),
+        toY: Math.max(...ys),
+      },
+    ];
+  });
+  return { ...layout, groups };
+};
+
