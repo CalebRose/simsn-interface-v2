@@ -13,7 +13,12 @@ import {
   layoutPlayIn,
   splitLeagues,
 } from "./nbaPostseasonLayout";
-import { splitTournaments } from "./cbbBracketLayout";
+import {
+  labelHalves,
+  layoutBracket,
+  separateHalves,
+  splitTournaments,
+} from "./cbbBracketLayout";
 
 interface Props {
   mode: "nba" | "isl";
@@ -27,6 +32,10 @@ interface Props {
   textColorClass: string;
   topControls?: ReactNode;
 }
+
+// Space the two conferences apart and label each half with its conference.
+const apart = (series: Match[], teamMap: Record<number, any> | null) =>
+  labelHalves(separateHalves(layoutBracket(series)), teamMap);
 
 export const NBAPostseasonBracket: FC<Props> = ({
   mode,
@@ -50,6 +59,7 @@ export const NBAPostseasonBracket: FC<Props> = ({
           key: "isl",
           name: "ISL Playoffs",
           games: isl,
+          layout: apart(isl, teamMap),
           labelFromMatchName: true,
           noClick: true,
         });
@@ -82,6 +92,7 @@ export const NBAPostseasonBracket: FC<Props> = ({
         key: "nba",
         name: "NBA Playoffs",
         games: nba,
+        layout: nba.length ? apart(nba, teamMap) : undefined,
         labelFromMatchName: true,
         noClick: true,
         below: playIn,

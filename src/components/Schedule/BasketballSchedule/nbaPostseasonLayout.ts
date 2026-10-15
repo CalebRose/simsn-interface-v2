@@ -33,9 +33,19 @@ export const isPlayInGame = (g: Match) =>
   ((g as any).SeriesID ?? 0) === 0 &&
   (g.IsPlayoffGame || (g as any).IsPlayInGame);
 
-export const buildSeries = (games: Match[]): Match[] => {
+interface SeriesOptions {
+  // Wins needed to take a series (4 for a best-of-7, 2 for a best-of-3).
+  winsNeeded?: number;
+  // Which games belong to a series. Defaults to playoff games with a SeriesID.
+  include?: (g: Match) => boolean;
+}
+
+export const buildSeries = (
+  games: Match[],
+  { winsNeeded = WINS_NEEDED, include = isSeriesGame }: SeriesOptions = {},
+): Match[] => {
   const bySeries = new Map<number, Match[]>();
-  games.filter(isSeriesGame).forEach((g) => {
+  games.filter(include).forEach((g) => {
     const id = (g as any).SeriesID as number;
     bySeries.set(id, [...(bySeries.get(id) || []), g]);
   });
@@ -78,9 +88,11 @@ export const buildSeries = (games: Match[]): Match[] => {
       AwayTeamRank: rankOf(awayID),
       HomeTeamScore: homeWins,
       AwayTeamScore: awayWins,
-      HomeTeamWin: homeWins >= WINS_NEEDED,
-      AwayTeamWin: awayWins >= WINS_NEEDED,
-      GameComplete: homeWins >= WINS_NEEDED || awayWins >= WINS_NEEDED,
+      HomeTeamWin: homeWins >= winsNeeded,
+      AwayTeamWin: awayWins >= winsNeeded,
+      GameComplete: homeWins >= winsNeeded || awayWins >= winsNeeded,
+      // Not a real game: the bracket shows it but has no box score to open.
+      IsSeries: true,
     }) as Match;
   });
 

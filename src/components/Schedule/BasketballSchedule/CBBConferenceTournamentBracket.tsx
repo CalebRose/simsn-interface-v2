@@ -232,9 +232,14 @@ const BracketCanvas: FC<{
             <div
               key={n.game.ID}
               role="button"
-              onClick={() => onGame && n.game.GameComplete && onGame(n.game)}
+              onClick={() =>
+                onGame &&
+                n.game.GameComplete &&
+                !(n.game as any).IsSeries &&
+                onGame(n.game)
+              }
               className={`absolute flex flex-col justify-start overflow-hidden rounded border border-slate-500 bg-slate-800 text-left ${
-                onGame && n.game.GameComplete
+                onGame && n.game.GameComplete && !(n.game as any).IsSeries
                   ? "cursor-pointer"
                   : "cursor-default"
               }`}
