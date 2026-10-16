@@ -130,8 +130,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
     const diffInHours =
       (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
 
-    console.log({ createdAt, now, diffInHours });
-    return diffInHours < 24;
+    return diffInHours < 72;
   }, [currentUser]);
 
   const [discordUsername, setDiscordUsername] = useState("");
