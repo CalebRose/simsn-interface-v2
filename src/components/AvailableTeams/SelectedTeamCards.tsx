@@ -119,6 +119,21 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
     return currentUser?.username || "";
   }, [currentUser]);
 
+  const isNewUser = useMemo(() => {
+    // if currentUser?.createdAt is less than 24 hours old, it's definitely a new profile.
+    // createdAt is an object containing a nanoseconds number and seconds number. We will need to convert it to date format.
+    const createdAt = new Date(
+      currentUser!.createdAt.nanoseconds / 1000000 +
+        currentUser!.createdAt.seconds * 1000,
+    );
+    const now = new Date();
+    const diffInHours =
+      (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+    console.log({ createdAt, now, diffInHours });
+    return diffInHours < 24;
+  }, [currentUser]);
+
   const [discordUsername, setDiscordUsername] = useState("");
   const [howMuchTimeAnswer, setHowMuchTimeAnswer] = useState("");
   const [howDidYouHearAboutSimSN, setHowDidYouHearAboutSimSN] = useState("");
@@ -209,6 +224,23 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
     ],
   );
 
+  const ownerName = useMemo(() => {
+    if (league === SimNFL) {
+      return selectedTeam.NFLOwnerName || "";
+    }
+    if (league === SimNBA) {
+      return selectedTeam.NBAOwnerName || "";
+    }
+    if (league === SimPHL) {
+      return selectedTeam.Owner || "";
+    }
+    if (league === SimMLB) {
+      return selectedTeam.owner_name || "";
+    }
+
+    return "";
+  }, [league, selectedTeam]);
+
   return (
     <div
       className={`flex flex-col max-h-[80vh] w-full min-[1025px]:h-[70vh] min-[820px]:max-h-[48vh] min-[1025px]:max-h-[75vh] min-[1025px]:mx-4 min-[1025px]:mb-3 rounded-2xl shadow-lg border-2 p-6 ${
@@ -245,7 +277,10 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                   {conferenceLabel ? " Conference" : ""}
                 </Text>
               </div>
-              {(league === SimCFB || league === SimCBB || league === SimCHL || league === SimCLAX) &&
+              {(league === SimCFB ||
+                league === SimCBB ||
+                league === SimCHL ||
+                league === SimCLAX) &&
                 selectedTeam.Coach !== "AI" && (
                   <div className="flex-col">
                     <Text variant="small" classes="font-semibold text-start">
@@ -266,10 +301,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     variant="small"
                     classes="font-semibold text-start whitespace-nowrap"
                   >
-                    Owner:{" "}
-                    {selectedTeam.NFLOwnerName?.length > 0
-                      ? selectedTeam.NFLOwnerName
-                      : "None"}
+                    Owner: {ownerName.length > 0 ? ownerName : "None"}
                   </Text>
                 </div>
                 {league === SimNFL && selectedTeam.NFLCoachName !== "AI" && (
@@ -313,10 +345,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               <div className="flex-row text-start">
                 <div className="flex-col">
                   <Text variant="small" classes="font-semibold text-start">
-                    Owner:{" "}
-                    {selectedTeam.Owner?.length > 0
-                      ? selectedTeam.Owner
-                      : "None"}
+                    Owner: {ownerName.length > 0 ? ownerName : "None"}
                   </Text>
                 </div>
                 <div className="flex-col">
@@ -357,10 +386,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               <div className="flex-row text-start">
                 <div className="flex-col">
                   <Text variant="small" classes="font-semibold text-start">
-                    Owner:{" "}
-                    {selectedTeam.NBAOwnerName?.length > 0
-                      ? selectedTeam.NBAOwnerName
-                      : "None"}
+                    Owner: {ownerName.length > 0 ? ownerName : "None"}
                   </Text>
                 </div>
                 <div className="flex-col">
@@ -414,10 +440,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     variant="small"
                     classes="font-semibold text-start whitespace-nowrap"
                   >
-                    Owner:{" "}
-                    {selectedTeam.owner_name?.length > 0
-                      ? selectedTeam.owner_name
-                      : "None"}
+                    Owner: {ownerName?.length > 0 ? ownerName : "None"}
                   </Text>
                 </div>
                 <div className="flex-col">
@@ -458,82 +481,147 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
           )}
         </div>
         {league !== SimCLAX && (
-        <Border>
-          <div className="flex flex-row gap-4 justify-between sm:relative">
-            <div className="flex flex-col">
-              <Text
-                variant="alternate"
-                classes="font-semibold whitespace-nowrap"
-              >
-                Overall Grade
-              </Text>
-              <Text variant="small">{selectedTeam.OverallGrade}</Text>
+          <Border>
+            <div className="flex flex-row gap-4 justify-between sm:relative">
+              <div className="flex flex-col">
+                <Text
+                  variant="alternate"
+                  classes="font-semibold whitespace-nowrap"
+                >
+                  Overall Grade
+                </Text>
+                <Text variant="small">{selectedTeam.OverallGrade}</Text>
+              </div>
+              <div className="flex flex-col sm:mx-auto sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2">
+                <Text
+                  variant="alternate"
+                  classes="font-semibold whitespace-nowrap"
+                >
+                  Offense Grade
+                </Text>
+                <Text variant="small">{selectedTeam.OffenseGrade}</Text>
+              </div>
+              <div className="flex flex-col">
+                <Text
+                  variant="alternate"
+                  classes="font-semibold whitespace-nowrap"
+                >
+                  Defense Grade
+                </Text>
+                <Text variant="small">{selectedTeam.DefenseGrade}</Text>
+              </div>
             </div>
-            <div className="flex flex-col sm:mx-auto sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2">
-              <Text
-                variant="alternate"
-                classes="font-semibold whitespace-nowrap"
-              >
-                Offense Grade
-              </Text>
-              <Text variant="small">{selectedTeam.OffenseGrade}</Text>
-            </div>
-            <div className="flex flex-col">
-              <Text
-                variant="alternate"
-                classes="font-semibold whitespace-nowrap"
-              >
-                Defense Grade
-              </Text>
-              <Text variant="small">{selectedTeam.DefenseGrade}</Text>
-            </div>
-          </div>
-        </Border>
+          </Border>
         )}
         {league === SimCLAX && (
           <>
             <Border>
               <div className="flex flex-row gap-4 justify-between sm:relative">
                 <div className="flex flex-col">
-                  <Text variant="alternate" classes="font-semibold whitespace-nowrap">Overall Grade</Text>
+                  <Text
+                    variant="alternate"
+                    classes="font-semibold whitespace-nowrap"
+                  >
+                    Overall Grade
+                  </Text>
                   <Text variant="small">{data?.overallGrade || "—"}</Text>
                 </div>
                 <div className="flex flex-col sm:mx-auto sm:absolute sm:left-1/2 sm:transform sm:-translate-x-1/2">
-                  <Text variant="alternate" classes="font-semibold whitespace-nowrap">Offense Grade</Text>
+                  <Text
+                    variant="alternate"
+                    classes="font-semibold whitespace-nowrap"
+                  >
+                    Offense Grade
+                  </Text>
                   <Text variant="small">{data?.offenseGrade || "—"}</Text>
                 </div>
                 <div className="flex flex-col">
-                  <Text variant="alternate" classes="font-semibold whitespace-nowrap">Defense Grade</Text>
+                  <Text
+                    variant="alternate"
+                    classes="font-semibold whitespace-nowrap"
+                  >
+                    Defense Grade
+                  </Text>
                   <Text variant="small">{data?.defenseGrade || "—"}</Text>
                 </div>
               </div>
             </Border>
             <Border>
               <div className="grid grid-cols-1 gap-4 text-start sm:grid-cols-2">
-                <div><Text variant="alternate" classes="font-semibold">Location</Text><Text variant="small">{[selectedTeam.City, selectedTeam.State].filter(Boolean).join(", ") || "—"}</Text></div>
-                <div><Text variant="alternate" classes="font-semibold">Venue</Text><Text variant="small">{selectedTeam.Arena || "—"}</Text></div>
+                <div>
+                  <Text variant="alternate" classes="font-semibold">
+                    Location
+                  </Text>
+                  <Text variant="small">
+                    {[selectedTeam.City, selectedTeam.State]
+                      .filter(Boolean)
+                      .join(", ") || "—"}
+                  </Text>
+                </div>
+                <div>
+                  <Text variant="alternate" classes="font-semibold">
+                    Venue
+                  </Text>
+                  <Text variant="small">{selectedTeam.Arena || "—"}</Text>
+                </div>
               </div>
             </Border>
             <Border>
               <div className="grid grid-cols-2 gap-4 text-center">
-                <div><Text variant="alternate" classes="font-semibold">Overall Record</Text><Text variant="small">{data?.overallWins || 0} - {data?.overallLosses || 0}</Text></div>
-                <div><Text variant="alternate" classes="font-semibold">Current Record</Text><Text variant="small">{data?.currentWins || 0} - {data?.currentLosses || 0}</Text></div>
+                <div>
+                  <Text variant="alternate" classes="font-semibold">
+                    Overall Record
+                  </Text>
+                  <Text variant="small">
+                    {data?.overallWins || 0} - {data?.overallLosses || 0}
+                  </Text>
+                </div>
+                <div>
+                  <Text variant="alternate" classes="font-semibold">
+                    Current Record
+                  </Text>
+                  <Text variant="small">
+                    {data?.currentWins || 0} - {data?.currentLosses || 0}
+                  </Text>
+                </div>
               </div>
             </Border>
             <Border>
               <div className="grid grid-cols-1 gap-4 text-center sm:grid-cols-2">
-                <div><Text variant="alternate" classes="font-semibold">Conference Championships</Text><Text variant="small">{data?.conferenceChampionshipYears?.length ? data.conferenceChampionshipYears.join(", ") : "None"}</Text></div>
-                <div><Text variant="alternate" classes="font-semibold">National Championships</Text><Text variant="small">{data?.nationalChampionshipYears?.length ? data.nationalChampionshipYears.join(", ") : "None"}</Text></div>
+                <div>
+                  <Text variant="alternate" classes="font-semibold">
+                    Conference Championships
+                  </Text>
+                  <Text variant="small">
+                    {data?.conferenceChampionshipYears?.length
+                      ? data.conferenceChampionshipYears.join(", ")
+                      : "None"}
+                  </Text>
+                </div>
+                <div>
+                  <Text variant="alternate" classes="font-semibold">
+                    National Championships
+                  </Text>
+                  <Text variant="small">
+                    {data?.nationalChampionshipYears?.length
+                      ? data.nationalChampionshipYears.join(", ")
+                      : "None"}
+                  </Text>
+                </div>
               </div>
             </Border>
             <Border>
               <div className="mb-2 flex flex-row items-center justify-start">
-                <Text variant="alternate" classes="font-semibold">Top Players</Text>
+                <Text variant="alternate" classes="font-semibold">
+                  Top Players
+                </Text>
               </div>
               <div className="grid grid-cols-2 gap-4 text-start sm:grid-cols-4">
                 {(data?.topPlayers || []).map((player: any) => (
                   <div className="flex flex-col" key={player.id}>
-                    <Text variant="xs">{player.position} {player.firstName} {player.lastName}</Text>
+                    <Text variant="xs">
+                      {player.position} {player.firstName} {player.lastName}
+                    </Text>
                     <Text variant="xs">Overall: {player.overallGrade}</Text>
                   </div>
                 ))}
@@ -583,7 +671,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("hc")}
                     disabled={
-                      (selectedTeam.NFLCoachName?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length === 0 ||
+                      (selectedTeam.NFLCoachName?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     <Text variant="small">Request Coach</Text>
@@ -592,7 +682,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("gm")}
                     disabled={
-                      (selectedTeam.NFLGMName?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length === 0 ||
+                      (selectedTeam.NFLGMName?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     <Text variant="small">Request GM</Text>
@@ -601,6 +693,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("a")}
                     disabled={
+                      ownerName.length === 0 ||
                       (selectedTeam.NFLAssistantName?.length ?? 0) > 0 ||
                       !canSubmit
                     }
@@ -615,7 +708,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("o")}
                     disabled={
-                      (selectedTeam.NBAOwnerName?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length > 0 ||
+                      (selectedTeam.NBAOwnerName?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     Request Ownership
@@ -624,7 +719,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("hc")}
                     disabled={
-                      (selectedTeam.NBACoachName?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length === 0 ||
+                      (selectedTeam.NBACoachName?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     Request Coach
@@ -633,7 +730,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("gm")}
                     disabled={
-                      (selectedTeam.NBAGMName?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length === 0 ||
+                      (selectedTeam.NBAGMName?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     Request GM
@@ -642,6 +741,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("a")}
                     disabled={
+                      ownerName.length === 0 ||
                       (selectedTeam.NBAAssistantName?.length ?? 0) > 0 ||
                       !canSubmit
                     }
@@ -665,7 +765,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("hc")}
                     disabled={
-                      (selectedTeam.Coach?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length === 0 ||
+                      (selectedTeam.Coach?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     <Text variant="small">Coach</Text>
@@ -673,7 +775,11 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                   <Button
                     size="sm"
                     onClick={() => handleClick("gm")}
-                    disabled={(selectedTeam.GM?.length ?? 0) > 0 || !canSubmit}
+                    disabled={
+                      ownerName.length === 0 ||
+                      (selectedTeam.GM?.length ?? 0) > 0 ||
+                      !canSubmit
+                    }
                   >
                     <Text variant="small">GM</Text>
                   </Button>
@@ -681,7 +787,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("a")}
                     disabled={
-                      (selectedTeam.Scout?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length === 0 ||
+                      (selectedTeam.Scout?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     <Text variant="small">Assistant</Text>
@@ -690,7 +798,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("m")}
                     disabled={
-                      (selectedTeam.Marketing?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length === 0 ||
+                      (selectedTeam.Marketing?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     <Text variant="small">Marketing</Text>
@@ -712,7 +822,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("mgr")}
                     disabled={
-                      (selectedTeam.manager_name?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length === 0 ||
+                      (selectedTeam.manager_name?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     <Text variant="small">Manager</Text>
@@ -721,7 +833,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                     size="sm"
                     onClick={() => handleClick("gm")}
                     disabled={
-                      (selectedTeam.gm_name?.length ?? 0) > 0 || !canSubmit
+                      ownerName.length === 0 ||
+                      (selectedTeam.gm_name?.length ?? 0) > 0 ||
+                      !canSubmit
                     }
                   >
                     <Text variant="small">GM</Text>
@@ -748,39 +862,69 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               {submissionError}
             </div>
           )}
-          {currentUser?.teamId === 0 &&
-            currentUser.NFLTeamID === 0 &&
-            currentUser.CHLTeamID === 0 &&
-            currentUser.PHLTeamID === 0 &&
-            currentUser.cbb_id === 0 &&
-            currentUser.NBATeamID === 0 &&
-            (league === SimNFL || league === SimNBA || league === SimPHL) && (
+          {isNewUser &&
+            (league === SimNFL ||
+              league === SimNBA ||
+              league === SimPHL ||
+              league === SimMLB) && (
               <>
-                <Text variant="small" classes="mb-1 text-start text-yellow-500">
+                <Text variant="small" classes="mb-2 text-start text-yellow-500">
                   Hey! So it looks like you're a brand new user requesting to
-                  join one of our pro teams. That's awesome. These leagues are
-                  often highly competitive and require a significant amount of
-                  teamwork and communication. Our pro leagues are designed to
-                  allow multiple users to manage a single team simultaneously in
-                  a team effort.
+                  join one of our pro teams. That's awesome. Our pro leagues are
+                  highly competitive and designed to allow multiple users to
+                  manage a single team simultaneously in a team effort. Because
+                  multiple users can operate within the same time, a significant
+                  amount of coordination and communication is required to
+                  succeed. All users within our pro leagues are active both
+                  through our discord, chat, and in the forums.
                 </Text>
-                <Text variant="small" classes="mb-1 text-start text-yellow-500">
-                  If this sounds exciting to you, then please continue filling
-                  out the application form below. It is also suggested that you
-                  get in communication with the owner of the team you're
-                  applying for either through our Discord server or using the
-                  DM/Inbox system.
-                </Text>
-                <Text variant="small" classes="mb-4 text-start text-yellow-500">
-                  Additionally, it is{" "}
-                  <span className="font-semibold italic">
-                    highly encouraged
-                  </span>{" "}
-                  to apply for a college team as well. These are single-user
-                  managed, use the same gameplay strategies as the
-                  pro-counter-part, and can give you experience that will
-                  benefit your time in the pro leagues and across the site.
-                </Text>
+                {ownerName?.length > 0 && (
+                  <>
+                    <Text
+                      variant="small"
+                      classes="mb-2 text-start text-yellow-500"
+                    >
+                      If this sounds exciting to you, then please continue
+                      filling out the application form below. It is also
+                      suggested that you get in communication with the owner of
+                      the team, <strong>{ownerName}</strong>, that you're
+                      applying for either through our Discord server or using
+                      the DM/Inbox system.
+                    </Text>
+                    <Text
+                      variant="small"
+                      classes="mb-4 text-start text-yellow-500"
+                    >
+                      Additionally, it is{" "}
+                      <span className="font-semibold italic">
+                        highly encouraged
+                      </span>{" "}
+                      to apply for a college team as well. These are single-user
+                      managed, use the same gameplay strategies as the
+                      pro-counter-part, and can give you experience that will
+                      benefit your time in the pro leagues and across the site.
+                    </Text>
+                  </>
+                )}
+                {ownerName.length === 0 && (
+                  <>
+                    <Text
+                      variant="small"
+                      classes="mb-4 text-start text-yellow-500"
+                    >
+                      While this team is completely open, we{" "}
+                      <span className="font-semibold italic">
+                        highly encourage
+                      </span>{" "}
+                      new users to apply for a college team to start out.
+                      College teams are single-user managed, use the same
+                      gameplay strategies as the pro-counter-part, and can give
+                      you experience that will benefit your time here. Once
+                      you're more comfortable with the systems, we then
+                      recommend jumping to the pros.
+                    </Text>
+                  </>
+                )}
               </>
             )}
           <Text variant="xs" classes="mb-4 text-start">
@@ -885,7 +1029,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               <textarea
                 value={aboutYourself}
                 onChange={(e) => setAboutYourself(e.target.value)}
-                placeholder="A short introduction — what you're hoping to get out of SimSN, your sim sports background, etc."
+                placeholder="Tell us anything! What you're hoping to get out of SimSN, your sim sports background, why you picked this team to apply for, etc."
                 rows={3}
                 className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />

@@ -321,7 +321,7 @@ export const Home = () => {
         <>
           <Border
             direction="col"
-            classes="p-[2vw] md:p-4 h-full mt-[20vh] md:w-[85vw] lg:w-[80vw] xl:w-[40vw]"
+            classes="p-[2vw] md:p-4 h-full mt-[20vh] justify-center w-auto"
           >
             <div className="flex mb-2 justify-center">
               <img
@@ -347,23 +347,24 @@ export const Home = () => {
             <div className="flex flex-row mb-4 justify-center">
               <Text variant="body-small" classes="">
                 Our simulations are custom-engines built in-house, and do not
-                use any software to play or simulate the games. Players can use
-                any web browser to participate and manage their teams.
+                use any external software to play or simulate the games. Players
+                can use any web browser to participate and manage their teams.
               </Text>
             </div>
             <div className="flex flex-row mb-4 justify-center">
               <Text variant="body-small" classes="">
                 As a new user, we encourage you to join a league and start
                 participating in our sports simulation community. You can also
-                introduce yourself through the forums to connect with other
-                members.
+                introduce yourself through the forums or the chat to connect
+                with other members.
               </Text>
             </div>
 
-            <div className="grid grid-cols-2 mb-2 space-x-4 justify-center">
+            <div className="grid grid-cols-3 mb-2 space-x-4 justify-center">
               <Button onClick={() => navigate(routes.AVAILABLE_TEAMS)}>
                 Navigate to Available Teams
               </Button>
+              <Button onClick={() => navigate(routes.HELP)}>How to Play</Button>
               <Button
                 onClick={() => navigate(`${routes.FORUMS}/welcome/intro-help`)}
               >

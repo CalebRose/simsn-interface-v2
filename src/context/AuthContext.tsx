@@ -18,6 +18,7 @@ import {
   SimPHL,
 } from "../_constants/constants";
 import { getLogo } from "../_utility/getLogo";
+import { baseUrl } from "../_constants/logos";
 
 // ✅ Define Auth Context Props
 interface AuthContextProps {
@@ -346,7 +347,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             phlLogo ||
             mlbLogo ||
             collegeBaseballLogo ||
-            "";
+            `${baseUrl}/icons/simsn_icon.webp`;
           break;
       }
     }

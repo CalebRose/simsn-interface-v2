@@ -11,6 +11,7 @@ import {
 } from "../_constants/constants";
 import {
   BaseballLogos,
+  baseUrl,
   CBLLogos,
   HCKLogos,
   ISLLogos,
@@ -71,7 +72,7 @@ export const getLogo = (
   if (league === SimPHL) return getPHLLogo(id, retro);
   if (league === SimMLB) return getMLBLogo(id, retro);
   if (league === SimCollegeBaseball) return getCollegeBaseballLogo(id, retro);
-  return "";
+  return `${baseUrl}/icons/simsn_icon.webp`;
 };
 
 export const getCFBLogo = (id: number, IsRetro: boolean) => {

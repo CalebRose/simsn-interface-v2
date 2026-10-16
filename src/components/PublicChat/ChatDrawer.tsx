@@ -25,6 +25,7 @@ import { ChatComposer } from "./ChatComposer";
 import { ChatMessageBody } from "./ChatMessageBody";
 import { ChatUserTrigger } from "./ChatUserTrigger";
 import { ChatReportModal } from "./ChatReportModal";
+import { baseUrl } from "../../_constants/logos";
 
 interface ChatDrawerProps {
   isOpen: boolean;
@@ -467,7 +468,7 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
               <ChatUserTrigger
                 uid={message.senderId}
                 username={message.senderUsername}
-                logoUrl={avatarUrl ?? undefined}
+                logoUrl={avatarUrl ?? `${baseUrl}/icons/simsn_icon.webp`}
                 onNavigate={onClose}
                 onReport={canReport ? openReport : undefined}
               >
