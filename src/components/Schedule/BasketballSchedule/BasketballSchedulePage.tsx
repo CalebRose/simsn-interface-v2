@@ -827,7 +827,9 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
   const proGamesBySelectedSeason = useMemo(() => {
     return allNBAGames
       .filter((game) => game.SeasonID === selectedSeasonID)
-      .sort((a, b) => a.Week - b.Week);
+      .sort(
+        (a, b) => a.Week - b.Week || a.MatchOfWeek.localeCompare(b.MatchOfWeek),
+      );
   }, [allNBAGames, selectedSeasonID]);
 
   const proStandingsBySelectedSeason = useMemo(() => {
