@@ -129,7 +129,9 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
   const collegeGamesBySelectedSeason = useMemo(() => {
     return allCBBGames
       .filter((game) => game.SeasonID === selectedSeasonID)
-      .sort((a, b) => a.Week - b.Week);
+      .sort(
+        (a, b) => a.Week - b.Week || a.MatchOfWeek.localeCompare(b.MatchOfWeek),
+      );
   }, [allCBBGames, selectedSeasonID]);
 
   const collegeStandingsBySelectedSeason = useMemo(() => {
@@ -206,7 +208,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
       selectedSeason,
       league,
       collegeStandingsBySelectedSeason,
-      allCBBGames,
+      collegeGamesBySelectedSeason,
       cbbTeams,
     );
   }, [
@@ -216,7 +218,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedSeason,
     league,
     collegeStandingsBySelectedSeason,
-    allCBBGames,
+    collegeGamesBySelectedSeason,
     cbbTeams,
   ]);
 
@@ -915,7 +917,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
       selectedSeason,
       league,
       proStandingsBySelectedSeason,
-      allNBAGames,
+      proGamesBySelectedSeason,
       nbaTeams,
     );
   }, [
@@ -925,7 +927,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedSeason,
     league,
     proStandingsBySelectedSeason,
-    allNBAGames,
+    proGamesBySelectedSeason,
     nbaTeams,
   ]);
 

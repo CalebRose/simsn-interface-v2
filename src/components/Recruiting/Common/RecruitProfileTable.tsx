@@ -937,6 +937,10 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
     return count;
   }, [profile]);
 
+  const scoutingPointsRemaining = useMemo(() => {
+    return teamProfile.WeeklyScoutingPoints;
+  }, [teamProfile]);
+
   // 4) Change handler
   const onPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = Math.max(0, Math.min(20, Number(e.target.value)));
@@ -1038,6 +1042,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("InsideShooting")}
                 >
                   ?
@@ -1053,6 +1058,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("MidRangeShooting")}
                 >
                   ?
@@ -1068,6 +1074,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("ThreePointShooting")}
                 >
                   ?
@@ -1083,6 +1090,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("FreeThrow")}
                 >
                   ?
@@ -1098,6 +1106,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("BasketballIQ")}
                 >
                   ?
@@ -1113,6 +1122,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("Agility")}
                 >
                   ?
@@ -1128,6 +1138,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("Ballwork")}
                 >
                   ?
@@ -1143,6 +1154,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("Stealing")}
                 >
                   ?
@@ -1158,6 +1170,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("Blocking")}
                 >
                   ?
@@ -1173,6 +1186,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("Rebounding")}
                 >
                   ?
@@ -1188,6 +1202,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("InteriorDefense")}
                 >
                   ?
@@ -1203,6 +1218,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                 <Button
                   variant="secondary"
                   size="xs"
+                  disabled={scoutingPointsRemaining <= 0}
                   onClick={() => scoutAttribute("PerimeterDefense")}
                 >
                   ?
@@ -1219,6 +1235,7 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
                   <Button
                     variant="secondary"
                     size="xs"
+                    disabled={scoutingPointsRemaining <= 0}
                     onClick={() => scoutAttribute("Potential")}
                   >
                     ?
