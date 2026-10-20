@@ -1905,6 +1905,18 @@ const HCKAdvancedStandingsRow: FC<HCKAdvancedStandingsRowProps> = ({
       <TableCell>
         <Span>{standings.PostSeasonStatus}</Span>
       </TableCell>
+      <TableCell>
+        <Span>{team?.OverallGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OffenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.DefenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.GoalieGrade}</Span>
+      </TableCell>
       {league === SimCHL && (
         <>
           <TableCell>
@@ -2141,6 +2153,15 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
       <TableCell>
         <Span>{standings.PostSeasonStatus}</Span>
       </TableCell>
+      <TableCell>
+        <Span>{team?.OverallGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OffenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.DefenseGrade}</Span>
+      </TableCell>
       {league === SimNFL && (
         <>
           <TableCell>
@@ -2343,6 +2364,15 @@ const BBAdvancedStandingsRow: FC<BBAdvancedStandingsRowProps> = ({
       </TableCell>
       <TableCell>
         <Span>{standings.PostSeasonStatus}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OverallGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OffenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.DefenseGrade}</Span>
       </TableCell>
       {league === SimCBB && (
         <>

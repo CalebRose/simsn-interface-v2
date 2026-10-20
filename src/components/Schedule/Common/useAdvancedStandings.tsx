@@ -339,6 +339,10 @@ export const useAdvancedStandings = (
         { header: "HW.", accessor: "HomeWins" },
         { header: "AW.", accessor: "AwayWins" },
         { header: "Status", accessor: "PostSeasonStatus" },
+        { header: "Ovr", accessor: "OverallGrade" },
+        { header: "Off.", accessor: "OffenseGrade" },
+        { header: "Def.", accessor: "DefenseGrade" },
+        { header: "Goalie", accessor: "GoalieGrade" },
       ]);
       if (league === SimCHL) {
         columns = columns.concat([
@@ -367,6 +371,9 @@ export const useAdvancedStandings = (
         { header: "HW.", accessor: "HomeWins" },
         { header: "AW.", accessor: "AwayWins" },
         { header: "Status", accessor: "PostSeasonStatus" },
+        { header: "Ovr", accessor: "OverallGrade" },
+        { header: "Off.", accessor: "OffenseGrade" },
+        { header: "Def.", accessor: "DefenseGrade" },
       ]);
       if (league === SimCBB) {
         columns = columns.concat([
@@ -406,6 +413,9 @@ export const useAdvancedStandings = (
           { header: "HW.", accessor: "HomeWins" },
           { header: "AW.", accessor: "AwayWins" },
           { header: "Status", accessor: "PostSeasonStatus" },
+          { header: "Ovr", accessor: "OverallGrade" },
+          { header: "Off.", accessor: "OffenseGrade" },
+          { header: "Def.", accessor: "DefenseGrade" },
           { header: "W%", accessor: "TotalWinPercentage" },
           { header: "Conf W.%", accessor: "ConfWinPercentage" },
           { header: "Preseason Rank", accessor: "PreseasonRank" },
@@ -437,6 +447,9 @@ export const useAdvancedStandings = (
           { header: "HW.", accessor: "HomeWins" },
           { header: "AW.", accessor: "AwayWins" },
           { header: "Status", accessor: "PostSeasonStatus" },
+          { header: "Ovr", accessor: "OverallGrade" },
+          { header: "Off.", accessor: "OffenseGrade" },
+          { header: "Def.", accessor: "DefenseGrade" },
           { header: "W%", accessor: "TotalWinPercentage" },
           { header: "Conf W.%", accessor: "ConfWinPercentage" },
         ]);

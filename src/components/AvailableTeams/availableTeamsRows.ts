@@ -60,14 +60,15 @@ const getOpenRoleStatus = (
         ? `${desktopLabels.join("/")} Open`
         : "No roles open",
     mobileStatus:
-      mobileLabels.length > 0
-        ? `${mobileLabels.join("/")} Open`
-        : "Filled",
+      mobileLabels.length > 0 ? `${mobileLabels.join("/")} Open` : "Filled",
     isAvailable: openRoles.length > 0,
   };
 };
 
-const getCoachStatus = (coach: string | undefined | null, isAssigned = true) => {
+const getCoachStatus = (
+  coach: string | undefined | null,
+  isAssigned = true,
+) => {
   if (!isAssigned || !coach || coach === "AI") {
     return {
       status: "Available",
