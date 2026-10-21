@@ -147,6 +147,7 @@ export class NFLGame {
   HomePreviousBye: boolean;
   AwayPreviousBye: boolean;
   IsRevealed: boolean;
+  StreamChannel: string;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -198,6 +199,7 @@ export class NFLGame {
     this.HomePreviousBye = source["HomePreviousBye"];
     this.AwayPreviousBye = source["AwayPreviousBye"];
     this.IsRevealed = source["IsRevealed"];
+    this.StreamChannel = source["StreamChannel"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -2653,6 +2655,7 @@ export class CollegeGame {
   AwayPreviousBye: boolean;
   ConferenceID: number;
   IsRevealed: boolean;
+  StreamChannel: string;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -2705,6 +2708,7 @@ export class CollegeGame {
     this.NextGameID = source["NextGameID"];
     this.NextGameHOA = source["NextGameHOA"];
     this.IsRevealed = source["IsRevealed"];
+    this.StreamChannel = source["StreamChannel"];
     this.HomePreviousBye = source["HomePreviousBye"];
     this.AwayPreviousBye = source["AwayPreviousBye"];
     this.ConferenceID = source["ConferenceID"];
