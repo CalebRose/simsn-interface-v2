@@ -911,6 +911,7 @@ export class NBAMatch {
   IsRevealed: boolean;
   MVP: number;
   AttendanceCount: number;
+  StreamChannel: string;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -960,6 +961,7 @@ export class NBAMatch {
     this.IsRevealed = source["IsRevealed"];
     this.MVP = source["MVP"];
     this.AttendanceCount = source["AttendanceCount"];
+    this.StreamChannel = source["StreamChannel"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1023,6 +1025,7 @@ export class Match {
   MVP: number;
   Country: string;
   AttendanceCount: number;
+  StreamChannel: string;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -1068,6 +1071,7 @@ export class Match {
     this.MVP = source["MVP"];
     this.Country = source["Country"];
     this.AttendanceCount = source["AttendanceCount"];
+    this.StreamChannel = source["StreamChannel"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
