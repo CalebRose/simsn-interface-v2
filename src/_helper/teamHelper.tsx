@@ -118,6 +118,7 @@ export const RevealBBAResults = (
   const currentWeek = timestamp.CollegeWeek;
   if (game.Week < currentWeek || game.SeasonID < timestamp.SeasonID)
     return true;
+  if (game.IsRevealed) return true;
   const { MatchOfWeek, GameComplete } = game;
   if (MatchOfWeek === "A" && timestamp.GamesARan) return GameComplete;
   if (MatchOfWeek === "B" && timestamp.GamesBRan) return GameComplete;

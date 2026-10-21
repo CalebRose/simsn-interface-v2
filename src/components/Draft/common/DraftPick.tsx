@@ -170,8 +170,13 @@ export const DraftPickCard: React.FC<{
 
   const drafteeSchool = useMemo(() => {
     if (!draftee) return "";
+    if (draftee.Team.length > 0) {
+      return `${draftee.Team}`;
+    }
     return `${draftee.College}`;
   }, [draftee]);
+
+  console.log({ draftee, drafteeLabel, drafteeSchool });
 
   const status = getPickStatus(pick, index);
   const statusLabel = getStatusLabel(status);
