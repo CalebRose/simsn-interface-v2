@@ -1729,6 +1729,14 @@ const SimNFLPhaseSection = ({
     return "";
   }, [phase]);
 
+  const extensionPhase = useMemo(() => {
+    if (phase < 25 && phase > 19)
+      return `${25 - phase} weeks until Extension Phase Opens`;
+    if (phase > 24)
+      return `Teams may now offer extensions to eligible players on their roster`;
+    return "Closed";
+  }, [phase]);
+
   return (
     <>
       <div className="grid grid-cols-6 px-1">
@@ -1763,7 +1771,7 @@ const SimNFLPhaseSection = ({
             </div>
           </>
         )}
-        {weeksUntilTradeDeadline < 6 && (
+        {weeksUntilTradeDeadline < 6 && weeksUntilTradeDeadline >= 0 && (
           <>
             <div className="text-start col-span-3">
               <Text variant="small">Trade Deadline</Text>
@@ -1772,6 +1780,16 @@ const SimNFLPhaseSection = ({
               <Text variant="small">
                 Trade Deadline is until {weeksUntilTradeDeadline} weeks.
               </Text>
+            </div>
+          </>
+        )}
+        {phase > 19 && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Extension Phase</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">{extensionPhase}</Text>
             </div>
           </>
         )}
