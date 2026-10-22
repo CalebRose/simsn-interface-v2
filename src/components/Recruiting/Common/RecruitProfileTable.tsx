@@ -230,7 +230,7 @@ const getRecruitProfileColumns = (
       { header: "Leaders", accessor: "lead" },
       { header: "Add Points", accessor: "AddedPoints" },
       { header: "Streak", accessor: "SpendingCount" },
-      { header: "Mod.", accessor: "CurrentWeeksPoints" },
+      { header: "Mod.", accessor: "Modifier" },
       { header: "Total", accessor: "TotalPoints" },
       { header: "Actions", accessor: "actions" },
     ]);
@@ -884,14 +884,10 @@ export const CBBProfileRow: FC<CBBProfileRowProps> = ({
         : "secondary";
 
   // 3) Compute modifier
-  let modifier = 1.0;
-  if (profile.HasStateBonus) {
-    modifier += 0.25;
-  }
-  if (profile.HasRegionBonus) {
-    modifier += 0.15;
-  }
-  let modValue = profile.CurrentWeeksPoints * modifier;
+
+  const modValue = useMemo(() => {
+    return profile.Modifier;
+  }, [profile]);
 
   const scoutCount = useMemo(() => {
     let count = 0;
