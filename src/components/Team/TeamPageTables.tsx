@@ -2210,6 +2210,10 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
           accessor: "ThreePointShooting",
         },
         { header: !isUltraWide ? "FT" : "Freethrow", accessor: "Freethrow" },
+        {
+          header: !isUltraWide ? "BIQ" : "Basketball IQ",
+          accessor: "BasketballIQ",
+        },
         { header: !isUltraWide ? "BW" : "Ballwork", accessor: "Ballwork" },
         { header: !isUltraWide ? "Stl" : "Stealing", accessor: "Stealing" },
         { header: !isUltraWide ? "RB" : "Rebounding", accessor: "Rebounding" },

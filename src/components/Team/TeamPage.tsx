@@ -2117,7 +2117,10 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     const roster = proRosterMap[teamID] || [];
     const updatedRoster = roster.map((player) =>
       player.ID === playerID
-        ? { ...player, IsOnTradeBlock: !player.IsOnTradeBlock }
+        ? new NBAPlayer({
+            ...player,
+            IsOnTradeBlock: !player.IsOnTradeBlock,
+          })
         : player,
     );
     updateNBARosterMap({ ...proRosterMap, [teamID]: updatedRoster });
