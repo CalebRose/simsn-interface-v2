@@ -2109,9 +2109,9 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
 
     await PlayerService.SendNBAPlayerToTradeBlock(playerID);
     const roster = proRosterMap[teamID] || [];
-    const updatedRoster = roster.map((player) =>
+    const updatedRoster: NBAPlayer[] = roster.map((player) =>
       player.ID === playerID
-        ? { ...player, IsOnTradeBlock: !player.IsOnTradeBlock }
+        ? ({ ...player, IsOnTradeBlock: !player.IsOnTradeBlock } as NBAPlayer)
         : player,
     );
     updateNBARosterMap({ ...proRosterMap, [teamID]: updatedRoster });
