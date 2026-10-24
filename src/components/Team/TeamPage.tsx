@@ -252,10 +252,7 @@ const CHLTeamPage = ({ league, ts }: TeamPageProps) => {
     return selectedRoster.filter((player) => player.IsRedshirting).length;
   }, [selectedRoster]);
 
-  const redshirtCount = useMemo(() => {
-    if (!selectedRoster) return 0;
-    return selectedRoster.filter((player) => player.IsRedshirting).length;
-  }, [selectedRoster]);
+  const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = chlTeamMap[value];
     setSelectedTeam(nextTeam);
@@ -630,10 +627,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
       .filter((contract) => contract !== null);
   }, [selectedRoster, phlContractMap]);
 
-  const redshirtCount = useMemo(() => {
-    if (!selectedRoster) return 0;
-    return selectedRoster.filter((player) => player.IsRedshirting).length;
-  }, [selectedRoster]);
+  const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = phlTeamMap[value];
     setSelectedTeam(nextTeam);
@@ -972,8 +966,6 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     return null;
   }, [cfbRosterMap, selectedTeam]);
 
-
-
   const selectedTeamProfile = useMemo(() => {
     if (selectedTeam && teamProfileMap) {
       return teamProfileMap[selectedTeam.ID];
@@ -1009,10 +1001,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     selectedClasses,
   });
 
-  const redshirtCount = useMemo(() => {
-    if (!selectedRoster) return 0;
-    return selectedRoster.filter((player) => player.IsRedshirting).length;
-  }, [selectedRoster]);
+  const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = cfbTeamMap ? cfbTeamMap[value] : null;
     setSelectedTeam(nextTeam);
@@ -1323,10 +1312,7 @@ const NFLTeamPage = ({ league, ts }: TeamPageProps) => {
       .filter((contract) => contract !== null);
   }, [selectedRoster, nflContractMap]);
 
-  const redshirtCount = useMemo(() => {
-    if (!selectedRoster) return 0;
-    return selectedRoster.filter((player) => player.IsRedshirting).length;
-  }, [selectedRoster]);
+  const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = nflTeamMap ? nflTeamMap[value] : null;
     setSelectedTeam(nextTeam);
@@ -1829,10 +1815,7 @@ const CBBTeamPage = ({ league, ts }: TeamPageProps) => {
     return collegePromiseMap[modalPlayer.ID];
   }, [modalPlayer, collegePromiseMap]);
 
-  const redshirtCount = useMemo(() => {
-    if (!selectedRoster) return 0;
-    return selectedRoster.filter((player) => player.IsRedshirting).length;
-  }, [selectedRoster]);
+  const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = cbbTeamMap ? cbbTeamMap[value] : null;
     setSelectedTeam(nextTeam);
@@ -2068,10 +2051,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
     return nbaDraftPickMap[selectedTeam.ID] || [];
   }, [selectedTeam, nbaDraftPickMap]);
 
-  const redshirtCount = useMemo(() => {
-    if (!selectedRoster) return 0;
-    return selectedRoster.filter((player) => player.IsRedshirting).length;
-  }, [selectedRoster]);
+  const selectTeamOption = (opts: SingleValue<SelectOption>) => {
     const value = Number(opts?.value);
     const nextTeam = nbaTeamMap ? nbaTeamMap[value] : null;
     setSelectedTeam(nextTeam);
