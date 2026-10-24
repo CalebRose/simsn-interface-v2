@@ -164,7 +164,6 @@ export const CHLRosterTable: FC<CHLRosterTableProps> = ({
         { header: "Academics", accessor: "AcademicsPref" },
         { header: "Loyalty", accessor: "TeamLoyalty" },
         { header: "Morale", accessor: "PlayerMorale" },
-        { header: "Redshirt", accessor: "isRedshirting" },
         { header: "Mood", accessor: "TransferStatus" },
         { header: "Offensive Fit", accessor: "OffensiveFit" },
         { header: "Defensive Fit", accessor: "DefensiveFit" },
@@ -1454,7 +1453,6 @@ interface CFBRosterTableProps {
   openModal: (action: ModalAction, player: CFBPlayer) => void;
   openPromiseModal: (player: CFBPlayer) => void;
   disable: boolean;
-  redshirtCount?: number;
 }
 
 export const CFBRosterTable: FC<CFBRosterTableProps> = ({
@@ -1462,7 +1460,6 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
   backgroundColor,
   headerColor,
   borderColor,
-  redshirtCount,
   team,
   category,
   openModal,
@@ -1494,7 +1491,6 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
         { header: "Injury", accessor: "InjuryType" },
         { header: "Personality", accessor: "Personality" },
         { header: "Work Ethic", accessor: "WorkEthic" },
-        { header: "Redshirt", accessor: "isRedshirting" },
         { header: "Mood", accessor: "TransferStatus" },
       ]);
     }
@@ -1593,19 +1589,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
         360px:max-w-[6em] 380px:max-w-[8em] 430px:max-w-[10em] 
         text-wrap sm:max-w-full px-1 sm:px-1.5 py-1 sm:whitespace-nowrap text-start`}
           >
-            {attr.label === "Redshirt" ? (
-              <>
-                {item.IsRedshirt && (
-                  <CheckCircle textColorClass={`${TextGreen}`} />
-                )}
-                {item.IsRedshirting && (
-                  <CheckCircle textColorClass="text-yellow-500" />
-                )}
-                {!item.IsRedshirt && !item.IsRedshirting && (
-                  <CrossCircle textColorClass="text-red-500" />
-                )}
-              </>
-            ) : attr.label === "Health" ? (
+            {attr.label === "Health" ? (
               <>
                 {attr.value === true ? (
                   <User textColorClass="text-red-500" />
@@ -1688,14 +1672,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
                 value: "cut",
                 label: `Cut - ${item.FirstName} ${item.LastName}`,
               },
-              ...(item.IsRedshirting || item.IsRedshirt || redshirtCount!! > 20
-                ? []
-                : [
-                    {
-                      value: "redshirt",
-                      label: `Redshirt - ${item.FirstName} ${item.LastName}`,
-                    },
-                  ]),
+
               {
                 value: "injuredReserve",
                 label: `Send to Injured Reserve - ${item.FirstName} ${item.LastName}`,
@@ -1713,9 +1690,7 @@ export const CFBRosterTable: FC<CFBRosterTableProps> = ({
               if (selectedOption?.value === "cut") {
                 openModal(Cut, item);
               }
-              if (selectedOption?.value === "redshirt") {
-                openModal(Redshirt, item);
-              }
+
               if (selectedOption?.value === "injuredReserve") {
                 openModal(InjuryReserve, item);
               }
@@ -2185,7 +2160,6 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
         { header: "Personality", accessor: "Personality" },
         { header: "Work Ethic", accessor: "WorkEthic" },
         { header: "Academics", accessor: "AcademicBias" },
-        { header: "Redshirt", accessor: "isRedshirting" },
         { header: "Mood", accessor: "TransferStatus" },
       ]);
     }
@@ -2355,9 +2329,7 @@ export const CBBRosterTable: FC<CBBRosterTableProps> = ({
               if (selectedOption?.value === "cut") {
                 openModal(Cut, item);
               }
-              if (selectedOption?.value === "redshirt") {
-                openModal(Redshirt, item);
-              }
+
               if (selectedOption?.value === "promise") {
                 openPromiseModal(item);
               } else {

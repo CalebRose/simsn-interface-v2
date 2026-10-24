@@ -64,13 +64,7 @@ export const useDepthChartValidation = ({
       if (league === SimCFB) {
         const cfbPlayer = player as CollegePlayer;
         
-        if (cfbPlayer.IsRedshirting) {
-          errors.push({
-            field: dcPlayer.Position,
-            message: `${playerName} is currently a redshirt player. Please swap them from their ${dcPlayer.Position} position level.`,
-            severity: 'error'
-          });
-        }
+
       } else {
         const nflPlayer = player as NFLPlayer;
         

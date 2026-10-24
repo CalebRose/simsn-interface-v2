@@ -120,7 +120,6 @@ export const getCHLAttributes = (
             label: "PlayerMorale",
             value: getPlayerMoraleLabel(player.PlayerMorale),
           },
-          { label: "Redshirt", value: player.IsRedshirting },
           { label: "TransferStatus", value: player.TransferStatus },
         ]
       : [];
@@ -980,7 +979,6 @@ export const getCFBAttributes = (
           },
           { label: "Personality", value: player.Personality },
           { label: "WorkEthic", value: player.WorkEthic },
-          { label: "Redshirt", value: player.IsRedshirting },
           { label: "TransferStatus", value: player.TransferStatus },
         ]
       : [];
@@ -2839,7 +2837,6 @@ export const getCBBAttributes = (
           { label: "Personality", value: player.Personality },
           { label: "WorkEthic", value: player.WorkEthic },
           { label: "AcademicBias", value: player.AcademicBias },
-          { label: "Redshirt", value: player.IsRedshirting },
           { label: "TransferStatus", value: player.TransferStatus },
         ]
       : [];
@@ -2887,7 +2884,6 @@ export const getCBBPortalAttributes = (
           { label: "Personality", value: player.Personality },
           { label: "WorkEthic", value: player.WorkEthic },
           { label: "AcademicBias", value: player.AcademicBias },
-          { label: "Redshirt", value: player.IsRedshirting },
           { label: "TransferStatus", value: player.TransferStatus },
         ]
       : [];

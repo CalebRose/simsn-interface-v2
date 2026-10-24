@@ -446,7 +446,7 @@ function buildPositionMap(
         const year = (player as CollegePlayer).Year;
         const isRedshirt = (player as CollegePlayer).IsRedshirt;
         if (year <= 2) score += 50;
-        else if (year === 3 && isRedshirt) score += 25;
+        else if (year === 3) score += 25;
       } else {
         const exp = (player as NFLPlayer).Experience;
         if (exp <= 1) score += 50;
@@ -476,7 +476,6 @@ export function autoArrangeDepthChart(
   const eligible = players.filter((p) => {
     if (p.IsInjured) return false;
     if ((p as any).IsPracticeSquad) return false;
-    if (league === SimCFB && (p as CollegePlayer).IsRedshirting) return false;
     return true;
   });
 

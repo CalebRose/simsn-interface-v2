@@ -102,15 +102,9 @@ export const filterEligiblePlayers = (
   return players.filter((player) => {
     const playerPosition = player.Position;
     const isPracticeSquad = (player as any).IsPracticeSquad || false;
-    const isRedshirting =
-      league === SimCFB &&
-      excludeRedshirt &&
-      (player as CollegePlayer).IsRedshirting;
-
     return (
       eligiblePositions.includes(playerPosition) &&
-      (!excludePracticeSquad || !isPracticeSquad) &&
-      !isRedshirting
+      (!excludePracticeSquad || !isPracticeSquad)
     );
   });
 };
