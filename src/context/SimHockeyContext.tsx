@@ -1401,9 +1401,14 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   };
 
   const saveCHLGameplan = async (dto: any) => {
-    const res = await GameplanService.SaveCHLGameplan(dto);
     setCHLLineups(dto.CHLLineups);
     setCHLShootoutLineup(dto.CHLShootoutLineup);
+    setChlLineupsMap((prev) => ({ ...prev, [dto.CHLTeamID]: dto.CHLLineups }));
+    setChlShootoutLineupsMap((prev) => ({
+      ...prev,
+      [dto.CHLTeamID]: dto.CHLShootoutLineup,
+    }));
+    const res = await GameplanService.SaveCHLGameplan(dto);
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,
@@ -1411,9 +1416,14 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   };
 
   const savePHLGameplan = async (dto: any) => {
-    const res = await GameplanService.SavePHLGameplan(dto);
     setPHLLineups(dto.PHLLineups);
-    setPHLShootoutLineup(dto.CHLShootoutLineup);
+    setPHLShootoutLineup(dto.PHLShootoutLineup);
+    setPhlLineupsMap((prev) => ({ ...prev, [dto.PHLTeamID]: dto.PHLLineups }));
+    setPhlShootoutLineupsMap((prev) => ({
+      ...prev,
+      [dto.PHLTeamID]: dto.PHLShootoutLineup,
+    }));
+    const res = await GameplanService.SavePHLGameplan(dto);
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,
