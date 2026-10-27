@@ -259,6 +259,7 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
         capsheet as NBACapsheet,
         0,
         0,
+        Number(playerMinimumValue),
       );
     }
     return list;
@@ -407,7 +408,7 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
             </ButtonGroup>
           </>
         }
-        maxWidth="min-[1025px]:max-w-[60vw]"
+        maxWidth="min-[1025px]:max-w-[70vw]"
       >
         <div className="grid grid-cols-[2fr__3fr] space-x-2 mb-2">
           <Border direction="col" classes="text-start p-3">
