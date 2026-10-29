@@ -71,7 +71,6 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     cbbTeamMap,
     cbbRosterMap,
     cbbTeamOptions,
-    allCBBStandings,
     cbbStandingsMapBySeason,
     allCollegeGames: allCBBGames,
     isLoading,
@@ -135,7 +134,12 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
   }, [allCBBGames, selectedSeasonID]);
 
   const collegeStandingsBySelectedSeason = useMemo(() => {
-    return cbbStandingsMapBySeason?.[selectedSeasonID] ?? [];
+    const standings = cbbStandingsMapBySeason?.[selectedSeasonID] ?? [];
+    return standings.sort(
+      (a, b) =>
+        a.ConferenceLosses - b.ConferenceLosses ||
+        a.TotalLosses - b.TotalLosses,
+    );
   }, [cbbStandingsMapBySeason, selectedSeasonID]);
 
   const conferenceTournamentGames = useMemo(
@@ -639,7 +643,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               <LeagueStandings
                 currentUser={currentUser}
                 league={league}
-                standings={allCBBStandings}
+                standings={collegeStandingsBySelectedSeason}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
@@ -715,7 +719,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               standings={
                 collegeStandingsBySelectedSeason.length
                   ? collegeStandingsBySelectedSeason
-                  : allCBBStandings
+                  : collegeStandingsBySelectedSeason
               }
               season={selectedSeason}
               teamMap={cbbTeamMap}
@@ -1304,7 +1308,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
               <LeagueStandings
                 currentUser={currentUser}
                 league={league}
-                standings={allNBAStandings}
+                standings={proStandingsBySelectedSeason}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 const TOKEN_PATTERN =
-  /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+|@[A-Za-z0-9_.-]+)/gi;
+  /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+|@[A-Za-z0-9_.@+-]+)/gi;
 
 const trimUrlPunctuation = (value: string) => {
   let url = value.replace(/[.,!?;:]+$/, "");
