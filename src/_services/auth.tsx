@@ -71,6 +71,9 @@ export const AuthService: {
               usernameLower: username.toLowerCase(),
               email: user.email,
               createdAt: new Date(),
+              newCFBUserCustomCrootBenefit: true,
+              newCBBUserCustomCrootBenefit: true,
+              newCHLUserCustomCrootBenefit: true,
             });
           } catch (firestoreError: any) {
             console.error("Failed to write user profile:", firestoreError);
