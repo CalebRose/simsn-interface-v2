@@ -71,7 +71,7 @@ export const useCHLRecruiting = () => {
   const canCreateCustomCroot = useMemo(() => {
     if (!currentUser) return false;
     if (!hck_Timestamp) return false;
-    if (hck_Timestamp.Phase < 15) return false;
+    if (hck_Timestamp.Phase >= 15) return false;
     if (currentUser.newCHLUserCustomCrootBenefit) return true;
     if (currentUser.chlCrootSubscriptionBenefit) return true;
     if (currentUser.SimCHLMediaPoints) {

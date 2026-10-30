@@ -73,7 +73,7 @@ export const useCFBRecruiting = () => {
   const canCreateCustomCroot = useMemo(() => {
     if (!currentUser) return false;
     if (!cfb_Timestamp) return false;
-    // if (cfb_Timestamp.Phase < 10) return false;
+    if (cfb_Timestamp.Phase >= 10) return false;
     if (currentUser.newCFBUserCustomCrootBenefit) return true;
     if (currentUser.cfbCrootSubscriptionBenefit) return true;
     if (currentUser.SimCFBMediaPoints) {

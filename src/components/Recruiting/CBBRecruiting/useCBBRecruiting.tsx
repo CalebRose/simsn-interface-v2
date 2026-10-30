@@ -63,7 +63,7 @@ export const useCBBRecruiting = () => {
   const canCreateCustomCroot = useMemo(() => {
     if (!currentUser) return false;
     if (!cbb_Timestamp) return false;
-    if (cbb_Timestamp.Phase < 10) return false;
+    if (cbb_Timestamp.Phase >= 10) return false;
     if (currentUser.newCBBUserCustomCrootBenefit) return true;
     if (currentUser.cbbCrootSubscriptionBenefit) return true;
     if (currentUser.SimCBBMediaPoints) {
