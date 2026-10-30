@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useAuthStore } from "../../../context/AuthContext";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import { useModal } from "../../../_hooks/useModal";
 import {
@@ -31,9 +32,12 @@ import {
   defensiveSystemsInformationList,
   offensiveSystemsInformationList,
 } from "../../Gameplan/HockeyLineups/useLineupUtils";
+import { updateUserByUsername } from "../../../firebase/firestoreHelper";
+import { CustomCrootSubmission } from "../Common/CustomCrootModal";
+import { RecruitService } from "../../../_services/recruitService";
 
 export const useCHLRecruiting = () => {
-  const hkStore = useSimHCKStore();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const {
     recruits,
     teamProfileMap,
@@ -42,7 +46,7 @@ export const useCHLRecruiting = () => {
     chlTeams,
     chlTeamMap,
     hck_Timestamp,
-  } = hkStore;
+  } = useSimHCKStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [recruitingCategory, setRecruitingCategory] =
     useState<RecruitingCategory>(Overview);
@@ -63,6 +67,18 @@ export const useCHLRecruiting = () => {
     HockeyCroot | FootballCroot | BasketballCroot
   >({} as HockeyCroot);
   const [modalAction, setModalAction] = useState<ModalAction>(RecruitInfoType);
+
+  const canCreateCustomCroot = useMemo(() => {
+    if (!currentUser) return false;
+    if (!hck_Timestamp) return false;
+    if (hck_Timestamp.Phase < 15) return false;
+    if (currentUser.newCHLUserCustomCrootBenefit) return true;
+    if (currentUser.chlCrootSubscriptionBenefit) return true;
+    if (currentUser.SimCHLMediaPoints) {
+      return currentUser.SimCHLMediaPoints > 10;
+    }
+    return false;
+  }, [currentUser, hck_Timestamp]);
 
   const recruitingLocked = useMemo(() => {
     if (hck_Timestamp) {
@@ -248,6 +264,34 @@ export const useCHLRecruiting = () => {
     ];
   }, [teamProfile]);
 
+  const submitCustomCroot = useCallback(
+    async (submission: CustomCrootSubmission) => {
+      if (!currentUser || !canCreateCustomCroot) return;
+      await RecruitService.HCKCreateCustomCroot(submission);
+      let user = { ...currentUser };
+      let newUserBonus = user?.newCHLUserCustomCrootBenefit ?? false;
+      let subscriptionBonus = user?.chlCrootSubscriptionBenefit ?? false;
+      let mediaPoints = user?.SimCHLMediaPoints ?? 0;
+      if (newUserBonus) {
+        // Apply any logic related to the new user bonus here
+        newUserBonus = false;
+      } else if (user?.chlCrootSubscriptionBenefit) {
+        subscriptionBonus = false;
+      } else if (user.SimCHLMediaPoints && user?.SimCHLMediaPoints >= 2) {
+        mediaPoints -= 2;
+      }
+      const payload = {
+        newCHLUserCustomCrootBenefit: newUserBonus,
+        chlCrootSubscriptionBenefit: subscriptionBonus,
+        SimCHLMediaPoints: mediaPoints,
+        username: currentUser?.username,
+      };
+      updateUserByUsername(currentUser!.username, payload);
+      setCurrentUser({ ...currentUser, ...payload });
+    },
+    [currentUser, canCreateCustomCroot],
+  );
+
   return {
     teamProfile,
     recruitMap,
@@ -286,5 +330,7 @@ export const useCHLRecruiting = () => {
     updateRecruitingCategory,
     offensiveSystemsInformation,
     defensiveSystemsInformation,
+    canCreateCustomCroot,
+    submitCustomCroot,
   };
 };

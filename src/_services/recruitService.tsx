@@ -103,6 +103,18 @@ export const RecruitService = {
     return await PostCall(`${fbaUrl}recruiting/addrecruit/`, dto);
   },
 
+  FBACreateCustomCroot: async (dto: any): Promise<void> => {
+    return await PostCallNoResponse(`${fbaUrl}recruiting/custom/croot/`, dto);
+  },
+
+  HCKCreateCustomCroot: async (dto: any): Promise<void> => {
+    return await PostCallNoResponse(`${hckUrl}recruiting/custom/croot/`, dto);
+  },
+
+  BBACreateCustomCroot: async (dto: any): Promise<void> => {
+    return await PostCallNoResponse(`${bbaUrl}recruiting/custom/croot/`, dto);
+  },
+
   FBAToggleScholarship: async (dto: any): Promise<FBARecruitPlayerProfile> => {
     return await PostCall(`${fbaUrl}recruiting/toggleScholarship/`, dto);
   },

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { useModal } from "../../../_hooks/useModal";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import {
@@ -21,9 +21,13 @@ import {
   useFilteredFootballRecruitsByTeam,
 } from "../../../_helper/recruitingHelper";
 import { usePagination } from "../../../_hooks/usePagination";
+import { useAuthStore } from "../../../context/AuthContext";
+import { CustomCrootSubmission } from "../Common/CustomCrootModal";
+import { RecruitService } from "../../../_services/recruitService";
+import { updateUserByUsername } from "../../../firebase/firestoreHelper";
 
 export const useCFBRecruiting = () => {
-  const fbStore = useSimFBAStore();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const {
     recruits,
     teamProfileMap,
@@ -33,7 +37,7 @@ export const useCFBRecruiting = () => {
     recruitProfiles,
     cfb_Timestamp,
     getBootstrapRecruitingData,
-  } = fbStore;
+  } = useSimFBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const [recruitingCategory, setRecruitingCategory] =
     useState<RecruitingCategory>(Overview);
@@ -65,6 +69,18 @@ export const useCFBRecruiting = () => {
   useEffect(() => {
     getBootstrapRecruitingData();
   }, []);
+
+  const canCreateCustomCroot = useMemo(() => {
+    if (!currentUser) return false;
+    if (!cfb_Timestamp) return false;
+    // if (cfb_Timestamp.Phase < 10) return false;
+    if (currentUser.newCFBUserCustomCrootBenefit) return true;
+    if (currentUser.cfbCrootSubscriptionBenefit) return true;
+    if (currentUser.SimCFBMediaPoints) {
+      return currentUser.SimCFBMediaPoints > 10;
+    }
+    return false;
+  }, [currentUser, cfb_Timestamp]);
 
   const recruitingLocked = useMemo(() => {
     if (cfb_Timestamp) {
@@ -129,7 +145,13 @@ export const useCFBRecruiting = () => {
   });
 
   const [filteredCrootProfiles, setFilteredCrootProfiles] = useState<any[]>([]);
-  const prevFiltersRef = useRef({ positions, archetype, regions, statuses, stars });
+  const prevFiltersRef = useRef({
+    positions,
+    archetype,
+    regions,
+    statuses,
+    stars,
+  });
   const prevSortVersionRef = useRef(sortVersion);
 
   // Dynamic sort: Default sorted on load, frozen while typing, fully re-sorted on click of triggerSort() or list changes
@@ -140,17 +162,33 @@ export const useCFBRecruiting = () => {
     }
 
     const filtersChanged =
-      JSON.stringify(prevFiltersRef.current.positions) !== JSON.stringify(positions) ||
-      JSON.stringify(prevFiltersRef.current.archetype) !== JSON.stringify(archetype) ||
-      JSON.stringify(prevFiltersRef.current.regions) !== JSON.stringify(regions) ||
-      JSON.stringify(prevFiltersRef.current.statuses) !== JSON.stringify(statuses) ||
+      JSON.stringify(prevFiltersRef.current.positions) !==
+        JSON.stringify(positions) ||
+      JSON.stringify(prevFiltersRef.current.archetype) !==
+        JSON.stringify(archetype) ||
+      JSON.stringify(prevFiltersRef.current.regions) !==
+        JSON.stringify(regions) ||
+      JSON.stringify(prevFiltersRef.current.statuses) !==
+        JSON.stringify(statuses) ||
       JSON.stringify(prevFiltersRef.current.stars) !== JSON.stringify(stars);
 
     const sortTriggered = prevSortVersionRef.current !== sortVersion;
-    const lengthChanged = rawFilteredCrootProfiles.length !== filteredCrootProfiles.length;
+    const lengthChanged =
+      rawFilteredCrootProfiles.length !== filteredCrootProfiles.length;
 
-    if (filtersChanged || sortTriggered || lengthChanged || filteredCrootProfiles.length === 0) {
-      prevFiltersRef.current = { positions, archetype, regions, statuses, stars };
+    if (
+      filtersChanged ||
+      sortTriggered ||
+      lengthChanged ||
+      filteredCrootProfiles.length === 0
+    ) {
+      prevFiltersRef.current = {
+        positions,
+        archetype,
+        regions,
+        statuses,
+        stars,
+      };
       prevSortVersionRef.current = sortVersion;
 
       // Sort directly using current live points values
@@ -171,7 +209,10 @@ export const useCFBRecruiting = () => {
       // While typing numbers, update values in-place so rows stay completely still, filtering out any removed profiles
       setFilteredCrootProfiles((prevList) => {
         const rawMap = new Map(
-          rawFilteredCrootProfiles.map((item: any) => [item.ID || item.RecruitID, item])
+          rawFilteredCrootProfiles.map((item: any) => [
+            item.ID || item.RecruitID,
+            item,
+          ]),
         );
         return prevList
           .filter((item) => rawMap.has(item.ID || item.RecruitID))
@@ -181,7 +222,15 @@ export const useCFBRecruiting = () => {
           });
       });
     }
-  }, [rawFilteredCrootProfiles, sortVersion, positions, archetype, regions, statuses, stars]);
+  }, [
+    rawFilteredCrootProfiles,
+    sortVersion,
+    positions,
+    archetype,
+    regions,
+    statuses,
+    stars,
+  ]);
 
   const pageSize = 100;
 
@@ -286,6 +335,34 @@ export const useCFBRecruiting = () => {
     setModalPlayer(player);
   };
 
+  const submitCustomCroot = useCallback(
+    async (submission: CustomCrootSubmission) => {
+      if (!currentUser || !canCreateCustomCroot) return;
+      await RecruitService.FBACreateCustomCroot(submission);
+      let user = { ...currentUser };
+      let newUserBonus = user?.newCFBUserCustomCrootBenefit ?? false;
+      let subscriptionBonus = user?.cfbCrootSubscriptionBenefit ?? false;
+      let mediaPoints = user?.SimCFBMediaPoints ?? 0;
+      if (newUserBonus) {
+        // Apply any logic related to the new user bonus here
+        newUserBonus = false;
+      } else if (user?.cfbCrootSubscriptionBenefit) {
+        subscriptionBonus = false;
+      } else if (user.SimCFBMediaPoints && user?.SimCFBMediaPoints >= 2) {
+        mediaPoints -= 2;
+      }
+      const payload = {
+        newCFBUserCustomCrootBenefit: newUserBonus,
+        cfbCrootSubscriptionBenefit: subscriptionBonus,
+        SimCFBMediaPoints: mediaPoints,
+        username: currentUser?.username,
+      };
+      updateUserByUsername(currentUser!.username, payload);
+      setCurrentUser({ ...currentUser, ...payload });
+    },
+    [currentUser, canCreateCustomCroot],
+  );
+
   return {
     teamProfile,
     recruitMap,
@@ -323,5 +400,7 @@ export const useCFBRecruiting = () => {
     SelectClass,
     SelectCategory,
     triggerSort,
+    canCreateCustomCroot,
+    submitCustomCroot,
   };
 };

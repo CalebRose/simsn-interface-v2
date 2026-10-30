@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAuthStore } from "../../../context/AuthContext";
 import { useModal } from "../../../_hooks/useModal";
 import { useSimBBAStore } from "../../../context/SimBBAContext";
 import {
@@ -17,9 +18,12 @@ import {
 import { Croot as HockeyCroot } from "../../../models/hockeyModels";
 import { useFilteredBasketballRecruits } from "../../../_helper/recruitingHelper";
 import { usePagination } from "../../../_hooks/usePagination";
+import { CustomCrootSubmission } from "../Common/CustomCrootModal";
+import { RecruitService } from "../../../_services/recruitService";
+import { updateUserByUsername } from "../../../firebase/firestoreHelper";
 
 export const useCBBRecruiting = () => {
-  const bbStore = useSimBBAStore();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const {
     recruits,
     teamProfileMap,
@@ -29,7 +33,7 @@ export const useCBBRecruiting = () => {
     recruitProfiles,
     cbb_Timestamp,
     getBootstrapRecruitingData,
-  } = bbStore;
+  } = useSimBBAStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
 
   const [recruitingCategory, setRecruitingCategory] =
@@ -55,6 +59,18 @@ export const useCBBRecruiting = () => {
   useEffect(() => {
     getBootstrapRecruitingData();
   }, []);
+
+  const canCreateCustomCroot = useMemo(() => {
+    if (!currentUser) return false;
+    if (!cbb_Timestamp) return false;
+    if (cbb_Timestamp.Phase < 10) return false;
+    if (currentUser.newCBBUserCustomCrootBenefit) return true;
+    if (currentUser.cbbCrootSubscriptionBenefit) return true;
+    if (currentUser.SimCBBMediaPoints) {
+      return currentUser.SimCBBMediaPoints > 10;
+    }
+    return false;
+  }, [currentUser, cbb_Timestamp]);
 
   const recruitingLocked = useMemo(() => {
     if (cbb_Timestamp) {
@@ -210,6 +226,34 @@ export const useCBBRecruiting = () => {
     setModalPlayer(player);
   };
 
+  const submitCustomCroot = useCallback(
+    async (submission: CustomCrootSubmission) => {
+      if (!currentUser || !canCreateCustomCroot) return;
+      await RecruitService.BBACreateCustomCroot(submission);
+      let user = { ...currentUser };
+      let newUserBonus = user?.newCBBUserCustomCrootBenefit ?? false;
+      let subscriptionBonus = user?.cbbCrootSubscriptionBenefit ?? false;
+      let mediaPoints = user?.SimCBBMediaPoints ?? 0;
+      if (newUserBonus) {
+        // Apply any logic related to the new user bonus here
+        newUserBonus = false;
+      } else if (user?.cbbCrootSubscriptionBenefit) {
+        subscriptionBonus = false;
+      } else if (user.SimCBBMediaPoints && user?.SimCBBMediaPoints >= 2) {
+        mediaPoints -= 2;
+      }
+      const payload = {
+        newCBBUserCustomCrootBenefit: newUserBonus,
+        cbbCrootSubscriptionBenefit: subscriptionBonus,
+        SimCBBMediaPoints: mediaPoints,
+        username: currentUser?.username,
+      };
+      updateUserByUsername(currentUser!.username, payload);
+      setCurrentUser({ ...currentUser, ...payload });
+    },
+    [currentUser, canCreateCustomCroot],
+  );
+
   return {
     teamProfile,
     recruitMap,
@@ -246,5 +290,7 @@ export const useCBBRecruiting = () => {
     filteredClass,
     SelectClass,
     SelectCountryOptions,
+    canCreateCustomCroot,
+    submitCustomCroot,
   };
 };

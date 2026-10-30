@@ -22,7 +22,9 @@ import { useResponsive } from "../../../_hooks/useMobile";
 import { useModal } from "../../../_hooks/useModal";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
+import { useAuthStore } from "../../../context/AuthContext";
 import { ActionModal } from "../../Common/ActionModal";
+import { CustomCrootModal } from "../Common/CustomCrootModal";
 import { RecruitingAISettingsModal } from "../Common/RecruitingAISettingsModal";
 import { CategoryDropdown } from "../Common/RecruitingCategoryDropdown";
 import { RecruitingClassTable } from "../Common/RecruitingClassTable";
@@ -34,7 +36,6 @@ import { TeamRankingsTable } from "../Common/TeamRankingsTable";
 import { useCFBRecruiting } from "./useCFBRecruiting";
 
 export const CFBRecruiting = () => {
-  const fbStore = useSimFBAStore();
   const {
     cfbTeam,
     cfbTeamMap,
@@ -47,7 +48,7 @@ export const CFBRecruiting = () => {
     SaveRecruitingBoard,
     SaveAIRecruitingSettings,
     ExportCFBRecruits,
-  } = fbStore;
+  } = useSimFBAStore();
   const {
     teamProfile,
     filteredCrootProfiles,
@@ -81,6 +82,8 @@ export const CFBRecruiting = () => {
     recruitingLocked,
     filteredClass,
     SelectClass,
+    canCreateCustomCroot,
+    submitCustomCroot,
     SelectCategory,
   } = useCFBRecruiting();
   const { isMobile } = useResponsive();
@@ -91,6 +94,8 @@ export const CFBRecruiting = () => {
     cfbTeam?.ColorThree,
   );
   const helpModal = useModal();
+  const customCrootModal = useModal();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const aiSettingsModal = useModal();
   const lockMessage = useLoadMessage(CFBRecruitLockedMessages, 5000);
   const recruitsExport = async () => {
@@ -99,6 +104,14 @@ export const CFBRecruiting = () => {
 
   return (
     <>
+      <CustomCrootModal
+        isOpen={customCrootModal.isModalOpen}
+        onClose={customCrootModal.handleCloseModal}
+        username={currentUser?.username ?? ""}
+        team={cfbTeam}
+        league={SimCFB}
+        onSubmit={submitCustomCroot}
+      />
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
@@ -254,6 +267,15 @@ export const CFBRecruiting = () => {
                   </div>
                 </div>
                 <ButtonGroup classes="flex flex-row w-full justify-center sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={customCrootModal.handleOpenModal}
+                    size="sm"
+                    disabled={!canCreateCustomCroot}
+                  >
+                    Create
+                  </Button>
                   <Button
                     type="button"
                     variant="primary"
