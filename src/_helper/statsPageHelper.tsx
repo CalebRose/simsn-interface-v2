@@ -16,6 +16,7 @@ import {
   RUSHING,
   SimCBB,
   SimCFB,
+  SimNBA,
   SPECIAL_TEAMS,
   StatsType,
   StatsView,
@@ -782,7 +783,7 @@ export const useFilteredBasketballStats = ({
           selectedLeague === SimCBB ? stat.CollegePlayerID : stat.NBAPlayerID;
         const player = playerMap[id];
         if (!player) return false;
-        if (selectedLeague === SimCBB) {
+        if (selectedLeague === SimNBA) {
           const team = teamMap[stat.TeamID];
           if (selectedLeagueOption === 2 && team.LeagueID !== 1) {
             return false;
@@ -797,7 +798,7 @@ export const useFilteredBasketballStats = ({
         const id = stat.TeamID;
         const team = teamMap[id];
         if (!team) return false;
-        if (selectedLeague === SimCBB) {
+        if (selectedLeague === SimNBA) {
           const team = teamMap[stat.TeamID];
           if (selectedLeagueOption === 2 && team.LeagueID !== 1) {
             return false;

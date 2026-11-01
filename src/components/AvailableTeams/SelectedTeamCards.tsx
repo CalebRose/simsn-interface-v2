@@ -120,7 +120,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   }, [currentUser]);
 
   const isNewUser = useMemo(() => {
-    // if currentUser?.createdAt is less than 24 hours old, it's definitely a new profile.
+    // if currentUser?.createdAt is less than 72 hours old, it's definitely a new profile.
     // createdAt is an object containing a nanoseconds number and seconds number. We will need to convert it to date format.
     const createdAt = new Date(
       currentUser!.createdAt.nanoseconds / 1000000 +
@@ -861,59 +861,71 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               {submissionError}
             </div>
           )}
-          {/* {isNewUser &&
+          {isNewUser &&
             (league === SimNFL ||
               league === SimNBA ||
               league === SimPHL ||
-              league === SimMLB) && ( */}
-          <>
-            <Text variant="small" classes="mb-2 text-start text-yellow-500">
-              Hey! So it looks like you're a brand new user requesting to join
-              one of our pro teams. That's awesome. Our pro leagues are highly
-              competitive and designed to allow multiple users to manage a
-              single team simultaneously in a team effort. Because multiple
-              users can simultaneously operate within the same team, a
-              significant amount of coordination and communication is required
-              to succeed. All users within our pro leagues are active both
-              through our discord, chat, and in the forums.
-            </Text>
-            {ownerName?.length > 0 && (
+              league === SimMLB) && (
               <>
                 <Text variant="small" classes="mb-2 text-start text-yellow-500">
-                  If this sounds exciting to you, then please continue filling
-                  out the application form below. It is also suggested that you
-                  get in communication with the owner of the team,{" "}
-                  <strong>{ownerName}</strong>, that you're applying for either
-                  through our Discord server or using the DM/Inbox system.
+                  Hey! So it looks like you're a brand new user requesting to
+                  join one of our pro teams. That's awesome. Our pro leagues are
+                  highly competitive and designed to allow multiple users to
+                  manage a single team simultaneously in a team effort. Because
+                  multiple users can simultaneously operate within the same
+                  team, a significant amount of coordination and communication
+                  is required to succeed. All users within our pro leagues are
+                  active both through our discord, chat, and in the forums.
                 </Text>
-                <Text variant="small" classes="mb-4 text-start text-yellow-500">
-                  Additionally, it is{" "}
-                  <span className="font-semibold italic">
-                    highly encouraged
-                  </span>{" "}
-                  to apply for a college team as well. These are single-user
-                  managed, use the same gameplay strategies as the
-                  pro-counter-part, and can give you experience that will
-                  benefit your time in the pro leagues and across the site.
-                </Text>
+                {ownerName?.length > 0 && (
+                  <>
+                    <Text
+                      variant="small"
+                      classes="mb-2 text-start text-yellow-500"
+                    >
+                      If this sounds exciting to you, then please continue
+                      filling out the application form below. It is also
+                      suggested that you get in communication with the owner of
+                      the team, <strong>{ownerName}</strong>, that you're
+                      applying for either through our Discord server or using
+                      the DM/Inbox system.
+                    </Text>
+                    <Text
+                      variant="small"
+                      classes="mb-4 text-start text-yellow-500"
+                    >
+                      Additionally, it is{" "}
+                      <span className="font-semibold italic">
+                        highly encouraged
+                      </span>{" "}
+                      to apply for a college team as well. These are single-user
+                      managed, use the same gameplay strategies as the
+                      pro-counter-part, and can give you experience that will
+                      benefit your time in the pro leagues and across the site.
+                    </Text>
+                  </>
+                )}
+                {ownerName.length === 0 && (
+                  <>
+                    <Text
+                      variant="small"
+                      classes="mb-4 text-start text-yellow-500"
+                    >
+                      While this team is completely open, we{" "}
+                      <span className="font-semibold italic">
+                        highly encourage
+                      </span>{" "}
+                      new users to apply for a college team to start out.
+                      College teams are single-user managed, use the same
+                      gameplay strategies as the pro-counter-part, and can give
+                      you experience that will benefit your time here. Once
+                      you're more comfortable with the systems, we then
+                      recommend jumping to the pros.
+                    </Text>
+                  </>
+                )}
               </>
             )}
-            {ownerName.length === 0 && (
-              <>
-                <Text variant="small" classes="mb-4 text-start text-yellow-500">
-                  While this team is completely open, we{" "}
-                  <span className="font-semibold italic">highly encourage</span>{" "}
-                  new users to apply for a college team to start out. College
-                  teams are single-user managed, use the same gameplay
-                  strategies as the pro-counter-part, and can give you
-                  experience that will benefit your time here. Once you're more
-                  comfortable with the systems, we then recommend jumping to the
-                  pros.
-                </Text>
-              </>
-            )}
-          </>
-          {/* )} */}
           <Text variant="xs" classes="mb-4 text-start">
             Coaching the {teamLabel} in {league} can be a wonderful experience.
             You will be coaching alongside others users in the{" "}

@@ -93,7 +93,7 @@ export const BasketballStatsPage: FC<StatsPageProps> = ({ league }) => {
         backgroundColor="#1f2937"
         darkerBackgroundColor={darkenColor("#1f2937", -5)}
       />
-      <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[minmax(200px,2fr)_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
+      <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[minmax(200px,2fr)_minmax(0,10fr)] max-[1024px]:gap-x-1 gap-x-2 mb-2">
         <StatsSidebar
           team={team!!}
           teamColors={teamColors}
@@ -116,7 +116,7 @@ export const BasketballStatsPage: FC<StatsPageProps> = ({ league }) => {
           Export={Export}
           HandleInjuryReportModal={injuryReportModal.handleOpenModal}
         />
-        <div className="flex flex-col w-full max-[1024px]:gap-y-2">
+        <div className="flex flex-col w-full min-w-0 max-[1024px]:gap-y-2">
           <div className="flex flex-col sm:flex-row gap-x-2">
             <Border
               direction="row"
@@ -173,10 +173,10 @@ export const BasketballStatsPage: FC<StatsPageProps> = ({ league }) => {
               )}
             </Border>
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col min-w-0">
             <Border
               direction="col"
-              classes="w-full max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 overflow-y-auto max-h-[50vh] md:max-h-[70vh]"
+              classes="w-full min-w-0 max-[1024px]:px-2 max-[1024px]:pb-4 p-4 items-center justify-start gap-x-8 overflow-x-hidden overflow-y-auto max-h-[50vh] md:max-h-[70vh]"
               styles={{
                 borderColor: teamColors.One,
                 backgroundColor: backgroundColor,
