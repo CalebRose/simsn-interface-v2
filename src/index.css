@@ -1403,6 +1403,16 @@ End of CBB gameplan
   }
 }
 
+/* Opt out of the stacked-card table layout above (tables that should scroll sideways instead). */
+@media screen and (max-width: 900px) {
+  table[data-keep-table] thead { display: table-header-group; }
+  table[data-keep-table] tfoot { display: table-footer-group; }
+  table[data-keep-table] tbody { display: table-row-group; }
+  table[data-keep-table] tr { display: table-row; margin: 0; border-radius: 0 !important; box-shadow: none !important; }
+  table[data-keep-table] td { display: table-cell; padding: 0.75rem 0.375rem !important; }
+  table[data-keep-table] td::before { content: none; display: none; }
+}
+
 @media screen and (max-width: 480px) {
   table td::before {
     min-width: 5rem;

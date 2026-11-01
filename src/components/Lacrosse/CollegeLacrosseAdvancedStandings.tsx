@@ -60,7 +60,7 @@ export const CollegeLacrosseAdvancedStandings = ({ conferenceStandings, userTeam
         <div className="text-center font-semibold">Teams<div className="mt-2"><SelectDropdown isMulti isSearchable styles={selectStyles} options={teamOptions} placeholder="All Teams" onChange={(options) => setTeamIds(options.map((option) => Number(option.value)))} /></div></div>
       </div>
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[1000px] border-collapse text-sm">
+        <table data-keep-table className="w-full min-w-[1000px] border-collapse text-sm">
           <thead><tr className="border-b-2">{columns.map((column) => <th key={column} className="px-2 py-3 text-center">{column}</th>)}</tr></thead>
           <tbody>
             {filteredRows.length ? filteredRows.map(({ standing, conferenceName }) => {

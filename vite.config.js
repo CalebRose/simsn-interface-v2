@@ -28,6 +28,7 @@ export default defineConfig(({ command, mode }) => {
     plugins: [react()],
     // Keep the dev server from crawling the nested worktree and tool folders.
     optimizeDeps: { entries: ["index.html"] },
-    server: { watch: { ignored: ["**/.worktrees/**", "**/tools/**", "**/teasers/**"] } },
+    // The SimCLAX API only allows CORS from localhost:5173, so never fall back to another port.
+    server: { port: 5173, strictPort: true, watch: { ignored: ["**/.worktrees/**", "**/tools/**", "**/teasers/**"] } },
   };
 });

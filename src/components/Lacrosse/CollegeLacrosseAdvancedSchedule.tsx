@@ -119,7 +119,7 @@ export const CollegeLacrosseAdvancedSchedule = ({ schedule, teams, weekly, week,
       )}
       {showLoading ? <div className="p-8 text-center">Loading weekly games…</div> : showError ? <div className="p-8 text-center text-red-500">{showError}</div> : (
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[1100px] border-collapse text-sm">
+          <table data-keep-table className="w-full min-w-[1100px] border-collapse text-sm">
             <thead>
               <tr className="border-b-2">
                 {["ID", "Week", "Game Title", "A.Coach", "A.Team", "A.R.", "A.Score", "H.Score", "H.R.", "H.Team", "H.Coach", "Arena", "City", "State"].map((column) => <th key={column} className="px-2 py-3 text-center">{column}</th>)}

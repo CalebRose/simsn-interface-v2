@@ -217,7 +217,7 @@ export const CollegeLacrosseRosterPage = () => {
       {team && <div className="space-y-3">
         <Border classes={`p-4 ${getTextColorBasedOnBg(primary)}`} styles={{ borderColor: secondary, backgroundColor: primary }}>
           <div className="grid gap-4 lg:grid-cols-[minmax(280px,1.05fr)_minmax(300px,1fr)_minmax(300px,1fr)]">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4">
               <Logo url={getLaxLogoUrl(team.logoFileName)} variant="large" />
               <div>
                 <h2 className="text-xl font-bold">{team.name} {team.nickname}</h2>
@@ -230,7 +230,7 @@ export const CollegeLacrosseRosterPage = () => {
               </div>
             </div>
             <Border classes="p-4" styles={{ borderColor: secondary }}>
-              <div className="grid grid-cols-[90px_1fr] gap-y-2 text-sm">
+              <div className="grid grid-cols-[70px_1fr] gap-y-2 text-sm">
                 <strong>Coach</strong><span>{team.coach || "None"}</span>
                 <strong>Staff</strong><span>None</span>
               </div>
@@ -253,10 +253,10 @@ export const CollegeLacrosseRosterPage = () => {
               onChange={(option) => option && navigate(routes.CLAX_TEAM.replace(":teamId?", option.value))}
             />
           </div>
-          {(isOwner || isAdmin) && <div className="flex gap-2 sm:ml-2">
+          {(isOwner || isAdmin) && <div className="flex flex-wrap gap-2 sm:ml-2">
                     <Button size="sm" onClick={() => navigate(routes.CLAX_LINEUPS.replace(":teamId", String(team.id)))}>Lineups</Button>
           </div>}
-          <div className="flex gap-2 sm:ml-auto">
+          <div className="flex flex-wrap gap-2 sm:ml-auto">
             <Button size="sm" isSelected={view === "overview"} onClick={() => setView("overview")}>Overview</Button>
             <Button size="sm" isSelected={view === "attributes"} onClick={() => setView("attributes")}>Attributes</Button>
             <Button size="sm" onClick={exportRoster}>Export</Button>
@@ -264,7 +264,7 @@ export const CollegeLacrosseRosterPage = () => {
         </div>
 
         <Border classes="overflow-x-auto" styles={{ borderColor: secondary }}>
-          <table className={`w-full text-left text-sm ${view === "attributes" ? "min-w-[1400px]" : "min-w-[1000px]"}`}>
+          <table data-keep-table className={`w-full text-left text-sm ${view === "attributes" ? "min-w-[1100px]" : "min-w-[820px]"}`}>
             <thead className="border-b border-white/70">
               <tr>
                 <SortHeader label="ID" column="id"/><SortHeader label="Name" column="name"/><SortHeader label="Position" column="position"/><SortHeader label="Archetype" column="archetype"/><SortHeader label="Year" column="year" centered/><SortHeader label="Stars" column="stars" centered/><SortHeader label="Overall" column="overall" centered/><SortHeader label="Potential" column="potential" centered/>
