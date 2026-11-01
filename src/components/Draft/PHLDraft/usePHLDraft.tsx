@@ -25,7 +25,7 @@ import {
   getDefensiveSystemFromMap,
 } from "../../Gameplan/HockeyLineups/useLineupUtils";
 import { useModal } from "../../../_hooks/useModal";
-import { Draftee } from "../common";
+import { Draftee, getGradeValue, getOverallGrade } from "../common";
 import { useDraftState } from "../hooks/useDraftState";
 import { getSecondsByRound } from "./utils/draftHelpers";
 import { useDraftTradeState } from "../hooks/useDraftTradeState";
@@ -289,10 +289,35 @@ export const usePHLDraft = () => {
   const teamScoutProfiles = useMemo(() => {
     if (!selectedTeam) return [];
 
-    return phlScoutProfiles.filter(
+    const profiles = phlScoutProfiles.filter(
       (profile) => profile.TeamID === selectedTeam.ID,
     );
-  }, [selectedTeam, phlScoutProfiles]);
+
+    return [...profiles].sort((a, b) => {
+      const playerA = draftablePlayerMap[a.PlayerID];
+      const playerB = draftablePlayerMap[b.PlayerID];
+      if (!playerA && !playerB) return 0;
+      if (!playerA) return 1;
+      if (!playerB) return -1;
+
+      const gradeA = getOverallGrade(playerA, SimPHL);
+      const gradeB = getOverallGrade(playerB, SimPHL);
+      const gradeValA = getGradeValue(gradeA);
+      const gradeValB = getGradeValue(gradeB);
+
+      if (gradeValB !== gradeValA) {
+        return gradeValB - gradeValA;
+      }
+      const overallA = (playerA as any)?.Overall || 0;
+      const overallB = (playerB as any)?.Overall || 0;
+      if (overallB !== overallA) {
+        return overallB - overallA;
+      }
+      const ageA = (playerA as any)?.Age || 0;
+      const ageB = (playerB as any)?.Age || 0;
+      return ageB - ageA;
+    });
+  }, [selectedTeam, phlScoutProfiles, draftablePlayerMap]);
 
   const phlGameplan = useMemo(() => {
     if (!selectedTeam) return null;

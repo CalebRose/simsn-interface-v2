@@ -6,6 +6,7 @@ import {
 import { DraftLeague, Draftee } from "./types";
 import {
   getAttributeFieldName,
+  getHockeyAttributeGrade,
   getOverallGrade,
   getPotentialGrade,
 } from "./draftHelpers";
@@ -63,8 +64,12 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
     if (fieldName === "MidRangeShooting") {
       fieldName = "MidrangeShooting";
     }
-    const grade = (player as any)[`${fieldName}Grade`];
-    displayValue = grade || "?";
+    if (league === SimPHL) {
+      displayValue = getHockeyAttributeGrade(player, fieldName);
+    } else {
+      const grade = (player as any)[`${fieldName}Grade`];
+      displayValue = grade || "?";
+    }
     valueColor = getGradeColor(displayValue);
   }
 

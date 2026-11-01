@@ -49,10 +49,10 @@ export const getHockeyLetterGrade = (attr: number, year: number): string => {
     }
     return "F";
   }
-  if (attr > 24) {
+  if (attr > 22) {
     return "A+";
   }
-  if (attr > 21) {
+  if (attr > 20) {
     return "A";
   }
   if (attr > 18) {

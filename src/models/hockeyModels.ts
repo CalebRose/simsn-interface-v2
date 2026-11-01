@@ -12,6 +12,7 @@ export class BasePlayer {
   Stars: number;
   Age: number;
   Overall: number;
+  OverallGrade: string;
   Agility: number;
   Faceoffs: number;
   LongShotAccuracy: number;
@@ -98,6 +99,7 @@ export class BasePlayer {
     this.Stars = source["Stars"];
     this.Age = source["Age"];
     this.Overall = source["Overall"];
+    this.OverallGrade = source["OverallGrade"];
     this.Agility = source["Agility"];
     this.Faceoffs = source["Faceoffs"];
     this.LongShotAccuracy = source["LongShotAccuracy"];
@@ -341,6 +343,7 @@ export class CollegePlayer {
   Stars: number;
   Age: number;
   Overall: number;
+  OverallGrade: string;
   Agility: number;
   Faceoffs: number;
   LongShotAccuracy: number;
@@ -473,6 +476,7 @@ export class CollegePlayer {
     this.Stars = source["Stars"];
     this.Age = source["Age"];
     this.Overall = source["Overall"];
+    this.OverallGrade = source["OverallGrade"];
     this.Agility = source["Agility"];
     this.Faceoffs = source["Faceoffs"];
     this.LongShotAccuracy = source["LongShotAccuracy"];
@@ -1160,6 +1164,7 @@ export class ProfessionalPlayer {
   Stars: number;
   Age: number;
   Overall: number;
+  OverallGrade: string;
   Agility: number;
   Faceoffs: number;
   LongShotAccuracy: number;
@@ -1309,6 +1314,7 @@ export class ProfessionalPlayer {
     this.Stars = source["Stars"];
     this.Age = source["Age"];
     this.Overall = source["Overall"];
+    this.OverallGrade = source["OverallGrade"];
     this.Agility = source["Agility"];
     this.Faceoffs = source["Faceoffs"];
     this.LongShotAccuracy = source["LongShotAccuracy"];
@@ -1482,6 +1488,7 @@ export class HistoricCollegePlayer {
   Stars: number;
   Age: number;
   Overall: number;
+  OverallGrade: string;
   Agility: number;
   Faceoffs: number;
   LongShotAccuracy: number;
@@ -1614,6 +1621,7 @@ export class HistoricCollegePlayer {
     this.Stars = source["Stars"];
     this.Age = source["Age"];
     this.Overall = source["Overall"];
+    this.OverallGrade = source["OverallGrade"];
     this.Agility = source["Agility"];
     this.Faceoffs = source["Faceoffs"];
     this.LongShotAccuracy = source["LongShotAccuracy"];
@@ -1770,6 +1778,7 @@ export class RetiredPlayer {
   Stars: number;
   Age: number;
   Overall: number;
+  OverallGrade: string;
   Agility: number;
   Faceoffs: number;
   LongShotAccuracy: number;
@@ -1919,6 +1928,7 @@ export class RetiredPlayer {
     this.Stars = source["Stars"];
     this.Age = source["Age"];
     this.Overall = source["Overall"];
+    this.OverallGrade = source["OverallGrade"];
     this.Agility = source["Agility"];
     this.Faceoffs = source["Faceoffs"];
     this.LongShotAccuracy = source["LongShotAccuracy"];
@@ -3229,6 +3239,7 @@ export class Recruit {
   Stars: number;
   Age: number;
   Overall: number;
+  OverallGrade: string;
   Agility: number;
   Faceoffs: number;
   LongShotAccuracy: number;
@@ -3353,6 +3364,7 @@ export class Recruit {
     this.Stars = source["Stars"];
     this.Age = source["Age"];
     this.Overall = source["Overall"];
+    this.OverallGrade = source["OverallGrade"];
     this.Agility = source["Agility"];
     this.Faceoffs = source["Faceoffs"];
     this.LongShotAccuracy = source["LongShotAccuracy"];
@@ -4009,6 +4021,7 @@ export class DraftablePlayer {
   Stars: number;
   Age: number;
   Overall: number;
+  OverallGrade: string;
   Agility: number;
   Faceoffs: number;
   LongShotAccuracy: number;
@@ -4150,6 +4163,7 @@ export class DraftablePlayer {
     this.Stars = source["Stars"];
     this.Age = source["Age"];
     this.Overall = source["Overall"];
+    this.OverallGrade = source["OverallGrade"];
     this.Agility = source["Agility"];
     this.Faceoffs = source["Faceoffs"];
     this.LongShotAccuracy = source["LongShotAccuracy"];

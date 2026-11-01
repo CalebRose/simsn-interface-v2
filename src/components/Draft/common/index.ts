@@ -31,11 +31,14 @@ export {
 } from './types';
 
 export {
+  GRADE_SCALE,
+  getGradeValue,
   getScoutableAttributes,
   getAttributeFieldName,
   getAttributeShowProperty,
   getScoutingCost,
   getOverallGrade,
+  getHockeyAttributeGrade,
   getPotentialGrade,
   getTimeForPick
 } from './draftHelpers';
