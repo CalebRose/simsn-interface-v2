@@ -26,5 +26,8 @@ export default defineConfig(({ command, mode }) => {
   return {
     base: "/",
     plugins: [react()],
+    // Keep the dev server from crawling the nested worktree and tool folders.
+    optimizeDeps: { entries: ["index.html"] },
+    server: { watch: { ignored: ["**/.worktrees/**", "**/tools/**", "**/teasers/**"] } },
   };
 });

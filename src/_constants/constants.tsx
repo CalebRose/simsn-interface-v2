@@ -1163,8 +1163,7 @@ export const LeagueTypeOptions = [
   { label: SimCBB, value: SimCBB },
   { label: SimNBA, value: SimNBA },
   { label: SimCHL, value: SimCHL },
-  // SimLAX public launch: restore SimCLAX here for users without a team/admin role.
-  // { label: SimCLAX, value: SimCLAX },
+  { label: SimCLAX, value: SimCLAX },
   { label: SimPHL, value: SimPHL },
 ];
 

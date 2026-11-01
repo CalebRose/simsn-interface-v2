@@ -17,6 +17,7 @@ const LEAGUE_LABELS: Record<string, string> = {
   simchl: "SimCHL",
   simphl: "SimPHL",
   simcbl: "SimCBL",
+  simclax: "SimCLAX",
   simmlb: "SimMLB",
 };
 

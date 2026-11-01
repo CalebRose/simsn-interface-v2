@@ -395,6 +395,39 @@ export const ForumService = {
     );
   },
 
+  CreateSimCollegeLacrosseJobApplicationThreadFromTeamRequest: async (
+    requestDto: {
+      Username: string;
+      TeamID: number;
+    },
+    teamName: string,
+    uid: string,
+    displayName: string,
+  ): Promise<{ threadId: string; postId: string }> => {
+    const title = `CLAX Application:${requestDto.Username} for ${teamName}`;
+
+    const paragraphs: string[] = [
+      `${requestDto.Username} has applied to coach the ${teamName}. Please review their application below.`,
+    ];
+
+    const body = buildJobApplicationRichBody(paragraphs);
+    const dto: CreateThreadDTO = {
+      forumId: "welcome-job-applications",
+      forumPath: ["welcome", "job-applications"],
+      title,
+      body,
+      bodyText: paragraphs.join("\n\n"),
+      threadType: "standard",
+      referencedLeague: "simclax",
+    };
+    return ForumService.CreateThread(
+      dto,
+      uid,
+      requestDto.Username,
+      displayName,
+    );
+  },
+
   CreateThread: async (
     dto: CreateThreadDTO,
     uid: string,

@@ -50,7 +50,6 @@ interface NewsSideBarProps {
   refreshNews: () => void;
   sortByNewest: boolean;
   setSortByNewest: React.Dispatch<React.SetStateAction<boolean>>;
-  showSimLax: boolean;
 }
 
 export const NewsSideBar: FC<NewsSideBarProps> = ({
@@ -70,16 +69,10 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   refreshNews,
   setSortByNewest,
   sortByNewest,
-  showSimLax,
 }) => {
   const { backgroundColor } = useBackgroundColor();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
-  const leagueOptions = useMemo(
-    () => showSimLax
-      ? [...LeagueTypeOptions, { label: SimCLAX, value: SimCLAX }]
-      : LeagueTypeOptions,
-    [showSimLax],
-  );
+  const leagueOptions = LeagueTypeOptions;
 
   const teamLabel = useMemo(() => {
     let label = "";

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import { AuthService } from "../../_services/auth";
 import { useSimLAXStore } from "../../context/SimLAXContext";
+import { getLaxLogoUrl } from "../../_services/lacrosseService";
 import { getLogo } from "../../_utility/getLogo";
 import routes from "../../_constants/routes";
 import { useForumStore } from "../../context/ForumContext";
@@ -13,6 +14,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -74,7 +76,7 @@ export const SideMenu = ({}) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { unreadCount: chatUnreadCount, hasMention: chatHasMention } =
     useChatUnread(currentUser?.id, isChatOpen);
-  const { laxAdminStatus } = useSimLAXStore();
+  const { laxAdminStatus, claxTeam } = useSimLAXStore();
   const isLaxAdmin = Boolean(laxAdminStatus?.isAdmin);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -483,6 +485,16 @@ export const SideMenu = ({}) => {
                 logo={mlbLogo}
                 dropdown={dropdowns.SimMLB}
                 league={SimMLB}
+                toggle={toggleMenu}
+                isTop
+              />
+            )}
+            {claxTeam && (
+              <SideMenuItem
+                label={SimCLAX}
+                logo={getLaxLogoUrl(claxTeam.logoFileName) || simLogos.SimCLAX}
+                dropdown={dropdowns.SimCLAX}
+                league={SimCLAX}
                 toggle={toggleMenu}
                 isTop
               />

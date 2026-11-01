@@ -388,6 +388,12 @@ export const AvailableTeams = () => {
       case SimCLAX:
         await LacrosseService.requestTeam(team.ID, currentUser!.username);
         setSentRequestCLAX(true);
+        await ForumService.CreateSimCollegeLacrosseJobApplicationThreadFromTeamRequest(
+          { Username: currentUser!.username, TeamID: team.ID },
+          team.Abbreviation || team.TeamName,
+          currentUser!.id,
+          currentUser!.username,
+        );
         break;
       case SimCHL:
         await RequestService.CreateCHLTeamRequest(requestDTO);
@@ -569,15 +575,12 @@ export const AvailableTeams = () => {
                   >
                     <Text variant="small">SimMLB</Text>
                   </PillButton>
-                  {/* SimLAX public launch: restore the SimCLAX and SimPLAX buttons here. */}
-                  {/*
-                    <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCLAX} onClick={() => selectSport(SimCLAX)}>
-                      <Text variant="small">SimCLAX</Text>
-                    </PillButton>
-                    <PillButton variant="primaryOutline" disabled title="SimPLAX is coming soon" classes="cursor-not-allowed opacity-50">
-                      <Text variant="small">SimPLAX</Text>
-                    </PillButton>
-                  */}
+                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCLAX} onClick={() => selectSport(SimCLAX)}>
+                    <Text variant="small">SimCLAX</Text>
+                  </PillButton>
+                  <PillButton variant="primaryOutline" disabled title="SimPLAX is coming soon" classes="cursor-not-allowed opacity-50">
+                    <Text variant="small">SimPLAX</Text>
+                  </PillButton>
                 </ButtonGrid>
               </div>
             </div>

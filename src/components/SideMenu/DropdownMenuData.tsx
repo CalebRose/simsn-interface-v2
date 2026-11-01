@@ -4,6 +4,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -23,6 +24,9 @@ interface DropdownItem {
   toggle: () => void;
   click?: () => void;
 }
+
+// Strips the optional :teamId param so the page falls back to the user's own team.
+const clax = (route: string) => route.replace(/\/:teamId\??$/, "");
 
 export const useSideMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -565,6 +569,43 @@ export const useSideMenu = () => {
             "https://docs.google.com/document/d/1znXTXKPYpIkd1cWTk7kg00pm7mY3N13Qenl9fNVIals/edit?usp=sharing",
             "_blank",
           ),
+        toggle: () => toggleMenu(),
+      },
+    ],
+    SimCLAX: [
+      {
+        label: "Team",
+        isRoute: true,
+        route: clax(routes.CLAX_TEAM),
+        league: SimCLAX,
+        toggle: () => toggleMenu(),
+      },
+      {
+        label: "Lineups",
+        isRoute: true,
+        route: clax(routes.CLAX_LINEUPS),
+        league: SimCLAX,
+        toggle: () => toggleMenu(),
+      },
+      {
+        label: "Recruiting",
+        isRoute: true,
+        route: routes.CLAX_RECRUITING,
+        league: SimCLAX,
+        toggle: () => toggleMenu(),
+      },
+      {
+        label: "Statistics",
+        isRoute: true,
+        route: routes.CLAX_STATISTICS,
+        league: SimCLAX,
+        toggle: () => toggleMenu(),
+      },
+      {
+        label: "Schedule",
+        isRoute: true,
+        route: routes.CLAX_SCHEDULE,
+        league: SimCLAX,
         toggle: () => toggleMenu(),
       },
     ],
