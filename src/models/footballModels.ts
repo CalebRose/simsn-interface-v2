@@ -782,6 +782,13 @@ export class NFLGameplan {
   PreviousWeekBye: boolean;
   FocusPlays: string;
   DoubleTeam: number;
+  Pace: string;
+  AggressiveFourthDown: string;
+  AggressiveTwoPoint: string;
+  PlayCalling3rdShort: string;
+  PlayCalling3rdLong: string;
+  PlayCalling4thShort: string;
+  PlayCalling4thLong: string;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -926,6 +933,13 @@ export class NFLGameplan {
     this.PreviousWeekBye = source["PreviousWeekBye"];
     this.FocusPlays = source["FocusPlays"];
     this.DoubleTeam = source["DoubleTeam"];
+    this.Pace = source["Pace"] || "Standard";
+    this.AggressiveFourthDown = source["AggressiveFourthDown"] || "Standard";
+    this.AggressiveTwoPoint = source["AggressiveTwoPoint"] || "Standard";
+    this.PlayCalling3rdShort = source["PlayCalling3rdShort"] || "Default";
+    this.PlayCalling3rdLong = source["PlayCalling3rdLong"] || "Default";
+    this.PlayCalling4thShort = source["PlayCalling4thShort"] || "Default";
+    this.PlayCalling4thLong = source["PlayCalling4thLong"] || "Default";
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -3975,6 +3989,13 @@ export class CollegeGameplan {
   PreviousWeekBye: boolean;
   FocusPlays: string;
   DoubleTeam: number;
+  Pace: string;
+  AggressiveFourthDown: string;
+  AggressiveTwoPoint: string;
+  PlayCalling3rdShort: string;
+  PlayCalling3rdLong: string;
+  PlayCalling4thShort: string;
+  PlayCalling4thLong: string;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -4119,6 +4140,13 @@ export class CollegeGameplan {
     this.PreviousWeekBye = source["PreviousWeekBye"];
     this.FocusPlays = source["FocusPlays"];
     this.DoubleTeam = source["DoubleTeam"];
+    this.Pace = source["Pace"] || "Standard";
+    this.AggressiveFourthDown = source["AggressiveFourthDown"] || "Standard";
+    this.AggressiveTwoPoint = source["AggressiveTwoPoint"] || "Standard";
+    this.PlayCalling3rdShort = source["PlayCalling3rdShort"] || "Default";
+    this.PlayCalling3rdLong = source["PlayCalling3rdLong"] || "Default";
+    this.PlayCalling4thShort = source["PlayCalling4thShort"] || "Default";
+    this.PlayCalling4thLong = source["PlayCalling4thLong"] || "Default";
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
