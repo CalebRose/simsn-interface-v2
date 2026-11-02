@@ -79,7 +79,14 @@ import {
   SEASON_VIEW,
   SimCHL,
   SimHCK,
+  SimPHL,
 } from "../_constants/constants";
+import { exportToCsv } from "../_utility/csvExport";
+import {
+  getOverallGrade,
+  getHockeyAttributeGrade,
+  getGradeValue,
+} from "../components/Draft/common/draftHelpers";
 import { hck_ws } from "../_constants/urls";
 import { PlayerService } from "../_services/playerService";
 import { GameplanService } from "../_services/gameplanService";
@@ -2244,7 +2251,18 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         setPhlDraftPickMap(res.DraftPicks);
 
         if (res.DraftablePlayers) {
-          setProDraftablePlayers(res.DraftablePlayers);
+          const playersWithGrades = res.DraftablePlayers.map((p: DraftablePlayer) => ({
+            ...p,
+            OverallGrade: getOverallGrade(p, SimPHL),
+          }));
+          const sorted = playersWithGrades.sort((a: any, b: any) => {
+            const valA = getGradeValue(a.OverallGrade);
+            const valB = getGradeValue(b.OverallGrade);
+            if (valB !== valA) return valB - valA;
+            if (b.Overall !== a.Overall) return b.Overall - a.Overall;
+            return b.Age - a.Age;
+          });
+          setProDraftablePlayers(sorted);
         }
 
         if (res.WarRoomMap && res.WarRoomMap[phlID]) {
@@ -2508,12 +2526,149 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   );
 
   const exportPHLDraftees = useCallback(async () => {
-    await DraftService.ExportNFLDraftees();
+    if (proDraftablePlayers && proDraftablePlayers.length > 0) {
+      enqueueSnackbar("Exporting PHL Draftees...", {
+        variant: "info",
+        autoHideDuration: 2000,
+      });
+
+      const seasonStr = hck_Timestamp?.Season
+        ? String(hck_Timestamp.Season)
+        : "Official";
+      const filename = `${seasonStr}_Official_Draft_List.csv`;
+
+      const headers = [
+        "College", "ID", "First Name", "Last Name", "Position",
+        "Archetype", "Height", "Weight",
+        "City", "Region", "Country", "Stars", "Age",
+        "Overall", "Agility", "Faceoffs", "LongShotAccuracy", "LongShotPower", "CloseShotAccuracy",
+        "CloseShotPower", "Passing", "PuckHandling", "Strength", "BodyChecking", "StickChecking",
+        "ShotBlocking", "Goalkeeping", "GoalieVision", "Stamina", "Injury Rating",
+        "Goals", "Assists", "Points", "+/-",
+        "Penalty Minutes", "Even Strength Goals", "Even Strength Points", "Power Play Goals",
+        "Power Play Points", "Shorthanded Goals", "Shorthanded Points", "Overtime Goals",
+        "Game Winning Goals", "Shots", "Shooting Percentage", "Time One Ice",
+        "Faceoff Win Percentage", "Faceoffs Won", "Faceoffs", "Goalie Wins",
+        "Goalie Losses", "Goalie Ties", "OT Losses", "Shots Against",
+        "Saves", "Goals Against", "Save Percentage", "Shutouts",
+        "Shots Blocked", "Body Checks", "Stick Checks",
+      ];
+
+      // Sort matching Draft Board & Scouting Board order: Display Grade desc, Overall desc, Age desc
+      const sorted = [...proDraftablePlayers].sort((a, b) => {
+        const gradeA = getOverallGrade(a, SimPHL);
+        const gradeB = getOverallGrade(b, SimPHL);
+        const valA = getGradeValue(gradeA);
+        const valB = getGradeValue(gradeB);
+        if (valB !== valA) return valB - valA;
+        if (b.Overall !== a.Overall) return b.Overall - a.Overall;
+        return b.Age - a.Age;
+      });
+
+      const getPotentialLetter = (val: number) => {
+        if (val > 85) return "A+";
+        if (val > 75) return "A";
+        if (val > 65) return "B";
+        if (val > 55) return "C";
+        if (val > 45) return "D";
+        return "F";
+      };
+
+      const rows = sorted.map((p: any) => {
+        const team = p.Team || p.College || "PORTAL";
+        const overallGrade = getOverallGrade(p, SimPHL);
+        const agility = getHockeyAttributeGrade(p, "Agility");
+        const faceoffs = getHockeyAttributeGrade(p, "Faceoffs");
+        const longShotAccuracy = getHockeyAttributeGrade(p, "LongShotAccuracy");
+        const longShotPower = getHockeyAttributeGrade(p, "LongShotPower");
+        const closeShotAccuracy = getHockeyAttributeGrade(p, "CloseShotAccuracy");
+        const closeShotPower = getHockeyAttributeGrade(p, "CloseShotPower");
+        const passing = getHockeyAttributeGrade(p, "Passing");
+        const puckHandling = getHockeyAttributeGrade(p, "PuckHandling");
+        const strength = getHockeyAttributeGrade(p, "Strength");
+        const bodyChecking = getHockeyAttributeGrade(p, "BodyChecking");
+        const stickChecking = getHockeyAttributeGrade(p, "StickChecking");
+        const shotBlocking = getHockeyAttributeGrade(p, "ShotBlocking");
+        const goalkeeping = getHockeyAttributeGrade(p, "Goalkeeping");
+        const goalieVision = getHockeyAttributeGrade(p, "GoalieVision");
+        const stamina = getPotentialLetter(p.Stamina || 0);
+        const injuryRating = getPotentialLetter(p.InjuryRating || 0);
+
+        return [
+          team,
+          p.ID,
+          p.FirstName,
+          p.LastName,
+          p.Position,
+          p.Archetype,
+          p.Height,
+          p.Weight,
+          p.City,
+          p.State || p.Region || "",
+          p.Country,
+          p.Stars,
+          p.Age,
+          overallGrade,
+          agility,
+          faceoffs,
+          longShotAccuracy,
+          longShotPower,
+          closeShotAccuracy,
+          closeShotPower,
+          passing,
+          puckHandling,
+          strength,
+          bodyChecking,
+          stickChecking,
+          shotBlocking,
+          goalkeeping,
+          goalieVision,
+          stamina,
+          injuryRating,
+          p.Goals ?? 0,
+          p.Assists ?? 0,
+          p.Points ?? 0,
+          p.PlusMinus ?? 0,
+          p.PenaltyMinutes ?? 0,
+          p.EvenStrengthGoals ?? 0,
+          p.EvenStrengthPoints ?? 0,
+          p.PowerPlayGoals ?? 0,
+          p.PowerPlayPoints ?? 0,
+          p.ShorthandedGoals ?? 0,
+          p.ShorthandedPoints ?? 0,
+          p.OvertimeGoals ?? 0,
+          p.GameWinningGoals ?? 0,
+          p.Shots ?? 0,
+          p.ShootingPercentage ?? 0,
+          p.TimeOnIce ?? "00:00",
+          p.FaceoffWinPercentage ?? 0,
+          p.FaceoffsWon ?? 0,
+          p.FaceoffsLost ?? 0,
+          p.GoalieWins ?? 0,
+          p.GoalieLosses ?? 0,
+          p.GoalieTies ?? 0,
+          p.OTLosses ?? 0,
+          p.ShotsAgainst ?? 0,
+          p.Saves ?? 0,
+          p.GoalsAgainst ?? 0,
+          p.SavePercentage ?? 0,
+          p.Shutouts ?? 0,
+          p.ShotsBlocked ?? 0,
+          p.BodyChecks ?? 0,
+          p.StickChecks ?? 0,
+        ];
+      });
+
+      exportToCsv(filename, headers, rows);
+      return;
+    }
+
+    await DraftService.ExportPHLDraftees();
     enqueueSnackbar("Exporting PHL Draftees...", {
       variant: "warning",
       autoHideDuration: 3000,
     });
-  }, []);
+  }, [proDraftablePlayers, hck_Timestamp]);
 
   const exportPHLFreeAgents = useCallback(async () => {
     await FreeAgencyService.ExportPHLFreeAgents();

@@ -26,7 +26,7 @@ import {
   getLeagueConstant,
   isNFLLeague,
 } from "./types";
-import { getOverallGrade } from "./draftHelpers";
+import { getOverallGrade, getGradeValue } from "./draftHelpers";
 import { DraftablePlayer } from "../../../models/hockeyModels";
 import {
   DrafteeInfoType,
@@ -137,7 +137,24 @@ export const DraftBoard: FC<DraftBoardProps> = ({
       return true;
     });
 
-    return filtered;
+    return [...filtered].sort((a, b) => {
+      const gradeA = getOverallGrade(a, league);
+      const gradeB = getOverallGrade(b, league);
+      const gradeValA = getGradeValue(gradeA);
+      const gradeValB = getGradeValue(gradeB);
+
+      if (gradeValB !== gradeValA) {
+        return gradeValB - gradeValA;
+      }
+      const overallA = (a as any).Overall || 0;
+      const overallB = (b as any).Overall || 0;
+      if (overallB !== overallA) {
+        return overallB - overallA;
+      }
+      const ageA = a.Age || 0;
+      const ageB = b.Age || 0;
+      return ageB - ageA;
+    });
   }, [
     draftees,
     draftedPlayerIds,

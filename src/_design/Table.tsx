@@ -152,6 +152,15 @@ export const Table = <T,>({
         if (a.ShowLetterGrade && !b.ShowLetterGrade) return 1;
         if (!a.ShowLetterGrade && b.ShowLetterGrade) return -1;
       }
+      if (key === "OverallGrade") {
+        const ai = gradeOrder.indexOf(a[key]);
+        const bi = gradeOrder.indexOf(b[key]);
+        if (ai !== -1 && bi !== -1) {
+          if (ai < bi) return order === "asc" ? -1 : 1;
+          if (ai > bi) return order === "asc" ? 1 : -1;
+          return 0;
+        }
+      }
       const cbbGradeFields: Record<string, string> = {
         Overall: "Overall",
         Agility: "Agility",
