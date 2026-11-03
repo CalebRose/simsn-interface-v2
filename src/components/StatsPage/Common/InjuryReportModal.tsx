@@ -182,12 +182,13 @@ export const InjuryReportModal: FC<InjuryReportModalProps> = ({
             </div>
           </div>
           <div className="overflow-y-auto max-h-[55vh]">
-            {injuredPlayers.length === 0 && (
+            {(!injuredPlayers || injuredPlayers.length === 0) && (
               <Text variant="h4" classes="my-4">
                 There are no injured players.
               </Text>
             )}
-            {injuredPlayers.length > 0 &&
+            {injuredPlayers &&
+              injuredPlayers.length > 0 &&
               injuredPlayers.map((player: any, idx: number) => (
                 <InjuredPlayerRow
                   key={idx}
