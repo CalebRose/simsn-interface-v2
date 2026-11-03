@@ -74,6 +74,7 @@ const MEDIA_POINT_ENTRIES: { label: string; key: keyof CurrentUser }[] = [
   { label: SimPHL, key: "SimPHLMediaPoints" },
   { label: "SimCBL", key: "SimCBLMediaPoints" },
   { label: SimMLB, key: "SimMLBMediaPoints" },
+  { label: SimCLAX, key: "SimCLAXMediaPoints" },
 ];
 
 const selectStyles = {

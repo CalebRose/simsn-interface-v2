@@ -38,6 +38,7 @@ export interface CurrentUser {
   SimPHLMediaPoints?: number;
   SimCBLMediaPoints?: number;
   SimMLBMediaPoints?: number;
+  SimCLAXMediaPoints?: number;
   top5UserIds?: string[];
   selectedTitle?: string | null;
   forumPostCount?: number;
