@@ -103,9 +103,9 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
         </div>
       ) : (
         <div className="flex flex-col gap-y-4">
-          <Text variant="body-small" classes="text-gray-400">
+          <Text variant="body-small" classes="text-(--text-muted)">
             Reporting post by{" "}
-            <span className="font-semibold text-white">
+            <span className="font-semibold text-(--text-primary)">
               {post.author.username}
             </span>
           </Text>
@@ -118,7 +118,7 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as ReportCategory)}
-              className="w-full bg-gray-800 border border-gray-600 rounded-sm px-3 py-2 text-sm text-white focus:outline-hidden focus:border-blue-500"
+              className="w-full bg-(--bg-secondary) border border-(--border-primary) rounded-sm px-3 py-2 text-sm text-(--text-primary) focus:outline-hidden focus:border-blue-500"
             >
               {CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -132,7 +132,7 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
           <div className="flex flex-col gap-y-1">
             <Text variant="small" classes="font-semibold">
               Reason{" "}
-              <span className="text-gray-500 font-normal">
+              <span className="text-(--text-muted) font-normal">
                 (min 10 characters)
               </span>
             </Text>
@@ -142,9 +142,9 @@ export const ReportPostModal: React.FC<ReportPostModalProps> = ({
               placeholder="Describe why this post violates community guidelines…"
               rows={4}
               maxLength={500}
-              className="w-full bg-gray-800 border border-gray-600 rounded-sm px-3 py-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-hidden focus:border-blue-500"
+              className="w-full bg-(--bg-secondary) border border-(--border-primary) rounded-sm px-3 py-2 text-sm text-(--text-primary) placeholder:text-(--text-muted) resize-none focus:outline-hidden focus:border-blue-500"
             />
-            <Text variant="xs" classes="text-gray-500 text-right">
+            <Text variant="xs" classes="text-(--text-muted) text-right">
               {reason.length}/500
             </Text>
           </div>

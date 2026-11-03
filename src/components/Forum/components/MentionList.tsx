@@ -60,7 +60,7 @@ export const MentionList = forwardRef<MentionListHandle, MentionListProps>(
     return (
       <div
         ref={listRef}
-        className="mention-list z-50 overflow-hidden rounded-lg border border-gray-600 bg-gray-800 shadow-xl"
+        className="mention-list z-50 overflow-hidden rounded-lg border border-(--border-primary) bg-(--bg-secondary) shadow-xl"
         style={{ minWidth: "160px", maxWidth: "260px" }}
       >
         {items.map((item, index) => (
@@ -69,13 +69,13 @@ export const MentionList = forwardRef<MentionListHandle, MentionListProps>(
             type="button"
             className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
               index === selectedIndex
-                ? "bg-yellow-500/20 text-yellow-300"
-                : "text-gray-200 hover:bg-white/10"
+                ? "bg-(--accent-warning)/20 text-(--accent-warning)"
+                : "text-(--text-secondary) hover:bg-(--text-primary)/10"
             }`}
             onClick={() => selectItem(index)}
             onMouseEnter={() => setSelectedIndex(index)}
           >
-            <span className="font-medium text-yellow-400">@</span>
+            <span className="font-medium text-(--accent-warning)">@</span>
             <span>{item.username}</span>
           </button>
         ))}

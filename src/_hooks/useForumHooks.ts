@@ -6,6 +6,7 @@ import { Forum, Post, Thread } from "../models/forumModels";
 import {
   buildForumEditorialItems,
   ForumEditorialItem,
+  isSystemGeneratedThread,
 } from "../components/Forum/forumUtils";
 
 // ─────────────────────────────────────────────
@@ -53,15 +54,29 @@ function selectEditorialThreads(threads: Thread[]): Thread[] {
     }
   }
 
-  return [...threadsById.values()]
-    .sort((a, b) => getLatestActivitySeconds(b) - getLatestActivitySeconds(a))
-    .slice(0, 3);
+  // Keep the 3 most recent per league forum so the league filter can still fill the hero.
+  const byForum = new Map<string, Thread[]>();
+  for (const thread of threadsById.values()) {
+    const list = byForum.get(thread.forumId) ?? [];
+    list.push(thread);
+    byForum.set(thread.forumId, list);
+  }
+
+  return [...byForum.values()]
+    .flatMap((list) =>
+      list
+        .sort(
+          (a, b) => getLatestActivitySeconds(b) - getLatestActivitySeconds(a),
+        )
+        .slice(0, 3),
+    )
+    .sort((a, b) => getLatestActivitySeconds(b) - getLatestActivitySeconds(a));
 }
 
 async function loadPostsById(threads: Thread[]): Promise<Map<string, Post>> {
   const posts = await Promise.all(
     threads.map((thread) =>
-      thread.firstPostId
+      thread.firstPostId && !thread.featureImageUrl
         ? ForumService.GetPostById(thread.firstPostId)
         : Promise.resolve(null),
     ),
@@ -437,6 +452,61 @@ export function useLastViewedThreads(uid: string | undefined): ViewedThread[] {
 }
 
 // ─────────────────────────────────────────────
+// Latest thread for a category card (cached per thread id)
+// ─────────────────────────────────────────────
+
+const threadByIdCache = new Map<string, Thread | null>();
+
+export function useForumLatestThread(
+  candidates: Forum[],
+  enabled = true,
+): Thread | null {
+  const ids = [...candidates]
+    .filter((f) => !!f.latestThreadId)
+    .sort(
+      (a, b) =>
+        (b.latestActivityAt?.seconds ?? 0) - (a.latestActivityAt?.seconds ?? 0),
+    )
+    .slice(0, 4)
+    .map((f) => f.latestThreadId as string);
+  const key = ids.join("|");
+  const [thread, setThread] = useState<Thread | null>(null);
+
+  useEffect(() => {
+    if (!enabled || ids.length === 0) {
+      setThread(null);
+      return;
+    }
+    let cancelled = false;
+    Promise.all(
+      ids.map(async (id) => {
+        if (!threadByIdCache.has(id)) {
+          try {
+            threadByIdCache.set(id, await ForumService.GetThreadById(id));
+          } catch {
+            threadByIdCache.set(id, null);
+          }
+        }
+        return threadByIdCache.get(id) ?? null;
+      }),
+    ).then((threads) => {
+      if (cancelled) return;
+      const live = threads.filter((t): t is Thread => !!t && !t.isDeleted);
+      // Prefer human-written threads so bot posts don't dominate every card.
+      setThread(
+        live.find((t) => !isSystemGeneratedThread(t)) ?? live[0] ?? null,
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, enabled]);
+
+  return thread;
+}
+
+// ─────────────────────────────────────────────
 // Latest Threads (global, ordered by latest activity)
 // ─────────────────────────────────────────────
 
@@ -466,7 +536,7 @@ export function useLatestThreads(enabled: boolean): {
     }
     let cancelled = false;
     setLoading(true);
-    ForumService.GetLatestThreads(10)
+    ForumService.GetLatestThreads(30)
       .then((result) => {
         if (!cancelled) {
           latestThreadsCache = { threads: result, cachedAt: Date.now() };

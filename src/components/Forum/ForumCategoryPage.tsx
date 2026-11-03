@@ -20,7 +20,7 @@ import { Forum } from "../../models/forumModels";
 import routes from "../../_constants/routes";
 import { useResponsive } from "../../_hooks/useMobile";
 import { LastViewedThreadsSidebar } from "./components/LastViewedThreadsSidebar";
-import { LatestThreadsSidebar } from "./components/LatestThreadsSidebar";
+import { PostgameScoreboard } from "./components/PostgameScoreboard";
 
 interface Params {
   forumSlug: string;
@@ -138,7 +138,7 @@ export const ForumCategoryPage: React.FC = () => {
         </div>
 
         {forum?.isLocked && (
-          <div className="mb-3 p-2 bg-yellow-900/40 border border-yellow-700 rounded-sm text-sm text-yellow-300">
+          <div className="mb-3 p-2 bg-(--accent-warning)/15 border border-(--accent-warning)/50 rounded-sm text-sm text-(--text-primary)">
             🔒 This forum is locked. No new threads can be posted.
           </div>
         )}
@@ -167,20 +167,20 @@ export const ForumCategoryPage: React.FC = () => {
                         {sf.name}
                       </Text>
                       {sf.description && (
-                        <Text variant="xs" classes="text-gray-400 mt-0.5">
+                        <Text variant="xs" classes="text-(--text-muted) mt-0.5">
                           {sf.description}
                         </Text>
                       )}
                     </div>
                     <div className="flex gap-4 shrink-0 text-right">
                       <div>
-                        <Text variant="xs" classes="text-gray-400">
+                        <Text variant="xs" classes="text-(--text-muted)">
                           Threads
                         </Text>
                         <Text variant="small">{sf.threadCount}</Text>
                       </div>
                       <div>
-                        <Text variant="xs" classes="text-gray-400">
+                        <Text variant="xs" classes="text-(--text-muted)">
                           Posts
                         </Text>
                         <Text variant="small">{sf.postCount}</Text>
@@ -194,7 +194,7 @@ export const ForumCategoryPage: React.FC = () => {
         )}
 
         {!isMobile && (
-          <div className="grid grid-cols-12 gap-4 border-b border-white/10 pb-3">
+          <div className="grid grid-cols-12 gap-4 border-b border-(--text-primary)/10 pb-3">
             <div
               className={`${isMediaSubforum && subforumSlug ? "col-span-10" : "col-span-12"} flex items-end justify-between`}
             >
@@ -208,7 +208,7 @@ export const ForumCategoryPage: React.FC = () => {
               </div>
               <Text
                 variant="body-small"
-                classes="hidden sm:block text-white/45 uppercase tracking-[0.2em]"
+                classes="hidden sm:block text-(--text-primary)/45 uppercase tracking-[0.2em]"
               >
                 Directory
               </Text>
@@ -230,12 +230,12 @@ export const ForumCategoryPage: React.FC = () => {
             <>
               <div className="col-span-1 flex flex-col justify-end">
                 <Text variant="h6">Postgame Threads</Text>
-                <Text variant="body-small" classes="mt-1 text-gray-500">
+                <Text variant="body-small" classes="mt-1 text-(--text-muted)">
                   The latest {forum?.name} games
                 </Text>
               </div>
               <div className="col-span-1">
-                <LatestThreadsSidebar
+                <PostgameScoreboard
                   threads={latestThreads}
                   isLoading={latestThreadsLoading}
                 />
@@ -250,7 +250,7 @@ export const ForumCategoryPage: React.FC = () => {
                   <Text variant="h6">
                     {forum?.name} {parentForum?.name} Threads
                   </Text>
-                  <Text variant="body-small" classes="mt-1 text-gray-500">
+                  <Text variant="body-small" classes="mt-1 text-(--text-muted)">
                     The latest news!
                   </Text>
                 </div>
@@ -275,7 +275,7 @@ export const ForumCategoryPage: React.FC = () => {
           {/* Latest Threads sidebar */}
           {!isMobile && isMediaSubforum && subforumSlug && (
             <div className="col-span-2">
-              <LatestThreadsSidebar
+              <PostgameScoreboard
                 threads={latestThreads}
                 isLoading={latestThreadsLoading}
               />

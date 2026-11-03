@@ -106,7 +106,7 @@ const forums = [
   topLevel(
     "subscribers-lounge",
     "subscribers-lounge",
-    "Subscriber's Lounge",
+    "Subscribers' Lounge",
     0.6,
     "For our supporters",
   ),

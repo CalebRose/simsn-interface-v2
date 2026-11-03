@@ -50,6 +50,7 @@ import {
   FaSortAmountUp,
   FaHandshake,
   FaHammer,
+  FaSearch,
 } from "react-icons/fa";
 
 // 🔑 Define Props Interface for LockIcon
@@ -375,6 +376,12 @@ export const ArrowLeft: React.FC<LockIconProps> = ({ textColorClass }) => {
 
 export const Hammer: React.FC<LockIconProps> = ({ textColorClass }) => {
   return <GiHammerDrop className={`size-5 ${textColorClass}`} />;
+};
+
+export const MagnifyingGlass: React.FC<LockIconProps> = ({
+  textColorClass,
+}) => {
+  return <FaSearch className={`size-4 me-1 ${textColorClass}`} />;
 };
 
 export const DMIcon: React.FC = () => {

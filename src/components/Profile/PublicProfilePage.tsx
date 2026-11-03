@@ -122,7 +122,7 @@ export const PublicProfilePage: React.FC = () => {
     return (
       <PageContainer direction="col" isLoading={false} title="Profile">
         <div className="text-center py-16">
-          <Text variant="h5" classes="text-gray-400">
+          <Text variant="h5" classes="text-(--text-muted)">
             User not found.
           </Text>
         </div>
@@ -150,21 +150,21 @@ export const PublicProfilePage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <Text variant="body-small" classes="text-gray-400 mt-0.5">
+              <Text variant="body-small" classes="text-(--text-muted) mt-0.5">
                 Member since {joinDate}
               </Text>
               <div className="flex gap-6 mt-2">
                 <div>
-                  <span className="text-white font-bold text-lg">
+                  <span className="text-(--text-primary) font-bold text-lg">
                     {viewedUser?.forumPostCount ?? 0}
                   </span>
-                  <span className="text-gray-400 text-xs ml-1">Posts</span>
+                  <span className="text-(--text-muted) text-xs ml-1">Posts</span>
                 </div>
                 <div>
-                  <span className="text-white font-bold text-lg">
+                  <span className="text-(--text-primary) font-bold text-lg">
                     {viewedUser?.forumReactionCount ?? 0}
                   </span>
-                  <span className="text-gray-400 text-xs ml-1">
+                  <span className="text-(--text-muted) text-xs ml-1">
                     Reactions received
                   </span>
                 </div>
@@ -192,7 +192,7 @@ export const PublicProfilePage: React.FC = () => {
               {leagues.map((l) => (
                 <span
                   key={l.key}
-                  className="bg-gray-700 rounded-full px-3 py-1 text-sm text-gray-200"
+                  className="bg-(--bg-surface) rounded-full px-3 py-1 text-sm text-(--text-secondary)"
                 >
                   {l.label}
                 </span>
@@ -211,12 +211,12 @@ export const PublicProfilePage: React.FC = () => {
               {top5Users.map((u, i) => (
                 <div
                   key={u.id}
-                  className="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2"
+                  className="flex items-center gap-2 bg-(--bg-secondary) rounded-lg px-3 py-2"
                 >
-                  <span className="text-gray-500 text-xs font-bold">
+                  <span className="text-(--text-muted) text-xs font-bold">
                     #{i + 1}
                   </span>
-                  <span className="text-white font-semibold text-sm">
+                  <span className="text-(--text-primary) font-semibold text-sm">
                     {u.username}
                   </span>
                 </div>
@@ -235,21 +235,21 @@ export const PublicProfilePage: React.FC = () => {
               {achievements.map((a) => (
                 <div
                   key={a.id}
-                  className="flex items-start gap-3 bg-gray-800 rounded p-3"
+                  className="flex items-start gap-3 bg-(--bg-secondary) rounded p-3"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <Text variant="body-small" classes="font-semibold">
                         {a.title}
                       </Text>
-                      <span className="text-xs text-gray-500 bg-gray-700 rounded px-1.5 py-0.5">
+                      <span className="text-xs text-(--text-muted) bg-(--bg-surface) rounded px-1.5 py-0.5">
                         {a.league}
                       </span>
                     </div>
-                    <Text variant="xs" classes="text-gray-400 mt-0.5">
+                    <Text variant="xs" classes="text-(--text-muted) mt-0.5">
                       {a.description}
                     </Text>
-                    <Text variant="xs" classes="text-gray-500 mt-0.5">
+                    <Text variant="xs" classes="text-(--text-muted) mt-0.5">
                       Season {a.seasonId}
                     </Text>
                   </div>
