@@ -26,6 +26,7 @@ import routes from "../../_constants/routes";
 import { MEDIA_TAGS, MediaTag, isMediaForum } from "../../_constants/mediaTags";
 import { THREAD_TEMPLATES, POSTING_GUIDELINES } from "./threadTemplates";
 import { RichTextRenderer } from "./components/RichTextRenderer";
+import { ImageKitService } from "../../_services/imagekitService";
 
 interface ThreadCreationDraft {
   title: string;
@@ -79,6 +80,29 @@ export const CreateThreadPage: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<RichTextDocument | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [coverUploading, setCoverUploading] = useState(false);
+  const [coverError, setCoverError] = useState<string | null>(null);
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadCoverImage = async (file: File) => {
+    setCoverError(null);
+    if (!file.type.startsWith("image/")) {
+      setCoverError("Please choose an image file.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setCoverError("Image must be 5 MB or smaller.");
+      return;
+    }
+    setCoverUploading(true);
+    try {
+      setCoverImageUrl(await ImageKitService.uploadImage(file));
+    } catch {
+      setCoverError("Upload failed. Try again or paste an image URL.");
+    } finally {
+      setCoverUploading(false);
+    }
+  };
   const [draftBannerDismissed, setDraftBannerDismissed] = useState(false);
   const showDraftBanner = hasThreadDraft && !draftBannerDismissed;
   const bodyEditorRef = useRef<ForumEditorHandle>(null);
@@ -417,7 +441,9 @@ export const CreateThreadPage: React.FC = () => {
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-medium">
                   Media type{" "}
-                  <span className="text-(--text-muted) font-normal">(optional)</span>
+                  <span className="text-(--text-muted) font-normal">
+                    (optional)
+                  </span>
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {MEDIA_TAGS.map((tag) => {
@@ -546,21 +572,79 @@ export const CreateThreadPage: React.FC = () => {
             )}
 
             {/* Cover image */}
-            <label className="flex flex-col gap-1 text-start">
-              <span className="text-sm font-medium">
-                Cover image URL{" "}
-                <span className="font-normal text-(--text-muted)">(optional)</span>
-              </span>
-              <input
-                type="url"
-                value={coverImageUrl}
-                onChange={(e) => setCoverImageUrl(e.target.value)}
-                placeholder="https://…"
-                className="min-h-11 rounded-sm border border-(--text-primary)/15 bg-transparent px-3 text-base sm:text-sm"
-              />
+            <div
+              className="flex flex-col gap-1 text-start"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                const file = e.dataTransfer.files?.[0];
+                if (file) {
+                  e.preventDefault();
+                  uploadCoverImage(file);
+                }
+              }}
+            >
+              <label htmlFor="cover-image-url" className="text-sm font-medium">
+                Cover image{" "}
+                <span className="font-normal text-(--text-muted)">
+                  (optional)
+                </span>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="cover-image-url"
+                  type="url"
+                  value={coverImageUrl}
+                  onChange={(e) => setCoverImageUrl(e.target.value)}
+                  onPaste={(e) => {
+                    const file = Array.from(e.clipboardData?.files ?? []).find(
+                      (f) => f.type.startsWith("image/"),
+                    );
+                    if (file) {
+                      e.preventDefault();
+                      uploadCoverImage(file);
+                    }
+                  }}
+                  placeholder="Paste a URL or screenshot, or drop an image"
+                  disabled={coverUploading}
+                  className="min-h-11 min-w-0 flex-1 rounded-sm border border-(--text-primary)/15 bg-transparent px-3 text-base sm:text-sm"
+                />
+                <input
+                  ref={coverFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadCoverImage(file);
+                    e.target.value = "";
+                  }}
+                />
+                <button
+                  type="button"
+                  disabled={coverUploading}
+                  onClick={() => coverFileInputRef.current?.click()}
+                  className="min-h-11 shrink-0 rounded-sm border border-(--text-primary)/15 px-3 text-sm hover:bg-(--text-primary)/10 disabled:opacity-50"
+                >
+                  {coverUploading ? "Uploading…" : "Upload"}
+                </button>
+                {coverImageUrl && !coverUploading && (
+                  <button
+                    type="button"
+                    onClick={() => setCoverImageUrl("")}
+                    className="min-h-11 shrink-0 rounded-sm px-2 text-sm text-(--text-muted) hover:text-(--text-primary)"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {coverError && (
+                <span role="alert" className="text-xs text-(--accent-error)">
+                  {coverError}
+                </span>
+              )}
               <span className="text-xs text-(--text-muted)">
                 Used as the thumbnail and homepage hero image. Use a clean image
-                without baked-in text.
+                without baked-in text. Max 5 MB.
               </span>
               {coverImageUrl.trim() && /^https?:\/\//i.test(coverImageUrl) && (
                 <img
@@ -569,7 +653,7 @@ export const CreateThreadPage: React.FC = () => {
                   className="mt-1 h-28 w-auto max-w-full self-start rounded-sm object-cover"
                 />
               )}
-            </label>
+            </div>
 
             {/* Body editor */}
             <div className="flex flex-col gap-1">
