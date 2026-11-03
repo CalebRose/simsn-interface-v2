@@ -164,7 +164,7 @@ export const ForumCard: React.FC<ForumCardProps> = ({
                   e.stopPropagation();
                   navigate(`${routes.FORUMS}/${forum.slug}/${sf.slug}`);
                 }}
-                className="min-h-11 dark:text-white rounded-sm bg-(--bg-surface) px-3 py-1 text-sm text-(--accent-primary) border border-blue-400 transition-colors hover:bg-(--border-secondary) hover:text-(--accent-primary) focus-visible:ring-2 focus-visible:ring-blue-400 sm:min-h-8"
+                className="min-h-5 sm:min-h-8 dark:text-white rounded-sm bg-(--bg-surface) px-3 py-1 text-sm text-(--accent-primary) border border-blue-400 transition-colors hover:bg-(--border-secondary) hover:text-(--accent-primary) focus-visible:ring-2 focus-visible:ring-blue-400"
               >
                 {getForumDisplayName(sf.name)}
               </button>
