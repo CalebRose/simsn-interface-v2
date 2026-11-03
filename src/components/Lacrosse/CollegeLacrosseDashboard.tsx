@@ -6,6 +6,12 @@ import { getLaxLogoUrl, LaxPlayer, LaxScheduleResponse, LaxTeam } from "../../_s
 import routes from "../../_constants/routes";
 import { claxScheduleKey, claxStatsKey, useSimLAXStore } from "../../context/SimLAXContext";
 import { LacrossePlayerFace } from "./CollegeLacrossePlayerModal";
+import { ForumPortal } from "../LandingPage/TeamLandingPageComponents";
+import { SimCLAX } from "../../_constants/constants";
+import { useAuthStore } from "../../context/AuthContext";
+import { getThemeColors } from "../../_utility/themeHelpers";
+import { getThemeAwareDarkenColor } from "../../_utility/getDarkerColor";
+import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 
 type StatRow=Record<string,string|number|null>;
 
@@ -24,8 +30,10 @@ export const CollegeLacrosseDashboard=({team}:{team:LaxTeam})=>{
   const fieldStats:StatRow[]=schedule?claxStatistics[claxStatsKey(schedule.selectedSeason,undefined,"field","player")]?.rows??[]:[];
   const goalieStats:StatRow[]=schedule?claxStatistics[claxStatsKey(schedule.selectedSeason,undefined,"goalie","player")]?.rows??[]:[];
   const scheduleScrollRef=useRef<HTMLDivElement>(null);
+  const {isDarkMode}=useAuthStore();
   const primary=team.colors.primary||"#2563eb";
   const heading={backgroundColor:primary,color:readableText(primary)};
+  const forumBackground=getThemeColors(isDarkMode).background;
   const conference=team.conference?.abbreviation||team.conference?.name||"Conference";
   const orderedGames=[...(schedule?.games||[])].sort((a,b)=>
     Number(a.gameContext!=="preseason")-Number(b.gameContext!=="preseason")||a.week-b.week||a.id-b.id);
@@ -105,6 +113,9 @@ export const CollegeLacrosseDashboard=({team}:{team:LaxTeam})=>{
           <div>{gameType}</div>
           <button type="button" onClick={()=>navigate(routes.CLAX_LINEUPS)} className="mt-4 rounded bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700">Gameplan</button>
         </div>}
+      </Border>
+      <Border classes="h-fit overflow-hidden border-4 p-0" styles={{backgroundColor:team.colors.secondary||primary,borderColor:forumBackground}}>
+        <ForumPortal team={team} league={SimCLAX} backgroundColor={forumBackground} headerColor={primary} borderColor={team.colors.secondary||primary} textColorClass={getTextColorBasedOnBg(forumBackground)} darkerBackgroundColor={getThemeAwareDarkenColor(forumBackground,-5)}/>
       </Border>
     </div>
     <div className="space-y-4" aria-label="SimLAX dashboard right column">
