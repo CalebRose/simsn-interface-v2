@@ -283,7 +283,7 @@ export const SideMenu = ({}) => {
                 aria-label="Chat"
                 aria-expanded={isChatOpen}
                 onClick={() => setIsChatOpen(true)}
-                className="relative rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 focus:outline-hidden dark:text-gray-400 dark:hover:bg-gray-700"
+                className={`relative rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 focus:outline-hidden dark:text-gray-400 dark:hover:bg-gray-700 ${chatUnreadCount > 0 ? "border-3 border-blue-400" : ""}`}
               >
                 <ChatIcon />
                 {chatUnreadCount > 0 &&

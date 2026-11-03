@@ -165,18 +165,18 @@ export const PollBlock: React.FC<PollBlockProps> = ({
                 <div className="flex justify-between items-center text-sm">
                   <span
                     className={
-                      isUserChoice ? "font-semibold text-blue-400" : ""
+                      isUserChoice ? "font-semibold text-(--accent-primary)" : ""
                     }
                   >
                     {isUserChoice ? "✓ " : ""}
                     {option.label}
                   </span>
-                  <span className="text-gray-400 text-xs">
+                  <span className="text-(--text-muted) text-xs">
                     {option.voteCount} vote{option.voteCount !== 1 ? "s" : ""} (
                     {pct}%)
                   </span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-sm h-2 overflow-hidden">
+                <div className="w-full bg-(--bg-surface) rounded-sm h-2 overflow-hidden">
                   <div
                     className="bg-blue-500 h-2 rounded-sm transition-all duration-300"
                     style={{ width: `${pct}%` }}
@@ -193,7 +193,7 @@ export const PollBlock: React.FC<PollBlockProps> = ({
               className={`flex items-center gap-2 p-2 rounded-sm border cursor-pointer transition-colors ${
                 selected.has(option.id)
                   ? "border-blue-500 bg-blue-900/30"
-                  : "border-gray-600 hover:border-gray-400"
+                  : "border-(--border-primary) hover:border-(--text-muted)"
               }`}
             >
               <input
@@ -211,7 +211,7 @@ export const PollBlock: React.FC<PollBlockProps> = ({
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-3 gap-2 flex-wrap">
-        <Text variant="xs" classes="text-gray-500">
+        <Text variant="xs" classes="text-(--text-muted)">
           {poll.totalVotes} total vote{poll.totalVotes !== 1 ? "s" : ""}
           {poll.closesAt && !poll.isClosed && (
             <>
@@ -291,10 +291,10 @@ export const PollBlock: React.FC<PollBlockProps> = ({
 
       {/* OP / moderator settings panel */}
       {(isOP || canManagePoll) && (
-        <div className="mt-3 pt-3 border-t border-gray-700 flex flex-col gap-2">
+        <div className="mt-3 pt-3 border-t border-(--border-primary) flex flex-col gap-2">
           <Text
             variant="xs"
-            classes="text-gray-400 font-semibold uppercase tracking-wide"
+            classes="text-(--text-muted) font-semibold uppercase tracking-wide"
           >
             Poll settings
           </Text>

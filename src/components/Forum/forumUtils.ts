@@ -133,12 +133,121 @@ function forumDocToPlaintext(
   function extractText(node: RichTextNode): string {
     if (node.type === "text") return node.text ?? "";
     if (!node.content) return "";
-    return node.content
-      .map(extractText)
-      .join(node.type === "paragraph" ? "\n" : "");
+    const parts = node.content.map(extractText);
+    switch (node.type) {
+      // Cells and rows must not run together ("TennesseeFlorida...")
+      case "tableRow":
+        return parts.join(" ");
+      case "table":
+      case "bulletList":
+      case "orderedList":
+      case "doc":
+        return parts.join("\n");
+      case "paragraph":
+        return parts.join("\n");
+      default:
+        return parts.join("");
+    }
   }
 
   return body.content.map(extractText).join("\n");
+}
+
+const PREVIEW_SKIP_TYPES = new Set(["table"]);
+
+/** Splits long run-together tokens ("TennesseeFloridaWestern") on case boundaries. */
+export function cleanExcerpt(text: string | null | undefined): string {
+  if (!text) return "";
+  return text
+    .split(/(\s+)/)
+    .map((token) =>
+      token.length >= 15 ? token.replace(/([a-z])([A-Z])/g, "$1 $2") : token,
+    )
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Strips "[Quote: user]" markers from nested quotes and trims at a word boundary. */
+export function buildQuoteSnippet(text: string | null | undefined, max = 160) {
+  const cleaned = (text ?? "")
+    .replace(/\[Quote:[^\]]*\]/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (cleaned.length <= max) return cleaned;
+  const cut = cleaned.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  return `${(lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
+
+const SYSTEM_FORUM_PREFIXES = [
+  "postgame-discussions",
+  "welcome-job-applications",
+];
+
+export function formatRelativeTime(
+  ts: { seconds: number } | null | undefined,
+  fallback = "—",
+): string {
+  if (!ts) return fallback;
+  const then = ts.seconds * 1000;
+  const diff = Math.max(0, Math.floor((Date.now() - then) / 1000));
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return new Date(then).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function pluralize(count: number, singular: string, plural?: string) {
+  return `${count.toLocaleString()} ${count === 1 ? singular : (plural ?? `${singular}s`)}`;
+}
+
+export function isSystemGeneratedThread(thread: Pick<Thread, "forumId">) {
+  return SYSTEM_FORUM_PREFIXES.some((p) => thread.forumId?.startsWith(p));
+}
+
+const LEAGUE_KEYS = [
+  "simcfb",
+  "simnfl",
+  "simcbb",
+  "simnba",
+  "simchl",
+  "simphl",
+  "simcbl",
+  "simmlb",
+  "simclax",
+];
+
+/** Fixes stored names such as "Subscriber's Lounge" without touching Firestore. */
+export function getForumDisplayName(name: string): string {
+  return name.replace(/subscribers?['’]s?\s+lounge/i, "Subscribers' Lounge");
+}
+
+export const LEAGUE_ACCENT_COLORS: Record<string, string> = {
+  simcfb: "#f97316",
+  simnfl: "#3b82f6",
+  simcbb: "#a855f7",
+  simnba: "#ef4444",
+  simchl: "#06b6d4",
+  simphl: "#14b8a6",
+  simcbl: "#eab308",
+  simmlb: "#22c55e",
+  simclax: "#ec4899",
+};
+
+/** League of a thread/forum, derived from sportKey or a "...-simcfb" forum id. */
+export function getLeagueKey(
+  forumId: string | undefined | null,
+  sportKey?: string | null,
+): string | null {
+  const sk = sportKey?.toLowerCase();
+  if (sk && LEAGUE_KEYS.includes(sk)) return sk;
+  const id = forumId?.toLowerCase() ?? "";
+  return LEAGUE_KEYS.find((k) => id === k || id.endsWith(`-${k}`)) ?? null;
 }
 
 export function parseForumBody(
@@ -164,10 +273,16 @@ export function parseForumBody(
   const bodyTextWithoutFeatureImage = forumDocToPlaintext(
     documentWithoutFeatureImage,
   );
-  const previewWithoutFeatureImage = bodyTextWithoutFeatureImage
-    .replace(/\n{3,}/g, "\n\n")
-    .trim()
-    .slice(0, maxPreviewLength);
+  const firstBlock = documentWithoutFeatureImage?.content?.find(
+    (node) => !isEmptyTopLevelNode(node),
+  );
+  const previewWithoutFeatureImage =
+    firstBlock && PREVIEW_SKIP_TYPES.has(firstBlock.type)
+      ? ""
+      : bodyTextWithoutFeatureImage
+          .replace(/\n{3,}/g, "\n\n")
+          .trim()
+          .slice(0, maxPreviewLength);
 
   return {
     featureImageUrl,

@@ -4,7 +4,7 @@ import {
   RichTextNode,
   RichTextMark,
 } from "../../../models/forumModels";
-import { parseForumBody } from "../forumUtils";
+import { parseForumBody, buildQuoteSnippet } from "../forumUtils";
 
 // ─────────────────────────────────────────────
 // Safe JSON-to-component renderer.
@@ -42,7 +42,7 @@ function applyMarks(
         node = (
           <code
             key={key}
-            className="bg-gray-800 text-green-400 px-1 rounded-sm text-sm"
+            className="bg-(--bg-secondary) text-green-400 px-1 rounded-sm text-sm"
           >
             {node}
           </code>
@@ -68,7 +68,7 @@ function applyMarks(
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-400 underline hover:text-blue-300"
+              className="text-(--accent-primary) underline hover:text-(--accent-primary)"
             >
               {node}
             </a>
@@ -175,7 +175,7 @@ function renderNode(
       return (
         <blockquote
           key={key}
-          className="border-l-4 border-blue-500 pl-3 my-2 text-gray-300 italic"
+          className="border-l-4 border-blue-500 pl-3 my-2 text-(--text-secondary) italic"
         >
           {children}
         </blockquote>
@@ -185,7 +185,7 @@ function renderNode(
       return (
         <pre
           key={key}
-          className="bg-gray-900 text-green-400 p-3 rounded-sm overflow-x-auto text-sm my-2"
+          className="bg-(--bg-secondary) text-green-400 p-3 rounded-sm overflow-x-auto text-sm my-2"
         >
           <code>{children}</code>
         </pre>
@@ -195,7 +195,7 @@ function renderNode(
       return <br key={key} />;
 
     case "horizontalRule":
-      return <hr key={key} className="border-gray-600 my-3" />;
+      return <hr key={key} className="border-(--border-primary) my-3" />;
 
     case "text": {
       const txt = node.text ?? "";
@@ -220,25 +220,28 @@ function renderNode(
       return (
         <span
           key={key}
-          className="inline-flex items-center rounded-full border border-yellow-500/40 bg-yellow-500/10 px-2 py-0 text-[0.85em] font-semibold text-yellow-400"
+          className="rounded-sm bg-(--accent-warning)/10 px-0.5 font-semibold text-(--accent-warning)"
           data-uid={(node.attrs?.uid ?? node.attrs?.id) as string}
         >
           @{(node.attrs?.username ?? node.attrs?.label) as string}
         </span>
       );
 
-    case "quoteReference":
+    case "quoteReference": {
+      const rawQuote = (node.content ?? []).map((c) => c.text ?? "").join(" ");
+      const quoteText = buildQuoteSnippet(rawQuote);
       return (
         <div
           key={key}
-          className="border-l-4 border-gray-500 pl-3 my-2 bg-white/5 rounded-sm text-sm"
+          className="border-l-4 border-(--border-primary) pl-3 py-1 my-2 bg-(--text-primary)/5 rounded-sm text-xs text-(--text-muted)"
         >
-          <span className="text-gray-400 text-xs font-medium block mb-1">
+          <span className="text-(--text-secondary) text-xs font-medium block mb-0.5">
             Quote — {node.attrs?.authorUsername as string}
           </span>
-          {children}
+          {quoteText}
         </div>
       );
+    }
 
     case "youtubeEmbed": {
       const videoId = node.attrs?.videoId as string | undefined;
@@ -301,7 +304,7 @@ function renderNode(
           className={
             tableBorderless
               ? "px-2 py-1 font-semibold text-left align-top"
-              : "border border-gray-600 px-2 py-1 bg-gray-800 font-semibold text-left"
+              : "border border-(--border-primary) px-2 py-1 bg-(--bg-secondary) font-semibold text-left"
           }
           style={
             thWidth
@@ -323,7 +326,7 @@ function renderNode(
           className={
             tableBorderless
               ? "px-2 py-1 align-top"
-              : "border border-gray-600 px-2 py-1"
+              : "border border-(--border-primary) px-2 py-1"
           }
           style={
             tdWidth

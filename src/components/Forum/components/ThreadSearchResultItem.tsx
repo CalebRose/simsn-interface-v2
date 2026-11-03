@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Thread } from "../../../models/forumModels";
 import { Text } from "../../../_design/Typography";
 import routes from "../../../_constants/routes";
+import { cleanExcerpt } from "../forumUtils";
 
 interface ThreadSearchResultItemProps {
   thread: Thread;
@@ -40,7 +41,7 @@ export const ThreadSearchResultItem: React.FC<ThreadSearchResultItemProps> = ({
 
   return (
     <div
-      className="flex flex-col gap-1 py-3 px-3 border-b border-white/10 last:border-b-0 cursor-pointer transition-colors rounded-sm hover:bg-white/5"
+      className="flex flex-col gap-1 py-3 px-3 border-b border-(--text-primary)/10 last:border-b-0 cursor-pointer transition-colors rounded-sm hover:bg-(--text-primary)/5"
       onClick={handleClick}
       role="button"
       tabIndex={0}
@@ -48,7 +49,7 @@ export const ThreadSearchResultItem: React.FC<ThreadSearchResultItemProps> = ({
     >
       <div className="flex flex-wrap items-center gap-1.5">
         {forumName && (
-          <span className="text-xs bg-white/10 text-white/70 px-1.5 py-0.5 rounded-sm font-medium">
+          <span className="text-xs bg-(--text-primary)/10 text-(--text-primary)/70 px-1.5 py-0.5 rounded-sm font-medium">
             {forumName}
           </span>
         )}
@@ -64,12 +65,12 @@ export const ThreadSearchResultItem: React.FC<ThreadSearchResultItemProps> = ({
       </Text>
 
       {thread.contentPreview && (
-        <Text variant="xs" classes="text-gray-500 line-clamp-1 text-start">
-          {thread.contentPreview}
+        <Text variant="xs" classes="text-(--text-muted) line-clamp-1 text-start">
+          {cleanExcerpt(thread.contentPreview)}
         </Text>
       )}
 
-      <div className="flex items-center justify-between text-gray-400">
+      <div className="flex items-center justify-between text-(--text-muted)">
         <Text variant="small">by {thread.author.username}</Text>
         <Text variant="xs">
           {formatRelativeTime(

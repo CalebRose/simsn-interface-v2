@@ -21,7 +21,7 @@ import {
   deleteDoc,
   Timestamp,
 } from "firebase/firestore";
-import type { PostMention } from "../models/forumModels";
+import type { PostMention, AuthorBadgeInfo } from "../models/forumModels";
 import { firestore } from "../firebase/firebase";
 import { parseForumBody } from "../components/Forum/forumUtils";
 import {
@@ -434,6 +434,7 @@ export const ForumService = {
     username: string,
     displayName: string,
     logoUrl?: string,
+    badge?: AuthorBadgeInfo,
   ): Promise<{ threadId: string; postId: string }> => {
     const now = serverTimestamp();
     const parsedBody = parseForumBody(dto.body);
@@ -448,6 +449,8 @@ export const ForumService = {
       username,
       displayName,
       ...(logoUrl ? { logoUrl } : {}),
+      ...(badge?.role ? { role: badge.role } : {}),
+      ...(badge?.league ? { league: badge.league } : {}),
     };
 
     // 1. Create the first post
@@ -616,6 +619,7 @@ export const ForumService = {
     username: string,
     displayName: string,
     logoUrl?: string,
+    badge?: AuthorBadgeInfo,
   ): Promise<string> => {
     const now = serverTimestamp();
 
@@ -624,6 +628,8 @@ export const ForumService = {
       username,
       displayName,
       ...(logoUrl ? { logoUrl } : {}),
+      ...(badge?.role ? { role: badge.role } : {}),
+      ...(badge?.league ? { league: badge.league } : {}),
     };
 
     const postRef = await addDoc(postsCol(), {

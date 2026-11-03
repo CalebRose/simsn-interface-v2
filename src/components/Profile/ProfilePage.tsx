@@ -185,7 +185,7 @@ const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
             className={`text-xs px-3 py-1 rounded transition-colors ${
               tab === t
                 ? "bg-blue-600 text-white"
-                : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                : "bg-(--bg-surface) text-(--text-secondary) hover:bg-(--border-secondary)"
             }`}
           >
             {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -194,12 +194,12 @@ const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
       </div>
 
       {loading ? (
-        <Text variant="xs" classes="text-gray-400">
+        <Text variant="xs" classes="text-(--text-muted)">
           Loading…
         </Text>
       ) : tab === "threads" ? (
         threads.length === 0 ? (
-          <Text variant="xs" classes="text-gray-500 italic">
+          <Text variant="xs" classes="text-(--text-muted) italic">
             No threads yet.
           </Text>
         ) : (
@@ -207,15 +207,15 @@ const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
             {threads.map((th) => (
               <li
                 key={th.id}
-                className="text-xs border-b border-gray-700 pb-1.5 last:border-b-0"
+                className="text-xs border-b border-(--border-primary) pb-1.5 last:border-b-0"
               >
                 <Link
                   to={`/forums/thread/${th.id}`}
-                  className="font-semibold text-white hover:text-blue-400 transition-colors"
+                  className="font-semibold text-(--text-primary) hover:text-(--accent-primary) transition-colors"
                 >
                   {th.title}
                 </Link>
-                <span className="text-gray-500 ml-2">
+                <span className="text-(--text-muted) ml-2">
                   {formatTs(th.createdAt as unknown as { seconds: number })}
                 </span>
               </li>
@@ -223,7 +223,7 @@ const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
           </ul>
         )
       ) : posts.length === 0 ? (
-        <Text variant="xs" classes="text-gray-500 italic">
+        <Text variant="xs" classes="text-(--text-muted) italic">
           No posts yet.
         </Text>
       ) : (
@@ -231,15 +231,15 @@ const RecentActivitySection: React.FC<RecentActivitySectionProps> = ({
           {posts.map((p) => (
             <li
               key={p.id}
-              className="text-xs border-b border-gray-700 pb-1.5 last:border-b-0"
+              className="text-xs border-b border-(--border-primary) pb-1.5 last:border-b-0"
             >
               <Link
                 to={`/forums/thread/${p.threadId}`}
-                className="text-gray-300 line-clamp-2 hover:text-blue-400 transition-colors block"
+                className="text-(--text-secondary) line-clamp-2 hover:text-(--accent-primary) transition-colors block"
               >
                 {p.bodyText}
               </Link>
-              <span className="text-gray-500 ml-2">
+              <span className="text-(--text-muted) ml-2">
                 {formatTs(p.createdAt as unknown as { seconds: number })}
               </span>
             </li>
@@ -302,25 +302,25 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
             )}
           </div>
           {viewedUser?.status && viewedUser.status.length > 0 && (
-            <Text variant="body-small" classes="text-gray-300 italic mt-0.5">
+            <Text variant="body-small" classes="text-(--text-secondary) italic mt-0.5">
               {viewedUser.status}
             </Text>
           )}
-          <Text variant="body-small" classes="text-gray-400 mt-0.5">
+          <Text variant="body-small" classes="text-(--text-muted) mt-0.5">
             Member since {viewedJoinDate}
           </Text>
           <div className="flex gap-6 mt-2">
             <div>
-              <span className="text-white font-bold text-lg">
+              <span className="text-(--text-primary) font-bold text-lg">
                 {viewedUser?.forumPostCount ?? 0}
               </span>
-              <span className="text-gray-400 text-xs ml-1">Posts</span>
+              <span className="text-(--text-muted) text-xs ml-1">Posts</span>
             </div>
             <div>
-              <span className="text-white font-bold text-lg">
+              <span className="text-(--text-primary) font-bold text-lg">
                 {viewedUser?.forumReactionCount ?? 0}
               </span>
-              <span className="text-gray-400 text-xs ml-1">
+              <span className="text-(--text-muted) text-xs ml-1">
                 Reactions received
               </span>
             </div>
@@ -383,7 +383,7 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
         </Text>
         <div className="flex gap-3 flex-wrap">
           {viewedTop5.length === 0 && (
-            <Text variant="body-small" classes="text-gray-500">
+            <Text variant="body-small" classes="text-(--text-muted)">
               This user needs to make some friends!
             </Text>
           )}
@@ -391,15 +391,15 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
             viewedTop5.map((u, i) => (
               <div
                 key={u.id}
-                className="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2"
+                className="flex items-center gap-2 bg-(--bg-secondary) rounded-lg px-3 py-2"
               >
-                <span className="text-gray-500 text-xs font-bold">
+                <span className="text-(--text-muted) text-xs font-bold">
                   #{i + 1}
                 </span>
                 <ClickableUserLabel
                   label={u.username || "-"}
                   coach={u.username ? u.username : ""}
-                  textColorClass="text-white"
+                  textColorClass="text-(--text-primary)"
                   additionalClasses="font-semibold"
                   textVariant="small"
                 />
@@ -436,7 +436,7 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
         </Text>
         <div className="space-y-2">
           {viewedAchievements.length === 0 && (
-            <Text variant="body-small" classes="text-gray-500">
+            <Text variant="body-small" classes="text-(--text-muted)">
               No achievements yet.
             </Text>
           )}
@@ -444,21 +444,21 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
             viewedAchievements.map((a) => (
               <div
                 key={a.id}
-                className="flex items-start gap-3 bg-gray-800 rounded p-3"
+                className="flex items-start gap-3 bg-(--bg-secondary) rounded p-3"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <Text variant="body-small" classes="font-semibold">
                       {a.title}
                     </Text>
-                    <span className="text-xs text-gray-500 bg-gray-700 rounded px-1.5 py-0.5">
+                    <span className="text-xs text-(--text-muted) bg-(--bg-surface) rounded px-1.5 py-0.5">
                       {a.league}
                     </span>
                   </div>
-                  <Text variant="xs" classes="text-gray-400 mt-0.5">
+                  <Text variant="xs" classes="text-(--text-muted) mt-0.5">
                     {a.description}
                   </Text>
-                  <Text variant="xs" classes="text-gray-500 mt-0.5">
+                  <Text variant="xs" classes="text-(--text-muted) mt-0.5">
                     Season {a.seasonId}
                   </Text>
                 </div>
@@ -998,7 +998,7 @@ export const ProfilePage = () => {
                   >
                     ← Back to my profile
                   </Button>
-                  <Text variant="body-small" classes="text-gray-400">
+                  <Text variant="body-small" classes="text-(--text-muted)">
                     Viewing {viewedUser!.username}'s profile
                   </Text>
                 </div>
@@ -1039,7 +1039,7 @@ export const ProfilePage = () => {
                       {currentUser?.status && currentUser.status.length > 0 && (
                         <Text
                           variant="body-small"
-                          classes="text-gray-300 italic mt-0.5"
+                          classes="text-(--text-secondary) italic mt-0.5"
                         >
                           {currentUser.status}
                         </Text>
@@ -1054,7 +1054,7 @@ export const ProfilePage = () => {
                           }}
                           placeholder="Set a status…"
                           maxLength={100}
-                          className="flex-1 bg-gray-800 border border-gray-600 rounded px-2 py-1 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                          className="flex-1 bg-(--bg-secondary) border border-(--border-primary) rounded px-2 py-1 text-xs text-(--text-primary) placeholder:text-(--text-muted) focus:outline-none focus:border-blue-500"
                         />
                         <Button
                           variant="secondary"
@@ -1065,23 +1065,23 @@ export const ProfilePage = () => {
                           {statusSaving ? "…" : "Save"}
                         </Button>
                       </div>
-                      <Text variant="body-small" classes="text-gray-400 mt-0.5">
+                      <Text variant="body-small" classes="text-(--text-muted) mt-0.5">
                         Member since {ownJoinDate}
                       </Text>
                       <div className="flex gap-6 mt-2">
                         <div>
-                          <span className="text-white font-bold text-lg">
+                          <span className="text-(--text-primary) font-bold text-lg">
                             {currentUser?.forumPostCount ?? 0}
                           </span>
-                          <span className="text-gray-400 text-xs ml-1">
+                          <span className="text-(--text-muted) text-xs ml-1">
                             Posts
                           </span>
                         </div>
                         <div>
-                          <span className="text-white font-bold text-lg">
+                          <span className="text-(--text-primary) font-bold text-lg">
                             {currentUser?.forumReactionCount ?? 0}
                           </span>
-                          <span className="text-gray-400 text-xs ml-1">
+                          <span className="text-(--text-muted) text-xs ml-1">
                             Reactions received
                           </span>
                         </div>
@@ -1162,21 +1162,21 @@ export const ProfilePage = () => {
                           slotUser?.username ?? (uid ? "…" : null);
                         return (
                           <div key={i} className="flex items-center gap-2">
-                            <span className="text-gray-500 text-xs w-5 shrink-0">
+                            <span className="text-(--text-muted) text-xs w-5 shrink-0">
                               #{i + 1}
                             </span>
                             {uid ? (
-                              <div className="flex items-center gap-2 bg-gray-800 rounded px-3 py-1.5 flex-1">
+                              <div className="flex items-center gap-2 bg-(--bg-secondary) rounded px-3 py-1.5 flex-1">
                                 <ClickableUserLabel
                                   label={displayName || "-"}
                                   coach={displayName ? displayName : ""}
-                                  textColorClass="text-white"
+                                  textColorClass="text-(--text-primary)"
                                   additionalClasses="font-semibold flex-1"
                                   textVariant="small"
                                 />
                                 <button
                                   onClick={() => clearTop5Slot(i)}
-                                  className="text-gray-500 hover:text-red-400 text-xs transition-colors"
+                                  className="text-(--text-muted) hover:text-(--accent-error) text-xs transition-colors"
                                 >
                                   ✕
                                 </button>
@@ -1187,7 +1187,7 @@ export const ProfilePage = () => {
                                   setActiveTop5Slot(i);
                                   setTop5SearchQuery("");
                                 }}
-                                className="flex-1 text-left text-xs text-gray-500 bg-gray-800/50 border border-dashed border-gray-600 rounded px-3 py-1.5 hover:border-gray-400 transition-colors"
+                                className="flex-1 text-left text-xs text-(--text-muted) bg-(--bg-secondary)/50 border border-dashed border-(--border-primary) rounded px-3 py-1.5 hover:border-(--text-muted) transition-colors"
                               >
                                 {activeTop5Slot === i
                                   ? "Type to search below…"
@@ -1206,18 +1206,18 @@ export const ProfilePage = () => {
                           value={top5SearchQuery}
                           onChange={(e) => setTop5SearchQuery(e.target.value)}
                           placeholder={`Search for slot #${activeTop5Slot + 1}…`}
-                          className="w-full bg-gray-800 border border-gray-600 rounded px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                          className="w-full bg-(--bg-secondary) border border-(--border-primary) rounded px-3 py-1.5 text-sm text-(--text-primary) placeholder:text-(--text-muted) focus:outline-none focus:border-blue-500"
                           autoFocus
                         />
                         {top5SearchResults.length > 0 && (
-                          <div className="mt-1 bg-gray-800 border border-gray-600 rounded overflow-hidden">
+                          <div className="mt-1 bg-(--bg-secondary) border border-(--border-primary) rounded overflow-hidden">
                             {top5SearchResults.map((r) => (
                               <button
                                 key={r.uid}
                                 onClick={() =>
                                   assignTop5User(activeTop5Slot, r.uid)
                                 }
-                                className="block w-full text-left px-3 py-2 text-sm text-white hover:bg-gray-700 border-b border-gray-700 last:border-b-0 transition-colors"
+                                className="block w-full text-left px-3 py-2 text-sm text-(--text-primary) hover:bg-(--bg-surface) border-b border-(--border-primary) last:border-b-0 transition-colors"
                               >
                                 {r.username}
                               </button>
@@ -1230,7 +1230,7 @@ export const ProfilePage = () => {
                             setTop5SearchQuery("");
                             setTop5SearchResults([]);
                           }}
-                          className="mt-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                          className="mt-1.5 text-xs text-(--text-muted) hover:text-(--text-secondary) transition-colors"
                         >
                           Cancel
                         </button>
@@ -1284,7 +1284,7 @@ export const ProfilePage = () => {
                         achievements.map((a) => (
                           <div
                             key={a.id}
-                            className="flex items-start gap-3 bg-gray-800 rounded p-3"
+                            className="flex items-start gap-3 bg-(--bg-secondary) rounded p-3"
                           >
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
@@ -1294,14 +1294,14 @@ export const ProfilePage = () => {
                                 >
                                   {a.title}
                                 </Text>
-                                <span className="text-xs text-gray-500 bg-gray-700 rounded px-1.5 py-0.5">
+                                <span className="text-xs text-(--text-muted) bg-(--bg-surface) rounded px-1.5 py-0.5">
                                   {a.league}
                                 </span>
                               </div>
-                              <Text variant="xs" classes="text-gray-400 mt-0.5">
+                              <Text variant="xs" classes="text-(--text-muted) mt-0.5">
                                 {a.description}
                               </Text>
-                              <Text variant="xs" classes="text-gray-500 mt-0.5">
+                              <Text variant="xs" classes="text-(--text-muted) mt-0.5">
                                 Season {a.seasonId}
                               </Text>
                             </div>
