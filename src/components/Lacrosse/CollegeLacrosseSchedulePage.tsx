@@ -28,7 +28,7 @@ const readableText=(color:string) => {
 const detail=(error:unknown)=>error instanceof Error?error.message:"The SimLAX schedule could not be reached.";
 
 export const CollegeLacrosseSchedulePage=()=>{
-  const {claxTeams:teams,refreshClaxTeams,claxSchedules,refreshClaxSchedule}=useSimLAXStore();
+  const {claxTeam:ownedTeam,claxTeams:teams,refreshClaxTeams,claxSchedules,refreshClaxSchedule}=useSimLAXStore();
   const [scheduleKey,setScheduleKey]=useState(claxScheduleKey());
   const [fetchedSchedule,setFetchedSchedule]=useState<LaxScheduleResponse>();
   const schedule=claxSchedules[scheduleKey]??fetchedSchedule;
@@ -46,6 +46,17 @@ export const CollegeLacrosseSchedulePage=()=>{
   useEffect(()=>{if((view==="conferenceTournament"&&!schedule?.hasConferenceTournament)||(view==="nationalTournament"&&!schedule?.hasNationalTournament))setView("overview");},[schedule?.hasConferenceTournament,schedule?.hasNationalTournament,view]);
   const primary=schedule?.team.colors.primary||"#2563eb";
   const headerStyle={backgroundColor:primary,color:readableText(primary)};
+  const isOwnSchedule=Boolean(schedule&&ownedTeam?.id===schedule.team.id);
+  const [ownFetched,setOwnFetched]=useState<LaxScheduleResponse>();
+  const viewedSeason=schedule?.selectedSeason;
+  useEffect(()=>{
+    if(!ownedTeam||viewedSeason===undefined||isOwnSchedule)return;
+    let active=true;
+    refreshClaxSchedule(ownedTeam.id,viewedSeason).then((response)=>{if(active)setOwnFetched(response);}).catch(()=>{});
+    return ()=>{active=false;};
+  },[ownedTeam,viewedSeason,isOwnSchedule,refreshClaxSchedule]);
+  const ownSchedule=isOwnSchedule?schedule:(ownedTeam&&viewedSeason!==undefined?claxSchedules[claxScheduleKey(ownedTeam.id,viewedSeason)]:undefined)??(ownFetched?.selectedSeason===viewedSeason&&ownFetched?.team.id===ownedTeam?.id?ownFetched:undefined);
+  const sameConference=Boolean(ownedTeam?.conference?.id&&ownedTeam.conference.id===schedule?.team.conference?.id);
   const record=schedule?.standings.find((standing)=>standing.team.id===schedule.team.id);
   const teamOptions=teams.map((team)=>({value:String(team.id),label:`${team.name} | ${team.abbreviation}`}));
   const seasonOptions=schedule?.seasons.map((season)=>({value:String(season),label:String(schedule.seasonYears?.[season]??getLacrosseSeasonYear(season))}))||[];
@@ -84,7 +95,9 @@ export const CollegeLacrosseSchedulePage=()=>{
           const games=visibleGames.filter((game)=>game.week===week);
           const tentative=(view==="overview"||view==="preseason")?(schedule.tentativeGames||[]).filter((game)=>game.week===week&&game.gameContext===requestContext):[];
           const schedulingOpen=view==="preseason"?schedule.preseasonSchedulingOpen:view==="overview"&&schedule.regularSeasonSchedulingOpen;
-          if(games.length===0&&tentative.length===0&&schedulingOpen)return [<tr key={`open-${requestContext}-${week}`} className="border-b border-slate-600 odd:bg-slate-900/20 even:bg-slate-800/40"><td className="px-1.5 py-3 sm:px-2 font-semibold">{week}</td><td colSpan={2} className="px-1.5 py-3 sm:px-2 text-center"><a href={`#request-week-${week}`} onClick={(event)=>{event.preventDefault();setRequestWeek(week);}} className="italic opacity-50 transition-colors hover:text-[#fcd53f] hover:opacity-100">OPEN</a></td><td/><td/></tr>];
+          const ownWeekTaken=Boolean(ownSchedule&&(ownSchedule.games.some((game)=>game.week===week&&game.gameContext===requestContext)||(ownSchedule.tentativeGames||[]).some((game)=>game.week===week&&game.gameContext===requestContext)));
+          const canChallenge=Boolean(ownedTeam&&ownSchedule&&!isOwnSchedule&&!sameConference&&!ownWeekTaken);
+          if(games.length===0&&tentative.length===0&&schedulingOpen)return [<tr key={`open-${requestContext}-${week}`} className="border-b border-slate-600 odd:bg-slate-900/20 even:bg-slate-800/40"><td className="px-1.5 py-3 sm:px-2 font-semibold">{week}</td><td colSpan={2} className="px-1.5 py-3 sm:px-2 text-center">{isOwnSchedule?<a href={`#request-week-${week}`} onClick={(event)=>{event.preventDefault();setRequestWeek(week);}} className="italic opacity-50 transition-colors hover:text-[#fcd53f] hover:opacity-100">OPEN</a>:canChallenge?<a href={`#challenge-week-${week}`} onClick={(event)=>{event.preventDefault();setRequestWeek(week);}} className="italic opacity-50 transition-colors hover:text-[#fcd53f] hover:opacity-100">CHALLENGE</a>:<span className="italic opacity-50">OPEN</span>}</td><td/><td/></tr>];
           if(games.length===0&&tentative.length===0)return [];
           if(games.length>0)return games.map((game)=>{
             const homeCellStyle=game.isHome?headerStyle:undefined;
@@ -105,7 +118,8 @@ export const CollegeLacrosseSchedulePage=()=>{
         <div className="mt-4 -mx-2 overflow-x-auto sm:mx-0"><table data-keep-table className="w-full border-collapse text-sm"><thead><tr className="border-b-2"><th className="px-1.5 py-3 sm:px-2 text-left">Rank</th><th className="px-1.5 py-3 sm:px-2 text-left">Team</th><th className="px-1.5 py-3 sm:px-2 text-center">C.W</th><th className="px-1.5 py-3 sm:px-2 text-center">C.L</th><th className="px-1.5 py-3 sm:px-2 text-center">T.W</th><th className="px-1.5 py-3 sm:px-2 text-center">T.L</th></tr></thead><tbody>{conferenceGroup.standings.map((standing)=><tr key={standing.team.id} className={`border-b border-slate-600 ${standing.team.id===schedule.team.id?"font-bold":""}`}><td className="px-1.5 py-3 sm:px-2">{standing.rank}</td><td className="px-1.5 py-3 sm:px-2"><div className="flex items-center gap-2"><Logo url={getLaxLogoUrl(standing.team.logoFileName)} variant="tiny"/><span>{standing.team.abbreviation||standing.team.name}</span></div></td><td className="px-1.5 py-3 sm:px-2 text-center">{standing.conferenceWins}</td><td className="px-1.5 py-3 sm:px-2 text-center">{standing.conferenceLosses}</td><td className="px-1.5 py-3 sm:px-2 text-center">{standing.totalWins}</td><td className="px-1.5 py-3 sm:px-2 text-center">{standing.totalLosses}</td></tr>)}</tbody></table></div>
       </Border>)}</div>}
     </div>}
-    {schedule&&<CollegeLacrosseScheduleRequestModal week={requestWeek} season={schedule.selectedSeason} gameContext={requestContext} team={schedule.team} games={schedule.games} tentativeGames={schedule.tentativeGames||[]} onClose={()=>setRequestWeek(null)} onSent={()=>void load(schedule.team.id,schedule.selectedSeason)}/>} 
+    {schedule&&isOwnSchedule&&<CollegeLacrosseScheduleRequestModal week={requestWeek} season={schedule.selectedSeason} gameContext={requestContext} team={schedule.team} games={schedule.games} tentativeGames={schedule.tentativeGames||[]} onClose={()=>setRequestWeek(null)} onSent={()=>void load(schedule.team.id,schedule.selectedSeason)}/>}
+    {schedule&&!isOwnSchedule&&ownedTeam&&ownSchedule&&<CollegeLacrosseScheduleRequestModal week={requestWeek} season={schedule.selectedSeason} gameContext={requestContext} team={ownedTeam} games={ownSchedule.games} tentativeGames={ownSchedule.tentativeGames||[]} opponent={schedule.team} onClose={()=>setRequestWeek(null)} onSent={()=>{void load(schedule.team.id,schedule.selectedSeason);void refreshClaxSchedule(ownedTeam.id,schedule.selectedSeason).then(setOwnFetched).catch(()=>{});}}/>}
     <CollegeLacrosseBoxScoreModal gameId={boxScoreGameId} onClose={()=>setBoxScoreGameId(null)}/>
   </PageContainer>;
 };
