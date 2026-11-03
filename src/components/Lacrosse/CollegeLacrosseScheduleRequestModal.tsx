@@ -15,11 +15,13 @@ interface CollegeLacrosseScheduleRequestModalProps {
   team: LaxTeam;
   games: LaxScheduleGame[];
   tentativeGames: LaxTentativeGame[];
+  /** When set, the modal challenges this team directly instead of letting the user pick an opponent. */
+  opponent?: LaxTeam;
   onClose: () => void;
   onSent: () => void;
 }
 
-export const CollegeLacrosseScheduleRequestModal = ({ week, season, gameContext, team, games, tentativeGames, onClose, onSent }:CollegeLacrosseScheduleRequestModalProps) => {
+export const CollegeLacrosseScheduleRequestModal = ({ week, season, gameContext, team, games, tentativeGames, opponent, onClose, onSent }:CollegeLacrosseScheduleRequestModalProps) => {
   const [venue,setVenue]=useState<VenueChoice>("home");
   const [opponentId,setOpponentId]=useState<string>();
   const [availableTeams,setAvailableTeams]=useState<LaxTeam[]>([]);
@@ -30,10 +32,11 @@ export const CollegeLacrosseScheduleRequestModal = ({ week, season, gameContext,
   useEffect(()=>{
     if(week===null)return;
     let active=true;
-    setVenue("home");setOpponentId(undefined);setLoadingOpponents(true);setOpponentError("");setSendError("");
+    setVenue("home");setOpponentId(opponent?String(opponent.id):undefined);setLoadingOpponents(true);setOpponentError("");setSendError("");
     LacrosseService.getAvailableOpponents(team.id,season,week,gameContext).then((opponents)=>{if(active)setAvailableTeams(opponents.filter((candidate)=>candidate.id!==team.id));}).catch(()=>{if(active){setAvailableTeams([]);setOpponentError("Available opponents could not be loaded.");}}).finally(()=>{if(active)setLoadingOpponents(false);});
     return ()=>{active=false;};
-  },[gameContext,season,team.id,week]);
+  },[gameContext,opponent?.id,season,team.id,week]);
+  const opponentUnavailable=Boolean(opponent)&&!loadingOpponents&&!opponentError&&!availableTeams.some((candidate)=>candidate.id===opponent?.id);
   const opponentOptions=useMemo(()=>availableTeams.map((candidate)=>({value:String(candidate.id),label:`${candidate.name} | ${candidate.abbreviation}`})),[availableTeams]);
   const opponentSelectStyles:StylesConfig<SelectOption,false>={
     control:(provided,state)=>({...provided,width:"100%",maxWidth:"none",backgroundColor:state.isFocused?"#2d3748":"#1a202c",borderColor:state.isFocused?"#4A90E2":"#4A5568",boxShadow:state.isFocused?"0 0 0 1px #4A90E2":"none"}),
@@ -52,8 +55,8 @@ export const CollegeLacrosseScheduleRequestModal = ({ week, season, gameContext,
   return <ProfileTeamCardModal
     isOpen={week!==null}
     onClose={onClose}
-    title={`Request a ${gameContext==="preseason"?"Preseason ":""}Week ${week || ""} Game`}
-    actions={<><Button variant="secondary" disabled={sending} onClick={onClose}>Cancel</Button><Button disabled={!opponentId||sending} onClick={()=>void send()}>{sending?"Sending...":"Send"}</Button></>}
+    title={opponent?`Challenge ${opponent.name} · ${gameContext==="preseason"?"Preseason ":""}Week ${week || ""}`:`Request a ${gameContext==="preseason"?"Preseason ":""}Week ${week || ""} Game`}
+    actions={<><Button variant="secondary" disabled={sending} onClick={onClose}>Cancel</Button><Button disabled={!opponentId||sending||loadingOpponents||opponentUnavailable} onClick={()=>void send()}>{sending?"Sending...":"Send"}</Button></>}
   >
     <div className="space-y-6">
       <div className="text-center text-lg font-bold">{team.name}</div>
@@ -61,7 +64,7 @@ export const CollegeLacrosseScheduleRequestModal = ({ week, season, gameContext,
         <button type="button" onClick={()=>setVenue("home")} className={`min-w-20 rounded border px-5 py-2 text-lg font-bold ${venue==="home"?"border-green-400 bg-green-600 text-white":"border-slate-500 bg-transparent"}`} aria-pressed={venue==="home"}>vs</button>
         <button type="button" onClick={()=>setVenue("away")} className={`min-w-20 rounded border px-5 py-2 text-lg font-bold ${venue==="away"?"border-blue-400 bg-blue-600 text-white":"border-slate-500 bg-transparent"}`} aria-pressed={venue==="away"}>@</button>
       </div>
-      <div className="w-full"><label className="mb-2 block text-center font-semibold">Opponent</label><SelectDropdown isSearchable isLoading={loadingOpponents} isDisabled={loadingOpponents} styles={opponentSelectStyles} options={opponentOptions} value={opponentOptions.find((option)=>option.value===opponentId)} placeholder={loadingOpponents?"Loading available teams...":"Search available teams..."} noOptionsMessage={()=>"No available opponents"} onChange={(option)=>setOpponentId(option?.value)} />{opponentError&&<div className="mt-2 text-center text-sm text-red-500">{opponentError}</div>}</div>
+      {opponent?<div className="w-full"><label className="mb-2 block text-center font-semibold">Opponent</label><div className="rounded border border-slate-500 px-3 py-2 text-center font-semibold">{opponent.name}{opponent.abbreviation?` | ${opponent.abbreviation}`:""}</div>{loadingOpponents&&<div className="mt-2 text-center text-sm opacity-70">Checking availability...</div>}{opponentError&&<div className="mt-2 text-center text-sm text-red-500">{opponentError}</div>}{opponentUnavailable&&<div className="mt-2 text-center text-sm text-red-500">{opponent.name} is not available for a Week {week} game (same conference, or a game is already scheduled).</div>}</div>:<div className="w-full"><label className="mb-2 block text-center font-semibold">Opponent</label><SelectDropdown isSearchable isLoading={loadingOpponents} isDisabled={loadingOpponents} styles={opponentSelectStyles} options={opponentOptions} value={opponentOptions.find((option)=>option.value===opponentId)} placeholder={loadingOpponents?"Loading available teams...":"Search available teams..."} noOptionsMessage={()=>"No available opponents"} onChange={(option)=>setOpponentId(option?.value)} />{opponentError&&<div className="mt-2 text-center text-sm text-red-500">{opponentError}</div>}</div>}
       {sendError&&<div className="text-center text-sm text-red-500">{sendError}</div>}
       <div className="grid grid-cols-2 gap-4 text-center">
         <div className="rounded border border-slate-500 p-3"><strong className="block text-lg">Home Games</strong><span>{confirmedHome} confirmed</span><span className="block opacity-60">{pendingHome} pending</span></div>
