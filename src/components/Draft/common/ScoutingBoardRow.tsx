@@ -399,17 +399,22 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
           </div>
         </div>
         <div className="md:col-span-2 space-y-3 md:space-y-2 md:items-center md:justify-center md:flex md:flex-col">
-          <Text variant="xs" classes="text-gray-300 text-center md:text-center">
+          <Text
+            variant="small"
+            classes="text-gray-300 text-center md:text-center"
+          >
             Attributes
           </Text>
           <div className="flex flex-col md:flex-row gap-3">
-            <div className="flex flex-row gap-2 justify-center md:justify-start">
+            <div
+              className={`flex flex-row gap-2 justify-center md:justify-start ${scoutableAttributes.length > 6 ? "items-center" : ""}`}
+            >
               <div className="text-center">
                 <Text variant="xs" classes="text-gray-300 text-[10px]">
                   Overall
                 </Text>
-                <div className="min-w-12.5 min-h-12.5 max-w-20 max-h-20 bg-gray-700 border border-gray-600 rounded-sm flex items-center justify-center">
-                  <Text variant="xs" classes="text-green-400 font-bold text-sm">
+                <div className="min-w-15 min-h-15 max-w-15 max-h-15 bg-gray-700 border border-gray-600 rounded-sm flex items-center justify-center">
+                  <Text variant="small" classes="text-green-400 font-bold">
                     {getOverallGrade(player, league)}
                   </Text>
                 </div>
@@ -441,7 +446,7 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
             </div>
             <div className="flex-1">
               <div
-                className={`grid grid-cols-4 gap-2 ${league !== SimNBA ? "md:grid-cols-8" : "md:grid-cols-6"} md:gap-1`}
+                className={`grid grid-cols-4 gap-1 sm:grid-cols-6 space-x-2 space-y-2`}
               >
                 {scoutableAttributes.map((attributeName, idx) => {
                   return renderScoutingAttributeBox(
