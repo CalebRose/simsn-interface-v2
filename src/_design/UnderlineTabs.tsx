@@ -18,7 +18,9 @@ export function UnderlineTabs<K extends string>({
     <div
       role="tablist"
       className={`grid border-b border-(--border-primary) ${classes}`}
-      style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+      style={{
+        gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
+      }}
     >
       {tabs.map(([key, label]) => (
         <button
@@ -27,7 +29,7 @@ export function UnderlineTabs<K extends string>({
           role="tab"
           aria-selected={value === key}
           onClick={() => onChange(key)}
-          className={`min-h-11 border-b-2 text-sm font-medium transition-colors ${
+          className={`min-h-11 border-b-2 mb-2 text-sm font-medium transition-colors ${
             value === key
               ? "border-(--accent-primary) text-(--text-primary)"
               : "border-transparent text-(--text-muted)"

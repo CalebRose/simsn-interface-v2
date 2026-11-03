@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
-import { FilterChip } from "../../_design/FilterChip";
 import { UnderlineTabs } from "../../_design/UnderlineTabs";
 import { ForumCard } from "./components/ForumCard";
 import { ForumEditorialSection } from "./components/ForumEditorialSection";
@@ -177,6 +176,22 @@ export const ForumsHomePage: React.FC = () => {
       </PageContainer>
     );
 
+  const leagueSelect = (
+    <select
+      aria-label="Filter by league"
+      value={activeLeague}
+      onChange={(e) => setLeagueFilter(e.target.value)}
+      className="min-h-11 w-full rounded-md border border-(--border-primary) bg-(--bg-secondary) px-3 text-base text-(--text-primary) sm:min-h-9 sm:w-auto sm:text-sm"
+    >
+      <option value="all">All leagues</option>
+      {leagues.map((key) => (
+        <option key={key} value={key}>
+          {LEAGUE_LABELS[key]}
+        </option>
+      ))}
+    </select>
+  );
+
   const subscriberCanPost =
     forumRole === "subscriber"
       ? forums.some((f) => canSubscriberPostInForum(f))
@@ -192,21 +207,7 @@ export const ForumsHomePage: React.FC = () => {
           <Text variant="h4">Forums</Text>
 
           <div className="flex items-center gap-2 space-x-1">
-            {/* League filter chips */}
-            {leagues.length > 0 &&
-              ["all", ...leagues].map((key) => {
-                const active = key === activeLeague;
-                return (
-                  <FilterChip
-                    key={key}
-                    size="md"
-                    active={active}
-                    onClick={() => setLeagueFilter(key)}
-                  >
-                    {key === "all" ? "All" : LEAGUE_LABELS[key]}
-                  </FilterChip>
-                );
-              })}
+            {!isMobile && leagues.length > 0 && leagueSelect}
             <Button
               variant="secondaryOutline"
               size="sm"
@@ -231,6 +232,9 @@ export const ForumsHomePage: React.FC = () => {
             )}
           </div>
         </div>
+        {isMobile && leagues.length > 0 && (
+          <div className="mb-3">{leagueSelect}</div>
+        )}
 
         <ForumEditorialSection
           items={filteredEditorial}
@@ -245,7 +249,7 @@ export const ForumsHomePage: React.FC = () => {
         ) : isMobile ? (
           <section className="flex w-full flex-col text-left">
             <UnderlineTabs
-              classes="mb-3"
+              classes="mb-3 space-x-2"
               tabs={
                 [
                   ["categories", "Categories"],

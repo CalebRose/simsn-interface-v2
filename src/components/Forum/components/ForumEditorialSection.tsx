@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import routes from "../../../_constants/routes";
 import { ForumBorder } from "../../../_design/Borders";
@@ -141,12 +141,19 @@ export const ForumEditorialSection: React.FC<ForumEditorialSectionProps> = ({
   isLoading = false,
 }) => {
   const visibleItems = items.slice(0, 3);
-  const [mobileIndex, setMobileIndex] = useState(0);
+  // Track the active item by thread id so live re-ordering of the list
+  // can't shift the carousel to a different item.
+  const [activeId, setActiveId] = useState<string | null>(null);
   const touchStartX = useRef<number | null>(null);
-
-  useEffect(() => {
-    setMobileIndex(0);
-  }, [visibleItems.length]);
+  const foundIndex = visibleItems.findIndex((i) => i.thread.id === activeId);
+  const mobileIndex = foundIndex >= 0 ? foundIndex : 0;
+  const goTo = (target: number) => {
+    const count = visibleItems.length;
+    if (count === 0) return;
+    setActiveId(
+      visibleItems[Math.min(Math.max(target, 0), count - 1)].thread.id,
+    );
+  };
 
   if (!isLoading && items.length === 0) return null;
 
@@ -166,11 +173,7 @@ export const ForumEditorialSection: React.FC<ForumEditorialSectionProps> = ({
               const dx = e.changedTouches[0].clientX - touchStartX.current;
               touchStartX.current = null;
               if (Math.abs(dx) < 50 || visibleItems.length < 2) return;
-              setMobileIndex((prev) =>
-                dx < 0
-                  ? (prev + 1) % visibleItems.length
-                  : (prev - 1 + visibleItems.length) % visibleItems.length,
-              );
+              goTo(mobileIndex + (dx < 0 ? 1 : -1));
             }}
           >
             <EditorialCard
@@ -183,12 +186,9 @@ export const ForumEditorialSection: React.FC<ForumEditorialSectionProps> = ({
               <div className="flex items-center justify-between gap-3">
                 <button
                   type="button"
-                  onClick={() =>
-                    setMobileIndex((prev) =>
-                      prev === 0 ? visibleItems.length - 1 : prev - 1,
-                    )
-                  }
-                  className="rounded-md border border-(--border-secondary) bg-(--bg-secondary) px-3 py-2 min-h-11 text-sm text-(--text-primary) transition-opacity hover:opacity-90"
+                  onClick={() => goTo(mobileIndex - 1)}
+                  disabled={mobileIndex === 0}
+                  className="rounded-md border border-(--border-secondary) bg-(--bg-secondary) px-3 py-2 min-h-11 text-sm text-(--text-primary) transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Prev
                 </button>
@@ -198,13 +198,15 @@ export const ForumEditorialSection: React.FC<ForumEditorialSectionProps> = ({
                     <button
                       key={item.thread.id}
                       type="button"
-                      onClick={() => setMobileIndex(index)}
+                      onClick={() => goTo(index)}
                       aria-label={`Go to editorial item ${index + 1}`}
-                      className="flex h-11 w-6 items-center justify-center"
+                      className="flex h-11 w-6 items-center justify-center bg-transparent! border-0! p-0!"
                     >
                       <span
                         className={`h-2 w-2 rounded-full transition-opacity ${
-                          index === mobileIndex ? "bg-white" : "bg-white/30"
+                          index === mobileIndex
+                            ? "bg-(--text-primary)"
+                            : "bg-(--text-primary)/30"
                         }`}
                       />
                     </button>
@@ -213,10 +215,9 @@ export const ForumEditorialSection: React.FC<ForumEditorialSectionProps> = ({
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setMobileIndex((prev) => (prev + 1) % visibleItems.length)
-                  }
-                  className="rounded-md border border-(--border-secondary) bg-(--bg-secondary) px-3 py-2 min-h-11 text-sm text-(--text-primary) transition-opacity hover:opacity-90"
+                  onClick={() => goTo(mobileIndex + 1)}
+                  disabled={mobileIndex === visibleItems.length - 1}
+                  className="rounded-md border border-(--border-secondary) bg-(--bg-secondary) px-3 py-2 min-h-11 text-sm text-(--text-primary) transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Next
                 </button>
