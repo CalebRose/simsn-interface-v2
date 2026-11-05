@@ -34,6 +34,7 @@ import { useLeagueStore } from "../../context/LeagueContext";
 import { useAdminPage } from "../../context/AdminPageContext";
 import { AdminTeamsTab } from "./AdminTeamsTab";
 import { AdminRequestsTab } from "./AdminRequestsTab";
+import { AdminStatesTab } from "./AdminStatesTab";
 import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
 import { AdminTradesTab } from "./AdminTradesTab";
@@ -391,6 +392,7 @@ export const AdminPage = () => {
             <div className="flex w-full max-h-[calc(65vh-10rem)] overflow-y-auto">
               {selectedTab === Requests && <AdminRequestsTab />}
               {selectedTab === Teams && <AdminTeamsTab />}
+              {selectedTab === GameState && <AdminStatesTab />}
               {selectedTab === Trades && <AdminTradesTab />}
             </div>
           </Border>

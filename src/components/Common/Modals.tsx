@@ -59,7 +59,7 @@ import { useSimBBAStore } from "../../context/SimBBAContext";
 import { GetRecruitingTendency } from "../../_utility/getRecruitingTendency";
 import { getDisplayStatus } from "../../_helper/recruitingHelper";
 import { SelectDropdown } from "../../_design/Select";
-import { Tab, TabGroup } from "../../_design/Tabs";
+import { Tab, TabGroup, TabGrid } from "../../_design/Tabs";
 import { getPlayerOverall } from "../Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
 import {
   BasketballPlayerStatsModalView,
@@ -947,7 +947,7 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
         )}
       </div>
       <div className="flex flex-col mt-4 pt-4">
-        <TabGroup classes="mb-3">
+        <TabGrid columns={3} classes="mb-3">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -963,7 +963,7 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
             {priorityAttributes.map((attr, idx) => (
@@ -1927,9 +1927,15 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
             </Text>
           </div>
         )}
-        {(player.Position === "QB" || (player.Position === "ATH" && (player.Archetype === "Field General" || player.Archetype === "Triple-Threat" || player.Archetype === "Soccer Player"))) && (
+        {(player.Position === "QB" ||
+          (player.Position === "ATH" &&
+            (player.Archetype === "Field General" ||
+              player.Archetype === "Triple-Threat" ||
+              player.Archetype === "Soccer Player"))) && (
           <div className="flex flex-col">
-            <Text classes="font-semibold mb-1 whitespace-nowrap">Shotgun Rating</Text>
+            <Text classes="font-semibold mb-1 whitespace-nowrap">
+              Shotgun Rating
+            </Text>
             <Text variant="xs" classes="whitespace-nowrap pt-0.5">
               {getShotgunRating(player)}
             </Text>
