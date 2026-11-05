@@ -23,7 +23,7 @@ export const WarRoomDraftPick: React.FC<WarRoomDraftPickProps> = ({
 }) => {
   const pickNumber = useMemo(() => {
     if (league === SimPHL) {
-      return (pick.DraftRound - 1) * 24 + pick.DraftNumber;
+      return (pick.DraftRound - 1) * 28 + pick.DraftNumber;
     }
     return (pick.DraftRound - 1) * 32 + pick.DraftNumber;
   }, [league, pick]);
@@ -107,7 +107,7 @@ export const DraftPickCard: React.FC<{
   draftablePlayerMap,
   handlePlayerModal,
 }) => {
-  const picksInRound = league === SimPHL ? 24 : 32;
+  const picksInRound = league === SimPHL ? 28 : 32;
   const pickNumber = (pick.DraftRound - 1) * picksInRound + pick.DraftNumber;
   const currentPickNumber = currentPick
     ? (currentPick.DraftRound - 1) * picksInRound + currentPick.DraftNumber
@@ -184,6 +184,7 @@ export const DraftPickCard: React.FC<{
 
   const draftNumber = useMemo(() => {
     if (view === "") return pick.DraftNumber;
+    if (view === "bigboard") return index + 1;
     if (league === SimPHL) {
       return (pick.DraftRound - 1) * picksInRound + pick.DraftNumber;
     }
@@ -191,7 +192,7 @@ export const DraftPickCard: React.FC<{
       return (pick.DraftRound - 1) * picksInRound + pick.DraftNumber;
     }
     return (pick.DraftRound - 1) * picksInRound + pick.DraftNumber;
-  }, [view, pick, league]);
+  }, [view, index, pick, league, picksInRound]);
 
   return (
     <div

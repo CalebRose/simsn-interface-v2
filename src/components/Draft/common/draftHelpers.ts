@@ -1,4 +1,4 @@
-import { DraftLeague, Draftee, isNFLDraftee, isNFLLeague } from "./types";
+import { DraftLeague, Draftee, isNFLDraftee, isNFLLeague, isPHLLeague } from "./types";
 import {
   getScoutableAttributes as getNFLScoutableAttributes,
   getAttributeFieldName as getNFLAttributeFieldName,
@@ -188,7 +188,8 @@ export const getTimeForPick = (
     if (pickNumber <= 130) return 180;
     return 120;
   }
-  const round = Math.ceil(pickNumber / (picksPerRound || 24));
+  const defaultPicks = isPHLLeague(league) ? 28 : 32;
+  const round = Math.ceil(pickNumber / (picksPerRound || defaultPicks));
   if (round === 1) return 300;
   if (round <= 4) return 180;
   return 120;
