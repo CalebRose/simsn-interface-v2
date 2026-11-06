@@ -17,7 +17,7 @@ import { HeightToFeetAndInches } from "../../_utility/getHeightByFeetAndInches";
 import PlayerPicture from "../../_utility/usePlayerFaces";
 import { Logo } from "../../_design/Logo";
 import { Text } from "../../_design/Typography";
-import { Tab, TabGroup } from "../../_design/Tabs";
+import { Tab, TabGrid } from "../../_design/Tabs";
 import {
   FootballPlayerStatsModalView,
   HockeyPlayerStatsModalView,
@@ -171,7 +171,7 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
         )}
       </div>
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <TabGroup classes="mb-3 w-full">
+        <TabGrid columns={2} classes="mb-3 w-full">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -182,7 +182,7 @@ export const PHLDrafteeInfoModalBody: FC<PHLDrafteeInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
 
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
@@ -465,7 +465,7 @@ export const NFLDrafteeInfoModalBody: FC<NFLDrafteeInfoModalBodyProps> = ({
         )}
       </div>
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <TabGroup classes="mb-3 w-full">
+        <TabGrid columns={2} classes="mb-3 w-full">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -476,7 +476,7 @@ export const NFLDrafteeInfoModalBody: FC<NFLDrafteeInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
 
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
@@ -622,7 +622,7 @@ export const NBADrafteeInfoModalBody: FC<NBADrafteeInfoModalBodyProps> = ({
         )}
       </div>
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <TabGroup classes="mb-3 w-full">
+        <TabGrid columns={2} classes="mb-3 w-full">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -633,7 +633,7 @@ export const NBADrafteeInfoModalBody: FC<NBADrafteeInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
 
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
