@@ -19,6 +19,7 @@ import { UserProfileCard } from "../../Common/UserProfileCard";
 
 interface PostCardProps {
   post: Post;
+  replyToUsername?: string;
   currentUserId: string | null;
   permissions: ForumPermissions;
   isThreadLocked: boolean;
@@ -45,6 +46,7 @@ function formatTimestamp(ts: { seconds: number } | null | undefined): string {
 
 export const PostCard: React.FC<PostCardProps> = ({
   post,
+  replyToUsername,
   currentUserId,
   permissions,
   isThreadLocked,
@@ -135,7 +137,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                     />
                     {post.replyToPostId && (
                       <span className="text-xs text-(--text-muted)">
-                        ↩ in reply
+                        ↩ in reply{replyToUsername ? ` to ${replyToUsername}` : ""}
                       </span>
                     )}
                   </div>
@@ -185,7 +187,7 @@ export const PostCard: React.FC<PostCardProps> = ({
                     />
                     {post.replyToPostId && (
                       <span className="text-xs text-(--text-muted)">
-                        ↩ in reply
+                        ↩ in reply{replyToUsername ? ` to ${replyToUsername}` : ""}
                       </span>
                     )}
                   </div>
