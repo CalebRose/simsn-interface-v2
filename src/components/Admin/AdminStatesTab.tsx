@@ -227,9 +227,7 @@ export const AdminStatesTab = () => {
             <SelectDropdown
               options={phaseOptions}
               value={selectedPhase ?? null}
-              onChange={(option) =>
-                option && changePhase(Number(option.value))
-              }
+              onChange={(option) => option && changePhase(Number(option.value))}
             />
           </div>
           <Input
@@ -246,9 +244,12 @@ export const AdminStatesTab = () => {
 
       <div className="flex flex-col gap-y-3">
         <Text variant="h6">Toggles</Text>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
           {toggleDefs.map(({ key, label }) => (
-            <div key={key} className="flex items-center justify-between gap-x-4">
+            <div
+              key={key}
+              className="              flex items-center justify-start gap-x-3"
+            >
               <Text variant="body-small">{label}</Text>
               <ToggleSwitch
                 checked={draft.toggles[key]}
