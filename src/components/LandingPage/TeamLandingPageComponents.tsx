@@ -8,6 +8,7 @@ import {
   RevealFBResults,
 } from "../../_helper/teamHelper";
 import { StandingsTable } from "../Common/Tables";
+import { ChatDrawer } from "../PublicChat/ChatDrawer";
 import { SectionCards } from "../../_design/SectionCards";
 import { Button, ButtonGrid, ButtonGroup } from "../../_design/Buttons";
 import {
@@ -2479,6 +2480,7 @@ export const TeamInjuries = ({
   isLoading: isLoading,
   league,
 }: TeamInjuriesProps) => {
+  console.log({ teamInjuries });
   return (
     <SectionCards
       team={team}
@@ -2842,6 +2844,42 @@ export const ForumPortal = ({
           No active threads for this league. Check back later!
         </Text>
       )}
+    </SectionCards>
+  );
+};
+
+interface ChatPortalProps {
+  team: any;
+  backgroundColor: string;
+  headerColor: string;
+  borderColor: string;
+  textColorClass: string;
+  darkerBackgroundColor: string;
+  league: League;
+}
+export const ChatPortal = ({
+  team,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  textColorClass,
+  darkerBackgroundColor,
+  league,
+}: ChatPortalProps) => {
+  return (
+    <SectionCards
+      team={team}
+      header="Chat"
+      classes={`${textColorClass} h-full`}
+      backgroundColor={backgroundColor}
+      headerColor={headerColor}
+      borderColor={borderColor}
+      textColorClass={textColorClass}
+      darkerBackgroundColor={darkerBackgroundColor}
+    >
+      <div className="h-full max-h-130 pt-1">
+        <ChatDrawer isOpen variant="embedded" />
+      </div>
     </SectionCards>
   );
 };
