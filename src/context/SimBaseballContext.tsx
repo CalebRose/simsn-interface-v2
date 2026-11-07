@@ -32,8 +32,12 @@ import {
 import { useEffect, useState } from "react";
 import { useWebSockets } from "../_hooks/useWebsockets";
 import { baseball_ws } from "../_constants/urls";
-import { SimMLB } from "../_constants/constants";
-import { normalizePlayer } from "../_utility/baseballHelpers";
+import { SimCollegeBaseball, SimMLB } from "../_constants/constants";
+import {
+  getPrimaryBaseballTeam,
+  normalizePlayer,
+} from "../_utility/baseballHelpers";
+import { getLogo } from "../_utility/getLogo";
 import { BootstrapSpecialEvent } from "../models/baseball/baseballEventModels";
 
 // ═══════════════════════════════════════════════
@@ -135,6 +139,9 @@ interface SimBaseballContextProps {
   collegeRoster?: BaseballRosters | null;
   isCollegeBaseballUser: boolean;
   isMlbUser: boolean;
+  // College baseball logos are keyed by team_id, not org_id — resolved here
+  // because AuthContext only knows the user's CollegeBaseballOrgID.
+  collegeBaseballLogo: string;
   isCollegeOrgLoading?: boolean;
   isMlbOrgLoading?: boolean;
   baseball_Timestamp: BaseballTimestamp | null;
@@ -177,6 +184,7 @@ const defaultContext: SimBaseballContextProps = {
   collegeRoster: null,
   isCollegeBaseballUser: false,
   isMlbUser: false,
+  collegeBaseballLogo: "",
   isCollegeOrgLoading: false,
   isMlbOrgLoading: false,
   baseball_Timestamp: null,
@@ -297,6 +305,13 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
 
   const isMlbUser = !!mlbOrganization;
   const isCollegeBaseballUser = !!collegeOrganization;
+
+  const collegeBaseballLogo = useMemo(() => {
+    if (!collegeOrganization) return "";
+    const team = getPrimaryBaseballTeam(collegeOrganization);
+    if (!team) return "";
+    return getLogo(SimCollegeBaseball, team.team_id, currentUser?.IsRetro);
+  }, [collegeOrganization, currentUser?.IsRetro]);
 
   const mlbRoster = useMemo(() => {
     if (!mlbOrganization || !rosters || rosters.length === 0) return null;
@@ -745,6 +760,7 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
         collegeRoster,
         isCollegeBaseballUser,
         isMlbUser,
+        collegeBaseballLogo,
         isCollegeOrgLoading: isLoading,
         isMlbOrgLoading: isLoading,
         baseball_Timestamp,

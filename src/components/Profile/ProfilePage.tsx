@@ -485,7 +485,7 @@ export const ProfilePage = () => {
     isCHLUser,
     isPHLUser,
     isSubscriber,
-    defaultLogo,
+    defaultLogo: authDefaultLogo,
   } = useAuthStore();
   const { userMap, userListOptions, getOrFetchAchievements, loadAllUsers } =
     useForumStore();
@@ -497,9 +497,15 @@ export const ProfilePage = () => {
   const { cfbTeam, nflTeam, cfbTeamMap, proTeamMap } = useSimFBAStore();
   const { cbbTeam, nbaTeam, cbbTeamMap, nbaTeamMap } = useSimBBAStore();
   const { chlTeam, phlTeam, chlTeamMap, phlTeamMap } = useSimHCKStore();
-  const { collegeOrganization, mlbOrganization, organizationMap } =
-    useSimBaseballStore();
+  const {
+    collegeOrganization,
+    mlbOrganization,
+    organizationMap,
+    collegeBaseballLogo,
+  } = useSimBaseballStore();
   const { claxTeam, refreshClaxTeam } = useSimLAXStore();
+  // AuthContext leaves defaultLogo empty for SimCBL (needs team_id, not org_id)
+  const defaultLogo = authDefaultLogo || collegeBaseballLogo;
 
   const isOwnProfile =
     !paramUsername || paramUsername === currentUser?.username;

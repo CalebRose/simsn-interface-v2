@@ -685,6 +685,16 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
     return m;
   }, [allTeams]);
 
+  // Commitments only carry org_id, but college logos/names are keyed by
+  // team_id. College orgs have a single team (team_level 3).
+  const collegeTeamIdByOrgId = useMemo(() => {
+    const m = new Map<number, number>();
+    allTeams.forEach((t) => {
+      if (t.org_id != null && t.team_level === 3) m.set(t.org_id, t.team_id);
+    });
+    return m;
+  }, [allTeams]);
+
   const th = "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap";
   const td = "px-2 py-1";
 
@@ -1495,7 +1505,10 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                         </tr>
                       </thead>
                       <tbody>
-                        {sortedCommitments.map((c) => (
+                        {sortedCommitments.map((c) => {
+                          const committedTeamId =
+                            collegeTeamIdByOrgId.get(c.org_id) ?? 0;
+                          return (
                           <tr
                             key={c.player_id}
                             className="border-b border-gray-800 hover:bg-gray-700/30"
@@ -1508,11 +1521,14 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                                 <img
                                   src={getLogo(
                                     SimCollegeBaseball,
-                                    c.org_id,
+                                    committedTeamId,
                                     false,
                                   )}
                                   alt={c.org_abbrev}
-                                  title={teamNameMap.get(c.org_id) ?? c.org_abbrev}
+                                  title={
+                                    teamNameMap.get(committedTeamId) ??
+                                    c.org_abbrev
+                                  }
                                   className="w-5 h-5 object-contain"
                                 />
                                 {c.org_abbrev}
@@ -1562,7 +1578,8 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                             <td className={td}>{c.week_committed}</td>
                             <td className={td}>{c.points_total}</td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
