@@ -109,7 +109,7 @@ export const usePHLDraft = () => {
     WarRoomCollectionName: "phlwarrooms",
     UserWarRoomDocName: `${phlTeam?.ID ?? ""}`,
     league: SimPHL,
-    currentSeasonID: hck_Timestamp?.SeasonID,
+    currentSeasonYear: hck_Timestamp?.Season,
     firestoreDraftPicksMap: isDraftStateLoading ? undefined : allDraftPicks,
   });
 
