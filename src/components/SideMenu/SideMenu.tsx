@@ -44,14 +44,13 @@ export const SideMenu = ({}) => {
     isNBAUser,
     isNFLUser,
     isPHLUser,
-    defaultLogo: logo,
+    defaultLogo: authDefaultLogo,
     cfbLogo,
     nflLogo,
     cbbLogo,
     nbaLogo,
     chlLogo,
     phlLogo,
-    collegeBaseballLogo,
     mlbLogo,
   } = useAuthStore();
   const {
@@ -59,7 +58,10 @@ export const SideMenu = ({}) => {
     isMlbUser,
     collegeOrganization,
     mlbOrganization,
+    collegeBaseballLogo,
   } = useSimBaseballStore();
+  // AuthContext leaves defaultLogo empty for SimCBL (needs team_id, not org_id)
+  const logo = authDefaultLogo || collegeBaseballLogo;
   const { isOpen, isDropdownOpen, toggleMenu, toggleDropdown, dropdowns } =
     useSideMenu();
   const {
