@@ -12,6 +12,7 @@ import {
   ProfessionalPlayer,
   TradeProposal,
 } from "../../../models/hockeyModels";
+import { DraftPick as NBADraftPick } from "../../../models/basketballModels";
 import { League, SimNFL } from "../../../_constants/constants";
 import { useFirestore, firestore } from "../../../firebase/firebase";
 import { TradeService } from "../../../_services/tradeService";
@@ -20,7 +21,7 @@ import { TradeService } from "../../../_services/tradeService";
 
 export type AnyTradeProposal = NFLTradeProposal | TradeProposal;
 type AnyPlayer = NFLPlayer | ProfessionalPlayer;
-type AnyDraftPick = NFLDraftPick | DraftPick;
+type AnyDraftPick = NFLDraftPick | DraftPick | NBADraftPick;
 
 export interface WarRoomDoc {
   id: string;
@@ -55,7 +56,9 @@ export interface DraftTradeStateProps {
    * The round-keyed Firestore draft-state pick map (allDraftPicks from
    * useDraftState). Contains only current-season picks with up-to-date TeamIDs.
    */
-  firestoreDraftPicksMap?: Record<number, AnyDraftPick[]>;
+  firestoreDraftPicksMap?: Readonly<
+    Record<number, readonly AnyDraftPick[]>
+  >;
 }
 
 // ----- Helpers --------------------------------------------------------------

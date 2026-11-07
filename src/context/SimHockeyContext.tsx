@@ -282,7 +282,7 @@ interface SimHCKContextProps {
   phlAllDraftPicks: DraftPick[];
   arenas: Arena[];
   arenaMap: Record<number, Arena>;
-  getBootstrapDraftData: () => Promise<void>;
+  getBootstrapDraftData: () => Promise<DraftPick[]>;
   getBootstrapScheduleData: () => Promise<void>;
   getBootstrapLineupData: () => Promise<void>;
   addPlayerToScoutBoard: (dto: any, playerData?: any) => Promise<void>;
@@ -448,7 +448,7 @@ const defaultContext: SimHCKContextProps = {
   phlAllDraftPicks: [],
   arenas: [],
   arenaMap: {},
-  getBootstrapDraftData: async () => {},
+  getBootstrapDraftData: async () => [],
   getBootstrapStatsData: async () => {},
   getBootstrapScheduleData: async () => {},
   getBootstrapLineupData: async () => {},
@@ -2237,13 +2237,13 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const getBootstrapDraftData = useCallback(async () => {
+  const getBootstrapDraftData = useCallback(async (): Promise<DraftPick[]> => {
     let phlID = 0;
     if (currentUser && currentUser.PHLTeamID) {
       phlID = currentUser.PHLTeamID;
     }
     if (phlID === 0) {
-      return;
+      return [];
     }
     try {
       const res = await DraftService.GetPHLDraftPageData(phlID);
@@ -2275,10 +2275,15 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
           );
           setPhlScoutProfiles(profiles);
         }
+
+        return Object.values(
+          res.DraftPicks as Record<number, DraftPick[]>,
+        ).flat();
       }
     } catch (error) {
       console.error("Failed to load draft data:", error);
     }
+    return [];
   }, [currentUser?.PHLTeamID]);
 
   const addPlayerToScoutBoard = useCallback(
@@ -2308,10 +2313,25 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       try {
         const res = await DraftService.CreatePHLScoutingProfile(dto);
         if (res) {
-          const newProfile = new ScoutingProfile(res);
-          setPhlScoutProfiles((prev) =>
-            prev.map((p) => (p.ID === tempId ? newProfile : p)),
-          );
+          const responseProfile =
+            typeof res === "object" && res !== null ? res : {};
+          const newProfile = new ScoutingProfile({
+            ...optimisticProfile,
+            ...responseProfile,
+            ID: responseProfile.ID ?? optimisticProfile.ID,
+            PlayerID: responseProfile.PlayerID ?? dto.PlayerID,
+            TeamID: responseProfile.TeamID ?? dto.TeamID,
+            ShowCount: responseProfile.ShowCount ?? 0,
+          });
+          if (newProfile.ID > 0) {
+            setPhlScoutProfiles((prev) =>
+              prev.map((p) => (p.ID === tempId ? newProfile : p)),
+            );
+          } else {
+            await getBootstrapDraftData();
+          }
+        } else {
+          await getBootstrapDraftData();
         }
       } catch (error) {
         console.error("Failed to add player to scouting board:", error);
@@ -2322,7 +2342,7 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         });
       }
     },
-    [enqueueSnackbar],
+    [enqueueSnackbar, getBootstrapDraftData],
   );
 
   const revealScoutingAttribute = useCallback(

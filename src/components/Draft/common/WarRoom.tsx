@@ -59,15 +59,15 @@ export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
         </Text>
         {canTrade && (
           <div className="grid grid-cols-1 xl:grid-cols-2 mb-4 gap-4">
-            <div className="flex">
-              <Text variant="body-small" className="mb-4">
+            <div className="flex items-center gap-[10px]">
+              <Text variant="body-small">
                 Propose Trade
               </Text>
               <Button onClick={handleOpenProposeTradeModal}>Propose</Button>
             </div>
 
-            <div className="flex">
-              <Text variant="body-small" className="mb-4">
+            <div className="flex items-center gap-[10px]">
+              <Text variant="body-small">
                 View Trades
               </Text>
               <Button onClick={handleOpenReceiveTradeModal}>View</Button>
