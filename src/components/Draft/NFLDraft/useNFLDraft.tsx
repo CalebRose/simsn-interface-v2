@@ -97,7 +97,7 @@ export const useNFLDraft = () => {
     WarRoomCollectionName: "nflwarrooms",
     UserWarRoomDocName: `${nflTeam?.TeamName} ${nflTeam?.Mascot}`,
     league: SimNFL,
-    currentSeasonID: cfb_Timestamp?.NFLSeasonID,
+    currentSeasonYear: cfb_Timestamp?.Season,
     firestoreDraftPicksMap: allDraftPicks,
   });
 

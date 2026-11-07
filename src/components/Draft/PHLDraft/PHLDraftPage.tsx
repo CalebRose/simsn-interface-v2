@@ -37,6 +37,7 @@ import { BigDraftBoard } from "../common/BigBoard";
 import { useModal } from "../../../_hooks/useModal";
 import ProposeDraftTradeModal from "../common/ProposeDraftTradeModal";
 import { ManageDraftTradesModal } from "../common/ManageDraftTradesModal";
+import { ProcessAcceptedTradesModal } from "../common/ProcessAcceptedTradesModal";
 import { getSecondsByRound } from "./utils/draftHelpers";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 
@@ -93,12 +94,10 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     userTeam,
     tradePartnerTeam,
     selectTradePartner,
-    teamOptions,
     userTradablePlayers,
     userTradablePicks,
     partnerTradablePlayers,
     partnerTradablePicks,
-    userTradeProposals,
     userWarRoomData,
     approvedRequests,
     proposeTrade,
@@ -227,7 +226,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
         teamOptions={phlTeamOptions}
         selectTradePartner={selectTradePartner}
         userTradablePlayers={userTradablePlayers as ProfessionalPlayer[]}
-        userTradablePicks={teamDraftPicks}
+        userTradablePicks={userTradablePicks as DraftPick[]}
         partnerTradablePlayers={partnerTradablePlayers as ProfessionalPlayer[]}
         partnerTradablePicks={partnerTradablePicks as DraftPick[]}
         proposeTrade={proposeTrade}
@@ -245,6 +244,14 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
         acceptTrade={acceptTrade}
         rejectTrade={rejectTrade}
         backgroundColor={backgroundColor}
+      />
+      <ProcessAcceptedTradesModal
+        isOpen={adminProposalsModal.isModalOpen}
+        onClose={adminProposalsModal.handleCloseModal}
+        league={SimPHL}
+        approvedRequests={approvedRequests}
+        processTrade={handleProcessTrade}
+        vetoTrade={vetoTrade}
       />
       {modalPlayer && (
         <ActionModal
@@ -379,6 +386,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   teamDraftPicks={teamDraftPicks as DraftPick[]}
                   selectedTeam={selectedTeam as PHLTeam | null}
                   draftablePlayerMap={draftablePlayerMap}
+                  canTrade={!!userTeam}
                   handleOpenProposeTradeModal={
                     proposeTradeModal.handleOpenModal
                   }
@@ -420,6 +428,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                     adminProposalsModal.handleOpenModal
                   }
                   approvedRequestsCount={approvedRequests?.length ?? 0}
+                  canTrade={isCommissioner}
                 />
               </>
             )}

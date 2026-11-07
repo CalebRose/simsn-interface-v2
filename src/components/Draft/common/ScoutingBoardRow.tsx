@@ -79,6 +79,8 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
     attributeName: string,
     index: number,
   ) => {
+    if (profile.ID <= 0) return;
+
     const cost = getScoutingCost(attributeName, league);
     const showProperty = getAttributeShowProperty(
       attributeName,
@@ -109,7 +111,7 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
     );
     const revealed = (profile as any)[showProperty];
     const cost = getScoutingCost(attributeName, league);
-    const canAfford = availablePoints >= cost;
+    const canAfford = profile.ID > 0 && availablePoints >= cost;
 
     return (
       <ScoutingAttributeBox
