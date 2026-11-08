@@ -57,7 +57,7 @@ export class DraftStateObj {
 
   // Helper method to update to next pick
   advanceToNextPick(league: League): void {
-    const defaultPicksPerRound = league === SimPHL ? 24 : 32;
+    const defaultPicksPerRound = league === SimPHL ? 28 : 32;
     // Use the actual pick count for this round when available so that
     // compensatory picks (rounds with >32 picks) are handled correctly.
     const picksInCurrentRound =

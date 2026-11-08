@@ -78,7 +78,7 @@ export const AwardsModal: FC<AwardsModalProps> = ({
 
   const awardsList = useMemo(() => {
     if (league === SimCFB) {
-      return postSeasonAwards[selectedAward] || [];
+      return postSeasonAwards?.[selectedAward] || [];
     }
     return [];
   }, [league, postSeasonAwards, selectedAward]);

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import { AuthService } from "../../_services/auth";
 import { useSimLAXStore } from "../../context/SimLAXContext";
+import { getLaxLogoUrl } from "../../_services/lacrosseService";
 import { getLogo } from "../../_utility/getLogo";
 import routes from "../../_constants/routes";
 import { useForumStore } from "../../context/ForumContext";
@@ -13,6 +14,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -42,14 +44,13 @@ export const SideMenu = ({}) => {
     isNBAUser,
     isNFLUser,
     isPHLUser,
-    defaultLogo: logo,
+    defaultLogo: authDefaultLogo,
     cfbLogo,
     nflLogo,
     cbbLogo,
     nbaLogo,
     chlLogo,
     phlLogo,
-    collegeBaseballLogo,
     mlbLogo,
   } = useAuthStore();
   const {
@@ -57,7 +58,10 @@ export const SideMenu = ({}) => {
     isMlbUser,
     collegeOrganization,
     mlbOrganization,
+    collegeBaseballLogo,
   } = useSimBaseballStore();
+  // AuthContext leaves defaultLogo empty for SimCBL (needs team_id, not org_id)
+  const logo = authDefaultLogo || collegeBaseballLogo;
   const { isOpen, isDropdownOpen, toggleMenu, toggleDropdown, dropdowns } =
     useSideMenu();
   const {
@@ -74,7 +78,7 @@ export const SideMenu = ({}) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { unreadCount: chatUnreadCount, hasMention: chatHasMention } =
     useChatUnread(currentUser?.id, isChatOpen);
-  const { laxAdminStatus } = useSimLAXStore();
+  const { laxAdminStatus, claxTeam } = useSimLAXStore();
   const isLaxAdmin = Boolean(laxAdminStatus?.isAdmin);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -134,6 +138,11 @@ export const SideMenu = ({}) => {
   const navigateToNews = () => navigate(routes.NEWS);
   const navigateToHelp = () => navigate(routes.HELP);
 
+  const clickToHelp = () => {
+    navigateToHelp();
+    toggleDropdown();
+  };
+
   return (
     <>
       {/* ✅ Top Navigation Bar */}
@@ -153,15 +162,15 @@ export const SideMenu = ({}) => {
             </button>
             <button
               onClick={() => navigate(routes.HOME)}
-              className="flex ml-2 mr-2 items-center"
+              className={`inline-flex ${isMobile ? "px-2 py-2" : ""} mx-2 items-center`}
             >
               <img
                 src={`${simLogos.SimSN_Icon}`}
-                className={`${isMobile ? "h-6 mr-2" : "h-8 mr-3"}`}
+                className={`${isMobile ? "h-6 mr-2" : "h-8 mr-3"} px-0`}
                 alt="SimSNLogo"
               />
               <span
-                className={`self-center text-${isMobile ? "sm" : "xl"} font-semibold sm:text-2xl ${textColor}`}
+                className={`self-center text-${isMobile ? "sm" : "xl"} font-semibold ${textColor}`}
               >
                 SimSN
               </span>
@@ -169,7 +178,7 @@ export const SideMenu = ({}) => {
           </div>
           {/* User Dropdown */}
           {currentUser && (
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               {/* Theme Toggle */}
               {isDesktop && <ThemeToggle />}
 
@@ -276,7 +285,7 @@ export const SideMenu = ({}) => {
                 aria-label="Chat"
                 aria-expanded={isChatOpen}
                 onClick={() => setIsChatOpen(true)}
-                className="relative rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 focus:outline-hidden dark:text-gray-400 dark:hover:bg-gray-700"
+                className={`relative rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 focus:outline-hidden dark:text-gray-400 dark:hover:bg-gray-700 ${chatUnreadCount > 0 ? "border-3 border-blue-400" : ""}`}
               >
                 <ChatIcon />
                 {chatUnreadCount > 0 &&
@@ -313,7 +322,7 @@ export const SideMenu = ({}) => {
                   className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
                 >
                   <img
-                    className="w-8 h-8 rounded-full"
+                    className="w-8 h-8 rounded-full object-contain"
                     src={logo}
                     alt="User Avatar"
                   />
@@ -338,6 +347,10 @@ export const SideMenu = ({}) => {
                           currentUser.username,
                         )}
                         click={toggleDropdown}
+                      />
+                      <NavDropdownItem
+                        click={clickToHelp}
+                        label="How to Play"
                       />
                       {isCommissioner && !isBanned && (
                         <NavDropdownItem
@@ -392,6 +405,11 @@ export const SideMenu = ({}) => {
               label="Forums"
               toggle={toggleMenu}
               click={() => navigate(routes.FORUMS)}
+            />
+            <SideMenuItem
+              click={navigateToHelp}
+              label="How to Play"
+              toggle={toggleMenu}
             />
             {isCFBUser && (
               <SideMenuItem
@@ -473,6 +491,16 @@ export const SideMenu = ({}) => {
                 isTop
               />
             )}
+            {claxTeam && (
+              <SideMenuItem
+                label={SimCLAX}
+                logo={getLaxLogoUrl(claxTeam.logoFileName) || simLogos.SimCLAX}
+                dropdown={dropdowns.SimCLAX}
+                league={SimCLAX}
+                toggle={toggleMenu}
+                isTop
+              />
+            )}
             <SideMenuItem
               click={navigateToAvailableTeams}
               label="Available Teams"
@@ -481,11 +509,6 @@ export const SideMenu = ({}) => {
             <SideMenuItem
               click={navigateToNews}
               label="News"
-              toggle={toggleMenu}
-            />
-            <SideMenuItem
-              click={navigateToHelp}
-              label="Help"
               toggle={toggleMenu}
             />
             <SideMenuItem

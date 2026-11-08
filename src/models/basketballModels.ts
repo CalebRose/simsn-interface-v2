@@ -911,6 +911,7 @@ export class NBAMatch {
   IsRevealed: boolean;
   MVP: number;
   AttendanceCount: number;
+  StreamChannel: string;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -960,6 +961,7 @@ export class NBAMatch {
     this.IsRevealed = source["IsRevealed"];
     this.MVP = source["MVP"];
     this.AttendanceCount = source["AttendanceCount"];
+    this.StreamChannel = source["StreamChannel"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1023,6 +1025,7 @@ export class Match {
   MVP: number;
   Country: string;
   AttendanceCount: number;
+  StreamChannel: string;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -1068,6 +1071,7 @@ export class Match {
     this.MVP = source["MVP"];
     this.Country = source["Country"];
     this.AttendanceCount = source["AttendanceCount"];
+    this.StreamChannel = source["StreamChannel"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1507,6 +1511,8 @@ export class NBAStandings {
   DivisionName: string;
   PostSeasonStatus: string;
   IsConferenceChampion: boolean;
+  TotalWinPercentage: number;
+  ConfWinPercentage: number;
   TotalWins: number;
   TotalLosses: number;
   ConferenceWins: number;
@@ -1515,6 +1521,7 @@ export class NBAStandings {
   RankedLosses: number;
   PointsFor: number;
   PointsAgainst: number;
+  PointsDifferential: number;
   Streak: number;
   HomeWins: number;
   AwayWins: number;
@@ -1551,6 +1558,9 @@ export class NBAStandings {
     this.HomeWins = source["HomeWins"];
     this.AwayWins = source["AwayWins"];
     this.Coach = source["Coach"];
+    this.ConfWinPercentage = source["ConfWinPercentage"];
+    this.PointsDifferential = source["PointsDifferential"];
+    this.TotalWinPercentage = source["TotalWinPercentage"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -1589,6 +1599,26 @@ export class CollegeStandings {
   Invitational: string;
   InvitationalChampion: boolean;
   Rank: number;
+  PreseasonRank: number;
+  ToucanRank: number;
+  KenPomRank: number;
+  KenPomRating: number;
+  RPIRank: number;
+  RPIRating: number;
+  SOS: number;
+  SOR: number;
+  Q1Wins: number;
+  Q2Wins: number;
+  Q3Wins: number;
+  Q4Wins: number;
+  Q1Losses: number;
+  Q2Losses: number;
+  Q3Losses: number;
+  Q4Losses: number;
+  QuadrantRating: number;
+  ConferenceStrengthAdj: number;
+  TotalWinPercentage: number;
+  ConfWinPercentage: number;
   TotalWins: number;
   TotalLosses: number;
   ConferenceWins: number;
@@ -1597,6 +1627,7 @@ export class CollegeStandings {
   RankedLosses: number;
   PointsFor: number;
   PointsAgainst: number;
+  PointsDifferential: number;
   Streak: number;
   HomeWins: number;
   AwayWins: number;
@@ -1621,6 +1652,26 @@ export class CollegeStandings {
     this.Invitational = source["Invitational"];
     this.InvitationalChampion = source["InvitationalChampion"];
     this.Rank = source["Rank"];
+    this.PreseasonRank = source["PreseasonRank"];
+    this.ToucanRank = source["ToucanRank"];
+    this.KenPomRank = source["KenPomRank"];
+    this.KenPomRating = source["KenPomRating"];
+    this.RPIRank = source["RPIRank"];
+    this.RPIRating = source["RPIRating"];
+    this.SOS = source["SOS"];
+    this.SOR = source["SOR"];
+    this.Q1Wins = source["Q1Wins"];
+    this.Q2Wins = source["Q2Wins"];
+    this.Q3Wins = source["Q3Wins"];
+    this.Q4Wins = source["Q4Wins"];
+    this.Q1Losses = source["Q1Losses"];
+    this.Q2Losses = source["Q2Losses"];
+    this.Q3Losses = source["Q3Losses"];
+    this.Q4Losses = source["Q4Losses"];
+    this.QuadrantRating = source["QuadrantRating"];
+    this.ConferenceStrengthAdj = source["ConferenceStrengthAdj"];
+    this.TotalWinPercentage = source["TotalWinPercentage"];
+    this.ConfWinPercentage = source["ConfWinPercentage"];
     this.TotalWins = source["TotalWins"];
     this.TotalLosses = source["TotalLosses"];
     this.ConferenceWins = source["ConferenceWins"];
@@ -1629,6 +1680,7 @@ export class CollegeStandings {
     this.RankedLosses = source["RankedLosses"];
     this.PointsFor = source["PointsFor"];
     this.PointsAgainst = source["PointsAgainst"];
+    this.PointsDifferential = source["PointsDifferential"];
     this.Streak = source["Streak"];
     this.HomeWins = source["HomeWins"];
     this.AwayWins = source["AwayWins"];
@@ -1654,6 +1706,7 @@ export class CollegeStandings {
   }
 }
 export class CollegePollOfficial {
+  [key: string]: any;
   ID: number;
   CreatedAt: Time;
   UpdatedAt: Time;
@@ -6559,16 +6612,19 @@ export class CollegeLineup {
   FSInsideProportion: number;
   FSMidProportion: number;
   FSThreeProportion: number;
+  FSShotVolume: number;
   SecondStringID: number;
   SSMinutes: number;
   SSInsideProportion: number;
   SSMidProportion: number;
   SSThreeProportion: number;
+  SSShotVolume: number;
   ThirdStringID: number;
   TSMinutes: number;
   TSInsideProportion: number;
   TSMidProportion: number;
   TSThreeProportion: number;
+  TSShotVolume: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -6583,16 +6639,19 @@ export class CollegeLineup {
     this.FSInsideProportion = source["FSInsideProportion"];
     this.FSMidProportion = source["FSMidProportion"];
     this.FSThreeProportion = source["FSThreeProportion"];
+    this.FSShotVolume = source["FSShotVolume"];
     this.SecondStringID = source["SecondStringID"];
     this.SSMinutes = source["SSMinutes"];
     this.SSInsideProportion = source["SSInsideProportion"];
     this.SSMidProportion = source["SSMidProportion"];
     this.SSThreeProportion = source["SSThreeProportion"];
+    this.SSShotVolume = source["SSShotVolume"];
     this.ThirdStringID = source["ThirdStringID"];
     this.TSMinutes = source["TSMinutes"];
     this.TSInsideProportion = source["TSInsideProportion"];
     this.TSMidProportion = source["TSMidProportion"];
     this.TSThreeProportion = source["TSThreeProportion"];
+    this.TSShotVolume = source["TSShotVolume"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -6627,16 +6686,19 @@ export class NBALineup {
   FSInsideProportion: number;
   FSMidProportion: number;
   FSThreeProportion: number;
+  FSShotVolume: number;
   SecondStringID: number;
   SSMinutes: number;
   SSInsideProportion: number;
   SSMidProportion: number;
   SSThreeProportion: number;
+  SSShotVolume: number;
   ThirdStringID: number;
   TSMinutes: number;
   TSInsideProportion: number;
   TSMidProportion: number;
   TSThreeProportion: number;
+  TSShotVolume: number;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -6651,16 +6713,19 @@ export class NBALineup {
     this.FSInsideProportion = source["FSInsideProportion"];
     this.FSMidProportion = source["FSMidProportion"];
     this.FSThreeProportion = source["FSThreeProportion"];
+    this.FSShotVolume = source["FSShotVolume"];
     this.SecondStringID = source["SecondStringID"];
     this.SSMinutes = source["SSMinutes"];
     this.SSInsideProportion = source["SSInsideProportion"];
     this.SSMidProportion = source["SSMidProportion"];
     this.SSThreeProportion = source["SSThreeProportion"];
+    this.SSShotVolume = source["SSShotVolume"];
     this.ThirdStringID = source["ThirdStringID"];
     this.TSMinutes = source["TSMinutes"];
     this.TSInsideProportion = source["TSInsideProportion"];
     this.TSMidProportion = source["TSMidProportion"];
     this.TSThreeProportion = source["TSThreeProportion"];
+    this.TSShotVolume = source["TSShotVolume"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {

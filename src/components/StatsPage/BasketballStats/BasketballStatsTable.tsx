@@ -301,6 +301,11 @@ export const BasketballStatsTable: FC<BasketballStatsTableProps> = ({
             <Text variant="xs">{team.Team}</Text>
           </div>
         </TableCell>
+        <TableCell>
+          <div className="flex flex-row items-start">
+            <Text variant="xs">{team.Conference}</Text>
+          </div>
+        </TableCell>
         {values.map((stat: any, idx: number) => {
           return (
             <TableCell key={stat.label + idx}>

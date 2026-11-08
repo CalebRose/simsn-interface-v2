@@ -13,10 +13,13 @@ import { ModerationControls } from "./ModerationControls";
 import { ReportPostModal } from "./ReportPostModal";
 import { ForumPermissions } from "../../../models/forumModels";
 import { useAuthStore } from "../../../context/AuthContext";
+import { AuthorBadge } from "./AuthorBadge";
+import { IconButton } from "../../../_design/IconButton";
 import { UserProfileCard } from "../../Common/UserProfileCard";
 
 interface PostCardProps {
   post: Post;
+  replyToUsername?: string;
   currentUserId: string | null;
   permissions: ForumPermissions;
   isThreadLocked: boolean;
@@ -43,6 +46,7 @@ function formatTimestamp(ts: { seconds: number } | null | undefined): string {
 
 export const PostCard: React.FC<PostCardProps> = ({
   post,
+  replyToUsername,
   currentUserId,
   permissions,
   isThreadLocked,
@@ -59,6 +63,17 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [showReactions, setShowReactions] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [profileCardActive, setProfileCardActive] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const copyPermalink = async () => {
+    const url = `${window.location.origin}${window.location.pathname}#post-${post.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 1500);
+    } catch {
+      window.prompt("Copy this link", url);
+    }
+  };
   const isOwnPost = post.author.uid === currentUserId;
   const canEdit =
     permissions.canEditAnyPost || (isOwnPost && permissions.canEditOwnPost);
@@ -69,7 +84,7 @@ export const PostCard: React.FC<PostCardProps> = ({
     return (
       <div
         id={`post-${post.id}`}
-        className="py-3 px-3 border-b border-gray-700 last:border-b-0"
+        className="py-3 px-3 border-b border-(--border-primary) last:border-b-0"
       >
         <Text variant="secondary" classes="italic text-sm">
           [This post has been removed.]
@@ -86,7 +101,7 @@ export const PostCard: React.FC<PostCardProps> = ({
   return (
     <div
       id={`post-${post.id}`}
-      className="flex flex-col py-3 px-3 border-b border-gray-800 last:border-b-0 gap-2"
+      className="flex flex-col py-3 px-3 border-b border-(--border-secondary) last:border-b-0 gap-2"
     >
       {/* Header: author + timestamp */}
       <div className="flex items-start justify-between gap-2">
@@ -112,22 +127,29 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <div className="flex items-center gap-2 text-start">
                     <Text
                       variant="body-small"
-                      classes="font-semibold hover:text-blue-400 transition-colors"
+                      classes="font-semibold hover:text-(--accent-primary) transition-colors"
                     >
                       {post.author.username}
                     </Text>
+                    <AuthorBadge
+                      role={post.author.role}
+                      league={post.author.league}
+                    />
                     {post.replyToPostId && (
-                      <Text variant="xs" classes="text-gray-500">
-                        ↩ replied
-                      </Text>
+                      <span className="text-xs text-(--text-muted)">
+                        ↩ in reply{replyToUsername ? ` to ${replyToUsername}` : ""}
+                      </span>
                     )}
                   </div>
-                  <Text variant="xs" classes="text-gray-500">
+                  <Text
+                    variant="xs"
+                    classes="text-(--text-muted) sm:text-[13px]! text-xs!"
+                  >
                     {formatTimestamp(
                       post.createdAt as unknown as { seconds: number },
                     )}
                     {post.isEdited && (
-                      <span className="ml-2 text-gray-600 italic">
+                      <span className="ml-2 text-(--text-muted) italic">
                         {post.editedByUsername
                           ? `(edited by ${post.editedByUsername})`
                           : "(edited)"}
@@ -155,22 +177,29 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <div className="flex items-center gap-2 text-start">
                     <Text
                       variant="body-small"
-                      classes="font-semibold hover:text-blue-400 transition-colors"
+                      classes="font-semibold hover:text-(--accent-primary) transition-colors"
                     >
                       {post.author.username}
                     </Text>
+                    <AuthorBadge
+                      role={post.author.role}
+                      league={post.author.league}
+                    />
                     {post.replyToPostId && (
-                      <Text variant="xs" classes="text-gray-500">
-                        ↩ replied
-                      </Text>
+                      <span className="text-xs text-(--text-muted)">
+                        ↩ in reply{replyToUsername ? ` to ${replyToUsername}` : ""}
+                      </span>
                     )}
                   </div>
-                  <Text variant="xs" classes="text-gray-500">
+                  <Text
+                    variant="xs"
+                    classes="text-(--text-muted) sm:text-[13px]! text-xs!"
+                  >
                     {formatTimestamp(
                       post.createdAt as unknown as { seconds: number },
                     )}
                     {post.isEdited && (
-                      <span className="ml-2 text-gray-600 italic">
+                      <span className="ml-2 text-(--text-muted) italic">
                         {post.editedByUsername
                           ? `(edited by ${post.editedByUsername})`
                           : "(edited)"}
@@ -183,17 +212,24 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
 
-        {/* Moderation controls */}
-        <ModerationControls
-          canEdit={canEdit}
-          canDelete={canDelete}
-          onEdit={() => onEdit(post)}
-          onDelete={() => onDelete(post.id)}
-        />
+        <div className="flex items-center gap-1">
+          <IconButton label="Copy link to this post" onClick={copyPermalink}>
+            {linkCopied ? "✓" : "🔗"}
+          </IconButton>
+          {/* Moderation controls (also hosts Report) */}
+          <ModerationControls
+            canEdit={canEdit}
+            canDelete={canDelete}
+            canReport={!isOwnPost && !!currentUserId}
+            onReport={() => setShowReportModal(true)}
+            onEdit={() => onEdit(post)}
+            onDelete={() => onDelete(post.id)}
+          />
+        </div>
       </div>
 
       {/* Body */}
-      <div className="text-sm">
+      <div className="text-[15px] leading-relaxed sm:text-sm">
         <RichTextRenderer
           document={post.body as RichTextDocument}
           fallback={post.bodyText}
@@ -204,44 +240,42 @@ export const PostCard: React.FC<PostCardProps> = ({
       {/* Action bar */}
       {(!isThreadLocked || canBypassLock) && (
         <div className="flex flex-wrap items-center gap-2 mt-1">
-          {/* Reaction picker toggle */}
-          <div className="relative">
-            <Button
-              variant="secondaryOutline"
-              size="xs"
-              onClick={() => setShowReactions((v) => !v)}
-            >
-              😀
-            </Button>
-            {showReactions && (
-              <div className="absolute left-0 bottom-full mb-1 flex gap-1 bg-gray-800 border border-gray-600 rounded-sm p-1 z-10 shadow-lg">
-                {reactionEntries.map(([type, emoji]) => {
-                  const count = post.reactions?.[type]?.length ?? 0;
-                  const reacted = currentUserId
-                    ? (post.reactions?.[type] ?? []).includes(currentUserId)
-                    : false;
-                  return (
-                    <button
-                      key={type}
-                      title={type}
-                      onClick={() => {
-                        onReact(post.id, type);
-                        setShowReactions(false);
-                      }}
-                      className={`text-lg px-1 py-0.5 rounded-sm hover:bg-white/10 transition-colors ${
-                        reacted ? "bg-blue-900" : ""
-                      }`}
-                    >
-                      {emoji}
-                      {count > 0 && (
-                        <span className="text-xs ml-0.5">{count}</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {/* Reaction picker toggle; opens inline so it never covers post text */}
+          <Button
+            variant="secondaryOutline"
+            size="xs"
+            classes="min-h-11 sm:min-h-0"
+            onClick={() => setShowReactions((v) => !v)}
+            aria-expanded={showReactions}
+            title="Add reaction"
+          >
+            😀
+          </Button>
+          {showReactions && (
+            <div className="flex flex-wrap gap-1 bg-(--bg-secondary) border border-(--border-primary) rounded-sm p-1">
+              {reactionEntries.map(([type, emoji]) => {
+                const reacted = currentUserId
+                  ? (post.reactions?.[type] ?? []).includes(currentUserId)
+                  : false;
+                return (
+                  <button
+                    key={type}
+                    title={type}
+                    aria-label={`React ${type}`}
+                    onClick={() => {
+                      onReact(post.id, type);
+                      setShowReactions(false);
+                    }}
+                    className={`text-lg px-2 py-1 min-h-10 rounded-sm hover:bg-(--text-primary)/10 transition-colors ${
+                      reacted ? "bg-blue-900" : ""
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Existing reactions summary */}
           <div className="flex flex-wrap gap-1">
@@ -256,10 +290,10 @@ export const PostCard: React.FC<PostCardProps> = ({
                   <button
                     key={type}
                     onClick={() => onReact(post.id, type)}
-                    className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-sm border transition-colors ${
+                    className={`flex items-center gap-1 text-sm px-2 py-1 min-h-9 rounded-sm border transition-colors ${
                       reacted
                         ? "bg-blue-900 border-blue-600"
-                        : "bg-gray-800 border-gray-600 hover:bg-gray-700"
+                        : "bg-(--bg-secondary) border-(--border-primary) hover:bg-(--border-secondary)"
                     }`}
                   >
                     {emoji} {count}
@@ -271,27 +305,19 @@ export const PostCard: React.FC<PostCardProps> = ({
           <Button
             variant="secondaryOutline"
             size="xs"
+            classes="min-h-11 sm:min-h-0 text-(--text-secondary)"
             onClick={() => onReply(post)}
           >
-            Reply
+            ↩ Reply
           </Button>
           <Button
             variant="secondaryOutline"
             size="xs"
+            classes="min-h-11 sm:min-h-0 text-(--text-secondary)"
             onClick={() => onQuote(post)}
           >
-            Quote
+            ❝ Quote
           </Button>
-          {!isOwnPost && currentUserId && (
-            <Button
-              variant="secondaryOutline"
-              size="xs"
-              onClick={() => setShowReportModal(true)}
-              title="Report this post"
-            >
-              🚩
-            </Button>
-          )}
         </div>
       )}
 

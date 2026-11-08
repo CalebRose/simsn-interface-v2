@@ -49,6 +49,17 @@ import { CollegePollModal } from "../Common/CollegePollModal";
 import { getHCKWeekID } from "../../../_helper/statsPageHelper";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { SectionCards } from "../../../_design/SectionCards";
+import { GameRequestModal } from "../Common/GameRequestModal";
+import { Refresh } from "../../../_design/Icons";
+import { PHLPlayoffBracket } from "./PHLPlayoffBracket";
+import {
+  CHLConferenceTournamentBracket,
+  CHLNationalTournamentBracket,
+} from "./CHLPlayoffBrackets";
+
+const ConfTournament = "Conference Tournament";
+const NatTournament = "National Tournament";
+const PHLPlayoffs = "Playoffs";
 
 interface SchedulePageProps {
   league: League;
@@ -196,7 +207,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
 
   const submitPollModal = useModal();
   const collegePollModal = useModal();
-
+  const gameRequestModal = useModal();
   const handleScheduleExport = async (opts: any) => {
     const dto = {
       SeasonID: selectedSeasonValue,
@@ -224,6 +235,11 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
         pollSubmission={collegePollSubmission}
         submitPoll={submitCollegePoll}
         timestamp={ts}
+      />
+      <GameRequestModal
+        title="Request a CHL OOC Game"
+        isOpen={gameRequestModal.isModalOpen}
+        onClose={gameRequestModal.handleCloseModal}
       />
       <div className="flex flex-col w-full">
         <div className="sm:grid sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-6 sm:gap-4 w-full h-[82vh]">
@@ -281,6 +297,42 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   onClick={collegePollModal.handleOpenModal}
                 >
                   <Text variant="small">Official Poll</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2 justify-center text-center flex"
+                  onClick={getBootstrapScheduleData}
+                  disabled={ts.CollegeWeek > 0}
+                >
+                  <Refresh />
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  classes="px-5 py-2"
+                  onClick={gameRequestModal.handleOpenModal}
+                  disabled={ts.CollegeWeek > 0}
+                >
+                  <Text variant="small">Request Game</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(ConfTournament)}
+                  isSelected={category === ConfTournament}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Conf. Tourney</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(NatTournament)}
+                  isSelected={category === NatTournament}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Natl. Tourney</Text>
                 </Button>
               </ButtonGrid>
             </div>
@@ -642,6 +694,30 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               />
             </div>
           )}
+          {category === ConfTournament && (
+            <CHLConferenceTournamentBracket
+              games={collegeGamesBySelectedSeason}
+              teamMap={chlTeamMap}
+              ts={ts}
+              playerMap={playerMap}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
+          )}
+          {category === NatTournament && (
+            <CHLNationalTournamentBracket
+              games={collegeGamesBySelectedSeason}
+              teamMap={chlTeamMap}
+              ts={ts}
+              playerMap={playerMap}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
+          )}
           {category === AdvSchedule && (
             <AdvancedSchedule
               team={selectedTeam}
@@ -656,6 +732,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={view}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
             />
           )}
           {category === AdvStandings && (
@@ -670,6 +747,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={view}
               selectedSeasonID={selectedSeasonValue}
+              currentUser={currentUser}
             />
           )}
         </div>
@@ -850,6 +928,15 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   classes="px-3 py-2"
                 >
                   <Text variant="xs">Adv. Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(PHLPlayoffs)}
+                  isSelected={category === PHLPlayoffs}
+                  classes="px-5 py-2"
+                >
+                  <Text variant="small">Playoffs</Text>
                 </Button>
               </ButtonGrid>
             </div>
@@ -1203,6 +1290,18 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               />
             </div>
           )}
+          {category === PHLPlayoffs && (
+            <PHLPlayoffBracket
+              games={proGamesBySelectedSeason}
+              teamMap={phlTeamMap}
+              ts={ts}
+              playerMap={playerMap}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
+          )}
           {category === AdvSchedule && (
             <AdvancedSchedule
               team={selectedTeam}
@@ -1217,6 +1316,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={scheduleView}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
             />
           )}
           {category === AdvStandings && (
@@ -1231,6 +1331,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
               isLoading={isLoading}
               view={scheduleView}
               selectedSeasonID={selectedSeasonValue}
+              currentUser={currentUser}
             />
           )}
         </div>

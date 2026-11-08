@@ -29,7 +29,7 @@ import type {
 import { logFirestoreRead } from "../_utility/firestoreLogger";
 
 export const CHAT_ROOM_ID = "global";
-export const CHAT_RETENTION_DAYS = 3;
+export const CHAT_RETENTION_DAYS = 14;
 export const CHAT_PAGE_SIZE = 50;
 export const CHAT_NEW_USER_COOLDOWN_SECONDS = 30;
 export const CHAT_TEAM_COOLDOWN_SECONDS = 3;
@@ -77,9 +77,7 @@ export interface SendChatMessageInput {
 }
 
 const retentionCutoff = () =>
-  Timestamp.fromMillis(
-    Date.now() - CHAT_RETENTION_DAYS * 24 * 60 * 60 * 1000,
-  );
+  Timestamp.fromMillis(Date.now() - CHAT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
 
 export const ChatService = {
   subscribeToRecentMessages: (

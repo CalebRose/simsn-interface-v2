@@ -134,31 +134,34 @@ export const useFootballStats = () => {
   }, [selectedLeague, cfbTeamMap, proTeamMap]);
 
   const selectedStats = useMemo(() => {
-    if (selectedLeague === SimCFB) {
-      return GetFBACollegeStats(
-        statsView,
-        statsType,
-        selectedWeek,
-        selectedSeason,
-        cfbPlayerGameStatsMap,
-        cfbPlayerSeasonStatsMap,
-        cfbTeamGameStatsMap,
-        cfbTeamSeasonStatsMap,
-      );
-    }
-    if (selectedLeague === SimNFL) {
-      return GetFBAProStats(
-        statsView,
-        statsType,
-        selectedWeek,
-        selectedSeason,
-        nflPlayerGameStatsMap,
-        nflPlayerSeasonStatsMap,
-        nflTeamGameStatsMap,
-        nflTeamSeasonStatsMap,
-      );
-    }
-    return [];
+    const stats = (() => {
+      if (selectedLeague === SimCFB) {
+        return GetFBACollegeStats(
+          statsView,
+          statsType,
+          selectedWeek,
+          selectedSeason,
+          cfbPlayerGameStatsMap ?? {},
+          cfbPlayerSeasonStatsMap ?? {},
+          cfbTeamGameStatsMap ?? {},
+          cfbTeamSeasonStatsMap ?? {},
+        );
+      }
+      if (selectedLeague === SimNFL) {
+        return GetFBAProStats(
+          statsView,
+          statsType,
+          selectedWeek,
+          selectedSeason,
+          nflPlayerGameStatsMap ?? {},
+          nflPlayerSeasonStatsMap ?? {},
+          nflTeamGameStatsMap ?? {},
+          nflTeamSeasonStatsMap ?? {},
+        );
+      }
+      return [];
+    })();
+    return (stats ?? []).filter((s: any) => s != null);
   }, [
     selectedLeague,
     statsView,
@@ -198,7 +201,7 @@ export const useFootballStats = () => {
 
   const teamOptions = useMemo(() => {
     if (selectedLeague === SimCFB) {
-      if (!cfbTeamMap) return {};
+      if (!cfbTeamMap) return [];
       return GetFilteredCFBTeamOptions(
         selectedLeagueOption,
         cfbTeamOptions,

@@ -59,7 +59,7 @@ import { useSimBBAStore } from "../../context/SimBBAContext";
 import { GetRecruitingTendency } from "../../_utility/getRecruitingTendency";
 import { getDisplayStatus } from "../../_helper/recruitingHelper";
 import { SelectDropdown } from "../../_design/Select";
-import { Tab, TabGroup } from "../../_design/Tabs";
+import { Tab, TabGrid } from "../../_design/Tabs";
 import { getPlayerOverall } from "../Gameplan/FootballGameplan/DepthChart/Modal/DepthChartModalHelper";
 import {
   BasketballPlayerStatsModalView,
@@ -247,7 +247,7 @@ export const CHLPlayerInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
         </Text>
       </div>
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <TabGroup classes="mb-3 w-full">
+        <TabGrid columns={2} classes="mb-3 w-full">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -258,7 +258,7 @@ export const CHLPlayerInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
             <div className="flex flex-col px-1 gap-1">
@@ -645,7 +645,7 @@ export const PHLPlayerInfoModalBody: FC<PHLPlayerInfoModalBodyProps> = ({
         </>
       )}
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <TabGroup classes="mb-3 w-full">
+        <TabGrid columns={2} classes="mb-3 w-full">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -656,7 +656,7 @@ export const PHLPlayerInfoModalBody: FC<PHLPlayerInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
             <div className="flex flex-col px-1 gap-1">
@@ -947,7 +947,7 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
         )}
       </div>
       <div className="flex flex-col mt-4 pt-4">
-        <TabGroup classes="mb-3">
+        <TabGrid columns={3} classes="mb-3">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -963,7 +963,7 @@ export const CFBPlayerInfoModalBody: FC<CFBPlayerInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
             {priorityAttributes.map((attr, idx) => (
@@ -1226,7 +1226,7 @@ export const NFLPlayerInfoModalBody: FC<NFLPlayerInfoModalBodyProps> = ({
         )}
       </div>
       <div className="flex flex-col mt-4 pt-4">
-        <TabGroup classes="mb-3">
+        <TabGrid columns={2} classes="mb-3">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -1237,7 +1237,7 @@ export const NFLPlayerInfoModalBody: FC<NFLPlayerInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
             {priorityAttributes.map((attr, idx) => (
@@ -1927,9 +1927,15 @@ export const CFBCrootInfoModalBody: FC<CFBCrootInfoModalBodyProps> = ({
             </Text>
           </div>
         )}
-        {(player.Position === "QB" || (player.Position === "ATH" && (player.Archetype === "Field General" || player.Archetype === "Triple-Threat" || player.Archetype === "Soccer Player"))) && (
+        {(player.Position === "QB" ||
+          (player.Position === "ATH" &&
+            (player.Archetype === "Field General" ||
+              player.Archetype === "Triple-Threat" ||
+              player.Archetype === "Soccer Player"))) && (
           <div className="flex flex-col">
-            <Text classes="font-semibold mb-1 whitespace-nowrap">Shotgun Rating</Text>
+            <Text classes="font-semibold mb-1 whitespace-nowrap">
+              Shotgun Rating
+            </Text>
             <Text variant="xs" classes="whitespace-nowrap pt-0.5">
               {getShotgunRating(player)}
             </Text>
@@ -2373,7 +2379,7 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
         </Text>
       </div>
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <TabGroup classes="mb-3 w-full">
+        <TabGrid columns={2} classes="mb-3 w-full">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -2384,7 +2390,7 @@ export const CBBPlayerInfoModalBody: FC<CBBPlayerInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
             {priorityAttributes.map((attr, idx) => (
@@ -2598,7 +2604,7 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
         </>
       )}
       <div className="flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-        <TabGroup classes="mb-3 w-full">
+        <TabGrid columns={2} classes="mb-3 w-full">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -2609,7 +2615,7 @@ export const NBAPlayerInfoModalBody: FC<NBAPlayerInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
             {priorityAttributes.map((attr, idx) => (
@@ -2825,7 +2831,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
           </Text>
         </div>
         <div className="mt-2 flex flex-wrap col-span-4 gap-3 border-t-[0.1em] pt-4">
-          <TabGroup classes="mb-3 w-full">
+          <TabGrid columns={2} classes="mb-3 w-full">
             <Tab
               label="Attributes"
               selected={selectedTab === "Attributes"}
@@ -2836,7 +2842,7 @@ export const CHLPortalInfoModalBody: FC<CHLPlayerInfoModalBodyProps> = ({
               selected={selectedTab === "Stats"}
               setSelected={setSelectedTab}
             />
-          </TabGroup>
+          </TabGrid>
           {selectedTab === "Attributes" && (
             <div className="grid w-full grid-cols-4 gap-3">
               <div className="flex flex-col px-1 gap-1">
@@ -3513,7 +3519,7 @@ export const CFBPortalInfoModalBody: FC<CFBPortalInfoModalBodyProps> = ({
         </>
       )}
       <div className="flex flex-col mt-4 pt-4">
-        <TabGroup classes="mb-3">
+        <TabGrid columns={2} classes="mb-3">
           <Tab
             label="Attributes"
             selected={selectedTab === "Attributes"}
@@ -3524,7 +3530,7 @@ export const CFBPortalInfoModalBody: FC<CFBPortalInfoModalBodyProps> = ({
             selected={selectedTab === "Stats"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
         {selectedTab === "Attributes" && (
           <div className="grid w-full grid-cols-4 gap-3">
             {priorityAttributes.map((attr, idx) => (
@@ -4072,7 +4078,7 @@ export const BaseballPlayerInfoModalBody: FC<
 
       {/* Tabs */}
       <div className="flex flex-col mt-4 pt-4 border-t dark:border-gray-600">
-        <TabGroup classes="mb-3">
+        <TabGrid columns={isPitcher ? 6 : 5} classes="mb-3">
           <Tab
             label="Batting"
             selected={selectedTab === "Batting"}
@@ -4105,7 +4111,7 @@ export const BaseballPlayerInfoModalBody: FC<
             selected={selectedTab === "Statistics"}
             setSelected={setSelectedTab}
           />
-        </TabGroup>
+        </TabGrid>
 
         {selectedTab === "Batting" && (
           <div className="grid w-full grid-cols-3 sm:grid-cols-5 gap-3">

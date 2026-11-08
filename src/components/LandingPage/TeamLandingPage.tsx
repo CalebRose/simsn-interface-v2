@@ -24,6 +24,7 @@ import {
   TeamQuickLinks,
   TeamInjuries,
   ForumPortal,
+  ChatPortal,
   SeasonPhaseSection,
 } from "./TeamLandingPageComponents";
 import { isBrightColor } from "../../_utility/isBrightColor";
@@ -40,6 +41,7 @@ import {
 } from "../../_constants/constants";
 import { useCallback, useMemo } from "react";
 import { getThemeColors } from "../../_utility/themeHelpers";
+import { useResponsive } from "../../_hooks/useMobile";
 
 interface TeamLandingPageProps {
   team: any;
@@ -49,6 +51,8 @@ interface TeamLandingPageProps {
 
 export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
   const { currentUser, isDarkMode } = useAuthStore();
+
+  const { isUltraWide } = useResponsive();
 
   // Theme-aware background colors
   const themeColors = getThemeColors(isDarkMode);
@@ -64,9 +68,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
   const {
     collegeNotifications,
     proNotifications,
-    allCFBStandings,
     collegeStandingsMapBySeason,
-    allProStandings,
     proStandingsMapBySeason,
     cfbRosterMap,
     cfbTeamMap,
@@ -87,15 +89,16 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topCFBReceivers,
     topCFBRushers,
     isLoading,
-    playerFaces,
-    toggleNotificationAsRead: toggleFBANotification,
-    deleteNotification: deleteFBANotification,
+    proInjuryReport,
+    collegeInjuryReport,
   } = useSimFBAStore();
   const {
     collegeNotifications: cbbNotifications,
     proNotifications: nbaNotifications,
     allCBBStandings,
+    cbbStandingsMapBySeason,
     allProStandings: allNBAStandings,
+    proStandingsMapBySeason: nbaStandingsMapBySeason,
     cbbRosterMap,
     proRosterMap: nbaRosterMap,
     allCollegeGames: allCBBGames,
@@ -141,72 +144,6 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
   } = useSimHCKStore();
   const currentWeek = GetCurrentWeek(league, ts);
   const headers = Titles.headersMapping[league as LeagueType];
-
-  const toggleNotificationAsRead = useCallback(
-    (league: League, id: number) => {
-      switch (league) {
-        case SimCFB:
-          toggleFBANotification(id, false);
-          break;
-        case SimNFL:
-          toggleFBANotification(id, true);
-          break;
-        case SimCBB:
-          toggleBBANotification(id, false);
-          break;
-        case SimNBA:
-          toggleBBANotification(id, true);
-          break;
-        case SimCHL:
-          toggleHCKNotification(id, false);
-          break;
-        case SimPHL:
-          toggleHCKNotification(id, true);
-          break;
-        default:
-          break;
-      }
-    },
-    [
-      league,
-      toggleFBANotification,
-      toggleBBANotification,
-      toggleHCKNotification,
-    ],
-  );
-
-  const deleteNotification = useCallback(
-    (league: League, id: number) => {
-      switch (league) {
-        case SimCFB:
-          deleteFBANotification(id, false);
-          break;
-        case SimNFL:
-          deleteFBANotification(id, true);
-          break;
-        case SimCBB:
-          deleteBBANotification(id, false);
-          break;
-        case SimNBA:
-          deleteBBANotification(id, true);
-          break;
-        case SimCHL:
-          deleteHCKNotification(id, false);
-          break;
-        case SimPHL:
-          deleteHCKNotification(id, true);
-          break;
-        default:
-          break;
-      }
-    },
-    [
-      league,
-      deleteFBANotification,
-      deleteBBANotification,
-      deleteHCKNotification,
-    ],
-  );
 
   const playerMap = useMemo(() => {
     let rMap: Record<number, any[]> = {};
@@ -280,6 +217,18 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     return proStandingsMapBySeason?.[seasonID] ?? [];
   }, [proStandingsMapBySeason, ts]);
 
+  const seasonCBBStandings = useMemo(() => {
+    const seasonID = ts?.SeasonID || -1;
+    if (!seasonID || seasonID <= 0) return [];
+    return cbbStandingsMapBySeason?.[seasonID] ?? [];
+  }, [cbbStandingsMapBySeason, ts]);
+
+  const seasonNBAStandings = useMemo(() => {
+    const seasonID = ts?.SeasonID || -1;
+    if (!seasonID || seasonID <= 0) return [];
+    return nbaStandingsMapBySeason?.[seasonID] ?? [];
+  }, [nbaStandingsMapBySeason, ts]);
+
   const {
     teamStandings = [],
     teamNotifications = [],
@@ -342,7 +291,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           ts,
           league,
           currentUser,
-          allCBBStandings,
+          seasonCBBStandings,
           cbbNotifications,
           allCBBGames,
           cbbTeams,
@@ -362,7 +311,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           ts,
           league,
           currentUser,
-          allNBAStandings,
+          seasonNBAStandings,
           nbaNotifications,
           allNBAGames,
           nbaTeams,
@@ -423,7 +372,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     team,
     currentWeek,
     currentUser,
-    allCFBStandings,
+    seasonCFBStandings,
     collegeNotifications,
     allCollegeGames,
     cfbTeams,
@@ -432,7 +381,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topCFBReceivers,
     collegeNews,
     cfbRosterMap,
-    allProStandings,
+    seasonNFLStandings,
     proNotifications,
     allProGames,
     nflTeams,
@@ -441,7 +390,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topNFLReceivers,
     proNews,
     proRosterMap,
-    allCBBStandings,
+    seasonCBBStandings,
     cbbNotifications,
     allCBBGames,
     cbbTeams,
@@ -450,7 +399,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     topCBBRebounds,
     cbbNews,
     cbbRosterMap,
-    allNBAStandings,
+    seasonNBAStandings,
     nbaNotifications,
     allNBAGames,
     nbaTeams,
@@ -479,6 +428,12 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
     phlRosterMap,
   ]);
 
+  const gridCols = useMemo(() => {
+    return isUltraWide
+      ? "grid-cols-1 md:grid-cols-5"
+      : "grid-cols-1 md:grid-cols-3";
+  }, [isUltraWide]);
+
   return (
     <>
       <div className="flex-col w-full md:mb-6">
@@ -492,7 +447,7 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
           headerColor={headerColor}
           borderColor={borderColor}
         />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:w-full items-start">
+        <div className={`grid ${gridCols} gap-4 md:w-full items-start`}>
           {/* Column 1: Standings */}
           <div className="flex flex-col gap-4">
             {currentUser && (
@@ -548,23 +503,27 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                 teamMap={teamMap}
               />
             </Border>
-            <Border
-              classes="border-4 py-0 px-0 w-full h-[35vh] max-h-[35vh]"
-              styles={{
-                backgroundColor: borderColor,
-                borderColor: backgroundColor,
-              }}
-            >
-              <ForumPortal
-                team={team}
-                league={league}
-                backgroundColor={backgroundColor}
-                headerColor={headerColor}
-                borderColor={borderColor}
-                textColorClass={textColorClass}
-                darkerBackgroundColor={darkerBackgroundColor}
-              />
-            </Border>
+            {!isUltraWide && (
+              <>
+                <Border
+                  classes="border-4 py-0 px-0 w-full h-[35vh] max-h-[35vh] md:h-[50vh] md:max-h-[50vh]"
+                  styles={{
+                    backgroundColor: borderColor,
+                    borderColor: backgroundColor,
+                  }}
+                >
+                  <ForumPortal
+                    team={team}
+                    league={league}
+                    backgroundColor={backgroundColor}
+                    headerColor={headerColor}
+                    borderColor={borderColor}
+                    textColorClass={textColorClass}
+                    darkerBackgroundColor={darkerBackgroundColor}
+                  />
+                </Border>
+              </>
+            )}
             <Border
               classes="border-4 py-0 px-0 w-full"
               styles={{
@@ -584,27 +543,51 @@ export const TeamLandingPage = ({ team, league, ts }: TeamLandingPageProps) => {
                 isLoading={isLoading}
               />
             </Border>
-            {/* <Border
-              classes="border-4 py-0 px-0 w-full"
-              styles={{
-                backgroundColor: borderColor,
-                borderColor: backgroundColor,
-              }}
-            >
-              <TeamNews
-                team={team}
-                teamNews={teamNews}
-                isLoading={isLoading}
-                backgroundColor={backgroundColor}
-                headerColor={headerColor}
-                borderColor={borderColor}
-                textColorClass={textColorClass}
-                darkerBackgroundColor={darkerBackgroundColor}
-              />
-            </Border> */}
           </div>
-
-          {/* Column 3: QuickLinks, Injuries, Stats */}
+          {/* Column 3: Chat, Forum */}
+          {isUltraWide && (
+            <>
+              <div className="flex flex-col gap-4">
+                <Border
+                  classes="border-4 py-0 px-0 w-full h-[35vh] max-h-[35vh] md:h-[65vh] md:max-h-[65vh]"
+                  styles={{
+                    backgroundColor: borderColor,
+                    borderColor: backgroundColor,
+                  }}
+                >
+                  <ForumPortal
+                    team={team}
+                    league={league}
+                    backgroundColor={backgroundColor}
+                    headerColor={headerColor}
+                    borderColor={borderColor}
+                    textColorClass={textColorClass}
+                    darkerBackgroundColor={darkerBackgroundColor}
+                  />
+                </Border>
+              </div>
+              <div className="flex flex-col gap-4">
+                <Border
+                  classes="border-4 py-0 px-0 w-full h-[65vh] max-h-[65vh]"
+                  styles={{
+                    backgroundColor: borderColor,
+                    borderColor: backgroundColor,
+                  }}
+                >
+                  <ChatPortal
+                    team={team}
+                    league={league}
+                    backgroundColor={backgroundColor}
+                    headerColor={headerColor}
+                    borderColor={borderColor}
+                    textColorClass={textColorClass}
+                    darkerBackgroundColor={darkerBackgroundColor}
+                  />
+                </Border>
+              </div>
+            </>
+          )}
+          {/* Column 4: QuickLinks, Injuries, Stats */}
           <div className="flex flex-col gap-4">
             <Border
               classes="border-4 py-0 px-0 w-full"

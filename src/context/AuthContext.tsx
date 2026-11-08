@@ -18,6 +18,7 @@ import {
   SimPHL,
 } from "../_constants/constants";
 import { getLogo } from "../_utility/getLogo";
+import { baseUrl } from "../_constants/logos";
 
 // ✅ Define Auth Context Props
 interface AuthContextProps {
@@ -45,7 +46,6 @@ interface AuthContextProps {
   nbaLogo: string;
   chlLogo: string;
   phlLogo: string;
-  collegeBaseballLogo: string;
   mlbLogo: string;
 }
 
@@ -75,7 +75,6 @@ const defaultAuthContext: AuthContextProps = {
   nbaLogo: "",
   chlLogo: "",
   phlLogo: "",
-  collegeBaseballLogo: "",
   mlbLogo: "",
 };
 
@@ -253,7 +252,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     nbaLogo,
     chlLogo,
     phlLogo,
-    collegeBaseballLogo,
     mlbLogo,
     defaultLogo,
   } = useMemo(() => {
@@ -263,7 +261,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     let nbaLogo = "";
     let chlLogo = "";
     let phlLogo = "";
-    let collegeBaseballLogo = "";
     let mlbLogo = "";
     let defaultLogo = "";
 
@@ -299,13 +296,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (PHLTeamID) {
         phlLogo = getLogo(SimPHL, PHLTeamID, IsRetro);
       }
-      if (CollegeBaseballOrgID) {
-        collegeBaseballLogo = getLogo(
-          SimCollegeBaseball,
-          CollegeBaseballOrgID,
-          IsRetro,
-        );
-      }
+      // College baseball logos are keyed by team_id, but the user only carries
+      // CollegeBaseballOrgID, so it's resolved in SimBaseballContext instead
+      // (see collegeBaseballLogo there). Leave defaultLogo empty for SimCBL
+      // so consumers fall back to that value.
       if (MLBOrgID) {
         mlbLogo = getLogo(SimMLB, MLBOrgID, IsRetro);
       }
@@ -330,13 +324,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           defaultLogo = phlLogo;
           break;
         case SimCollegeBaseball:
-          defaultLogo = collegeBaseballLogo;
+          defaultLogo = "";
           break;
         case SimMLB:
           defaultLogo = mlbLogo;
           break;
         default:
-          // Fallback priority if DefaultLeague is not defined
+          // Fallback priority if DefaultLeague is not defined.
+          // Empty when only a SimCBL team exists (resolved by consumers).
           defaultLogo =
             cfbLogo ||
             nflLogo ||
@@ -345,8 +340,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             chlLogo ||
             phlLogo ||
             mlbLogo ||
-            collegeBaseballLogo ||
-            "";
+            (CollegeBaseballOrgID ? "" : `${baseUrl}/icons/simsn_icon.webp`);
           break;
       }
     }
@@ -358,7 +352,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       nbaLogo,
       chlLogo,
       phlLogo,
-      collegeBaseballLogo,
       mlbLogo,
       defaultLogo,
     };
@@ -391,7 +384,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         nbaLogo,
         chlLogo,
         phlLogo,
-        collegeBaseballLogo,
         mlbLogo,
       }}
     >

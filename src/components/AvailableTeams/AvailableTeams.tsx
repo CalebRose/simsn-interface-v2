@@ -29,7 +29,10 @@ import { useLeagueStore } from "../../context/LeagueContext";
 import { getPrimaryBaseballTeam } from "../../_utility/baseballHelpers";
 import { ForumService } from "../../_services/forumService";
 import type { BaseballOrganization } from "../../models/baseball/baseballModels";
-import { getLaxLogoUrl, LacrosseService } from "../../_services/lacrosseService";
+import {
+  getLaxLogoUrl,
+  LacrosseService,
+} from "../../_services/lacrosseService";
 import { useSimLAXStore } from "../../context/SimLAXContext";
 
 const buildBaseballOptions = (
@@ -86,20 +89,35 @@ export const AvailableTeams = () => {
     phlConferenceOptions,
   } = useSimHCKStore();
   const { organizations: mlbOrganizations } = useSimBaseballStore();
-  const { claxTeams: laxTeams, claxTeamsError: claxLoadError, refreshClaxTeams } = useSimLAXStore();
-  const claxTeams = useMemo(() => laxTeams.map((team) => ({
-    ID: team.id, TeamName: team.name, Mascot: team.nickname,
-    Abbreviation: team.abbreviation, City: team.city, State: team.state,
-    Arena: team.venue, Coach: team.coach || "None",
-    LogoURL: getLaxLogoUrl(team.logoFileName),
-    ConferenceID: team.conference?.id ?? 0,
-    Conference: team.conference?.name ?? "Independent",
-    ColorOne: team.colors.primary || "#374151",
-    ColorTwo: team.colors.secondary || "#9CA3AF",
-    ColorThree: team.colors.tertiary || "#FFFFFF",
-    IsUserCoached: team.isUserControlled,
-    OverallGrade: "—", OffenseGrade: "—", DefenseGrade: "—",
-  })), [laxTeams]);
+  const {
+    claxTeams: laxTeams,
+    claxTeamsError: claxLoadError,
+    refreshClaxTeams,
+  } = useSimLAXStore();
+  const claxTeams = useMemo(
+    () =>
+      laxTeams.map((team) => ({
+        ID: team.id,
+        TeamName: team.name,
+        Mascot: team.nickname,
+        Abbreviation: team.abbreviation,
+        City: team.city,
+        State: team.state,
+        Arena: team.venue,
+        Coach: team.coach || "None",
+        LogoURL: getLaxLogoUrl(team.logoFileName),
+        ConferenceID: team.conference?.id ?? 0,
+        Conference: team.conference?.name ?? "Independent",
+        ColorOne: team.colors.primary || "#374151",
+        ColorTwo: team.colors.secondary || "#9CA3AF",
+        ColorThree: team.colors.tertiary || "#FFFFFF",
+        IsUserCoached: team.isUserControlled,
+        OverallGrade: "—",
+        OffenseGrade: "—",
+        DefenseGrade: "—",
+      })),
+    [laxTeams],
+  );
   const [teamOptions, setTeamOptions] = useState(cfbTeamOptions);
   const [conferenceOptions, setConferenceOptions] =
     useState(cfbConferenceOptions);
@@ -120,6 +138,8 @@ export const AvailableTeams = () => {
     useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const IsRetro = currentUser?.IsRetro;
+
+  console.log({ currentUser });
 
   useEffect(() => {
     void refreshClaxTeams();
@@ -158,10 +178,22 @@ export const AvailableTeams = () => {
         setConferenceOptions(nbaConferenceOptions);
         break;
       case SimCLAX: {
-        setTeamOptions(claxTeams.map((team) => ({ label: team.TeamName, value: String(team.ID) })));
+        setTeamOptions(
+          claxTeams.map((team) => ({
+            label: team.TeamName,
+            value: String(team.ID),
+          })),
+        );
         const conferences = new Map<number, string>();
-        claxTeams.forEach((team) => conferences.set(team.ConferenceID, team.Conference));
-        setConferenceOptions(Array.from(conferences, ([value, label]) => ({ label, value: String(value) })).sort((a, b) => a.label.localeCompare(b.label)));
+        claxTeams.forEach((team) =>
+          conferences.set(team.ConferenceID, team.Conference),
+        );
+        setConferenceOptions(
+          Array.from(conferences, ([value, label]) => ({
+            label,
+            value: String(value),
+          })).sort((a, b) => a.label.localeCompare(b.label)),
+        );
         break;
       }
       case SimCHL:
@@ -356,7 +388,14 @@ export const AvailableTeams = () => {
       case SimCLAX:
         await LacrosseService.requestTeam(team.ID, currentUser!.username);
         setSentRequestCLAX(true);
-        break;      case SimCHL:
+        await ForumService.CreateSimCollegeLacrosseJobApplicationThreadFromTeamRequest(
+          { Username: currentUser!.username, TeamID: team.ID },
+          team.Abbreviation || team.TeamName,
+          currentUser!.id,
+          currentUser!.username,
+        );
+        break;
+      case SimCHL:
         await RequestService.CreateCHLTeamRequest(requestDTO);
         setSentRequestCHL(true);
         break;
@@ -477,49 +516,78 @@ export const AvailableTeams = () => {
             </div>
             <div className="flex flex-col">
               <div className="flex flex-col gap-2">
-                <ButtonGrid classes="grid-cols-6 justify-center">
-                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCFB} onClick={() => selectSport(SimCFB)}>
+                <ButtonGrid classes="grid-cols-3 sm:grid-cols-6 justify-center">
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={selectedLeague === SimCFB}
+                    onClick={() => selectSport(SimCFB)}
+                  >
                     <Text variant="small">SimCFB</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimNFL} onClick={() => selectSport(SimNFL)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={selectedLeague === SimNFL}
+                    onClick={() => selectSport(SimNFL)}
+                  >
                     <Text variant="small">SimNFL</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCBB} onClick={() => selectSport(SimCBB)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={selectedLeague === SimCBB}
+                    onClick={() => selectSport(SimCBB)}
+                  >
                     <Text variant="small">SimCBB</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimNBA} onClick={() => selectSport(SimNBA)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={selectedLeague === SimNBA}
+                    onClick={() => selectSport(SimNBA)}
+                  >
                     <Text variant="small">SimNBA</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCHL} onClick={() => selectSport(SimCHL)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={selectedLeague === SimCHL}
+                    onClick={() => selectSport(SimCHL)}
+                  >
                     <Text variant="small">SimCHL</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimPHL} onClick={() => selectSport(SimPHL)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={selectedLeague === SimPHL}
+                    onClick={() => selectSport(SimPHL)}
+                  >
                     <Text variant="small">SimPHL</Text>
                   </PillButton>
                 </ButtonGrid>
-                <ButtonGrid classes="grid-cols-6 justify-center">
-                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCollegeBaseball} onClick={() => selectSport(SimCollegeBaseball)}>
+                <ButtonGrid classes="grid-cols-3 sm:grid-cols-6 justify-center">
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={selectedLeague === SimCollegeBaseball}
+                    onClick={() => selectSport(SimCollegeBaseball)}
+                  >
                     <Text variant="small">SimCBL</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimMLB} onClick={() => selectSport(SimMLB)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={selectedLeague === SimMLB}
+                    onClick={() => selectSport(SimMLB)}
+                  >
                     <Text variant="small">SimMLB</Text>
                   </PillButton>
-                  {/* SimLAX public launch: restore the SimCLAX and SimPLAX buttons here. */}
-                  {/*
-                    <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCLAX} onClick={() => selectSport(SimCLAX)}>
-                      <Text variant="small">SimCLAX</Text>
-                    </PillButton>
-                    <PillButton variant="primaryOutline" disabled title="SimPLAX is coming soon" classes="cursor-not-allowed opacity-50">
-                      <Text variant="small">SimPLAX</Text>
-                    </PillButton>
-                  */}
+                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCLAX} onClick={() => selectSport(SimCLAX)}>
+                    <Text variant="small">SimCLAX</Text>
+                  </PillButton>
+                  <PillButton variant="primaryOutline" disabled title="SimPLAX is coming soon" classes="cursor-not-allowed opacity-50">
+                    <Text variant="small">SimPLAX</Text>
+                  </PillButton>
                 </ButtonGrid>
               </div>
             </div>
           </div>
         </div>
         <div className="min-[320px]:flex min-[320px]:flex-col-reverse min-[1025px]:grid min-[1025px]:grid-cols-2 gap-x-8">
-          <div className="grid min-[800px]:grid-cols-4 px-2 min-[300px]:grid-cols-3 overflow-y-auto gap-1 md:gap-0 justify-center min-[320px]:max-h-68 min-[420px]:max-h-100 min-[820px]:max-h-80 max-[1024px]:w-full min-[1025px]:max-h-[75vh] min-[1025px]:w-[50vw]">
+          <div className="grid min-[800px]:grid-cols-4 px-2 min-[300px]:grid-cols-3 overflow-y-auto gap-1 md:gap-0 justify-center min-[320px]:max-h-[50vh] min-[420px]:max-h-[55vh] min-[820px]:max-h-80 max-[1024px]:w-full min-[1025px]:max-h-[75vh] min-[1025px]:w-[50vw]">
             {selectedLeague === SimCFB &&
               filteredTeams.map((x) => (
                 <TeamCard
@@ -583,7 +651,8 @@ export const AvailableTeams = () => {
               <div className="col-span-full m-3 rounded-lg border border-red-400 p-4 text-red-400">
                 {claxLoadError}
               </div>
-            )}            {selectedLeague === SimCLAX &&
+            )}{" "}
+            {selectedLeague === SimCLAX &&
               filteredTeams.map((x) => (
                 <TeamCard
                   key={x.ID}
@@ -596,7 +665,8 @@ export const AvailableTeams = () => {
                   disable={sentRequestCLAX || x.IsUserCoached}
                   setSelectedTeam={setSelectedTeam}
                 />
-              ))}            {selectedLeague === SimCHL &&
+              ))}{" "}
+            {selectedLeague === SimCHL &&
               filteredTeams.map((x) => (
                 <TeamCard
                   key={x.ID}

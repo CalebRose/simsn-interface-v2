@@ -106,7 +106,7 @@ const forums = [
   topLevel(
     "subscribers-lounge",
     "subscribers-lounge",
-    "Subscriber's Lounge",
+    "Subscribers' Lounge",
     0.6,
     "For our supporters",
   ),
@@ -222,6 +222,15 @@ const forums = [
     "SimMLB league announcements",
     "SimMLB",
   ),
+  subforum(
+    "admin-simclax",
+    "simclax",
+    "SimCLAX Announcements",
+    "admin",
+    9,
+    "SimCLAX league announcements",
+    "SimCLAX",
+  ),
 
   // ── Media subforums (one per league) ──────────────────────────────────────
   subforum(
@@ -296,6 +305,15 @@ const forums = [
     "SimMLB articles, press conferences, rankings, podcasts, and interviews",
     "SimMLB",
   ),
+  subforum(
+    "media-simclax",
+    "simclax",
+    "SimCLAX",
+    "media",
+    8,
+    "SimCLAX articles, press conferences, rankings, podcasts, and interviews",
+    "SimCLAX",
+  ),
 
   // ── Results subforums (one per league) ──────────────────────────────────────
   subforum(
@@ -369,6 +387,15 @@ const forums = [
     7,
     "SimMLB post-game threads. Threads created through automations.",
     "SimMLB",
+  ),
+  subforum(
+    "postgame-discussions-simclax",
+    "simclax",
+    "SimCLAX",
+    "postgame-discussions",
+    8,
+    "SimCLAX post-game threads. Threads created through automations.",
+    "SimCLAX",
   ),
 
   // ── Welcome subforums ──────────────────────────────────────────────────────

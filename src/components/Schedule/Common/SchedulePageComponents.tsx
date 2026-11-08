@@ -16,6 +16,7 @@ import { SectionCards } from "../../../_design/SectionCards";
 import { InformationCircle } from "../../../_design/Icons";
 import PlayerPicture from "../../../_utility/usePlayerFaces";
 import {
+  getSimNBADivision,
   getSimNFLDivision,
   processLeagueStandings,
 } from "./SchedulePageHelper";
@@ -27,6 +28,7 @@ import {
 } from "../../Common/Labels";
 import { useModal } from "../../../_hooks/useModal";
 import { SchedulePageGameModal } from "./GameModal";
+import { StreamChannelBadge, hasPendingStream } from "./streamChannel";
 import { SimCFB, SimNFL } from "../../../_constants/constants";
 import {
   CollegeTeam as CFBTeam,
@@ -106,6 +108,7 @@ export const TeamSchedule = ({
   const gameModal = useModal();
   const [selectedGame, setSelectedGame] = useState<any>(null);
   const isFootball = league === SimCFB || league === SimNFL ? true : false;
+  const isBasketball = league === SimNBA || league === SimCBB;
   const { isUltraWide } = useResponsive();
   let gridColumns = useMemo(() => {
     if (isFootball) {
@@ -259,25 +262,29 @@ export const TeamSchedule = ({
                     </div>
                   )}
                   <div className="text-center col-span-1">
-                    <ClickableGameLabel
-                      textColorClass={`${
-                        game.userWin
-                          ? "text-green-500"
-                          : game.userLoss
-                            ? "text-red-500"
-                            : textColorClass
-                      } ${
-                        game.gameScore === "TBC"
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      }`}
-                      disable={game.gameScore === "TBC"}
-                      openModal={() => {
-                        setSelectedGame(game);
-                        gameModal.handleOpenModal();
-                      }}
-                      label={game.headerGameScore}
-                    />
+                    {hasPendingStream(game.gameScore, game.StreamChannel, isBasketball) ? (
+                      <StreamChannelBadge channel={game.StreamChannel} />
+                    ) : (
+                      <ClickableGameLabel
+                        textColorClass={`${
+                          game.userWin
+                            ? "text-green-500"
+                            : game.userLoss
+                              ? "text-red-500"
+                              : textColorClass
+                        } ${
+                          game.gameScore === "TBC"
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                        disable={game.gameScore === "TBC"}
+                        openModal={() => {
+                          setSelectedGame(game);
+                          gameModal.handleOpenModal();
+                        }}
+                        label={game.headerGameScore}
+                      />
+                    )}
                   </div>
                   <div className="flex text-center justify-center col-span-1">
                     <Button
@@ -327,6 +334,7 @@ export const WeeklySchedule = ({
   const gameModal = useModal();
   const [selectedGame, setSelectedGame] = useState<any>(null);
   const isFootball = league === SimCFB || league === SimNFL ? true : false;
+  const isBasketball = league === SimNBA || league === SimCBB;
 
   return (
     <SectionCards
@@ -469,17 +477,21 @@ export const WeeklySchedule = ({
                   />
                 </div>
                 <div className="text-center col-span-1">
-                  <ClickableGameLabel
-                    textColorClass={`${
-                      game.gameScore === "TBC" ? "opacity-50" : ""
-                    }`}
-                    disable={game.gameScore === "TBC"}
-                    openModal={() => {
-                      setSelectedGame(game);
-                      gameModal.handleOpenModal();
-                    }}
-                    label={`${game.headerGameScore}${game.IsNeutralSite || game.IsNeutral ? " (N)" : ""}`}
-                  />
+                  {hasPendingStream(game.gameScore, game.StreamChannel, isBasketball) ? (
+                    <StreamChannelBadge channel={game.StreamChannel} />
+                  ) : (
+                    <ClickableGameLabel
+                      textColorClass={`${
+                        game.gameScore === "TBC" ? "opacity-50" : ""
+                      }`}
+                      disable={game.gameScore === "TBC"}
+                      openModal={() => {
+                        setSelectedGame(game);
+                        gameModal.handleOpenModal();
+                      }}
+                      label={`${game.headerGameScore}${game.IsNeutralSite || game.IsNeutral ? " (N)" : ""}`}
+                    />
+                  )}
                 </div>
                 <div className="flex text-center justify-center col-span-1">
                   <Button
@@ -1017,6 +1029,7 @@ interface AdvancedScheduleProps {
   view: string;
   isPreseason?: boolean;
   resultsOverride?: boolean;
+  currentUser: any;
 }
 
 interface HCKAdvancedGameRowProps {
@@ -1028,6 +1041,7 @@ interface HCKAdvancedGameRowProps {
   openModal: () => void;
   playerMap: Record<number, any>;
   resultsOverride: boolean;
+  currentUser: any;
 }
 
 const HCKAdvancedGameRow: FC<HCKAdvancedGameRowProps> = ({
@@ -1039,6 +1053,7 @@ const HCKAdvancedGameRow: FC<HCKAdvancedGameRowProps> = ({
   openModal,
   playerMap,
   resultsOverride,
+  currentUser,
 }) => {
   const handleClick = () => {
     if (!game.GameComplete || !game.IsRevealed || resultsOverride) return;
@@ -1082,11 +1097,11 @@ const HCKAdvancedGameRow: FC<HCKAdvancedGameRowProps> = ({
     return `${player.Position} ${player.FirstName} ${player.LastName}`;
   })();
   const homeTeamLogo = (() => {
-    let logo = getLogo(league, game.HomeTeamID, false);
+    let logo = getLogo(league, game.HomeTeamID, currentUser?.IsRetro);
     return logo;
   })();
   const awayTeamLogo = (() => {
-    let logo = getLogo(league, game.AwayTeamID, false);
+    let logo = getLogo(league, game.AwayTeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -1205,6 +1220,7 @@ interface FBAdvancedGameRowProps {
   playerMap: Record<number, any>;
   league: League;
   resultsOverride: boolean;
+  currentUser: any;
 }
 
 const FBAdvancedGameRow: FC<FBAdvancedGameRowProps> = ({
@@ -1216,6 +1232,7 @@ const FBAdvancedGameRow: FC<FBAdvancedGameRowProps> = ({
   playerMap,
   league,
   resultsOverride,
+  currentUser,
 }) => {
   const handleClick = () => {
     if (!game.GameComplete || !game.IsRevealed) return;
@@ -1236,16 +1253,17 @@ const FBAdvancedGameRow: FC<FBAdvancedGameRowProps> = ({
     return "text-gray-500";
   })();
   const mvpLabel = (() => {
+    if (!game.IsRevealed && !resultsOverride) return "";
     const player = playerMap[game.MVP];
     if (!player) return "";
     return `${player.Position} ${player.FirstName} ${player.LastName}`;
   })();
   const homeTeamLogo = (() => {
-    let logo = getLogo(league, game.HomeTeamID, false);
+    let logo = getLogo(league, game.HomeTeamID, currentUser?.IsRetro);
     return logo;
   })();
   const awayTeamLogo = (() => {
-    let logo = getLogo(league, game.AwayTeamID, false);
+    let logo = getLogo(league, game.AwayTeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -1394,6 +1412,7 @@ interface BBAdvancedGameRowProps {
   playerMap: Record<number, any>;
   league: League;
   resultsOverride: boolean;
+  currentUser: any;
 }
 
 const BBAdvancedGameRow: FC<BBAdvancedGameRowProps> = ({
@@ -1405,6 +1424,7 @@ const BBAdvancedGameRow: FC<BBAdvancedGameRowProps> = ({
   playerMap,
   league,
   resultsOverride,
+  currentUser,
 }) => {
   const handleClick = () => {
     if (!game.GameComplete || !game.IsRevealed || resultsOverride) return;
@@ -1426,16 +1446,17 @@ const BBAdvancedGameRow: FC<BBAdvancedGameRowProps> = ({
     return "text-gray-500";
   })();
   const mvpLabel = (() => {
+    if (!game.IsRevealed && !resultsOverride) return "";
     const player = playerMap[game.MVP];
     if (!player) return "";
     return `${player.Position} ${player.FirstName} ${player.LastName}`;
   })();
   const homeTeamLogo = (() => {
-    let logo = getLogo(league, game.HomeTeamID, false);
+    let logo = getLogo(league, game.HomeTeamID, currentUser?.IsRetro);
     return logo;
   })();
   const awayTeamLogo = (() => {
-    let logo = getLogo(league, game.AwayTeamID, false);
+    let logo = getLogo(league, game.AwayTeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -1553,6 +1574,7 @@ export const AdvancedSchedule: FC<AdvancedScheduleProps> = ({
   isLoading,
   isPreseason,
   resultsOverride = false,
+  currentUser,
 }) => {
   const {
     leagueTeamOptions,
@@ -1597,6 +1619,7 @@ export const AdvancedSchedule: FC<AdvancedScheduleProps> = ({
             openModal={gameModal.handleOpenModal}
             playerMap={leaguePlayerMap}
             resultsOverride={resultsOverride}
+            currentUser={currentUser}
           />
         );
       };
@@ -1613,6 +1636,7 @@ export const AdvancedSchedule: FC<AdvancedScheduleProps> = ({
             playerMap={leaguePlayerMap}
             league={league}
             resultsOverride={resultsOverride}
+            currentUser={currentUser}
           />
         );
       };
@@ -1628,6 +1652,7 @@ export const AdvancedSchedule: FC<AdvancedScheduleProps> = ({
           playerMap={leaguePlayerMap}
           league={league}
           resultsOverride={resultsOverride}
+          currentUser={currentUser}
         />
       );
     };
@@ -1702,6 +1727,7 @@ interface AdvancedStandingsProps {
   isLoading: boolean;
   view: string;
   selectedSeasonID: number;
+  currentUser: any;
 }
 
 interface HCKAdvancedStandingsRowProps {
@@ -1710,6 +1736,7 @@ interface HCKAdvancedStandingsRowProps {
   idx: number;
   bg: string;
   teamMap: Record<number, CHLTeam> | Record<number, ProfessionalTeam>;
+  currentUser: any;
 }
 
 const HCKAdvancedStandingsRow: FC<HCKAdvancedStandingsRowProps> = ({
@@ -1718,9 +1745,10 @@ const HCKAdvancedStandingsRow: FC<HCKAdvancedStandingsRowProps> = ({
   idx,
   bg,
   teamMap,
+  currentUser,
 }) => {
   const teamLogo = (() => {
-    let logo = getLogo(league, standings.TeamID, false);
+    let logo = getLogo(league, standings.TeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -1888,6 +1916,18 @@ const HCKAdvancedStandingsRow: FC<HCKAdvancedStandingsRowProps> = ({
       <TableCell>
         <Span>{standings.PostSeasonStatus}</Span>
       </TableCell>
+      <TableCell>
+        <Span>{team?.OverallGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OffenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.DefenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.GoalieGrade}</Span>
+      </TableCell>
       {league === SimCHL && (
         <>
           <TableCell>
@@ -1932,6 +1972,7 @@ interface FBAdvancedStandingsRowProps {
   bg: string;
   league: League;
   teamMap: Record<number, CFBTeam> | Record<number, NFLTeam>;
+  currentUser: any;
 }
 
 const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
@@ -1940,9 +1981,10 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
   bg,
   teamMap,
   league,
+  currentUser,
 }) => {
   const teamLogo = (() => {
-    let logo = getLogo(league, standings.TeamID, false);
+    let logo = getLogo(league, standings.TeamID, currentUser?.IsRetro);
     return logo;
   })();
 
@@ -2122,6 +2164,15 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
       <TableCell>
         <Span>{standings.PostSeasonStatus}</Span>
       </TableCell>
+      <TableCell>
+        <Span>{team?.OverallGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OffenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.DefenseGrade}</Span>
+      </TableCell>
       {league === SimNFL && (
         <>
           <TableCell>
@@ -2174,24 +2225,230 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
 };
 
 interface BBAdvancedStandingsRowProps {
-  game: CBBStandings | NBAStandings;
+  standings: CBBStandings | NBAStandings;
   idx: number;
   bg: string;
   league: League;
+  teamMap: Record<number, CBBTeam> | Record<number, NBATeam>;
+  currentUser: any;
 }
 
 const BBAdvancedStandingsRow: FC<BBAdvancedStandingsRowProps> = ({
-  game,
+  standings,
   idx,
   bg,
   league,
+  teamMap,
+  currentUser,
 }) => {
+  const teamLogo = (() => {
+    let logo = getLogo(league, standings.TeamID, currentUser?.IsRetro);
+    return logo;
+  })();
+
+  const team = useMemo(() => {
+    if (league === SimCBB) {
+      return teamMap ? (teamMap[standings.TeamID] as CBBTeam) : null;
+    }
+    if (league === SimNBA) {
+      return teamMap ? teamMap[standings.TeamID] : null;
+    }
+    return teamMap ? teamMap[standings.TeamID] : null;
+  }, [teamMap, standings.TeamID]);
+
+  const division = useMemo(() => {
+    if (league === SimNBA) {
+      return getSimNBADivision((standings as NBAStandings).DivisionID);
+    }
+    return "";
+  }, [standings, league]);
+
+  const rank = useMemo(() => {
+    if (league === SimCBB) {
+      return (standings as CBBStandings).Rank;
+    }
+    return 0;
+  }, [standings, league]);
+
+  const cbbRankingStats = useMemo(() => {
+    if (league === SimNBA) return null;
+    if (league === SimCBB) {
+      return {
+        TotalWinPercentage: (standings as CBBStandings).TotalWinPercentage,
+        ConfWinPercentage: (standings as CBBStandings).ConfWinPercentage,
+        PreseasonRank: (standings as CBBStandings).PreseasonRank,
+        ToucanRank: (standings as CBBStandings).ToucanRank,
+        KenPomRank: (standings as CBBStandings).KenPomRank,
+        KP: (standings as CBBStandings).KenPomRating,
+        RPI: (standings as CBBStandings).RPIRating,
+        RPIRank: (standings as CBBStandings).RPIRank,
+        SOS: (standings as CBBStandings).SOS,
+        SOR: (standings as CBBStandings).SOR,
+        Q1Wins: (standings as CBBStandings).Q1Wins,
+        Q1Losses: (standings as CBBStandings).Q1Losses,
+        Q2Wins: (standings as CBBStandings).Q2Wins,
+        Q2Losses: (standings as CBBStandings).Q2Losses,
+        Q3Wins: (standings as CBBStandings).Q3Wins,
+        Q3Losses: (standings as CBBStandings).Q3Losses,
+        Q4Wins: (standings as CBBStandings).Q4Wins,
+        Q4Losses: (standings as CBBStandings).Q4Losses,
+        QR: (standings as CBBStandings).QuadrantRating,
+        ConferenceStrengthAdj: (standings as CBBStandings)
+          .ConferenceStrengthAdj,
+      };
+    }
+    return null;
+  }, [league, standings]);
+
+  const teamLabel = useMemo(() => {
+    if (league === SimCBB && teamMap) {
+      const t = teamMap[standings.TeamID] as CBBTeam;
+      return t?.Team || "";
+    }
+    if (league === SimNBA && teamMap) {
+      const t = teamMap[standings.TeamID] as NBATeam;
+      return `${t.Team} ${t.Nickname}`;
+    }
+    return standings.TeamName || "";
+  }, [league, standings, teamMap]);
+
   return (
     <div
       key={idx}
       className="table-row border-b dark:border-gray-700 text-start"
       style={{ backgroundColor: bg }}
-    ></div>
+    >
+      <TableCell>
+        <div className="flex items-center space-x-4">
+          <Logo url={teamLogo} variant="tiny" />
+          <ClickableTeamLabel
+            teamID={standings.TeamID}
+            league={league}
+            label={teamLabel}
+          />
+        </div>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceName}</Span>
+      </TableCell>
+      {league === SimNBA && (
+        <TableCell>
+          <Span>{division}</Span>
+        </TableCell>
+      )}
+      <TableCell>
+        <ClickableUserLabel
+          coach={standings.Coach || "AI"}
+          label={standings.Coach || "AI"}
+          textVariant="xs"
+        />
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.TotalLosses}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.ConferenceLosses}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PointsFor}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PointsAgainst}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PointsDifferential}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.Streak}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.HomeWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.AwayWins}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{standings.PostSeasonStatus}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OverallGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OffenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.DefenseGrade}</Span>
+      </TableCell>
+      {league === SimCBB && (
+        <>
+          <TableCell>
+            <Span>{rank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{standings.RankedWins}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{standings.RankedLosses}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.PreseasonRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.ToucanRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.KenPomRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.KP.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.RPIRank}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.RPI.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.SOS.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.SOR.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>
+              {cbbRankingStats?.Q1Wins}-{cbbRankingStats?.Q1Losses}
+            </Span>
+          </TableCell>
+          <TableCell>
+            <Span>
+              {cbbRankingStats?.Q2Wins}-{cbbRankingStats?.Q2Losses}
+            </Span>
+          </TableCell>
+          <TableCell>
+            <Span>
+              {cbbRankingStats?.Q3Wins}-{cbbRankingStats?.Q3Losses}
+            </Span>
+          </TableCell>
+          <TableCell>
+            <Span>
+              {cbbRankingStats?.Q4Wins}-{cbbRankingStats?.Q4Losses}
+            </Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.QR.toFixed(3)}</Span>
+          </TableCell>
+          <TableCell>
+            <Span>{cbbRankingStats?.ConferenceStrengthAdj.toFixed(3)}</Span>
+          </TableCell>
+        </>
+      )}
+    </div>
   );
 };
 
@@ -2206,6 +2463,7 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
   darkerBackgroundColor,
   isLoading,
   selectedSeasonID,
+  currentUser,
 }) => {
   const {
     filteredStandings,
@@ -2215,6 +2473,7 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
     leagueTeamMap,
     hockeyTeamMap,
     footballTeamMap,
+    basketballTeamMap,
     leagueTeamOptions,
     leagueConferenceOptions,
     leagueOptions,
@@ -2242,6 +2501,7 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
             bg={bg}
             league={league}
             teamMap={hockeyTeamMap}
+            currentUser={currentUser}
           />
         );
       };
@@ -2259,12 +2519,26 @@ export const AdvancedStandings: FC<AdvancedStandingsProps> = ({
             bg={bg}
             league={league}
             teamMap={footballTeamMap!!}
+            currentUser={currentUser}
           />
         );
       };
     }
-    return (game: CBBStandings | NBAStandings, idx: number, bg: string) => {
-      return <></>;
+    return (
+      standings: CBBStandings | NBAStandings,
+      idx: number,
+      bg: string,
+    ) => {
+      return (
+        <BBAdvancedStandingsRow
+          standings={standings}
+          idx={idx}
+          bg={bg}
+          league={league}
+          teamMap={basketballTeamMap!!}
+          currentUser={currentUser}
+        />
+      );
     };
   };
 

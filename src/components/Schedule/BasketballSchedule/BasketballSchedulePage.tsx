@@ -35,6 +35,7 @@ import { useModal } from "../../../_hooks/useModal";
 import { getFBAWeekID } from "../../../_helper/statsPageHelper";
 import {
   AdvancedSchedule,
+  AdvancedStandings,
   LeagueStandings,
   TeamSchedule,
   TeamStandings,
@@ -46,6 +47,14 @@ import { Button, ButtonGrid, ButtonGroup } from "../../../_design/Buttons";
 import { CollegePollModal } from "../Common/CollegePollModal";
 import { SubmitPollModal } from "../Common/SubmitPollModal";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
+import { CBBConferenceTournamentBracket } from "./CBBConferenceTournamentBracket";
+import { CBBPostseasonPage } from "./CBBNationalTournamentBracket";
+import { findConferenceTournamentGames } from "./cbbBracketLayout";
+import { NBAPostseasonPage } from "./NBAPostseasonBracket";
+
+const ConfTournament = "Conference Tournament";
+const Postseason = "Postseason";
+const NBAPostseason = "Postseason";
 
 interface SchedulePageProps {
   league: League;
@@ -62,7 +71,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     cbbTeamMap,
     cbbRosterMap,
     cbbTeamOptions,
-    allCBBStandings,
+    cbbStandingsMapBySeason,
     allCollegeGames: allCBBGames,
     isLoading,
     collegePollSubmission,
@@ -115,11 +124,28 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
   const selectedSeasonID = useMemo(() => {
     return selectedSeason - 2020;
   }, [selectedSeason]);
+
   const collegeGamesBySelectedSeason = useMemo(() => {
     return allCBBGames
       .filter((game) => game.SeasonID === selectedSeasonID)
-      .sort((a, b) => a.Week - b.Week);
+      .sort(
+        (a, b) => a.Week - b.Week || a.MatchOfWeek.localeCompare(b.MatchOfWeek),
+      );
   }, [allCBBGames, selectedSeasonID]);
+
+  const collegeStandingsBySelectedSeason = useMemo(() => {
+    const standings = cbbStandingsMapBySeason?.[selectedSeasonID] ?? [];
+    return standings.sort(
+      (a, b) =>
+        a.ConferenceLosses - b.ConferenceLosses ||
+        a.TotalLosses - b.TotalLosses,
+    );
+  }, [cbbStandingsMapBySeason, selectedSeasonID]);
+
+  const conferenceTournamentGames = useMemo(
+    () => findConferenceTournamentGames(collegeGamesBySelectedSeason),
+    [collegeGamesBySelectedSeason],
+  );
 
   const playerMap = useMemo(() => {
     if (!cbbRosterMap) return {};
@@ -185,8 +211,8 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
       selectedWeek,
       selectedSeason,
       league,
-      allCBBStandings,
-      allCBBGames,
+      collegeStandingsBySelectedSeason,
+      collegeGamesBySelectedSeason,
       cbbTeams,
     );
   }, [
@@ -195,8 +221,8 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedWeek,
     selectedSeason,
     league,
-    allCBBStandings,
-    allCBBGames,
+    collegeStandingsBySelectedSeason,
+    collegeGamesBySelectedSeason,
     cbbTeams,
   ]);
 
@@ -298,6 +324,24 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
                   classes="px-3 py-2"
                 >
                   <Text variant="small">Adv. Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(ConfTournament)}
+                  isSelected={category === ConfTournament}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Conf. Tourney</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(Postseason)}
+                  isSelected={category === Postseason}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Natl. Tourney</Text>
                 </Button>
                 <Button
                   size="md"
@@ -599,7 +643,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               <LeagueStandings
                 currentUser={currentUser}
                 league={league}
-                standings={allCBBStandings}
+                standings={collegeStandingsBySelectedSeason}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
@@ -669,6 +713,37 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               />
             </div>
           )}
+          {category === ConfTournament && (
+            <CBBConferenceTournamentBracket
+              games={conferenceTournamentGames}
+              standings={
+                collegeStandingsBySelectedSeason.length
+                  ? collegeStandingsBySelectedSeason
+                  : collegeStandingsBySelectedSeason
+              }
+              season={selectedSeason}
+              teamMap={cbbTeamMap}
+              defaultConferenceId={selectedTeam?.ConferenceID}
+              ts={ts}
+              playerMap={playerMap}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
+          )}
+          {category === Postseason && (
+            <CBBPostseasonPage
+              games={collegeGamesBySelectedSeason}
+              teamMap={cbbTeamMap}
+              ts={ts}
+              playerMap={playerMap}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
+          )}
           {category === AdvSchedule && (
             <AdvancedSchedule
               team={selectedTeam}
@@ -683,6 +758,22 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               isLoading={isLoading}
               view={view}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
+            />
+          )}
+          {category === AdvStandings && (
+            <AdvancedStandings
+              team={selectedTeam}
+              league={league}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={view}
+              selectedSeasonID={selectedSeason - 2020}
+              currentUser={currentUser}
             />
           )}
         </div>
@@ -704,6 +795,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
     nbaTeamOptions,
     allProStandings: allNBAStandings,
     allProGames: allNBAGames,
+    proStandingsMapBySeason,
     isLoading,
     ExportBasketballSchedule,
   } = bbStore;
@@ -739,8 +831,14 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
   const proGamesBySelectedSeason = useMemo(() => {
     return allNBAGames
       .filter((game) => game.SeasonID === selectedSeasonID)
-      .sort((a, b) => a.Week - b.Week);
+      .sort(
+        (a, b) => a.Week - b.Week || a.MatchOfWeek.localeCompare(b.MatchOfWeek),
+      );
   }, [allNBAGames, selectedSeasonID]);
+
+  const proStandingsBySelectedSeason = useMemo(() => {
+    return proStandingsMapBySeason?.[selectedSeasonID] ?? [];
+  }, [proStandingsMapBySeason, selectedSeasonID]);
 
   const teamColors = useTeamColors(
     selectedTeam?.ColorOne,
@@ -824,8 +922,8 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
       selectedWeek,
       selectedSeason,
       league,
-      allNBAStandings,
-      allNBAGames,
+      proStandingsBySelectedSeason,
+      proGamesBySelectedSeason,
       nbaTeams,
     );
   }, [
@@ -834,8 +932,8 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedWeek,
     selectedSeason,
     league,
-    allNBAStandings,
-    allNBAGames,
+    proStandingsBySelectedSeason,
+    proGamesBySelectedSeason,
     nbaTeams,
   ]);
 
@@ -916,6 +1014,15 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
                   classes="px-3 py-2"
                 >
                   <Text variant="small">Adv. Standings</Text>
+                </Button>
+                <Button
+                  size="md"
+                  variant="primary"
+                  onClick={() => setCategory(NBAPostseason)}
+                  isSelected={category === NBAPostseason}
+                  classes="px-3 py-2"
+                >
+                  <Text variant="small">Postseason</Text>
                 </Button>
               </ButtonGrid>
             </div>
@@ -1201,7 +1308,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
               <LeagueStandings
                 currentUser={currentUser}
                 league={league}
-                standings={allNBAStandings}
+                standings={proStandingsBySelectedSeason}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
@@ -1271,6 +1378,18 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
               />
             </div>
           )}
+          {category === NBAPostseason && (
+            <NBAPostseasonPage
+              games={proGamesBySelectedSeason}
+              teamMap={nbaTeamMap}
+              ts={ts}
+              playerMap={playerMap}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+            />
+          )}
           {category === AdvSchedule && (
             <AdvancedSchedule
               team={selectedTeam}
@@ -1285,6 +1404,22 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
               isLoading={isLoading}
               view={view}
               resultsOverride={resultsOverride}
+              currentUser={currentUser}
+            />
+          )}
+          {category === AdvStandings && (
+            <AdvancedStandings
+              team={selectedTeam}
+              league={league}
+              backgroundColor={backgroundColor}
+              headerColor={headerColor}
+              borderColor={borderColor}
+              textColorClass={textColorClass}
+              darkerBackgroundColor={darkerBackgroundColor}
+              isLoading={isLoading}
+              view={view}
+              selectedSeasonID={selectedSeason - 2020}
+              currentUser={currentUser}
             />
           )}
         </div>

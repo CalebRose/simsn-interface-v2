@@ -28,7 +28,11 @@ import {
   CreatePostDTO,
 } from "../../models/forumModels";
 import { plaintextToDoc } from "./components/ForumEditor";
-import { parseForumBody, analyzeContentQuality } from "./forumUtils";
+import {
+  parseForumBody,
+  analyzeContentQuality,
+  buildQuoteSnippet,
+} from "./forumUtils";
 import routes from "../../_constants/routes";
 import { MEDIA_TAG_MAP, MediaTag } from "../../_constants/mediaTags";
 import { ThreadSEOMeta } from "./components/ThreadSEOMeta";
@@ -143,6 +147,33 @@ export const ThreadPage: React.FC = () => {
     hasDraft: hasReplyDraft,
   } = useForumDraft<RichTextDocument>(replyDraftKey);
   const replyEditorRef = useRef<ForumEditorHandle>(null);
+  const [composerVisible, setComposerVisible] = useState(false);
+  useEffect(() => {
+    const el = document.getElementById("reply-composer");
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) =>
+      setComposerVisible(entry.isIntersecting),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [posts.length, postsLoading]);
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (postsLoading || posts.length === 0) return;
+    if (hash === "#last") {
+      const last =
+        [...posts].reverse().find((p) => !p.isDeleted) ??
+        posts[posts.length - 1];
+      document
+        .getElementById(`post-${last.id}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    if (!hash.startsWith("#post-")) return;
+    document
+      .getElementById(hash.slice(1))
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [postsLoading, posts.length]);
   const [draftBannerDismissed, setDraftBannerDismissed] = useState(false);
   const showDraftBanner = hasReplyDraft && !draftBannerDismissed;
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
@@ -218,7 +249,10 @@ export const ThreadPage: React.FC = () => {
             authorUsername: quotingPost.author.username,
           },
           content: [
-            { type: "text" as const, text: quotingPost.bodyText.slice(0, 200) },
+            {
+              type: "text" as const,
+              text: buildQuoteSnippet(quotingPost.bodyText),
+            },
           ],
         };
         body = {
@@ -626,8 +660,8 @@ export const ThreadPage: React.FC = () => {
                   variant="small"
                   classes={
                     threadHeroImageUrl
-                      ? "mt-1 text-white/70"
-                      : "mt-1 text-gray-400"
+                      ? "mt-1 text-(--text-primary)/70"
+                      : "mt-1 text-(--text-muted)"
                   }
                 >
                   {activeThread.replyCount} repl
@@ -661,9 +695,9 @@ export const ThreadPage: React.FC = () => {
                     <span
                       className={`text-xs font-mono ${
                         contentQuality.wordCount < 20
-                          ? "text-red-400"
+                          ? "text-(--accent-error)"
                           : contentQuality.wordCount < 75
-                            ? "text-yellow-400"
+                            ? "text-(--accent-warning)"
                             : "text-green-400"
                       }`}
                     >
@@ -673,9 +707,9 @@ export const ThreadPage: React.FC = () => {
                     <span
                       className={`text-xs font-mono ${
                         contentQuality.uniqueWordRatio < 0.4
-                          ? "text-red-400"
+                          ? "text-(--accent-error)"
                           : contentQuality.uniqueWordRatio < 0.6
-                            ? "text-yellow-400"
+                            ? "text-(--accent-warning)"
                             : "text-green-400"
                       }`}
                     >
@@ -688,8 +722,8 @@ export const ThreadPage: React.FC = () => {
                         contentQuality.level === "good"
                           ? "bg-green-800 text-green-200"
                           : contentQuality.level === "moderate"
-                            ? "bg-yellow-800 text-yellow-200"
-                            : "bg-red-800 text-red-200"
+                            ? "bg-(--accent-warning)/20 text-(--accent-warning)"
+                            : "bg-(--accent-error)/20 text-(--accent-error)"
                       }`}
                     >
                       {contentQuality.level === "good"
@@ -704,7 +738,7 @@ export const ThreadPage: React.FC = () => {
                       {contentQuality.flags.map((flag) => (
                         <span
                           key={flag}
-                          className="text-xs bg-red-900/50 text-red-300 border border-red-700/40 px-1.5 py-0.5 rounded-sm"
+                          className="text-xs bg-(--accent-error)/15 text-(--accent-error) border border-(--accent-error)/40 px-1.5 py-0.5 rounded-sm"
                         >
                           ⚠ {flag}
                         </span>
@@ -772,14 +806,14 @@ export const ThreadPage: React.FC = () => {
 
         {/* Locked banner */}
         {isLocked && (
-          <div className="mb-3 p-2 bg-yellow-900/40 border border-yellow-700 rounded-sm text-sm text-yellow-300">
+          <div className="mb-3 p-2 bg-(--accent-warning)/15 border border-(--accent-warning)/50 rounded-sm text-sm text-(--text-primary)">
             🔒 This thread has been locked by a moderator.
           </div>
         )}
 
         {/* Mute banner */}
         {isMuted && muteExpiresAt && (
-          <div className="mb-3 p-2 bg-red-900/40 border border-red-700 rounded-sm text-sm text-red-300">
+          <div className="mb-3 p-2 bg-(--accent-error)/15 border border-(--accent-error)/50 rounded-sm text-sm text-(--text-primary)">
             🔇 You have been muted from posting until{" "}
             <span className="font-semibold">
               {muteExpiresAt.toLocaleDateString(undefined, {
@@ -834,9 +868,23 @@ export const ThreadPage: React.FC = () => {
 
         {/* Reply form */}
         {canReply && !editingPost && (
-          <div className="mt-4">
+          <div className="mt-4" id="reply-composer">
+            {!composerVisible && (
+              <button
+                type="button"
+                onClick={() => {
+                  document
+                    .getElementById("reply-composer")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  setTimeout(() => replyEditorRef.current?.focus(), 400);
+                }}
+                className="fixed inset-x-3 bottom-3 z-40 min-h-12 rounded-full border border-(--border-primary) bg-(--bg-secondary)/95 px-4 text-left text-sm text-(--text-secondary) shadow-lg backdrop-blur md:hidden"
+              >
+                ✎ Write a reply…
+              </button>
+            )}
             {(replyingTo || quotingPost) && (
-              <div className="flex items-center gap-2 mb-2 text-sm text-gray-400">
+              <div className="flex items-center gap-2 mb-2 text-sm text-(--text-muted)">
                 {replyingTo && (
                   <span>
                     Replying to <strong>{replyingTo.author.username}</strong>
@@ -852,7 +900,7 @@ export const ThreadPage: React.FC = () => {
                     setReplyingTo(null);
                     setQuotingPost(null);
                   }}
-                  className="text-xs text-red-400 hover:text-red-300"
+                  className="text-xs text-(--accent-error) hover:text-(--accent-error)"
                 >
                   ✕ Clear
                 </button>
@@ -861,7 +909,7 @@ export const ThreadPage: React.FC = () => {
 
             {/* Draft restore banner */}
             {showDraftBanner && (
-              <div className="flex items-center justify-between mb-2 px-3 py-2 rounded-sm text-sm bg-blue-950/60 border border-blue-700/50 text-blue-300">
+              <div className="flex items-center justify-between mb-2 px-3 py-2 rounded-sm text-sm bg-blue-950/60 border border-blue-700/50 text-(--accent-primary)">
                 <span>Draft restored from your last session.</span>
                 <button
                   onClick={() => {
@@ -869,7 +917,7 @@ export const ThreadPage: React.FC = () => {
                     replyEditorRef.current?.clear();
                     setDraftBannerDismissed(true);
                   }}
-                  className="ml-4 text-xs text-blue-400 hover:text-blue-200 underline underline-offset-2"
+                  className="ml-4 text-xs text-(--accent-primary) hover:text-(--accent-primary) underline underline-offset-2"
                 >
                   Discard draft
                 </button>
@@ -896,7 +944,7 @@ export const ThreadPage: React.FC = () => {
         {/* Delete confirmation modal */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-900 border border-gray-700 rounded-lg p-5 max-w-sm w-full">
+            <div className="bg-(--bg-secondary) border border-(--border-primary) rounded-lg p-5 max-w-sm w-full">
               <Text variant="h6" classes="mb-3">
                 {showDeleteConfirm === "__thread__"
                   ? "Delete this thread?"
@@ -911,7 +959,7 @@ export const ThreadPage: React.FC = () => {
                 onChange={(e) => setModReason(e.target.value)}
                 placeholder="Reason (optional)"
                 rows={2}
-                className="w-full bg-gray-800 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-hidden focus:border-blue-500 mb-3"
+                className="w-full bg-(--bg-secondary) border border-(--border-primary) rounded-sm p-2 text-sm text-(--text-primary) placeholder:text-(--text-muted) resize-none focus:outline-hidden focus:border-blue-500 mb-3"
               />
               <div className="flex justify-end gap-2">
                 <Button
@@ -945,7 +993,7 @@ export const ThreadPage: React.FC = () => {
         {/* Move thread modal */}
         {showMoveModal && activeThread && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-900 border border-gray-700 rounded-lg p-5 max-w-sm w-full">
+            <div className="bg-(--bg-secondary) border border-(--border-primary) rounded-lg p-5 max-w-sm w-full">
               <Text variant="h6" classes="mb-3">
                 Move thread
               </Text>
@@ -956,7 +1004,7 @@ export const ThreadPage: React.FC = () => {
                 <select
                   value={moveTargetForumId}
                   onChange={(e) => setMoveTargetForumId(e.target.value)}
-                  className="bg-gray-800 border border-gray-600 rounded-sm p-2 text-sm text-white focus:outline-hidden focus:border-blue-500"
+                  className="bg-(--bg-secondary) border border-(--border-primary) rounded-sm p-2 text-sm text-(--text-primary) focus:outline-hidden focus:border-blue-500"
                   disabled={isMoving}
                 >
                   <option value="">-- Select destination --</option>
@@ -1003,7 +1051,7 @@ export const ThreadPage: React.FC = () => {
                   onChange={(e) => setMoveReason(e.target.value)}
                   placeholder="Reason (optional)"
                   rows={2}
-                  className="w-full bg-gray-800 border border-gray-600 rounded-sm p-2 text-sm text-white placeholder-gray-500 resize-none focus:outline-hidden focus:border-blue-500"
+                  className="w-full bg-(--bg-secondary) border border-(--border-primary) rounded-sm p-2 text-sm text-(--text-primary) placeholder:text-(--text-muted) resize-none focus:outline-hidden focus:border-blue-500"
                   disabled={isMoving}
                 />
               </div>

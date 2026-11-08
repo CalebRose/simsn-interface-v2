@@ -14,13 +14,14 @@ import {
   serverTimestamp,
   DocumentSnapshot,
   QueryDocumentSnapshot,
+  QuerySnapshot,
   writeBatch,
   increment,
   setDoc,
   deleteDoc,
   Timestamp,
 } from "firebase/firestore";
-import type { PostMention } from "../models/forumModels";
+import type { PostMention, AuthorBadgeInfo } from "../models/forumModels";
 import { firestore } from "../firebase/firebase";
 import { parseForumBody } from "../components/Forum/forumUtils";
 import {
@@ -394,12 +395,46 @@ export const ForumService = {
     );
   },
 
+  CreateSimCollegeLacrosseJobApplicationThreadFromTeamRequest: async (
+    requestDto: {
+      Username: string;
+      TeamID: number;
+    },
+    teamName: string,
+    uid: string,
+    displayName: string,
+  ): Promise<{ threadId: string; postId: string }> => {
+    const title = `CLAX Application:${requestDto.Username} for ${teamName}`;
+
+    const paragraphs: string[] = [
+      `${requestDto.Username} has applied to coach the ${teamName}. Please review their application below.`,
+    ];
+
+    const body = buildJobApplicationRichBody(paragraphs);
+    const dto: CreateThreadDTO = {
+      forumId: "welcome-job-applications",
+      forumPath: ["welcome", "job-applications"],
+      title,
+      body,
+      bodyText: paragraphs.join("\n\n"),
+      threadType: "standard",
+      referencedLeague: "simclax",
+    };
+    return ForumService.CreateThread(
+      dto,
+      uid,
+      requestDto.Username,
+      displayName,
+    );
+  },
+
   CreateThread: async (
     dto: CreateThreadDTO,
     uid: string,
     username: string,
     displayName: string,
     logoUrl?: string,
+    badge?: AuthorBadgeInfo,
   ): Promise<{ threadId: string; postId: string }> => {
     const now = serverTimestamp();
     const parsedBody = parseForumBody(dto.body);
@@ -414,6 +449,8 @@ export const ForumService = {
       username,
       displayName,
       ...(logoUrl ? { logoUrl } : {}),
+      ...(badge?.role ? { role: badge.role } : {}),
+      ...(badge?.league ? { league: badge.league } : {}),
     };
 
     // 1. Create the first post
@@ -582,6 +619,7 @@ export const ForumService = {
     username: string,
     displayName: string,
     logoUrl?: string,
+    badge?: AuthorBadgeInfo,
   ): Promise<string> => {
     const now = serverTimestamp();
 
@@ -590,6 +628,8 @@ export const ForumService = {
       username,
       displayName,
       ...(logoUrl ? { logoUrl } : {}),
+      ...(badge?.role ? { role: badge.role } : {}),
+      ...(badge?.league ? { league: badge.league } : {}),
     };
 
     const postRef = await addDoc(postsCol(), {
@@ -1224,31 +1264,37 @@ export const ForumService = {
     const lower = prefix.toLowerCase();
     const capitalized = lower.charAt(0).toUpperCase() + lower.slice(1);
     const usersCol = collection(firestore, "users");
-    const makeRangeQuery = (p: string) =>
+    const makeRangeQuery = (field: string, p: string) =>
       query(
         usersCol,
-        where("username", ">=", p),
-        where("username", "<", p + "\uf8ff"),
+        where(field, ">=", p),
+        where(field, "<", p + "\uf8ff"),
         limit(maxResults),
       );
-    // Run both lowercase and capitalized-first queries in parallel so usernames
-    // stored with any common casing (all-lower or Title-case) are all found.
-    const queryPairs = [getDocs(makeRangeQuery(lower))];
-    if (capitalized !== lower) {
-      queryPairs.push(getDocs(makeRangeQuery(capitalized)));
-    }
-    const snaps = await Promise.all(queryPairs);
     const seen = new Set<string>();
     const results: { uid: string; username: string }[] = [];
-    for (const snap of snaps) {
-      logFirestoreRead(`SearchUsersByPrefix [${prefix}]`, snap.docs.length);
-      for (const d of snap.docs) {
-        if (!seen.has(d.id)) {
+    const collect = (snaps: QuerySnapshot[]) => {
+      for (const snap of snaps) {
+        logFirestoreRead(`SearchUsersByPrefix [${prefix}]`, snap.docs.length);
+        for (const d of snap.docs) {
+          const username = d.data().username as string | undefined;
+          if (!username || seen.has(d.id)) continue;
           seen.add(d.id);
-          results.push({ uid: d.id, username: d.data().username as string });
+          results.push({ uid: d.id, username });
         }
       }
+    };
+
+    // Case-insensitive search on the normalized usernameLower field.
+    collect([await getDocs(makeRangeQuery("usernameLower", lower))]);
+    if (results.length > 0) return results.slice(0, maxResults);
+
+    // Fallback for users not yet backfilled with usernameLower.
+    const legacy = [getDocs(makeRangeQuery("username", lower))];
+    if (capitalized !== lower) {
+      legacy.push(getDocs(makeRangeQuery("username", capitalized)));
     }
+    collect(await Promise.all(legacy));
     return results.slice(0, maxResults);
   },
 

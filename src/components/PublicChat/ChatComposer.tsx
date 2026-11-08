@@ -24,7 +24,7 @@ const escapeRegExp = (value: string) =>
 
 const getMentionQuery = (value: string, cursor: number) => {
   const precedingText = value.slice(0, cursor);
-  const match = precedingText.match(/(?:^|\s)@([A-Za-z0-9_.-]*)$/);
+  const match = precedingText.match(/(?:^|\s)@([A-Za-z0-9_.@+-]*)$/);
   return match?.[1] ?? null;
 };
 
@@ -103,7 +103,7 @@ export const ChatComposer = ({
     const cursor = textarea.selectionStart;
     const prefix = body.slice(0, cursor);
     const nextPrefix = prefix.replace(
-      /@([A-Za-z0-9_.-]*)$/,
+      /@([A-Za-z0-9_.@+-]*)$/,
       `@${mention.username} `,
     );
     const nextBody = nextPrefix + body.slice(cursor);

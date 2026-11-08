@@ -35,7 +35,7 @@ export const AuthService: {
   register: (
     username: string,
     email: string,
-    password: string
+    password: string,
   ) => Promise<AuthResponse>;
   user: boolean | User;
   getProfile: (hard?: boolean) => Promise<UserProfile | false>;
@@ -48,7 +48,7 @@ export const AuthService: {
   register: async (
     username: string,
     email: string,
-    password: string
+    password: string,
   ): Promise<AuthResponse> => {
     const fauth = getAuth();
 
@@ -68,6 +68,7 @@ export const AuthService: {
           try {
             await setDoc(firestoreDoc(fireStore, "users", user.uid), {
               username,
+              usernameLower: username.toLowerCase(),
               email: user.email,
               createdAt: new Date(),
             });
@@ -97,7 +98,7 @@ export const AuthService: {
           const userRef: DocumentReference<DocumentData> = firestoreDoc(
             fireStore,
             `users`,
-            user.uid
+            user.uid,
           );
 
           onSnapshot(userRef, (doc) => {

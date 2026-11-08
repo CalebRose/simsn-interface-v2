@@ -41,8 +41,8 @@ export const hck_ws = HCKWSURL;
 */
 const localBASEBALL = "https://localhost:6001/api/";
 const baseballApiURL =
-  "https://simbaseballapi-production.up.railway.app/api/v1/";
+  "https://simbaseball.afwh.app/api/v1/";
 export const baseballUrl = baseballApiURL;
 const localBASEBALLWS = "ws://localhost:6001/ws";
-const baseballWSURL = "wss://simbaseballapi-production.up.railway.app/ws";
+const baseballWSURL = "wss://simbaseball.afwh.app/ws";
 export const baseball_ws = baseballWSURL;

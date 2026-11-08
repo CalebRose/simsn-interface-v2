@@ -403,6 +403,8 @@ interface ForumEditorProps {
   mentionUsers?: { uid: string; username: string }[];
   /** Caps the editor content area height and makes it scroll internally, keeping the toolbar and submit buttons always visible. */
   editorMaxHeight?: string;
+  /** Minimum height of the writing area (e.g. "280px"); the area still grows with content. */
+  editorMinHeight?: string;
 }
 
 export interface ForumEditorHandle {
@@ -596,13 +598,14 @@ const TBtn: React.FC<TBtnProps> = ({
   <button
     type="button"
     title={title}
+    aria-label={title}
     onClick={onClick}
     disabled={disabled}
-    className={`px-2 py-1 rounded-sm text-sm font-medium transition-colors select-none
+    className={`px-2 py-1 shrink-0 rounded-sm text-sm font-medium transition-colors select-none min-w-9 min-h-9 sm:min-w-0 sm:min-h-0
       ${
         active
           ? "bg-blue-600 text-white"
-          : "text-gray-300 hover:bg-white/10 hover:text-white"
+          : "text-(--text-secondary) hover:bg-(--text-primary)/10 hover:text-(--text-primary)"
       }
       disabled:opacity-40 disabled:cursor-not-allowed`}
   >
@@ -611,7 +614,7 @@ const TBtn: React.FC<TBtnProps> = ({
 );
 
 const Divider = () => (
-  <span className="w-px h-5 bg-gray-600 mx-0.5 self-center shrink-0" />
+  <span className="w-px h-5 bg-(--border-primary) mx-0.5 self-center shrink-0" />
 );
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -630,6 +633,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
       onDocChange,
       mentionUsers,
       editorMaxHeight,
+      editorMinHeight,
     },
     ref,
   ) {
@@ -809,7 +813,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
       <div className="flex flex-col gap-2 w-full">
         {/* Toolbar */}
         <div
-          className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 rounded-t-lg border-b"
+          className="flex flex-nowrap overflow-x-auto sm:flex-wrap sm:overflow-visible items-center gap-0.5 px-2 py-1.5 rounded-t-lg border-b"
           style={{
             backgroundColor: "var(--bg-primary)",
             borderColor: "var(--border-secondary)",
@@ -1054,6 +1058,9 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
           style={{
             backgroundColor: "var(--bg-secondary)",
             borderColor: "var(--border-secondary)",
+            ...(editorMinHeight
+              ? ({ "--editor-min-h": editorMinHeight } as React.CSSProperties)
+              : {}),
             ...(editorMaxHeight
               ? { maxHeight: editorMaxHeight, overflowY: "auto" }
               : {}),
@@ -1113,7 +1120,7 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
         <div className="flex items-center justify-between">
           <Text
             variant="xs"
-            classes={isOverLimit ? "text-red-400" : "text-gray-500"}
+            classes={isOverLimit ? "text-(--accent-error)" : "text-(--text-muted)"}
           >
             {isOverLimit
               ? `${Math.abs(remaining)} characters over limit`
@@ -1142,7 +1149,10 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
             </Button>
           </div>
         </div>
-        <Text variant="xs" classes="text-gray-600">
+        <Text
+          variant="xs"
+          classes="hidden [@media(hover:hover)]:block text-(--text-muted)"
+        >
           Tip: Ctrl+Enter to submit
         </Text>
       </div>

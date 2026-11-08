@@ -2924,6 +2924,10 @@ export const getAdditionalCBBAttributes = (player: CBBPlayer) => {
       value: getCBBLetterGrade(player.FreeThrow, player.Year),
     },
     {
+      label: "BIQ",
+      value: getCBBLetterGrade(player.BasketballIQ, player.Year),
+    },
+    {
       label: "BW",
       value: getCBBLetterGrade(player.Ballwork, player.Year),
     },

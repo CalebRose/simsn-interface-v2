@@ -25,10 +25,12 @@ import { ChatComposer } from "./ChatComposer";
 import { ChatMessageBody } from "./ChatMessageBody";
 import { ChatUserTrigger } from "./ChatUserTrigger";
 import { ChatReportModal } from "./ChatReportModal";
+import { baseUrl } from "../../_constants/logos";
 
 interface ChatDrawerProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
+  variant?: "drawer" | "embedded";
 }
 
 const timestampMillis = (value: Timestamp | null | undefined) =>
@@ -80,7 +82,13 @@ const profileSnapshot = (user: CurrentUser): ChatAvatarProfile => ({
   IsRetro: user.IsRetro ?? false,
 });
 
-export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
+export const ChatDrawer = ({
+  isOpen,
+  onClose,
+  variant = "drawer",
+}: ChatDrawerProps) => {
+  const isEmbedded = variant === "embedded";
+  const handleClose = useCallback(() => onClose?.(), [onClose]);
   const { currentUser, isLoading: isUserLoading } = useAuthStore();
   const currentUserId = currentUser?.id;
   const [recentMessages, setRecentMessages] = useState<ChatMessage[]>([]);
@@ -188,13 +196,13 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || isEmbedded) return;
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") handleClose();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, isEmbedded, handleClose]);
 
   const messages = useMemo(() => {
     const byId = new Map<string, ChatMessage>();
@@ -357,40 +365,52 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-100">
-      <button
-        type="button"
-        aria-label="Close chat"
-        className="absolute inset-0 h-full w-full bg-black/40"
-        onClick={onClose}
-      />
+    <div className={isEmbedded ? "h-full" : "fixed inset-0 z-100"}>
+      {!isEmbedded && (
+        <button
+          type="button"
+          aria-label="Close chat"
+          className="absolute inset-0 h-full w-full bg-black/40"
+          onClick={handleClose}
+        />
+      )}
       <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="public-chat-title"
-        className="absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
+        {...(isEmbedded
+          ? { "aria-label": "General Chat" }
+          : {
+              role: "dialog",
+              "aria-modal": true,
+              "aria-labelledby": "public-chat-title",
+            })}
+        className={
+          isEmbedded
+            ? "flex h-full w-full flex-col overflow-hidden rounded-md border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
+            : "absolute inset-y-0 right-0 flex w-full max-w-md flex-col border-l border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
+        }
       >
-        <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-          <div>
-            <h2
-              id="public-chat-title"
-              className="text-start text-base font-semibold text-gray-900 dark:text-white"
+        {!isEmbedded && (
+          <header className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+            <div>
+              <h2
+                id="public-chat-title"
+                className="text-start text-base font-semibold text-gray-900 dark:text-white"
+              >
+                General Chat
+              </h2>
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                Global room · messages kept for {CHAT_RETENTION_DAYS} days
+              </p>
+            </div>
+            <button
+              type="button"
+              aria-label="Close chat"
+              onClick={handleClose}
+              className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
             >
-              General Chat
-            </h2>
-            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-              Global room · messages kept for {CHAT_RETENTION_DAYS} days
-            </p>
-          </div>
-          <button
-            type="button"
-            aria-label="Close chat"
-            onClick={onClose}
-            className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-          >
-            <X size={20} aria-hidden="true" />
-          </button>
-        </header>
+              <X size={20} aria-hidden="true" />
+            </button>
+          </header>
+        )}
 
         <div
           ref={messagesContainerRef}
@@ -467,8 +487,8 @@ export const ChatDrawer = ({ isOpen, onClose }: ChatDrawerProps) => {
               <ChatUserTrigger
                 uid={message.senderId}
                 username={message.senderUsername}
-                logoUrl={avatarUrl ?? undefined}
-                onNavigate={onClose}
+                logoUrl={avatarUrl ?? `${baseUrl}/icons/simsn_icon.webp`}
+                onNavigate={handleClose}
                 onReport={canReport ? openReport : undefined}
               >
                 {children}

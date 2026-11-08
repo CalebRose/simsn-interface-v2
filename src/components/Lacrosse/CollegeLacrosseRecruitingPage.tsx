@@ -803,7 +803,7 @@ const OverviewTable = ({
   open: (recruit: LaxRecruit) => void;
   add: (id: number) => void;
 }) => (
-  <table className="w-full min-w-[1320px] border-collapse text-sm">
+  <table data-keep-table className="w-full min-w-[1320px] border-collapse text-sm">
     <thead>
       <tr className="border-b border-slate-500">
         {[
@@ -894,7 +894,7 @@ const BoardTable = ({
   scholarship: (recruit: LaxBoardRecruit) => void;
   remove: (id: number) => void;
 }) => (
-  <table className="w-full min-w-[1320px] border-collapse text-sm">
+  <table data-keep-table className="w-full min-w-[1320px] border-collapse text-sm">
     <thead>
       <tr className="border-b border-slate-500">
         {boardHeaders.map(([label, key, left]) => (
@@ -983,7 +983,7 @@ const BoardTable = ({
 );
 
 const RankingsTable = ({ rankings }: { rankings: LaxRecruitingRanking[] }) => (
-  <table className="w-full min-w-[1000px] border-collapse text-sm">
+  <table data-keep-table className="w-full min-w-[1000px] border-collapse text-sm">
     <thead>
       <tr className="border-b border-slate-500">
         {[
@@ -1041,7 +1041,7 @@ const ClassTable = ({
   recruits: LaxRecruit[];
   open: (recruit: LaxRecruit) => void;
 }) => (
-  <table className="w-full min-w-[1000px] border-collapse text-sm">
+  <table data-keep-table className="w-full min-w-[1000px] border-collapse text-sm">
     <thead>
       <tr className="border-b border-slate-500">
         {[

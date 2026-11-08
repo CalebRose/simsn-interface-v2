@@ -98,6 +98,7 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
       coach = cbbtp.CoachRating;
       season = cbbtp.SeasonMomentum;
       campusLife = cbbtp.CampusLife;
+      mediaSpotlight = cbbtp.MediaSpotlight;
       break;
     case SimCFB:
       const cfbtp = TeamProfile as FootballTeamProfile;

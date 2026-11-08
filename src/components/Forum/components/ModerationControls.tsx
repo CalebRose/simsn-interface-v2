@@ -9,8 +9,10 @@ interface ModerationControlsProps {
   canLock?: boolean;
   canPin?: boolean;
   canMove?: boolean;
+  canReport?: boolean;
   isLocked?: boolean;
   isPinned?: boolean;
+  onReport?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onLock?: () => void;
@@ -26,8 +28,10 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
   canLock = false,
   canPin = false,
   canMove = false,
+  canReport = false,
   isLocked = false,
   isPinned = false,
+  onReport,
   onEdit,
   onDelete,
   onLock,
@@ -41,7 +45,8 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const hasActions = canEdit || canDelete || canLock || canPin || canMove;
+  const hasActions =
+    canEdit || canDelete || canLock || canPin || canMove || canReport;
 
   const computePosition = useCallback(() => {
     if (!wrapperRef.current) return;
@@ -54,7 +59,8 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
       (canDelete ? 1 : 0) +
       (canLock ? 1 : 0) +
       (canPin ? 1 : 0) +
-      (canMove ? 1 : 0);
+      (canMove ? 1 : 0) +
+      (canReport ? 1 : 0);
     const estimatedHeight = numActions * 36 + 12;
 
     if (spaceBelow < estimatedHeight && rect.top > estimatedHeight) {
@@ -74,7 +80,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
         width: "9rem",
       });
     }
-  }, [canEdit, canDelete, canLock, canPin, canMove]);
+  }, [canEdit, canDelete, canLock, canPin, canMove, canReport]);
 
   // Close on outside click
   useEffect(() => {
@@ -103,7 +109,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
         <div
           ref={dropdownRef}
           style={dropdownStyle}
-          className="p-1 bg-gray-700 border border-gray-600 rounded-sm shadow-xl z-9999 py-1"
+          className="p-1 bg-(--bg-surface) border border-(--border-primary) rounded-sm shadow-xl z-9999 py-1"
         >
           {canEdit && onEdit && (
             <button
@@ -111,7 +117,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
                 onEdit();
                 setOpen(false);
               }}
-              className="w-full text-left text-sm px-3 py-1.5 hover:bg-gray-700 transition-colors"
+              className="w-full text-left text-sm px-3 py-1.5 hover:bg-(--border-secondary) transition-colors"
             >
               Edit
             </button>
@@ -122,7 +128,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
                 onDelete();
                 setOpen(false);
               }}
-              className="w-full text-left text-sm px-3 py-1.5 text-red-400 hover:bg-gray-700 transition-colors"
+              className="w-full text-left text-sm px-3 py-1.5 text-(--accent-error) hover:bg-(--border-secondary) transition-colors"
             >
               ❌ Delete
             </button>
@@ -135,7 +141,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
                     onLock();
                     setOpen(false);
                   }}
-                  className="w-full text-left text-sm px-3 py-1.5 text-yellow-400 hover:bg-gray-700 transition-colors"
+                  className="w-full text-left text-sm px-3 py-1.5 text-(--accent-warning) hover:bg-(--border-secondary) transition-colors"
                 >
                   🔒 Lock thread
                 </button>
@@ -146,7 +152,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
                     onUnlock();
                     setOpen(false);
                   }}
-                  className="w-full text-left text-sm px-3 py-1.5 text-green-400 hover:bg-gray-700 transition-colors"
+                  className="w-full text-left text-sm px-3 py-1.5 text-green-400 hover:bg-(--border-secondary) transition-colors"
                 >
                   🔓 Unlock thread
                 </button>
@@ -161,7 +167,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
                     onPin();
                     setOpen(false);
                   }}
-                  className="w-full text-left text-sm px-3 py-1.5 hover:bg-gray-700 transition-colors"
+                  className="w-full text-left text-sm px-3 py-1.5 hover:bg-(--border-secondary) transition-colors"
                 >
                   📌 Pin thread
                 </button>
@@ -172,7 +178,7 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
                     onUnpin();
                     setOpen(false);
                   }}
-                  className="w-full text-left text-sm px-3 py-1.5 hover:bg-gray-700 transition-colors"
+                  className="w-full text-left text-sm px-3 py-1.5 hover:bg-(--border-secondary) transition-colors"
                 >
                   Unpin thread
                 </button>
@@ -185,9 +191,20 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
                 onMove();
                 setOpen(false);
               }}
-              className="w-full text-left text-sm px-3 py-1.5 text-blue-400 hover:bg-gray-700 transition-colors"
+              className="w-full text-left text-sm px-3 py-1.5 text-(--accent-primary) hover:bg-(--border-secondary) transition-colors"
             >
               ↗ Move thread
+            </button>
+          )}
+          {canReport && onReport && (
+            <button
+              onClick={() => {
+                onReport();
+                setOpen(false);
+              }}
+              className="w-full text-left text-sm px-3 py-2 text-(--accent-error) hover:bg-(--border-secondary) transition-colors"
+            >
+              🚩 Report post
             </button>
           )}
         </div>,
@@ -203,6 +220,8 @@ export const ModerationControls: React.FC<ModerationControlsProps> = ({
         onClick={handleToggle}
         aria-haspopup="true"
         aria-expanded={open}
+        aria-label="More actions"
+        title="More actions"
       >
         ···
       </Button>

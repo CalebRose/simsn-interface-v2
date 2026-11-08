@@ -172,7 +172,7 @@ export const ForumSearchPage: React.FC = () => {
             <select
               value={selectedForumId}
               onChange={(e) => setSelectedForumId(e.target.value)}
-              className="bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white focus:outline-hidden focus:border-blue-500"
+              className="bg-(--bg-secondary) border border-(--border-primary) rounded-sm p-2 text-sm text-(--text-primary) focus:outline-hidden focus:border-blue-500"
             >
               <option value="">All forums</option>
               {standaloneForums.map((f) => (
@@ -203,7 +203,7 @@ export const ForumSearchPage: React.FC = () => {
               onChange={(e) => setTitleInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder="e.g. Week 5 recap"
-              classes="bg-gray-900 border border-gray-600"
+              classes="bg-(--bg-secondary) border border-(--border-primary)"
             />
           </div>
 
@@ -217,15 +217,15 @@ export const ForumSearchPage: React.FC = () => {
                 setAuthorQuery(e.target.value);
               }}
               placeholder="Username"
-              classes="bg-gray-900 border border-gray-600"
+              classes="bg-(--bg-secondary) border border-(--border-primary)"
             />
             {authorSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-gray-900 border border-gray-600 rounded-sm max-h-48 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-(--bg-secondary) border border-(--border-primary) rounded-sm max-h-48 overflow-y-auto">
                 {authorSuggestions.map((u) => (
                   <button
                     key={u.uid}
                     type="button"
-                    className="block w-full text-left px-3 py-1.5 text-sm hover:bg-gray-700"
+                    className="block w-full text-left px-3 py-1.5 text-sm hover:bg-(--border-secondary)"
                     onClick={() => {
                       setSelectedAuthor(u);
                       setAuthorQuery("");
@@ -246,14 +246,14 @@ export const ForumSearchPage: React.FC = () => {
                 type="date"
                 value={dateAfter}
                 onChange={(e) => setDateAfter(e.target.value)}
-                className="bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white flex-1 focus:outline-hidden focus:border-blue-500"
+                className="bg-(--bg-secondary) border border-(--border-primary) rounded-sm p-2 text-sm text-(--text-primary) flex-1 focus:outline-hidden focus:border-blue-500"
               />
               <Text variant="xs">to</Text>
               <input
                 type="date"
                 value={dateBefore}
                 onChange={(e) => setDateBefore(e.target.value)}
-                className="bg-gray-900 border border-gray-600 rounded-sm p-2 text-sm text-white flex-1 focus:outline-hidden focus:border-blue-500"
+                className="bg-(--bg-secondary) border border-(--border-primary) rounded-sm p-2 text-sm text-(--text-primary) flex-1 focus:outline-hidden focus:border-blue-500"
               />
             </div>
           </div>

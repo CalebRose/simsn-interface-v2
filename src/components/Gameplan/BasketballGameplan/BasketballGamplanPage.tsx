@@ -181,7 +181,7 @@ export const BasketballGameplanPage = () => {
 
   return (
     <div>
-      <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[2fr_10fr] max-[1024px]:gap-x-1 gap-x-2 mb-2">
+      <div className="grid grid-flow-row grid-auto-rows-auto w-full h-full max-[1024px]:grid-cols-1 max-[1024px]:gap-y-2 grid-cols-[2fr_minmax(0,10fr)] max-[1024px]:gap-x-1 gap-x-2 mb-2">
         <div className="flex flex-col w-full h-full max-[1024px]:gap-y-2">
           <Border
             direction="col"
@@ -349,7 +349,7 @@ export const BasketballGameplanPage = () => {
                     />
                     {opponentLeadEnabled && (
                       <Input
-                        label="Opponent Lead (points)"
+                        label="Lead (points)"
                         type="number"
                         min={1}
                         max={99}
@@ -531,7 +531,7 @@ export const BasketballGameplanPage = () => {
               backgroundColor: backgroundColor,
             }}
           >
-            <div className="space-y-6">
+            <div className="w-full space-y-6">
               {selectedDepthSlots.map((selectedPositionIndex) => (
                 <BasketballDepthChart
                   key={selectedPositionIndex}

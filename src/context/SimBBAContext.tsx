@@ -778,10 +778,10 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     if (allCBBStandings) {
       for (let i = 0; i < allCBBStandings.length; i++) {
         const standing = allCBBStandings[i];
-        if (!map[standing.Season]) {
-          map[standing.Season] = [];
+        if (!map[standing.SeasonID]) {
+          map[standing.SeasonID] = [];
         }
-        map[standing.Season].push(standing);
+        map[standing.SeasonID].push(standing);
       }
     }
     return map;
@@ -792,10 +792,10 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
     if (allProStandings) {
       for (let i = 0; i < allProStandings.length; i++) {
         const standing = allProStandings[i];
-        if (!map[standing.Season]) {
-          map[standing.Season] = [];
+        if (!map[standing.SeasonID]) {
+          map[standing.SeasonID] = [];
         }
-        map[standing.Season].push(standing);
+        map[standing.SeasonID].push(standing);
       }
     }
     return map;
@@ -1048,9 +1048,11 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       setCollegePollSubmission(res.PollSubmission);
       if (res.AllCollegeGames.length > 0) {
         setAllCollegeGames(res.AllCollegeGames);
+        setAllCBBStandings(res.CollegeStandings);
       }
       if (res.AllProGames.length > 0) {
         setAllProGames(res.AllProGames);
+        setAllProStandings(res.ProStandings);
       }
     } finally {
       isScheduleDataFetching.current = false;

@@ -54,6 +54,11 @@ export const PostList: React.FC<PostListProps> = ({
         <PostCard
           key={post.id}
           post={post}
+          replyToUsername={
+            post.replyToPostId
+              ? posts.find((p) => p.id === post.replyToPostId)?.author.username
+              : undefined
+          }
           currentUserId={currentUserId}
           permissions={permissions}
           isThreadLocked={isThreadLocked}

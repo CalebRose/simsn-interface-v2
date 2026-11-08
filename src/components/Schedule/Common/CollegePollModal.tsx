@@ -124,6 +124,7 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
   league,
   IsRetro,
 }) => {
+  const { isMobile } = useResponsive();
   const team = useMemo(() => {
     let t = teamMap[poll.TeamID];
     if (!t) {
@@ -155,7 +156,7 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
     const standings = standingsMap[poll.TeamID];
     if (standings) {
       if (league === SimCHL) {
-        return `${standings.TotalWins} Wins | ${standings.TotalLosses} Losses | ${standings.TotalOTLosses} OT Losses | ${standings.ConferenceWins} Conference Wins | ${standings.ConferenceLosses} Losses | ${standings.ConferenceOTLosses} C.OT Losses`;
+        return `${standings.TotalWins} Wins | ${standings.TotalLosses} Losses | ${standings.TotalOTLosses} OT Losses | ${standings.ConferenceWins} ${isMobile ? "CW" : "Conference Wins"} | ${standings.ConferenceLosses} ${isMobile ? "CL" : "Conference Losses"} | ${standings.ConferenceOTLosses} C.OT Losses`;
       } else if (league === SimCBB) {
         return `${standings.TotalWins} Wins | ${standings.TotalLosses} Losses | ${standings.ConferenceWins} Conference Wins | ${standings.ConferenceLosses} Losses`;
       } else if (league === SimCFB) {
@@ -163,7 +164,7 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
       }
     }
     return "";
-  }, [league, standingsMap, poll]);
+  }, [league, standingsMap, poll, isMobile]);
 
   if (!team) {
     return <></>;
@@ -177,27 +178,29 @@ const CollegePollRow: FC<CollegePollRowProps> = ({
           idx % 2 === 0 ? darkerBackgroundColor : backgroundColor,
       }}
     >
-      <div className="text-left col-span-1 flex items-center">
+      <div className="text-start col-span-1 flex items-center ps-2">
         <Text variant="xs" className="font-semibold">
           {idx + 1}
         </Text>
       </div>
-      <div className="text-left col-span-4">
+      <div className="text-start col-span-3">
         <div className="grid grid-cols-5 space-x-4 h-full">
-          <div className="col-span-1 items-center flex">
+          <div
+            className={`${isMobile ? "col-span-2" : "col-span-1"} items-center flex`}
+          >
             <Logo url={logo} variant="xs" />
           </div>
-          <div className="col-span-4 items-center flex">
+          <div className="col-span-3 items-center flex">
             <Text variant="xs">{teamName}</Text>
           </div>
         </div>
       </div>
-      <div className="text-left col-span-3 flex items-center">
+      <div className="text-start col-span-4 flex items-center pr-2">
         <Text variant="xs" className="font-semibold">
           {description}
         </Text>
       </div>
-      <div className="text-left col-span-2 flex items-center">
+      <div className="text-start col-span-2 flex items-center">
         <Text variant="xs" className="font-semibold">
           {poll.Votes} Votes ({poll.No1Votes})
         </Text>
@@ -212,7 +215,7 @@ export const HCKCollegePollModal: FC<CollegePollModalProps> = ({
 }) => {
   const ts = timestamp as HCKTimestamp;
   const { currentUser } = useAuthStore();
-  const { collegePolls, chlTeamMap, chlStandingsMap, chlTeam } =
+  const { collegePolls, chlTeamMap, collegeStandingsMapBySeason, chlTeam } =
     useSimHCKStore();
 
   const { isMobile } = useResponsive();
@@ -247,6 +250,18 @@ export const HCKCollegePollModal: FC<CollegePollModalProps> = ({
     const num = Number(value);
     setSelectedWeek(num);
   };
+
+  const currentStandings = useMemo(() => {
+    return collegeStandingsMapBySeason[selectedSeason] || [];
+  }, [collegeStandingsMapBySeason, selectedSeason]);
+
+  const chlStandingsMap = useMemo(() => {
+    const map: Record<number, any> = {};
+    for (const team of currentStandings) {
+      map[team.TeamID] = team;
+    }
+    return map;
+  }, [currentStandings]);
 
   const CurrentCollegePoll = useMemo(() => {
     const pollIdx = collegePolls.findIndex(
@@ -306,12 +321,12 @@ export const HCKCollegePollModal: FC<CollegePollModalProps> = ({
             Rank
           </Text>
         </div>
-        <div className="text-left col-span-4">
+        <div className="text-left col-span-3">
           <Text variant="body" className="font-semibold">
             Team
           </Text>
         </div>
-        <div className="text-left col-span-3">
+        <div className="text-left col-span-4">
           <Text variant="body" className="font-semibold">
             Record
           </Text>
@@ -353,7 +368,7 @@ export const BBACollegePollModal: FC<CollegePollModalProps> = ({
 }) => {
   const ts = timestamp as BBATimestamp;
   const { currentUser } = useAuthStore();
-  const { collegePolls, cbbTeamMap, cbbStandingsMap, cbbTeam } =
+  const { collegePolls, cbbTeamMap, cbbStandingsMapBySeason, cbbTeam } =
     useSimBBAStore();
 
   const { isMobile } = useResponsive();
@@ -375,10 +390,22 @@ export const BBACollegePollModal: FC<CollegePollModalProps> = ({
     return MakeBBAWeeksOptionList(selectedSeason);
   }, [selectedSeason]);
 
+  const currentStandings = useMemo(() => {
+    return cbbStandingsMapBySeason[selectedSeason] || [];
+  }, [cbbStandingsMapBySeason, selectedSeason]);
+
+  const cbbStandingsMap = useMemo(() => {
+    const map: Record<number, any> = {};
+    for (const team of currentStandings) {
+      map[team.TeamID] = team;
+    }
+    return map;
+  }, [currentStandings]);
+
   const SelectSeasonOption = (opts: SingleValue<SelectOption>) => {
     const value = opts!.value;
     const num = Number(value);
-    const newWeekID = getHCKWeekID(1, num);
+    const newWeekID = getFBAWeekID(1, num);
     setSelectedSeason(num);
     setSelectedWeek(newWeekID);
   };
@@ -411,6 +438,7 @@ export const BBACollegePollModal: FC<CollegePollModalProps> = ({
   const backgroundColor = "#1f2937";
   const darkerBackgroundColor = darkenColor(backgroundColor, -5);
   const borderColor = teamColors.Two;
+
   const displaySeason = useMemo(() => {
     return BASE_FBA_SEASON + selectedSeason;
   }, [selectedSeason]);
@@ -421,7 +449,7 @@ export const BBACollegePollModal: FC<CollegePollModalProps> = ({
 
   return (
     <>
-      <div className="grid grid-cols-2 mb-3 gap-x-4">
+      <div className="grid grid-cols-2 mb-3 gap-x-4 text-start">
         <CategoryDropdown
           label={`Current Season: ${displaySeason}`}
           options={seasonOptions}
@@ -438,27 +466,27 @@ export const BBACollegePollModal: FC<CollegePollModalProps> = ({
         />
       </div>
       <div
-        className="grid grid-cols-10 border-b-2 pb-2"
+        className="grid grid-cols-10 border-b-2 pb-2 text-start"
         style={{
           borderColor,
         }}
       >
-        <div className="text-left col-span-1">
+        <div className="text-start col-span-1">
           <Text variant="body" className="font-semibold">
             Rank
           </Text>
         </div>
-        <div className="text-left col-span-4">
+        <div className="text-start col-span-3">
           <Text variant="body" className="font-semibold">
             Team
           </Text>
         </div>
-        <div className="text-left col-span-3">
+        <div className="text-start col-span-4">
           <Text variant="body" className="font-semibold">
             Record
           </Text>
         </div>
-        <div className="text-left col-span-2">
+        <div className="text-start col-span-2">
           <Text variant="body" className="font-semibold">
             Votes
           </Text>
@@ -495,8 +523,12 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
 }) => {
   const ts = timestamp as Timestamp;
   const { currentUser } = useAuthStore();
-  const { collegePollsMapBySeason, cfbTeamMap, cfbStandingsMap, cfbTeam } =
-    useSimFBAStore();
+  const {
+    collegePollsMapBySeason,
+    cfbTeamMap,
+    collegeStandingsMapBySeason,
+    cfbTeam,
+  } = useSimFBAStore();
 
   const { isMobile } = useResponsive();
   const [selectedWeek, setSelectedWeek] = useState<number>(
@@ -509,6 +541,18 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
   const collegePolls = useMemo(() => {
     return collegePollsMapBySeason[selectedSeason] || [];
   }, [collegePollsMapBySeason, selectedSeason]);
+
+  const currentStandings = useMemo(() => {
+    return collegeStandingsMapBySeason[selectedSeason] || [];
+  }, [collegeStandingsMapBySeason, selectedSeason]);
+
+  const cfbStandingsMap = useMemo(() => {
+    const map: Record<number, any> = {};
+    for (const team of currentStandings) {
+      map[team.TeamID] = team;
+    }
+    return map;
+  }, [currentStandings]);
 
   const teamColors = useTeamColors(
     cfbTeam?.ColorOne,
@@ -599,12 +643,12 @@ export const FBACollegePollModal: FC<CollegePollModalProps> = ({
             Rank
           </Text>
         </div>
-        <div className="text-left col-span-4">
+        <div className="text-left col-span-3">
           <Text variant="body" className="font-semibold">
             Team
           </Text>
         </div>
-        <div className="text-left col-span-3">
+        <div className="text-left col-span-4">
           <Text variant="body" className="font-semibold">
             Record
           </Text>
