@@ -105,6 +105,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
     rejectTrade,
     vetoTrade,
     handleProcessTrade,
+    realignOrder,
   } = usePHLDraft();
 
   const proposeTradeModal = useModal();
@@ -312,6 +313,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                 <UpcomingPicks
                   upcomingPicks={upcomingPicks.slice(0, 5)}
                   currentPick={currentPick}
+                  currentRoundPickCount={draftState.allDraftPicks[draftState.currentRound]?.length}
                   userTeamId={selectedTeam?.ID}
                   teamColors={teamColors}
                   backgroundColor={backgroundColor}
@@ -406,6 +408,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   league={SimPHL}
                   backgroundColor={backgroundColor}
                   currentPick={currentPick}
+                  currentRoundPickCount={draftState.allDraftPicks[draftState.currentRound]?.length}
                 />
               </>
             )}
@@ -429,6 +432,7 @@ export const PHLDraftPage: FC<PHLDraftPageProps> = ({ league }) => {
                   }
                   approvedRequestsCount={approvedRequests?.length ?? 0}
                   canTrade={isCommissioner}
+                  realignOrder={realignOrder}
                 />
               </>
             )}

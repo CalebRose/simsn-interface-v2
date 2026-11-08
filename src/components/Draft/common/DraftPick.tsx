@@ -88,10 +88,31 @@ export const WarRoomDraftPick: React.FC<WarRoomDraftPickProps> = ({
   );
 };
 
+export const getPickStatus = (
+  pick: DraftPickType,
+  currentPick: DraftPickType | null,
+  userTeamId: number | undefined,
+  currentRoundPickCount: number,
+) => {
+  if (pick.TeamID === userTeamId) return "user";
+  if (!currentPick) return "upcoming";
+  if (pick.ID === currentPick.ID) return "current";
+
+  const isLastPick = currentPick.DraftNumber >= currentRoundPickCount;
+  const nextRound = isLastPick
+    ? currentPick.DraftRound + 1
+    : currentPick.DraftRound;
+  const nextNumber = isLastPick ? 1 : currentPick.DraftNumber + 1;
+  return pick.DraftRound === nextRound && pick.DraftNumber === nextNumber
+    ? "next"
+    : "upcoming";
+};
+
 export const DraftPickCard: React.FC<{
   pick: DraftPickType;
   index: number;
   currentPick: DraftPickType | null;
+  currentRoundPickCount?: number;
   userTeamId?: number;
   league: any;
   view?: string;
@@ -101,6 +122,7 @@ export const DraftPickCard: React.FC<{
   pick,
   index,
   currentPick,
+  currentRoundPickCount,
   userTeamId,
   league,
   view = "",
@@ -108,17 +130,6 @@ export const DraftPickCard: React.FC<{
   handlePlayerModal,
 }) => {
   const picksInRound = league === SimPHL ? 28 : 32;
-  const pickNumber = (pick.DraftRound - 1) * picksInRound + pick.DraftNumber;
-  const currentPickNumber = currentPick
-    ? (currentPick.DraftRound - 1) * picksInRound + currentPick.DraftNumber
-    : 0;
-
-  const getPickStatus = (pick: DraftPickType, index: number) => {
-    if (pick.TeamID === userTeamId) return "user";
-    if (currentPick && pick.ID === currentPick.ID) return "current";
-    if (pickNumber === currentPickNumber + 1) return "next";
-    return "upcoming";
-  };
 
   const getStatusStyles = (status: string) => {
     switch (status) {
@@ -176,9 +187,12 @@ export const DraftPickCard: React.FC<{
     return `${draftee.College}`;
   }, [draftee]);
 
-  console.log({ draftee, drafteeLabel, drafteeSchool });
-
-  const status = getPickStatus(pick, index);
+  const status = getPickStatus(
+    pick,
+    currentPick,
+    userTeamId,
+    currentRoundPickCount || picksInRound,
+  );
   const statusLabel = getStatusLabel(status);
   const teamLogo = getLogo(league, pick.TeamID, false);
 

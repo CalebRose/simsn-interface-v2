@@ -29,6 +29,7 @@ interface DraftAdminBoardProps {
   handleOpenAdminProposalsModal?: () => void;
   approvedRequestsCount?: number;
   canTrade?: boolean;
+  realignOrder: () => Promise<void>;
 }
 
 export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
@@ -47,8 +48,22 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
   handleOpenAdminProposalsModal,
   approvedRequestsCount = 0,
   canTrade = false,
+  realignOrder,
 }) => {
-  const draftPickOptions = getDraftPickOptions(league);
+  const draftRound = useMemo(() => {
+    return draftState.currentRound;
+  }, [draftState]);
+
+  const totalNumberOfPicksInRound = useMemo(() => {
+    const draftPickMap = draftState.allDraftPicks;
+    const picksInRound = draftPickMap[draftRound] || [];
+    return picksInRound.length;
+  }, [draftState, draftRound]);
+
+  const draftPickOptions = getDraftPickOptions(
+    league,
+    totalNumberOfPicksInRound,
+  );
   const draftRoundOptions = getDraftRoundOptions();
 
   const selectDraftPickOption = async (opt: SingleValue<SelectOption>) => {
@@ -167,6 +182,16 @@ export const DraftAdminBoard: React.FC<DraftAdminBoardProps> = ({
               Resync
             </Button>
           </div>
+          {/* <div className="flex flex-col">
+            <Text variant="body-small">Realign Order</Text>
+            <Button
+              disabled={draftState.currentPick > 1}
+              variant="success"
+              onClick={realignOrder}
+            >
+              Realign
+            </Button>
+          </div> */}
           <div className="flex flex-col">
             <Text variant="body-small">Start Draft</Text>
             <Button

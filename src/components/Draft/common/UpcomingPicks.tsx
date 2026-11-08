@@ -1,8 +1,9 @@
 import React, { FC } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
-import { DraftLeague, DraftPick, TeamColors, getLeagueConstant } from "./types";
-import { DraftPickCard } from "./DraftPick";
+import { DraftLeague, DraftPick, TeamColors } from "./types";
+import { DraftPickCard, getPickStatus } from "./DraftPick";
+import { SimPHL } from "../../../_constants/constants";
 
 interface UpcomingPicksProps {
   upcomingPicks: DraftPick[];
@@ -11,6 +12,7 @@ interface UpcomingPicksProps {
   teamColors: TeamColors;
   backgroundColor: string;
   league: DraftLeague;
+  currentRoundPickCount?: number;
 }
 
 export const UpcomingPicks: FC<UpcomingPicksProps> = ({
@@ -20,13 +22,9 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
   teamColors,
   backgroundColor,
   league,
+  currentRoundPickCount,
 }) => {
-  const getPickStatus = (pick: DraftPick, index: number) => {
-    if (pick.TeamID === userTeamId) return "user";
-    if (currentPick && pick.ID === currentPick.ID) return "current";
-    if (index === 1) return "next";
-    return "upcoming";
-  };
+  const picksInRound = currentRoundPickCount || (league === SimPHL ? 28 : 32);
 
   return (
     <Border
@@ -53,6 +51,7 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
             pick={pick}
             index={index}
             currentPick={currentPick}
+            currentRoundPickCount={picksInRound}
             userTeamId={userTeamId}
             league={league}
           />
@@ -66,8 +65,8 @@ export const UpcomingPicks: FC<UpcomingPicksProps> = ({
           className="flex items-center space-x-1"
           style={{ contain: "layout" }}
         >
-          {upcomingPicks.slice(0, 10).map((pick, index) => {
-            const status = getPickStatus(pick, index);
+          {upcomingPicks.slice(0, 10).map((pick) => {
+            const status = getPickStatus(pick, currentPick, userTeamId, picksInRound);
             return (
               <div
                 key={pick.ID}
