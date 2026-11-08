@@ -30,7 +30,7 @@ export const PublicLandingPage = () => {
   const fieldImg = fieldImage();
 
   return (
-    <section className="relative min-h-screen w-screen overflow-hidden bg-gray-950 pt-10 text-white">
+    <section className="relative min-h-screen w-full overflow-hidden bg-gray-950 pt-10 text-white">
       <img
         alt="Sports field"
         src={fieldImg}
