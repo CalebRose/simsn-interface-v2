@@ -232,13 +232,12 @@ export const useNFLDraft = () => {
 
   const upcomingPicks = useMemo(() => {
     const result = draftPicksFromState
-      .filter((pick) => {
-        const pickOverall =
-          (pick.DraftRound - 1) * NFL_PICKS_PER_ROUND + pick.DraftNumber;
-        const draftPickOverall =
-          (draftCurrentRound - 1) * NFL_PICKS_PER_ROUND + draftCurrentPick;
-        return pickOverall >= draftPickOverall;
-      })
+      .filter(
+        (pick) =>
+          pick.DraftRound > draftCurrentRound ||
+          (pick.DraftRound === draftCurrentRound &&
+            pick.DraftNumber >= draftCurrentPick),
+      )
       .sort((a, b) => {
         if (a.DraftRound !== b.DraftRound) {
           return a.DraftRound - b.DraftRound;
@@ -251,19 +250,15 @@ export const useNFLDraft = () => {
 
   const recentPicks = useMemo(() => {
     return draftPicksFromState
-      .filter((pick) => {
-        const pickOverall =
-          (pick.DraftRound - 1) * NFL_PICKS_PER_ROUND + pick.DraftNumber;
-        const draftPickOverall =
-          (draftCurrentRound - 1) * NFL_PICKS_PER_ROUND + draftCurrentPick;
-        return pickOverall < draftPickOverall && pick.DrafteeID > 0;
-      })
+      .filter(
+        (pick) =>
+          pick.DrafteeID > 0 &&
+          (pick.DraftRound < draftCurrentRound ||
+            (pick.DraftRound === draftCurrentRound &&
+              pick.DraftNumber < draftCurrentPick)),
+      )
       .sort((a, b) => {
-        const aOverall =
-          (a.DraftRound - 1) * NFL_PICKS_PER_ROUND + a.DraftNumber;
-        const bOverall =
-          (b.DraftRound - 1) * NFL_PICKS_PER_ROUND + b.DraftNumber;
-        return bOverall - aOverall;
+        return b.DraftRound - a.DraftRound || b.DraftNumber - a.DraftNumber;
       })
       .slice(0, 20);
   }, [draftPicksFromState, draftCurrentRound, draftCurrentPick]);

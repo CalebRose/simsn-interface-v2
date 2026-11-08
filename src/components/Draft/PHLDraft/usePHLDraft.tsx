@@ -244,13 +244,12 @@ export const usePHLDraft = () => {
 
   const upcomingPicks = useMemo(() => {
     const result = draftPicksFromState
-      .filter((pick) => {
-        const pickOverall =
-          (pick.DraftRound - 1) * PHL_PICKS_PER_ROUND + pick.DraftNumber;
-        const draftPickOverall =
-          (draftCurrentRound - 1) * PHL_PICKS_PER_ROUND + draftCurrentPick;
-        return pickOverall >= draftPickOverall;
-      })
+      .filter(
+        (pick) =>
+          pick.DraftRound > draftCurrentRound ||
+          (pick.DraftRound === draftCurrentRound &&
+            pick.DraftNumber >= draftCurrentPick),
+      )
       .sort((a, b) => {
         if (a.DraftRound !== b.DraftRound) {
           return a.DraftRound - b.DraftRound;
@@ -259,28 +258,22 @@ export const usePHLDraft = () => {
       })
       .slice(0, 15);
     return result;
-  }, [draftPicksFromState, draftCurrentPick]);
+  }, [draftPicksFromState, draftCurrentRound, draftCurrentPick]);
 
   const recentPicks = useMemo(() => {
     return draftPicksFromState
-      .filter((pick) => {
-        const pickOverall =
-          (pick.DraftRound - 1) * PHL_PICKS_PER_ROUND + pick.DraftNumber;
-        return (
-          pickOverall <
-            (draftCurrentRound - 1) * PHL_PICKS_PER_ROUND + draftCurrentPick &&
-          pick.DrafteeID > 0
-        );
-      })
+      .filter(
+        (pick) =>
+          pick.DrafteeID > 0 &&
+          (pick.DraftRound < draftCurrentRound ||
+            (pick.DraftRound === draftCurrentRound &&
+              pick.DraftNumber < draftCurrentPick)),
+      )
       .sort((a, b) => {
-        const aOverall =
-          (a.DraftRound - 1) * PHL_PICKS_PER_ROUND + a.DraftNumber;
-        const bOverall =
-          (b.DraftRound - 1) * PHL_PICKS_PER_ROUND + b.DraftNumber;
-        return bOverall - aOverall;
+        return b.DraftRound - a.DraftRound || b.DraftNumber - a.DraftNumber;
       })
       .slice(0, 10);
-  }, [draftPicksFromState, draftCurrentPick]);
+  }, [draftPicksFromState, draftCurrentRound, draftCurrentPick]);
 
   const draftedPlayerIds = useMemo(() => {
     return new Set(
@@ -690,6 +683,42 @@ export const usePHLDraft = () => {
     phlAllDraftPicks,
   ]);
 
+  const realignOrder = useCallback(async () => {
+    const refreshedDraftPicks = await getBootstrapDraftData();
+    const sourcePicks = refreshedDraftPicks.length
+      ? refreshedDraftPicks
+      : phlAllDraftPicks;
+    const updatedDraftPicks: Record<
+      number,
+      Array<(typeof allDraftPicks)[number][number] | Omit<DraftPick, "convertValues">>
+    > = {};
+    const existingPickIDs = new Set<number>();
+    for (const [round, picks] of Object.entries(allDraftPicks)) {
+      updatedDraftPicks[Number(round)] = [...picks];
+      for (const pick of picks) {
+        existingPickIDs.add(pick.ID);
+      }
+    }
+
+    for (const pick of sourcePicks) {
+      if (existingPickIDs.has(pick.ID)) {
+        continue;
+      }
+      updatedDraftPicks[pick.DraftRound] =
+        updatedDraftPicks[pick.DraftRound] || [];
+      updatedDraftPicks[pick.DraftRound].push({ ...pick, DrafteeID: 0 });
+      existingPickIDs.add(pick.ID);
+    }
+    await handleManualDraftStateUpdate({
+      allDraftPicks: updatedDraftPicks,
+    });
+  }, [
+    allDraftPicks,
+    getBootstrapDraftData,
+    handleManualDraftStateUpdate,
+    phlAllDraftPicks,
+  ]);
+
   const handleProcessTrade = useCallback(
     async (acceptedTrade: AnyTradeProposal) => {
       const trade = acceptedTrade as TradeProposal;
@@ -719,24 +748,26 @@ export const usePHLDraft = () => {
       const updatedDraftPicks: Record<number, DraftPick[]> = {};
       let hasCurrentSeasonSwap = false;
       for (const [round, picks] of Object.entries(allDraftPicks)) {
-        updatedDraftPicks[Number(round)] = (picks as DraftPick[]).map((pick) => {
-          if (!senderPickIDs.has(pick.ID) && !recipientPickIDs.has(pick.ID)) {
-            return pick;
-          }
+        updatedDraftPicks[Number(round)] = (picks as DraftPick[]).map(
+          (pick) => {
+            if (!senderPickIDs.has(pick.ID) && !recipientPickIDs.has(pick.ID)) {
+              return pick;
+            }
 
-          hasCurrentSeasonSwap = true;
-          const sendingTeamID = senderPickIDs.has(pick.ID)
-            ? recipientTeamID
-            : senderTeamID;
-          const newTeam = phlTeamMap[sendingTeamID];
-          return new DraftPick({
-            ...pick,
-            PreviousTeamID: pick.TeamID,
-            PreviousTeam: pick.Team,
-            TeamID: sendingTeamID,
-            Team: newTeam?.TeamName ?? pick.Team,
-          });
-        });
+            hasCurrentSeasonSwap = true;
+            const sendingTeamID = senderPickIDs.has(pick.ID)
+              ? recipientTeamID
+              : senderTeamID;
+            const newTeam = phlTeamMap[sendingTeamID];
+            return new DraftPick({
+              ...pick,
+              PreviousTeamID: pick.TeamID,
+              PreviousTeam: pick.Team,
+              TeamID: sendingTeamID,
+              Team: newTeam?.TeamName ?? pick.Team,
+            });
+          },
+        );
       }
 
       if (hasCurrentSeasonSwap) {
@@ -837,6 +868,7 @@ export const usePHLDraft = () => {
     updateUserWarRoom,
     updateApprovedTrades,
     handleProcessTrade,
+    realignOrder,
   };
 };
 

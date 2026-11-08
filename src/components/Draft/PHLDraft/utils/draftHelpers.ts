@@ -19,9 +19,9 @@ export const getDraftRoundOptions = () => {
   return options;
 };
 
-export const getDraftPickOptions = (league: League) => {
+export const getDraftPickOptions = (league: League, numOfPicks: number = 0) => {
   const options: { label: string; value: string }[] = [];
-  const totalNumberOfPicks = league === SimPHL ? 28 : 32; // 1 round × 28 teams
+  const totalNumberOfPicks = numOfPicks || (league === SimPHL ? 28 : 32); // 1 round × 28 teams
   for (let i = 1; i <= totalNumberOfPicks; i++) {
     options.push({ label: `Pick ${i}`, value: i.toString() });
   }
