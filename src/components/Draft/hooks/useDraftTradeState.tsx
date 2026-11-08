@@ -1,5 +1,11 @@
 import { useState, useMemo, useCallback } from "react";
-import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
+import {
+  arrayRemove,
+  arrayUnion,
+  doc,
+  updateDoc,
+  writeBatch,
+} from "firebase/firestore";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import {
@@ -378,7 +384,6 @@ export const useDraftTradeState = ({
       const recipientDocID = tradePartnerTeam
         ? getTeamWarRoomDocID(tradePartnerTeam)
         : getRecipientDocID(modalDTO);
-      if (!recipientDocID) return;
 
       const newDTO = stripUndefined({
         ...modalDTO,
@@ -389,13 +394,34 @@ export const useDraftTradeState = ({
           : {}),
       }) as unknown as AnyTradeProposal;
 
-      // 1. Add to user's sentRequests
-      await updateUserWarRoom({ sentRequests: arrayUnion(newDTO) as any });
+      if (isNFL) {
+        if (!recipientDocID) return;
 
-      // 2. Add to partner's requests (direct update — no subscription needed)
-      await updateDoc(getWarRoomDocRef(recipientDocID), {
-        requests: arrayUnion(newDTO),
-      });
+        await updateUserWarRoom({ sentRequests: arrayUnion(newDTO) as any });
+        await updateDoc(getWarRoomDocRef(recipientDocID), {
+          requests: arrayUnion(newDTO),
+        });
+        return;
+      }
+
+      if (!senderDocID || !recipientDocID || senderDocID === recipientDocID) {
+        throw new Error(
+          "Cannot propose a draft trade without two distinct PHL teams.",
+        );
+      }
+
+      const batch = writeBatch(firestore);
+      batch.set(
+        getWarRoomDocRef(senderDocID),
+        { sentRequests: arrayUnion(newDTO) },
+        { merge: true },
+      );
+      batch.set(
+        getWarRoomDocRef(recipientDocID),
+        { requests: arrayUnion(newDTO) },
+        { merge: true },
+      );
+      await batch.commit();
     },
     [
       isNFL,
