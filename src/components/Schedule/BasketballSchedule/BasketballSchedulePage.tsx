@@ -71,7 +71,6 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     cbbTeamMap,
     cbbRosterMap,
     cbbTeamOptions,
-    allCBBStandings,
     cbbStandingsMapBySeason,
     allCollegeGames: allCBBGames,
     isLoading,
@@ -129,11 +128,18 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
   const collegeGamesBySelectedSeason = useMemo(() => {
     return allCBBGames
       .filter((game) => game.SeasonID === selectedSeasonID)
-      .sort((a, b) => a.Week - b.Week);
+      .sort(
+        (a, b) => a.Week - b.Week || a.MatchOfWeek.localeCompare(b.MatchOfWeek),
+      );
   }, [allCBBGames, selectedSeasonID]);
 
   const collegeStandingsBySelectedSeason = useMemo(() => {
-    return cbbStandingsMapBySeason?.[selectedSeasonID] ?? [];
+    const standings = cbbStandingsMapBySeason?.[selectedSeasonID] ?? [];
+    return standings.sort(
+      (a, b) =>
+        a.ConferenceLosses - b.ConferenceLosses ||
+        a.TotalLosses - b.TotalLosses,
+    );
   }, [cbbStandingsMapBySeason, selectedSeasonID]);
 
   const conferenceTournamentGames = useMemo(
@@ -206,7 +212,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
       selectedSeason,
       league,
       collegeStandingsBySelectedSeason,
-      allCBBGames,
+      collegeGamesBySelectedSeason,
       cbbTeams,
     );
   }, [
@@ -216,7 +222,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedSeason,
     league,
     collegeStandingsBySelectedSeason,
-    allCBBGames,
+    collegeGamesBySelectedSeason,
     cbbTeams,
   ]);
 
@@ -637,7 +643,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               <LeagueStandings
                 currentUser={currentUser}
                 league={league}
-                standings={allCBBStandings}
+                standings={collegeStandingsBySelectedSeason}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}
@@ -713,7 +719,7 @@ export const CBBSchedulePage = ({ league, ts }: SchedulePageProps) => {
               standings={
                 collegeStandingsBySelectedSeason.length
                   ? collegeStandingsBySelectedSeason
-                  : allCBBStandings
+                  : collegeStandingsBySelectedSeason
               }
               season={selectedSeason}
               teamMap={cbbTeamMap}
@@ -825,7 +831,9 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
   const proGamesBySelectedSeason = useMemo(() => {
     return allNBAGames
       .filter((game) => game.SeasonID === selectedSeasonID)
-      .sort((a, b) => a.Week - b.Week);
+      .sort(
+        (a, b) => a.Week - b.Week || a.MatchOfWeek.localeCompare(b.MatchOfWeek),
+      );
   }, [allNBAGames, selectedSeasonID]);
 
   const proStandingsBySelectedSeason = useMemo(() => {
@@ -915,7 +923,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
       selectedSeason,
       league,
       proStandingsBySelectedSeason,
-      allNBAGames,
+      proGamesBySelectedSeason,
       nbaTeams,
     );
   }, [
@@ -925,7 +933,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
     selectedSeason,
     league,
     proStandingsBySelectedSeason,
-    allNBAGames,
+    proGamesBySelectedSeason,
     nbaTeams,
   ]);
 
@@ -1300,7 +1308,7 @@ export const NBASchedulePage = ({ league, ts }: SchedulePageProps) => {
               <LeagueStandings
                 currentUser={currentUser}
                 league={league}
-                standings={allNBAStandings}
+                standings={proStandingsBySelectedSeason}
                 backgroundColor={backgroundColor}
                 headerColor={headerColor}
                 borderColor={borderColor}

@@ -1,21 +1,28 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Forum } from "../../../models/forumModels";
 import { ForumBorder } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import routes from "../../../_constants/routes";
 import { useAuthStore } from "../../../context/AuthContext";
+import { useForumLatestThread } from "../../../_hooks/useForumHooks";
+import {
+  LEAGUE_ACCENT_COLORS,
+  formatRelativeTime,
+  getForumDisplayName,
+  getLeagueKey,
+  isSystemGeneratedThread,
+  pluralize,
+} from "../forumUtils";
+import { MetaText } from "../../../_design/MetaText";
+import { IconButton } from "../../../_design/IconButton";
 
 interface ForumCardProps {
   forum: Forum;
   subforums?: Forum[];
 }
 
-function formatTimestamp(ts: { seconds: number } | null | undefined): string {
-  if (!ts) return "—";
-  const date = new Date(ts.seconds * 1000);
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
+type Ts = { seconds: number };
 
 export const ForumCard: React.FC<ForumCardProps> = ({
   forum,
@@ -23,10 +30,38 @@ export const ForumCard: React.FC<ForumCardProps> = ({
 }) => {
   const { currentUser } = useAuthStore();
   const navigate = useNavigate();
-  const handleNavigate = () => {
-    if (!canNavigateToForum) return;
-    navigate(`${routes.FORUMS}/${forum.slug}`);
+  const collapseKey = `forumCardCollapsed:${forum.id}`;
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(collapseKey) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      try {
+        localStorage.setItem(collapseKey, prev ? "0" : "1");
+      } catch {
+        // storage unavailable; state just won't persist
+      }
+      return !prev;
+    });
   };
+
+  const isSubscriber = !!currentUser?.IsSubscribed;
+  // Never surface titles from subscriber-only forums to non-subscribers.
+  const visibleSubforums = useMemo(
+    () =>
+      subforums.filter((sf) => sf.visibility !== "subscriber" || isSubscriber),
+    [subforums, isSubscriber],
+  );
+  const hiddenFromUser = forum.visibility === "subscriber" && !isSubscriber;
+
+  const latestThread = useForumLatestThread(
+    [forum, ...visibleSubforums],
+    !hiddenFromUser,
+  );
 
   const canNavigateToForum = useMemo(() => {
     if (!currentUser) return false;
@@ -45,93 +80,140 @@ export const ForumCard: React.FC<ForumCardProps> = ({
       return false;
     }
     return true;
-  }, [currentUser]);
+  }, [currentUser, forum.name]);
 
-  if (
-    forum.visibility === "subscriber" &&
-    (currentUser?.IsSubscribed === undefined ||
-      currentUser?.IsSubscribed === false)
-  ) {
-    return <></>;
-  }
+  if (hiddenFromUser) return <></>;
+
+  const handleNavigate = () => {
+    if (!canNavigateToForum) return;
+    navigate(`${routes.FORUMS}/${forum.slug}`);
+  };
+
+  const threadTotal =
+    (forum.threadCount ?? 0) +
+    visibleSubforums.reduce((sum, sf) => sum + (sf.threadCount ?? 0), 0);
+  const postTotal =
+    (forum.postCount ?? 0) +
+    visibleSubforums.reduce((sum, sf) => sum + (sf.postCount ?? 0), 0);
+
+  // Thread creation updates the subforum, so the parent must aggregate.
+  const latest = [forum, ...visibleSubforums].reduce<{
+    at: Ts | null;
+    by: string | null;
+  }>(
+    (best, f) => {
+      const at = f.latestActivityAt as unknown as Ts | null | undefined;
+      if (at && (!best.at || at.seconds > best.at.seconds)) {
+        return { at, by: f.latestActivityBy?.username ?? null };
+      }
+      return best;
+    },
+    { at: null, by: null },
+  );
+
+  const leagueKey = getLeagueKey(forum.id, forum.sportKey);
+  const accent = leagueKey ? LEAGUE_ACCENT_COLORS[leagueKey] : "#475569";
+
   return (
-    <ForumBorder classes="p-4 cursor-pointer hover:opacity-90 transition-opacity flex flex-col h-full">
-      {/* Top: name + description (clickable) */}
+    <ForumBorder
+      classes={`flex flex-col h-full overflow-hidden p-0 transition-colors hover:bg-(--text-primary)/5 ${canNavigateToForum ? "cursor-pointer" : ""}`}
+    >
       <div
-        className="flex flex-col flex-1 min-w-0"
+        className="flex min-w-0 flex-1 flex-col p-4"
+        style={{ borderLeft: `4px solid ${accent}` }}
         onClick={handleNavigate}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && handleNavigate()}
       >
-        <div className="flex items-center gap-2 mb-1">
-          <Text variant="h6">{forum.name}</Text>
+        <div className="mb-1 flex items-center gap-2">
+          <Text variant="h6" classes="text-start">
+            {getForumDisplayName(forum.name)}
+          </Text>
           {forum.isLocked && (
-            <span className="text-xs bg-yellow-600 text-white px-1 rounded-sm">
+            <span className="rounded-sm bg-yellow-600 px-1.5 text-xs text-white">
               Locked
             </span>
           )}
+          <IconButton
+            label={collapsed ? "Expand category" : "Collapse category"}
+            aria-expanded={!collapsed}
+            classes="ml-auto"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleCollapsed();
+            }}
+          >
+            {collapsed ? "▸" : "▾"}
+          </IconButton>
         </div>
-        {forum.description && (
-          <Text variant="small" classes="text-gray-400 mb-2">
+        {!collapsed && forum.description && (
+          <Text
+            variant="small"
+            classes="mb-3 line-clamp-2 text-(--text-muted) text-start"
+          >
             {forum.description}
           </Text>
         )}
-        {/* Subforums */}
-        {subforums.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {subforums.map((sf) => (
+        {!collapsed && visibleSubforums.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {visibleSubforums.map((sf) => (
               <button
                 key={sf.id}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`${routes.FORUMS}/${forum.slug}/${sf.slug}`);
                 }}
-                className="text-xs bg-gray-700 hover:bg-gray-600 text-blue-300 hover:text-blue-200 px-2 py-0.5 rounded-sm transition-colors"
+                className="min-h-5 sm:min-h-8 dark:text-white rounded-sm bg-(--bg-surface) px-3 py-1 text-sm text-(--accent-primary) border border-blue-400 transition-colors hover:bg-(--border-secondary) hover:text-(--accent-primary) focus-visible:ring-2 focus-visible:ring-blue-400"
               >
-                {sf.name}
+                {getForumDisplayName(sf.name)}
               </button>
             ))}
           </div>
         )}
       </div>
 
-      {/* Bottom: stats row */}
-      <div className="flex items-center justify-between pt-3 mt-auto border-t text-sm border-(--border-secondary)">
-        <div className="flex gap-4">
-          <span className="text-gray-400">
-            <span className="text-white font-medium">
-              {(forum.threadCount ?? 0) +
-                subforums.reduce((sum, sf) => sum + (sf.threadCount ?? 0), 0)}
-            </span>{" "}
-            threads
-          </span>
-          <span className="text-gray-400">
-            <span className="text-white font-medium">
-              {(forum.postCount ?? 0) +
-                subforums.reduce((sum, sf) => sum + (sf.postCount ?? 0), 0)}
-            </span>{" "}
-            posts
-          </span>
+      <div
+        className="flex w-full flex-col gap-1 border-t border-(--border-secondary) px-4 py-3 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+        onClick={handleNavigate}
+      >
+        <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2">
+          <MetaText classes="uppercase tracking-wide shrink-0">Latest</MetaText>
+          {threadTotal === 0 ? (
+            <MetaText>No threads yet</MetaText>
+          ) : latestThread ? (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`${routes.FORUM_THREAD}/${latestThread.id}`);
+                }}
+                className="min-w-0 max-w-full truncate p-0 text-left text-sm font-medium text-(--accent-primary) hover:text-(--accent-primary) hover:underline focus-visible:ring-2 focus-visible:ring-blue-400"
+                title={latestThread.title}
+              >
+                {latestThread.title}
+              </button>
+              <MetaText classes="shrink-0">
+                {isSystemGeneratedThread(latestThread) && "Auto-post · "}
+                {latestThread.author.username} ·{" "}
+                {formatRelativeTime(
+                  (latestThread.latestActivityAt ??
+                    latestThread.createdAt) as unknown as Ts,
+                )}
+              </MetaText>
+            </>
+          ) : latest.at ? (
+            <MetaText>
+              {formatRelativeTime(latest.at)}
+              {latest.by && ` by ${latest.by}`}
+            </MetaText>
+          ) : (
+            <MetaText>No recent activity</MetaText>
+          )}
         </div>
-        {forum.latestActivityAt ? (
-          <div className="text-right">
-            <Text variant="xs" classes="text-(--text-secondary)">
-              {formatTimestamp(
-                forum.latestActivityAt as unknown as { seconds: number },
-              )}
-            </Text>
-            {forum.latestActivityBy && (
-              <Text variant="xs" classes="text-(--text-secondary)">
-                by {forum.latestActivityBy.username}
-              </Text>
-            )}
-          </div>
-        ) : (
-          <Text variant="xs" classes="text-(--text-secondary)">
-            No activity
-          </Text>
-        )}
+        <MetaText classes="shrink-0">
+          {pluralize(threadTotal, "thread")} · {pluralize(postTotal, "post")}
+        </MetaText>
       </div>
     </ForumBorder>
   );

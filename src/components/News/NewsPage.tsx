@@ -27,7 +27,6 @@ export const NewsPage = () => {
     engagementData,
     updateEngagementData,
     claxTeamMap,
-    showSimLax,
   } = useNewsPage();
 
   return (
@@ -51,7 +50,6 @@ export const NewsPage = () => {
             refreshNews={RefreshNews}
             sortByNewest={sortByNewest}
             setSortByNewest={setSortByNewest}
-            showSimLax={showSimLax}
           />
           <div className="flex flex-col w-full">
             {pagedData.map((newsItem: NewsLog) => (

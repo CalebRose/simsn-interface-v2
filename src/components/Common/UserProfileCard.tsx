@@ -104,6 +104,30 @@ export const UserProfileCard: React.FC<UserProfileCardProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // intentionally runs only on first mount
 
+  // mouseleave is not fired when content scrolls out from under a still
+  // pointer (or never arrives after lazy mount), so dismiss defensively.
+  useEffect(() => {
+    if (!isHovered) return;
+    const close = () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      setIsHovered(false);
+    };
+    const handlePointerMove = (event: PointerEvent) => {
+      const trigger = triggerRef.current;
+      if (!trigger || !(event.target instanceof Node) || !trigger.contains(event.target)) {
+        close();
+      }
+    };
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("wheel", close, { passive: true });
+    window.addEventListener("pointermove", handlePointerMove);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("wheel", close);
+      window.removeEventListener("pointermove", handlePointerMove);
+    };
+  }, [isHovered]);
+
   const user = useMemo<CurrentUser | null>(
     () => userMap[uid] ?? null,
     [userMap, uid],

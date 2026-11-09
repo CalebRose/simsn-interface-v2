@@ -388,6 +388,12 @@ export const AvailableTeams = () => {
       case SimCLAX:
         await LacrosseService.requestTeam(team.ID, currentUser!.username);
         setSentRequestCLAX(true);
+        await ForumService.CreateSimCollegeLacrosseJobApplicationThreadFromTeamRequest(
+          { Username: currentUser!.username, TeamID: team.ID },
+          team.Abbreviation || team.TeamName,
+          currentUser!.id,
+          currentUser!.username,
+        );
         break;
       case SimCHL:
         await RequestService.CreateCHLTeamRequest(requestDTO);
@@ -510,7 +516,7 @@ export const AvailableTeams = () => {
             </div>
             <div className="flex flex-col">
               <div className="flex flex-col gap-2">
-                <ButtonGrid classes="grid-cols-6 justify-center">
+                <ButtonGrid classes="grid-cols-3 sm:grid-cols-6 justify-center">
                   <PillButton
                     variant="primaryOutline"
                     isSelected={selectedLeague === SimCFB}
@@ -554,7 +560,7 @@ export const AvailableTeams = () => {
                     <Text variant="small">SimPHL</Text>
                   </PillButton>
                 </ButtonGrid>
-                <ButtonGrid classes="grid-cols-6 justify-center">
+                <ButtonGrid classes="grid-cols-3 sm:grid-cols-6 justify-center">
                   <PillButton
                     variant="primaryOutline"
                     isSelected={selectedLeague === SimCollegeBaseball}
@@ -569,22 +575,19 @@ export const AvailableTeams = () => {
                   >
                     <Text variant="small">SimMLB</Text>
                   </PillButton>
-                  {/* SimLAX public launch: restore the SimCLAX and SimPLAX buttons here. */}
-                  {/*
-                    <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCLAX} onClick={() => selectSport(SimCLAX)}>
-                      <Text variant="small">SimCLAX</Text>
-                    </PillButton>
-                    <PillButton variant="primaryOutline" disabled title="SimPLAX is coming soon" classes="cursor-not-allowed opacity-50">
-                      <Text variant="small">SimPLAX</Text>
-                    </PillButton>
-                  */}
+                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCLAX} onClick={() => selectSport(SimCLAX)}>
+                    <Text variant="small">SimCLAX</Text>
+                  </PillButton>
+                  <PillButton variant="primaryOutline" disabled title="SimPLAX is coming soon" classes="cursor-not-allowed opacity-50">
+                    <Text variant="small">SimPLAX</Text>
+                  </PillButton>
                 </ButtonGrid>
               </div>
             </div>
           </div>
         </div>
         <div className="min-[320px]:flex min-[320px]:flex-col-reverse min-[1025px]:grid min-[1025px]:grid-cols-2 gap-x-8">
-          <div className="grid min-[800px]:grid-cols-4 px-2 min-[300px]:grid-cols-3 overflow-y-auto gap-1 md:gap-0 justify-center min-[320px]:max-h-68 min-[420px]:max-h-100 min-[820px]:max-h-80 max-[1024px]:w-full min-[1025px]:max-h-[75vh] min-[1025px]:w-[50vw]">
+          <div className="grid min-[800px]:grid-cols-4 px-2 min-[300px]:grid-cols-3 overflow-y-auto gap-1 md:gap-0 justify-center min-[320px]:max-h-[50vh] min-[420px]:max-h-[55vh] min-[820px]:max-h-80 max-[1024px]:w-full min-[1025px]:max-h-[75vh] min-[1025px]:w-[50vw]">
             {selectedLeague === SimCFB &&
               filteredTeams.map((x) => (
                 <TeamCard

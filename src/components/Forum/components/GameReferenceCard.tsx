@@ -17,6 +17,7 @@ const LEAGUE_LABELS: Record<string, string> = {
   simchl: "SimCHL",
   simphl: "SimPHL",
   simcbl: "SimCBL",
+  simclax: "SimCLAX",
   simmlb: "SimMLB",
 };
 
@@ -35,12 +36,12 @@ export const GameReferenceCard: React.FC<GameReferenceCardProps> = ({
               {LEAGUE_LABELS[gameRef.league] ?? gameRef.league.toUpperCase()}
             </span>
             {gameRef.gameDateLabel && (
-              <Text variant="xs" classes="text-gray-400">
+              <Text variant="xs" classes="text-(--text-muted)">
                 {gameRef.gameDateLabel}
               </Text>
             )}
             {gameRef.gameStatus && (
-              <Text variant="xs" classes="text-gray-400">
+              <Text variant="xs" classes="text-(--text-muted)">
                 · {gameRef.gameStatus}
               </Text>
             )}
@@ -49,7 +50,7 @@ export const GameReferenceCard: React.FC<GameReferenceCardProps> = ({
             {gameRef.gameLabel}
           </Text>
           {gameRef.seasonId && gameRef.weekId && (
-            <Text variant="xs" classes="text-gray-500">
+            <Text variant="xs" classes="text-(--text-muted)">
               Season {gameRef.seasonId} · Week {gameRef.weekId}
             </Text>
           )}
@@ -58,7 +59,7 @@ export const GameReferenceCard: React.FC<GameReferenceCardProps> = ({
         {gameRef.sourcePath && (
           <button
             onClick={() => (onOpen ? onOpen() : navigate(gameRef.sourcePath!))}
-            className="text-xs text-blue-400 hover:text-blue-300 underline shrink-0"
+            className="text-xs text-(--accent-primary) hover:text-(--accent-primary) underline shrink-0"
           >
             View game →
           </button>

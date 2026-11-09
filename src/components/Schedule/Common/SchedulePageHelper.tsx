@@ -483,13 +483,19 @@ export const getScheduleCBBData = (
   selectedWeek: any,
   selectedSeason: any,
   league: League,
-  allCHLStandings: CBBStandings[],
+  allCBBStandings: CBBStandings[],
   allCollegeGames: CBBGame[],
   allCollegeTeams: CBBTeam[],
 ) => {
   // Team Standings
-  const teamStandings = allCHLStandings
+  const teamStandings = allCBBStandings
     .filter((standings) => standings.ConferenceID === team.ConferenceID)
+    // Sort by conference losses THEN BY total losses, then rank
+    .sort(
+      (a, b) =>
+        a.ConferenceLosses - b.ConferenceLosses ||
+        a.TotalLosses - b.TotalLosses,
+    )
     .map((standings, index) => ({
       ...standings,
       TeamAbbr: standings.TeamName,
@@ -576,7 +582,12 @@ export const getScheduleNBAData = (
   // Team Standings
   const teamStandings = allNBAStandings
     .filter((standings) => standings.ConferenceID === team.ConferenceID)
-    .sort((a, b) => a.LeagueID - b.LeagueID)
+    .sort(
+      (a, b) =>
+        a.LeagueID - b.LeagueID ||
+        a.ConferenceLosses - b.ConferenceLosses ||
+        a.TotalLosses - b.TotalLosses,
+    )
     .map((standings, index) => ({
       ...standings,
       TeamAbbr: standings.TeamName,
@@ -906,6 +917,16 @@ export const processLeagueStandings = (
     acc[groupKey].push(team);
     return acc;
   }, {});
+
+  if (league === SimCBB || league === SimNBA) {
+    for (const groupName of Object.keys(groupedStandings)) {
+      groupedStandings[groupName].sort(
+        (a: any, b: any) =>
+          a.ConferenceLosses - b.ConferenceLosses ||
+          a.TotalLosses - b.TotalLosses,
+      );
+    }
+  }
 
   const sortedGroupNames = Object.keys(groupedStandings).sort((a, b) => {
     const indexA = customOrder.indexOf(a);

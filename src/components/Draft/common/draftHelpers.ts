@@ -1,4 +1,4 @@
-import { DraftLeague, Draftee, isNFLDraftee, isNFLLeague } from "./types";
+import { DraftLeague, Draftee, isNFLDraftee, isNFLLeague, isPHLLeague } from "./types";
 import {
   getScoutableAttributes as getNFLScoutableAttributes,
   getAttributeFieldName as getNFLAttributeFieldName,
@@ -14,8 +14,83 @@ import {
   getHockeyAttributeShowProperty,
   getHockeyScoutingCost,
 } from "../PHLDraft/utils/draftHelpers";
-import { League, SimNBA, SimNFL } from "../../../_constants/constants";
+import { League, SimNBA, SimNFL, SimPHL } from "../../../_constants/constants";
 import { NBADraftee } from "../../../models/basketballModels";
+
+export const GRADE_SCALE = [
+  "F", "D", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+"
+];
+
+export const getGradeValue = (grade: string): number => {
+  const idx = GRADE_SCALE.indexOf(grade);
+  return idx === -1 ? -1 : idx;
+};
+
+export const fnv1a32 = (str: string): number => {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+};
+
+export const fuzzGrade = (playerId: number, key: string, trueGrade: string): string => {
+  const idx = GRADE_SCALE.indexOf(trueGrade);
+  if (idx === -1) return trueGrade;
+  const roll = fnv1a32(`${playerId}:${key}`) % 100;
+  if (roll < 15) {
+    return GRADE_SCALE[Math.min(idx + 1, GRADE_SCALE.length - 1)];
+  }
+  if (roll < 30) {
+    return GRADE_SCALE[Math.max(idx - 1, 0)];
+  }
+  return trueGrade;
+};
+
+export const getTrueHockeyOverallGrade = (overall: number): string => {
+  if (overall >= 24) return "A+";
+  if (overall >= 22) return "A";
+  if (overall >= 20) return "A-";
+  if (overall >= 18) return "B+";
+  if (overall >= 16) return "B";
+  if (overall >= 14) return "B-";
+  if (overall >= 12) return "C+";
+  if (overall >= 10) return "C";
+  if (overall >= 8) return "C-";
+  if (overall >= 6) return "D";
+  return "F";
+};
+
+export const getDrafteeAttributeGrade = (attr: number): string => {
+  if (attr > 22) return "A+";
+  if (attr > 20) return "A";
+  if (attr > 18) return "A-";
+  if (attr > 16) return "B+";
+  if (attr > 14) return "B";
+  if (attr > 12) return "B-";
+  if (attr > 10) return "C+";
+  if (attr > 8) return "C";
+  if (attr > 6) return "C-";
+  if (attr > 4) return "D";
+  return "F";
+};
+
+export const getHockeyAttributeGrade = (
+  player: Draftee,
+  fieldName: string,
+): string => {
+  const p = player as any;
+  if (p[fieldName] !== undefined && typeof p[fieldName] === "number") {
+    const trueGrade = getDrafteeAttributeGrade(p[fieldName]);
+    return fuzzGrade(player.ID, fieldName, trueGrade);
+  }
+  const existingGrade = p[`${fieldName}Grade`];
+  if (existingGrade && existingGrade !== "?") {
+    return fuzzGrade(player.ID, fieldName, existingGrade);
+  }
+  return existingGrade || "?";
+};
 
 export const getScoutableAttributes = (
   position: string,
@@ -76,19 +151,12 @@ export const getOverallGrade = (player: Draftee, league: League): string => {
   if (league === SimNBA) {
     return (player as NBADraftee).OverallGrade || "C";
   }
+  if (player.OverallGrade) {
+    return player.OverallGrade;
+  }
   const overall = (player as any).Overall || 0;
-  if (overall >= 27) return "A+";
-  if (overall >= 25) return "A";
-  if (overall >= 23) return "A-";
-  if (overall >= 21) return "B+";
-  if (overall >= 19) return "B";
-  if (overall >= 17) return "B-";
-  if (overall >= 15) return "C+";
-  if (overall >= 13) return "C";
-  if (overall >= 11) return "C-";
-  if (overall >= 9) return "D+";
-  if (overall >= 5) return "D";
-  return "F";
+  const trueGrade = getTrueHockeyOverallGrade(overall);
+  return fuzzGrade(player.ID, "Overall", trueGrade);
 };
 
 export const getPotentialGrade = (
@@ -120,7 +188,8 @@ export const getTimeForPick = (
     if (pickNumber <= 130) return 180;
     return 120;
   }
-  const round = Math.ceil(pickNumber / (picksPerRound || 24));
+  const defaultPicks = isPHLLeague(league) ? 28 : 32;
+  const round = Math.ceil(pickNumber / (picksPerRound || defaultPicks));
   if (round === 1) return 300;
   if (round <= 4) return 180;
   return 120;

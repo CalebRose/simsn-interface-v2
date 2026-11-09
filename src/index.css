@@ -22,11 +22,17 @@
 
 /* ── TipTap / ProseMirror rich text editor ───────────────────────── */
 .ProseMirror {
-  min-height: 120px;
+  min-height: var(--editor-min-h, 120px);
   padding: 0.75rem;
   outline: none;
   color: var(--text-primary);
   text-align: left;
+}
+/* 16px prevents iOS Safari from zooming the page on focus */
+@media (max-width: 639px) {
+  .ProseMirror {
+    font-size: 16px;
+  }
 }
 .ProseMirror p {
   margin-bottom: 0.5rem;
@@ -157,16 +163,13 @@
 
 /* ── @mention chip (inside the TipTap editor) ─────────────────────── */
 .ProseMirror .mention-chip {
-  display: inline-flex;
-  align-items: center;
-  background-color: rgba(234, 179, 8, 0.15);
+  display: inline;
+  background-color: rgba(234, 179, 8, 0.12);
   color: #eab308;
-  border: 1px solid rgba(234, 179, 8, 0.4);
-  border-radius: 9999px;
-  padding: 0 0.45rem;
-  font-size: 0.85em;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0 0.15rem;
   font-weight: 600;
-  line-height: 1.5;
   cursor: default;
   user-select: none;
 }
@@ -1401,6 +1404,16 @@ End of CBB gameplan
     overflow-y: auto;
     margin-top: 1rem;
   }
+}
+
+/* Opt out of the stacked-card table layout above (tables that should scroll sideways instead). */
+@media screen and (max-width: 900px) {
+  table[data-keep-table] thead { display: table-header-group; }
+  table[data-keep-table] tfoot { display: table-footer-group; }
+  table[data-keep-table] tbody { display: table-row-group; }
+  table[data-keep-table] tr { display: table-row; margin: 0; border-radius: 0 !important; box-shadow: none !important; }
+  table[data-keep-table] td { display: table-cell; padding: 0.75rem 0.375rem !important; }
+  table[data-keep-table] td::before { content: none; display: none; }
 }
 
 @media screen and (max-width: 480px) {

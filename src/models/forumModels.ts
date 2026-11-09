@@ -94,6 +94,8 @@ export interface ThreadAuthor {
   username: string;
   displayName: string;
   logoUrl?: string;
+  role?: ForumRole;
+  league?: string;
 }
 
 export interface Thread {
@@ -138,6 +140,8 @@ export interface PostAuthor {
   username: string;
   displayName: string;
   logoUrl?: string;
+  role?: ForumRole;
+  league?: string;
 }
 
 export interface PostMention {
@@ -413,6 +417,12 @@ export type ForumRole =
   | "member"
   | "commissioner"
   | "admin";
+
+/** Role and league captured on an author snapshot when a thread or post is written. */
+export interface AuthorBadgeInfo {
+  role?: ForumRole;
+  league?: string;
+}
 
 export interface ForumPermissions {
   canRead: boolean;

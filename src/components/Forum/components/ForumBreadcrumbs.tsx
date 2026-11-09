@@ -28,7 +28,7 @@ export const ForumBreadcrumbs: React.FC<ForumBreadcrumbsProps> = ({
             {crumb.href && !isLast ? (
               <Link
                 to={crumb.href}
-                className="text-blue-400 hover:text-blue-300 transition-colors"
+                className="text-(--accent-primary) hover:text-(--accent-primary) transition-colors"
               >
                 {crumb.label}
               </Link>

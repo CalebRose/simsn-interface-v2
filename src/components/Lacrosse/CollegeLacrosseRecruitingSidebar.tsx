@@ -34,7 +34,7 @@ export const CollegeLacrosseRecruitingSidebar = ({
       Recruiting Needs
     </h3>
     <div className="mt-3 overflow-x-auto">
-      <table className="w-full border-collapse text-center text-xs">
+      <table data-keep-table className="w-full border-collapse text-center text-xs">
         <thead>
           <tr className="border-b border-slate-500">
             <th className="py-2 text-left">Position</th>

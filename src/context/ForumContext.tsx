@@ -30,6 +30,7 @@ import {
   UpdatePostDTO,
   CreateReportDTO,
   ForumRole,
+  AuthorBadgeInfo,
   ForumPermissions,
   ReactionType,
 } from "../models/forumModels";
@@ -404,6 +405,14 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
     [currentUserState],
   );
 
+  const authorBadge = useMemo<AuthorBadgeInfo>(
+    () => ({
+      role: forumRole,
+      league: currentUserState?.DefaultLeague || undefined,
+    }),
+    [forumRole, currentUserState?.DefaultLeague],
+  );
+
   const { isMuted, muteExpiresAt } = useMemo(() => {
     const raw = currentUserState?.forumMutedUntil;
     if (!raw) return { isMuted: false, muteExpiresAt: null };
@@ -626,6 +635,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
           currentUserState.username,
           currentUserState.username,
           logoUrl || undefined,
+          authorBadge,
         );
         // Send mention notifications for the opening post (fire-and-forget)
         if (dto.mentions && dto.mentions.length > 0) {
@@ -646,7 +656,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         return null;
       }
     },
-    [currentUserState],
+    [currentUserState, authorBadge],
   );
 
   // ─── Create Post ─────────────────────────────
@@ -662,6 +672,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
           currentUserState.username,
           currentUserState.username,
           logoUrl || undefined,
+          authorBadge,
         );
         // Send mention notifications (fire-and-forget)
         if (postId && dto.mentions && dto.mentions.length > 0 && activeThread) {
@@ -681,7 +692,7 @@ export const ForumProvider: React.FC<ForumProviderProps> = ({
         return null;
       }
     },
-    [currentUserState, activeThread],
+    [currentUserState, activeThread, authorBadge],
   );
 
   // ─── Update Post ─────────────────────────────

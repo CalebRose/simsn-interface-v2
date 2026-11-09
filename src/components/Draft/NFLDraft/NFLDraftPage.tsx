@@ -313,6 +313,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                 <UpcomingPicks
                   upcomingPicks={upcomingPicks.slice(0, 5)}
                   currentPick={currentPick}
+                  currentRoundPickCount={draftState.allDraftPicks[draftState.currentRound]?.length}
                   userTeamId={selectedTeam?.ID}
                   teamColors={teamColors}
                   backgroundColor={backgroundColor}
@@ -403,6 +404,7 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                   league={SimNFL}
                   backgroundColor={backgroundColor}
                   currentPick={currentPick}
+                  currentRoundPickCount={draftState.allDraftPicks[draftState.currentRound]?.length}
                 />
               </>
             )}

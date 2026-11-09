@@ -385,7 +385,7 @@ export const CollegeLacrosseLineupsPage = () => {
       {adminMode && !isOwner && <Border classes="p-3 text-center font-semibold text-amber-300" styles={{ borderColor: team.colors.secondary || team.colors.primary }}>Admin Mode — you are editing {team.name}'s live lineup and gameplan.</Border>}
       {lineupError && <Border classes="p-3 text-center font-semibold text-amber-400" styles={{ borderColor: team.colors.secondary || team.colors.primary }}>{lineupError}</Border>}
 
-      <Border classes="overflow-hidden p-4" styles={{ borderColor: team.colors.primary }}>
+      <Border classes="hidden overflow-hidden p-4 md:block" styles={{ borderColor: team.colors.primary }}>
         <h2 className="mb-3 text-lg font-bold">Starting Lineup</h2>
         <div className="relative overflow-hidden rounded-xl border-2" style={{ borderColor: team.colors.primary || "#2563eb", backgroundColor: "#00a848" }}>
           <div className="relative min-h-[540px] p-5 pb-8">

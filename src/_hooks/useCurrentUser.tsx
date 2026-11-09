@@ -7,6 +7,7 @@ import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 export interface CurrentUser {
   id: string;
   username: string;
+  usernameLower?: string;
   teamId?: number;
   team_id?: number;
   NFLTeamID?: number;
@@ -37,11 +38,18 @@ export interface CurrentUser {
   SimPHLMediaPoints?: number;
   SimCBLMediaPoints?: number;
   SimMLBMediaPoints?: number;
+  SimCLAXMediaPoints?: number;
   top5UserIds?: string[];
   selectedTitle?: string | null;
   forumPostCount?: number;
   forumReactionCount?: number;
   status?: string;
+  cfbCrootSubscriptionBenefit?: boolean;
+  cbbCrootSubscriptionBenefit?: boolean;
+  chlCrootSubscriptionBenefit?: boolean;
+  newCFBUserCustomCrootBenefit?: boolean;
+  newCBBUserCustomCrootBenefit?: boolean;
+  newCHLUserCustomCrootBenefit?: boolean;
 }
 type UseCurrentUserReturn = [
   CurrentUser | null,

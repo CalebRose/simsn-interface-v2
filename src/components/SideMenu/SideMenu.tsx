@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import { AuthService } from "../../_services/auth";
 import { useSimLAXStore } from "../../context/SimLAXContext";
+import { getLaxLogoUrl } from "../../_services/lacrosseService";
 import { getLogo } from "../../_utility/getLogo";
 import routes from "../../_constants/routes";
 import { useForumStore } from "../../context/ForumContext";
@@ -13,6 +14,7 @@ import {
   SimCBB,
   SimCFB,
   SimCHL,
+  SimCLAX,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -42,14 +44,13 @@ export const SideMenu = ({}) => {
     isNBAUser,
     isNFLUser,
     isPHLUser,
-    defaultLogo: logo,
+    defaultLogo: authDefaultLogo,
     cfbLogo,
     nflLogo,
     cbbLogo,
     nbaLogo,
     chlLogo,
     phlLogo,
-    collegeBaseballLogo,
     mlbLogo,
   } = useAuthStore();
   const {
@@ -57,7 +58,10 @@ export const SideMenu = ({}) => {
     isMlbUser,
     collegeOrganization,
     mlbOrganization,
+    collegeBaseballLogo,
   } = useSimBaseballStore();
+  // AuthContext leaves defaultLogo empty for SimCBL (needs team_id, not org_id)
+  const logo = authDefaultLogo || collegeBaseballLogo;
   const { isOpen, isDropdownOpen, toggleMenu, toggleDropdown, dropdowns } =
     useSideMenu();
   const {
@@ -74,7 +78,7 @@ export const SideMenu = ({}) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { unreadCount: chatUnreadCount, hasMention: chatHasMention } =
     useChatUnread(currentUser?.id, isChatOpen);
-  const { laxAdminStatus } = useSimLAXStore();
+  const { laxAdminStatus, claxTeam } = useSimLAXStore();
   const isLaxAdmin = Boolean(laxAdminStatus?.isAdmin);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -281,7 +285,7 @@ export const SideMenu = ({}) => {
                 aria-label="Chat"
                 aria-expanded={isChatOpen}
                 onClick={() => setIsChatOpen(true)}
-                className="relative rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 focus:outline-hidden dark:text-gray-400 dark:hover:bg-gray-700"
+                className={`relative rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 focus:outline-hidden dark:text-gray-400 dark:hover:bg-gray-700 ${chatUnreadCount > 0 ? "border-3 border-blue-400" : ""}`}
               >
                 <ChatIcon />
                 {chatUnreadCount > 0 &&
@@ -483,6 +487,16 @@ export const SideMenu = ({}) => {
                 logo={mlbLogo}
                 dropdown={dropdowns.SimMLB}
                 league={SimMLB}
+                toggle={toggleMenu}
+                isTop
+              />
+            )}
+            {claxTeam && (
+              <SideMenuItem
+                label={SimCLAX}
+                logo={getLaxLogoUrl(claxTeam.logoFileName) || simLogos.SimCLAX}
+                dropdown={dropdowns.SimCLAX}
+                league={SimCLAX}
                 toggle={toggleMenu}
                 isTop
               />

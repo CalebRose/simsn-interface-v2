@@ -6,6 +6,7 @@ import {
 import { DraftLeague, Draftee } from "./types";
 import {
   getAttributeFieldName,
+  getHockeyAttributeGrade,
   getOverallGrade,
   getPotentialGrade,
 } from "./draftHelpers";
@@ -63,8 +64,12 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
     if (fieldName === "MidRangeShooting") {
       fieldName = "MidrangeShooting";
     }
-    const grade = (player as any)[`${fieldName}Grade`];
-    displayValue = grade || "?";
+    if (league === SimPHL && !isHCKPotentialGrade) {
+      displayValue = getHockeyAttributeGrade(player, fieldName);
+    } else {
+      const grade = (player as any)[`${fieldName}Grade`];
+      displayValue = grade || "?";
+    }
     valueColor = getGradeColor(displayValue);
   }
 
@@ -77,7 +82,7 @@ export const ScoutingAttributeBox: FC<ScoutingAttributeBoxProps> = ({
     <div
       className={`
         relative p-2 rounded-sm border text-center cursor-pointer
-        ${isPotentialGrade || isOverallGrade ? "min-w-12.5 min-h-12.5 sm:min-w-15 sm:min-h-15 max-w-20 max-h-20" : "min-w-15 min-h-15 sm:min-w-17.5 sm:min-h-17.5 max-w-20 max-h-20"}
+        ${isPotentialGrade || isOverallGrade ? "min-w-15 max-w-15 min-h-15 max-h-15" : "min-w-15 max-w-15 min-h-15 max-h-15 sm:min-w-20 sm:max-w-20 sm:min-h-20 sm:max-h-20"}
         flex flex-col justify-center items-center
         ${
           revealed

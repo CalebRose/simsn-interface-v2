@@ -718,18 +718,6 @@ export const useBasketballGameplan = () => {
       requiredShotTotal = 100;
     }
 
-    const firstStringPositionCounts: Record<string, number> = {
-      F: 0,
-      G: 0,
-      C: 0,
-    };
-
-    const secondStringPositionCounts: Record<string, number> = {
-      F: 0,
-      G: 0,
-      C: 0,
-    };
-
     for (const [index, lineup] of selectedTeamLineups.entries()) {
       const position = lineupFormation[index] || lineup.Position;
       const slotLabel = `${position}${position === "G" ? index + 1 : position === "F" ? index - 1 : 1}`;
@@ -764,11 +752,6 @@ export const useBasketballGameplan = () => {
 
       // --- 2. No duplicate players within first string / second string across positions ---
       if (lineup.FirstStringID) {
-        const p = selectedRosterMap[lineup.FirstStringID];
-        if (p) {
-          firstStringPositionCounts[p.Position] =
-            (firstStringPositionCounts[p.Position] || 0) + 1;
-        }
         if (firstStringPlayers.has(lineup.FirstStringID)) {
           errorList.push(
             `${getPlayerName(lineup.FirstStringID, selectedRosterMap)} is assigned as first string at more than one position.`,
@@ -777,14 +760,6 @@ export const useBasketballGameplan = () => {
           firstStringPlayers.add(lineup.FirstStringID);
         }
       }
-      if (lineup.SecondStringID) {
-        const p = selectedRosterMap[lineup.SecondStringID];
-        if (p) {
-          secondStringPositionCounts[p.Position] =
-            (secondStringPositionCounts[p.Position] || 0) + 1;
-        }
-      }
-
       // --- Same player can't occupy two strings at the same position ---
       if (
         lineup.FirstStringID &&
@@ -899,26 +874,11 @@ export const useBasketballGameplan = () => {
       );
     }
 
-    if (firstStringPositionCounts["G"] === 0) {
-      errorList.push(
-        `First string must have at least one guard, currently has ${firstStringPositionCounts["G"]}.`,
-      );
-    }
-    if (firstStringPositionCounts["F"] === 0) {
-      errorList.push(
-        `First string must have at least one forward, currently has ${firstStringPositionCounts["F"]}.`,
-      );
-    }
-
-    if (secondStringPositionCounts["G"] === 0) {
-      errorList.push(
-        `Second string must have at least one guard, currently has ${secondStringPositionCounts["G"]}.`,
-      );
-    }
-    if (secondStringPositionCounts["F"] === 0) {
-      errorList.push(
-        `Second string must have at least one forward, currently has ${secondStringPositionCounts["F"]}.`,
-      );
+    const hasCenterInDepthChart = [...depthChartPlayers].some(
+      (playerID) => selectedRosterMap[playerID]?.Position === "C",
+    );
+    if (!hasCenterInDepthChart) {
+      errorList.push("The depth chart must include at least one Center.");
     }
 
     if (foulProtectionMode === 1 && !selectedRosterMap[foulProtectionValue])

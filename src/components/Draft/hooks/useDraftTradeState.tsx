@@ -1,5 +1,11 @@
 import { useState, useMemo, useCallback } from "react";
-import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
+import {
+  arrayRemove,
+  arrayUnion,
+  doc,
+  updateDoc,
+  writeBatch,
+} from "firebase/firestore";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
 import { useSimHCKStore } from "../../../context/SimHockeyContext";
 import {
@@ -12,6 +18,7 @@ import {
   ProfessionalPlayer,
   TradeProposal,
 } from "../../../models/hockeyModels";
+import { DraftPick as NBADraftPick } from "../../../models/basketballModels";
 import { League, SimNFL } from "../../../_constants/constants";
 import { useFirestore, firestore } from "../../../firebase/firebase";
 import { TradeService } from "../../../_services/tradeService";
@@ -20,7 +27,7 @@ import { TradeService } from "../../../_services/tradeService";
 
 export type AnyTradeProposal = NFLTradeProposal | TradeProposal;
 type AnyPlayer = NFLPlayer | ProfessionalPlayer;
-type AnyDraftPick = NFLDraftPick | DraftPick;
+type AnyDraftPick = NFLDraftPick | DraftPick | NBADraftPick;
 
 export interface WarRoomDoc {
   id: string;
@@ -45,17 +52,18 @@ export interface DraftTradeStateProps {
    */
   UserWarRoomDocName: string;
   /**
-   * The current season ID (e.g. cfb_Timestamp.NFLSeasonID).
-   * When provided together with firestoreDraftPicksMap, current-season picks
-   * are sourced from the Firestore draft state (so in-draft trades are
-   * reflected) while future-season picks come from the REST store.
+   * Current draft year as a calendar season (not the database SeasonID).
+   * Only this season and the following two seasons are tradable.
    */
-  currentSeasonID?: number;
+  currentSeasonYear?: number;
   /**
    * The round-keyed Firestore draft-state pick map (allDraftPicks from
-   * useDraftState). Contains only current-season picks with up-to-date TeamIDs.
+   * useDraftState). Its current-draft pick ownership overrides the REST pick
+   * data for matching pick IDs.
    */
-  firestoreDraftPicksMap?: Record<number, AnyDraftPick[]>;
+  firestoreDraftPicksMap?: Readonly<
+    Record<number, readonly AnyDraftPick[]>
+  >;
 }
 
 // ----- Helpers --------------------------------------------------------------
@@ -111,7 +119,7 @@ export const useDraftTradeState = ({
   ApprovedTradesDocName,
   WarRoomCollectionName,
   UserWarRoomDocName,
-  currentSeasonID,
+  currentSeasonYear,
   firestoreDraftPicksMap,
 }: DraftTradeStateProps) => {
   const isNFL = league === SimNFL;
@@ -175,54 +183,55 @@ export const useDraftTradeState = ({
   );
 
   const draftPickMap = useMemo(
-    () =>
-      (isNFL ? nflStore.nflDraftPickMap : hckStore.phlDraftPickMap) as Record<
-        number,
-        AnyDraftPick[]
-      >,
-    [isNFL, nflStore.nflDraftPickMap, hckStore.phlDraftPickMap],
+    () => (isNFL ? nflStore.nflDraftPickMap : hckStore.phlDraftPicks),
+    [isNFL, nflStore.nflDraftPickMap, hckStore.phlDraftPicks],
   );
 
-  /**
-   * Merged per-team pick map.
-   * - When currentSeasonID + firestoreDraftPicksMap are provided:
-   *   current-season picks come from the Firestore draft state (TeamIDs reflect
-   *   any trades executed during the live draft) while future-season picks come
-   *   from the REST store unchanged.
-   * - Falls back to the plain API map when either prop is absent.
+  /** Current-draft ownership comes from Firestore; only the next two seasons
+   * of draft picks are exposed as tradeable assets.
    */
   const mergedDraftPickMap = useMemo(() => {
-    if (!currentSeasonID || !firestoreDraftPicksMap || !draftPickMap) {
-      return draftPickMap;
-    }
-
-    // Build a per-team index of Firestore current-season picks
     const currentByTeam: Record<number, AnyDraftPick[]> = {};
-    for (const round in firestoreDraftPicksMap) {
-      for (const pick of firestoreDraftPicksMap[round]) {
-        const teamID = (pick as any).TeamID as number;
-        if (!currentByTeam[teamID]) currentByTeam[teamID] = [];
-        currentByTeam[teamID].push(pick);
+    const currentPickIDs = new Set<number>();
+    if (firestoreDraftPicksMap) {
+      for (const round in firestoreDraftPicksMap) {
+        for (const pick of firestoreDraftPicksMap[round]) {
+          const teamID = (pick as any).TeamID as number;
+          currentPickIDs.add(pick.ID);
+          if (!currentByTeam[teamID]) currentByTeam[teamID] = [];
+          currentByTeam[teamID].push(pick);
+        }
       }
     }
 
-    // Merge: future picks (API) + current-season picks (Firestore)
     const allTeamIDs = new Set([
       ...Object.keys(draftPickMap).map(Number),
       ...Object.keys(currentByTeam).map(Number),
     ]);
 
+    if (currentSeasonYear === undefined) {
+      return Object.fromEntries([...allTeamIDs].map((teamID) => [teamID, []]));
+    }
+
+    const lastTradableSeason = currentSeasonYear + 2;
     const merged: Record<number, AnyDraftPick[]> = {};
     for (const teamID of allTeamIDs) {
-      const futurePicks = (draftPickMap[teamID] ?? []).filter(
-        (pick: any) => pick.SeasonID !== currentSeasonID,
+      const otherSeasonPicks = (draftPickMap?.[teamID] ?? []).filter(
+        (pick) =>
+          !currentPickIDs.has(pick.ID) &&
+          pick.Season >= currentSeasonYear &&
+          pick.Season <= lastTradableSeason,
       );
-      const currentPicks = currentByTeam[teamID] ?? [];
-      merged[teamID] = [...currentPicks, ...futurePicks];
+      const currentPicks = (currentByTeam[teamID] ?? []).filter(
+        (pick) =>
+          pick.Season >= currentSeasonYear &&
+          pick.Season <= lastTradableSeason,
+      );
+      merged[teamID] = [...currentPicks, ...otherSeasonPicks];
     }
 
     return merged;
-  }, [draftPickMap, currentSeasonID, firestoreDraftPicksMap]);
+  }, [draftPickMap, currentSeasonYear, firestoreDraftPicksMap]);
 
   const tradeProposalsMap = useMemo(
     () =>
@@ -375,7 +384,6 @@ export const useDraftTradeState = ({
       const recipientDocID = tradePartnerTeam
         ? getTeamWarRoomDocID(tradePartnerTeam)
         : getRecipientDocID(modalDTO);
-      if (!recipientDocID) return;
 
       const newDTO = stripUndefined({
         ...modalDTO,
@@ -386,13 +394,34 @@ export const useDraftTradeState = ({
           : {}),
       }) as unknown as AnyTradeProposal;
 
-      // 1. Add to user's sentRequests
-      await updateUserWarRoom({ sentRequests: arrayUnion(newDTO) as any });
+      if (isNFL) {
+        if (!recipientDocID) return;
 
-      // 2. Add to partner's requests (direct update — no subscription needed)
-      await updateDoc(getWarRoomDocRef(recipientDocID), {
-        requests: arrayUnion(newDTO),
-      });
+        await updateUserWarRoom({ sentRequests: arrayUnion(newDTO) as any });
+        await updateDoc(getWarRoomDocRef(recipientDocID), {
+          requests: arrayUnion(newDTO),
+        });
+        return;
+      }
+
+      if (!senderDocID || !recipientDocID || senderDocID === recipientDocID) {
+        throw new Error(
+          "Cannot propose a draft trade without two distinct PHL teams.",
+        );
+      }
+
+      const batch = writeBatch(firestore);
+      batch.set(
+        getWarRoomDocRef(senderDocID),
+        { sentRequests: arrayUnion(newDTO) },
+        { merge: true },
+      );
+      batch.set(
+        getWarRoomDocRef(recipientDocID),
+        { requests: arrayUnion(newDTO) },
+        { merge: true },
+      );
+      await batch.commit();
     },
     [
       isNFL,

@@ -258,6 +258,7 @@ export const NBADraftPage: React.FC<NBADraftPageProps> = ({ league }) => {
                 <UpcomingPicks
                   upcomingPicks={upcomingPicks.slice(0, 5)}
                   currentPick={currentPick}
+                  currentRoundPickCount={draftState.allDraftPicks[draftState.currentRound]?.length}
                   userTeamId={selectedTeam?.ID}
                   teamColors={teamColors}
                   backgroundColor={backgroundColor}
@@ -341,6 +342,7 @@ export const NBADraftPage: React.FC<NBADraftPageProps> = ({ league }) => {
                   league={SimNBA}
                   backgroundColor={backgroundColor}
                   currentPick={currentPick}
+                  currentRoundPickCount={draftState.allDraftPicks[draftState.currentRound]?.length}
                 />
               </>
             )}

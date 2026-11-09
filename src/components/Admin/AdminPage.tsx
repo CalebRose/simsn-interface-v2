@@ -6,9 +6,15 @@ import { useAuthStore } from "../../context/AuthContext";
 import routes from "../../_constants/routes";
 import { Border } from "../../_design/Borders";
 import { ToggleSwitch } from "../../_design/Inputs";
-import { Tab, TabGroup } from "../../_design/Tabs";
+import { Tab, TabGrid, TabGroup } from "../../_design/Tabs";
 import {
   AdminRole,
+  Bowls,
+  ConfChampionships,
+  Contracts,
+  GameState,
+  Postseason,
+  Reports,
   Requests,
   SimCBB,
   SimCFB,
@@ -21,11 +27,14 @@ import {
   SimPHL,
   Teams,
   Trades,
+  Transactions,
+  UDFAs,
 } from "../../_constants/constants";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useAdminPage } from "../../context/AdminPageContext";
 import { AdminTeamsTab } from "./AdminTeamsTab";
 import { AdminRequestsTab } from "./AdminRequestsTab";
+import { AdminStatesTab } from "./AdminStatesTab";
 import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
 import { AdminTradesTab } from "./AdminTradesTab";
@@ -131,6 +140,29 @@ export const AdminPage = () => {
 
   const leagueStore = useLeagueStore();
   const { ts, selectedLeague, setSelectedLeague } = leagueStore;
+
+  const columnCount = useMemo(() => {
+    switch (selectedLeague) {
+      case SimCFB:
+        return 7;
+      case SimNFL:
+        return 9;
+      case SimCBB:
+        return 6;
+      case SimNBA:
+        return 9;
+      case SimCHL:
+        return 6;
+      case SimCLAX:
+        return 10;
+      case SimPHL:
+        return 9;
+      case SimMLB:
+        return 9;
+      default:
+        return 7;
+    }
+  }, [selectedLeague]);
 
   // Role gating logic
   if (!laxAdminChecked) {
@@ -282,8 +314,8 @@ export const AdminPage = () => {
         )}
         {selectedLeague !== SimCLAX && (
           <Border classes="w-full">
-            <div className="flex flex-row flex-wrap justify-between pt-1 pb-2 mb-2">
-              <TabGroup classes="flex flex-grow justify-between">
+            <div className="flex flex-row flex-wrap w-full pt-1 pb-2 mb-2">
+              <TabGrid classes="w-full" columns={columnCount}>
                 <Tab
                   label={Requests}
                   selected={selectedTab === Requests}
@@ -294,24 +326,73 @@ export const AdminPage = () => {
                   selected={selectedTab === Teams}
                   setSelected={setSelectedTab}
                 />
+                <Tab
+                  label={GameState}
+                  selected={selectedTab === GameState}
+                  setSelected={setSelectedTab}
+                />
+                {selectedLeague !== SimNFL &&
+                  selectedLeague !== SimNBA &&
+                  selectedLeague !== SimPHL &&
+                  selectedLeague !== SimMLB && (
+                    <Tab
+                      label={ConfChampionships}
+                      selected={selectedTab === ConfChampionships}
+                      setSelected={setSelectedTab}
+                    />
+                  )}
+                {selectedLeague === SimCFB && (
+                  <>
+                    <Tab
+                      label={Bowls}
+                      selected={selectedTab === Bowls}
+                      setSelected={setSelectedTab}
+                    />
+                  </>
+                )}
+                <Tab
+                  label={Postseason}
+                  selected={selectedTab === Postseason}
+                  setSelected={setSelectedTab}
+                />
                 {(selectedLeague === SimPHL ||
                   selectedLeague === SimNFL ||
                   selectedLeague === SimNBA ||
-                  selectedLeague === SimMLB ||
-                  selectedLeague === SimCollegeBaseball) && (
+                  selectedLeague === SimMLB) && (
                   <>
                     <Tab
                       label={Trades}
                       selected={selectedTab === Trades}
                       setSelected={setSelectedTab}
                     />
+                    <Tab
+                      label={Contracts}
+                      selected={selectedTab === Contracts}
+                      setSelected={setSelectedTab}
+                    />
+                    <Tab
+                      label={Transactions}
+                      selected={selectedTab === Transactions}
+                      setSelected={setSelectedTab}
+                    />
+                    <Tab
+                      label={UDFAs}
+                      selected={selectedTab === UDFAs}
+                      setSelected={setSelectedTab}
+                    />
                   </>
                 )}
-              </TabGroup>
+                <Tab
+                  label={Reports}
+                  selected={selectedTab === Reports}
+                  setSelected={setSelectedTab}
+                />
+              </TabGrid>
             </div>
-            <div className="flex sm:flex-col md:flex-row md:justify-evenly flex-wrap md:gap-2 w-full max-h-[calc(65vh-10rem)] overflow-y-auto">
+            <div className="flex w-full max-h-[calc(65vh-10rem)] overflow-y-auto">
               {selectedTab === Requests && <AdminRequestsTab />}
               {selectedTab === Teams && <AdminTeamsTab />}
+              {selectedTab === GameState && <AdminStatesTab />}
               {selectedTab === Trades && <AdminTradesTab />}
             </div>
           </Border>

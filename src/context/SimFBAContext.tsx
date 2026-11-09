@@ -857,11 +857,13 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
   const getBootstrapTeamData = async () => {
     const res = await BootstrapService.GetFBABootstrapTeamData();
-    setCFBTeams(res.AllCollegeTeams);
-    setNFLTeams(res.AllProTeams);
+    const allCollegeTeams: CollegeTeam[] = res.AllCollegeTeams ?? [];
+    const allProTeams: NFLTeam[] = res.AllProTeams ?? [];
+    setCFBTeams(allCollegeTeams);
+    setNFLTeams(allProTeams);
 
-    if (res.AllCollegeTeams.length > 0) {
-      const sortedCollegeTeams = res.AllCollegeTeams.sort(
+    if (allCollegeTeams.length > 0) {
+      const sortedCollegeTeams = allCollegeTeams.sort(
         (a: CollegeTeam, b: CollegeTeam) =>
           a.TeamName.localeCompare(b.TeamName),
       );
@@ -884,8 +886,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       );
       setCFBTeamMap(collegeTeamMap);
     }
-    if (res.AllProTeams.length > 0) {
-      const sortedNFLTeams = res.AllProTeams.sort((a, b) =>
+    if (allProTeams.length > 0) {
+      const sortedNFLTeams = allProTeams.sort((a, b) =>
         a.TeamName.localeCompare(b.TeamName),
       );
       const nflTeamOptions = sortedNFLTeams.map((team) => ({
@@ -936,9 +938,11 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   const nflPlayerMap = useMemo(() => {
     if (!proRosterMap || !nflTeams) return {};
     const initialMap = MakeNFLPlayerMapFromRosterMap(nflTeams, proRosterMap!!);
-    for (let i = 0; i < nflRetiredPlayers.length; i++) {
-      const player = new NFLPlayer(nflRetiredPlayers[i]);
-      initialMap[player.ID] = player;
+    if (nflRetiredPlayers && nflRetiredPlayers.length > 0) {
+      for (let i = 0; i < nflRetiredPlayers.length; i++) {
+        const player = new NFLPlayer(nflRetiredPlayers[i]);
+        initialMap[player.ID] = player;
+      }
     }
     return initialMap;
   }, [nflTeams, proRosterMap, nflRetiredPlayers]);
@@ -1159,8 +1163,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       setAllProStandings(res.ProStandings);
       setCollegePolls(res.OfficialPolls);
       setCollegePollSubmission(res.PollSubmission);
-      setHistoricCollegePlayers(res.HistoricCollegePlayers);
-      setNFLRetiredPlayers(res.RetiredPlayers);
+      setHistoricCollegePlayers(res.HistoricCollegePlayers ?? []);
+      setNFLRetiredPlayers(res.RetiredPlayers ?? []);
       setStadiums(res.Stadiums || []);
       setCFBGameRequests(res.CFBGameRequests || []);
       setNFLGameRequests(res.NFLGameRequests || []);
@@ -1201,9 +1205,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
     try {
       const res = await BootstrapService.GetFBAStatsBootstrapData(cfbID, nflID);
-      setCFBPostSeasonAwards(res.PostSeasonAwards);
-      setHistoricCollegePlayers(res.HistoricCollegePlayers);
-      setNFLRetiredPlayers(res.RetiredPlayers);
+      setCFBPostSeasonAwards(res.PostSeasonAwards ?? ({} as AwardsList));
+      setHistoricCollegePlayers(res.HistoricCollegePlayers ?? []);
+      setNFLRetiredPlayers(res.RetiredPlayers ?? []);
     } finally {
       isStatsDataFetching.current = false;
     }
@@ -1236,13 +1240,13 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         nflID,
       );
       if (cfbID > 0) {
-        setCFBRosterMap(res.CollegeRosterMap);
-        setCollegeInjuryReport(res.CollegeInjuryReport);
+        setCFBRosterMap(res.CollegeRosterMap ?? {});
+        setCollegeInjuryReport(res.CollegeInjuryReport ?? []);
       }
       if (nflID > 0) {
-        setProRosterMap(res.ProRosterMap);
-        setPracticeSquadPlayers(res.PracticeSquadPlayers);
-        setProInjuryReport(res.ProInjuryReport);
+        setProRosterMap(res.ProRosterMap ?? {});
+        setPracticeSquadPlayers(res.PracticeSquadPlayers ?? []);
+        setProInjuryReport(res.ProInjuryReport ?? []);
       }
     } catch (e) {
       isPlayerDataLoaded.current = false;

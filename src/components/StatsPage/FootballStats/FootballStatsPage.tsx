@@ -13,7 +13,6 @@ import { Text } from "../../../_design/Typography";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { FootballStatsTable } from "./FootballStatsTable";
-import { ToggleSwitch } from "../../../_design/Inputs";
 import { StatsPageHelpModal } from "../Common/StatsPageHelpModal";
 import { AwardsModal } from "../Common/AwardsModal";
 import { darkenColor } from "../../../_utility/getDarkerColor";

@@ -16,6 +16,7 @@ import {
   RUSHING,
   SimCBB,
   SimCFB,
+  SimNBA,
   SPECIAL_TEAMS,
   StatsType,
   StatsView,
@@ -370,8 +371,10 @@ export const MakeCFBPlayerMapFromRosterMap = (
   rosterMap: Record<number, CFBPlayer[]>,
 ): Record<number, CFBPlayer> => {
   const playerMap: Record<number, CFBPlayer> = {};
+  if (!cfbTeams || !rosterMap) return playerMap;
 
   for (let i = 0; i < cfbTeams.length; i++) {
+    if (!cfbTeams[i]) continue;
     const teamID = cfbTeams[i].ID;
     const roster = rosterMap[teamID];
     if (!roster) continue;
@@ -397,8 +400,10 @@ export const MakeNFLPlayerMapFromRosterMap = (
   rosterMap: Record<number, NFLPlayer[]>,
 ): Record<number, NFLPlayer> => {
   const playerMap: Record<number, NFLPlayer> = {};
+  if (!nflTeams || !rosterMap) return playerMap;
 
   for (let i = 0; i < nflTeams.length; i++) {
+    if (!nflTeams[i]) continue;
     const teamID = nflTeams[i].ID;
     const roster = rosterMap[teamID];
     if (!roster) continue;
@@ -529,10 +534,10 @@ export const useFilteredFootballStats = ({
       if (statsType === PLAYER_VIEW) {
         const id =
           selectedLeague === SimCFB ? stat.CollegePlayerID : stat.NFLPlayerID;
-        const player = playerMap[id];
+        const player = playerMap?.[id];
         if (!player) return false;
         if (selectedLeague === SimCFB) {
-          const team = teamMap[stat.TeamID];
+          const team = teamMap?.[stat.TeamID];
           if (!team) return false;
           if (selectedLeagueOption === 2 && !team.IsFBS) {
             return false;
@@ -626,6 +631,7 @@ export const GetFilteredCFBTeamOptions = (
   teamMap: Record<number, CollegeTeam>,
 ) => {
   const optionsList = [];
+  if (!cfbTeamOptions || !teamMap) return [];
   for (let i = 0; i < cfbTeamOptions.length; i++) {
     const opt = cfbTeamOptions[i];
     const teamID = Number(opt.value);
@@ -648,6 +654,7 @@ export const GetFilteredCFBConferenceOptions = (
 ) => {
   const optionsMap: any = {};
   const selectedMap: any = {};
+  if (!cfbConferenceOptions || !cfbTeams) return [];
   for (let i = 0; i < cfbConferenceOptions.length; i++) {
     const opt = cfbConferenceOptions[i];
     const confID = Number(opt.value);
@@ -662,7 +669,7 @@ export const GetFilteredCFBConferenceOptions = (
       (selectedLeagueOption === 3 && !team.IsFBS)
     ) {
       const conf = optionsMap[team.ConferenceID];
-      if (selectedMap[team.ConferenceID]) {
+      if (!conf || selectedMap[team.ConferenceID]) {
         continue;
       }
       selectedMap[team.ConferenceID] = true;
@@ -782,7 +789,7 @@ export const useFilteredBasketballStats = ({
           selectedLeague === SimCBB ? stat.CollegePlayerID : stat.NBAPlayerID;
         const player = playerMap[id];
         if (!player) return false;
-        if (selectedLeague === SimCBB) {
+        if (selectedLeague === SimNBA) {
           const team = teamMap[stat.TeamID];
           if (selectedLeagueOption === 2 && team.LeagueID !== 1) {
             return false;
@@ -797,7 +804,7 @@ export const useFilteredBasketballStats = ({
         const id = stat.TeamID;
         const team = teamMap[id];
         if (!team) return false;
-        if (selectedLeague === SimCBB) {
+        if (selectedLeague === SimNBA) {
           const team = teamMap[stat.TeamID];
           if (selectedLeagueOption === 2 && team.LeagueID !== 1) {
             return false;

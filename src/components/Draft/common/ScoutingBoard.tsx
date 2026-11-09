@@ -14,6 +14,7 @@ import {
   isNFLLeague,
 } from "./types";
 import { ScoutingBoardRow } from "./ScoutingBoardRow";
+import { getGradeValue, getOverallGrade } from "./draftHelpers";
 import {
   NFLDraftPick,
   NFLDraftee,
@@ -68,6 +69,14 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
   handlePlayerModal,
 }) => {
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
+  const [selectedSort, setSelectedSort] = useState<string>("overall-desc");
+
+  const sortOptions: SelectOption[] = [
+    { label: "Overall (Highest First)", value: "overall-desc" },
+    { label: "Overall (Lowest First)", value: "overall-asc" },
+    { label: "Position", value: "position" },
+    { label: "Name (A-Z)", value: "name" },
+  ];
 
   const positions = useMemo(() => getPositionsByLeague(league), [league]);
   const collegeLeague = getCollegeLeagueConstant(league);
@@ -123,8 +132,59 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
       return true;
     });
 
-    return filtered;
-  }, [scoutProfiles, draftedPlayerIds, selectedPositions, draftablePlayerMap]);
+    return [...filtered].sort((a, b) => {
+      const playerA = getPlayerFromProfile(a);
+      const playerB = getPlayerFromProfile(b);
+      if (!playerA && !playerB) return 0;
+      if (!playerA) return 1;
+      if (!playerB) return -1;
+
+      // Sort by the letter grade displayed on screen!
+      const gradeA = getOverallGrade(playerA, league);
+      const gradeB = getOverallGrade(playerB, league);
+      const gradeValA = getGradeValue(gradeA);
+      const gradeValB = getGradeValue(gradeB);
+
+      if (selectedSort === "overall-asc") {
+        if (gradeValA !== gradeValB) return gradeValA - gradeValB;
+        const ovrA = (playerA as any)?.Overall || 0;
+        const ovrB = (playerB as any)?.Overall || 0;
+        if (ovrA !== ovrB) return ovrA - ovrB;
+        return ((playerA as any)?.Age || 0) - ((playerB as any)?.Age || 0);
+      }
+      if (selectedSort === "position") {
+        const posA = playerA?.Position || "";
+        const posB = playerB?.Position || "";
+        if (posA !== posB) return posA.localeCompare(posB);
+        return gradeValB - gradeValA;
+      }
+      if (selectedSort === "name") {
+        const nameA = `${playerA?.FirstName || ""} ${playerA?.LastName || ""}`.trim();
+        const nameB = `${playerB?.FirstName || ""} ${playerB?.LastName || ""}`.trim();
+        return nameA.localeCompare(nameB);
+      }
+
+      // Default: "overall-desc" based on the displayed letter grade!
+      if (gradeValB !== gradeValA) {
+        return gradeValB - gradeValA;
+      }
+      const ovrA = (playerA as any)?.Overall || 0;
+      const ovrB = (playerB as any)?.Overall || 0;
+      if (ovrB !== ovrA) {
+        return ovrB - ovrA;
+      }
+      const ageA = (playerA as any)?.Age || 0;
+      const ageB = (playerB as any)?.Age || 0;
+      return ageB - ageA;
+    });
+  }, [
+    scoutProfiles,
+    draftedPlayerIds,
+    selectedPositions,
+    draftablePlayerMap,
+    selectedSort,
+    league,
+  ]);
 
   const availablePoints = teamScoutingPoints - spentPoints;
 
@@ -180,7 +240,7 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
           </Text>
         </div>
       </div>
-      <div className="mb-4">
+      <div className="flex flex-wrap gap-4 mb-4">
         <SelectDropdown
           options={positions}
           value={positions.filter((p) => selectedPositions.includes(p.value))}
@@ -191,6 +251,16 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
           }}
           placeholder="All Positions"
           isMulti
+          className="text-sm max-w-xs"
+        />
+        <SelectDropdown
+          options={sortOptions}
+          value={sortOptions.find((s) => s.value === selectedSort)}
+          onChange={(selected) => {
+            const val = (selected as SelectOption)?.value || "overall-desc";
+            setSelectedSort(val);
+          }}
+          placeholder="Sort By"
           className="text-sm max-w-xs"
         />
       </div>

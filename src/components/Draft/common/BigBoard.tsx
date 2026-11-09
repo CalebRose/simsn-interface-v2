@@ -13,6 +13,7 @@ interface BigDraftBoardProps {
   selectedTeam: ProfessionalTeam | NFLTeam | NBATeam | null;
   draftablePlayerMap: Record<number, Draftee>;
   currentPick: DraftPick | null;
+  currentRoundPickCount?: number;
   handlePlayerModal?: (action: ModalAction, player: Draftee) => void;
 }
 
@@ -23,6 +24,7 @@ export const BigDraftBoard: React.FC<BigDraftBoardProps> = ({
   selectedTeam,
   draftablePlayerMap,
   currentPick,
+  currentRoundPickCount,
   handlePlayerModal,
 }) => {
   return (
@@ -38,6 +40,7 @@ export const BigDraftBoard: React.FC<BigDraftBoardProps> = ({
             userTeamId={selectedTeam?.ID}
             league={league}
             currentPick={currentPick}
+            currentRoundPickCount={currentRoundPickCount}
             view="bigboard"
             draftablePlayerMap={draftablePlayerMap}
             handlePlayerModal={handlePlayerModal}

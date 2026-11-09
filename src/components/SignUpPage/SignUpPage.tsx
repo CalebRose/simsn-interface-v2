@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState, useMemo } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { validatePassword } from "firebase/auth";
@@ -8,6 +8,40 @@ import { simLogos } from "../../_constants/logos";
 import { useAuthStore } from "../../context/AuthContext";
 import { AvailableTeamsModal } from "./AvailableTeamsModal";
 import { useModal } from "../../_hooks/useModal";
+
+const RESERVED_USERNAME_WORDS = [
+  "admin",
+  "4dmin",
+  "adm1n",
+  "4dm1n",
+  "root",
+  "r00t",
+  "superuser",
+  "simsn",
+  "simcfb",
+  "simnfl",
+  "simfba",
+  "simcbb",
+  "simnba",
+  "simhck",
+  "simbba",
+  "simchl",
+  "simphl",
+  "simcbl",
+  "simmlb",
+  "s1msn",
+  "s1mcfb",
+  "s1mnfl",
+  "s1mfba",
+  "s1mcbb",
+  "s1mnba",
+  "s1mhck",
+  "s1mbba",
+  "s1mchl",
+  "s1mphl",
+  "s1mcbl",
+  "s1mmlb",
+];
 
 // ✅ Form State Interface
 interface SignUpForm {
@@ -100,6 +134,31 @@ export const SignUpPage = () => {
     }
   };
 
+  const validUsername = useMemo(() => {
+    // Must contain at least 3 characters, must not include any special characters, specifically '@' or '#'.
+    // Must not include any strings such as "admin", "root", "superuser", "simsn", "simcfb", "simnfl", etc.
+    const username = form.username.value;
+    const isValidLength = username.length >= 3;
+    const hasNoSpecialChars = /^[a-zA-Z0-9_]+$/.test(username);
+    const lower = username.toLowerCase();
+    const hasNoReservedWords = !RESERVED_USERNAME_WORDS.some((word) =>
+      lower.includes(word),
+    );
+    return isValidLength && hasNoSpecialChars && hasNoReservedWords;
+  }, [form.username.value]);
+
+  const showUsernameWarning = form.username.value.length > 0 && !validUsername;
+  const usernameWarning = showUsernameWarning ? (
+    <div className="mt-1 text-xs text-red-500" role="alert">
+      <p>Username is not valid:</p>
+      <ul className="list-disc pl-5">
+        <li>Must be more than or equal to 3 characters in length</li>
+        <li>Must have no special characters like '@'</li>
+        <li>Cannot have any special words as the username</li>
+      </ul>
+    </div>
+  ) : null;
+
   return (
     <section className="w-screen">
       <AvailableTeamsModal
@@ -151,6 +210,7 @@ export const SignUpPage = () => {
                   className="mt-1 w-[25em] rounded-md border-gray-200  text-sm  shadow-xs dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                   onChange={handleChange}
                 />
+                {usernameWarning}
               </div>
 
               <div className="col-span-12 sm:col-span-6">
@@ -239,6 +299,7 @@ export const SignUpPage = () => {
                       className="mt-1 w-full rounded-md border-gray-200 text-sm shadow-xs dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
                       onChange={handleChange}
                     />
+                    {usernameWarning}
                   </div>
 
                   <div className="col-span-6 sm:col-span-3">
@@ -271,6 +332,7 @@ export const SignUpPage = () => {
                     <button
                       type="submit"
                       className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-hidden focus:ring-3 active:text-blue-500"
+                      disabled={!validUsername}
                     >
                       {processing ? "Processing..." : "Create an account"}
                     </button>

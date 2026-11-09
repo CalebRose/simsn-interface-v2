@@ -8,6 +8,7 @@ import {
   RevealFBResults,
 } from "../../_helper/teamHelper";
 import { StandingsTable } from "../Common/Tables";
+import { ChatDrawer } from "../PublicChat/ChatDrawer";
 import { SectionCards } from "../../_design/SectionCards";
 import { Button, ButtonGrid, ButtonGroup } from "../../_design/Buttons";
 import {
@@ -387,17 +388,38 @@ export const TeamMatchUp = ({
   teamMap,
 }: TeamMatchUpProps) => {
   const [selectedGame, setSelectedGame] = useState<any>(null);
-  const { cfbStandingsMap, proStandingsMap, allProStandings } =
+  const { collegeStandingsMapBySeason, proStandingsMapBySeason } =
     useSimFBAStore();
-  const proStandingsLookup = useMemo(() => {
-    if (proStandingsMap && Object.keys(proStandingsMap).length > 0) {
-      return proStandingsMap as Record<number, any>;
-    }
-    if (allProStandings && allProStandings.length > 0) {
-      return Object.fromEntries(allProStandings.map((s: any) => [s.TeamID, s]));
+
+  const seasonCFBStandings = useMemo(() => {
+    const seasonID = ts?.CollegeSeasonID || -1;
+    if (!seasonID || seasonID <= 0) return [];
+    return collegeStandingsMapBySeason?.[seasonID] ?? [];
+  }, [collegeStandingsMapBySeason, ts]);
+
+  const seasonNFLStandings = useMemo(() => {
+    const seasonID = ts?.NFLSeasonID || -1;
+    if (!seasonID || seasonID <= 0) return [];
+    return proStandingsMapBySeason?.[seasonID] ?? [];
+  }, [proStandingsMapBySeason, ts]);
+
+  const cfbStandingsLookup = useMemo(() => {
+    if (seasonCFBStandings && seasonCFBStandings.length > 0) {
+      return Object.fromEntries(
+        seasonCFBStandings.map((s: any) => [s.TeamID, s]),
+      );
     }
     return {} as Record<number, any>;
-  }, [proStandingsMap, allProStandings]);
+  }, [seasonCFBStandings]);
+
+  const proStandingsLookup = useMemo(() => {
+    if (seasonNFLStandings && seasonNFLStandings.length > 0) {
+      return Object.fromEntries(
+        seasonNFLStandings.map((s: any) => [s.TeamID, s]),
+      );
+    }
+    return {} as Record<number, any>;
+  }, [seasonNFLStandings]);
 
   let revealResult = false;
   if (matchUp.length > 0) {
@@ -433,7 +455,7 @@ export const TeamMatchUp = ({
       const opponentID = isHomeGame ? userGame.AwayTeamID : userGame.HomeTeamID;
       const standings =
         league === SimCFB
-          ? cfbStandingsMap && (cfbStandingsMap as any)[opponentID]
+          ? cfbStandingsLookup[opponentID]
           : proStandingsLookup[opponentID];
       if (standings) {
         const wins = standings.TotalWins ?? 0;
@@ -445,7 +467,7 @@ export const TeamMatchUp = ({
 
       const myStandings =
         league === SimCFB
-          ? cfbStandingsMap && (cfbStandingsMap as any)[team.ID]
+          ? cfbStandingsLookup[team.ID]
           : proStandingsLookup[team.ID];
       if (myStandings) {
         const wins = myStandings.TotalWins ?? 0;
@@ -1729,6 +1751,14 @@ const SimNFLPhaseSection = ({
     return "";
   }, [phase]);
 
+  const extensionPhase = useMemo(() => {
+    if (phase < 25 && phase > 19)
+      return `${25 - phase} weeks until Extension Phase Opens`;
+    if (phase > 24)
+      return `Teams may now offer extensions to eligible players on their roster`;
+    return "Closed";
+  }, [phase]);
+
   return (
     <>
       <div className="grid grid-cols-6 px-1">
@@ -1763,7 +1793,7 @@ const SimNFLPhaseSection = ({
             </div>
           </>
         )}
-        {weeksUntilTradeDeadline < 6 && (
+        {weeksUntilTradeDeadline < 6 && weeksUntilTradeDeadline >= 0 && (
           <>
             <div className="text-start col-span-3">
               <Text variant="small">Trade Deadline</Text>
@@ -1772,6 +1802,16 @@ const SimNFLPhaseSection = ({
               <Text variant="small">
                 Trade Deadline is until {weeksUntilTradeDeadline} weeks.
               </Text>
+            </div>
+          </>
+        )}
+        {phase > 19 && (
+          <>
+            <div className="text-start col-span-3">
+              <Text variant="small">Extension Phase</Text>
+            </div>
+            <div className="text-end col-span-3">
+              <Text variant="small">{extensionPhase}</Text>
             </div>
           </>
         )}
@@ -2440,6 +2480,7 @@ export const TeamInjuries = ({
   isLoading: isLoading,
   league,
 }: TeamInjuriesProps) => {
+  console.log({ teamInjuries });
   return (
     <SectionCards
       team={team}
@@ -2803,6 +2844,42 @@ export const ForumPortal = ({
           No active threads for this league. Check back later!
         </Text>
       )}
+    </SectionCards>
+  );
+};
+
+interface ChatPortalProps {
+  team: any;
+  backgroundColor: string;
+  headerColor: string;
+  borderColor: string;
+  textColorClass: string;
+  darkerBackgroundColor: string;
+  league: League;
+}
+export const ChatPortal = ({
+  team,
+  backgroundColor,
+  headerColor,
+  borderColor,
+  textColorClass,
+  darkerBackgroundColor,
+  league,
+}: ChatPortalProps) => {
+  return (
+    <SectionCards
+      team={team}
+      header="Chat"
+      classes={`${textColorClass} h-full`}
+      backgroundColor={backgroundColor}
+      headerColor={headerColor}
+      borderColor={borderColor}
+      textColorClass={textColorClass}
+      darkerBackgroundColor={darkerBackgroundColor}
+    >
+      <div className="h-full max-h-130 pt-1">
+        <ChatDrawer isOpen variant="embedded" />
+      </div>
     </SectionCards>
   );
 };

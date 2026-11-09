@@ -28,6 +28,13 @@ export const ProRequests = "Pro Requests";
 export const CollegeTeams = "College Teams";
 export const ProTeams = "Pro Teams";
 export const Requests = "Requests";
+export const GameState = "Game State";
+export const ConfChampionships = "Conf Championships";
+export const Reports = "Reports";
+export const Transactions = "Transactions";
+export const UDFAs = "UDFAs";
+export const Bowls = "Bowls";
+export const Postseason = "Postseason";
 export const Teams = "Teams";
 export const Trades = "Trades";
 export const Games = "Games";
@@ -1163,8 +1170,7 @@ export const LeagueTypeOptions = [
   { label: SimCBB, value: SimCBB },
   { label: SimNBA, value: SimNBA },
   { label: SimCHL, value: SimCHL },
-  // SimLAX public launch: restore SimCLAX here for users without a team/admin role.
-  // { label: SimCLAX, value: SimCLAX },
+  { label: SimCLAX, value: SimCLAX },
   { label: SimPHL, value: SimPHL },
 ];
 

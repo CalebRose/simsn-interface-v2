@@ -65,7 +65,7 @@ export const useNewsPage = () => {
     proNews: phlNews,
     getBootstrapNewsData: getHCKBootstrapNewsData,
   } = useSimHCKStore();
-  const { claxTeam, laxAdminStatus, claxNews: claxNewsResponse, refreshClaxNews } = useSimLAXStore();
+  const { claxTeam, claxNews: claxNewsResponse, refreshClaxNews } = useSimLAXStore();
   const claxTeamMap = useMemo<Record<number, LaxTeam>>(
     () => Object.fromEntries((claxNewsResponse?.teams ?? []).map((team) => [team.id, team])),
     [claxNewsResponse],
@@ -639,7 +639,6 @@ export const useNewsPage = () => {
     selectedLeague,
     selectedTeam: newsSelectedTeam,
     claxTeamMap,
-    showSimLax: Boolean(claxTeam) || Boolean(laxAdminStatus?.isAdmin),
     pagedData,
     RefreshNews,
     sortByNewest,

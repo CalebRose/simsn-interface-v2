@@ -28,6 +28,7 @@ import {
 } from "../../Common/Labels";
 import { useModal } from "../../../_hooks/useModal";
 import { SchedulePageGameModal } from "./GameModal";
+import { StreamChannelBadge, hasPendingStream } from "./streamChannel";
 import { SimCFB, SimNFL } from "../../../_constants/constants";
 import {
   CollegeTeam as CFBTeam,
@@ -107,6 +108,7 @@ export const TeamSchedule = ({
   const gameModal = useModal();
   const [selectedGame, setSelectedGame] = useState<any>(null);
   const isFootball = league === SimCFB || league === SimNFL ? true : false;
+  const isBasketball = league === SimNBA || league === SimCBB;
   const { isUltraWide } = useResponsive();
   let gridColumns = useMemo(() => {
     if (isFootball) {
@@ -260,25 +262,29 @@ export const TeamSchedule = ({
                     </div>
                   )}
                   <div className="text-center col-span-1">
-                    <ClickableGameLabel
-                      textColorClass={`${
-                        game.userWin
-                          ? "text-green-500"
-                          : game.userLoss
-                            ? "text-red-500"
-                            : textColorClass
-                      } ${
-                        game.gameScore === "TBC"
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      }`}
-                      disable={game.gameScore === "TBC"}
-                      openModal={() => {
-                        setSelectedGame(game);
-                        gameModal.handleOpenModal();
-                      }}
-                      label={game.headerGameScore}
-                    />
+                    {hasPendingStream(game.gameScore, game.StreamChannel, isBasketball) ? (
+                      <StreamChannelBadge channel={game.StreamChannel} />
+                    ) : (
+                      <ClickableGameLabel
+                        textColorClass={`${
+                          game.userWin
+                            ? "text-green-500"
+                            : game.userLoss
+                              ? "text-red-500"
+                              : textColorClass
+                        } ${
+                          game.gameScore === "TBC"
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                        disable={game.gameScore === "TBC"}
+                        openModal={() => {
+                          setSelectedGame(game);
+                          gameModal.handleOpenModal();
+                        }}
+                        label={game.headerGameScore}
+                      />
+                    )}
                   </div>
                   <div className="flex text-center justify-center col-span-1">
                     <Button
@@ -328,6 +334,7 @@ export const WeeklySchedule = ({
   const gameModal = useModal();
   const [selectedGame, setSelectedGame] = useState<any>(null);
   const isFootball = league === SimCFB || league === SimNFL ? true : false;
+  const isBasketball = league === SimNBA || league === SimCBB;
 
   return (
     <SectionCards
@@ -470,17 +477,21 @@ export const WeeklySchedule = ({
                   />
                 </div>
                 <div className="text-center col-span-1">
-                  <ClickableGameLabel
-                    textColorClass={`${
-                      game.gameScore === "TBC" ? "opacity-50" : ""
-                    }`}
-                    disable={game.gameScore === "TBC"}
-                    openModal={() => {
-                      setSelectedGame(game);
-                      gameModal.handleOpenModal();
-                    }}
-                    label={`${game.headerGameScore}${game.IsNeutralSite || game.IsNeutral ? " (N)" : ""}`}
-                  />
+                  {hasPendingStream(game.gameScore, game.StreamChannel, isBasketball) ? (
+                    <StreamChannelBadge channel={game.StreamChannel} />
+                  ) : (
+                    <ClickableGameLabel
+                      textColorClass={`${
+                        game.gameScore === "TBC" ? "opacity-50" : ""
+                      }`}
+                      disable={game.gameScore === "TBC"}
+                      openModal={() => {
+                        setSelectedGame(game);
+                        gameModal.handleOpenModal();
+                      }}
+                      label={`${game.headerGameScore}${game.IsNeutralSite || game.IsNeutral ? " (N)" : ""}`}
+                    />
+                  )}
                 </div>
                 <div className="flex text-center justify-center col-span-1">
                   <Button
@@ -1905,6 +1916,18 @@ const HCKAdvancedStandingsRow: FC<HCKAdvancedStandingsRowProps> = ({
       <TableCell>
         <Span>{standings.PostSeasonStatus}</Span>
       </TableCell>
+      <TableCell>
+        <Span>{team?.OverallGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OffenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.DefenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.GoalieGrade}</Span>
+      </TableCell>
       {league === SimCHL && (
         <>
           <TableCell>
@@ -2141,6 +2164,15 @@ const FBAdvancedStandingsRow: FC<FBAdvancedStandingsRowProps> = ({
       <TableCell>
         <Span>{standings.PostSeasonStatus}</Span>
       </TableCell>
+      <TableCell>
+        <Span>{team?.OverallGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OffenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.DefenseGrade}</Span>
+      </TableCell>
       {league === SimNFL && (
         <>
           <TableCell>
@@ -2343,6 +2375,15 @@ const BBAdvancedStandingsRow: FC<BBAdvancedStandingsRowProps> = ({
       </TableCell>
       <TableCell>
         <Span>{standings.PostSeasonStatus}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OverallGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.OffenseGrade}</Span>
+      </TableCell>
+      <TableCell>
+        <Span>{team?.DefenseGrade}</Span>
       </TableCell>
       {league === SimCBB && (
         <>
