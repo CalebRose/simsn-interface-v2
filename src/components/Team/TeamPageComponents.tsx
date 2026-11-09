@@ -615,6 +615,7 @@ export const RosterInfo = ({
           return player?.IsAffiliatePlayer || false;
         }
       } else {
+        if (league === SimCFB) return false;
         return player?.IsRedshirting || false;
       }
     }).length || 0;
@@ -678,6 +679,7 @@ export const AdditionalTeamInfo = ({
           return player?.IsAffiliatePlayer || false;
         }
       } else {
+        if (league === SimCFB) return false;
         return player?.IsRedshirting || false;
       }
     }).length || 0;

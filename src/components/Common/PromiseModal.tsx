@@ -31,7 +31,6 @@ import { useSimBBAStore } from "../../context/SimBBAContext";
 import { FootballPlayerStatsModalView } from "./PlayerStatsModalView";
 
 const CFB_OPTION_TYPES: { label: string; value: string }[] = [
-  { label: "No Redshirt", value: "No Redshirt" },
   { label: "Snap Count", value: "Snap Count" },
   { label: "Wins", value: "Wins" },
   { label: "Bowl Game", value: "Bowl Game" },
@@ -215,6 +214,7 @@ export const PromiseModal: FC<PromiseModalProps> = ({
       }
     }
     if (
+      league !== SimCFB &&
       promiseType === "No Redshirt" &&
       (player.IsRedshirt || player.IsRedshirting)
     ) {
