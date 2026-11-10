@@ -123,6 +123,10 @@ export const AdminStatesTab = () => {
   );
   const [draft, setDraft] = useState<TimestampDraft | null>(initial);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRunningGames, setIsRunningGames] = useState(false);
+  const [runGamesTriggered, setRunGamesTriggered] = useState(
+    Boolean(cfb_Timestamp?.RunGames),
+  );
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -131,6 +135,10 @@ export const AdminStatesTab = () => {
   useEffect(() => {
     setDraft(initial);
   }, [initial]);
+
+  useEffect(() => {
+    setRunGamesTriggered(Boolean(cfb_Timestamp?.RunGames));
+  }, [cfb_Timestamp?.RunGames]);
 
   const toggleDefs = isFootball(league) ? footballToggles : gamesToggles;
 
@@ -211,6 +219,26 @@ export const AdminStatesTab = () => {
     }
   };
 
+  const runThisWeeksGames = async () => {
+    setIsRunningGames(true);
+    setMessage(null);
+    try {
+      const updatedTS = await AdminService.FBARunTheGames();
+      setRunGamesTriggered(Boolean(updatedTS?.RunGames ?? true));
+      setMessage({
+        type: "success",
+        text: "This week's CFB and NFL games have been triggered to run on the backend.",
+      });
+    } catch (e) {
+      setMessage({
+        type: "error",
+        text: `Failed to run this week's games: ${e instanceof Error ? e.message : e}`,
+      });
+    } finally {
+      setIsRunningGames(false);
+    }
+  };
+
   const selectedPhase = phaseOptions.find(
     (o) => o.value === draft.Phase.toString(),
   );
@@ -272,6 +300,19 @@ export const AdminStatesTab = () => {
           >
             Reset
           </Button>
+          {isFootball(league) && (
+            <Button
+              variant="primary"
+              onClick={runThisWeeksGames}
+              disabled={isRunningGames || runGamesTriggered}
+            >
+              {isRunningGames
+                ? "Starting Games..."
+                : runGamesTriggered
+                  ? "This Week's Games Running / Queued"
+                  : "Run This Weeks Games"}
+            </Button>
+          )}
         </ButtonGroup>
         {message && (
           <Text

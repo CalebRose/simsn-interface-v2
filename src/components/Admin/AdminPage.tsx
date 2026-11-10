@@ -35,6 +35,10 @@ import { useAdminPage } from "../../context/AdminPageContext";
 import { AdminTeamsTab } from "./AdminTeamsTab";
 import { AdminRequestsTab } from "./AdminRequestsTab";
 import { AdminStatesTab } from "./AdminStatesTab";
+import { AdminConfChampionshipsTab } from "./AdminConfChampionshipsTab";
+import { AdminBowlsTab } from "./AdminBowlsTab";
+import { AdminPostseasonTab } from "./AdminPostseasonTab";
+import { AdminReportsTab } from "./AdminReportsTab";
 import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
 import { AdminTradesTab } from "./AdminTradesTab";
@@ -393,7 +397,18 @@ export const AdminPage = () => {
               {selectedTab === Requests && <AdminRequestsTab />}
               {selectedTab === Teams && <AdminTeamsTab />}
               {selectedTab === GameState && <AdminStatesTab />}
+              {selectedTab === ConfChampionships &&
+                selectedLeague === SimCFB && <AdminConfChampionshipsTab />}
+              {selectedTab === Bowls && selectedLeague === SimCFB && (
+                <AdminBowlsTab />
+              )}
+              {selectedTab === Postseason && selectedLeague === SimCFB && (
+                <AdminPostseasonTab />
+              )}
               {selectedTab === Trades && <AdminTradesTab />}
+              {selectedTab === Reports && selectedLeague === SimCFB && (
+                <AdminReportsTab />
+              )}
             </div>
           </Border>
         )}
