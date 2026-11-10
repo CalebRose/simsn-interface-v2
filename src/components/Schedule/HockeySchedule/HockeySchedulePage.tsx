@@ -102,6 +102,7 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     value: string;
   }>({ label: ts.Season.toString(), value: ts.SeasonID.toString() });
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
+  const [isPreseason, setIsPreseason] = useState<boolean>(!!ts.IsPreseason);
   const hckExportOptions = useMemo(() => NonFBAExportOptions(), []);
   const selectedWeekValue = useMemo(() => {
     return Number(selectedWeek.value);
@@ -146,8 +147,10 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   };
 
   const collegeGamesBySelectedSeason = useMemo(() => {
-    return collegeGamesMapBySeason[selectedSeasonValue] || [];
-  }, [collegeGamesMapBySeason, selectedSeasonValue]);
+    return (collegeGamesMapBySeason[selectedSeasonValue] || []).filter(
+      (g: any) => !!g.IsPreseason === isPreseason,
+    );
+  }, [collegeGamesMapBySeason, selectedSeasonValue, isPreseason]);
 
   const collegeStandingsBySelectedSeason = useMemo(() => {
     return collegeStandingsMapBySeason[selectedSeasonValue] || [];
@@ -362,6 +365,13 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
                   )}
                 </>
               )}
+              <div className="flex justify-center items-center gap-2">
+                <ToggleSwitch
+                  onChange={(checked) => setIsPreseason(checked)}
+                  checked={isPreseason}
+                />
+                <Text variant="small">Preseason</Text>
+              </div>
               <div className="flex items-center gap-2 justify-around sm:flex-col">
                 <div className="flex flex-col items-center gap-2 justify-center">
                   {view === TeamGames ? (
@@ -786,6 +796,7 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   }>({ label: ts.Season.toString(), value: ts.SeasonID.toString() });
   const [standingsView, setStandingsView] = useState(Conferences);
   const [resultsOverride, setResultsOverride] = useState<boolean>(false);
+  const [isPreseason, setIsPreseason] = useState<boolean>(!!ts.IsPreseason);
   const hckExportOptions = useMemo(() => NonFBAExportOptions(), []);
   const selectedWeekValue = useMemo(() => {
     return Number(selectedWeek.value);
@@ -817,8 +828,10 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   );
 
   const proGamesBySelectedSeason = useMemo(() => {
-    return proGamesMapBySeason[selectedSeasonValue] || [];
-  }, [proGamesMapBySeason, selectedSeasonValue]);
+    return (proGamesMapBySeason[selectedSeasonValue] || []).filter(
+      (g: any) => !!g.IsPreseason === isPreseason,
+    );
+  }, [proGamesMapBySeason, selectedSeasonValue, isPreseason]);
 
   const proStandingsBySelectedSeason = useMemo(() => {
     return proStandingsMapBySeason[selectedSeasonValue] || [];
@@ -942,6 +955,13 @@ export const PHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
             </div>
             {(category === Overview || category === AdvSchedule) && (
               <>
+                <div className="flex justify-center items-center gap-2">
+                  <ToggleSwitch
+                    onChange={(checked) => setIsPreseason(checked)}
+                    checked={isPreseason}
+                  />
+                  <Text variant="small">Preseason</Text>
+                </div>
                 <div className="flex justify-center items-center gap-2">
                   <ToggleSwitch
                     onChange={(checked) => {

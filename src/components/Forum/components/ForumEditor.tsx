@@ -108,6 +108,16 @@ const ForumImageNodeView: React.FC<NodeViewProps> = ({
   );
 };
 
+// Older posts (e.g. thread cover images) stored images as type "image".
+const normalizeLegacyImages = (doc: RichTextDocument): RichTextDocument => {
+  const walk = (node: any): any => ({
+    ...node,
+    ...(node.type === "image" ? { type: "forumImage" } : {}),
+    ...(node.content ? { content: node.content.map(walk) } : {}),
+  });
+  return walk(doc);
+};
+
 const ForumImageExtension = Node.create({
   name: "forumImage",
   group: "block",
@@ -637,8 +647,11 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
     },
     ref,
   ) {
-    const initialContent =
-      initialDoc ?? (initialText ? plaintextToDoc(initialText) : undefined);
+    const initialContent = initialDoc
+      ? normalizeLegacyImages(initialDoc)
+      : initialText
+        ? plaintextToDoc(initialText)
+        : undefined;
 
     const [isEmpty, setIsEmpty] = useState(!initialContent);
     const [isInTable, setIsInTable] = useState(false);
@@ -665,7 +678,11 @@ export const ForumEditor = forwardRef<ForumEditorHandle, ForumEditorProps>(
 
     const editor = useEditor({
       extensions: [
-        StarterKit.configure({ codeBlock: { HTMLAttributes: { class: "" } } }),
+        StarterKit.configure({
+          codeBlock: { HTMLAttributes: { class: "" } },
+          link: false,
+          underline: false,
+        }),
         Underline,
         Link.configure({
           openOnClick: false,
