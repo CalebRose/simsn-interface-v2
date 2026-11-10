@@ -89,7 +89,7 @@ const readDraft = (league: League, ts: any): TimestampDraft | null => {
   }
 
   const salaryCap =
-    isFootball(league) && pro ? (ts.Y1Capspace ?? ts.SalaryCap ?? 0) : 0;
+    pro ? (ts.Y1Capspace ?? ts.SalaryCap ?? 0) : 0;
 
   const toggleDefs = isFootball(league) ? footballToggles : gamesToggles;
   const toggles: Record<string, boolean> = {};
@@ -252,7 +252,7 @@ export const AdminStatesTab = () => {
       Phase: draft.Phase,
       ...draft.toggles,
     };
-    if (isFootball(league) && isProLeague(league)) {
+    if (isProLeague(league)) {
       dto.SalaryCap = Number(draft.SalaryCap);
       dto.Y1Capspace = Number(draft.SalaryCap);
     }
@@ -297,6 +297,66 @@ export const AdminStatesTab = () => {
       setMessage({
         type: "error",
         text: `Failed to run this week's games: ${e instanceof Error ? e.message : e}`,
+      });
+    } finally {
+      setIsRunningGames(false);
+    }
+  };
+
+  const nextGameSlot = useMemo(() => {
+    if (!draft?.toggles) return null;
+    if (!draft.toggles.GamesARan) return "A";
+    if (!draft.toggles.GamesBRan) return "B";
+    if (!draft.toggles.GamesCRan) return "C";
+    if (!draft.toggles.GamesDRan) return "D";
+    return null;
+  }, [draft?.toggles]);
+
+  const runNextSetOfGames = async () => {
+    if (!nextGameSlot) return;
+    const slot = nextGameSlot;
+    setIsRunningGames(true);
+    setMessage(null);
+    try {
+      const nextToggles = { ...draft.toggles };
+      if (slot === "A") nextToggles.GamesARan = true;
+      else if (slot === "B") nextToggles.GamesBRan = true;
+      else if (slot === "C") nextToggles.GamesCRan = true;
+      else if (slot === "D") nextToggles.GamesDRan = true;
+
+      const dto: any = {
+        WeekID: draft.WeekID,
+        Week: draft.Week,
+        SeasonID: draft.SeasonID,
+        Phase: draft.Phase,
+        ...nextToggles,
+      };
+      if (isProLeague(league)) {
+        dto.SalaryCap = Number(draft.SalaryCap);
+        dto.Y1Capspace = Number(draft.SalaryCap);
+      }
+
+      if (isBasketball(league)) {
+        await AdminService.BBARunNextGames(slot);
+        await AdminService.BBAUpdateTimestamp(dto);
+      } else {
+        await AdminService.HCKRunNextGames(slot);
+        await AdminService.HCKUpdateTimestamp(dto);
+      }
+
+      setDraft({
+        ...draft,
+        toggles: nextToggles,
+      });
+
+      setMessage({
+        type: "success",
+        text: `Set ${slot} games for ${league} have been run! Games ${slot} Ran toggle updated.`,
+      });
+    } catch (e) {
+      setMessage({
+        type: "error",
+        text: `Failed to run Set ${slot} games: ${e instanceof Error ? e.message : e}`,
       });
     } finally {
       setIsRunningGames(false);
@@ -392,7 +452,7 @@ export const AdminStatesTab = () => {
             value={draft.SeasonID}
             onChange={(e) => changeSeason(Number(e.target.value) || 0)}
           />
-          {isFootball(league) && isProLeague(league) && (
+          {isProLeague(league) && (
             <Input
               type="number"
               label="Salary Cap ($M)"
@@ -442,7 +502,7 @@ export const AdminStatesTab = () => {
               Add a Comp Pick
             </Button>
           )}
-          {isFootball(league) && (
+          {isFootball(league) ? (
             <Button
               variant="primary"
               onClick={runThisWeeksGames}
@@ -453,6 +513,18 @@ export const AdminStatesTab = () => {
                 : runGamesTriggered
                   ? "This Week's Games Running / Queued"
                   : "Run This Weeks Games"}
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={runNextSetOfGames}
+              disabled={isRunningGames || !nextGameSlot}
+            >
+              {isRunningGames
+                ? `Running Set ${nextGameSlot}...`
+                : nextGameSlot
+                  ? `Run Next Set of Games (${nextGameSlot})`
+                  : "All Game Sets Complete"}
             </Button>
           )}
         </ButtonGroup>

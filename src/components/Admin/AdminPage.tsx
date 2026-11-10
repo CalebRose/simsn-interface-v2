@@ -36,12 +36,18 @@ import { AdminTeamsTab } from "./AdminTeamsTab";
 import { AdminRequestsTab } from "./AdminRequestsTab";
 import { AdminStatesTab } from "./AdminStatesTab";
 import { AdminConfChampionshipsTab } from "./AdminConfChampionshipsTab";
+import { AdminCBBConfTournamentsTab } from "./AdminCBBConfTournamentsTab";
 import { AdminBowlsTab } from "./AdminBowlsTab";
 import { AdminPostseasonTab } from "./AdminPostseasonTab";
 import { AdminNFLPostseasonTab } from "./AdminNFLPostseasonTab";
+import { AdminCBBPostseasonTab } from "./AdminCBBPostseasonTab";
+import { AdminNBAPostseasonTab } from "./AdminNBAPostseasonTab";
 import { AdminNFLContractsTab } from "./AdminNFLContractsTab";
 import { AdminNFLTransactionsTab } from "./AdminNFLTransactionsTab";
+import { AdminTransactionsTab } from "./AdminTransactionsTab";
 import { AdminNFLReportsTab } from "./AdminNFLReportsTab";
+import { AdminNBAReportsTab } from "./AdminNBAReportsTab";
+import { AdminPHLReportsTab } from "./AdminPHLReportsTab";
 import { AdminReportsTab } from "./AdminReportsTab";
 import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
@@ -383,11 +389,13 @@ export const AdminPage = () => {
                       selected={selectedTab === Transactions}
                       setSelected={setSelectedTab}
                     />
-                    <Tab
-                      label={UDFAs}
-                      selected={selectedTab === UDFAs}
-                      setSelected={setSelectedTab}
-                    />
+                    {selectedLeague === SimNFL && (
+                      <Tab
+                        label={UDFAs}
+                        selected={selectedTab === UDFAs}
+                        setSelected={setSelectedTab}
+                      />
+                    )}
                   </>
                 )}
                 <Tab
@@ -403,6 +411,8 @@ export const AdminPage = () => {
               {selectedTab === GameState && <AdminStatesTab />}
               {selectedTab === ConfChampionships &&
                 selectedLeague === SimCFB && <AdminConfChampionshipsTab />}
+              {selectedTab === ConfChampionships &&
+                selectedLeague === SimCBB && <AdminCBBConfTournamentsTab />}
               {selectedTab === Bowls && selectedLeague === SimCFB && (
                 <AdminBowlsTab />
               )}
@@ -412,12 +422,18 @@ export const AdminPage = () => {
               {selectedTab === Postseason && selectedLeague === SimNFL && (
                 <AdminNFLPostseasonTab />
               )}
+              {selectedTab === Postseason && selectedLeague === SimCBB && (
+                <AdminCBBPostseasonTab />
+              )}
+              {selectedTab === Postseason && selectedLeague === SimNBA && (
+                <AdminNBAPostseasonTab />
+              )}
               {selectedTab === Trades && <AdminTradesTab />}
               {selectedTab === Contracts && selectedLeague === SimNFL && (
                 <AdminNFLContractsTab />
               )}
-              {selectedTab === Transactions && selectedLeague === SimNFL && (
-                <AdminNFLTransactionsTab />
+              {selectedTab === Transactions && (
+                <AdminTransactionsTab />
               )}
               {selectedTab === UDFAs && selectedLeague === SimNFL && (
                 <div className="w-full p-4">
@@ -429,6 +445,12 @@ export const AdminPage = () => {
               )}
               {selectedTab === Reports && selectedLeague === SimNFL && (
                 <AdminNFLReportsTab />
+              )}
+              {selectedTab === Reports && selectedLeague === SimNBA && (
+                <AdminNBAReportsTab />
+              )}
+              {selectedTab === Reports && selectedLeague === SimPHL && (
+                <AdminPHLReportsTab />
               )}
             </div>
           </Border>
