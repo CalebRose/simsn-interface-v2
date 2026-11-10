@@ -38,6 +38,10 @@ import { AdminStatesTab } from "./AdminStatesTab";
 import { AdminConfChampionshipsTab } from "./AdminConfChampionshipsTab";
 import { AdminBowlsTab } from "./AdminBowlsTab";
 import { AdminPostseasonTab } from "./AdminPostseasonTab";
+import { AdminNFLPostseasonTab } from "./AdminNFLPostseasonTab";
+import { AdminNFLContractsTab } from "./AdminNFLContractsTab";
+import { AdminNFLTransactionsTab } from "./AdminNFLTransactionsTab";
+import { AdminNFLReportsTab } from "./AdminNFLReportsTab";
 import { AdminReportsTab } from "./AdminReportsTab";
 import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
@@ -405,28 +409,32 @@ export const AdminPage = () => {
               {selectedTab === Postseason && selectedLeague === SimCFB && (
                 <AdminPostseasonTab />
               )}
+              {selectedTab === Postseason && selectedLeague === SimNFL && (
+                <AdminNFLPostseasonTab />
+              )}
               {selectedTab === Trades && <AdminTradesTab />}
+              {selectedTab === Contracts && selectedLeague === SimNFL && (
+                <AdminNFLContractsTab />
+              )}
+              {selectedTab === Transactions && selectedLeague === SimNFL && (
+                <AdminNFLTransactionsTab />
+              )}
+              {selectedTab === UDFAs && selectedLeague === SimNFL && (
+                <div className="w-full p-4">
+                  <NFLUDFAAdminPanel />
+                </div>
+              )}
               {selectedTab === Reports && selectedLeague === SimCFB && (
                 <AdminReportsTab />
+              )}
+              {selectedTab === Reports && selectedLeague === SimNFL && (
+                <AdminNFLReportsTab />
               )}
             </div>
           </Border>
         )}
 
         {selectedLeague === SimCLAX && <CollegeLacrosseAdminPage embedded />}
-
-        {/* SimNFL Section: Hub + UDFA Panel */}
-        {selectedLeague === SimNFL && (
-          <div className="flex flex-col w-full gap-y-4">
-            <Border classes="w-full sm:max-w-[65vw]">
-              <div className="flex justify-center p-4">
-                <Text variant="h6">{selectedLeague} Commissioner Hub</Text>
-              </div>
-              <CommissionerHub league={selectedLeague} />
-            </Border>
-            <NFLUDFAAdminPanel />
-          </div>
-        )}
 
         {selectedLeague === SimMLB && <IFAAdminSection />}
         {(selectedLeague === SimMLB ||

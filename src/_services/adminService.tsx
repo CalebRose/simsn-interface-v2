@@ -1,6 +1,6 @@
 import { bbaUrl, fbaUrl, hckUrl } from "../_constants/urls";
 import { GetCall, PostCall, PUTCallNoResponse } from "../_helper/fetchHelper";
-import { CollegeGame, Timestamp as FBA_Timestamp } from "../models/footballModels";
+import { CollegeGame, NFLGame, Timestamp as FBA_Timestamp } from "../models/footballModels";
 
 export interface FBAUpdateTimestampDTO {
   WeekID: number;
@@ -83,6 +83,17 @@ export interface CFBPlayoffScheduleRequest {
   Seeds: CFBPlayoffSeedDTO[];
 }
 
+export interface NFLPlayoffSeedDTO {
+  Seed: number;
+  TeamID: number;
+  TeamAbbr: string;
+  Conference: "AFC" | "NFC" | string;
+}
+
+export interface NFLPlayoffScheduleRequest {
+  Seeds: NFLPlayoffSeedDTO[];
+}
+
 export const AdminService = {
   FBAUpdateTimestamp: async (dto: FBAUpdateTimestampDTO): Promise<void> => {
     await PUTCallNoResponse(`${fbaUrl}admin/timestamp/update`, dto);
@@ -100,6 +111,23 @@ export const AdminService = {
     await PostCall<Record<string, never>, { deleted: boolean }>(
       `${fbaUrl}admin/cfb/game/delete/${gameID}`,
       {},
+    );
+  },
+  GetNFLPostseasonGames: async (): Promise<NFLGame[]> => {
+    return await GetCall<NFLGame[]>(`${fbaUrl}admin/nfl/postseason/games`);
+  },
+  DeleteNFLPostseasonGame: async (gameID: number): Promise<void> => {
+    await PostCall<Record<string, never>, { deleted: boolean }>(
+      `${fbaUrl}admin/nfl/game/delete/${gameID}`,
+      {},
+    );
+  },
+  GenerateNFLPlayoffSchedule: async (
+    dto: NFLPlayoffScheduleRequest,
+  ): Promise<NFLGame[]> => {
+    return await PostCall<NFLPlayoffScheduleRequest, NFLGame[]>(
+      `${fbaUrl}admin/nfl/playoffs/generate`,
+      dto,
     );
   },
   SaveCFBConferenceChampionship: async (
