@@ -10,10 +10,12 @@ import {
 } from "../../_constants/constants";
 import { Button, ButtonGroup } from "../../_design/Buttons";
 import { Input, ToggleSwitch } from "../../_design/Inputs";
+import { Modal } from "../../_design/Modal";
 import { SelectDropdown } from "../../_design/Select";
 import { Text } from "../../_design/Typography";
 import { getFBAWeekID, getHCKWeekID } from "../../_helper/statsPageHelper";
 import { AdminService } from "../../_services/adminService";
+import { DraftService } from "../../_services/draftService";
 import { useLeagueStore } from "../../context/LeagueContext";
 import { useSimFBAStore } from "../../context/SimFBAContext";
 import { useSimHCKStore } from "../../context/SimHockeyContext";
@@ -51,6 +53,7 @@ interface TimestampDraft {
   Week: number;
   WeekID: number;
   SeasonID: number;
+  SalaryCap: number;
   toggles: Record<string, boolean>;
 }
 
@@ -85,6 +88,9 @@ const readDraft = (league: League, ts: any): TimestampDraft | null => {
     seasonID = ts.SeasonID;
   }
 
+  const salaryCap =
+    isFootball(league) && pro ? (ts.Y1Capspace ?? ts.SalaryCap ?? 0) : 0;
+
   const toggleDefs = isFootball(league) ? footballToggles : gamesToggles;
   const toggles: Record<string, boolean> = {};
   toggleDefs.forEach(({ key }) => {
@@ -98,13 +104,30 @@ const readDraft = (league: League, ts: any): TimestampDraft | null => {
     Week: week ?? 0,
     WeekID: weekID ?? 0,
     SeasonID: seasonID ?? 0,
+    SalaryCap: salaryCap,
     toggles,
   };
 };
 
+const compRoundOptions = [
+  { value: "1", label: "Round 1" },
+  { value: "2", label: "Round 2" },
+  { value: "3", label: "Round 3" },
+  { value: "4", label: "Round 4" },
+  { value: "5", label: "Round 5" },
+  { value: "6", label: "Round 6" },
+  { value: "7", label: "Round 7" },
+];
+
 export const AdminStatesTab = () => {
   const { selectedLeague } = useLeagueStore();
-  const { cfb_Timestamp } = useSimFBAStore();
+  const {
+    cfb_Timestamp,
+    setCFB_Timestamp,
+    nflTeams,
+    nflDraftPicks,
+    setNFLDraftPicks,
+  } = useSimFBAStore();
   const { hck_Timestamp } = useSimHCKStore();
   const { cbb_Timestamp } = useSimBBAStore();
 
@@ -132,6 +155,18 @@ export const AdminStatesTab = () => {
     text: string;
   } | null>(null);
 
+  // Compensatory Draft Pick Modal State
+  const [isCompModalOpen, setIsCompModalOpen] = useState(false);
+  const [compTeamID, setCompTeamID] = useState<number>(0);
+  const [compYear, setCompYear] = useState<number>(cfb_Timestamp?.Season ?? 2026);
+  const [compRound, setCompRound] = useState<number>(3);
+  const [compPickNumber, setCompPickNumber] = useState<number>(33);
+  const [isSubmittingComp, setIsSubmittingComp] = useState(false);
+  const [compMessage, setCompMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   useEffect(() => {
     setDraft(initial);
   }, [initial]);
@@ -152,6 +187,16 @@ export const AdminStatesTab = () => {
       };
     });
   }, [league]);
+
+  const teamOptions = useMemo(() => {
+    if (!nflTeams || nflTeams.length === 0) return [];
+    return [...nflTeams]
+      .sort((a, b) => a.TeamName.localeCompare(b.TeamName))
+      .map((t) => ({
+        value: t.ID.toString(),
+        label: `${t.TeamName} ${t.Mascot}`,
+      }));
+  }, [nflTeams]);
 
   const isDirty = useMemo(
     () => JSON.stringify(draft) !== JSON.stringify(initial),
@@ -186,6 +231,13 @@ export const AdminStatesTab = () => {
     });
   };
 
+  const changeSalaryCap = (salaryCap: number) => {
+    setDraft({
+      ...draft,
+      SalaryCap: salaryCap,
+    });
+  };
+
   const changeToggle = (key: string, value: boolean) => {
     setDraft({ ...draft, toggles: { ...draft.toggles, [key]: value } });
   };
@@ -200,9 +252,21 @@ export const AdminStatesTab = () => {
       Phase: draft.Phase,
       ...draft.toggles,
     };
+    if (isFootball(league) && isProLeague(league)) {
+      dto.SalaryCap = Number(draft.SalaryCap);
+      dto.Y1Capspace = Number(draft.SalaryCap);
+    }
     try {
       if (isFootball(league)) {
         await AdminService.FBAUpdateTimestamp(dto);
+        if (setCFB_Timestamp && cfb_Timestamp) {
+          setCFB_Timestamp({
+            ...cfb_Timestamp,
+            ...dto,
+            Y1Capspace: Number(draft.SalaryCap),
+            SalaryCap: Number(draft.SalaryCap),
+          });
+        }
       } else if (isBasketball(league)) {
         await AdminService.BBAUpdateTimestamp(dto);
       } else {
@@ -239,6 +303,69 @@ export const AdminStatesTab = () => {
     }
   };
 
+  const handleOpenCompModal = () => {
+    const defaultYear =
+      cfb_Timestamp?.Season ??
+      (draft?.SeasonID ? draft.SeasonID + 2020 : 2026);
+    setCompYear(defaultYear);
+    if (teamOptions.length > 0 && !compTeamID) {
+      setCompTeamID(Number(teamOptions[0].value));
+    }
+    setCompRound(3);
+    setCompPickNumber(33);
+    setCompMessage(null);
+    setIsCompModalOpen(true);
+  };
+
+  const handleSaveCompPick = async () => {
+    if (!compTeamID) {
+      setCompMessage({ type: "error", text: "Please select a team." });
+      return;
+    }
+    if (!compRound || compRound < 1 || compRound > 7) {
+      setCompMessage({ type: "error", text: "Round must be between 1 and 7." });
+      return;
+    }
+    if (!compPickNumber || compPickNumber < 1) {
+      setCompMessage({
+        type: "error",
+        text: "Pick number within the round must be at least 1.",
+      });
+      return;
+    }
+
+    setIsSubmittingComp(true);
+    setCompMessage(null);
+    try {
+      const createdPick = await DraftService.AddCompensatoryDraftPick({
+        TeamID: compTeamID,
+        Season: compYear,
+        SeasonID: compYear > 2020 ? compYear - 2020 : compYear,
+        DraftRound: compRound,
+        DraftNumber: compPickNumber,
+      });
+
+      if (setNFLDraftPicks && createdPick) {
+        setNFLDraftPicks([...(nflDraftPicks || []), createdPick]);
+      }
+
+      setCompMessage({
+        type: "success",
+        text: `Successfully added compensatory pick: Round ${compRound}, Pick #${compPickNumber}!`,
+      });
+      setTimeout(() => {
+        setIsCompModalOpen(false);
+      }, 1500);
+    } catch (e) {
+      setCompMessage({
+        type: "error",
+        text: `Failed to add comp pick: ${e instanceof Error ? e.message : e}`,
+      });
+    } finally {
+      setIsSubmittingComp(false);
+    }
+  };
+
   const selectedPhase = phaseOptions.find(
     (o) => o.value === draft.Phase.toString(),
   );
@@ -265,6 +392,16 @@ export const AdminStatesTab = () => {
             value={draft.SeasonID}
             onChange={(e) => changeSeason(Number(e.target.value) || 0)}
           />
+          {isFootball(league) && isProLeague(league) && (
+            <Input
+              type="number"
+              label="Salary Cap ($M)"
+              min={0}
+              step="0.5"
+              value={draft.SalaryCap}
+              onChange={(e) => changeSalaryCap(Number(e.target.value) || 0)}
+            />
+          )}
           <Input label="Week" value={draft.Week} readOnly disabled />
           <Input label="Week ID" value={draft.WeekID} readOnly disabled />
         </div>
@@ -300,6 +437,11 @@ export const AdminStatesTab = () => {
           >
             Reset
           </Button>
+          {isFootball(league) && isProLeague(league) && (
+            <Button variant="secondaryOutline" onClick={handleOpenCompModal}>
+              Add a Comp Pick
+            </Button>
+          )}
           {isFootball(league) && (
             <Button
               variant="primary"
@@ -325,6 +467,99 @@ export const AdminStatesTab = () => {
           </Text>
         )}
       </div>
+
+      {/* Add Compensatory Draft Pick Modal */}
+      {isCompModalOpen && (
+        <Modal
+          isOpen={true}
+          onClose={() => setIsCompModalOpen(false)}
+          title="Add Compensatory Draft Pick"
+          actions={
+            <ButtonGroup>
+              <Button
+                variant="secondaryOutline"
+                onClick={() => setIsCompModalOpen(false)}
+                disabled={isSubmittingComp}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleSaveCompPick}
+                disabled={isSubmittingComp || !compTeamID}
+              >
+                {isSubmittingComp ? "Adding..." : "Add Pick"}
+              </Button>
+            </ButtonGroup>
+          }
+        >
+          <div className="flex flex-col gap-y-4 p-2">
+            <Text variant="body-small" classes="text-gray-400">
+              Add a compensatory pick to the draft order for a designated NFL team.
+            </Text>
+
+            <div className="flex flex-col gap-y-1">
+              <Text variant="small" classes="text-gray-400">
+                Team
+              </Text>
+              <SelectDropdown
+                options={teamOptions}
+                value={
+                  teamOptions.find((o) => o.value === compTeamID.toString()) ??
+                  null
+                }
+                onChange={(opt) => opt && setCompTeamID(Number(opt.value))}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Input
+                type="number"
+                label="Year"
+                min={2020}
+                value={compYear}
+                onChange={(e) => setCompYear(Number(e.target.value) || 2026)}
+              />
+
+              <div className="flex flex-col gap-y-1">
+                <Text variant="small" classes="text-gray-400">
+                  Round
+                </Text>
+                <SelectDropdown
+                  options={compRoundOptions}
+                  value={
+                    compRoundOptions.find(
+                      (r) => r.value === compRound.toString(),
+                    ) ?? null
+                  }
+                  onChange={(opt) => opt && setCompRound(Number(opt.value))}
+                />
+              </div>
+
+              <Input
+                type="number"
+                label="Pick in Round"
+                min={1}
+                value={compPickNumber}
+                onChange={(e) => setCompPickNumber(Number(e.target.value) || 1)}
+              />
+            </div>
+
+            {compMessage && (
+              <Text
+                variant="body-small"
+                classes={
+                  compMessage.type === "success"
+                    ? "text-green-400"
+                    : "text-red-400"
+                }
+              >
+                {compMessage.text}
+              </Text>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

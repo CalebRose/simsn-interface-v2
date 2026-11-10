@@ -29,6 +29,12 @@ export const AdminNFLContractsTab = () => {
     "renewals" | "franchiseTag" | "fifthYear" | "priceMatrix"
   >("renewals");
   const [isProcessing, setIsProcessing] = useState<number | null>(null);
+  const [acceptedOptionIds, setAcceptedOptionIds] = useState<Set<number>>(
+    new Set(),
+  );
+  const [rejectedOptionIds, setRejectedOptionIds] = useState<Set<number>>(
+    new Set(),
+  );
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     text: string;
@@ -93,20 +99,15 @@ export const AdminNFLContractsTab = () => {
     return contractRenewals.filter((item) => item.extension.TeamID === teamID);
   }, [contractRenewals, filterTeam]);
 
-  // Section 2: Players with Franchise or Transition Tag applied
+  // Section 2: Players with Franchise Tag applied
   const taggedPlayers = useMemo(() => {
     return allNFLPlayers.filter((p) => {
       const ext = proExtensionMap?.[p.ID];
-      return (
-        p.TagType === 1 ||
-        p.TagType === 2 ||
-        (ext && ext.IsTag && !ext.IsAccepted) ||
-        (ext && ext.IsTag && (p.TagType === 1 || p.TagType === 2))
-      );
+      return Boolean(ext && ext.IsTag);
     });
   }, [allNFLPlayers, proExtensionMap]);
 
-  // Section 3: 1st Round Picks with experience <= 5
+  // Section 3: 1st Round Picks with 4 years experience (entering 5th year)
   const fifthYearCandidates = useMemo(() => {
     return allNFLPlayers
       .filter((p) => {
@@ -114,7 +115,7 @@ export const AdminNFLContractsTab = () => {
         const pick = Number(p.DraftedPick ?? 0);
         const exp = Number(p.Experience ?? 0);
         const isRoundOne = round === 1 || (round === 0 && pick > 0 && pick <= 32);
-        return isRoundOne && exp <= 5;
+        return isRoundOne && exp === 4;
       })
       .sort((a, b) => {
         if (a.Experience !== b.Experience) {
@@ -150,7 +151,12 @@ export const AdminNFLContractsTab = () => {
         PlayerID: player.ID,
         TagType: tagType,
       });
-      player.TagType = tagType;
+      setAcceptedOptionIds((prev) => new Set(prev).add(player.ID));
+      setRejectedOptionIds((prev) => {
+        const next = new Set(prev);
+        next.delete(player.ID);
+        return next;
+      });
       await getBootstrapRosterData();
       setFeedback({
         type: "success",
@@ -170,7 +176,12 @@ export const AdminNFLContractsTab = () => {
     setIsProcessing(player.ID);
     setFeedback(null);
     try {
-      player.TagType = -1;
+      setRejectedOptionIds((prev) => new Set(prev).add(player.ID));
+      setAcceptedOptionIds((prev) => {
+        const next = new Set(prev);
+        next.delete(player.ID);
+        return next;
+      });
       setFeedback({
         type: "success",
         text: `Declined 5th-year option for ${player.FirstName} ${player.LastName}.`,
@@ -185,7 +196,10 @@ export const AdminNFLContractsTab = () => {
     }
   };
 
-  const getOptionPrice = (pos: string, tier: "Basic" | "Playtime" | "Transition" | "Franchise" = "Basic") => {
+  const getOptionPrice = (
+    pos: string,
+    tier: "Basic" | "Playtime" | "Franchise" = "Basic",
+  ) => {
     const cleanPos = pos?.trim().toUpperCase();
     return tagData[cleanPos]?.[tier] ?? 0;
   };
@@ -361,7 +375,7 @@ export const AdminNFLContractsTab = () => {
                 Franchise Tag Costs by Position
               </Text>
               <Text variant="small" classes="text-gray-400">
-                Current season franchise and transition tag amounts.
+                Current season franchise tag amounts by position.
               </Text>
             </div>
             <div className="overflow-x-auto max-h-[500px]">
@@ -369,8 +383,9 @@ export const AdminNFLContractsTab = () => {
                 <thead className="bg-gray-900/80 text-gray-400 uppercase text-xs sticky top-0">
                   <tr>
                     <th className="p-2 border border-gray-700">Position</th>
-                    <th className="p-2 border border-gray-700 text-right">Franchise Tag</th>
-                    <th className="p-2 border border-gray-700 text-right">Transition Tag</th>
+                    <th className="p-2 border border-gray-700 text-right">
+                      Franchise Tag Cost
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -384,9 +399,6 @@ export const AdminNFLContractsTab = () => {
                       </td>
                       <td className="p-2 border border-gray-700 text-right font-mono font-bold text-green-400">
                         ${values.Franchise.toFixed(2)}M
-                      </td>
-                      <td className="p-2 border border-gray-700 text-right font-mono text-cyan-400">
-                        ${values.Transition.toFixed(2)}M
                       </td>
                     </tr>
                   ))}
@@ -402,13 +414,13 @@ export const AdminNFLContractsTab = () => {
                 Tagged Players ({taggedPlayers.length})
               </Text>
               <Text variant="small" classes="text-gray-400">
-                Players who have had the franchise or transition tag applied this season.
+                Players who have had the franchise tag applied this season.
               </Text>
             </div>
 
             {taggedPlayers.length === 0 ? (
               <div className="py-8 text-center text-gray-400">
-                No players currently have a Franchise or Transition tag applied.
+                No players currently have a Franchise tag applied.
               </div>
             ) : (
               <div className="overflow-x-auto max-h-[500px]">
@@ -418,23 +430,16 @@ export const AdminNFLContractsTab = () => {
                       <th className="p-2 border border-gray-700">Player</th>
                       <th className="p-2 border border-gray-700">Pos</th>
                       <th className="p-2 border border-gray-700">Team</th>
-                      <th className="p-2 border border-gray-700">Tag Type</th>
-                      <th className="p-2 border border-gray-700 text-right">Amount</th>
+                      <th className="p-2 border border-gray-700">Tag</th>
+                      <th className="p-2 border border-gray-700 text-right">
+                        Amount
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {taggedPlayers.map((player) => {
                       const team = proTeamMap?.[player.TeamID];
-                      const tagLabel =
-                        player.TagType === 1
-                          ? "Franchise"
-                          : player.TagType === 2
-                          ? "Transition"
-                          : "Tagged";
-                      const cost =
-                        player.TagType === 1
-                          ? getOptionPrice(player.Position, "Franchise")
-                          : getOptionPrice(player.Position, "Transition");
+                      const cost = getOptionPrice(player.Position, "Franchise");
 
                       return (
                         <tr
@@ -445,27 +450,29 @@ export const AdminNFLContractsTab = () => {
                             <div className="flex items-center gap-x-2">
                               {team && (
                                 <Logo
-                                  url={getLogo(SimNFL, team.ID, currentUser?.IsRetro)}
+                                  url={getLogo(
+                                    SimNFL,
+                                    team.ID,
+                                    currentUser?.IsRetro,
+                                  )}
                                   variant="small"
                                   containerClass="w-5 h-5"
                                 />
                               )}
-                              <span>{player.FirstName} {player.LastName}</span>
+                              <span>
+                                {player.FirstName} {player.LastName}
+                              </span>
                             </div>
                           </td>
-                          <td className="p-2 border border-gray-700">{player.Position}</td>
+                          <td className="p-2 border border-gray-700">
+                            {player.Position}
+                          </td>
                           <td className="p-2 border border-gray-700">
                             {team ? team.TeamAbbr : `Team #${player.TeamID}`}
                           </td>
                           <td className="p-2 border border-gray-700">
-                            <span
-                              className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                                player.TagType === 1
-                                  ? "bg-purple-900/60 text-purple-300 border border-purple-700"
-                                  : "bg-cyan-900/60 text-cyan-300 border border-cyan-700"
-                              }`}
-                            >
-                              {tagLabel}
+                            <span className="px-2 py-0.5 rounded text-xs font-semibold bg-purple-900/60 text-purple-300 border border-purple-700">
+                              Franchise
                             </span>
                           </td>
                           <td className="p-2 border border-gray-700 text-right font-mono font-bold text-green-400">
@@ -482,16 +489,16 @@ export const AdminNFLContractsTab = () => {
         </div>
       )}
 
-      {/* SECTION 3: 1ST ROUND PICKS (EXPERIENCE <= 5) - 5TH YEAR OPTIONS */}
+      {/* SECTION 3: 1ST ROUND PICKS (4 YEARS EXPERIENCE) - 5TH YEAR OPTIONS */}
       {activeSection === "fifthYear" && (
         <Border classes="p-4 flex flex-col gap-y-4 bg-gray-800/40">
           <div className="flex justify-between items-center pb-2 border-b border-gray-700">
             <div>
               <Text variant="h6" classes="font-bold text-white">
-                1st Round Draft Picks (5 Years or Below) - 5th-Year Options ({filteredFifthYearCandidates.length})
+                1st Round Draft Picks (4 Years Experience) - 5th-Year Options ({filteredFifthYearCandidates.length})
               </Text>
               <Text variant="small" classes="text-gray-400">
-                Players drafted in Round 1 with 5 or fewer seasons of experience eligible for a 5th-year option.
+                Players drafted in Round 1 with exactly 4 seasons of experience eligible for a 5th-year option.
               </Text>
             </div>
           </div>
@@ -509,10 +516,10 @@ export const AdminNFLContractsTab = () => {
                     <th className="p-2 border border-gray-700">Position</th>
                     <th className="p-2 border border-gray-700">Team</th>
                     <th className="p-2 border border-gray-700 text-center">Draft Pick</th>
-                    <th className="p-2 border border-gray-700 text-center">Experience</th>
+                    <th className="p-2 border border-gray-700 text-center">Tier</th>
                     <th className="p-2 border border-gray-700 text-right">Basic Option</th>
                     <th className="p-2 border border-gray-700 text-right">Playtime Option</th>
-                    <th className="p-2 border border-gray-700">Status</th>
+                    <th className="p-2 border border-gray-700 text-center">Status</th>
                     <th className="p-2 border border-gray-700 text-center">Actions</th>
                   </tr>
                 </thead>
@@ -521,11 +528,15 @@ export const AdminNFLContractsTab = () => {
                     const team = proTeamMap?.[player.TeamID];
                     const basicPrice = getOptionPrice(player.Position, "Basic");
                     const playtimePrice = getOptionPrice(player.Position, "Playtime");
+                    const ext = proExtensionMap?.[player.ID];
                     const isAccepted =
-                      player.TagType === 3 ||
-                      player.TagType === 4 ||
-                      proExtensionMap?.[player.ID]?.IsTag;
-                    const isRejected = player.TagType === -1;
+                      acceptedOptionIds.has(player.ID) ||
+                      Boolean(ext && ext.IsTag && ext.IsAccepted);
+                    const isRejected = rejectedOptionIds.has(player.ID);
+
+                    const isPlaytimeQualified = player.TagType === 3;
+                    const isProBowlQualified =
+                      player.TagType === 1 || player.TagType === 2;
 
                     return (
                       <tr
@@ -553,8 +564,20 @@ export const AdminNFLContractsTab = () => {
                         <td className="p-2 border border-gray-700 text-center font-mono">
                           R1:P{player.DraftedPick || "?"}
                         </td>
-                        <td className="p-2 border border-gray-700 text-center font-mono">
-                          {player.Experience} yr{player.Experience === 1 ? "" : "s"}
+                        <td className="p-2 border border-gray-700 text-center">
+                          {isProBowlQualified ? (
+                            <span className="px-2 py-0.5 rounded text-xs bg-purple-900/60 text-purple-300 border border-purple-700 font-semibold">
+                              Pro Bowl
+                            </span>
+                          ) : isPlaytimeQualified ? (
+                            <span className="px-2 py-0.5 rounded text-xs bg-cyan-900/60 text-cyan-300 border border-cyan-700 font-semibold">
+                              Playtime
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded text-xs bg-gray-800 text-gray-300 border border-gray-700 font-medium">
+                              Basic
+                            </span>
+                          )}
                         </td>
                         <td className="p-2 border border-gray-700 text-right font-mono text-cyan-400">
                           ${basicPrice.toFixed(2)}M
@@ -562,17 +585,17 @@ export const AdminNFLContractsTab = () => {
                         <td className="p-2 border border-gray-700 text-right font-mono text-green-400">
                           ${playtimePrice.toFixed(2)}M
                         </td>
-                        <td className="p-2 border border-gray-700">
+                        <td className="p-2 border border-gray-700 text-center">
                           {isAccepted ? (
                             <span className="px-2 py-0.5 rounded text-xs bg-green-900/60 text-green-300 border border-green-700 font-semibold">
                               Accepted
                             </span>
                           ) : isRejected ? (
-                            <span className="px-2 py-0.5 rounded text-xs bg-red-900/60 text-red-300 border border-red-700">
+                            <span className="px-2 py-0.5 rounded text-xs bg-red-900/60 text-red-300 border border-red-700 font-semibold">
                               Declined
                             </span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded text-xs bg-yellow-900/50 text-yellow-300 border border-yellow-700">
+                            <span className="px-2 py-0.5 rounded text-xs bg-yellow-900/50 text-yellow-300 border border-yellow-700 font-semibold">
                               Eligible
                             </span>
                           )}
@@ -636,7 +659,6 @@ export const AdminNFLContractsTab = () => {
                   <th className="p-2 border border-gray-700">Position Group</th>
                   <th className="p-2 border border-gray-700 text-right">Basic Tier</th>
                   <th className="p-2 border border-gray-700 text-right">Playtime Tier</th>
-                  <th className="p-2 border border-gray-700 text-right">Transition Tag</th>
                   <th className="p-2 border border-gray-700 text-right">Franchise Tag</th>
                 </tr>
               </thead>
@@ -654,9 +676,6 @@ export const AdminNFLContractsTab = () => {
                     </td>
                     <td className="p-2 border border-gray-700 text-right font-mono text-blue-400 font-semibold">
                       ${values.Playtime.toFixed(2)}M
-                    </td>
-                    <td className="p-2 border border-gray-700 text-right font-mono text-yellow-400 font-semibold">
-                      ${values.Transition.toFixed(2)}M
                     </td>
                     <td className="p-2 border border-gray-700 text-right font-mono text-green-400 font-bold">
                       ${values.Franchise.toFixed(2)}M

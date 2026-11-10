@@ -105,6 +105,7 @@ import { DraftService } from "../_services/draftService";
 // ✅ Define Types for Context
 interface SimFBAContextProps {
   cfb_Timestamp: Timestamp | null;
+  setCFB_Timestamp: (ts: Timestamp | null) => void;
   isLoading: boolean;
   cfbTeam: CollegeTeam | null;
   cfbTeams: CollegeTeam[];
@@ -328,6 +329,7 @@ interface SimFBAContextProps {
 // ✅ Initial Context State
 const defaultContext: SimFBAContextProps = {
   cfb_Timestamp: null,
+  setCFB_Timestamp: () => {},
   isLoading: true,
   cfbTeam: null,
   cfbTeams: [],
@@ -2963,6 +2965,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     <SimFBAContext.Provider
       value={{
         cfb_Timestamp,
+        setCFB_Timestamp,
         cfbPostSeasonAwards,
         cfbTeam,
         cfbTeams,

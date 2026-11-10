@@ -39,6 +39,10 @@ export const DraftService = {
     return await GetCall(`${fbaUrl}nfl/draft/page/${TeamID}`);
   },
 
+  AddCompensatoryDraftPick: async (dto: any): Promise<any> => {
+    return await PostCall(`${fbaUrl}admin/nfl/draft-pick/compensatory`, dto);
+  },
+
   // NEW UDFA ENDPOINTS
   GetUDFABoard: async (teamID: number) =>
     GetCall(`${fbaUrl}nfl/udfa/board/${teamID}`),

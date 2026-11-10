@@ -7,6 +7,8 @@ export interface FBAUpdateTimestampDTO {
   Week: number;
   SeasonID: number;
   Phase: number;
+  SalaryCap?: number;
+  Y1Capspace?: number;
   CFBSpringGames: boolean;
   NFLPreseason: boolean;
   ThursdayGames: boolean;
@@ -94,7 +96,20 @@ export interface NFLPlayoffScheduleRequest {
   Seeds: NFLPlayoffSeedDTO[];
 }
 
+export interface CompensatoryDraftPickDTO {
+  TeamID: number;
+  Season?: number;
+  SeasonID?: number;
+  DraftRound: number;
+  DraftNumber: number;
+}
+
 export const AdminService = {
+  AddCompensatoryDraftPick: async (
+    dto: CompensatoryDraftPickDTO,
+  ): Promise<any> => {
+    return await PostCall(`${fbaUrl}admin/nfl/draft-pick/compensatory`, dto);
+  },
   FBAUpdateTimestamp: async (dto: FBAUpdateTimestampDTO): Promise<void> => {
     await PUTCallNoResponse(`${fbaUrl}admin/timestamp/update`, dto);
   },
