@@ -46,8 +46,15 @@ export const PostCall = async <TRequest, TResponse>(
 
     if (!response.ok) {
       let errorBody: any;
-      try { errorBody = await response.json(); } catch {}
-      const msg = apiErrorMessage(errorBody, `HTTP Error: ${response.statusText}`);
+      let rawText = "";
+      try {
+        rawText = await response.text();
+        errorBody = JSON.parse(rawText);
+      } catch {}
+      const msg = apiErrorMessage(
+        errorBody,
+        rawText.trim() || `HTTP Error: ${response.statusText}`,
+      );
       throw new ApiError(response.status, msg, errorBody);
     }
 
@@ -103,8 +110,15 @@ export const PUTCall = async <TRequest, TResponse>(
 
     if (!response.ok) {
       let errorBody: any;
-      try { errorBody = await response.json(); } catch {}
-      const msg = apiErrorMessage(errorBody, `HTTP Error: ${response.statusText}`);
+      let rawText = "";
+      try {
+        rawText = await response.text();
+        errorBody = JSON.parse(rawText);
+      } catch {}
+      const msg = apiErrorMessage(
+        errorBody,
+        rawText.trim() || `HTTP Error: ${response.statusText}`,
+      );
       throw new ApiError(response.status, msg, errorBody);
     }
 

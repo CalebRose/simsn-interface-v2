@@ -35,6 +35,23 @@ import { useAdminPage } from "../../context/AdminPageContext";
 import { AdminTeamsTab } from "./AdminTeamsTab";
 import { AdminRequestsTab } from "./AdminRequestsTab";
 import { AdminStatesTab } from "./AdminStatesTab";
+import { AdminConfChampionshipsTab } from "./AdminConfChampionshipsTab";
+import { AdminCBBConfTournamentsTab } from "./AdminCBBConfTournamentsTab";
+import { AdminCHLConfTournamentsTab } from "./AdminCHLConfTournamentsTab";
+import { AdminBowlsTab } from "./AdminBowlsTab";
+import { AdminPostseasonTab } from "./AdminPostseasonTab";
+import { AdminNFLPostseasonTab } from "./AdminNFLPostseasonTab";
+import { AdminCBBPostseasonTab } from "./AdminCBBPostseasonTab";
+import { AdminNBAPostseasonTab } from "./AdminNBAPostseasonTab";
+import { AdminCHLPostseasonTab } from "./AdminCHLPostseasonTab";
+import { AdminNFLContractsTab } from "./AdminNFLContractsTab";
+import { AdminNFLTransactionsTab } from "./AdminNFLTransactionsTab";
+import { AdminTransactionsTab } from "./AdminTransactionsTab";
+import { AdminNFLReportsTab } from "./AdminNFLReportsTab";
+import { AdminNBAReportsTab } from "./AdminNBAReportsTab";
+import { AdminPHLReportsTab } from "./AdminPHLReportsTab";
+import { AdminCHLReportsTab } from "./AdminCHLReportsTab";
+import { AdminReportsTab } from "./AdminReportsTab";
 import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
 import { AdminTradesTab } from "./AdminTradesTab";
@@ -375,11 +392,13 @@ export const AdminPage = () => {
                       selected={selectedTab === Transactions}
                       setSelected={setSelectedTab}
                     />
-                    <Tab
-                      label={UDFAs}
-                      selected={selectedTab === UDFAs}
-                      setSelected={setSelectedTab}
-                    />
+                    {selectedLeague === SimNFL && (
+                      <Tab
+                        label={UDFAs}
+                        selected={selectedTab === UDFAs}
+                        setSelected={setSelectedTab}
+                      />
+                    )}
                   </>
                 )}
                 <Tab
@@ -393,25 +412,62 @@ export const AdminPage = () => {
               {selectedTab === Requests && <AdminRequestsTab />}
               {selectedTab === Teams && <AdminTeamsTab />}
               {selectedTab === GameState && <AdminStatesTab />}
+              {selectedTab === ConfChampionships &&
+                selectedLeague === SimCFB && <AdminConfChampionshipsTab />}
+              {selectedTab === ConfChampionships &&
+                selectedLeague === SimCBB && <AdminCBBConfTournamentsTab />}
+              {selectedTab === ConfChampionships &&
+                selectedLeague === SimCHL && <AdminCHLConfTournamentsTab />}
+              {selectedTab === Bowls && selectedLeague === SimCFB && (
+                <AdminBowlsTab />
+              )}
+              {selectedTab === Postseason && selectedLeague === SimCFB && (
+                <AdminPostseasonTab />
+              )}
+              {selectedTab === Postseason && selectedLeague === SimNFL && (
+                <AdminNFLPostseasonTab />
+              )}
+              {selectedTab === Postseason && selectedLeague === SimCBB && (
+                <AdminCBBPostseasonTab />
+              )}
+              {selectedTab === Postseason && selectedLeague === SimNBA && (
+                <AdminNBAPostseasonTab />
+              )}
+              {selectedTab === Postseason && selectedLeague === SimCHL && (
+                <AdminCHLPostseasonTab />
+              )}
               {selectedTab === Trades && <AdminTradesTab />}
+              {selectedTab === Contracts && selectedLeague === SimNFL && (
+                <AdminNFLContractsTab />
+              )}
+              {selectedTab === Transactions && (
+                <AdminTransactionsTab />
+              )}
+              {selectedTab === UDFAs && selectedLeague === SimNFL && (
+                <div className="w-full p-4">
+                  <NFLUDFAAdminPanel />
+                </div>
+              )}
+              {selectedTab === Reports && selectedLeague === SimCFB && (
+                <AdminReportsTab />
+              )}
+              {selectedTab === Reports && selectedLeague === SimNFL && (
+                <AdminNFLReportsTab />
+              )}
+              {selectedTab === Reports && selectedLeague === SimNBA && (
+                <AdminNBAReportsTab />
+              )}
+              {selectedTab === Reports && selectedLeague === SimPHL && (
+                <AdminPHLReportsTab />
+              )}
+              {selectedTab === Reports && selectedLeague === SimCHL && (
+                <AdminCHLReportsTab />
+              )}
             </div>
           </Border>
         )}
 
         {selectedLeague === SimCLAX && <CollegeLacrosseAdminPage embedded />}
-
-        {/* SimNFL Section: Hub + UDFA Panel */}
-        {selectedLeague === SimNFL && (
-          <div className="flex flex-col w-full gap-y-4">
-            <Border classes="w-full sm:max-w-[65vw]">
-              <div className="flex justify-center p-4">
-                <Text variant="h6">{selectedLeague} Commissioner Hub</Text>
-              </div>
-              <CommissionerHub league={selectedLeague} />
-            </Border>
-            <NFLUDFAAdminPanel />
-          </div>
-        )}
 
         {selectedLeague === SimMLB && <IFAAdminSection />}
         {(selectedLeague === SimMLB ||

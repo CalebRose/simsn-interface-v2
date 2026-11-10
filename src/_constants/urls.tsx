@@ -1,12 +1,18 @@
 /*
   Football URLs
 */
+const isLocal =
+  typeof window !== "undefined" &&
+  (window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.hostname === "[::1]");
+
 const fbaLocal = "http://localhost:5001/api/";
 const fbaApiURL = "https://simfba.azurewebsites.net/api/";
-export const fbaUrl = fbaApiURL;
+export const fbaUrl = isLocal ? fbaLocal : fbaApiURL;
 const localWSURL = "ws://localhost:5001/ws";
 const FBAWSURL = "wss://simfba.azurewebsites.net/ws";
-export const fba_ws = FBAWSURL;
+export const fba_ws = isLocal ? localWSURL : FBAWSURL;
 
 /*
   Forum URLs

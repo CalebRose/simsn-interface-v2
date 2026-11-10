@@ -105,6 +105,7 @@ import { DraftService } from "../_services/draftService";
 // ✅ Define Types for Context
 interface SimFBAContextProps {
   cfb_Timestamp: Timestamp | null;
+  setCFB_Timestamp: (ts: Timestamp | null) => void;
   isLoading: boolean;
   cfbTeam: CollegeTeam | null;
   cfbTeams: CollegeTeam[];
@@ -215,6 +216,12 @@ interface SimFBAContextProps {
   redshirtPlayer: (playerID: number, teamID: number) => Promise<void>;
   promisePlayer: (dto: any) => Promise<void>;
   updateCFBRosterMap: (newMap: Record<number, CollegePlayer[]>) => void;
+  updateCFBDepthChartMap: (
+    newMap: Record<number, CollegeTeamDepthChart>,
+  ) => void;
+  updateNFLDepthChartMap: (
+    newMap: Record<number, NFLDepthChart>,
+  ) => void;
   saveCFBDepthChart: (
     dto: any,
     updatedDepthChart?: CollegeTeamDepthChart,
@@ -322,6 +329,7 @@ interface SimFBAContextProps {
 // ✅ Initial Context State
 const defaultContext: SimFBAContextProps = {
   cfb_Timestamp: null,
+  setCFB_Timestamp: () => {},
   isLoading: true,
   cfbTeam: null,
   cfbTeams: [],
@@ -427,6 +435,8 @@ const defaultContext: SimFBAContextProps = {
   updatePointsOnPortalPlayer: () => {},
   scoutPortalAttribute: async () => {},
   updateCFBRosterMap: () => {},
+  updateCFBDepthChartMap: () => {},
+  updateNFLDepthChartMap: () => {},
   saveCFBDepthChart: async () => {},
   saveNFLDepthChart: async () => {},
   saveCFBGameplan: async () => ({ success: false }),
@@ -1019,6 +1029,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
 
   const bootstrapAllData = async () => {
     await getLandingBootstrapData();
+    await getBootstrapRosterData();
+    await getBootstrapNewsData();
+    await getBootstrapPlayerData();
+    await getBootstrapGameplanData();
     // await fetchAllHistory();
     isFetching.current = false;
   };
@@ -1032,6 +1046,15 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NFLTeamID) {
       nflID = currentUser.NFLTeamID;
     }
+    const isAdminOrCommish = Boolean(
+      currentUser?.roleID &&
+        (currentUser.roleID.toLowerCase() === "admin" ||
+          currentUser.roleID.toLowerCase().includes("commissioner")),
+    );
+    if (isAdminOrCommish) {
+      if (cfbID === 0) cfbID = 1;
+      if (nflID === 0) nflID = 1;
+    }
     // if the user has no football teams, skip FBA landing bootstrapping
     if (cfbID === 0 && nflID === 0) {
       setIsLoading(false);
@@ -1040,7 +1063,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     const res = await BootstrapService.GetFBALandingBootstrapData(cfbID, nflID);
 
     if (cfbID > 0) {
-      setCFBTeam(res.CollegeTeam);
+      if (currentUser?.teamId) {
+        setCFBTeam(res.CollegeTeam);
+      }
       setCollegeNotifications(res.CollegeNotifications);
       setTopCFBPassers(res.TopCFBPassers);
       setTopCFBRushers(res.TopCFBRushers);
@@ -1055,7 +1080,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
 
     if (nflID > 0) {
-      setNFLTeam(res.ProTeam);
+      if (currentUser?.NFLTeamID) {
+        setNFLTeam(res.ProTeam);
+      }
       setNFLGameplanMap(res.NFLGameplanMap);
       setProNotifications(res.ProNotifications);
       setTopNFLPassers(res.TopNFLPassers);
@@ -1082,6 +1109,15 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
     if (currentUser && currentUser.NFLTeamID) {
       nflID = currentUser.NFLTeamID;
+    }
+    const isAdminOrCommish = Boolean(
+      currentUser?.roleID &&
+        (currentUser.roleID.toLowerCase() === "admin" ||
+          currentUser.roleID.toLowerCase().includes("commissioner")),
+    );
+    if (isAdminOrCommish) {
+      if (cfbID === 0) cfbID = 1;
+      if (nflID === 0) nflID = 1;
     }
     if (cfbID === 0 && nflID === 0) {
       return;
@@ -1219,7 +1255,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
   ]);
 
   const getBootstrapPlayerData = useCallback(async () => {
-    if (isPlayerDataLoaded.current) return;
+    if (isPlayerDataLoaded.current) {
+      console.log("[SimFBAContext] getBootstrapPlayerData skipped (already loaded/in flight)");
+      return;
+    }
     isPlayerDataLoaded.current = true;
 
     let cfbID = 0;
@@ -1230,7 +1269,18 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NFLTeamID) {
       nflID = currentUser.NFLTeamID;
     }
+    const isAdminOrCommish = Boolean(
+      currentUser?.roleID &&
+        (currentUser.roleID.toLowerCase() === "admin" ||
+          currentUser.roleID.toLowerCase().includes("commissioner")),
+    );
+    if (isAdminOrCommish) {
+      if (cfbID === 0) cfbID = 1;
+      if (nflID === 0) nflID = 1;
+    }
+    console.log("[SimFBAContext] getBootstrapPlayerData params:", { cfbID, nflID, isAdminOrCommish, roleID: currentUser?.roleID });
     if (cfbID === 0 && nflID === 0) {
+      isPlayerDataLoaded.current = false;
       return;
     }
 
@@ -1239,6 +1289,9 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         cfbID,
         nflID,
       );
+      console.log("[SimFBAContext] getBootstrapPlayerData response received:", {
+        collegeRosterCount: Object.keys(res?.CollegeRosterMap ?? {}).length,
+      });
       if (cfbID > 0) {
         setCFBRosterMap(res.CollegeRosterMap ?? {});
         setCollegeInjuryReport(res.CollegeInjuryReport ?? []);
@@ -1249,9 +1302,10 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         setProInjuryReport(res.ProInjuryReport ?? []);
       }
     } catch (e) {
+      console.error("[SimFBAContext] getBootstrapPlayerData error:", e);
       isPlayerDataLoaded.current = false;
     }
-  }, [currentUser?.teamId, currentUser?.NFLTeamID]);
+  }, [currentUser?.teamId, currentUser?.NFLTeamID, currentUser?.roleID]);
 
   // Use this once the draft page is finished
   const getBootstrapDraftData = async () => {
@@ -1299,19 +1353,40 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (currentUser && currentUser.NFLTeamID) {
       nflID = currentUser.NFLTeamID;
     }
+    const isAdminOrCommish = Boolean(
+      currentUser?.roleID &&
+        (currentUser.roleID.toLowerCase() === "admin" ||
+          currentUser.roleID.toLowerCase().includes("commissioner")),
+    );
+    if (isAdminOrCommish) {
+      if (cfbID === 0) cfbID = 1;
+      if (nflID === 0) nflID = 1;
+    }
+    console.log("[SimFBAContext] getBootstrapGameplanData params:", { cfbID, nflID, isAdminOrCommish, roleID: currentUser?.roleID });
     if (cfbID === 0 && nflID === 0) {
       return;
     }
-    const res = await BootstrapService.GetFBAGameplanBootstrapData(
-      cfbID,
-      nflID,
-    );
-    setCollegeGameplanMap(res.CollegeGameplanMap);
-    setCollegeDepthChart(res.CollegeDepthChart || null);
-    setCFBDepthChartMap(res.CollegeDepthChartMap || {});
-    setNFLGameplanMap(res.NFLGameplanMap);
-    setNFLDepthChart(res.NFLDepthChart || null);
-    setNFLDepthChartMap(res.NFLDepthChartMap || {});
+    try {
+      const res = await BootstrapService.GetFBAGameplanBootstrapData(
+        cfbID,
+        nflID,
+      );
+      console.log("[SimFBAContext] getBootstrapGameplanData response received:", {
+        collegeDepthChartCount: Object.keys(res?.CollegeDepthChartMap ?? {}).length,
+      });
+      setCollegeGameplanMap(res.CollegeGameplanMap);
+      if (currentUser?.teamId) {
+        setCollegeDepthChart(res.CollegeDepthChart || null);
+      }
+      setCFBDepthChartMap(res.CollegeDepthChartMap || {});
+      setNFLGameplanMap(res.NFLGameplanMap);
+      if (currentUser?.NFLTeamID) {
+        setNFLDepthChart(res.NFLDepthChart || null);
+      }
+      setNFLDepthChartMap(res.NFLDepthChartMap || {});
+    } catch (e) {
+      console.error("[SimFBAContext] getBootstrapGameplanData error:", e);
+    }
   };
 
   const getBootstrapNewsData = useCallback(async () => {
@@ -1322,6 +1397,15 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     }
     if (currentUser && currentUser.NFLTeamID) {
       nflID = currentUser.NFLTeamID;
+    }
+    const isAdminOrCommish = Boolean(
+      currentUser?.roleID &&
+        (currentUser.roleID.toLowerCase() === "admin" ||
+          currentUser.roleID.toLowerCase().includes("commissioner")),
+    );
+    if (isAdminOrCommish) {
+      if (cfbID === 0) cfbID = 1;
+      if (nflID === 0) nflID = 1;
     }
     if (cfbID === 0 && nflID === 0) {
       return;
@@ -1335,7 +1419,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     if (nflID > 0) {
       setProNews(res.ProNews);
     }
-  }, [currentUser?.teamId, currentUser?.NFLTeamID]);
+  }, [currentUser?.teamId, currentUser?.NFLTeamID, currentUser?.roleID]);
 
   const getUDFABoard = async (teamID: number) => {
     try {
@@ -1554,6 +1638,18 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     setCFBRosterMap(newMap);
   };
 
+  const updateCFBDepthChartMap = (
+    newMap: Record<number, CollegeTeamDepthChart>,
+  ) => {
+    setCFBDepthChartMap(newMap);
+  };
+
+  const updateNFLDepthChartMap = (
+    newMap: Record<number, NFLDepthChart>,
+  ) => {
+    setNFLDepthChartMap(newMap);
+  };
+
   const saveCFBDepthChart = async (
     dto: any,
     updatedDepthChart?: CollegeTeamDepthChart,
@@ -1564,7 +1660,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       if (updatedDepthChart) {
         setCollegeDepthChart(updatedDepthChart);
 
-        if (cfbTeam?.ID && cfbDepthChartMap) {
+        if (updatedDepthChart.TeamID && cfbDepthChartMap) {
           setCFBDepthChartMap((prev) => ({
             ...prev,
             [updatedDepthChart.TeamID]: updatedDepthChart,
@@ -2869,6 +2965,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     <SimFBAContext.Provider
       value={{
         cfb_Timestamp,
+        setCFB_Timestamp,
         cfbPostSeasonAwards,
         cfbTeam,
         cfbTeams,
@@ -2961,6 +3058,8 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         sendNFLPlayerToPracticeSquad,
         placeNFLPlayerOnTradeBlock,
         updateCFBRosterMap,
+        updateCFBDepthChartMap,
+        updateNFLDepthChartMap,
         saveCFBDepthChart,
         saveNFLDepthChart,
         saveCFBGameplan,
