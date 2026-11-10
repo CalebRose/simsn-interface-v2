@@ -2,6 +2,7 @@ import { bbaUrl, fbaUrl, hckUrl } from "../_constants/urls";
 import { GetCall, PostCall, PUTCallNoResponse } from "../_helper/fetchHelper";
 import { CollegeGame, NFLGame, Timestamp as FBA_Timestamp } from "../models/footballModels";
 import { Match, NBAMatch } from "../models/basketballModels";
+import { CollegeGame as HCKCollegeGame } from "../models/hockeyModels";
 
 export interface FBAUpdateTimestampDTO {
   WeekID: number;
@@ -158,6 +159,41 @@ export interface NBAPlayoffScheduleRequest {
   WestSeeds: NBAPlayoffSeedDTO[];
 }
 
+export interface CHLTournamentSeedDTO {
+  Seed: number;
+  TeamID: number;
+  TeamName: string;
+}
+
+export interface CHLConferenceTournamentRequest {
+  ConferenceID?: number;
+  Conference: string;
+  Format?: string;
+  Seeds: CHLTournamentSeedDTO[];
+}
+
+export interface CHLPostseasonTournamentRequest {
+  TournamentName: string;
+  Seeds: CHLTournamentSeedDTO[];
+}
+
+export interface CHLTournamentMatchDTO {
+  GameTitle: string;
+  Conference?: string;
+  RoundName: string;
+  HomeTeamID: number;
+  AwayTeamID: number;
+  HomeTeamSeed?: number;
+  AwayTeamSeed?: number;
+  Week: number;
+  GameDay: string;
+  Arena: string;
+  City: string;
+  State: string;
+  IsConferenceTournament?: boolean;
+  IsPlayoffGame?: boolean;
+}
+
 export const AdminService = {
   AddCompensatoryDraftPick: async (
     dto: CompensatoryDraftPickDTO,
@@ -298,5 +334,35 @@ export const AdminService = {
     } catch {
       return null;
     }
+  },
+  SaveCHLConferenceTournamentMatch: async (
+    dto: CHLTournamentMatchDTO,
+  ): Promise<HCKCollegeGame> => {
+    return await PostCall<CHLTournamentMatchDTO, HCKCollegeGame>(
+      `${hckUrl}admin/chl/tournament/match/save`,
+      dto,
+    );
+  },
+  GenerateCHLConferenceTournament: async (
+    dto: CHLConferenceTournamentRequest,
+  ): Promise<any> => {
+    return await PostCall<CHLConferenceTournamentRequest, any>(
+      `${hckUrl}admin/chl/tournament/conference/generate`,
+      dto,
+    );
+  },
+  GenerateCHLPostseasonSchedule: async (
+    dto: CHLPostseasonTournamentRequest,
+  ): Promise<any> => {
+    return await PostCall<CHLPostseasonTournamentRequest, any>(
+      `${hckUrl}admin/chl/tournament/ncaa/generate`,
+      dto,
+    );
+  },
+  DeleteCHLPostseasonMatch: async (gameID: number): Promise<void> => {
+    await PostCall<Record<string, never>, { deleted: boolean }>(
+      `${hckUrl}admin/chl/game/delete/${gameID}`,
+      {},
+    );
   },
 };
