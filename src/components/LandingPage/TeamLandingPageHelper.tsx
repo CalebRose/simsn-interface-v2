@@ -653,7 +653,8 @@ export const getLandingCHLData = (
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
         game.Week === testWeek &&
-        game.GameDay === nextGameDay,
+        game.GameDay === nextGameDay &&
+        game.IsPreseason === timestamp.IsPreseason,
     );
 
     if (nextMatch.length > 0) {
@@ -697,7 +698,9 @@ export const getLandingCHLData = (
   // Team Schedule
   const teamSchedule = allCHLGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.IsPreseason === timestamp.IsPreseason,
     )
     .map((game) => ({
       ...game,
@@ -794,7 +797,8 @@ export const getLandingPHLData = (
       (game) =>
         (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
         game.Week === testWeek &&
-        game.GameDay === nextGameDay,
+        game.GameDay === nextGameDay &&
+        game.IsPreseason === timestamp.IsPreseason,
     );
 
     if (nextMatch.length > 0) {
@@ -838,7 +842,9 @@ export const getLandingPHLData = (
   // Team Schedule
   const teamSchedule = allPHLGames
     .filter(
-      (game) => game.HomeTeamID === team.ID || game.AwayTeamID === team.ID,
+      (game) =>
+        (game.HomeTeamID === team.ID || game.AwayTeamID === team.ID) &&
+        game.IsPreseason === timestamp.IsPreseason,
     )
     .map((game) => ({
       ...game,

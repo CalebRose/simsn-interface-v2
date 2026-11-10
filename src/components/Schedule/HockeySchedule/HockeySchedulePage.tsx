@@ -147,9 +147,17 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
   };
 
   const collegeGamesBySelectedSeason = useMemo(() => {
-    return (collegeGamesMapBySeason[selectedSeasonValue] || []).filter(
-      (g: any) => !!g.IsPreseason === isPreseason,
-    );
+    return (collegeGamesMapBySeason[selectedSeasonValue] || [])
+      .filter((g: any) => g.IsPreseason === isPreseason)
+      .sort((a, b) => {
+        if (a.Week !== b.Week) {
+          return a.Week - b.Week;
+        }
+        if (a.GameDay && b.GameDay) {
+          return a.GameDay.localeCompare(b.GameDay);
+        }
+        return 0;
+      });
   }, [collegeGamesMapBySeason, selectedSeasonValue, isPreseason]);
 
   const collegeStandingsBySelectedSeason = useMemo(() => {
@@ -173,8 +181,8 @@ export const CHLSchedulePage: FC<SchedulePageProps> = ({ league, ts }) => {
     selectedWeek,
     selectedSeason,
     league,
-    collegeStandingsMapBySeason,
-    collegeGamesMapBySeason,
+    collegeStandingsBySelectedSeason,
+    collegeGamesBySelectedSeason,
     chlTeams,
   ]);
 

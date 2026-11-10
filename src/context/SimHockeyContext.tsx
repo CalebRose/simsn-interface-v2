@@ -2251,10 +2251,12 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         setPhlDraftPickMap(res.DraftPicks);
 
         if (res.DraftablePlayers) {
-          const playersWithGrades = res.DraftablePlayers.map((p: DraftablePlayer) => ({
-            ...p,
-            OverallGrade: getOverallGrade(p, SimPHL),
-          }));
+          const playersWithGrades = res.DraftablePlayers.map(
+            (p: DraftablePlayer) => ({
+              ...p,
+              OverallGrade: getOverallGrade(p, SimPHL),
+            }),
+          );
           const sorted = playersWithGrades.sort((a: any, b: any) => {
             const valA = getGradeValue(a.OverallGrade);
             const valB = getGradeValue(b.OverallGrade);
@@ -2558,20 +2560,67 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       const filename = `${seasonStr}_Official_Draft_List.csv`;
 
       const headers = [
-        "College", "ID", "First Name", "Last Name", "Position",
-        "Archetype", "Height", "Weight",
-        "City", "Region", "Country", "Stars", "Age",
-        "Overall", "Agility", "Faceoffs", "LongShotAccuracy", "LongShotPower", "CloseShotAccuracy",
-        "CloseShotPower", "Passing", "PuckHandling", "Strength", "BodyChecking", "StickChecking",
-        "ShotBlocking", "Goalkeeping", "GoalieVision", "Stamina", "Injury Rating",
-        "Goals", "Assists", "Points", "+/-",
-        "Penalty Minutes", "Even Strength Goals", "Even Strength Points", "Power Play Goals",
-        "Power Play Points", "Shorthanded Goals", "Shorthanded Points", "Overtime Goals",
-        "Game Winning Goals", "Shots", "Shooting Percentage", "Time One Ice",
-        "Faceoff Win Percentage", "Faceoffs Won", "Faceoffs", "Goalie Wins",
-        "Goalie Losses", "Goalie Ties", "OT Losses", "Shots Against",
-        "Saves", "Goals Against", "Save Percentage", "Shutouts",
-        "Shots Blocked", "Body Checks", "Stick Checks",
+        "College",
+        "ID",
+        "First Name",
+        "Last Name",
+        "Position",
+        "Archetype",
+        "Height",
+        "Weight",
+        "City",
+        "Region",
+        "Country",
+        "Stars",
+        "Age",
+        "Overall",
+        "Agility",
+        "Faceoffs",
+        "LongShotAccuracy",
+        "LongShotPower",
+        "CloseShotAccuracy",
+        "CloseShotPower",
+        "Passing",
+        "PuckHandling",
+        "Strength",
+        "BodyChecking",
+        "StickChecking",
+        "ShotBlocking",
+        "Goalkeeping",
+        "GoalieVision",
+        "Stamina",
+        "Injury Rating",
+        "Goals",
+        "Assists",
+        "Points",
+        "+/-",
+        "Penalty Minutes",
+        "Even Strength Goals",
+        "Even Strength Points",
+        "Power Play Goals",
+        "Power Play Points",
+        "Shorthanded Goals",
+        "Shorthanded Points",
+        "Overtime Goals",
+        "Game Winning Goals",
+        "Shots",
+        "Shooting Percentage",
+        "Time One Ice",
+        "Faceoff Win Percentage",
+        "Faceoffs Won",
+        "Faceoffs",
+        "Goalie Wins",
+        "Goalie Losses",
+        "Goalie Ties",
+        "OT Losses",
+        "Shots Against",
+        "Saves",
+        "Goals Against",
+        "Save Percentage",
+        "Shutouts",
+        "Shots Blocked",
+        "Body Checks",
+        "Stick Checks",
       ];
 
       // Sort matching Draft Board & Scouting Board order: Display Grade desc, Overall desc, Age desc
@@ -2601,7 +2650,10 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
         const faceoffs = getHockeyAttributeGrade(p, "Faceoffs");
         const longShotAccuracy = getHockeyAttributeGrade(p, "LongShotAccuracy");
         const longShotPower = getHockeyAttributeGrade(p, "LongShotPower");
-        const closeShotAccuracy = getHockeyAttributeGrade(p, "CloseShotAccuracy");
+        const closeShotAccuracy = getHockeyAttributeGrade(
+          p,
+          "CloseShotAccuracy",
+        );
         const closeShotPower = getHockeyAttributeGrade(p, "CloseShotPower");
         const passing = getHockeyAttributeGrade(p, "Passing");
         const puckHandling = getHockeyAttributeGrade(p, "PuckHandling");

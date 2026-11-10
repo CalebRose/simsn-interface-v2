@@ -3,7 +3,7 @@ import { useLeagueStore } from "../../../context/LeagueContext";
 import { SimCBB, SimCFB, SimCHL, SimNFL } from "../../../_constants/constants";
 import { Modal } from "../../../_design/Modal";
 import { useSimFBAStore } from "../../../context/SimFBAContext";
-import { TabGroup, Tab } from "../../../_design/Tabs";
+import { TabGrid, Tab } from "../../../_design/Tabs";
 import { Button } from "../../../_design/Buttons";
 import { SelectDropdown } from "../../../_design/Select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
@@ -73,6 +73,7 @@ const TABS = {
   INCOMING: "Incoming",
   SENT: "Sent",
   ACCEPTED: "Accepted",
+  INVITATIONALS: "Invitationals",
 } as const;
 
 type TabKey = (typeof TABS)[keyof typeof TABS];
@@ -373,7 +374,7 @@ const NFLGameRequestModal = () => {
   return (
     <div className="flex flex-col gap-4 p-2">
       {/* Tabs */}
-      <TabGroup>
+      <TabGrid columns={isModerator ? 4 : 3}>
         <Tab
           label={TABS.CREATE}
           selected={activeTab === TABS.CREATE}
@@ -396,7 +397,7 @@ const NFLGameRequestModal = () => {
             setSelected={setActiveTab}
           />
         )}
-      </TabGroup>
+      </TabGrid>
 
       {/* ── Create Request View ────────────────────────────────────────────────────────── */}
       {activeTab === TABS.CREATE && (
@@ -1345,7 +1346,7 @@ const CFBGameRequestModal = () => {
   return (
     <div className="flex flex-col gap-4 p-2">
       {/* Tabs */}
-      <TabGroup>
+      <TabGrid columns={isModerator ? 4 : 3}>
         <Tab
           label={TABS.CREATE}
           selected={activeTab === TABS.CREATE}
@@ -1368,7 +1369,7 @@ const CFBGameRequestModal = () => {
             setSelected={setActiveTab}
           />
         )}
-      </TabGroup>
+      </TabGrid>
 
       {/* ── Create Request View ─────────────────────────────────────────── */}
       {activeTab === TABS.CREATE && (
@@ -1982,6 +1983,47 @@ const CHLGameRequestModal = () => {
   const pendingInvitationalRequests = selectedInvitationalRequests.filter(
     (r) => !r.IsApproved,
   );
+  const moderatorInvitationalRequests =
+    currentSeasonInvitationalRequests.filter(
+      (request) => invitationalMap[request.InvitationalID],
+    );
+
+  const getInvitationalApprovalBlockReason = useCallback(
+    (request: HockeyInvitationalRequest) => {
+      const invitational = invitationalMap[request.InvitationalID];
+      if (!invitational) return "The requested invitational is unavailable.";
+      const approvedRequests = currentSeasonInvitationalRequests.filter(
+        (candidate) =>
+          candidate.InvitationalID === request.InvitationalID &&
+          candidate.IsApproved &&
+          candidate.ID !== request.ID,
+      );
+      if (approvedRequests.length >= invitational.TotalTeams) {
+        return "This invitational is full.";
+      }
+      if (
+        invitational.InterConferenceOnly &&
+        !isIndependent(request.ConferenceID) &&
+        approvedRequests.some(
+          (candidate) => candidate.ConferenceID === request.ConferenceID,
+        )
+      ) {
+        return "A team from this conference is already approved.";
+      }
+      const hasScheduledGame = (allCollegeGames ?? []).some(
+        (game) =>
+          game.SeasonID === request.SeasonID &&
+          !game.IsPreseason &&
+          game.Week === invitational.Week &&
+          (game.HomeTeamID === request.TeamID ||
+            game.AwayTeamID === request.TeamID),
+      );
+      return hasScheduledGame
+        ? `This team already has a game scheduled in Week ${invitational.Week}.`
+        : null;
+    },
+    [allCollegeGames, currentSeasonInvitationalRequests, invitationalMap],
+  );
 
   /** Why my team cannot request the selected invitational (null when it can). */
   const invitationalBlockReason = useMemo<string | null>(() => {
@@ -2033,10 +2075,13 @@ const CHLGameRequestModal = () => {
       const slot = req.Timeslot as Slot;
       return (
         isSlotTaken(m, req.HomeTeamID, req.Week, slot) ||
-        isSlotTaken(m, req.AwayTeamID, req.Week, slot)
+        isSlotTaken(m, req.AwayTeamID, req.Week, slot) ||
+        (!req.IsPreseason &&
+          (approvedInvitationalWeeksByTeam[req.HomeTeamID]?.has(req.Week) ||
+            approvedInvitationalWeeksByTeam[req.AwayTeamID]?.has(req.Week)))
       );
     },
-    [scheduleRegular, scheduleSpring],
+    [scheduleRegular, scheduleSpring, approvedInvitationalWeeksByTeam],
   );
 
   /** Weeks where my team still has an open A or B timeslot. */
@@ -2223,6 +2268,11 @@ const CHLGameRequestModal = () => {
     !!selectedSlot &&
     !isSubmitting &&
     totalGames < CHL_MAX_GAMES &&
+    availableWeeks.some((week) => week.value === String(weekNum)) &&
+    availableOpponents.some(
+      (opponent) => opponent.value === String(opponentID),
+    ) &&
+    availableSlots.some((slot) => slot.value === selectedSlot.value) &&
     (!isNeutralSite || !!selectedStadium);
 
   // ── Event handlers ─────────────────────────────────────────────────────────
@@ -2355,6 +2405,53 @@ const CHLGameRequestModal = () => {
     [],
   );
 
+  const handleProcessInvitationalRequest = useCallback(
+    async (request: HockeyInvitationalRequest) => {
+      if (request.ID <= 0 || getInvitationalApprovalBlockReason(request))
+        return;
+      await scheduleService.HCKProcessHockeyInvitationalRequest(request);
+      setLocalInvitationalRequests((prev) =>
+        prev.map((candidate) =>
+          candidate.ID === request.ID
+            ? Object.assign(new HockeyInvitationalRequest(candidate), {
+                IsApproved: true,
+              })
+            : candidate,
+        ),
+      );
+    },
+    [getInvitationalApprovalBlockReason],
+  );
+
+  const handleVetoInvitationalRequest = useCallback(
+    async (request: HockeyInvitationalRequest) => {
+      if (request.ID <= 0) return;
+      await scheduleService.HCKVetoHockeyInvitationalRequest(request);
+      setLocalInvitationalRequests((prev) =>
+        prev.filter((candidate) => candidate.ID !== request.ID),
+      );
+    },
+    [],
+  );
+
+  const getIncomingInvitationalBlockReason = useCallback(
+    (request: CHLGameRequest) => {
+      if (
+        request.IsPreseason ||
+        (!approvedInvitationalWeeksByTeam[request.HomeTeamID]?.has(
+          request.Week,
+        ) &&
+          !approvedInvitationalWeeksByTeam[request.AwayTeamID]?.has(
+            request.Week,
+          ))
+      ) {
+        return undefined;
+      }
+      return `A team in this game is approved for an invitational in Week ${request.Week}.`;
+    },
+    [approvedInvitationalWeeksByTeam],
+  );
+
   const homeTeamLogo = useMemo(() => {
     if (!homeTeam) return "";
     return getLogo(SimCHL, homeTeam.ID, currentUser?.IsRetro);
@@ -2372,7 +2469,7 @@ const CHLGameRequestModal = () => {
   return (
     <div className="flex flex-col flex-1 gap-4 p-2">
       {/* Tabs */}
-      <TabGroup>
+      <TabGrid columns={isModerator ? 5 : 3}>
         <Tab
           label={TABS.CREATE}
           selected={activeTab === TABS.CREATE}
@@ -2395,7 +2492,14 @@ const CHLGameRequestModal = () => {
             setSelected={setActiveTab}
           />
         )}
-      </TabGroup>
+        {isModerator && (
+          <Tab
+            label={TABS.INVITATIONALS}
+            selected={activeTab === TABS.INVITATIONALS}
+            setSelected={setActiveTab}
+          />
+        )}
+      </TabGrid>
 
       {/* ── Create Request View ─────────────────────────────────────────── */}
       {activeTab === TABS.CREATE && (
@@ -2871,6 +2975,7 @@ const CHLGameRequestModal = () => {
                 league={SimCHL}
                 onAccept={handleAcceptRequest}
                 onReject={handleRejectRequest}
+                disabledReason={getIncomingInvitationalBlockReason(req)}
               />
             ))
           )}
@@ -2915,6 +3020,69 @@ const CHLGameRequestModal = () => {
           )}
         </div>
       )}
+
+      {activeTab === TABS.INVITATIONALS && isModerator && (
+        <div className="flex flex-col gap-3">
+          {moderatorInvitationalRequests.length === 0 ? (
+            <Text variant="small">No invitational requests this season.</Text>
+          ) : (
+            moderatorInvitationalRequests.map((request) => {
+              const invitational = invitationalMap[request.InvitationalID];
+              const blockReason = request.IsApproved
+                ? null
+                : getInvitationalApprovalBlockReason(request);
+              return (
+                <div
+                  key={
+                    request.ID ||
+                    `team-${request.TeamID}-${request.InvitationalID}`
+                  }
+                  className="border border-gray-600 rounded-lg p-3 flex flex-wrap items-center justify-between gap-3"
+                >
+                  <div className="flex flex-col gap-1">
+                    <Text variant="small" classes="font-semibold text-start">
+                      {chlTeamMap?.[request.TeamID]?.TeamName ??
+                        `Team #${request.TeamID}`}
+                    </Text>
+                    <Text variant="xs" classes="text-gray-400">
+                      {invitational?.Name ?? "Invitational"} — Week{" "}
+                      {invitational?.Week ?? "—"} —{" "}
+                      {request.IsApproved ? "Approved" : "Pending approval"}
+                    </Text>
+                    {blockReason && (
+                      <Text variant="xs" classes="text-yellow-400">
+                        {blockReason}
+                      </Text>
+                    )}
+                  </div>
+                  {!request.IsApproved && (
+                    <div className="flex gap-2">
+                      <Button
+                        variant="success"
+                        size="sm"
+                        onClick={() =>
+                          handleProcessInvitationalRequest(request)
+                        }
+                        disabled={request.ID <= 0 || !!blockReason}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleVetoInvitationalRequest(request)}
+                        disabled={request.ID <= 0}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -2927,6 +3095,7 @@ interface IncomingRequestCardProps {
   league: League;
   onAccept: (id: number) => void;
   onReject: (id: number) => void;
+  disabledReason?: string;
 }
 
 const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
@@ -2935,6 +3104,7 @@ const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
   league,
   onAccept,
   onReject,
+  disabledReason,
 }) => {
   const sendingTeam = cfbTeamMap?.[request.SendingTeamID];
   const homeTeam = cfbTeamMap?.[request.HomeTeamID];
@@ -3016,6 +3186,7 @@ const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
             variant="success"
             size="sm"
             onClick={() => onAccept(request.ID)}
+            disabled={!!disabledReason}
           >
             Accept
           </Button>
@@ -3026,6 +3197,11 @@ const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
           >
             Reject
           </Button>
+          {disabledReason && (
+            <Text variant="xs" classes="text-yellow-400 max-w-48">
+              {disabledReason}
+            </Text>
+          )}
         </div>
       </div>
     </div>
