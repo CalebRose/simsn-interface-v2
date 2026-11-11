@@ -2087,7 +2087,7 @@ const CHLGameRequestModal = () => {
   /** Weeks where my team still has an open A or B timeslot. */
   const availableWeeks = useMemo<SelectOption[]>(() => {
     if (!chlTeam) return [];
-    let weeks_available = isPreseason ? 3 : CHL_REGULAR_SEASON_WEEKS;
+    let weeks_available = isPreseason ? 1 : CHL_REGULAR_SEASON_WEEKS;
     const options: SelectOption[] = [];
     for (let week = 1; week <= weeks_available; week++) {
       if (
@@ -2107,11 +2107,16 @@ const CHLGameRequestModal = () => {
     if (!chlTeam || !selectedWeek || !selectedOpponent) return [];
     const week = parseInt(selectedWeek.value);
     const opponent = parseInt(selectedOpponent.value);
-    return CHL_SLOTS.filter(
-      (slot) =>
-        !isSlotTaken(teamSchedule, chlTeam.ID, week, slot) &&
-        !isSlotTaken(teamSchedule, opponent, week, slot),
-    ).map((slot) => ({ label: `Timeslot ${slot}`, value: slot }));
+    const availableSlotsForWeek = isPreseason
+      ? (["A", "B", "C"] as Slot[])
+      : CHL_SLOTS;
+    return availableSlotsForWeek
+      .filter(
+        (slot) =>
+          !isSlotTaken(teamSchedule, chlTeam.ID, week, slot) &&
+          !isSlotTaken(teamSchedule, opponent, week, slot),
+      )
+      .map((slot) => ({ label: `Timeslot ${slot}`, value: slot }));
   }, [chlTeam, selectedWeek, selectedOpponent, teamSchedule]);
 
   // Keep the selected timeslot valid; default to the first open one.
