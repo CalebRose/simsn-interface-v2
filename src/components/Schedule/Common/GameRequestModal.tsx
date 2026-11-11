@@ -2117,7 +2117,7 @@ const CHLGameRequestModal = () => {
           !isSlotTaken(teamSchedule, opponent, week, slot),
       )
       .map((slot) => ({ label: `Timeslot ${slot}`, value: slot }));
-  }, [chlTeam, selectedWeek, selectedOpponent, teamSchedule]);
+  }, [chlTeam, selectedWeek, selectedOpponent, teamSchedule, isPreseason]);
 
   // Keep the selected timeslot valid; default to the first open one.
   useEffect(() => {
