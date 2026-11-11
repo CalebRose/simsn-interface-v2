@@ -2317,7 +2317,7 @@ const CHLGameRequestModal = () => {
         isNeutralSite && selectedStadium
           ? (arenaData?.Name ?? "")
           : (homeTeam?.Arena ?? ""),
-      IsSpringGame: isPreseason,
+      IsPreseason: isPreseason,
     };
     setIsSubmitting(true);
     try {
