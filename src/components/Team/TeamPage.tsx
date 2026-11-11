@@ -433,6 +433,7 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     tradePreferencesMap,
     phlDraftPicks,
     proPlayerMap,
+    chlPlayerMap,
     individualDraftPickMap,
     phlGameplan,
     cutPHLPlayer,
@@ -518,11 +519,15 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     if (userTeamPicks) {
       for (let i = 0; i < userTeamPicks.length; i++) {
         const pick = userTeamPicks[i];
-        if (pick.DrafteeID > 0) continue; // Don't include picks that have been used to draft a player
+        if (pick.DrafteeID > 0 && pick.IsCalledUp) continue; // Don't include picks that have been used to draft a player
+        let player: PHLPlayer | CHLPlayer = proPlayerMap![pick.DrafteeID];
+        if (!player) {
+          player = chlPlayerMap![pick.DrafteeID];
+        }
         const block: TradeBlockRow = {
           id: pick.ID,
           pick: pick,
-          name: `N/A`,
+          name: player ? `${player.FirstName} ${player.LastName}` : "N/A",
           position: "N/A",
           arch: "N/A",
           year: pick.Season.toString(),
@@ -567,11 +572,15 @@ const PHLTeamPage = ({ league, ts }: TeamPageProps) => {
     if (selectedTeamDraftPicks) {
       for (let i = 0; i < selectedTeamDraftPicks.length; i++) {
         const pick = selectedTeamDraftPicks[i];
-        if (pick.DrafteeID > 0) continue; // Don't include picks that have been used to draft a player
+        if (pick.DrafteeID > 0 && pick.IsCalledUp) continue; // Don't include picks that have been used to draft a player
+        let player: PHLPlayer | CHLPlayer = proPlayerMap![pick.DrafteeID];
+        if (!player) {
+          player = chlPlayerMap![pick.DrafteeID];
+        }
         const block: TradeBlockRow = {
           id: pick.ID,
           pick: pick,
-          name: `N/A`,
+          name: player ? `${player.FirstName} ${player.LastName}` : "N/A",
           position: "N/A",
           arch: "N/A",
           year: pick.Season.toString(),

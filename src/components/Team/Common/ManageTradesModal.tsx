@@ -246,7 +246,8 @@ export const ManageTradeModal: FC<ManageTradeModalProps> = ({
                 const nflTeamID = (trade as NFLTradeProposal).NFLTeamID;
                 otherTeam = proTeamMap![nflTeamID];
               } else if (league === SimNBA) {
-                otherTeam = nbaTeamMap?.[trade.NBATeamID];
+                const nbaTeamID = (trade as NBATradeProposal).NBATeamID;
+                otherTeam = nbaTeamMap?.[nbaTeamID];
               }
               if (!otherTeam) return null;
               return (
