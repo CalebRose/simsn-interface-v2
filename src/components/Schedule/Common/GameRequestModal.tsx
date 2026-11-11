@@ -3122,6 +3122,14 @@ const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
     return "";
   }, [request, league]);
 
+  const isPreseason = useMemo(() => {
+    if (league === SimCHL) {
+      const req = request as CHLGameRequest;
+      return !!req.IsPreseason;
+    }
+    return false;
+  }, [request, league]);
+
   return (
     <div className="border border-gray-600 border-l-4 border-l-blue-500 rounded-lg p-3 flex items-center gap-4">
       {/* Logo */}
@@ -3180,6 +3188,7 @@ const IncomingRequestCard: React.FC<IncomingRequestCardProps> = ({
             Week {request.Week} {timeSlot}
           </Text>
           <div className="flex gap-1 flex-wrap justify-end">
+            {isPreseason && <Tag variant="indigo">Preseason</Tag>}
             {request.IsSpringGame && <Tag variant="indigo">Spring</Tag>}
             {request.IsNeutralSite && <Tag variant="purple">Neutral</Tag>}
           </div>
@@ -3240,6 +3249,14 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
       return req.Timeslot;
     }
     return "";
+  }, [request, league]);
+
+  const isPreseason = useMemo(() => {
+    if (league === SimCHL) {
+      const req = request as CHLGameRequest;
+      return !!req.IsPreseason;
+    }
+    return false;
   }, [request, league]);
 
   return (
@@ -3308,6 +3325,7 @@ const AcceptedRequestCard: React.FC<AcceptedRequestCardProps> = ({
           </Text>
           <div className="flex gap-1 flex-wrap justify-end">
             {request.IsSpringGame && <Tag variant="indigo">Spring</Tag>}
+            {isPreseason && <Tag variant="indigo">Preseason</Tag>}
             {request.IsNeutralSite && <Tag variant="purple">Neutral</Tag>}
             {hasWeekConflict && <Tag variant="red">⚠ Week Conflict</Tag>}
           </div>
