@@ -551,18 +551,19 @@ export const useFilteredFootballStats = ({
 
         if (footballStatsType === PASSING) {
           return (
-            ["QB", "ATH"].includes(player.Position) && stat.PassAttempts > 0
+            ["QB", "ATH", "RB", "WR"].includes(player.Position) &&
+            stat.PassAttempts > 0
           );
         }
         if (footballStatsType === RUSHING) {
           return (
-            ["RB", "FB", "QB", "ATH"].includes(player.Position) &&
+            ["RB", "FB", "QB", "ATH", "TE", "WR"].includes(player.Position) &&
             stat.RushAttempts > 0
           );
         }
         if (footballStatsType === RECEIVING) {
           return (
-            ["RB", "FB", "WR", "TE", "ATH"].includes(player.Position) &&
+            ["RB", "FB", "WR", "TE", "ATH", "QB"].includes(player.Position) &&
             stat.Targets > 0
           );
         }
