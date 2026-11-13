@@ -61,6 +61,13 @@ import {
     CommitmentsParams, CommitmentsResponse,
 } from "../models/baseball/baseballRecruitingModels";
 import {
+    TrainingCampOptionsResponse,
+    TrainingCampFocusResponse,
+    TrainingCampSetFocusRequest, TrainingCampSetFocusResponse,
+    TrainingCampClearFocusRequest, TrainingCampClearFocusResponse,
+    TrainingCampResultsResponse,
+} from "../models/baseball/baseballTrainingCampModels";
+import {
     BoxScoreResponse, PlayByPlayResponse,
     PbpV2Response, GetPlayByPlayV2Options,
     GameResultsParams, GameResultsResponse,
@@ -729,6 +736,28 @@ export const BaseballService = {
         if (params.star_rating) qs.set("star_rating", String(params.star_rating));
         if (params.week) qs.set("week", String(params.week));
         return await GetCall<CommitmentsResponse>(`${baseballUrl}recruiting/commitments?${qs.toString()}`);
+    },
+    // --- Training Camp ---
+    GetTrainingCampOptions: async (): Promise<TrainingCampOptionsResponse> => {
+        return await GetCall<TrainingCampOptionsResponse>(`${baseballUrl}training-camp/options`);
+    },
+    // Omit leagueYearId to use the current timestamp season.
+    GetTrainingCampFocus: async (orgId: number, leagueYearId?: number): Promise<TrainingCampFocusResponse> => {
+        const qs = new URLSearchParams({ org_id: String(orgId) });
+        if (leagueYearId) qs.set("league_year_id", String(leagueYearId));
+        return await GetCall<TrainingCampFocusResponse>(`${baseballUrl}training-camp/focus?${qs.toString()}`);
+    },
+    // Bulk set; the API applies all items or none.
+    SetTrainingCampFocus: async (dto: TrainingCampSetFocusRequest): Promise<TrainingCampSetFocusResponse> => {
+        return await PUTCall<TrainingCampSetFocusRequest, TrainingCampSetFocusResponse>(`${baseballUrl}training-camp/focus`, dto);
+    },
+    ClearTrainingCampFocus: async (dto: TrainingCampClearFocusRequest): Promise<TrainingCampClearFocusResponse> => {
+        return await DELETECall<TrainingCampClearFocusRequest, TrainingCampClearFocusResponse>(`${baseballUrl}training-camp/focus`, dto);
+    },
+    GetTrainingCampResults: async (orgId: number, leagueYearId?: number): Promise<TrainingCampResultsResponse> => {
+        const qs = new URLSearchParams({ org_id: String(orgId) });
+        if (leagueYearId) qs.set("league_year_id", String(leagueYearId));
+        return await GetCall<TrainingCampResultsResponse>(`${baseballUrl}training-camp/results?${qs.toString()}`);
     },
     // --- Face Data ---
     GetFaceData: async (): Promise<{ faces: { [key: number]: FaceDataResponse } }> => {

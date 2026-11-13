@@ -419,6 +419,14 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
       {
+        label: "Training Camp",
+        isRoute: true,
+        route: routes.COLLEGE_BASEBALL_TRAINING_CAMP,
+        league: SimCollegeBaseball,
+        click: () => navigate(routes.COLLEGE_BASEBALL_TRAINING_CAMP),
+        toggle: () => toggleMenu(),
+      },
+      {
         label: "Conf. Tournament",
         isRoute: true,
         route: routes.COLLEGE_BASEBALL_CONF_TOURNAMENT,
@@ -525,6 +533,14 @@ export const useSideMenu = () => {
         route: routes.MLB_INJURIES,
         league: SimMLB,
         click: () => navigate(routes.MLB_INJURIES),
+        toggle: () => toggleMenu(),
+      },
+      {
+        label: "Training Camp",
+        isRoute: true,
+        route: routes.MLB_TRAINING_CAMP,
+        league: SimMLB,
+        click: () => navigate(routes.MLB_TRAINING_CAMP),
         toggle: () => toggleMenu(),
       },
       {
