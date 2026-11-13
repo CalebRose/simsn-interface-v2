@@ -291,7 +291,7 @@ function scorePlayerForDCPosition(
     case "STU": {
       let s = (p.Tackle || 0) + Math.floor(ovr * 0.2);
       if (p.Year <= 2) s += 50;
-      else if (p.Year === 3 && p.IsRedshirt) s += 25;
+      else if (p.Year === 3) s += 25;
       return s;
     }
     default:
@@ -307,7 +307,7 @@ function autoFixCollegeDepthChart(
   roster.forEach((p) => playerByID.set(p.ID, p));
 
   const healthyActiveRoster = roster.filter(
-    (p) => p.ID > 0 && !p.IsInjured && !p.IsRedshirting,
+    (p) => p.ID > 0 && !p.IsInjured,
   );
 
   const usedInPosition = new Map<string, Set<number>>();
@@ -333,7 +333,6 @@ function autoFixCollegeDepthChart(
     const isValid =
       Boolean(pid && rosterPlayer && rosterPlayer.ID > 0) &&
       !rosterPlayer!.IsInjured &&
-      !rosterPlayer!.IsRedshirting &&
       !posSet.has(pid) &&
       !(isFirstString && !isST && usedAsFirstString.has(pid));
 
@@ -556,7 +555,6 @@ export const AdminReportsTab = () => {
       }
 
       const missingStarterPositions: string[] = [];
-      const redshirtedInDC: string[] = [];
       const duplicateInDC: string[] = [];
       const seenInPosition = new Map<string, Set<number>>();
       const seenFirstString = new Set<number>();
@@ -601,12 +599,6 @@ export const AdminReportsTab = () => {
             player: rosterPlayer,
           });
         }
-
-        if (rosterPlayer.IsRedshirting) {
-          redshirtedInDC.push(
-            `${rosterPlayer.FirstName} ${rosterPlayer.LastName} (${slot.Position}${slot.PositionLevel})`,
-          );
-        }
       });
 
       if (missingStarterPositions.length > 0) {
@@ -614,14 +606,6 @@ export const AdminReportsTab = () => {
           team,
           issueType: "Empty / Missing Depth Chart Slots",
           details: `Unassigned or missing player slots: ${missingStarterPositions.slice(0, 8).join(", ")}${missingStarterPositions.length > 8 ? ` (+${missingStarterPositions.length - 8} more)` : ""}`,
-        });
-      }
-
-      if (redshirtedInDC.length > 0) {
-        blockersList.push({
-          team,
-          issueType: "Redshirting Player in Depth Chart",
-          details: `Redshirting player(s) slotted: ${redshirtedInDC.slice(0, 5).join(", ")}${redshirtedInDC.length > 5 ? ` (+${redshirtedInDC.length - 5} more)` : ""}`,
         });
       }
 
@@ -696,7 +680,7 @@ export const AdminReportsTab = () => {
         }
       });
 
-      if (activeHealthyCount < 50 || nonRedshirtingCount < 50) {
+      if (activeHealthyCount < 50 || totalCount < 50) {
         list.push({
           team,
           activeHealthyCount,
