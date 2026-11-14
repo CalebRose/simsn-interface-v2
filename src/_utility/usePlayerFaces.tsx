@@ -93,7 +93,7 @@ const PlayerPicture: React.FC<PlayerPictureProps> = ({
 
 export default PlayerPicture;
 
-const getPlayerFace = (
+export const getPlayerFace = (
   playerFaceData: FaceDataResponse,
   player: any,
   team: any,

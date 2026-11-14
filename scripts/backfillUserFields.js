@@ -8,7 +8,8 @@
  *     newCFBUserCustomCrootBenefit, newCBBUserCustomCrootBenefit,
  *     newCHLUserCustomCrootBenefit (booleans, default false)
  *
- * Existing values are never overwritten; only missing/incorrect fields are written.
+ * The three new*UserCustomCrootBenefit fields are forced to true for all
+ * existing users. All other existing values are never overwritten.
  *
  * Prerequisites:
  *   - scripts/serviceAccountKey.json present (never commit this file)
@@ -40,6 +41,12 @@ const BOOLEAN_FIELDS = [
   "newCHLUserCustomCrootBenefit",
 ];
 
+const FORCE_TRUE_FIELDS = [
+  "newCFBUserCustomCrootBenefit",
+  "newCBBUserCustomCrootBenefit",
+  "newCHLUserCustomCrootBenefit",
+];
+
 const BATCH_SIZE = 400;
 
 async function main() {
@@ -64,6 +71,11 @@ async function main() {
 
     for (const field of BOOLEAN_FIELDS) {
       if (typeof data[field] !== "boolean") updates[field] = false;
+    }
+
+    // Every existing user gets the custom croot benefit, even if previously false
+    for (const field of FORCE_TRUE_FIELDS) {
+      if (data[field] !== true) updates[field] = true;
     }
 
     if (Object.keys(updates).length === 0) {
