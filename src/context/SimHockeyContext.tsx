@@ -1410,14 +1410,16 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   };
 
   const saveCHLGameplan = async (dto: any) => {
-    setCHLLineups(dto.CHLLineups);
-    setCHLShootoutLineup(dto.CHLShootoutLineup);
+    await GameplanService.SaveCHLGameplan(dto);
+    if (dto.CHLTeamID === chlTeam?.ID) {
+      setCHLLineups(dto.CHLLineups);
+      setCHLShootoutLineup(dto.CHLShootoutLineup);
+    }
     setChlLineupsMap((prev) => ({ ...prev, [dto.CHLTeamID]: dto.CHLLineups }));
     setChlShootoutLineupsMap((prev) => ({
       ...prev,
       [dto.CHLTeamID]: dto.CHLShootoutLineup,
     }));
-    const res = await GameplanService.SaveCHLGameplan(dto);
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,
@@ -1425,14 +1427,16 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   };
 
   const savePHLGameplan = async (dto: any) => {
-    setPHLLineups(dto.PHLLineups);
-    setPHLShootoutLineup(dto.PHLShootoutLineup);
+    await GameplanService.SavePHLGameplan(dto);
+    if (dto.PHLTeamID === phlTeam?.ID) {
+      setPHLLineups(dto.PHLLineups);
+      setPHLShootoutLineup(dto.PHLShootoutLineup);
+    }
     setPhlLineupsMap((prev) => ({ ...prev, [dto.PHLTeamID]: dto.PHLLineups }));
     setPhlShootoutLineupsMap((prev) => ({
       ...prev,
       [dto.PHLTeamID]: dto.PHLShootoutLineup,
     }));
-    const res = await GameplanService.SavePHLGameplan(dto);
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,
