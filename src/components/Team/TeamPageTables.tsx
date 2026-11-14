@@ -2023,7 +2023,7 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
               },
               {
                 value: "extension",
-                label: `Offer Extension - ${item.FirstName} ${item.LastName}`,
+                label: `${playerContract?.ContractLength === 1 ? `Offer Extension - ${item.FirstName} ${item.LastName}` : "Cannot offer extension"}`,
               },
               {
                 value: "franchise",
@@ -2059,7 +2059,8 @@ export const NFLRosterTable: FC<NFLRosterTableProps> = ({
                 openFranchiseTagModal(item);
               } else if (
                 selectedOption?.value === "extension" &&
-                item.Rejections < 3
+                item.Rejections < 3 &&
+                playerContract?.ContractLength === 1
               ) {
                 openExtensionModal(item);
               } else {

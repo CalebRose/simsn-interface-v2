@@ -1141,7 +1141,9 @@ export const SimBBAProvider: React.FC<SimBBAProviderProps> = ({ children }) => {
       );
       const NBATeamsList = [...nbaTeams];
       const teamIDX = NBATeamsList.findIndex((x) => x.ID === request.NBATeamID);
-      if (request.IsOwner) {
+      if (teamIDX < 0) {
+        console.warn("Resigned NBA team not found in the local team list", request.NBATeamID);
+      } else if (request.IsOwner) {
         NBATeamsList[teamIDX].NBAOwnerName = "";
       } else if (request.IsCoach) {
         NBATeamsList[teamIDX].NBACoachName = "";

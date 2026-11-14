@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   Coach,
   GM,
@@ -46,9 +46,9 @@ import {
 import { BaseballOrganization } from "../../models/baseball/baseballModels";
 import { ProfileTeamCardModal } from "./ProfileTeamCardModal";
 import { useTeamColors } from "../../_hooks/useTeamColors";
-import { CurrentUser } from "../../_hooks/useCurrentUser";
-import { updateUserByUsername } from "../../firebase/firestoreHelper";
 import { getLaxLogoUrl, LacrosseService, LaxTeam } from "../../_services/lacrosseService";
+import { useProfileResignation } from "./useProfileResignation";
+import { enqueueSnackbar } from "notistack";
 
 interface ProfileTeamCardProps {
   teamID: number;
@@ -141,6 +141,7 @@ export const ProfileCLAXTeamCard: React.FC<ProfileCLAXTeamCardProps> = ({
 }) => {
   const { currentUser } = useAuthStore();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const { resign, isResigning } = useProfileResignation();
   if (!Team) return null;
 
   const backgroundColor = Team.colors.primary || "#4B5563";
@@ -149,9 +150,17 @@ export const ProfileCLAXTeamCard: React.FC<ProfileCLAXTeamCardProps> = ({
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
 
   const quit = async () => {
-    await LacrosseService.quitTeam();
-    handleCloseModal();
-    onQuit?.();
+    await resign({
+      league: SimCLAX,
+      teamID: Team.id,
+      phase: null,
+      weekID: null,
+      remove: () => LacrosseService.quitTeam(),
+      onComplete: () => {
+        handleCloseModal();
+        onQuit?.();
+      },
+    });
   };
 
   return (
@@ -179,7 +188,7 @@ export const ProfileCLAXTeamCard: React.FC<ProfileCLAXTeamCardProps> = ({
           title={`Quit ${Team.name}?`}
           actions={
             <ButtonGroup>
-              <Button size="sm" onClick={() => void quit()}>Yes</Button>
+              <Button size="sm" onClick={() => void quit()} disabled={isResigning}>Yes</Button>
               <Button size="sm" onClick={handleCloseModal}>No</Button>
             </ButtonGroup>
           }
@@ -202,20 +211,22 @@ export const ProfileCFBTeamCard: React.FC<ProfileCFBTeamCardProps> = ({
   IsUser,
   Team,
 }) => {
-  const { currentUser, setCurrentUser } = useAuthStore();
-  const { cfbTeam, removeUserfromCFBTeamCall } = useSimFBAStore();
+  const { currentUser } = useAuthStore();
+  const { cfbTeam, cfb_Timestamp, removeUserfromCFBTeamCall } = useSimFBAStore();
+  const { resign, isResigning } = useProfileResignation();
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const remove = async () => {
-    handleCloseModal();
-    await removeUserfromCFBTeamCall(currentUser!.teamId!!);
-    const cu = { ...currentUser };
-    cu.teamId = 0;
-    setCurrentUser(cu as CurrentUser);
-    const payload = {
-      teamId: 0,
-    };
-    await updateUserByUsername(currentUser!.username, payload);
+    const teamID = currentUser?.teamId;
+    await resign({
+      league: SimCFB,
+      teamID,
+      phase: cfb_Timestamp?.Phase ?? null,
+      weekID: cfb_Timestamp?.CollegeWeekID ?? null,
+      remove: removeUserfromCFBTeamCall,
+      clearFields: { teamId: 0 },
+      onComplete: handleCloseModal,
+    });
   };
 
   const viewingTeam = useMemo(() => {
@@ -259,7 +270,7 @@ export const ProfileCFBTeamCard: React.FC<ProfileCFBTeamCardProps> = ({
             actions={
               <>
                 <ButtonGroup>
-                  <Button size="sm" onClick={remove}>
+                  <Button size="sm" onClick={remove} disabled={isResigning}>
                     Yes
                   </Button>
                   <Button size="sm" onClick={handleCloseModal}>
@@ -289,10 +300,10 @@ export const ProfileNFLTeamCard: React.FC<ProfileNFLTeamCardProps> = ({
   IsUser,
   Team,
 }) => {
-  const { currentUser, setCurrentUser } = useAuthStore();
-  const { nflTeam, removeUserfromNFLTeamCall } = useSimFBAStore();
+  const { currentUser } = useAuthStore();
+  const { nflTeam, cfb_Timestamp, removeUserfromNFLTeamCall } = useSimFBAStore();
+  const { resign, isResigning } = useProfileResignation();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const [role, setRole] = useState("");
 
   const viewingTeam = useMemo(() => {
     if (Team?.ID !== currentUser?.NFLTeamID) {
@@ -306,30 +317,29 @@ export const ProfileNFLTeamCard: React.FC<ProfileNFLTeamCardProps> = ({
   const secondaryBorderColor = viewingTeam?.ColorThree || "#4B5563";
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
 
-  useEffect(() => {
-    if (nflTeam) {
-      if (nflTeam?.Owner === currentUser?.username) {
-        setRole(Owner);
-      } else if (nflTeam!.GM === currentUser?.username) {
-        setRole(GM);
-      } else if (nflTeam!.Coach === currentUser?.username) {
-        setRole(Coach);
-      } else if (nflTeam!.Scout === currentUser?.username) {
-        setRole(Scout);
-      } else if (nflTeam!.Marketing === currentUser?.username) {
-        setRole(Marketing);
-      }
-    }
-  }, [nflTeam]);
+  const role = useMemo(() => {
+    if (!nflTeam || !currentUser?.username) return "";
+    if (nflTeam.NFLOwnerName === currentUser.username) return Owner;
+    if (nflTeam.NFLGMName === currentUser.username) return GM;
+    if (nflTeam.NFLCoachName === currentUser.username) return Coach;
+    if (nflTeam.NFLAssistantName === currentUser.username) return "Assistant";
+    return "";
+  }, [nflTeam, currentUser?.username]);
   const remove = async () => {
+    if (!role) {
+      enqueueSnackbar("Unable to determine your team role. Please contact an administrator.", {
+        variant: "error",
+      });
+      return;
+    }
     let isManager = false;
     let isOwner = false;
     let isCoach = false;
     let isScout = false;
-    if (role === "Manager") isManager = true;
+    if (role === GM) isManager = true;
     if (role === "Owner") isOwner = true;
     if (role === "Coach") isCoach = true;
-    if (role === "Scout" || role === "Assistant") isScout = true;
+    if (role === "Assistant") isScout = true;
     const dto = {
       NFLTeamID: nflTeam!.ID,
       IsOwner: isOwner,
@@ -337,15 +347,15 @@ export const ProfileNFLTeamCard: React.FC<ProfileNFLTeamCardProps> = ({
       IsCoach: isCoach,
       IsAssistant: isScout,
     } as NFLRequest;
-    handleCloseModal();
-    const cu = { ...currentUser };
-    cu.NFLTeamID = 0;
-    setCurrentUser(cu as CurrentUser);
-    const payload = {
-      NFLTeamID: 0,
-    };
-    await updateUserByUsername(currentUser!.username, payload);
-    return await removeUserfromNFLTeamCall(dto);
+    await resign({
+      league: SimNFL,
+      teamID: dto.NFLTeamID,
+      phase: cfb_Timestamp?.Phase ?? null,
+      weekID: cfb_Timestamp?.NFLWeekID ?? null,
+      remove: () => removeUserfromNFLTeamCall(dto),
+      clearFields: { NFLTeamID: 0, NFLRole: "" },
+      onComplete: handleCloseModal,
+    });
   };
   return (
     <>
@@ -373,7 +383,7 @@ export const ProfileNFLTeamCard: React.FC<ProfileNFLTeamCardProps> = ({
               actions={
                 <>
                   <ButtonGroup>
-                    <Button size="sm" onClick={remove}>
+                    <Button size="sm" onClick={remove} disabled={isResigning}>
                       Yes
                     </Button>
                     <Button size="sm" onClick={handleCloseModal}>
@@ -404,20 +414,22 @@ export const ProfileCHLTeamCard: React.FC<ProfileCHLTeamCardProps> = ({
   IsUser,
   Team,
 }) => {
-  const { currentUser, setCurrentUser } = useAuthStore();
-  const { chlTeam, removeUserfromCHLTeamCall } = useSimHCKStore();
+  const { currentUser } = useAuthStore();
+  const { chlTeam, hck_Timestamp, removeUserfromCHLTeamCall } = useSimHCKStore();
+  const { resign, isResigning } = useProfileResignation();
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const remove = async () => {
-    handleCloseModal();
-    await removeUserfromCHLTeamCall(currentUser!.CHLTeamID!!);
-    const cu = { ...currentUser };
-    cu.CHLTeamID = 0;
-    setCurrentUser(cu as CurrentUser);
-    const payload = {
-      CHLTeamID: 0,
-    };
-    await updateUserByUsername(currentUser!.username, payload);
+    const teamID = currentUser?.CHLTeamID;
+    await resign({
+      league: SimCHL,
+      teamID,
+      phase: hck_Timestamp?.Phase ?? null,
+      weekID: hck_Timestamp?.WeekID ?? null,
+      remove: removeUserfromCHLTeamCall,
+      clearFields: { CHLTeamID: 0 },
+      onComplete: handleCloseModal,
+    });
   };
 
   const viewingTeam = useMemo(() => {
@@ -461,7 +473,7 @@ export const ProfileCHLTeamCard: React.FC<ProfileCHLTeamCardProps> = ({
             actions={
               <>
                 <ButtonGroup>
-                  <Button size="sm" onClick={remove}>
+                  <Button size="sm" onClick={remove} disabled={isResigning}>
                     Yes
                   </Button>
                   <Button size="sm" onClick={handleCloseModal}>
@@ -491,10 +503,10 @@ export const ProfilePHLTeamCard: React.FC<ProfilePHLTeamCardProps> = ({
   IsUser,
   Team,
 }) => {
-  const { currentUser, setCurrentUser } = useAuthStore();
-  const { phlTeam, removeUserfromPHLTeamCall } = useSimHCKStore();
+  const { currentUser } = useAuthStore();
+  const { phlTeam, hck_Timestamp, removeUserfromPHLTeamCall } = useSimHCKStore();
+  const { resign, isResigning } = useProfileResignation();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const [role, setRole] = useState("");
 
   const viewingTeam = useMemo(() => {
     if (Team?.ID !== currentUser?.PHLTeamID) {
@@ -508,35 +520,35 @@ export const ProfilePHLTeamCard: React.FC<ProfilePHLTeamCardProps> = ({
   const secondaryBorderColor = viewingTeam?.ColorThree || "#4B5563";
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
 
-  useEffect(() => {
-    if (phlTeam) {
-      if (phlTeam?.Owner === currentUser?.username) {
-        setRole(Owner);
-      } else if (phlTeam!.GM === currentUser?.username) {
-        setRole(GM);
-      } else if (phlTeam!.Coach === currentUser?.username) {
-        setRole(Coach);
-      } else if (phlTeam!.Scout === currentUser?.username) {
-        setRole(Scout);
-      } else if (phlTeam!.Marketing === currentUser?.username) {
-        setRole(Marketing);
-      }
-    }
-  }, [phlTeam]);
+  const role = useMemo(() => {
+    if (!phlTeam || !currentUser?.username) return "";
+    if (phlTeam.Owner === currentUser.username) return Owner;
+    if (phlTeam.GM === currentUser.username) return GM;
+    if (phlTeam.Coach === currentUser.username) return Coach;
+    if (phlTeam.Scout === currentUser.username) return Scout;
+    if (phlTeam.Marketing === currentUser.username) return Marketing;
+    return "";
+  }, [phlTeam, currentUser?.username]);
   const remove = async () => {
+    if (!role) {
+      enqueueSnackbar("Unable to determine your team role. Please contact an administrator.", {
+        variant: "error",
+      });
+      return;
+    }
     const dto = {
       TeamID: phlTeam?.ID,
       Role: role,
     } as ProTeamRequest;
-    handleCloseModal();
-    const cu = { ...currentUser };
-    cu.PHLTeamID = 0;
-    setCurrentUser(cu as CurrentUser);
-    const payload = {
-      PHLTeamID: 0,
-    };
-    await updateUserByUsername(currentUser!.username, payload);
-    return await removeUserfromPHLTeamCall(dto);
+    await resign({
+      league: SimPHL,
+      teamID: dto.TeamID,
+      phase: hck_Timestamp?.Phase ?? null,
+      weekID: hck_Timestamp?.WeekID ?? null,
+      remove: () => removeUserfromPHLTeamCall(dto),
+      clearFields: { PHLTeamID: 0, PHLRole: "" },
+      onComplete: handleCloseModal,
+    });
   };
   return (
     <>
@@ -564,7 +576,7 @@ export const ProfilePHLTeamCard: React.FC<ProfilePHLTeamCardProps> = ({
               actions={
                 <>
                   <ButtonGroup>
-                    <Button size="sm" onClick={remove}>
+                    <Button size="sm" onClick={remove} disabled={isResigning}>
                       Yes
                     </Button>
                     <Button size="sm" onClick={handleCloseModal}>
@@ -599,13 +611,22 @@ export const ProfileCBBTeamCard: React.FC<ProfileCBBTeamCardProps> = ({
   IsUser,
   Team,
 }) => {
-  const { currentUser, setCurrentUser } = useAuthStore();
-  const { cbbTeam, removeUserfromCBBTeamCall } = useSimBBAStore();
+  const { currentUser } = useAuthStore();
+  const { cbbTeam, cbb_Timestamp, removeUserfromCBBTeamCall } = useSimBBAStore();
+  const { resign, isResigning } = useProfileResignation();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
 
   const remove = async () => {
-    handleCloseModal();
-    setCurrentUser({ ...currentUser, cbb_id: 0 } as CurrentUser);
+    const teamID = currentUser?.cbb_id;
+    await resign({
+      league: SimCBB,
+      teamID,
+      phase: cbb_Timestamp?.Phase ?? null,
+      weekID: cbb_Timestamp?.CollegeWeekID ?? null,
+      remove: removeUserfromCBBTeamCall,
+      clearFields: { cbb_id: 0 },
+      onComplete: handleCloseModal,
+    });
   };
 
   const viewingTeam = useMemo(() => {
@@ -643,7 +664,7 @@ export const ProfileCBBTeamCard: React.FC<ProfileCBBTeamCardProps> = ({
         title={`Resign from ${viewingTeam?.Team}?`}
         actions={
           <ButtonGroup>
-            <Button size="sm" onClick={remove}>
+            <Button size="sm" onClick={remove} disabled={isResigning}>
               Yes
             </Button>
             <Button size="sm" onClick={handleCloseModal}>
@@ -674,10 +695,10 @@ export const ProfileNBATeamCard: React.FC<ProfileNBATeamCardProps> = ({
   IsUser,
   Team,
 }) => {
-  const { currentUser, setCurrentUser } = useAuthStore();
-  const { nbaTeam, removeUserfromNBATeamCall } = useSimBBAStore();
+  const { currentUser } = useAuthStore();
+  const { nbaTeam, cbb_Timestamp, removeUserfromNBATeamCall } = useSimBBAStore();
+  const { resign, isResigning } = useProfileResignation();
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
-  const [role, setRole] = useState("");
 
   const viewingTeam = useMemo(() => {
     if (Team?.ID !== currentUser?.NBATeamID) return Team;
@@ -689,17 +710,22 @@ export const ProfileNBATeamCard: React.FC<ProfileNBATeamCardProps> = ({
   const secondaryBorderColor = viewingTeam?.ColorThree || "#4B5563";
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
 
-  useEffect(() => {
-    if (nbaTeam) {
-      if (nbaTeam.NBAOwnerName === currentUser?.username) setRole(Owner);
-      else if (nbaTeam.NBACoachName === currentUser?.username) setRole(Coach);
-      else if (nbaTeam.NBAGMName === currentUser?.username) setRole(GM);
-      else if (nbaTeam.NBAAssistantName === currentUser?.username)
-        setRole("Assistant");
-    }
-  }, [nbaTeam, currentUser]);
+  const role = useMemo(() => {
+    if (!nbaTeam || !currentUser?.username) return "";
+    if (nbaTeam.NBAOwnerName === currentUser.username) return Owner;
+    if (nbaTeam.NBACoachName === currentUser.username) return Coach;
+    if (nbaTeam.NBAGMName === currentUser.username) return GM;
+    if (nbaTeam.NBAAssistantName === currentUser.username) return "Assistant";
+    return "";
+  }, [nbaTeam, currentUser?.username]);
 
   const remove = async () => {
+    if (!role) {
+      enqueueSnackbar("Unable to determine your team role. Please contact an administrator.", {
+        variant: "error",
+      });
+      return;
+    }
     const request = new NBARequest({
       NBATeamID: nbaTeam!.ID,
       Username: currentUser!.username,
@@ -708,17 +734,15 @@ export const ProfileNBATeamCard: React.FC<ProfileNBATeamCardProps> = ({
       IsManager: role === GM,
       IsAssistant: role === "Assistant",
     });
-    handleCloseModal();
-    setCurrentUser({
-      ...currentUser,
-      NBATeamID: 0,
-      NBARole: "",
-    } as CurrentUser);
-    await updateUserByUsername(currentUser!.username, {
-      NBATeamID: 0,
-      NBARole: "",
+    await resign({
+      league: SimNBA,
+      teamID: request.NBATeamID,
+      phase: cbb_Timestamp?.Phase ?? null,
+      weekID: cbb_Timestamp?.NBAWeekID ?? null,
+      remove: () => removeUserfromNBATeamCall(request),
+      clearFields: { NBATeamID: 0, NBARole: "" },
+      onComplete: handleCloseModal,
     });
-    await removeUserfromNBATeamCall(request);
   };
 
   if (!nbaTeam) return null;
@@ -746,7 +770,7 @@ export const ProfileNBATeamCard: React.FC<ProfileNBATeamCardProps> = ({
           title={`Resign from ${viewingTeam?.Team}?`}
           actions={
             <ButtonGroup>
-              <Button size="sm" onClick={remove}>
+              <Button size="sm" onClick={remove} disabled={isResigning}>
                 Yes
               </Button>
               <Button size="sm" onClick={handleCloseModal}>

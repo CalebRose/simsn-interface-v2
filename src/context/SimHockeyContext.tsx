@@ -1200,7 +1200,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       const res = await TeamService.RemoveUserFromPHLTeam(request);
       const phlTeamsList = [...phlTeams];
       const teamIDX = phlTeamsList.findIndex((x) => x.ID === request.TeamID);
-      if (request.Role === Owner) {
+      if (teamIDX < 0) {
+        console.warn("Resigned PHL team not found in the local team list", request.TeamID);
+      } else if (request.Role === Owner) {
         phlTeamsList[teamIDX].Owner = "";
       } else if (request.Role === Coach) {
         phlTeamsList[teamIDX].Coach = "";
