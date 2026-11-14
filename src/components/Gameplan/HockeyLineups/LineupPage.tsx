@@ -58,8 +58,11 @@ import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
 import { CategoryDropdown } from "../../Recruiting/Common/RecruitingCategoryDropdown";
 import { useResponsive } from "../../../_hooks/useMobile";
+import { useAuthStore } from "../../../context/AuthContext";
+import { ToggleSwitch } from "../../../_design/Inputs";
 
 export const CHLLineupPage = () => {
+  const { isAdmin } = useAuthStore();
   const {
     chlTeam,
     chlTeamMap,
@@ -71,7 +74,7 @@ export const CHLLineupPage = () => {
     chlLineups,
     chlShootoutLineup,
     saveCHLGameplan,
-    chlGameplan,
+    chlGameplanMap,
     saveCHLAIGameplan,
     getBootstrapLineupData,
   } = useSimHCKStore();
@@ -81,6 +84,7 @@ export const CHLLineupPage = () => {
   }, []);
 
   const [selectedTeamID, setSelectedTeamID] = useState(chlTeam?.ID);
+  const [adminOverride, setAdminOverride] = useState(false);
   const [selectedForwardLine, setSelectedForwardLine] =
     useState<Lineup>(LineupF1);
   const [selectedDefenderLine, setSelectedDefenderLine] =
@@ -100,11 +104,25 @@ export const CHLLineupPage = () => {
     CollegePlayer | ProfessionalPlayer
   >({} as CollegePlayer);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const aiGameplanModal = useModal();
   const { isMobile } = useResponsive();
 
   const isUserTeam = useMemo(() => {
-    return chlTeam?.ID === selectedTeamID;
+    return !!selectedTeamID && chlTeam?.ID === selectedTeamID;
   }, [chlTeam?.ID, selectedTeamID]);
+  const canEdit =
+    !!selectedTeamID &&
+    (isUserTeam || (isAdmin && adminOverride));
+  const canModify =
+    canEdit &&
+    !!selectedTeamID &&
+    (isUserTeam ||
+      (!!chlLineupsMap[selectedTeamID] &&
+        !!chlShootoutLineupsMap[selectedTeamID] &&
+        !!chlRosterMap[selectedTeamID]));
+  const chlGameplan = selectedTeamID
+    ? chlGameplanMap[selectedTeamID]
+    : undefined;
 
   const selectedTeam = useMemo(
     () => (selectedTeamID ? (chlTeamMap[selectedTeamID] ?? chlTeam) : chlTeam),
@@ -193,14 +211,12 @@ export const CHLLineupPage = () => {
   );
 
   const Save = async () => {
-    if (chlTeam && isUserTeam) {
-      setOriginalLineups(currentLineups);
-      setOriginalShootoutLineups(currentShootoutLineups);
+    if (selectedTeamID && canModify) {
       const dto = {
-        CHLTeamID: chlTeam?.ID,
+        CHLTeamID: selectedTeamID,
         CHLLineups: currentLineups,
         CHLShootoutLineup: currentShootoutLineups,
-        CollegePlayers: chlRosterMap[chlTeam.ID],
+        CollegePlayers: chlRosterMap[selectedTeamID],
       };
       await saveCHLGameplan(dto);
     }
@@ -208,18 +224,20 @@ export const CHLLineupPage = () => {
 
   const SelectTeam = (options: any) => {
     const opts = Number(options.value);
+    setAdminOverride(false);
+    aiGameplanModal.handleCloseModal();
     setSelectedTeamID(() => opts);
   };
 
   const ResetLineups = () => {
-    if (!isUserTeam) return;
+    if (!canModify) return;
     setCurrentLineups(originalLineups);
     setCurrentShootoutLineups(originalShootoutLineups);
     // Will need to also reset the player ids -- actually, those will be reset automatically. Or should be.
   };
 
   const ChangeValueInShootoutLineup = (value: number, key: string) => {
-    if (!isUserTeam) return;
+    if (!canModify) return;
     updateLineupFieldWithClass(
       setCurrentShootoutLineups,
       CollegeShootoutLineup,
@@ -230,7 +248,7 @@ export const CHLLineupPage = () => {
 
   const ChangeLineupValue = useCallback(
     (value: number, key: string, index: number) => {
-      if (!isUserTeam) return;
+      if (!canModify) return;
       setCurrentLineups((prevLineups) =>
         prevLineups.map((lineup, idx) =>
           idx === index
@@ -239,26 +257,26 @@ export const CHLLineupPage = () => {
         ),
       );
     },
-    [isUserTeam],
+    [canModify],
   );
 
   const ChangePlayerInput = useCallback(
     (playerID: number, key: string, value: number) => {
-      if (!isUserTeam || !chlTeam) return;
+      if (!canModify || !selectedTeamID || !chlRosterMap[selectedTeamID]) return;
       const updatedRosterMap = { ...chlRosterMap };
-      updatedRosterMap[chlTeam!.ID] = [...updatedRosterMap[chlTeam!.ID]];
-      const playerIdx = updatedRosterMap[chlTeam!.ID]?.findIndex(
+      updatedRosterMap[selectedTeamID] = [...updatedRosterMap[selectedTeamID]];
+      const playerIdx = updatedRosterMap[selectedTeamID].findIndex(
         (x) => x.ID === playerID,
       );
       if (playerIdx > -1) {
-        updatedRosterMap[chlTeam!.ID][playerIdx] = new CollegePlayer({
-          ...updatedRosterMap[chlTeam!.ID][playerIdx],
+        updatedRosterMap[selectedTeamID][playerIdx] = new CollegePlayer({
+          ...updatedRosterMap[selectedTeamID][playerIdx],
           [key]: value,
         });
         updateCHLRosterMap(updatedRosterMap);
       }
     },
-    [chlRosterMap, updateCHLRosterMap, chlTeam, isUserTeam],
+    [chlRosterMap, updateCHLRosterMap, selectedTeamID, canModify],
   );
 
   const activatePlayerModal = (player: CollegePlayer | ProfessionalPlayer) => {
@@ -267,19 +285,15 @@ export const CHLLineupPage = () => {
     handleOpenModal();
   };
 
-  const aiGameplanModal = useModal();
-
   const offensiveSystemsInformation = useMemo(() => {
     return offensiveSystemsInformationList[
-      chlGameplan!
-        .OffensiveSystem as keyof typeof offensiveSystemsInformationList
+      chlGameplan?.OffensiveSystem as keyof typeof offensiveSystemsInformationList
     ];
   }, [chlGameplan]);
 
   const defensiveSystemsInformation = useMemo(() => {
     return defensiveSystemsInformationList[
-      chlGameplan!
-        .DefensiveSystem as keyof typeof defensiveSystemsInformationList
+      chlGameplan?.DefensiveSystem as keyof typeof defensiveSystemsInformationList
     ];
   }, [chlGameplan]);
 
@@ -289,13 +303,16 @@ export const CHLLineupPage = () => {
 
   return (
     <>
-      <HCKAIGameplanModal
-        isOpen={aiGameplanModal.isModalOpen}
-        onClose={aiGameplanModal.handleCloseModal}
-        league={SimCHL}
-        gameplan={chlGameplan}
-        saveGameplan={saveCHLAIGameplan}
-      />
+      {canEdit && chlGameplan && aiGameplanModal.isModalOpen && (
+        <HCKAIGameplanModal
+          key={selectedTeamID}
+          isOpen={true}
+          onClose={aiGameplanModal.handleCloseModal}
+          league={SimCHL}
+          gameplan={chlGameplan}
+          saveGameplan={saveCHLAIGameplan}
+        />
+      )}
       <LineupHelpModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
@@ -330,13 +347,32 @@ export const CHLLineupPage = () => {
                 isMulti={false}
                 isMobile={isMobile}
               />
+              {isAdmin && selectedTeamID && !isUserTeam && (
+                <div className="flex flex-row space-x-2 mt-2">
+                  <Text variant="small" classes="text-start font-semibold">
+                    Admin Override
+                  </Text>
+                  <ToggleSwitch
+                    checked={adminOverride}
+                    onChange={(checked) => {
+                      setAdminOverride(checked);
+                      if (!checked) aiGameplanModal.handleCloseModal();
+                    }}
+                  />
+                </div>
+              )}
+              {isAdmin && adminOverride && !canModify && (
+                <Text variant="small">
+                  Lineup or roster data is unavailable for this team.
+                </Text>
+              )}
             </div>
             <ButtonGrid classes="grid grid-cols-2 gap-2 w-full mb-2">
               <Button
                 type="button"
                 variant="primary"
                 size="xs"
-                disabled={!isUserTeam}
+                disabled={!canEdit || !chlGameplan}
                 onClick={aiGameplanModal.handleOpenModal}
               >
                 Settings
@@ -355,7 +391,7 @@ export const CHLLineupPage = () => {
                 type="button"
                 size="xs"
                 onClick={ResetLineups}
-                disabled={!isUserTeam}
+                disabled={!canModify}
               >
                 Reset
               </Button>
@@ -363,7 +399,7 @@ export const CHLLineupPage = () => {
                 type="button"
                 variant={errors.length > 0 ? "danger" : "success"}
                 size="xs"
-                disabled={errors.length > 0 || !isUserTeam}
+                disabled={errors.length > 0 || !canModify}
                 onClick={Save}
               >
                 Save
@@ -580,7 +616,7 @@ export const CHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
-                    canModify={isUserTeam}
+                    canModify={canModify}
                   />
                 </div>
               )}
@@ -597,7 +633,7 @@ export const CHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
-                    canModify={isUserTeam}
+                    canModify={canModify}
                   />
                 </div>
               )}
@@ -614,7 +650,7 @@ export const CHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
-                    canModify={isUserTeam}
+                    canModify={canModify}
                   />
                 </div>
               )}
@@ -639,7 +675,7 @@ export const CHLLineupPage = () => {
                         ChangeState={ChangeValueInShootoutLineup}
                         lineCategory={currentShootoutLineups}
                         activatePlayer={activatePlayerModal}
-                        canModify={isUserTeam}
+                        canModify={canModify}
                       />
                     ))}
                   </div>
@@ -654,6 +690,7 @@ export const CHLLineupPage = () => {
 };
 
 export const PHLLineupPage = () => {
+  const { isAdmin } = useAuthStore();
   const hkStore = useSimHCKStore();
   const {
     phlTeam,
@@ -666,7 +703,7 @@ export const PHLLineupPage = () => {
     phlShootoutLineup,
     phlShootoutLineupsMap,
     savePHLGameplan,
-    phlGameplan,
+    phlGameplanMap,
     savePHLAIGameplan,
     getBootstrapLineupData,
   } = hkStore;
@@ -675,6 +712,7 @@ export const PHLLineupPage = () => {
   }, [getBootstrapLineupData]);
 
   const [selectedTeamID, setSelectedTeamID] = useState(phlTeam?.ID);
+  const [adminOverride, setAdminOverride] = useState(false);
   const [selectedForwardLine, setSelectedForwardLine] =
     useState<Lineup>(LineupF1);
   const [selectedDefenderLine, setSelectedDefenderLine] =
@@ -694,10 +732,24 @@ export const PHLLineupPage = () => {
     CollegePlayer | ProfessionalPlayer
   >({} as ProfessionalPlayer);
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
+  const aiGameplanModal = useModal();
   const isUserTeam = useMemo(
-    () => phlTeam?.ID === selectedTeamID,
+    () => !!selectedTeamID && phlTeam?.ID === selectedTeamID,
     [phlTeam?.ID, selectedTeamID],
   );
+  const canEdit =
+    !!selectedTeamID &&
+    (isUserTeam || (isAdmin && adminOverride));
+  const canModify =
+    canEdit &&
+    !!selectedTeamID &&
+    (isUserTeam ||
+      (!!phlLineupsMap[selectedTeamID] &&
+        !!phlShootoutLineupsMap[selectedTeamID] &&
+        !!proRosterMap[selectedTeamID]));
+  const phlGameplan = selectedTeamID
+    ? phlGameplanMap[selectedTeamID]
+    : undefined;
   const selectedTeam = useMemo(
     () => (selectedTeamID ? (phlTeamMap[selectedTeamID] ?? phlTeam) : phlTeam),
     [phlTeam, phlTeamMap, selectedTeamID],
@@ -763,6 +815,8 @@ export const PHLLineupPage = () => {
   }, [eligiblePlayers]);
 
   const SelectTeam = (options: any) => {
+    setAdminOverride(false);
+    aiGameplanModal.handleCloseModal();
     setSelectedTeamID(Number(options.value));
   };
 
@@ -794,28 +848,26 @@ export const PHLLineupPage = () => {
   );
 
   const Save = async () => {
-    if (phlTeam && isUserTeam) {
-      setOriginalLineups(currentLineups);
-      setOriginalShootoutLineups(currentShootoutLineups);
+    if (selectedTeamID && canModify) {
       const dto = {
-        PHLTeamID: phlTeam.ID,
+        PHLTeamID: selectedTeamID,
         PHLLineups: currentLineups,
         PHLShootoutLineup: currentShootoutLineups,
-        ProPlayers: proRosterMap[phlTeam.ID],
+        ProPlayers: proRosterMap[selectedTeamID],
       };
       await savePHLGameplan(dto);
     }
   };
 
   const ResetLineups = () => {
-    if (!isUserTeam) return;
+    if (!canModify) return;
     setCurrentLineups(originalLineups);
     setCurrentShootoutLineups(originalShootoutLineups);
     // Will need to also reset the player ids -- actually, those will be reset automatically. Or should be.
   };
 
   const ChangeValueInShootoutLineup = (value: number, key: string) => {
-    if (!isUserTeam) return;
+    if (!canModify) return;
     updateLineupFieldWithClass(
       setCurrentShootoutLineups,
       ProfessionalShootoutLineup,
@@ -826,7 +878,7 @@ export const PHLLineupPage = () => {
 
   const ChangeLineupValue = useCallback(
     (value: number, key: string, index: number) => {
-      if (!isUserTeam) return;
+      if (!canModify) return;
       setCurrentLineups((prevLineups) =>
         prevLineups.map((lineup, idx) =>
           idx === index
@@ -835,27 +887,27 @@ export const PHLLineupPage = () => {
         ),
       );
     },
-    [isUserTeam],
+    [canModify],
   );
 
   const ChangePlayerInput = useCallback(
     (playerID: number, key: string, value: number) => {
-      if (!isUserTeam || !phlTeam) return;
+      if (!canModify || !selectedTeamID || !proRosterMap[selectedTeamID]) return;
       const updatedRosterMap = { ...proRosterMap };
-      updatedRosterMap[phlTeam!.ID] = [...updatedRosterMap[phlTeam!.ID]];
-      const playerIdx = updatedRosterMap[phlTeam!.ID]?.findIndex(
+      updatedRosterMap[selectedTeamID] = [...updatedRosterMap[selectedTeamID]];
+      const playerIdx = updatedRosterMap[selectedTeamID].findIndex(
         (x) => x.ID === playerID,
       );
 
       if (playerIdx > -1) {
-        updatedRosterMap[phlTeam!.ID][playerIdx] = new ProfessionalPlayer({
-          ...updatedRosterMap[phlTeam!.ID][playerIdx],
+        updatedRosterMap[selectedTeamID][playerIdx] = new ProfessionalPlayer({
+          ...updatedRosterMap[selectedTeamID][playerIdx],
           [key]: value,
         });
         updateProRosterMap(updatedRosterMap);
       }
     },
-    [proRosterMap, updateProRosterMap, phlTeam, isUserTeam],
+    [proRosterMap, updateProRosterMap, selectedTeamID, canModify],
   );
 
   const activatePlayerModal = (player: CollegePlayer | ProfessionalPlayer) => {
@@ -864,19 +916,15 @@ export const PHLLineupPage = () => {
     handleOpenModal();
   };
 
-  const aiGameplanModal = useModal();
-
   const offensiveSystemsInformation = useMemo(() => {
     return offensiveSystemsInformationList[
-      phlGameplan!
-        .OffensiveSystem as keyof typeof offensiveSystemsInformationList
+      phlGameplan?.OffensiveSystem as keyof typeof offensiveSystemsInformationList
     ];
   }, [phlGameplan]);
 
   const defensiveSystemsInformation = useMemo(() => {
     return defensiveSystemsInformationList[
-      phlGameplan!
-        .DefensiveSystem as keyof typeof defensiveSystemsInformationList
+      phlGameplan?.DefensiveSystem as keyof typeof defensiveSystemsInformationList
     ];
   }, [phlGameplan]);
 
@@ -886,13 +934,16 @@ export const PHLLineupPage = () => {
 
   return (
     <>
-      <HCKAIGameplanModal
-        isOpen={aiGameplanModal.isModalOpen}
-        onClose={aiGameplanModal.handleCloseModal}
-        league={SimPHL}
-        gameplan={phlGameplan}
-        saveGameplan={savePHLAIGameplan}
-      />
+      {canEdit && phlGameplan && aiGameplanModal.isModalOpen && (
+        <HCKAIGameplanModal
+          key={selectedTeamID}
+          isOpen={true}
+          onClose={aiGameplanModal.handleCloseModal}
+          league={SimPHL}
+          gameplan={phlGameplan}
+          saveGameplan={savePHLAIGameplan}
+        />
+      )}
       <LineupHelpModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
@@ -927,13 +978,32 @@ export const PHLLineupPage = () => {
                 isMulti={false}
                 isMobile={false}
               />
+              {isAdmin && selectedTeamID && !isUserTeam && (
+                <div className="flex flex-row space-x-2 mt-2">
+                  <Text variant="small" classes="text-start font-semibold">
+                    Admin Override
+                  </Text>
+                  <ToggleSwitch
+                    checked={adminOverride}
+                    onChange={(checked) => {
+                      setAdminOverride(checked);
+                      if (!checked) aiGameplanModal.handleCloseModal();
+                    }}
+                  />
+                </div>
+              )}
+              {isAdmin && adminOverride && !canModify && (
+                <Text variant="small">
+                  Lineup or roster data is unavailable for this team.
+                </Text>
+              )}
             </div>
             <ButtonGrid classes="grid grid-cols-2 gap-2 w-full mb-2">
               <Button
                 type="button"
                 variant="primary"
                 size="xs"
-                disabled={!isUserTeam}
+                disabled={!canEdit || !phlGameplan}
                 onClick={aiGameplanModal.handleOpenModal}
               >
                 Settings
@@ -952,7 +1022,7 @@ export const PHLLineupPage = () => {
                 type="button"
                 size="xs"
                 onClick={ResetLineups}
-                disabled={!isUserTeam}
+                disabled={!canModify}
               >
                 Reset
               </Button>
@@ -960,7 +1030,7 @@ export const PHLLineupPage = () => {
                 type="button"
                 variant={errors.length > 0 ? "danger" : "success"}
                 size="xs"
-                disabled={errors.length > 0 || !isUserTeam}
+                disabled={errors.length > 0 || !canModify}
                 onClick={Save}
               >
                 Save
@@ -1177,7 +1247,7 @@ export const PHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
-                    canModify={isUserTeam}
+                    canModify={canModify}
                   />
                 </div>
               )}
@@ -1194,7 +1264,7 @@ export const PHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
-                    canModify={isUserTeam}
+                    canModify={canModify}
                   />
                 </div>
               )}
@@ -1211,7 +1281,7 @@ export const PHLLineupPage = () => {
                     ChangeLineupValue={ChangeLineupValue}
                     ChangePlayerInput={ChangePlayerInput}
                     activatePlayer={activatePlayerModal}
-                    canModify={isUserTeam}
+                    canModify={canModify}
                   />
                 </div>
               )}
@@ -1236,7 +1306,7 @@ export const PHLLineupPage = () => {
                         ChangeState={ChangeValueInShootoutLineup}
                         lineCategory={currentShootoutLineups}
                         activatePlayer={activatePlayerModal}
-                        canModify={isUserTeam}
+                        canModify={canModify}
                       />
                     ))}
                   </div>

@@ -231,6 +231,24 @@ const forums = [
     "SimCLAX league announcements",
     "SimCLAX",
   ),
+  subforum(
+    "admin-simcvb",
+    "simcvb",
+    "SimCVB Announcements",
+    "admin",
+    10,
+    "SimCVB league announcements",
+    "SimCVB",
+  ),
+  subforum(
+    "admin-simpvb",
+    "simpvb",
+    "SimPVB Announcements",
+    "admin",
+    11,
+    "SimPVB league announcements",
+    "SimPVB",
+  ),
 
   // ── Media subforums (one per league) ──────────────────────────────────────
   subforum(
@@ -314,6 +332,24 @@ const forums = [
     "SimCLAX articles, press conferences, rankings, podcasts, and interviews",
     "SimCLAX",
   ),
+  subforum(
+    "media-simcvb",
+    "simcvb",
+    "SimCVB",
+    "media",
+    9,
+    "SimCVB articles, press conferences, rankings, podcasts, and interviews",
+    "SimCVB",
+  ),
+  subforum(
+    "media-simpvb",
+    "simpvb",
+    "SimPVB",
+    "media",
+    10,
+    "SimPVB articles, press conferences, rankings, podcasts, and interviews",
+    "SimPVB",
+  ),
 
   // ── Results subforums (one per league) ──────────────────────────────────────
   subforum(
@@ -396,6 +432,24 @@ const forums = [
     8,
     "SimCLAX post-game threads. Threads created through automations.",
     "SimCLAX",
+  ),
+  subforum(
+    "postgame-discussions-simcvb",
+    "simcvb",
+    "SimCVB",
+    "postgame-discussions",
+    9,
+    "SimCVB post-game threads. Threads created through automations.",
+    "SimCVB",
+  ),
+  subforum(
+    "postgame-discussions-simpvb",
+    "simpvb",
+    "SimPVB",
+    "postgame-discussions",
+    10,
+    "SimPVB post-game threads. Threads created through automations.",
+    "SimPVB",
   ),
 
   // ── Welcome subforums ──────────────────────────────────────────────────────

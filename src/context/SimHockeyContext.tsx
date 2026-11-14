@@ -1200,7 +1200,9 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
       const res = await TeamService.RemoveUserFromPHLTeam(request);
       const phlTeamsList = [...phlTeams];
       const teamIDX = phlTeamsList.findIndex((x) => x.ID === request.TeamID);
-      if (request.Role === Owner) {
+      if (teamIDX < 0) {
+        console.warn("Resigned PHL team not found in the local team list", request.TeamID);
+      } else if (request.Role === Owner) {
         phlTeamsList[teamIDX].Owner = "";
       } else if (request.Role === Coach) {
         phlTeamsList[teamIDX].Coach = "";
@@ -1408,14 +1410,16 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   };
 
   const saveCHLGameplan = async (dto: any) => {
-    setCHLLineups(dto.CHLLineups);
-    setCHLShootoutLineup(dto.CHLShootoutLineup);
+    await GameplanService.SaveCHLGameplan(dto);
+    if (dto.CHLTeamID === chlTeam?.ID) {
+      setCHLLineups(dto.CHLLineups);
+      setCHLShootoutLineup(dto.CHLShootoutLineup);
+    }
     setChlLineupsMap((prev) => ({ ...prev, [dto.CHLTeamID]: dto.CHLLineups }));
     setChlShootoutLineupsMap((prev) => ({
       ...prev,
       [dto.CHLTeamID]: dto.CHLShootoutLineup,
     }));
-    const res = await GameplanService.SaveCHLGameplan(dto);
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,
@@ -1423,14 +1427,16 @@ export const SimHCKProvider: React.FC<SimHCKProviderProps> = ({ children }) => {
   };
 
   const savePHLGameplan = async (dto: any) => {
-    setPHLLineups(dto.PHLLineups);
-    setPHLShootoutLineup(dto.PHLShootoutLineup);
+    await GameplanService.SavePHLGameplan(dto);
+    if (dto.PHLTeamID === phlTeam?.ID) {
+      setPHLLineups(dto.PHLLineups);
+      setPHLShootoutLineup(dto.PHLShootoutLineup);
+    }
     setPhlLineupsMap((prev) => ({ ...prev, [dto.PHLTeamID]: dto.PHLLineups }));
     setPhlShootoutLineupsMap((prev) => ({
       ...prev,
       [dto.PHLTeamID]: dto.PHLShootoutLineup,
     }));
-    const res = await GameplanService.SavePHLGameplan(dto);
     enqueueSnackbar("Lineups saved!", {
       variant: "success",
       autoHideDuration: 3000,

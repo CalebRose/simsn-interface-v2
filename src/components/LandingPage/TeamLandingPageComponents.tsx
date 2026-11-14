@@ -2480,7 +2480,6 @@ export const TeamInjuries = ({
   isLoading: isLoading,
   league,
 }: TeamInjuriesProps) => {
-  console.log({ teamInjuries });
   return (
     <SectionCards
       team={team}

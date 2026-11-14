@@ -2082,10 +2082,12 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
       const res = await TeamService.RemoveUserFromNFLTeam(request);
       const nflTeamsList = [...nflTeams];
       const teamIDX = nflTeamsList.findIndex((x) => x.ID === request.NFLTeamID);
-      if (request.IsOwner) {
+      if (teamIDX < 0) {
+        console.warn("Resigned NFL team not found in the local team list", request.NFLTeamID);
+      } else if (request.IsOwner) {
         nflTeamsList[teamIDX].NFLOwnerName = "";
       } else if (request.IsCoach) {
-        nflTeamsList[teamIDX].Coach = "";
+        nflTeamsList[teamIDX].NFLCoachName = "";
       } else if (request.IsManager) {
         nflTeamsList[teamIDX].NFLGMName = "";
       } else if (request.IsAssistant) {
