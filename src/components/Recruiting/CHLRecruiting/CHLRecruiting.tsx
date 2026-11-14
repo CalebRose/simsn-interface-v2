@@ -34,10 +34,11 @@ import { RecruitingAISettingsModal } from "../Common/RecruitingAISettingsModal";
 import { useLoadMessage } from "../../../_hooks/useLoadMessage";
 import { CHLRecruitLockedMessages } from "../../../_constants/loadMessages";
 import { RecruitingClassTable } from "../Common/RecruitingClassTable";
+import { useAuthStore } from "../../../context/AuthContext";
+import { CustomCrootModal } from "../Common/CustomCrootModal";
 
 export const CHLRecruiting = () => {
   const { backgroundColor } = useBackgroundColor();
-  const hkStore = useSimHCKStore();
   const {
     recruitProfiles,
     chlTeam,
@@ -52,7 +53,7 @@ export const CHLRecruiting = () => {
     SaveRecruitingBoard,
     SaveAIRecruitingSettings,
     ExportCHLRecruits,
-  } = hkStore;
+  } = useSimHCKStore();
   const {
     teamProfile,
     recruitMap,
@@ -88,6 +89,8 @@ export const CHLRecruiting = () => {
     SelectClass,
     offensiveSystemsInformation,
     defensiveSystemsInformation,
+    canCreateCustomCroot,
+    submitCustomCroot,
   } = useCHLRecruiting();
   const teamColors = useTeamColors(
     chlTeam?.ColorOne,
@@ -96,13 +99,24 @@ export const CHLRecruiting = () => {
   );
   const { isMobile } = useResponsive();
   const helpModal = useModal();
+  const customCrootModal = useModal();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const aiSettingsModal = useModal();
   const lockMessage = useLoadMessage(CHLRecruitLockedMessages, 5000);
   const recruitsExport = async () => {
     await ExportCHLRecruits();
   };
+
   return (
     <>
+      <CustomCrootModal
+        isOpen={customCrootModal.isModalOpen}
+        onClose={customCrootModal.handleCloseModal}
+        username={currentUser?.username ?? ""}
+        team={chlTeam}
+        league={SimCHL}
+        onSubmit={submitCustomCroot}
+      />
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
@@ -237,31 +251,49 @@ export const CHLRecruiting = () => {
               <div className="sm:grid sm:grid-cols-2 w-full">
                 <div className="flex flex-row w-full gap-x-6 justify-center sm:justify-normal">
                   <div className="flex flex-col">
-                    <Text variant="h6" classes="text-nowrap">
+                    <Text
+                      variant="body-small"
+                      classes="text-nowrap font-semibold"
+                    >
                       AI Active
                     </Text>
-                    <Text variant="body">
+                    <Text variant="small">
                       {teamProfile?.IsAI ? "Yes" : "No"}
                     </Text>
                   </div>
                   <div className="flex flex-col">
-                    <Text variant="h6" classes="text-nowrap">
+                    <Text
+                      variant="body-small"
+                      classes="text-nowrap font-semibold"
+                    >
                       Weekly Points
                     </Text>
-                    <Text variant="body">
+                    <Text variant="small">
                       {teamProfile?.SpentPoints} of {teamProfile?.WeeklyPoints}
                     </Text>
                   </div>
                   <div className="flex flex-col">
-                    <Text variant="h6" classes="text-nowrap">
+                    <Text
+                      variant="body-small"
+                      classes="text-nowrap font-semibold"
+                    >
                       Scouting Points
                     </Text>
-                    <Text variant="body">
+                    <Text variant="small">
                       {teamProfile?.WeeklyScoutingPoints}
                     </Text>
                   </div>
                 </div>
                 <ButtonGroup classes="flex flex-row w-full justify-center sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={customCrootModal.handleOpenModal}
+                    size="sm"
+                    disabled={!canCreateCustomCroot}
+                  >
+                    Create
+                  </Button>
                   <Button
                     type="button"
                     variant="primary"

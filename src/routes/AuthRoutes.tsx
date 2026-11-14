@@ -30,6 +30,7 @@ import { MLBSchedulePage } from "../components/Schedule/BaseballSchedule/MLBSche
 import { CollegeBaseballSchedulePage } from "../components/Schedule/BaseballSchedule/CollegeBaseballSchedulePage";
 import { BaseballStatsPage } from "../components/StatsPage/BaseballStats/BaseballStatsPage";
 import { BaseballInjuryPage } from "../components/Team/baseball/BaseballInjuryPage";
+import { BaseballTrainingCampPage } from "../components/Team/baseball/BaseballTrainingCampPage";
 import { PlayoffBracketPage } from "../components/SpecialEvents/BaseballEvents/PlayoffBracketPage";
 import { ConferenceTournamentPage } from "../components/SpecialEvents/BaseballEvents/ConferenceTournamentPage";
 import { AllStarGamePage } from "../components/SpecialEvents/BaseballEvents/AllStarGamePage";
@@ -694,6 +695,24 @@ export const AuthRoutes = [
     element={
       <AuthGuard>
         <BaseballInjuryPage league={SimCollegeBaseball} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Training Camp"
+    path={routes.MLB_TRAINING_CAMP}
+    element={
+      <AuthGuard>
+        <BaseballTrainingCampPage league={SimMLB} />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="College Baseball Training Camp"
+    path={routes.COLLEGE_BASEBALL_TRAINING_CAMP}
+    element={
+      <AuthGuard>
+        <BaseballTrainingCampPage league={SimCollegeBaseball} />
       </AuthGuard>
     }
   />,

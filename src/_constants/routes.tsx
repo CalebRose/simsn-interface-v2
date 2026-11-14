@@ -73,6 +73,8 @@ export default {
   COLLEGE_BASEBALL_STATS: "/collegebaseball/statistics/",
   MLB_INJURIES: "/mlb/injuries/",
   COLLEGE_BASEBALL_INJURIES: "/collegebaseball/injuries/",
+  MLB_TRAINING_CAMP: "/mlb/trainingcamp/",
+  COLLEGE_BASEBALL_TRAINING_CAMP: "/collegebaseball/trainingcamp/",
   MLB_PLAYOFFS: "/mlb/playoffs/",
   COLLEGE_BASEBALL_PLAYOFFS: "/collegebaseball/playoffs/",
   COLLEGE_BASEBALL_CONF_TOURNAMENT: "/collegebaseball/tournament/",

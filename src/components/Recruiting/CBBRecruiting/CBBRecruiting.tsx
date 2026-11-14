@@ -33,6 +33,8 @@ import { RecruitProfileTable } from "../Common/RecruitProfileTable";
 import { RecruitTable } from "../Common/RecruitTable";
 import { TeamRankingsTable } from "../Common/TeamRankingsTable";
 import { useCBBRecruiting } from "./useCBBRecruiting";
+import { useAuthStore } from "../../../context/AuthContext";
+import { CustomCrootModal } from "../Common/CustomCrootModal";
 
 export const CBBRecruiting = () => {
   const bbStore = useSimBBAStore();
@@ -86,6 +88,8 @@ export const CBBRecruiting = () => {
     SelectClass,
     country,
     SelectCountryOptions,
+    canCreateCustomCroot,
+    submitCustomCroot,
   } = useCBBRecruiting();
 
   const { isMobile } = useResponsive();
@@ -96,6 +100,8 @@ export const CBBRecruiting = () => {
     cbbTeam?.ColorThree,
   );
   const helpModal = useModal();
+  const customCrootModal = useModal();
+  const { currentUser, setCurrentUser } = useAuthStore();
   const aiSettingsModal = useModal();
   const lockMessage = useLoadMessage(CBBRecruitLockedMessages, 5000);
   const recruitsExport = async () => {
@@ -104,6 +110,14 @@ export const CBBRecruiting = () => {
 
   return (
     <>
+      <CustomCrootModal
+        isOpen={customCrootModal.isModalOpen}
+        onClose={customCrootModal.handleCloseModal}
+        username={currentUser?.username ?? ""}
+        team={cbbTeam}
+        league={SimCBB}
+        onSubmit={submitCustomCroot}
+      />
       {modalPlayer && (
         <ActionModal
           isOpen={isModalOpen}
@@ -265,6 +279,15 @@ export const CBBRecruiting = () => {
                   </div>
                 </div>
                 <ButtonGroup classes="flex flex-row w-full justify-center sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={customCrootModal.handleOpenModal}
+                    size="sm"
+                    disabled={!canCreateCustomCroot}
+                  >
+                    Create
+                  </Button>
                   <Button
                     type="button"
                     variant="primary"
