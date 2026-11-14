@@ -139,8 +139,6 @@ export const AvailableTeams = () => {
   const { enqueueSnackbar } = useSnackbar();
   const IsRetro = currentUser?.IsRetro;
 
-  console.log({ currentUser });
-
   useEffect(() => {
     void refreshClaxTeams();
     LacrosseService.getMyClaim()
@@ -575,10 +573,19 @@ export const AvailableTeams = () => {
                   >
                     <Text variant="small">SimMLB</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCLAX} onClick={() => selectSport(SimCLAX)}>
+                  <PillButton
+                    variant="primaryOutline"
+                    isSelected={selectedLeague === SimCLAX}
+                    onClick={() => selectSport(SimCLAX)}
+                  >
                     <Text variant="small">SimCLAX</Text>
                   </PillButton>
-                  <PillButton variant="primaryOutline" disabled title="SimPLAX is coming soon" classes="cursor-not-allowed opacity-50">
+                  <PillButton
+                    variant="primaryOutline"
+                    disabled
+                    title="SimPLAX is coming soon"
+                    classes="cursor-not-allowed opacity-50"
+                  >
                     <Text variant="small">SimPLAX</Text>
                   </PillButton>
                 </ButtonGrid>
