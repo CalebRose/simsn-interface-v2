@@ -377,28 +377,44 @@ export const KNOWN_BOWL_GAMES: Omit<
   },
 ];
 
-const parseCSVLine = (line: string): string[] => {
-  const result: string[] = [];
+const parseCSV = (text: string): string[][] => {
+  const rows: string[][] = [];
+  let row: string[] = [];
   let current = "";
   let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
     if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
+      if (inQuotes && text[i + 1] === '"') {
         current += '"';
         i++;
       } else {
         inQuotes = !inQuotes;
       }
     } else if (ch === "," && !inQuotes) {
-      result.push(current.trim());
+      row.push(current.trim());
+      current = "";
+    } else if ((ch === "\r" || ch === "\n") && !inQuotes) {
+      if (ch === "\r" && text[i + 1] === "\n") {
+        i++;
+      }
+      row.push(current.trim());
+      if (row.some((cell) => cell.length > 0)) {
+        rows.push(row);
+      }
+      row = [];
       current = "";
     } else {
       current += ch;
     }
   }
-  result.push(current.trim());
-  return result;
+
+  row.push(current.trim());
+  if (row.some((cell) => cell.length > 0)) {
+    rows.push(row);
+  }
+  return rows;
 };
 
 const escapeCSVField = (val: string | number | boolean): string => {
@@ -652,18 +668,13 @@ export const AdminBowlsTab = () => {
     setIsUploading(true);
     try {
       const text = await file.text();
-      const lines = text
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0);
+      const parsedRows = parseCSV(text);
 
-      if (lines.length < 2) {
+      if (parsedRows.length < 2) {
         throw new Error("CSV file is empty or missing data rows.");
       }
 
-      const rawHeaders = parseCSVLine(lines[0]).map((h) =>
-        h.toLowerCase().trim(),
-      );
+      const rawHeaders = parsedRows[0].map((h) => h.toLowerCase().trim());
 
       const idxWeek = rawHeaders.indexOf("week");
       const idxTimeSlot = rawHeaders.indexOf("timeslot");
@@ -693,8 +704,8 @@ export const AdminBowlsTab = () => {
       }
 
       const fixtures: CFBBowlFixtureDTO[] = [];
-      for (let i = 1; i < lines.length; i++) {
-        const cols = parseCSVLine(lines[i]);
+      for (let i = 1; i < parsedRows.length; i++) {
+        const cols = parsedRows[i];
         if (cols.length < 3) continue;
 
         // If importing a combined postseason CSV, skip playoff rows here
