@@ -1256,6 +1256,33 @@ export const ForumService = {
   // User Search (for @mention autocomplete)
   // ─────────────────────────────────────────────
 
+  FindUsersByUsername: async (
+    username: string,
+  ): Promise<{ uid: string; username: string }[]> => {
+    const usersCol = collection(firestore, "users");
+    const snapshots = await Promise.all([
+      getDocs(
+        query(
+          usersCol,
+          where("usernameLower", "==", username.toLowerCase()),
+          limit(2),
+        ),
+      ),
+      getDocs(query(usersCol, where("username", "==", username), limit(2))),
+    ]);
+    const users = new Map<string, { uid: string; username: string }>();
+    for (const snap of snapshots) {
+      logFirestoreRead("FindUsersByUsername", snap.docs.length);
+      for (const d of snap.docs) {
+        const name = d.data().username;
+        if (typeof name === "string") {
+          users.set(d.id, { uid: d.id, username: name });
+        }
+      }
+    }
+    return [...users.values()];
+  },
+
   SearchUsersByPrefix: async (
     prefix: string,
     maxResults = 8,

@@ -74,6 +74,15 @@ npm install
 npm run dev
 ```
 
+### Forum search
+
+The "Posted by" filter searches for threads started by the selected user.
+Enter an exact username or choose an autocomplete suggestion.
+Firestore needs a collection-scope composite index on `threads` for an
+author-only search: `author.uid` ascending, `isDeleted` ascending, and
+`latestActivityAt` descending. Create it in the Firebase console if it does
+not already exist. Other filter combinations may require additional indexes.
+
 ## 🤝 Collaboration
 
 This project is being built collaboratively by a small team of frontend engineers. One of our goals is to use this project as a way to **mentor and grow together** by focusing on:

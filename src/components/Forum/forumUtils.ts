@@ -220,6 +220,8 @@ const LEAGUE_KEYS = [
   "simcbl",
   "simmlb",
   "simclax",
+  "simcvb",
+  "simpvb",
 ];
 
 /** Fixes stored names such as "Subscriber's Lounge" without touching Firestore. */
@@ -237,6 +239,8 @@ export const LEAGUE_ACCENT_COLORS: Record<string, string> = {
   simcbl: "#eab308",
   simmlb: "#22c55e",
   simclax: "#ec4899",
+  simcvb: "#8b5cf6",
+  simpvb: "#10b981",
 };
 
 /** League of a thread/forum, derived from sportKey or a "...-simcfb" forum id. */

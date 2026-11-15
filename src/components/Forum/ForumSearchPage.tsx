@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { enqueueSnackbar } from "notistack";
 import { PageContainer } from "../../_design/Container";
 import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
@@ -85,13 +86,26 @@ export const ForumSearchPage: React.FC = () => {
       setAuthorSuggestions([]);
       return;
     }
+    let cancelled = false;
     const handle = setTimeout(async () => {
-      const results = await ForumService.SearchUsersByPrefix(
-        authorQuery.trim(),
-      );
-      setAuthorSuggestions(results);
+      try {
+        const results = await ForumService.SearchUsersByPrefix(
+          authorQuery.trim(),
+        );
+        if (!cancelled) setAuthorSuggestions(results);
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Failed to search forum users:", error);
+          enqueueSnackbar("Failed to find users. Please try again.", {
+            variant: "error",
+          });
+        }
+      }
     }, AUTHOR_SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(handle);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
   }, [authorQuery, selectedAuthor]);
 
   const resolveForumIds = (): string[] | undefined => {
@@ -106,33 +120,71 @@ export const ForumSearchPage: React.FC = () => {
       params: { forumIds?: string[]; authorUid?: string; titlePrefix?: string },
       cursor?: QueryDocumentSnapshot,
     ) => {
-      setIsLoading(true);
-      try {
-        const { threads, lastDoc: nextLastDoc } =
-          await ForumService.SearchThreads(params, cursor);
-        setRawThreads((prev) => (cursor ? [...prev, ...threads] : threads));
-        setLastDoc(nextLastDoc);
-      } finally {
-        setIsLoading(false);
-      }
+      const { threads, lastDoc: nextLastDoc } =
+        await ForumService.SearchThreads(params, cursor);
+      setRawThreads((prev) => (cursor ? [...prev, ...threads] : threads));
+      setLastDoc(nextLastDoc);
     },
     [],
   );
 
-  const handleSearch = () => {
-    const params = {
-      forumIds: resolveForumIds(),
-      authorUid: selectedAuthor?.uid,
-      titlePrefix: titleInput.trim() || undefined,
-    };
-    setActiveParams(params);
-    setHasSearched(true);
-    void runSearch(params);
+  const handleSearch = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setHasSearched(false);
+    setRawThreads([]);
+    setLastDoc(null);
+    setActiveParams(null);
+    try {
+      let author = selectedAuthor;
+      if (!author && authorQuery.trim()) {
+        const matches = await ForumService.FindUsersByUsername(
+          authorQuery.trim(),
+        );
+        if (matches.length !== 1) {
+          enqueueSnackbar(
+            matches.length === 0
+              ? "Username not found. Enter the exact username or select a suggestion."
+              : "Multiple users have this username. Select a suggestion.",
+            { variant: "error" },
+          );
+          return;
+        }
+        author = matches[0];
+        setSelectedAuthor(author);
+        setAuthorQuery("");
+      }
+      const params = {
+        forumIds: resolveForumIds(),
+        authorUid: author?.uid,
+        titlePrefix: titleInput.trim() || undefined,
+      };
+      await runSearch(params);
+      setActiveParams(params);
+      setHasSearched(true);
+    } catch (error) {
+      console.error("Failed to search forum threads:", error);
+      enqueueSnackbar("Failed to search threads. Please try again.", {
+        variant: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleLoadMore = () => {
-    if (!activeParams || !lastDoc) return;
-    void runSearch(activeParams, lastDoc);
+  const handleLoadMore = async () => {
+    if (!activeParams || !lastDoc || isLoading) return;
+    setIsLoading(true);
+    try {
+      await runSearch(activeParams, lastDoc);
+    } catch (error) {
+      console.error("Failed to load more forum threads:", error);
+      enqueueSnackbar("Failed to load more threads. Please try again.", {
+        variant: "error",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClear = () => {
@@ -166,7 +218,10 @@ export const ForumSearchPage: React.FC = () => {
   return (
     <PageContainer isLoading={forumsLoading} title="Search Forums">
       <div className="mx-auto w-full max-w-4xl px-4 py-2">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <fieldset
+          disabled={isLoading}
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"
+        >
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium">Forum / Subforum</label>
             <select
@@ -201,7 +256,7 @@ export const ForumSearchPage: React.FC = () => {
               showLabel={false}
               value={titleInput}
               onChange={(e) => setTitleInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              onKeyDown={(e) => e.key === "Enter" && void handleSearch()}
               placeholder="e.g. Week 5 recap"
               classes="bg-(--bg-secondary) border border-(--border-primary)"
             />
@@ -215,10 +270,13 @@ export const ForumSearchPage: React.FC = () => {
               onChange={(e) => {
                 setSelectedAuthor(null);
                 setAuthorQuery(e.target.value);
+                setAuthorSuggestions([]);
               }}
+              onKeyDown={(e) => e.key === "Enter" && void handleSearch()}
               placeholder="Username"
               classes="bg-(--bg-secondary) border border-(--border-primary)"
             />
+            <Text variant="xs">Threads started by this user</Text>
             {authorSuggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-(--bg-secondary) border border-(--border-primary) rounded-sm max-h-48 overflow-y-auto">
                 {authorSuggestions.map((u) => (
@@ -257,13 +315,23 @@ export const ForumSearchPage: React.FC = () => {
               />
             </div>
           </div>
-        </div>
+        </fieldset>
 
         <div className="flex items-center gap-2 mb-6">
-          <Button variant="primary" size="sm" onClick={handleSearch}>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleSearch}
+            disabled={isLoading}
+          >
             Search
           </Button>
-          <Button variant="secondaryOutline" size="sm" onClick={handleClear}>
+          <Button
+            variant="secondaryOutline"
+            size="sm"
+            onClick={handleClear}
+            disabled={isLoading}
+          >
             Clear
           </Button>
           <Button

@@ -11,6 +11,7 @@ import {
 } from "../../../_constants/constants";
 import {
   Croot as FootballCroot,
+  RecruitPlayerProfile,
   RecruitingTeamProfile,
 } from "../../../models/footballModels";
 import { Croot as BasketballCroot } from "../../../models/basketballModels";
@@ -25,6 +26,12 @@ import { useAuthStore } from "../../../context/AuthContext";
 import { CustomCrootSubmission } from "../Common/CustomCrootModal";
 import { RecruitService } from "../../../_services/recruitService";
 import { updateUserByUsername } from "../../../firebase/firestoreHelper";
+
+const EMPTY_RECRUIT_PROFILES: RecruitPlayerProfile[] = [];
+
+const sameItems = <T,>(first: T[], second: T[]) =>
+  first.length === second.length &&
+  first.every((item, index) => item === second[index]);
 
 export const useCFBRecruiting = () => {
   const { currentUser, setCurrentUser } = useAuthStore();
@@ -135,7 +142,7 @@ export const useCFBRecruiting = () => {
 
   // Bypass pre-sorted wrapper so filtering handles raw live profiles cleanly
   const rawFilteredCrootProfiles = useFilteredCrootProfiles({
-    recruitProfiles: recruitProfiles || [],
+    recruitProfiles: recruitProfiles || EMPTY_RECRUIT_PROFILES,
     recruitMap,
     positions,
     archetype,
@@ -156,11 +163,6 @@ export const useCFBRecruiting = () => {
 
   // Dynamic sort: Default sorted on load, frozen while typing, fully re-sorted on click of triggerSort() or list changes
   useEffect(() => {
-    if (!rawFilteredCrootProfiles) {
-      setFilteredCrootProfiles([]);
-      return;
-    }
-
     const filtersChanged =
       JSON.stringify(prevFiltersRef.current.positions) !==
         JSON.stringify(positions) ||
@@ -204,7 +206,9 @@ export const useCFBRecruiting = () => {
         }
         return 0;
       });
-      setFilteredCrootProfiles(sorted);
+      setFilteredCrootProfiles((previous) =>
+        sameItems(previous, sorted) ? previous : sorted,
+      );
     } else {
       // While typing numbers, update values in-place so rows stay completely still, filtering out any removed profiles
       setFilteredCrootProfiles((prevList) => {
@@ -214,12 +218,13 @@ export const useCFBRecruiting = () => {
             item,
           ]),
         );
-        return prevList
+        const updated = prevList
           .filter((item) => rawMap.has(item.ID || item.RecruitID))
           .map((item) => {
             const id = item.ID || item.RecruitID;
             return rawMap.get(id);
           });
+        return sameItems(prevList, updated) ? prevList : updated;
       });
     }
   }, [

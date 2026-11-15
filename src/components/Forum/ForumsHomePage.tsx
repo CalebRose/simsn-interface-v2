@@ -36,6 +36,8 @@ const LEAGUE_LABELS: Record<string, string> = {
   simcbl: "CBL",
   simmlb: "MLB",
   simclax: "CLax",
+  simcvb: "CVB",
+  simpvb: "PVB",
 };
 const LEAGUE_ORDER = Object.keys(LEAGUE_LABELS);
 const LEAGUE_STORAGE_KEY = "forumLeagueFilter";
