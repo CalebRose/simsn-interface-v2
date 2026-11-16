@@ -43,6 +43,54 @@ export const DraftService = {
     return await PostCall(`${fbaUrl}admin/nfl/draft-pick/compensatory`, dto);
   },
 
+  ForfeitNFLDraftPick: async (dto: {
+    DraftPickID: number;
+    Reason: string;
+  }): Promise<any> => {
+    return await PostCall(`${fbaUrl}admin/nfl/draft-pick/forfeit`, dto);
+  },
+
+  RunCombine: async (playerIDs: number[]): Promise<any> => {
+    return await PostCall(`${fbaUrl}admin/nfl/run/combine`, {
+      PlayerIDs: playerIDs,
+    });
+  },
+
+  RunProDays: async (): Promise<any> => {
+    return await PostCall(`${fbaUrl}admin/cfb/run/pro-days`, {});
+  },
+
+  ToggleProDayNominations: async (): Promise<any> => {
+    return await PostCall(`${fbaUrl}admin/cfb/toggle/proday-nominations`, {});
+  },
+
+  GetProDayNominationsByTeam: async (teamID: number): Promise<any> => {
+    return await GetCall(`${fbaUrl}cfb/proday/nominations/${teamID}`);
+  },
+
+  SubmitProDayNominations: async (dto: {
+    TeamID: number;
+    PlayerIDs: number[];
+  }): Promise<any> => {
+    return await PostCall(`${fbaUrl}cfb/proday/nominate`, dto);
+  },
+
+  ExportCombineResults: async (): Promise<any> => {
+    return await GetExportCall(
+      `${fbaUrl}nfl/draft/events/combine/export`,
+      "blob",
+      "simnfl_combine_results",
+    );
+  },
+
+  ExportProDayResults: async (): Promise<any> => {
+    return await GetExportCall(
+      `${fbaUrl}nfl/draft/events/proday/export`,
+      "blob",
+      "simcfb_pro_day_results",
+    );
+  },
+
   // NEW UDFA ENDPOINTS
   GetUDFABoard: async (teamID: number) =>
     GetCall(`${fbaUrl}nfl/udfa/board/${teamID}`),

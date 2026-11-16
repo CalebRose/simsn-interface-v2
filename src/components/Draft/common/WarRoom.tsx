@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { League, SimNBA, SimPHL } from "../../../_constants/constants";
+import React, { useMemo, useState } from "react";
+import { League, SimNBA, SimNFL, SimPHL } from "../../../_constants/constants";
 import { Draftee, DraftPick as DraftPickType } from "./types";
 import { Text } from "../../../_design/Typography";
 import { ProfessionalTeam } from "../../../models/hockeyModels";
@@ -8,6 +8,7 @@ import { NFLTeam } from "../../../models/footballModels";
 import { AnyTradeProposal, WarRoomDoc } from "../hooks/useDraftTradeState";
 import { Button } from "../../../_design/Buttons";
 import { NBATeam } from "../../../models/basketballModels";
+import { DraftService } from "../../../_services/draftService";
 
 interface DraftWarRoomProps {
   league: League;
@@ -48,6 +49,31 @@ export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
     return `Total Picks: ${teamDraftPicks.length}`;
   }, [teamDraftPicks]);
 
+  const [isDownloadingCombine, setIsDownloadingCombine] = useState(false);
+  const [isDownloadingProDays, setIsDownloadingProDays] = useState(false);
+
+  const handleDownloadCombine = async () => {
+    setIsDownloadingCombine(true);
+    try {
+      await DraftService.ExportCombineResults();
+    } catch (e) {
+      console.error("Failed to download combine results", e);
+    } finally {
+      setIsDownloadingCombine(false);
+    }
+  };
+
+  const handleDownloadProDays = async () => {
+    setIsDownloadingProDays(true);
+    try {
+      await DraftService.ExportProDayResults();
+    } catch (e) {
+      console.error("Failed to download pro day results", e);
+    } finally {
+      setIsDownloadingProDays(false);
+    }
+  };
+
   return (
     <>
       <div className="w-full p-4" style={{ backgroundColor }}>
@@ -57,6 +83,30 @@ export const DraftWarRoom: React.FC<DraftWarRoomProps> = ({
         <Text variant="body-small" className="mb-4">
           {draftPickCount}
         </Text>
+
+        {league === SimNFL && (
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <Button
+              variant="secondaryOutline"
+              onClick={handleDownloadCombine}
+              disabled={isDownloadingCombine}
+            >
+              {isDownloadingCombine
+                ? "Downloading Combine..."
+                : "Download Combine Results"}
+            </Button>
+            <Button
+              variant="secondaryOutline"
+              onClick={handleDownloadProDays}
+              disabled={isDownloadingProDays}
+            >
+              {isDownloadingProDays
+                ? "Downloading Pro Days..."
+                : "Download Pro Day Results"}
+            </Button>
+          </div>
+        )}
+
         {canTrade && (
           <div className="grid grid-cols-1 xl:grid-cols-2 mb-4 gap-4">
             <div className="flex items-center gap-[10px]">

@@ -12,6 +12,7 @@ import {
   Bowls,
   ConfChampionships,
   Contracts,
+  Draft,
   GameState,
   Postseason,
   Reports,
@@ -52,6 +53,7 @@ import { AdminNBAReportsTab } from "./AdminNBAReportsTab";
 import { AdminPHLReportsTab } from "./AdminPHLReportsTab";
 import { AdminCHLReportsTab } from "./AdminCHLReportsTab";
 import { AdminReportsTab } from "./AdminReportsTab";
+import { AdminDraftTab } from "./AdminDraftTab";
 import { Refresh } from "../../_design/Icons";
 import { CommissionerHub } from "./AdminComponents";
 import { AdminTradesTab } from "./AdminTradesTab";
@@ -161,9 +163,9 @@ export const AdminPage = () => {
   const columnCount = useMemo(() => {
     switch (selectedLeague) {
       case SimCFB:
-        return 7;
+        return 8;
       case SimNFL:
-        return 9;
+        return 10;
       case SimCBB:
         return 6;
       case SimNBA:
@@ -401,6 +403,14 @@ export const AdminPage = () => {
                     )}
                   </>
                 )}
+                {(selectedLeague === SimNFL ||
+                  selectedLeague === SimCFB) && (
+                  <Tab
+                    label={Draft}
+                    selected={selectedTab === Draft}
+                    setSelected={setSelectedTab}
+                  />
+                )}
                 <Tab
                   label={Reports}
                   selected={selectedTab === Reports}
@@ -448,6 +458,10 @@ export const AdminPage = () => {
                   <NFLUDFAAdminPanel />
                 </div>
               )}
+              {selectedTab === Draft &&
+                (selectedLeague === SimNFL || selectedLeague === SimCFB) && (
+                  <AdminDraftTab />
+                )}
               {selectedTab === Reports && selectedLeague === SimCFB && (
                 <AdminReportsTab />
               )}
