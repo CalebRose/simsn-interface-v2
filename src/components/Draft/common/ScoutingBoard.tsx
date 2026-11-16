@@ -15,6 +15,12 @@ import {
 } from "./types";
 import { ScoutingBoardRow } from "./ScoutingBoardRow";
 import { getGradeValue, getOverallGrade } from "./draftHelpers";
+import { Button } from "../../../_design/Buttons";
+import {
+  MAX_PRIVATE_WORKOUT_PLAYERS,
+  PRIVATE_WORKOUT_COST_PER_PLAYER,
+  isPrivateWorkoutCompleted,
+} from "../NFLDraft/utils/privateWorkoutUtils";
 import {
   NFLDraftPick,
   NFLDraftee,
@@ -25,7 +31,7 @@ import {
   DraftablePlayer as PHLDraftee,
   ScoutingProfile as PHLScoutingProfile,
 } from "../../../models/hockeyModels";
-import { DrafteeInfoType, ModalAction } from "../../../_constants/constants";
+import { DrafteeInfoType, ModalAction, SimNFL } from "../../../_constants/constants";
 
 interface ScoutingBoardProps {
   scoutProfiles: ScoutingProfile[];
@@ -39,6 +45,9 @@ interface ScoutingBoardProps {
     showAttribute: string,
     cost: number,
   ) => void;
+  onRunPrivateWorkouts?: (profiles: NFLScoutingProfile[]) => Promise<boolean>;
+  isPrivateWorkoutClosed?: boolean;
+  onDownloadPrivateWorkoutReport?: (players: NFLDraftee[]) => void;
   isUserTurn?: boolean;
   teamColors: TeamColors;
   backgroundColor: string;
@@ -57,6 +66,9 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
   onDraftPlayer,
   onViewDetails,
   onRevealAttribute,
+  onRunPrivateWorkouts,
+  isPrivateWorkoutClosed = false,
+  onDownloadPrivateWorkoutReport,
   isUserTurn = false,
   teamColors,
   backgroundColor,
@@ -70,6 +82,8 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
 }) => {
   const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
   const [selectedSort, setSelectedSort] = useState<string>("overall-desc");
+  const [selectedWorkoutIds, setSelectedWorkoutIds] = useState<number[]>([]);
+  const [isRunningWorkouts, setIsRunningWorkouts] = useState<boolean>(false);
 
   const sortOptions: SelectOption[] = [
     { label: "Overall (Highest First)", value: "overall-desc" },
@@ -209,6 +223,63 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
     [handlePlayerModal],
   );
 
+  const selectedWorkoutProfiles = useMemo(() => {
+    if (league !== SimNFL) return [];
+    const selectedSet = new Set(selectedWorkoutIds);
+    return scoutProfiles.filter(
+      (p) =>
+        selectedSet.has(p.ID) &&
+        !isPrivateWorkoutCompleted(p as NFLScoutingProfile),
+    ) as NFLScoutingProfile[];
+  }, [league, scoutProfiles, selectedWorkoutIds]);
+
+  const workedOutPlayers = useMemo(() => {
+    if (league !== SimNFL) return [];
+    return scoutProfiles
+      .filter((p) => isPrivateWorkoutCompleted(p as NFLScoutingProfile))
+      .map((p) => draftablePlayerMap[p.PlayerID] as NFLDraftee | undefined)
+      .filter((p): p is NFLDraftee => Boolean(p));
+  }, [league, scoutProfiles, draftablePlayerMap]);
+
+  const workoutCost =
+    selectedWorkoutProfiles.length * PRIVATE_WORKOUT_COST_PER_PLAYER;
+  const canAffordWorkouts = availablePoints >= workoutCost;
+
+  const handleTogglePrivateWorkout = useCallback(
+    (profile: ScoutingProfile) => {
+      if (isPrivateWorkoutClosed) return;
+      if (
+        league === SimNFL &&
+        isPrivateWorkoutCompleted(profile as NFLScoutingProfile)
+      ) {
+        return;
+      }
+      setSelectedWorkoutIds((prev) => {
+        if (prev.includes(profile.ID)) {
+          return prev.filter((id) => id !== profile.ID);
+        }
+        if (prev.length >= MAX_PRIVATE_WORKOUT_PLAYERS) {
+          return prev;
+        }
+        return [...prev, profile.ID];
+      });
+    },
+    [isPrivateWorkoutClosed, league],
+  );
+
+  const handleSubmitPrivateWorkouts = useCallback(async () => {
+    if (!onRunPrivateWorkouts || selectedWorkoutProfiles.length === 0) return;
+    setIsRunningWorkouts(true);
+    try {
+      const ok = await onRunPrivateWorkouts(selectedWorkoutProfiles);
+      if (ok) {
+        setSelectedWorkoutIds([]);
+      }
+    } finally {
+      setIsRunningWorkouts(false);
+    }
+  }, [onRunPrivateWorkouts, selectedWorkoutProfiles]);
+
   return (
     <Border
       classes="p-4 border-2 w-full overflow-x-auto"
@@ -264,12 +335,69 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
           className="text-sm max-w-xs"
         />
       </div>
+      {league === SimNFL && onRunPrivateWorkouts && (
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 mb-4 rounded border border-gray-700 bg-gray-800/60">
+          <div className="flex flex-wrap items-center gap-3">
+            <Text variant="small" classes="text-white font-semibold">
+              Private Workouts
+            </Text>
+            <Text variant="xs" classes="text-gray-300">
+              {selectedWorkoutProfiles.length}/{MAX_PRIVATE_WORKOUT_PLAYERS} selected
+              {" · "}
+              {workoutCost} pts ({PRIVATE_WORKOUT_COST_PER_PLAYER} pts/player)
+            </Text>
+            {isPrivateWorkoutClosed && (
+              <Text variant="xs" classes="text-red-400 font-semibold">
+                Closed (1st Pick is on the clock)
+              </Text>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {onDownloadPrivateWorkoutReport && (
+              <Button
+                variant="secondaryOutline"
+                size="sm"
+                onClick={() => onDownloadPrivateWorkoutReport(workedOutPlayers)}
+                disabled={workedOutPlayers.length === 0}
+              >
+                Download Workout Report ({workedOutPlayers.length})
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSubmitPrivateWorkouts}
+              disabled={
+                isPrivateWorkoutClosed ||
+                selectedWorkoutProfiles.length === 0 ||
+                !canAffordWorkouts ||
+                isRunningWorkouts
+              }
+            >
+              {isRunningWorkouts
+                ? "Running Workouts..."
+                : `Run Private Workouts (${workoutCost} pts)`}
+            </Button>
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-1 gap-4">
         {filteredProfiles.map((profile, index) => {
           const player = getPlayerFromProfile(profile);
           if (!player) return null;
 
           const isDrafted = draftedPlayerIds.has(player.ID);
+          const hasPrivateWorkout =
+            league === SimNFL &&
+            isPrivateWorkoutCompleted(profile as NFLScoutingProfile);
+          const isPrivateWorkoutSelected = selectedWorkoutIds.includes(
+            profile.ID,
+          );
+          const canSelectPrivateWorkout =
+            !isPrivateWorkoutClosed &&
+            !hasPrivateWorkout &&
+            (isPrivateWorkoutSelected ||
+              selectedWorkoutProfiles.length < MAX_PRIVATE_WORKOUT_PLAYERS);
 
           return (
             <ScoutingBoardRow
@@ -290,6 +418,15 @@ export const ScoutingBoard: FC<ScoutingBoardProps> = ({
               onDraftPlayer={onDraftPlayer}
               onRevealAttribute={onRevealAttribute}
               getRevealedCount={getRevealedCount}
+              hasPrivateWorkout={hasPrivateWorkout}
+              isPrivateWorkoutSelected={isPrivateWorkoutSelected}
+              canSelectPrivateWorkout={canSelectPrivateWorkout}
+              isPrivateWorkoutClosed={isPrivateWorkoutClosed}
+              onTogglePrivateWorkout={
+                league === SimNFL && onRunPrivateWorkouts
+                  ? handleTogglePrivateWorkout
+                  : undefined
+              }
             />
           );
         })}

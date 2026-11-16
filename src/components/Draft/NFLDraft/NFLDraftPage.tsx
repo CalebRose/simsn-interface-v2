@@ -64,6 +64,9 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
     handleAddToScoutBoard,
     handleRemoveFromScoutBoard,
     handleRevealAttribute,
+    isPrivateWorkoutClosed,
+    handleRunPrivateWorkouts,
+    handleDownloadPrivateWorkoutReport,
     handleViewScoutDetails,
     selectTeamOption,
     nflTeamOptions,
@@ -368,6 +371,9 @@ export const NFLDraftPage: FC<NFLDraftPageProps> = () => {
                   onViewDetails(profile as unknown as ScoutingProfile)
                 }
                 onRevealAttribute={onRevealAttribute}
+                onRunPrivateWorkouts={handleRunPrivateWorkouts}
+                isPrivateWorkoutClosed={isPrivateWorkoutClosed}
+                onDownloadPrivateWorkoutReport={handleDownloadPrivateWorkoutReport}
                 isUserTurn={isUserTurn}
                 teamColors={teamColors}
                 backgroundColor={backgroundColor}

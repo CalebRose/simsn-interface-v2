@@ -15,6 +15,15 @@ export const DraftService = {
     return await PostCall(`${fbaUrl}nfl/draft/reveal/attribute`, dto);
   },
 
+  RunPrivateWorkouts: async (dto: {
+    TeamID: number;
+    ScoutProfileIDs: number[];
+    PlayerIDs: number[];
+    Points: number;
+  }): Promise<any> => {
+    return await PostCall(`${fbaUrl}nfl/draft/private-workout`, dto);
+  },
+
   RemovePlayerFromBoard: async (id: number): Promise<void> => {
     await GetActionCall(`${fbaUrl}nfl/draft/remove/${id}`);
   },

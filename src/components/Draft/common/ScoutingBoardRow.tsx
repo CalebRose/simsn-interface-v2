@@ -51,6 +51,11 @@ interface ScoutingBoardRowProps {
   ) => void;
   getRevealedCount: (profile: ScoutingProfile) => number;
   viewPlayer: (draftee: Draftee) => void;
+  hasPrivateWorkout?: boolean;
+  isPrivateWorkoutSelected?: boolean;
+  canSelectPrivateWorkout?: boolean;
+  isPrivateWorkoutClosed?: boolean;
+  onTogglePrivateWorkout?: (profile: ScoutingProfile) => void;
 }
 
 export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
@@ -70,6 +75,11 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
   onRevealAttribute,
   getRevealedCount,
   viewPlayer,
+  hasPrivateWorkout = false,
+  isPrivateWorkoutSelected = false,
+  canSelectPrivateWorkout = false,
+  isPrivateWorkoutClosed = false,
+  onTogglePrivateWorkout,
 }) => {
   // SimPHL only
   const [showPotentialAttributes, setShowPotentialAttributes] = useState(false);
@@ -367,6 +377,11 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
               <Tag variant={draftPlayerTypeVariant} size="xs">
                 {draftPlayerType}
               </Tag>
+              {league === SimNFL && hasPrivateWorkout && (
+                <Tag variant="green" size="xs">
+                  Private Workout
+                </Tag>
+              )}
               {isGoodFBFit && (
                 <Tag variant="green" size="xs">
                   Good Fit
@@ -415,10 +430,15 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
                 <Text variant="xs" classes="text-gray-300 text-[10px]">
                   Overall
                 </Text>
-                <div className="min-w-15 min-h-15 max-w-15 max-h-15 bg-gray-700 border border-gray-600 rounded-sm flex items-center justify-center">
+                <div className="min-w-15 min-h-15 max-w-15 max-h-15 bg-gray-700 border border-gray-600 rounded-sm flex flex-col items-center justify-center">
                   <Text variant="small" classes="text-green-400 font-bold">
                     {getOverallGrade(player, league)}
                   </Text>
+                  {league === SimNFL && hasPrivateWorkout && (
+                    <Text variant="xs" classes="text-white text-[11px] font-semibold">
+                      ({(player as any).Overall})
+                    </Text>
+                  )}
                 </div>
               </div>
               <div className="text-center">
@@ -492,6 +512,26 @@ export const ScoutingBoardRow: FC<ScoutingBoardRowProps> = ({
               </>
             )}
           </Button>
+
+          {onTogglePrivateWorkout && (
+            <Button
+              variant={isPrivateWorkoutSelected ? "primary" : "secondaryOutline"}
+              size="sm"
+              onClick={() => onTogglePrivateWorkout(profile)}
+              disabled={
+                hasPrivateWorkout ||
+                isPrivateWorkoutClosed ||
+                (!isPrivateWorkoutSelected && !canSelectPrivateWorkout)
+              }
+              className="flex-1 md:min-w-[10em] p-3 md:p-2 flex justify-center gap-2 items-center"
+            >
+              {hasPrivateWorkout
+                ? "Worked Out"
+                : isPrivateWorkoutSelected
+                  ? "Selected (20 pts)"
+                  : "Private Workout"}
+            </Button>
+          )}
 
           <Button
             variant="secondaryOutline"

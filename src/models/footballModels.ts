@@ -7408,6 +7408,7 @@ export class ScoutingProfile {
   ShowPotential: boolean;
   RemovedFromBoard: boolean;
   ShowCount: number;
+  PrivateWorkout?: boolean;
   Draftee: NFLDraftee;
 
   constructor(source: any = {}) {
@@ -7429,6 +7430,7 @@ export class ScoutingProfile {
     this.ShowPotential = source["ShowPotential"];
     this.RemovedFromBoard = source["RemovedFromBoard"];
     this.ShowCount = source["ShowCount"];
+    this.PrivateWorkout = source["PrivateWorkout"];
     this.Draftee = this.convertValues(source["Draftee"], NFLDraftee);
   }
 

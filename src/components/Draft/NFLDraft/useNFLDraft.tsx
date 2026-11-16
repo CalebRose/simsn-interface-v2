@@ -22,6 +22,11 @@ import {
 import { SingleValue } from "react-select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { getSecondsByRound } from "../PHLDraft/utils/draftHelpers";
+import {
+  MAX_PRIVATE_WORKOUT_PLAYERS,
+  PRIVATE_WORKOUT_COST_PER_PLAYER,
+  downloadPrivateWorkoutReport,
+} from "./utils/privateWorkoutUtils";
 import { Draftee } from "../common";
 import { FormationMap } from "../../../_utility/getFormationMap";
 import { useDraftTradeState } from "../hooks/useDraftTradeState";
@@ -51,6 +56,7 @@ export const useNFLDraft = () => {
     getBootstrapDraftData,
     addPlayerToScoutBoard,
     revealScoutingAttribute,
+    runPrivateWorkouts,
     removePlayerFromScoutBoard,
     exportDraftPicks,
   } = useSimFBAStore();
@@ -359,6 +365,57 @@ export const useNFLDraft = () => {
       await revealScoutingAttribute(dto);
     },
     [selectedTeam, revealScoutingAttribute],
+  );
+
+  const isPrivateWorkoutClosed = useMemo(() => {
+    return (
+      isDraftComplete ||
+      draftCurrentRound > 1 ||
+      draftCurrentPick > 1 ||
+      recentPicks.length > 0 ||
+      !draftIsPaused ||
+      draftSeconds < getTimeForPick(1)
+    );
+  }, [
+    isDraftComplete,
+    draftCurrentRound,
+    draftCurrentPick,
+    recentPicks.length,
+    draftIsPaused,
+    draftSeconds,
+  ]);
+
+  const handleRunPrivateWorkouts = useCallback(
+    async (profiles: ScoutingProfile[]): Promise<boolean> => {
+      if (!selectedTeam || isPrivateWorkoutClosed || profiles.length === 0) {
+        return false;
+      }
+      const cappedProfiles = profiles.slice(0, MAX_PRIVATE_WORKOUT_PLAYERS);
+      const totalCost = cappedProfiles.length * PRIVATE_WORKOUT_COST_PER_PLAYER;
+      const availablePoints =
+        (teamWarRoom?.ScoutingPoints || 0) - (teamWarRoom?.SpentPoints || 0);
+      if (availablePoints < totalCost) {
+        return false;
+      }
+      const dto = {
+        TeamID: selectedTeam.ID,
+        ScoutProfileIDs: cappedProfiles.map((p) => p.ID),
+        PlayerIDs: cappedProfiles.map((p) => p.PlayerID),
+        Points: totalCost,
+      };
+      return await runPrivateWorkouts(dto);
+    },
+    [selectedTeam, isPrivateWorkoutClosed, teamWarRoom, runPrivateWorkouts],
+  );
+
+  const handleDownloadPrivateWorkoutReport = useCallback(
+    (players: NFLDraftee[]) => {
+      downloadPrivateWorkoutReport(
+        players,
+        selectedTeam ? `${selectedTeam.TeamName}_${selectedTeam.Mascot}` : undefined,
+      );
+    },
+    [selectedTeam],
   );
 
   const handleViewScoutDetails = useCallback((profile: ScoutingProfile) => {
@@ -895,6 +952,9 @@ export const useNFLDraft = () => {
     handleAddToScoutBoard,
     handleRemoveFromScoutBoard,
     handleRevealAttribute,
+    isPrivateWorkoutClosed,
+    handleRunPrivateWorkouts,
+    handleDownloadPrivateWorkoutReport,
     handleViewScoutDetails,
     closeScoutingModal,
     handleExportDraftPicks,
