@@ -377,28 +377,44 @@ export const KNOWN_BOWL_GAMES: Omit<
   },
 ];
 
-const parseCSVLine = (line: string): string[] => {
-  const result: string[] = [];
+const parseCSV = (text: string): string[][] => {
+  const rows: string[][] = [];
+  let row: string[] = [];
   let current = "";
   let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
     if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
+      if (inQuotes && text[i + 1] === '"') {
         current += '"';
         i++;
       } else {
         inQuotes = !inQuotes;
       }
     } else if (ch === "," && !inQuotes) {
-      result.push(current.trim());
+      row.push(current.trim());
+      current = "";
+    } else if ((ch === "\r" || ch === "\n") && !inQuotes) {
+      if (ch === "\r" && text[i + 1] === "\n") {
+        i++;
+      }
+      row.push(current.trim());
+      if (row.some((cell) => cell.length > 0)) {
+        rows.push(row);
+      }
+      row = [];
       current = "";
     } else {
       current += ch;
     }
   }
-  result.push(current.trim());
-  return result;
+
+  row.push(current.trim());
+  if (row.some((cell) => cell.length > 0)) {
+    rows.push(row);
+  }
+  return rows;
 };
 
 const escapeCSVField = (val: string | number | boolean): string => {
@@ -417,7 +433,14 @@ const parseBool = (val: string | undefined): boolean => {
 
 export const AdminBowlsTab = () => {
   const { currentUser } = useAuthStore();
-  const { cfb_Timestamp } = useSimFBAStore();
+  const {
+    cfb_Timestamp,
+    cfbTeams,
+    cfbStandingsMap,
+    allCollegeGames,
+    currentCollegeSeasonGames,
+    getBootstrapScheduleData,
+  } = useSimFBAStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [postseasonGames, setPostseasonGames] = useState<CollegeGame[]>([]);
@@ -448,6 +471,12 @@ export const AdminBowlsTab = () => {
     loadPostseasonGames();
   }, [loadPostseasonGames]);
 
+  useEffect(() => {
+    if (!allCollegeGames || allCollegeGames.length === 0) {
+      getBootstrapScheduleData();
+    }
+  }, [allCollegeGames, getBootstrapScheduleData]);
+
   const scheduledBowlGames = useMemo(
     () =>
       (postseasonGames || []).filter(
@@ -465,6 +494,106 @@ export const AdminBowlsTab = () => {
     });
     return map;
   }, [scheduledBowlGames]);
+
+  const regularSeasonRecords = useMemo(() => {
+    const records: Record<number, { wins: number; losses: number }> = {};
+    const targetSeasonID =
+      cfb_Timestamp?.CollegeSeasonID ||
+      (cfb_Timestamp?.Season ? cfb_Timestamp.Season - 2020 : 0);
+    const gamesSource =
+      currentCollegeSeasonGames && currentCollegeSeasonGames.length > 0
+        ? currentCollegeSeasonGames
+        : (allCollegeGames || []).filter(
+            (g) => g != null && (targetSeasonID <= 0 || g.SeasonID === targetSeasonID),
+          );
+
+    gamesSource.forEach((game) => {
+      if (
+        !game ||
+        !game.GameComplete ||
+        game.IsSpringGame ||
+        game.Week < 0 ||
+        game.Week > 14
+      ) {
+        return;
+      }
+      if (!records[game.HomeTeamID]) {
+        records[game.HomeTeamID] = { wins: 0, losses: 0 };
+      }
+      if (!records[game.AwayTeamID]) {
+        records[game.AwayTeamID] = { wins: 0, losses: 0 };
+      }
+      const homeWon =
+        game.HomeTeamWin ||
+        (!game.AwayTeamWin && game.HomeTeamScore > game.AwayTeamScore);
+      const awayWon =
+        game.AwayTeamWin ||
+        (!game.HomeTeamWin && game.AwayTeamScore > game.HomeTeamScore);
+
+      if (homeWon) {
+        records[game.HomeTeamID].wins += 1;
+        records[game.AwayTeamID].losses += 1;
+      } else if (awayWon) {
+        records[game.AwayTeamID].wins += 1;
+        records[game.HomeTeamID].losses += 1;
+      }
+    });
+    return records;
+  }, [currentCollegeSeasonGames, allCollegeGames, cfb_Timestamp]);
+
+  const teamBowlMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    scheduledBowlGames.forEach((g) => {
+      if (g.HomeTeamID) map[g.HomeTeamID] = g.GameTitle || "Bowl Game";
+      if (g.AwayTeamID) map[g.AwayTeamID] = g.GameTitle || "Bowl Game";
+    });
+    return map;
+  }, [scheduledBowlGames]);
+
+  const bowlEligibleTeams = useMemo(() => {
+    return (cfbTeams || [])
+      .filter((team) => {
+        if (!team.IsFBS) return false;
+        const rec = regularSeasonRecords[team.ID];
+        return (rec?.wins ?? 0) >= 6;
+      })
+      .map((team) => {
+        const rec = regularSeasonRecords[team.ID] || { wins: 0, losses: 0 };
+        const standing = cfbStandingsMap?.[team.ID];
+        return {
+          team,
+          wins: rec.wins,
+          losses: rec.losses,
+          rank: standing?.Rank ?? 0,
+          assignedBowl: teamBowlMap[team.ID] ?? null,
+        };
+      })
+      .sort((a, b) => {
+        if (b.wins !== a.wins) return b.wins - a.wins;
+        if (a.losses !== b.losses) return a.losses - b.losses;
+        return a.team.TeamName.localeCompare(b.team.TeamName);
+      });
+  }, [cfbTeams, regularSeasonRecords, cfbStandingsMap, teamBowlMap]);
+
+  const downloadCSV = (
+    filename: string,
+    headers: string[],
+    rows: (string | number | boolean)[][],
+  ) => {
+    const csvRows = rows.map((row) => row.map(escapeCSVField).join(","));
+    const csvContent = [headers.map(escapeCSVField).join(","), ...csvRows].join(
+      "\n",
+    );
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
 
   const handleExportBowlsCSV = () => {
     const headers = [
@@ -493,22 +622,42 @@ export const AdminBowlsTab = () => {
         existing?.State ?? bowl.State,
         existing ? (existing.IsDomed ? 1 : 0) : bowl.IsDomed ? 1 : 0,
         existing ? (existing.IsNeutral ? 1 : 0) : bowl.IsNeutral ? 1 : 0,
-      ]
-        .map(escapeCSVField)
-        .join(",");
+      ];
     });
 
-    const csvContent = [headers.join(","), ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
     const seasonYear = cfb_Timestamp?.Season ?? "cfb";
-    link.href = url;
-    link.setAttribute("download", `${seasonYear}_bowl_fixtures.csv`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    downloadCSV(`${seasonYear}_bowl_fixtures.csv`, headers, rows);
+  };
+
+  const handleExportEligibleTeamsCSV = () => {
+    const headers = [
+      "Team",
+      "Mascot",
+      "Abbr",
+      "Conference",
+      "Rank",
+      "Wins",
+      "Losses",
+      "Record",
+      "Bowl Status",
+    ];
+
+    const rows = bowlEligibleTeams.map(
+      ({ team, wins, losses, rank, assignedBowl }) => [
+        team.TeamName,
+        team.Mascot,
+        team.TeamAbbr,
+        team.Conference || "Independent",
+        rank > 0 ? rank : "",
+        wins,
+        losses,
+        `${wins}-${losses}`,
+        assignedBowl ?? "Eligible / Unassigned",
+      ],
+    );
+
+    const seasonYear = cfb_Timestamp?.Season ?? "cfb";
+    downloadCSV(`${seasonYear}_bowl_eligible_teams.csv`, headers, rows);
   };
 
   const handleImportCSVFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -519,18 +668,13 @@ export const AdminBowlsTab = () => {
     setIsUploading(true);
     try {
       const text = await file.text();
-      const lines = text
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter((l) => l.length > 0);
+      const parsedRows = parseCSV(text);
 
-      if (lines.length < 2) {
+      if (parsedRows.length < 2) {
         throw new Error("CSV file is empty or missing data rows.");
       }
 
-      const rawHeaders = parseCSVLine(lines[0]).map((h) =>
-        h.toLowerCase().trim(),
-      );
+      const rawHeaders = parsedRows[0].map((h) => h.toLowerCase().trim());
 
       const idxWeek = rawHeaders.indexOf("week");
       const idxTimeSlot = rawHeaders.indexOf("timeslot");
@@ -560,8 +704,8 @@ export const AdminBowlsTab = () => {
       }
 
       const fixtures: CFBBowlFixtureDTO[] = [];
-      for (let i = 1; i < lines.length; i++) {
-        const cols = parseCSVLine(lines[i]);
+      for (let i = 1; i < parsedRows.length; i++) {
+        const cols = parsedRows[i];
         if (cols.length < 3) continue;
 
         // If importing a combined postseason CSV, skip playoff rows here
@@ -808,6 +952,92 @@ export const AdminBowlsTab = () => {
           </div>
         </Border>
       )}
+
+      {/* Bowl Game Eligible Teams */}
+      <Border classes="p-4 flex flex-col gap-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-y-1">
+            <Text variant="h6">
+              Bowl Game Eligible ({bowlEligibleTeams.length} Teams)
+            </Text>
+            <Text variant="small" classes="text-gray-400">
+              FBS teams with 6 or more wins between Weeks 0 and 14 in the current
+              season.
+            </Text>
+          </div>
+          <Button
+            size="sm"
+            variant="secondaryOutline"
+            disabled={bowlEligibleTeams.length === 0}
+            onClick={handleExportEligibleTeamsCSV}
+          >
+            Export Eligible Teams CSV
+          </Button>
+        </div>
+        {bowlEligibleTeams.length === 0 ? (
+          <Text variant="small" classes="text-gray-400">
+            No FBS teams have reached 6 wins between Weeks 0 and 14 yet.
+          </Text>
+        ) : (
+          <div className="overflow-x-auto max-h-[26rem] overflow-y-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="sticky top-0 bg-gray-900">
+                <tr className="border-b border-gray-700 text-gray-400 text-xs uppercase">
+                  <th className="py-2 px-3">Team</th>
+                  <th className="py-2 px-3">Abbr</th>
+                  <th className="py-2 px-3">Conference</th>
+                  <th className="py-2 px-3">Weeks 0–14 Record</th>
+                  <th className="py-2 px-3">Bowl Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-800 text-sm">
+                {bowlEligibleTeams.map(
+                  ({ team, wins, losses, rank, assignedBowl }) => (
+                    <tr key={team.ID} className="hover:bg-gray-900/40">
+                      <td className="py-2 px-3">
+                        <div className="flex items-center gap-x-2">
+                          <Logo
+                            url={getLogo(
+                              SimCFB,
+                              team.ID,
+                              currentUser?.IsRetro,
+                            )}
+                            variant="tiny"
+                          />
+                          <span className="font-medium">
+                            {rank > 0 ? `#${rank} ` : ""}
+                            {team.TeamName} {team.Mascot}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-2 px-3 font-mono text-xs">
+                        {team.TeamAbbr}
+                      </td>
+                      <td className="py-2 px-3 text-gray-300">
+                        {team.Conference || "Independent"}
+                      </td>
+                      <td className="py-2 px-3 font-medium">
+                        {wins}-{losses}
+                      </td>
+                      <td className="py-2 px-3">
+                        {assignedBowl ? (
+                          <span className="text-xs px-2 py-0.5 rounded bg-green-900/60 text-green-300 border border-green-700">
+                            {assignedBowl}
+                          </span>
+                        ) : (
+                          <span className="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-400">
+                            Eligible / Unassigned
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Border>
 
       {/* Known Bowl Games Reference List */}
       <Border classes="p-4 flex flex-col gap-y-3">

@@ -966,11 +966,6 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     return null;
   }, [cfbRosterMap, selectedTeam]);
 
-  const redshirtCount = useMemo(() => {
-    if (!selectedRoster) return 0;
-    return selectedRoster.filter((player) => player.IsRedshirting).length;
-  }, [selectedRoster]);
-
   const selectedTeamProfile = useMemo(() => {
     if (selectedTeam && teamProfileMap) {
       return teamProfileMap[selectedTeam.ID];
@@ -1181,7 +1176,6 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
             borderColor={borderColor}
             openModal={openModal}
             openPromiseModal={openPromiseModal}
-            redshirtCount={redshirtCount}
             disable={selectedTeam!.ID !== cfbTeam!.ID}
           />
         </Border>
@@ -2115,7 +2109,7 @@ const NBATeamPage = ({ league, ts }: TeamPageProps) => {
 
     await PlayerService.SendNBAPlayerToTradeBlock(playerID);
     const roster = proRosterMap[teamID] || [];
-    const updatedRoster = roster.map((player) =>
+    const updatedRoster: NBAPlayer[] = roster.map((player) =>
       player.ID === playerID
         ? new NBAPlayer({
             ...player,

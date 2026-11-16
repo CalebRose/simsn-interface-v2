@@ -126,6 +126,13 @@ export interface GameplanData {
   GoFor4AndShort: number;
   GoFor4AndLong: number;
   PrimaryHB: number;
+  Pace?: string;
+  AggressiveFourthDown?: string;
+  AggressiveTwoPoint?: string;
+  PlayCalling3rdShort?: string;
+  PlayCalling3rdLong?: string;
+  PlayCalling4thShort?: string;
+  PlayCalling4thLong?: string;
   FocusPlays?: string;
   OffFormation1Name?: string;
   OffFormation2Name?: string;

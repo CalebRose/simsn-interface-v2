@@ -1356,8 +1356,35 @@ export const SpecialTeamsOptions = {
 export const SpecialTeamsLabels = {
   MaximumFGDistance: 'Maximum Field Goal Distance',
   GoFor4AndShort: 'Go For It on 4th and Short',
-  GoFor4AndLong: 'Go For It on 4th and Long'
+  GoFor4AndLong: 'Go For It on 4th and Long',
+  Pace: 'Game Pace / Tempo',
+  AggressiveFourthDown: '4th Down Aggressiveness',
+  AggressiveTwoPoint: '2-Point Conversion Aggressiveness',
+  PlayCalling3rdShort: '3rd & Short Play Call',
+  PlayCalling3rdLong: '3rd & Long Play Call',
+  PlayCalling4thShort: '4th & Short Play Call',
+  PlayCalling4thLong: '4th & Long Play Call'
 };
+
+export const SituationalPlayCallingOptions = [
+  'Default',
+  'Traditional Run',
+  'Option Run',
+  'Pass',
+  'RPO'
+];
+
+export const PaceOptions = ['Slow', 'Standard', 'Fast'];
+export const FourthDownAggressivenessOptions = [
+  'Conservative',
+  'Standard',
+  'Aggressive'
+];
+export const TwoPointAggressivenessOptions = [
+  'Conservative',
+  'Standard',
+  'Aggressive'
+];
 
 export type GameplanTab = 'Offensive Formations' | 'Offensive Distributions' | 'Defense' | 'Special Teams';
 
