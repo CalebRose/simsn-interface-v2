@@ -22,7 +22,6 @@ jobs:
       VITE_SIMFBA_USER: ${{ secrets.VITE_SIMFBA_USER }}
       VITE_IMAGEKIT_URL_ENDPOINT: ${{ secrets.VITE_IMAGEKIT_URL_ENDPOINT }}
       VITE_SIMLAX_API_URL: ${{ vars.VITE_SIMLAX_API_URL || secrets.VITE_SIMLAX_API_URL }}
-      VITE_SIMVB_API_URL: ${{ vars.VITE_SIMVB_API_URL || secrets.VITE_SIMVB_API_URL }}
 
     steps:
       - uses: actions/checkout@v4

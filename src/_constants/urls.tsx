@@ -46,3 +46,12 @@ export const baseballUrl = baseballApiURL;
 const localBASEBALLWS = "ws://localhost:6001/ws";
 const baseballWSURL = "wss://simbaseball.afwh.app/ws";
 export const baseball_ws = baseballWSURL;
+
+/*
+  Volleyball URLs
+*/
+// The API's own address (no /api/v1): replay faces and logos are served
+// from it too.
+const vbApiOrigin = "https://vb-api.afwh.app";
+export const vbOrigin = vbApiOrigin;
+export const vbUrl = `${vbApiOrigin}/api/v1`;

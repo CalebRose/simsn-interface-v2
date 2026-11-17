@@ -25,15 +25,7 @@ export default defineConfig(({ command, mode }) => {
       throw new Error("VITE_SIMLAX_API_URL is required for a production build.");
     }
     requirePublicHttps("VITE_SIMLAX_API_URL", laxApiUrl);
-
-    // Volleyball is optional: without its API address the site still builds
-    // and simply hides SimCVB / SimPVB. A wrong address is still an error.
-    const vbApiUrl = env.VITE_SIMVB_API_URL?.trim();
-    if (vbApiUrl) {
-      requirePublicHttps("VITE_SIMVB_API_URL", vbApiUrl);
-    } else {
-      console.warn("VITE_SIMVB_API_URL is not set: building without SimSN Volleyball.");
-    }
+    // Volleyball's API address is in src/_constants/urls.tsx, not the env.
   }
 
   return {
