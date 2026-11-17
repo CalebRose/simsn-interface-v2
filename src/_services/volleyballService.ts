@@ -1,18 +1,19 @@
 import { getFirebaseIdToken } from "../_helper/authToken";
+import { vbOrigin, vbUrl } from "../_constants/urls";
 import type { RallyView } from "../_vendor/simvb-court-view/simvb-court-view.js";
 
-// VITE_SIMVB_API_URL is the volleyball API's origin (a trailing /api/v1 is
-// tolerated). Unlike SimLAX, a missing value does not throw: volleyball is
-// simply unavailable and the rest of the site carries on.
-const origin = import.meta.env.VITE_SIMVB_API_URL?.trim()
-  .replace(/\/+$/, "")
-  .replace(/\/api\/v1$/, "");
-const base = origin ? `${origin}/api/v1` : "";
+// The volleyball API's address lives in urls.tsx with the other sports'; it
+// is public, so it needs no build setting.
+const base = vbUrl;
 
+/**
+ * Always true now that the address is fixed in urls.tsx. Kept so a page can
+ * still hide volleyball by one switch if it is ever taken down.
+ */
 export const isVolleyballConfigured = Boolean(base);
 
 /** The API's address with no /api/v1: where its own assets are served. */
-export const vbApiOrigin = origin ?? "";
+export const vbApiOrigin = vbOrigin;
 
 // The API's error body is { error: { code, message, details?, correlationId } }.
 // Pages branch on `code` (NOT_YOUR_TEAM, NO_COACH, NOT_PUBLISHED, ...).
@@ -33,13 +34,6 @@ const vbRequest = async <T>(
   path: string,
   body?: unknown,
 ): Promise<T> => {
-  if (!base) {
-    throw new VbApiError(
-      0,
-      "NOT_CONFIGURED",
-      "SimSN Volleyball is not configured (VITE_SIMVB_API_URL is missing).",
-    );
-  }
   // Always a fresh token: the API verifies any token it is sent, on public
   // routes too, so a stale one would turn a public read into a 401.
   const token = await getFirebaseIdToken();
