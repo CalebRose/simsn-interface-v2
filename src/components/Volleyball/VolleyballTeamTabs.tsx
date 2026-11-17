@@ -39,8 +39,10 @@ import {
   vbMoney,
   vbPaths,
   vbResult,
+  vbRoleLabel,
   vbSetScores,
 } from "./vbFormatting";
+import { SportChip } from "../Common/SportKit";
 
 interface TeamTabProps {
   kind: VbLeagueKind;
@@ -377,11 +379,17 @@ export const VbStaffTab: FC<TeamTabProps> = ({ kind, team }) => {
             {members.map((member) => (
               <tr key={member.PersonID} className={vbRowClass}>
                 <td className={vbCell}>
-                  {vbLabel(member.Role)}
+                  {vbRoleLabel(member.Role)}
                   {member.Interim ? " (interim)" : ""}
                 </td>
                 <td className={vbCell}>
                   <VbCoachLink personId={member.PersonID} name={member.Name} />
+                  {/* A user's coach: their username marks them out. */}
+                  {member.Username && (
+                    <span className="ml-2" title="Coached by this user">
+                      <SportChip>{member.Username}</SportChip>
+                    </span>
+                  )}
                 </td>
                 <td className={vbNum}>{member.Since}</td>
                 <td className={vbNum}>{vbMoney(member.Salary)}</td>

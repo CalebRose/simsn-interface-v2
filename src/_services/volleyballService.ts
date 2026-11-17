@@ -190,6 +190,8 @@ export interface VbCoach {
   TeamID: number | null;
   BuildResetSeason: number | null;
   Traits: string[];
+  /** The coach's job at their team; absent or null without one. */
+  Role?: VbStaffRole | null;
 }
 
 /** The coach a user without one designs as part of an application. */
@@ -222,6 +224,42 @@ export interface VbClaimRequest {
   Note?: string | null;
   /** When the application was last sent. */
   UpdatedAt?: string | null;
+  /** The job asked for: headCoach, or a pro club's staff role. */
+  Role?: VbStaffRole;
+  /**
+   * Who decides it. A request for a pro club's staff role is decided by
+   * that club's staff, not by site admins.
+   */
+  Approver?: "admin" | "staff";
+}
+
+/** The jobs a user can ask for. College programs take head coaches only. */
+export type VbStaffRole =
+  | "headCoach"
+  | "associateHeadCoach"
+  | "strengthConditioning"
+  | "setterCoach"
+  | "athleticTrainer"
+  | "videoAnalytics"
+  | "defensiveCoordinator"
+  | "offensiveCoordinator";
+
+/** A pro club's roles a user can ask for, in the order the club lists them. */
+export const vbProStaffRoles: VbStaffRole[] = [
+  "headCoach",
+  "associateHeadCoach",
+  "offensiveCoordinator",
+  "defensiveCoordinator",
+  "setterCoach",
+  "strengthConditioning",
+  "athleticTrainer",
+  "videoAnalytics",
+];
+
+/** A pro club's requests for its staff roles, decided by its staff. */
+export interface VbStaffRequests {
+  TeamID: number;
+  Requests: VbClaimRequest[];
 }
 
 export interface VbManagedTeam {
@@ -229,6 +267,8 @@ export interface VbManagedTeam {
   Name: string;
   Kind: VbLeagueKind;
   LeagueID: number;
+  /** The user's job there: headCoach, or a pro staff role. */
+  Role?: VbStaffRole;
 }
 
 export interface VbMe {
@@ -352,6 +392,8 @@ export interface VbStaffMember {
   Traits: string[];
   /** Track-record estimates: a grade or a "low–high" range per attribute. */
   Grades: Record<string, string>;
+  /** The user in this job; null for AI staff. */
+  Username?: string | null;
 }
 
 export interface VbStaff {
@@ -1209,6 +1251,8 @@ export interface VbCoachLookup {
       Name: string;
       Kind: VbLeagueKind;
       LeagueID: number;
+      /** Their job there: headCoach, or a pro staff role. */
+      Role?: VbStaffRole;
     } | null;
   }>;
 }
@@ -1488,9 +1532,14 @@ export const VolleyballCoachService = {
       "POST",
       `/manage/job-offers/${offerId}/${answer}`,
     ),
-  // The team gets an AI interim.
+  // A head coach's team gets an AI interim; an assistant leaving leaves no
+  // interim (InterimPersonID null).
   leave: (level: VbLeagueKind) =>
-    vbRequest<{ TeamID: number; InterimPersonID: number }>(
+    vbRequest<{
+      TeamID: number;
+      Role: VbStaffRole;
+      InterimPersonID: number | null;
+    }>(
       "POST",
       "/manage/coach/leave",
       { Level: level },
@@ -1512,7 +1561,13 @@ export const VolleyballClaimService = {
     kind: VbLeagueKind,
     username: string,
     teamId: number,
-    application: { Coach?: VbRequestCoach; Answers?: VbRequestAnswer[] } = {},
+    application: {
+      Coach?: VbRequestCoach;
+      Answers?: VbRequestAnswer[];
+      // Pro only, and headCoach when left out. College takes headCoach
+      // alone (400 ROLE otherwise). 409 ROLE_TAKEN, STAFF_FULL.
+      Role?: VbStaffRole;
+    } = {},
   ) =>
     vbRequest<VbClaimRequest>("POST", `${claimPath(kind)}/create`, {
       Username: username,
@@ -2070,6 +2125,8 @@ export interface VbManagedStaff {
     GuaranteedShare: number | null;
     Grades: Record<string, string>;
     Traits: string[];
+    /** A user holds this job: they cannot be let go (409 HUMAN). */
+    Human?: boolean;
   }>;
   Candidates: Array<{
     PersonID: number;
@@ -2154,12 +2211,30 @@ export const VolleyballStaffService = {
       `/manage/teams/${teamId}/staff/hire`,
       body,
     ),
-  // confirm false previews the payout and changes nothing.
+  // confirm false previews the payout and changes nothing. 409 HUMAN for a
+  // job a user holds.
   terminate: (teamId: number, employmentId: number, confirm: boolean) =>
     vbRequest<{ EmploymentID: number; Payout: number; Done: boolean }>(
       "POST",
       `/manage/teams/${teamId}/staff/${employmentId}/terminate`,
       { Confirm: confirm },
+    ),
+  // A pro club's requests for its staff roles, decided by anyone on its
+  // staff. First come per role: approving a later one is 409 EARLIER_PENDING
+  // until the earlier is decided. 403 FORBIDDEN on your own request.
+  getStaffRequests: (teamId: number) =>
+    vbGet<VbStaffRequests>(`/manage/teams/${teamId}/staff-requests`),
+  approveStaffRequest: (teamId: number, requestId: number) =>
+    vbRequest<VbClaimRequest>(
+      "POST",
+      `/manage/teams/${teamId}/staff-requests/${requestId}/approve`,
+    ),
+  rejectStaffRequest: (teamId: number, requestId: number, note?: string) =>
+    vbRequest<VbClaimRequest>(
+      "POST",
+      `/manage/teams/${teamId}/staff-requests/${requestId}/reject`,
+      // The route wants a body, even an empty one.
+      note ? { Note: note } : {},
     ),
 };
 

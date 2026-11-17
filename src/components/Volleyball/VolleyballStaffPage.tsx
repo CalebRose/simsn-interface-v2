@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { enqueueSnackbar } from "notistack";
-import { SportButton } from "../Common/SportKit";
+import { SportButton, SportChip } from "../Common/SportKit";
 import { Modal } from "../../_design/Modal";
 import { Tag } from "../../_design/Tags";
 import routes from "../../_constants/routes";
@@ -28,7 +28,7 @@ import {
   vbTableClass,
 } from "./VbCommon";
 import { vbErrorLines, vbErrorText } from "./vbErrors";
-import { vbLabel, vbMoney } from "./vbFormatting";
+import { vbLabel, vbMoney, vbRoleLabel } from "./vbFormatting";
 import { vbFieldClass, VbSlider } from "./VbManage";
 import { VbPageShell } from "./VbPageShell";
 import { useVbTeamPicker } from "./VbTeamPicker";
@@ -485,11 +485,16 @@ const ManageStaff: FC<{ team: VbTeam }> = ({ team }) => {
             {staff.Staff.map((employee) => (
               <tr key={employee.EmploymentID} className={vbRowClass}>
                 <td className={vbCell}>
-                  {vbLabel(employee.Role)}
+                  {vbRoleLabel(employee.Role)}
                   {employee.Interim ? " (interim)" : ""}
                 </td>
                 <td className={vbCell}>
                   <VbCoachLink personId={employee.PersonID} name={employee.Name} />
+                  {employee.Human && (
+                    <span className="ml-2">
+                      <SportChip>User</SportChip>
+                    </span>
+                  )}
                 </td>
                 <td className={vbNum}>{vbMoney(employee.Salary)}</td>
                 <td className={vbNum}>{employee.ContractEnd ?? "—"}</td>
@@ -499,8 +504,9 @@ const ManageStaff: FC<{ team: VbTeam }> = ({ team }) => {
                     : `${Math.round(employee.GuaranteedShare * 100)}%`}
                 </td>
                 <td className={`${vbCell} text-right`}>
-                  {/* The head coach is the user and cannot be let go. */}
-                  {employee.Role !== "headCoach" && (
+                  {/* The head coach, and any job a user holds, cannot be let
+                      go (the API refuses a user with 409 HUMAN). */}
+                  {employee.Role !== "headCoach" && !employee.Human && (
                     <SportButton
                       size="xs"
                       variant="danger"

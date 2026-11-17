@@ -14,11 +14,15 @@ import {
   VbLeagueKind,
   VbPhilosophy,
   VbRequestCoach,
+  VbStaffRole,
   VbTeam,
   VolleyballClaimService,
   VolleyballCoachService,
   VolleyballService,
+  VolleyballStaffService,
 } from "../../_services/volleyballService";
+import { VbRolePicker } from "./VbAvailableTeam";
+import { vbFieldClass } from "./VbManage";
 import { useVbLevelRequests, useVbResource, useVbTeams } from "./useVbData";
 import { vbCoachPath } from "./VbCoachLink";
 import { VbFact } from "./VbPlayerCard";
@@ -46,6 +50,7 @@ import {
   vbLeagueConstant,
   vbMoney,
   vbPaths,
+  vbRoleLabel,
   vbTeamLogo,
 } from "./vbFormatting";
 import { useProfileResignation } from "../Profile/useProfileResignation";
@@ -906,11 +911,20 @@ const CoachBody: FC<{ kind: VbLeagueKind }> = ({ kind }) => {
   const requestsPanel = (
     <>
       {pending && (
-        <VbPanel title={`Your application for ${pending.TeamName}`}>
+        <VbPanel
+          title={`Your application for ${pending.TeamName}${
+            pending.Role && pending.Role !== "headCoach"
+              ? ` (${vbRoleLabel(pending.Role).toLowerCase()})`
+              : ""
+          }`}
+        >
           <div className="space-y-3 p-3">
             <div className="flex flex-wrap items-center gap-2 text-left text-sm">
               <span className="text-(--text-muted)">
-                Waiting for an admin since{" "}
+                {/* An assistant job is the club's staff's to decide. */}
+                {pending.Approver === "staff"
+                  ? "Waiting for the club's staff since"
+                  : "Waiting for an admin since"}{" "}
                 {new Date(pending.CreatedAt).toLocaleDateString()}
                 {pending.UpdatedAt && pending.UpdatedAt !== pending.CreatedAt
                   ? `, last sent ${new Date(pending.UpdatedAt).toLocaleDateString()}`
@@ -1029,7 +1043,7 @@ const CoachBody: FC<{ kind: VbLeagueKind }> = ({ kind }) => {
           {team ? (
             <>
               <span>
-                Head coach of{" "}
+                {vbRoleLabel(vbCoach.Role)} at{" "}
                 <span
                   {...vbLinkProps(() =>
                     navigate(vbPaths(teamKind).team(team.TeamID)),
@@ -1065,6 +1079,9 @@ const CoachBody: FC<{ kind: VbLeagueKind }> = ({ kind }) => {
           {otherLink}.
         </div>
       </VbPanel>
+
+      {/* A pro club's own staff decide who joins it. */}
+      {kind === "pro" && team && <StaffRequestsPanel team={team} />}
 
       {requestsPanel}
 
@@ -1120,12 +1137,192 @@ const CoachBody: FC<{ kind: VbLeagueKind }> = ({ kind }) => {
         }
       >
         <p className="text-left">
-          Leave {team?.Name}? An AI interim takes over at once, and you may
-          have to wait before you can ask for another {unit}. Your {other}{" "}
-          team is not affected.
+          Leave {team?.Name}?{" "}
+          {!vbCoach?.Role || vbCoach.Role === "headCoach"
+            ? "An AI interim takes over at once, and you"
+            : "Your job on the staff opens up for others to ask for, and you"}{" "}
+          may have to wait before you can ask for another {unit}. Your{" "}
+          {other} team is not affected.
         </p>
       </Modal>
     </div>
+  );
+};
+
+/**
+ * A pro club's requests for its assistant jobs. Anyone on the club's staff
+ * decides them, not site admins; first come per job, so a later request for
+ * the same job waits until the earlier one is decided (EARLIER_PENDING).
+ */
+const StaffRequestsPanel: FC<{ team: VbTeam }> = ({ team }) => {
+  const { currentUser } = useAuthStore();
+  const { setVbResource } = useSimVBStore();
+  const key = `staff-requests:${team.TeamID}`;
+  const requests = useVbResource(key, () =>
+    VolleyballStaffService.getStaffRequests(team.TeamID),
+  );
+  const options = useVbResource("coach-build-options", () =>
+    VolleyballCoachService.getBuildOptions(),
+  );
+  const [openId, setOpenId] = useState<number | null>(null);
+  const [rejectingId, setRejectingId] = useState<number | null>(null);
+  const [note, setNote] = useState("");
+  const [busyId, setBusyId] = useState<number | null>(null);
+  const pending = (requests.data?.Requests ?? []).filter(
+    (request) => request.Status === "pending",
+  );
+
+  const reload = async () => {
+    try {
+      setVbResource(
+        key,
+        await VolleyballStaffService.getStaffRequests(team.TeamID),
+      );
+      // An approval changes who is on the staff.
+      setVbResource(
+        `staff:${team.TeamID}`,
+        await VolleyballService.getStaff(team.TeamID),
+      );
+    } catch {
+      // The list shows its own error on the next read.
+    }
+  };
+
+  const decide = async (request: VbClaimRequest, approve: boolean) => {
+    setBusyId(request.ID);
+    try {
+      if (approve) {
+        await VolleyballStaffService.approveStaffRequest(team.TeamID, request.ID);
+        enqueueSnackbar(
+          `${request.Username} joins the staff as ${vbRoleLabel(request.Role).toLowerCase()}.`,
+          { variant: "success" },
+        );
+      } else {
+        await VolleyballStaffService.rejectStaffRequest(
+          team.TeamID,
+          request.ID,
+          note.trim() || undefined,
+        );
+        enqueueSnackbar(`Request from ${request.Username} rejected.`, {
+          variant: "info",
+        });
+        setRejectingId(null);
+        setNote("");
+      }
+    } catch (reason) {
+      enqueueSnackbar(vbErrorLines(reason).join(" "), { variant: "error" });
+    } finally {
+      setBusyId(null);
+      void reload();
+    }
+  };
+
+  return (
+    <VbPanel title="Staff requests">
+      <VbLoad loading={requests.loading} error={requests.error} rows={3}>
+        <div className="space-y-2 p-3 text-left text-sm">
+          {pending.map((request) => {
+            const own = request.Username === currentUser?.username;
+            return (
+              <div
+                key={request.ID}
+                className="rounded-lg bg-(--sport-surface-2) p-2"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">{request.Username}</span>
+                  <span className="text-(--text-muted)">
+                    asks to be {vbRoleLabel(request.Role).toLowerCase()} ·{" "}
+                    {new Date(
+                      request.UpdatedAt ?? request.CreatedAt,
+                    ).toLocaleDateString()}
+                  </span>
+                  <span className="ml-auto inline-flex flex-wrap gap-2">
+                    <SportButton
+                      size="xs"
+                      variant="secondary"
+                      isSelected={openId === request.ID}
+                      onClick={() =>
+                        setOpenId(openId === request.ID ? null : request.ID)
+                      }
+                    >
+                      Application
+                    </SportButton>
+                    {own ? (
+                      // The API refuses deciding your own request (FORBIDDEN).
+                      <span className="self-center text-xs text-(--text-muted)">
+                        Your request: the rest of the staff decide it
+                      </span>
+                    ) : (
+                      <>
+                        <SportButton
+                          size="xs"
+                          variant="success"
+                          disabled={busyId !== null}
+                          onClick={() => decide(request, true)}
+                        >
+                          Approve
+                        </SportButton>
+                        <SportButton
+                          size="xs"
+                          variant="danger"
+                          disabled={busyId !== null}
+                          onClick={() => {
+                            setRejectingId(
+                              rejectingId === request.ID ? null : request.ID,
+                            );
+                            setNote("");
+                          }}
+                        >
+                          Reject
+                        </SportButton>
+                      </>
+                    )}
+                  </span>
+                </div>
+                {rejectingId === request.ID && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <input
+                      value={note}
+                      onChange={(event) => setNote(event.target.value)}
+                      maxLength={500}
+                      placeholder="A note for them (optional)"
+                      aria-label="Note for the rejection"
+                      className={`${vbFieldClass} min-w-0 flex-1`}
+                    />
+                    <SportButton
+                      size="xs"
+                      variant="danger"
+                      disabled={busyId !== null}
+                      onClick={() => decide(request, false)}
+                    >
+                      Reject request
+                    </SportButton>
+                  </div>
+                )}
+                {openId === request.ID && (
+                  <div className="mt-2">
+                    <VbApplicationSummary
+                      request={request}
+                      options={options.data}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {!pending.length && (
+            <div className="text-(--text-muted)">
+              No one is waiting to join your staff.
+            </div>
+          )}
+          <div className="text-xs text-(--text-muted)">
+            Users ask for your club's assistant jobs on the Available Teams
+            page. Anyone on your staff can decide; each job's requests are
+            decided in the order they came in.
+          </div>
+        </div>
+      </VbLoad>
+    </VbPanel>
   );
 };
 
@@ -1154,6 +1351,10 @@ const ApplyForm: FC<{
   const [answers, setAnswers] = useState<VbAnswerValues>(() =>
     vbAnswersFrom(resending?.Answers),
   );
+  // The job asked for: a pro club also has assistant jobs.
+  const [role, setRole] = useState<VbStaffRole>(
+    resending?.Role ?? "headCoach",
+  );
   const logo = (
     <Logo
       url={vbTeamLogo(team, kind, vbLeagues[kind])}
@@ -1167,6 +1368,7 @@ const ApplyForm: FC<{
     await VolleyballClaimService.create(kind, username, team.TeamID, {
       Coach: coach,
       Answers: vbAnswersToSend(answers),
+      Role: kind === "pro" ? role : undefined,
     });
     await refreshVbMe();
     // A resend updates the same request, so it gets no second thread.
@@ -1226,7 +1428,9 @@ const ApplyForm: FC<{
         <VbPanel>
           {heading(
             "Team",
-            "The team you are applying for. An admin approves or rejects each application.",
+            kind === "pro"
+              ? "The club and the job you are applying for. Site admins decide head coach applications; the club's staff decide assistant jobs."
+              : "The team you are applying for. An admin approves or rejects each application.",
           )}
           <div className="flex flex-wrap items-center gap-3 p-3 text-left text-sm">
             {logo}
@@ -1247,6 +1451,16 @@ const ApplyForm: FC<{
               </span>
             )}
           </div>
+          {kind === "pro" && (
+            <div className="px-3 pb-3 sm:w-96">
+              <VbRolePicker
+                teamId={team.TeamID}
+                value={role}
+                onChange={setRole}
+                classes={vbFieldClass}
+              />
+            </div>
+          )}
           <div className="px-3 pb-3 text-left text-xs text-(--text-muted)">
             {resending
               ? "You are changing an application that is already waiting. Sending it again replaces it and keeps its place in the queue."

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Border } from "../../_design/Borders";
 import { Text } from "../../_design/Typography";
@@ -8,12 +8,15 @@ import {
   VbAbilityGrades,
   VbLeague,
   VbLeagueKind,
+  vbProStaffRoles,
+  VbStaffRole,
   VbTeam,
   VbTeamHistory,
   VolleyballService,
 } from "../../_services/volleyballService";
 import { vbGradeRank } from "./VbGrades";
-import { vbLabel, vbPaths, vbTeamLogo } from "./vbFormatting";
+import { vbLabel, vbPaths, vbRoleLabel, vbTeamLogo } from "./vbFormatting";
+import { useVbResource } from "./useVbData";
 
 // Volleyball's part of the shared Available Teams page: its teams in the
 // shape that page lists, what the selected-team card shows, and the notice in
@@ -171,6 +174,65 @@ export const VbAvailableTeamDetail: FC<{
 };
 
 /**
+ * The job to ask for at a pro club: head coach or one of its assistant
+ * roles. Roles a user already holds there are shown and cannot be picked
+ * (the API would refuse them with ROLE_TAKEN). College programs take head
+ * coaches only, so they have no picker.
+ */
+export const VbRolePicker: FC<{
+  teamId: number;
+  value: VbStaffRole;
+  onChange: (role: VbStaffRole) => void;
+  /** Classes for the select, to match the form around it. */
+  classes?: string;
+}> = ({ teamId, value, onChange, classes = "" }) => {
+  // The same key as the Team page's staff tab.
+  const staff = useVbResource(`staff:${teamId}`, () =>
+    VolleyballService.getStaff(teamId),
+  );
+  // Who holds each role now, when it is a user.
+  const heldBy = new Map(
+    (staff.data?.Staff ?? [])
+      .filter((member) => member.Username)
+      .map((member) => [member.Role, member.Username!]),
+  );
+  // If the picked role turns out to be taken, move to the first open one.
+  useEffect(() => {
+    if (!heldBy.has(value)) return;
+    const open = vbProStaffRoles.find((role) => !heldBy.has(role));
+    if (open) onChange(open);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [staff.data]);
+  const allTaken = vbProStaffRoles.every((role) => heldBy.has(role));
+  return (
+    <div className="text-start">
+      <label className="mb-1 block text-sm font-medium">
+        The job you are asking for
+        <select
+          value={value}
+          onChange={(event) => onChange(event.target.value as VbStaffRole)}
+          className={`mt-1 block w-full ${classes}`}
+        >
+          {vbProStaffRoles.map((role) => (
+            <option key={role} value={role} disabled={heldBy.has(role)}>
+              {vbRoleLabel(role)}
+              {heldBy.has(role) ? ` (held by ${heldBy.get(role)})` : ""}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p className="mt-1 text-xs opacity-75">
+        {allTaken
+          ? "Every job at this club is held by a user."
+          : value === "headCoach"
+            ? "Site admins decide head coach requests."
+            : "The club's staff decide requests for their assistant jobs, not site admins."}
+      </p>
+    </div>
+  );
+};
+
+/**
  * What a volleyball request means, shown in the request window. Volleyball
  * differs from the other sports: you play as a coach, one per level, and
  * that coach holds one team, so a new team at a level means leaving the
@@ -192,18 +254,20 @@ export const VbRequestNotice: FC<{
     <div className="mb-4 space-y-2 text-start text-sm">
       {current && (
         <p className="rounded border border-yellow-500 p-2 text-yellow-500">
-          You are the head coach of {current.Name}. Your {kind} coach coaches
-          one {college ? "program" : "club"} at a time: if an admin approves
-          this request they leave {current.Name} for {teamName}, and{" "}
-          {current.Name} goes to an interim coach. Your{" "}
+          You coach at {current.Name}. Your {kind} coach works for one{" "}
+          {college ? "program" : "club"} at a time: if this request is
+          approved they leave {current.Name} for {teamName}. Your{" "}
           {college ? "pro" : "college"} team is not affected.
         </p>
       )}
       <p>
-        In SimSN Volleyball you play as a head coach: a person in the league
-        with their own abilities, traits and philosophy, who can be hired and
-        can move between {college ? "programs" : "clubs"}. You can have a
-        college coach and a pro coach, as two separate people.
+        In SimSN Volleyball you play as a coach: a person in the league with
+        their own abilities, traits and philosophy, who can be hired and can
+        move between {college ? "programs" : "clubs"}. You can have a college
+        coach and a pro coach, as two separate people.
+        {college
+          ? " A college program has one user, its head coach."
+          : " A pro club can have several users: its head coach and assistants."}
       </p>
       {/* Users with no coach normally apply on the application page; this
           window only reaches them if it opened before their account loaded. */}

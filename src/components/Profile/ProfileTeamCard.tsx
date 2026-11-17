@@ -49,7 +49,8 @@ import { BaseballOrganization } from "../../models/baseball/baseballModels";
 import { ProfileTeamCardModal } from "./ProfileTeamCardModal";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { getLaxLogoUrl, LacrosseService, LaxTeam } from "../../_services/lacrosseService";
-import { VbTeam } from "../../_services/volleyballService";
+import { VbStaffRole, VbTeam } from "../../_services/volleyballService";
+import { vbRoleLabel } from "../Volleyball/vbFormatting";
 import { simLogos } from "../../_constants/logos";
 import { useProfileResignation } from "./useProfileResignation";
 import { enqueueSnackbar } from "notistack";
@@ -206,8 +207,11 @@ export const ProfileCLAXTeamCard: React.FC<ProfileCLAXTeamCardProps> = ({
   );
 };
 
+/** A volleyball team with the user's job there. */
+export type ProfileVbTeam = VbTeam & { StaffRole?: VbStaffRole | null };
+
 interface ProfileVBTeamCardProps {
-  Team: VbTeam | null;
+  Team: ProfileVbTeam | null;
 }
 
 // Volleyball: read-only here. A coach leaves their team from their coach page.
@@ -227,7 +231,7 @@ export const ProfileVBTeamCard: React.FC<ProfileVBTeamCardProps> = ({
           : Team.Name
       }
       conference={Team.Conference || ""}
-      role="Coach"
+      role={vbRoleLabel(Team.StaffRole)}
       backgroundColor={backgroundColor}
       borderColor={borderColor}
       secondaryBorderColor={Team.ColorThree || borderColor}

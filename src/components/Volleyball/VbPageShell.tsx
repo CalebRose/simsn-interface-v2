@@ -17,6 +17,7 @@ import {
   vbLeagueConstant,
   vbLeagueLogo,
   vbRecord,
+  vbRoleLabel,
   vbTeamFullName,
   vbTeamLogo,
 } from "./vbFormatting";
@@ -50,7 +51,8 @@ export const VbLeagueFrame: FC<VbPageShellProps> = ({
   home = false,
   children,
 }) => {
-  const { vbAvailable, vbLeagues, cvbTeam, pvbTeam } = useSimVBStore();
+  const { vbAvailable, vbLeagues, cvbTeam, pvbTeam, vbCoaches } =
+    useSimVBStore();
   const league = vbLeagues[kind];
   const clock = useVbClock(kind);
   const ownTeam = kind === "college" ? cvbTeam : pvbTeam;
@@ -65,10 +67,15 @@ export const VbLeagueFrame: FC<VbPageShellProps> = ({
     clock?.Season ?? null,
   );
   const standing = ownTeam ? standings.get(ownTeam.TeamID) : undefined;
+  // An assistant on a pro club sees their job; a head coach needs no chip.
+  const ownRole = vbCoaches[kind]?.Role;
+  const roleFact =
+    ownTeam && ownRole && ownRole !== "headCoach" ? vbRoleLabel(ownRole) : "";
   const rank = ownTeam ? top25.get(ownTeam.TeamID) : undefined;
   const teamFacts =
     ownTeam && !content?.title && standing
       ? [
+          roleFact,
           rank ? `No. ${rank}` : "",
           vbRecord(standing),
           kind === "college" && standing.ConferenceID != null

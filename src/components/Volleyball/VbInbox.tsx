@@ -33,6 +33,7 @@ type InboxItem = VbInbox["Items"][number];
 
 const typeLabels: Record<string, string> = {
   claim: "Team request",
+  staff_request: "Staff request",
   job_offer: "Job offer",
   trade_offer: "Trade offer",
   trade_answer: "Trade answer",
@@ -69,6 +70,8 @@ const inboxPath = (item: InboxItem, kind: VbLeagueKind, teamId: number | null) =
       return paths.lineup;
     case "job_offer":
     case "request":
+    // A request to join a pro club's staff: decided on the Coach page.
+    case "staff_request":
       return paths.coach;
     default:
       return null;
