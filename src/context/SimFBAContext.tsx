@@ -311,6 +311,12 @@ interface SimFBAContextProps {
   deleteNotification: (notificationID: number, isPro: boolean) => Promise<void>;
   addPlayerToScoutBoard: (dto: any, playerData?: any) => Promise<void>;
   revealScoutingAttribute: (dto: any) => Promise<void>;
+  runPrivateWorkouts: (dto: {
+    TeamID: number;
+    ScoutProfileIDs: number[];
+    PlayerIDs: number[];
+    Points: number;
+  }) => Promise<boolean>;
   removePlayerFromScoutBoard: (id: number) => Promise<void>;
   exportDraftPicks: (dto: any) => Promise<void>;
   setNFLDraftPicks: (draftPicks: any[]) => void;
@@ -491,6 +497,7 @@ const defaultContext: SimFBAContextProps = {
   deleteNotification: async () => {},
   addPlayerToScoutBoard: async () => {},
   revealScoutingAttribute: async () => {},
+  runPrivateWorkouts: async () => false,
   removePlayerFromScoutBoard: async () => {},
   exportDraftPicks: async () => {},
   tagNFLPlayer: async () => {},
@@ -2837,6 +2844,77 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
     [nflTeam, enqueueSnackbar],
   );
 
+  const runPrivateWorkouts = useCallback(
+    async (dto: {
+      TeamID: number;
+      ScoutProfileIDs: number[];
+      PlayerIDs: number[];
+      Points: number;
+    }): Promise<boolean> => {
+      try {
+        const res = await DraftService.RunPrivateWorkouts(dto);
+        if (res) {
+          const workedOutSet = new Set(dto.ScoutProfileIDs);
+          setNFLScoutingProfileMap((prev) => {
+            if (!nflTeam) return prev;
+            const profiles = prev[nflTeam.ID] ?? [];
+            return {
+              ...prev,
+              [nflTeam.ID]: profiles.map((p) =>
+                workedOutSet.has(p.ID)
+                  ? new ScoutingProfile({
+                      ...p,
+                      ShowAttribute1: true,
+                      ShowAttribute2: true,
+                      ShowAttribute3: true,
+                      ShowAttribute4: true,
+                      ShowAttribute5: true,
+                      ShowAttribute6: true,
+                      ShowAttribute7: true,
+                      ShowAttribute8: true,
+                      ShowPotential: true,
+                      ShowCount: 9,
+                      PrivateWorkout: true,
+                    })
+                  : p,
+              ),
+            };
+          });
+          if (nflTeam) {
+            setNFLWarRoomMap((prev) => {
+              const currentWarRoom = prev[nflTeam.ID];
+              if (!currentWarRoom) return prev;
+              return {
+                ...prev,
+                [nflTeam.ID]: new NFLWarRoom({
+                  ...currentWarRoom,
+                  SpentPoints: currentWarRoom.SpentPoints + dto.Points,
+                }),
+              };
+            });
+          }
+          enqueueSnackbar(
+            `Private workouts completed for ${dto.ScoutProfileIDs.length} player${dto.ScoutProfileIDs.length === 1 ? "" : "s"}!`,
+            {
+              variant: "success",
+              autoHideDuration: 3000,
+            },
+          );
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error("Failed to run private workouts:", error);
+        enqueueSnackbar("Failed to run private workouts", {
+          variant: "error",
+          autoHideDuration: 3000,
+        });
+        return false;
+      }
+    },
+    [nflTeam, enqueueSnackbar],
+  );
+
   const removePlayerFromScoutBoard = useCallback(
     async (id: number) => {
       const teamID = nflTeam?.ID;
@@ -3127,6 +3205,7 @@ export const SimFBAProvider: React.FC<SimFBAProviderProps> = ({ children }) => {
         exportTransferPortalPlayers,
         addPlayerToScoutBoard,
         revealScoutingAttribute,
+        runPrivateWorkouts,
         removePlayerFromScoutBoard,
         exportDraftPicks,
         tagNFLPlayer,

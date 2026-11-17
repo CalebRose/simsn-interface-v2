@@ -77,6 +77,7 @@ import { PromiseModal } from "../Common/PromiseModal";
 import { ExtensionOfferModal } from "../Common/ExtensionOfferModal";
 import { useBackgroundColor } from "../../_hooks/useBackgroundColor";
 import { FranchiseTagModal } from "../Common/FranchiseTagModal";
+import { ProDayNominationModal } from "./ProDayNominationModal";
 import { useFilteredRoster } from "./TeamPageUtils";
 import { PlayerService } from "../../_services/playerService";
 
@@ -916,6 +917,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
   const { currentUser } = useAuthStore();
   const {
     cfbTeam,
+    cfb_Timestamp,
     cfbTeamMap,
     cfbRosterMap,
     cfbTeamOptions,
@@ -930,6 +932,7 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
     ExportFBRoster,
   } = useSimFBAStore();
   const [showInfo, setShowInfo] = useState(true);
+  const [isProDayModalOpen, setIsProDayModalOpen] = useState(false);
 
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
   const promiseModal = useModal();
@@ -1068,6 +1071,14 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
           promisePlayer={promisePlayer}
         />
       )}
+      {isProDayModalOpen && selectedTeam && (
+        <ProDayNominationModal
+          isOpen={isProDayModalOpen}
+          onClose={() => setIsProDayModalOpen(false)}
+          teamID={selectedTeam.ID}
+          teamName={`${selectedTeam.TeamName} ${selectedTeam.Mascot}`}
+        />
+      )}
       <TeamInfo
         id={selectedTeam?.ID}
         IsRetro={currentUser?.IsRetro}
@@ -1154,6 +1165,19 @@ const CFBTeamPage = ({ league, ts }: TeamPageProps) => {
                 <Button variant="primary" size="sm" onClick={exportRoster}>
                   <Text variant="small">Export</Text>
                 </Button>
+                {selectedTeam?.ID === cfbTeam?.ID && (
+                  <Button
+                    size={isMobile ? "xs" : "sm"}
+                    variant={
+                      cfb_Timestamp?.AllowProDayNominations
+                        ? "primary"
+                        : "secondaryOutline"
+                    }
+                    onClick={() => setIsProDayModalOpen(true)}
+                  >
+                    <Text variant="small">Pro Day Nominations</Text>
+                  </Button>
+                )}
               </>
             )}
           </div>

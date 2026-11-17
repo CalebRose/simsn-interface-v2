@@ -7271,6 +7271,7 @@ export class NFLDraftee {
   PuntPowerGrade: string;
   BoomOrBust: boolean;
   BoomOrBustStatus: string;
+  IsNominatedForProDay: boolean;
 
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -7368,6 +7369,7 @@ export class NFLDraftee {
     this.PuntPowerGrade = source["PuntPowerGrade"];
     this.BoomOrBust = source["BoomOrBust"];
     this.BoomOrBustStatus = source["BoomOrBustStatus"];
+    this.IsNominatedForProDay = source["IsNominatedForProDay"];
   }
 
   convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -7406,6 +7408,7 @@ export class ScoutingProfile {
   ShowPotential: boolean;
   RemovedFromBoard: boolean;
   ShowCount: number;
+  PrivateWorkout?: boolean;
   Draftee: NFLDraftee;
 
   constructor(source: any = {}) {
@@ -7427,6 +7430,7 @@ export class ScoutingProfile {
     this.ShowPotential = source["ShowPotential"];
     this.RemovedFromBoard = source["RemovedFromBoard"];
     this.ShowCount = source["ShowCount"];
+    this.PrivateWorkout = source["PrivateWorkout"];
     this.Draftee = this.convertValues(source["Draftee"], NFLDraftee);
   }
 
@@ -9475,6 +9479,7 @@ export class Timestamp {
   ProgressedProfessionalPlayers: boolean;
   TransferPortalPhase: number;
   TransferPortalRound: number;
+  AllowProDayNominations: boolean;
   Phase: number;
   constructor(source: any = {}) {
     if ("string" === typeof source) source = JSON.parse(source);
@@ -9532,6 +9537,7 @@ export class Timestamp {
       source["ProgressedProfessionalPlayers"];
     this.TransferPortalPhase = source["TransferPortalPhase"];
     this.TransferPortalRound = source["TransferPortalRound"];
+    this.AllowProDayNominations = source["AllowProDayNominations"];
     this.Phase = source["Phase"];
   }
 
