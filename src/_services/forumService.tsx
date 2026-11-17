@@ -428,6 +428,56 @@ export const ForumService = {
     );
   },
 
+  // Volleyball: one thread per request for a college program or a pro club.
+  CreateSimVolleyballJobApplicationThreadFromTeamRequest: async (
+    kind: "college" | "pro",
+    username: string,
+    teamName: string,
+    uid: string,
+    displayName: string,
+    answers?: {
+      howMuchTimeAnswer?: string;
+      howDidYouHearAboutSimSN?: string;
+      communityReference?: string;
+      aboutYourself?: string;
+      discordUsername?: string;
+    },
+    /** The coach sent with the application, as lines; none for a user who has one. */
+    coachLines: string[] = [],
+  ): Promise<{ threadId: string; postId: string }> => {
+    const title = `${kind === "college" ? "CVB" : "PVB"} Application:${username} for ${teamName}`;
+
+    // The volleyball API keeps the application too; the thread is where the
+    // community sees it.
+    const paragraphs: string[] = [
+      `${username} has applied to coach ${teamName}. Please review their application below.`,
+      ...coachLines,
+      ...(
+        [
+          ["Time available each week", answers?.howMuchTimeAnswer],
+          ["How they found SimSN", answers?.howDidYouHearAboutSimSN],
+          ["Community reference", answers?.communityReference],
+          ["About them", answers?.aboutYourself],
+          ["Discord", answers?.discordUsername],
+        ] as Array<[string, string | undefined]>
+      )
+        .filter(([, answer]) => answer?.trim())
+        .map(([label, answer]) => `${label}: ${answer!.trim()}`),
+    ];
+
+    const body = buildJobApplicationRichBody(paragraphs);
+    const dto: CreateThreadDTO = {
+      forumId: "welcome-job-applications",
+      forumPath: ["welcome", "job-applications"],
+      title,
+      body,
+      bodyText: paragraphs.join("\n\n"),
+      threadType: "standard",
+      referencedLeague: kind === "college" ? "simcvb" : "simpvb",
+    };
+    return ForumService.CreateThread(dto, uid, username, displayName);
+  },
+
   CreateThread: async (
     dto: CreateThreadDTO,
     uid: string,

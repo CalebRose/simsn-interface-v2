@@ -1,6 +1,19 @@
-import React, { ReactNode } from "react";
+import React, { createContext, ReactNode, useContext } from "react";
 import { LoadSpinner } from "./LoadSpinner";
 import { Text } from "./Typography";
+
+/**
+ * A banner a route puts at the top of its page, above the page's own content
+ * (a sport's navigation bar, for one). Without a provider there is none, and
+ * the container is unchanged.
+ */
+export const PageBannerContext = createContext<ReactNode>(null);
+
+/** The route's banner, for a page that does not use PageContainer. */
+export const PageBanner = () => {
+  const banner = useContext(PageBannerContext);
+  return banner ? <div className="w-full">{banner}</div> : null;
+};
 
 // 🔑 Define Props Interface for PageContainer
 interface PageContainerProps {
@@ -32,7 +45,14 @@ export const PageContainer: React.FC<PageContainerProps> = ({
           </div>
         </div>
       )}
-      {isLoading ? <LoadSpinner /> : children}
+      {isLoading ? (
+        <LoadSpinner />
+      ) : (
+        <>
+          <PageBanner />
+          {children}
+        </>
+      )}
     </div>
   );
 };

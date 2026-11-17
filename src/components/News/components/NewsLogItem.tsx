@@ -21,6 +21,9 @@ import { useAuthStore } from "../../../context/AuthContext";
 
 import { EngagementButton } from "./EngagementButton";
 import { getLaxLogoUrl, LaxTeam } from "../../../_services/lacrosseService";
+import { useSimVBStore } from "../../../context/SimVBContext";
+import { isVbLeague } from "../../Volleyball/useVbNewsFeed";
+import { simLogos } from "../../../_constants/logos";
 
 interface NewsLogItemProps {
   newsItem: NewsLog;
@@ -68,6 +71,8 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
   const { cfbTeamMap, proTeamMap } = useSimFBAStore();
   const { cbbTeamMap, nbaTeamMap } = useSimBBAStore();
   const { chlTeamMap, phlTeamMap } = useSimHCKStore();
+  const { vbTeamsById } = useSimVBStore();
+  const volleyball = isVbLeague(league);
 
   // Get team information based on league
   const getTeamInfo = () => {
@@ -96,6 +101,8 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
       case SimCLAX:
         teamMap = claxTeamMap;
         break;
+      default:
+        if (volleyball) teamMap = vbTeamsById;
     }
 
     if (teamMap && newsItem.TeamID && newsItem.TeamID > 0) {
@@ -107,7 +114,10 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
 
   const team = getTeamInfo();
   const teamLogo = team
-    ? league === SimCLAX
+    ? volleyball
+      ? (team as any).LogoURL ||
+        (league === "SimCVB" ? simLogos.SimCVB : simLogos.SimPVB)
+      : league === SimCLAX
       ? getLaxLogoUrl((team as LaxTeam).logoFileName)
       : getLogo(league, newsItem.TeamID, currentUser?.IsRetro)
     : null;
@@ -141,6 +151,7 @@ export const NewsLogItem: React.FC<NewsLogItemProps> = ({
       case SimCLAX:
         return (team as LaxTeam).name;
       default:
+        if (volleyball) return teamAny.Name;
         return (
           teamAny.TeamName || teamAny.Team || teamAny.Mascot || teamAny.Nickname
         );

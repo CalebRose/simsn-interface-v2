@@ -9,14 +9,16 @@ league API confirms a successful removal. Its fields follow
 - `ReportedBy`: the Firebase authentication UID. `Message` contains the
   user's username; `League` and `TeamID` identify the team.
 - `Phase` and `WeekID` come from the corresponding league timestamp, or are
-  `null` when unavailable. SimCLAX currently has neither value in this flow.
+  `null` when unavailable. SimCLAX, SimCVB and SimPVB currently have neither
+  value in this flow.
 - `Status: "pending"`, a server-generated `CreatedAt`, and null review fields.
 
 This is a best-effort, self-reported browser event, not an authoritative audit
 record. A successful resignation and its Firestore write are not atomic.
 FireStore checks the user's team assignment for the six football, basketball,
-and hockey leagues; SimCLAX ownership is not available in the Firestore user
-document and cannot be verified by these rules. Trusted backend APIs should
+and hockey leagues; SimCLAX, SimCVB and SimPVB ownership is not available in
+the Firestore user document and cannot be verified by these rules (volleyball
+keeps a coach's team in its own API, which stays the authority on it). Trusted backend APIs should
 eventually write authoritative reports.
 
 The Firestore rules file and Firebase config are intentionally ignored by Git in
@@ -85,6 +87,8 @@ function canCreateResignationReport() {
       || (data.League == 'SimCHL' && data.TeamID == user.get('CHLTeamID', 0))
       || (data.League == 'SimPHL' && data.TeamID == user.get('PHLTeamID', 0))
       || data.League == 'SimCLAX'
+      || data.League == 'SimCVB'
+      || data.League == 'SimPVB'
     )
     && data.ReportType == 'team_resignation'
     && data.ResponseType == 0

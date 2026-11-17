@@ -13,6 +13,8 @@ export const simLogos = {
   SimCLAX: "/simlax-logo.png",
   SimCBL: `${baseUrl}/icons/simcbl.png`,
   SimMiLB: `${baseUrl}/icons/simmilb.png`,
+  SimCVB: `${baseUrl}/icons/simcvb.png`,
+  SimPVB: `${baseUrl}/icons/simpvb.png`,
 };
 
 export const logos = {

@@ -6,6 +6,7 @@ import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { PillButton, ButtonGroup } from "../../../_design/Buttons";
 import { PageContainer } from "../../../_design/Container";
+import { SportBannerAside } from "../../Common/SportBanner";
 import { SelectDropdown } from "../../../_design/Select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import {
@@ -22,7 +23,6 @@ import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
 import { BaseballService } from "../../../_services/baseballService";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
-import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import {
   type ScheduleViewMode,
   groupGamesIntoSeries,
@@ -432,7 +432,6 @@ export const BaseballScheduleView = ({
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const headerTextClass = getTextColorBasedOnBg(headerColor);
 
   // --- State ---
   const [viewMode, setViewMode] = useState<ScheduleViewMode>("weekly");
@@ -519,17 +518,6 @@ export const BaseballScheduleView = ({
   }, [games, selectedWeek, selectedSubweek]);
 
   // --- Logo ---
-  const logo = useMemo(() => {
-    if (!primaryTeam) return "";
-    return getLogo(
-      league === SimMLB ? SimMLB : SimCollegeBaseball,
-      primaryTeam.team_id,
-      currentUser?.IsRetro,
-    );
-  }, [primaryTeam, league, currentUser?.IsRetro]);
-
-  const pageTitle = primaryTeam?.team_full_name ?? organization.org_abbrev;
-  const seasonLabel = `Season ${seasonContext.league_year}`;
 
   // --- Available subweeks for the current week ---
   const availableSubweeks = useMemo(() => {
@@ -589,30 +577,9 @@ export const BaseballScheduleView = ({
   return (
     <PageContainer>
       <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
-        {/* Team-colored header */}
-        <div
-          className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{
-            backgroundColor: headerColor,
-            borderBottom: `3px solid ${borderColor}`,
-          }}
-        >
-          {logo && (
-            <img
-              src={logo}
-              className="w-10 h-10 object-contain"
-              alt={organization.org_abbrev}
-            />
-          )}
-          <div>
-            <Text variant="h4" classes={headerTextClass}>
-              {pageTitle}
-            </Text>
-            <Text variant="small" classes={`${headerTextClass} opacity-75`}>
-              Schedule · {seasonLabel}
-            </Text>
-          </div>
-          <div className="ml-auto min-w-56">
+        {/* The page's controls sit on the banner; the banner names the page. */}
+        <SportBannerAside>
+          <div className="w-full sm:w-72">
             <SelectDropdown
               options={teamOptions}
               value={selectedTeamOption}
@@ -633,7 +600,7 @@ export const BaseballScheduleView = ({
               }}
             />
           </div>
-        </div>
+        </SportBannerAside>
 
         {/* Controls */}
         <Border

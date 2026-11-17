@@ -4,6 +4,8 @@ import { enqueueSnackbar } from "notistack";
 import { AuthService } from "../../_services/auth";
 import { useSimLAXStore } from "../../context/SimLAXContext";
 import { getLaxLogoUrl } from "../../_services/lacrosseService";
+import { useSimVBStore } from "../../context/SimVBContext";
+import { vbTeamLogo } from "../Volleyball/vbFormatting";
 import { getLogo } from "../../_utility/getLogo";
 import routes from "../../_constants/routes";
 import { useForumStore } from "../../context/ForumContext";
@@ -16,10 +18,12 @@ import {
   SimCHL,
   SimCLAX,
   SimCollegeBaseball,
+  SimCVB,
   SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
+  SimPVB,
 } from "../../_constants/constants";
 import { SideMenuItem } from "../../_design/SideMenuItem";
 import { NavDropdown, NavDropdownItem } from "../../_design/DropdownList";
@@ -79,6 +83,7 @@ export const SideMenu = ({}) => {
   const { unreadCount: chatUnreadCount, hasMention: chatHasMention } =
     useChatUnread(currentUser?.id, isChatOpen);
   const { laxAdminStatus, claxTeam } = useSimLAXStore();
+  const { cvbTeam, pvbTeam, vbLeagues } = useSimVBStore();
   const isLaxAdmin = Boolean(laxAdminStatus?.isAdmin);
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -497,6 +502,26 @@ export const SideMenu = ({}) => {
                 logo={getLaxLogoUrl(claxTeam.logoFileName) || simLogos.SimCLAX}
                 dropdown={dropdowns.SimCLAX}
                 league={SimCLAX}
+                toggle={toggleMenu}
+                isTop
+              />
+            )}
+            {cvbTeam && (
+              <SideMenuItem
+                label={SimCVB}
+                logo={vbTeamLogo(cvbTeam, "college", vbLeagues.college)}
+                dropdown={dropdowns.SimCVB}
+                league={SimCVB}
+                toggle={toggleMenu}
+                isTop
+              />
+            )}
+            {pvbTeam && (
+              <SideMenuItem
+                label={SimPVB}
+                logo={vbTeamLogo(pvbTeam, "pro", vbLeagues.pro)}
+                dropdown={dropdowns.SimPVB}
+                league={SimPVB}
                 toggle={toggleMenu}
                 isTop
               />

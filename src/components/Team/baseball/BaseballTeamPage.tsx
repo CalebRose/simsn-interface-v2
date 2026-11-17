@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import routes from "../../../_constants/routes";
 import { exportToCsv } from "../../../_utility/csvExport";
 import {
   INFO_HEADERS, ALL_ATTR_HEADERS,
@@ -14,7 +12,11 @@ import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { PillButton, ButtonGroup } from "../../../_design/Buttons";
 import { PageContainer } from "../../../_design/Container";
-import { SelectDropdown } from "../../../_design/Select";
+import {
+  SportBannerAside,
+  SportBannerPicker,
+  useSportBannerContent,
+} from "../../Common/SportBanner";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import {
   Player,
@@ -65,7 +67,6 @@ import {
 } from "../../../models/baseball/baseballStatsModels";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
-import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { PlayerModal } from "./PlayerModal";
 import "./baseballMobile.css";
 import {
@@ -296,7 +297,6 @@ interface BaseballTeamPageProps {
 }
 
 export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
-  const navigate = useNavigate();
   const { currentUser } = useAuthStore();
   const {
     organizations,
@@ -531,7 +531,6 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const headerTextClass = getTextColorBasedOnBg(headerColor);
 
   // Reset sort when category changes
   useEffect(() => {
@@ -1200,6 +1199,14 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     [leagueOrgs, isCollege, league, currentUser?.IsRetro],
   );
 
+  // The organisation on screen is the banner's: its name, logo and colours.
+  useSportBannerContent({
+    title: pageTitle,
+    logo: logo || undefined,
+    color: headerColor,
+    accent: borderColor,
+  });
+
   if (!userOrg && !isAllView) {
     return (
       <PageContainer>
@@ -1212,106 +1219,20 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   return (
     <PageContainer>
       <div className="flex-col w-full md:mb-6 px-2 sm:px-4 md:px-0">
-        {/* Team-colored header */}
-        <div
-          className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{
-            backgroundColor: headerColor,
-            borderBottom: `3px solid ${borderColor}`,
-          }}
-        >
-          {logo && (
-            <img
-              src={logo}
-              className="w-10 h-10 object-contain"
-              alt={viewedOrg?.org_abbrev ?? ""}
-            />
-          )}
-          <Text variant="h4" classes={headerTextClass}>
-            {pageTitle}
-          </Text>
-          <div className="ml-auto">
-            <SelectDropdown
-              options={orgOptions}
-              value={selectedOrgOption}
-              onChange={(opt) => {
-                if (opt) handleOrgChange((opt as SelectOption).value);
-              }}
-              isSearchable
-              placeholder="Select organization..."
-              formatOptionLabel={formatOrgLabel}
-              styles={{
-                control: (base: any, state: any) => ({
-                  ...base,
-                  minWidth: "16rem",
-                  backgroundColor: state.isFocused ? "#2d3748" : "#1a202c",
-                  borderColor: state.isFocused ? borderColor : "#4A5568",
-                }),
-              }}
-            />
-          </div>
-        </div>
-        {/* Quick links to the other pages for this team */}
-        <div className="flex flex-wrap gap-2 mb-2">
-          <ButtonGroup>
-            <PillButton
-              variant="primaryOutline"
-              onClick={() =>
-                navigate(
-                  isCollege
-                    ? routes.COLLEGE_BASEBALL_GAMEPLAN
-                    : routes.MLB_GAMEPLAN,
-                )
-              }
-            >
-              <Text variant="small">Gameplan</Text>
-            </PillButton>
-            <PillButton
-              variant="primaryOutline"
-              onClick={() =>
-                navigate(
-                  isCollege
-                    ? routes.COLLEGE_BASEBALL_RECRUITING
-                    : routes.MLB_IFA,
-                )
-              }
-            >
-              <Text variant="small">{isCollege ? "Recruiting" : "IFA"}</Text>
-            </PillButton>
-            <PillButton
-              variant="primaryOutline"
-              onClick={() =>
-                navigate(
-                  isCollege
-                    ? routes.COLLEGE_BASEBALL_STATS
-                    : routes.MLB_STATS,
-                )
-              }
-            >
-              <Text variant="small">Statistics</Text>
-            </PillButton>
-            <PillButton
-              variant="primaryOutline"
-              onClick={() =>
-                navigate(
-                  isCollege
-                    ? routes.COLLEGE_BASEBALL_SCHEDULE
-                    : routes.MLB_SCHEDULE,
-                )
-              }
-            >
-              <Text variant="small">Schedule</Text>
-            </PillButton>
-            {!isCollege && (
-              <PillButton
-                variant="primaryOutline"
-                onClick={() => navigate(routes.MLB_FINANCIALS)}
-              >
-                <Text variant="small">Finances</Text>
-              </PillButton>
-            )}
-          </ButtonGroup>
-        </div>
+        {/* On the banner: the organisation picker. The page links that were
+            buttons here are the banner's own. */}
+        <SportBannerAside>
+          <SportBannerPicker
+            options={orgOptions}
+            value={selectedOrgOption}
+            onChange={(opt) => {
+              if (opt) handleOrgChange((opt as SelectOption).value);
+            }}
+            isSearchable
+            placeholder="Select organization..."
+            formatOptionLabel={formatOrgLabel}
+          />
+        </SportBannerAside>
         <Border
           classes="p-4 mb-2"
           styles={{ borderTop: `3px solid ${headerColor}` }}

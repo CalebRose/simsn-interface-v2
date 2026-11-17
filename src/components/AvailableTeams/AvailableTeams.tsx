@@ -17,6 +17,8 @@ import {
   SimPHL,
   SimMLB,
   SimCollegeBaseball,
+  SimCVB,
+  SimPVB,
 } from "../../_constants/constants";
 import { SelectedTeamCard } from "./SelectedTeamCards";
 import { Text } from "../../_design/Typography";
@@ -34,6 +36,18 @@ import {
   LacrosseService,
 } from "../../_services/lacrosseService";
 import { useSimLAXStore } from "../../context/SimLAXContext";
+import {
+  isVolleyballConfigured,
+  VolleyballClaimService,
+} from "../../_services/volleyballService";
+import { useSimVBStore } from "../../context/SimVBContext";
+import { useVbRequestKind, useVbTeams } from "../Volleyball/useVbData";
+import {
+  loadVbAvailableTeam,
+  vbAvailableTeam,
+  vbKindOf,
+} from "../Volleyball/VbAvailableTeam";
+import { vbAnswersToSend } from "../Volleyball/VbApplication";
 
 const buildBaseballOptions = (
   orgs: BaseballOrganization[],
@@ -118,6 +132,27 @@ export const AvailableTeams = () => {
       })),
     [laxTeams],
   );
+  // Volleyball: both leagues' teams, and whether a request is waiting. A
+  // user has one coach, so one pending request covers both leagues.
+  const { vbLeagues, vbRequests, refreshVbMe } = useSimVBStore();
+  const cvbTeamList = useVbTeams("college");
+  const pvbTeamList = useVbTeams("pro");
+  const vbKind = vbKindOf(selectedLeague);
+  const vbTeams = useMemo(
+    () =>
+      vbKind
+        ? ((vbKind === "college" ? cvbTeamList : pvbTeamList) ?? [])
+            .map((team) => vbAvailableTeam(team, vbKind, vbLeagues[vbKind]))
+            .sort((a, b) => a.TeamName.localeCompare(b.TeamName))
+        : [],
+    [vbKind, cvbTeamList, pvbTeamList, vbLeagues],
+  );
+  // One waiting request per level: college and pro are separate.
+  const vbRequestKind = useVbRequestKind();
+  const sentRequestVB = vbRequests.some(
+    (request) =>
+      request.Status === "pending" && vbRequestKind(request) === vbKind,
+  );
   const [teamOptions, setTeamOptions] = useState(cfbTeamOptions);
   const [conferenceOptions, setConferenceOptions] =
     useState(cfbConferenceOptions);
@@ -194,6 +229,28 @@ export const AvailableTeams = () => {
         );
         break;
       }
+      case SimCVB:
+      case SimPVB: {
+        setTeamOptions(
+          vbTeams.map((team) => ({
+            label: team.TeamName,
+            value: String(team.ID),
+          })),
+        );
+        const conferences = new Map<number, string>();
+        vbTeams.forEach(
+          (team) =>
+            team.ConferenceID &&
+            conferences.set(team.ConferenceID, team.Conference),
+        );
+        setConferenceOptions(
+          Array.from(conferences, ([value, label]) => ({
+            label,
+            value: String(value),
+          })).sort((a, b) => a.label.localeCompare(b.label)),
+        );
+        break;
+      }
       case SimCHL:
         setTeamOptions(chlTeamOptions);
         setConferenceOptions(chlConferenceOptions);
@@ -220,7 +277,7 @@ export const AvailableTeams = () => {
     setConferences([]);
     setSelectedTeam(null);
     setSelectedTeamData(null);
-  }, [selectedLeague, claxTeams]);
+  }, [selectedLeague, claxTeams, vbTeams]);
 
   const filteredTeams = useMemo(() => {
     let teams: any[] = [];
@@ -230,6 +287,7 @@ export const AvailableTeams = () => {
     else if (selectedLeague === SimNBA) teams = [...nbaTeams];
     else if (selectedLeague === SimCHL) teams = [...chlTeams];
     else if (selectedLeague === SimCLAX) teams = [...claxTeams];
+    else if (vbKind) teams = [...vbTeams];
     else if (selectedLeague === SimPHL) teams = [...phlTeams];
     else if (selectedLeague === SimMLB)
       teams = [...(mlbOrganizations || [])].filter((o) => o.league === "mlb");
@@ -272,6 +330,8 @@ export const AvailableTeams = () => {
     claxTeams,
     phlTeams,
     mlbOrganizations,
+    vbKind,
+    vbTeams,
   ]);
 
   useEffect(() => {
@@ -282,6 +342,10 @@ export const AvailableTeams = () => {
     if (selectedLeague === SimCLAX) {
       const preview = await LacrosseService.getPreview(selectedTeam.ID);
       setSelectedTeamData(preview);
+      return;
+    }
+    if (vbKind) {
+      setSelectedTeamData(await loadVbAvailableTeam(selectedTeam.ID, vbKind));
       return;
     }
     // Baseball orgs don't have a view endpoint yet — use the org data directly
@@ -314,6 +378,7 @@ export const AvailableTeams = () => {
       (league === SimNBA && sentRequestNBA) ||
       (league === SimCHL && sentRequestCHL) ||
       (league === SimCLAX && sentRequestCLAX) ||
+      (vbKindOf(league) !== null && sentRequestVB) ||
       (league === SimPHL && sentRequestPHL) ||
       (league === SimMLB && sentRequestMLB) ||
       (league === SimCollegeBaseball && sentRequestCollegeBaseball)
@@ -393,6 +458,31 @@ export const AvailableTeams = () => {
           currentUser!.username,
         );
         break;
+      case SimCVB:
+      case SimPVB: {
+        const kind = vbKindOf(league)!;
+        // A user with a coach asks here; one without applies on the
+        // volleyball application page, which also builds their coach.
+        await VolleyballClaimService.create(kind, currentUser!.username, team.ID, {
+          Answers: vbAnswersToSend({
+            discordUsername,
+            howMuchTimeAnswer,
+            howDidYouHearAboutSimSN,
+            communityReference,
+            aboutYourself,
+          }),
+        });
+        await refreshVbMe();
+        await ForumService.CreateSimVolleyballJobApplicationThreadFromTeamRequest(
+          kind,
+          currentUser!.username,
+          team.TeamName,
+          currentUser!.id,
+          currentUser!.username,
+          { howMuchTimeAnswer, howDidYouHearAboutSimSN, communityReference, aboutYourself, discordUsername },
+        );
+        break;
+      }
       case SimCHL:
         await RequestService.CreateCHLTeamRequest(requestDTO);
         setSentRequestCHL(true);
@@ -588,6 +678,16 @@ export const AvailableTeams = () => {
                   >
                     <Text variant="small">SimPLAX</Text>
                   </PillButton>
+                  {isVolleyballConfigured && (
+                    <>
+                      <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCVB} onClick={() => selectSport(SimCVB)}>
+                        <Text variant="small">SimCVB</Text>
+                      </PillButton>
+                      <PillButton variant="primaryOutline" isSelected={selectedLeague === SimPVB} onClick={() => selectSport(SimPVB)}>
+                        <Text variant="small">SimPVB</Text>
+                      </PillButton>
+                    </>
+                  )}
                 </ButtonGrid>
               </div>
             </div>
@@ -673,6 +773,20 @@ export const AvailableTeams = () => {
                   setSelectedTeam={setSelectedTeam}
                 />
               ))}{" "}
+            {vbKind &&
+              filteredTeams.map((x) => (
+                <TeamCard
+                  key={x.ID}
+                  teamID={x.ID}
+                  t={x}
+                  retro={false}
+                  team={x.TeamName}
+                  conference={x.Conference}
+                  league={selectedLeague as League}
+                  disable={sentRequestVB || x.IsUserCoached}
+                  setSelectedTeam={setSelectedTeam}
+                />
+              ))}
             {selectedLeague === SimCHL &&
               filteredTeams.map((x) => (
                 <TeamCard
@@ -762,7 +876,11 @@ export const AvailableTeams = () => {
               league={selectedLeague}
               retro={IsRetro}
               sentRequest={
-                selectedLeague === SimCLAX ? sentRequestCLAX : undefined
+                selectedLeague === SimCLAX
+                  ? sentRequestCLAX
+                  : vbKind
+                    ? sentRequestVB
+                    : undefined
               }
               sendRequest={sendRequest}
             />

@@ -2,6 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { PageContainer } from "../../../_design/Container";
+import {
+  SportBannerRows,
+  useSportBannerContent,
+} from "../../Common/SportBanner";
+import {
+  BaseballLevelTabs,
+  useBaseballOrg,
+} from "../../LandingPage/baseballNav";
 import { TabGroup, Tab } from "../../../_design/Tabs";
 import { SimCollegeBaseball, SimMLB } from "../../../_constants/constants";
 import { getLogo } from "../../../_utility/getLogo";
@@ -261,6 +269,12 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
     return organization.org_abbrev;
   }, [organization, selectedLevel]);
 
+  // The team on screen is the banner's; its levels are the banner's row.
+  useSportBannerContent(
+    organization ? { title: pageTitle, logo: logo || undefined } : null,
+  );
+  const bannerColors = useBaseballOrg(league);
+
   if (!organization) {
     return (
       <PageContainer>
@@ -272,65 +286,18 @@ export const BaseballGameplanPage = ({ league }: BaseballGameplanPageProps) => {
   return (
     <PageContainer>
       <div className="flex-col w-full md:mb-6 px-2 sm:px-4 md:px-0">
-        {/* Header */}
-        <Border classes="p-4 mb-2">
-          <div className="flex items-center flex-wrap gap-2 sm:gap-4 mb-3">
-            {logo && (
-              <img
-                src={logo}
-                className="w-12 h-12 object-contain"
-                alt={organization.org_abbrev}
-              />
-            )}
-            <Text variant="h4">{pageTitle} Game Planning</Text>
-          </div>
-
-          {/* Level Selector */}
-          {organization.teams && Object.keys(organization.teams).length > 1 && (
-            <div className="flex items-center gap-1 overflow-x-auto">
-              {LEVEL_ORDER.filter((l) => organization.teams?.[l]).map(
-                (level) => {
-                  const team = organization.teams[level];
-                  const isActive = activeLevel === level;
-                  return (
-                    <button
-                      key={level}
-                      onClick={() =>
-                        setSelectedLevel(level === "mlb" ? null : level)
-                      }
-                      className={`flex items-center gap-1.5 px-3 py-2.5 sm:py-1.5 rounded-lg text-sm whitespace-nowrap transition-all cursor-pointer border
-                      ${
-                        isActive
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 font-semibold text-blue-700 dark:text-blue-300"
-                          : "border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400 bg-white dark:bg-gray-800"
-                      }`}
-                    >
-                      <img
-                        src={getLogo(
-                          league === SimMLB ? SimMLB : SimCollegeBaseball,
-                          team.team_id,
-                          currentUser?.IsRetro,
-                        )}
-                        className="w-5 h-5 object-contain"
-                        alt=""
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                      <span>{displayLevel(level)}</span>
-                      {team.team_abbrev && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {team.team_abbrev}
-                        </span>
-                      )}
-                    </button>
-                  );
-                },
-              )}
-            </div>
-          )}
-        </Border>
-
+        <SportBannerRows>
+          <BaseballLevelTabs
+            league={league}
+            org={organization}
+            activeLevel={activeLevel}
+            onSelect={(level) =>
+              setSelectedLevel(level === "mlb" ? null : level)
+            }
+            color={bannerColors.color}
+            accent={bannerColors.accent}
+          />
+        </SportBannerRows>
         {/* Tabs + Content */}
         <Border classes="p-4">
           <TabGroup classes="mb-4">

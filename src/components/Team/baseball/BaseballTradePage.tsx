@@ -1,3 +1,4 @@
+import { PageBanner } from "../../../_design/Container";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Attributes,
@@ -890,9 +891,7 @@ export const BaseballTradePage: FC<BaseballTradePageProps> = ({ league }) => {
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 max-w-7xl mx-auto">
-      <Text as="h2" classes="text-2xl font-bold">
-        Trades — {userOrg.org_abbrev}
-      </Text>
+      <PageBanner />
 
       {/* ═══════ Trade Proposal Builder ═══════ */}
       <Border classes="p-4">

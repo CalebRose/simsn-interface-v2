@@ -368,7 +368,6 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
         {/* Header + Budget */}
         <Border classes="p-4 mb-2">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-            <Text variant="h4">Free Agency</Text>
             <div className="flex gap-4 text-sm">
               {signingBudget != null && (
                 <span className="text-gray-300">

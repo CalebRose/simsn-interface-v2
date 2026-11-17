@@ -405,7 +405,6 @@ export const BaseballIFAPage = ({ league }: BaseballIFAPageProps) => {
         <Border classes="p-4 mb-2">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-3">
-              <Text variant="h4">International FA</Text>
               {ifaState && (
                 <span className="text-sm text-gray-400">
                   Week {ifaState.current_week} of {ifaState.total_weeks}

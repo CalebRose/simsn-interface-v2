@@ -33,6 +33,7 @@ import {
   ProfileCBLTeamCard,
   ProfileMLBTeamCard,
   ProfileCLAXTeamCard,
+  ProfileVBTeamCard,
 } from "./ProfileTeamCard";
 import { CSSObjectWithLabel } from "react-select";
 import { useSimFBAStore } from "../../context/SimFBAContext";
@@ -51,6 +52,12 @@ import { BaseballOrganization } from "../../models/baseball/baseballModels";
 import { ClickableUserLabel } from "../Common/Labels";
 import { LacrosseService, LaxTeam } from "../../_services/lacrosseService";
 import { useSimLAXStore } from "../../context/SimLAXContext";
+import { useSimVBStore } from "../../context/SimVBContext";
+import {
+  isVolleyballConfigured,
+  VbTeam,
+  VolleyballService,
+} from "../../_services/volleyballService";
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -266,6 +273,7 @@ interface PublicProfileContentProps {
   selectedCBLTeam: BaseballOrganization | null | undefined;
   selectedMLBTeam: BaseballOrganization | null | undefined;
   selectedCLAXTeam: LaxTeam | null;
+  selectedVBTeams: VbTeam[];
   viewedTop5: CurrentUser[];
   viewedAchievements: Achievement[];
 }
@@ -284,6 +292,7 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
   selectedCBLTeam,
   selectedMLBTeam,
   selectedCLAXTeam,
+  selectedVBTeams,
   viewedTop5,
   viewedAchievements,
 }) => (
@@ -338,7 +347,8 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
       selectedPHLTeam ||
       selectedCBLTeam ||
       selectedMLBTeam ||
-      selectedCLAXTeam) && (
+      selectedCLAXTeam ||
+      selectedVBTeams.length > 0) && (
       <Border classes="w-full p-4">
         <Text variant="h6" classes="mb-3">
           Teams
@@ -371,6 +381,9 @@ const PublicProfileContent: React.FC<PublicProfileContentProps> = ({
           {selectedCLAXTeam && (
             <ProfileCLAXTeamCard IsUser={false} Team={selectedCLAXTeam} />
           )}
+          {selectedVBTeams.map((team) => (
+            <ProfileVBTeamCard key={team.TeamID} Team={team} />
+          ))}
         </div>
       </Border>
     )}
@@ -516,6 +529,14 @@ export const ProfilePage = () => {
   const [viewedUserLoading, setViewedUserLoading] = useState(false);
   const [viewedCLAXTeam, setViewedCLAXTeam] = useState<LaxTeam | null>(null);
   const selectedCLAXTeam = isOwnProfile ? claxTeam : viewedCLAXTeam;
+  const { cvbTeam, pvbTeam } = useSimVBStore();
+  // A user can coach a college program and a pro club at once.
+  const [viewedVBTeams, setViewedVBTeams] = useState<VbTeam[]>([]);
+  const ownVBTeams = useMemo(
+    () => [cvbTeam, pvbTeam].filter((team): team is VbTeam => Boolean(team)),
+    [cvbTeam, pvbTeam],
+  );
+  const selectedVBTeams = isOwnProfile ? ownVBTeams : viewedVBTeams;
   const [viewedAchievements, setViewedAchievements] = useState<Achievement[]>(
     [],
   );
@@ -645,6 +666,33 @@ export const ProfilePage = () => {
       cancelled = true;
     };
   }, [viewedUser?.id, isOwnProfile]);
+
+  // Volleyball has no user ids: a coach is found by their username.
+  useEffect(() => {
+    const username = viewedUser?.username;
+    if (isOwnProfile || !username || !isVolleyballConfigured) {
+      setViewedVBTeams([]);
+      return;
+    }
+    let cancelled = false;
+    VolleyballService.getCoachesByUsername(username)
+      .then((found) =>
+        Promise.all(
+          found.Coaches.flatMap((coach) =>
+            coach.Team ? [VolleyballService.getTeam(coach.Team.TeamID)] : [],
+          ),
+        ),
+      )
+      .then((teams) => {
+        if (!cancelled) setViewedVBTeams(teams);
+      })
+      .catch(() => {
+        if (!cancelled) setViewedVBTeams([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedUser?.username, isOwnProfile]);
 
   useEffect(() => {
     if (!paramUsername) return;
@@ -1022,6 +1070,7 @@ export const ProfilePage = () => {
                   selectedCBLTeam={selectedCBLTeam}
                   selectedMLBTeam={selectedMLBTeam}
                   selectedCLAXTeam={selectedCLAXTeam}
+                  selectedVBTeams={selectedVBTeams}
                   viewedTop5={viewedTop5}
                   viewedAchievements={viewedAchievements}
                 />
@@ -1152,6 +1201,9 @@ export const ProfilePage = () => {
                         onQuit={() => void refreshClaxTeam()}
                       />
                     )}
+                    {selectedVBTeams.map((team) => (
+                      <ProfileVBTeamCard key={team.TeamID} Team={team} />
+                    ))}
                   </div>
                 </Border>
 

@@ -11,6 +11,8 @@ export const SimHCK = "SimHCK";
 export const SimCollegeBaseball = "SimCollegeBaseball";
 export const SimMLB = "SimMLB";
 export const SimCBL = "SimCBL";
+export const SimCVB = "SimCVB";
+export const SimPVB = "SimPVB";
 export const AdminRole = "Admin";
 export type League =
   | typeof SimCFB
@@ -21,7 +23,9 @@ export type League =
   | typeof SimCLAX
   | typeof SimPHL
   | typeof SimCollegeBaseball
-  | typeof SimMLB;
+  | typeof SimMLB
+  | typeof SimCVB
+  | typeof SimPVB;
 
 export const CollegeRequests = "College Requests";
 export const ProRequests = "Pro Requests";
@@ -1174,6 +1178,8 @@ export const LeagueTypeOptions = [
   { label: SimCHL, value: SimCHL },
   { label: SimCLAX, value: SimCLAX },
   { label: SimPHL, value: SimPHL },
+  { label: SimCVB, value: SimCVB },
+  { label: SimPVB, value: SimPVB },
 ];
 
 export const NewsTypeOptions = [

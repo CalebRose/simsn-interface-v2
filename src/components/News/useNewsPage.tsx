@@ -20,6 +20,8 @@ import {
 import { NewsLog } from "../../models/footballModels";
 import { LaxTeam } from "../../_services/lacrosseService";
 import { useSimLAXStore } from "../../context/SimLAXContext";
+import { isVbLeague, useVbNewsFeed } from "../Volleyball/useVbNewsFeed";
+import { useSimVBStore } from "../../context/SimVBContext";
 import { usePagination } from "../../_hooks/usePagination";
 import { getFBAWeekID, getHCKWeekID } from "../../_helper/statsPageHelper";
 import { SingleValue } from "react-select";
@@ -85,7 +87,16 @@ export const useNewsPage = () => {
     Message: item.message,
     League: SimCLAX,
   }) as NewsLog), [claxNewsResponse]);
-  const newsSelectedTeam = selectedLeague === SimCLAX && claxTeam ? {
+  const { cvbTeam, pvbTeam } = useSimVBStore();
+  const vbTeam = selectedLeague === "SimCVB" ? cvbTeam : selectedLeague === "SimPVB" ? pvbTeam : null;
+  const newsSelectedTeam = vbTeam ? {
+    ID: vbTeam.TeamID,
+    TeamName: vbTeam.Name,
+    Mascot: vbTeam.Nickname,
+    ColorOne: vbTeam.ColorOne,
+    ColorTwo: vbTeam.ColorTwo,
+    ColorThree: vbTeam.ColorThree,
+  } : selectedLeague === SimCLAX && claxTeam ? {
     ID: claxTeam.id,
     TeamName: claxTeam.name,
     Mascot: claxTeam.nickname,
@@ -94,6 +105,7 @@ export const useNewsPage = () => {
     ColorThree: claxTeam.colors.tertiary,
   } : selectedTeam;
   const isLoadingData = selectedLeague === SimCLAX ? !claxTeam : !selectedTeam;
+  const isVolleyball = isVbLeague(selectedLeague);
   const backgroundColor = "#1f2937";
   let darkerBackgroundColor = getThemeAwareDarkenColor(backgroundColor, -5);
   const textColorClass = getTextColorBasedOnBg(backgroundColor);
@@ -123,6 +135,8 @@ export const useNewsPage = () => {
     return -1;
   });
   const [selectedNewsType, setSelectedNewsType] = useState<string>("");
+  // Volleyball's seasons are years, and its news comes a season at a time.
+  const vbFeed = useVbNewsFeed(selectedLeague as League, selectedSeason);
   const [sortByNewest, setSortByNewest] = useState<boolean>(true);
 
   // Engagement data state
@@ -172,19 +186,24 @@ export const useNewsPage = () => {
     if (selectedLeague === SimCLAX) {
       void refreshClaxNews();
     }
-  }, [isCFBUser, isNFLUser, isCBBUser, isNBAUser, isCHLUser, isPHLUser, selectedLeague, refreshClaxNews]);
+    if (isVolleyball) {
+      void vbFeed.refresh();
+    }
+  }, [isCFBUser, isNFLUser, isCBBUser, isNBAUser, isCHLUser, isPHLUser, selectedLeague, refreshClaxNews, isVolleyball, vbFeed.refresh]);
 
   const ts = useMemo(() => {
     if (selectedLeague === SimCHL || selectedLeague === SimPHL) {
       return hck_Timestamp;
     } else if (selectedLeague === SimCLAX) {
       return { SeasonID: claxSeason, WeekID: claxWeek } as any;
+    } else if (isVolleyball) {
+      return { SeasonID: vbFeed.season, Seasons: vbFeed.seasons } as any;
     } else if (selectedLeague === SimCFB || selectedLeague === SimNFL) {
       return cfb_Timestamp;
     } else if (selectedLeague === SimCBB || selectedLeague === SimNBA) {
       return cbb_Timestamp;
     }
-  }, [selectedLeague, hck_Timestamp, cfb_Timestamp, cbb_Timestamp, claxSeason, claxWeek]);
+  }, [selectedLeague, hck_Timestamp, cfb_Timestamp, cbb_Timestamp, claxSeason, claxWeek, isVolleyball, vbFeed.season, vbFeed.seasons]);
 
   const selectedLeagueNews = useMemo(() => {
     switch (selectedLeague) {
@@ -203,9 +222,9 @@ export const useNewsPage = () => {
       case SimCLAX:
         return claxNews;
       default:
-        return [];
+        return isVolleyball ? vbFeed.news : [];
     }
-  }, [selectedLeague, cfbNews, nflNews, cbbNews, nbaNews, chlNews, phlNews, claxNews]);
+  }, [selectedLeague, cfbNews, nflNews, cbbNews, nbaNews, chlNews, phlNews, claxNews, isVolleyball, vbFeed.news]);
 
   const filterNewsData = () => {
     return useMemo(() => {
@@ -577,6 +596,12 @@ export const useNewsPage = () => {
     } else if (leagueOption === SimCLAX) {
       setSelectedSeason(claxSeason);
       setSelectedWeek(-1);
+    } else if (isVbLeague(leagueOption)) {
+      // Both volleyball leagues share their years. A type picked for another
+      // league means nothing here.
+      setSelectedSeason(vbFeed.season ?? -1);
+      setSelectedWeek(-1);
+      setSelectedNewsType("");
     }
     setCurrentPage(0);
   };
@@ -591,7 +616,8 @@ export const useNewsPage = () => {
       newWeekID = getFBAWeekID(cbb_Timestamp?.CollegeWeekID || 1, num);
     }
     setSelectedSeason(num);
-    setSelectedWeek(newWeekID);
+    // Volleyball weeks are numbered within a season, so none carries over.
+    setSelectedWeek(isVolleyball ? -1 : newWeekID);
     setCurrentPage(0);
   };
 

@@ -3,13 +3,9 @@ import { Text } from "../../../_design/Typography";
 import { Border } from "../../../_design/Borders";
 import { PageContainer } from "../../../_design/Container";
 import { TabGroup, Tab } from "../../../_design/Tabs";
-import { SimMLB } from "../../../_constants/constants";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
-import { useAuthStore } from "../../../context/AuthContext";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
-import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
-import { getLogo } from "../../../_utility/getLogo";
 import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
 import {
   AllStarPlayer,
@@ -159,7 +155,6 @@ const ScoreDisplay = ({
 // ═══════════════════════════════════════════════
 
 export const AllStarGamePage = () => {
-  const { currentUser } = useAuthStore();
   const {
     seasonContext,
     mlbOrganization,
@@ -189,12 +184,6 @@ export const AllStarGamePage = () => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const headerTextClass = getTextColorBasedOnBg(headerColor);
-
-  const logo = useMemo(() => {
-    if (!primaryTeam) return "";
-    return getLogo(SimMLB, primaryTeam.team_id, currentUser?.IsRetro);
-  }, [primaryTeam, currentUser?.IsRetro]);
 
   // Extract All-Star data from bootstrap
   const allStarEvent = useMemo(() => {
@@ -218,26 +207,6 @@ export const AllStarGamePage = () => {
   return (
     <PageContainer>
       <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
-        {/* Header */}
-        <div
-          className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{
-            backgroundColor: headerColor,
-            borderBottom: `3px solid ${borderColor}`,
-          }}
-        >
-          {logo && (
-            <img src={logo} className="w-10 h-10 object-contain" alt="" />
-          )}
-          <div>
-            <Text variant="h4" classes={headerTextClass}>
-              All-Star Game
-            </Text>
-            <Text variant="small" classes={`${headerTextClass} opacity-75`}>
-              Season {seasonContext.league_year}
-            </Text>
-          </div>
-        </div>
 
         <Border
           classes="p-4"

@@ -8,6 +8,8 @@ import {
   SimCFB,
   SimCHL,
   SimCLAX,
+  SimCVB,
+  SimPVB,
   SimNBA,
   SimNFL,
   SimPHL,
@@ -32,6 +34,11 @@ import {
 import { BarsArrowDown, BarsArrowUp, Refresh } from "../../../_design/Icons";
 import { Text } from "../../../_design/Typography";
 import { useBackgroundColor } from "../../../_hooks/useBackgroundColor";
+import {
+  isVbLeague,
+  vbNewsTypeOptions,
+} from "../../Volleyball/useVbNewsFeed";
+import { useSimVBStore } from "../../../context/SimVBContext";
 
 interface NewsSideBarProps {
   teamColors: any;
@@ -73,6 +80,10 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
   const { backgroundColor } = useBackgroundColor();
   const headerTextColorClass = getTextColorBasedOnBg(teamColors.One);
   const leagueOptions = LeagueTypeOptions;
+  const volleyball = isVbLeague(league);
+  const { cvbTeam, pvbTeam } = useSimVBStore();
+  const vbTeam = league === SimCVB ? cvbTeam : pvbTeam;
+  const newsTypeOptions = volleyball ? vbNewsTypeOptions : NewsTypeOptions;
 
   const teamLabel = useMemo(() => {
     let label = "";
@@ -97,11 +108,15 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
       case SimCLAX:
         label = selectedTeam?.TeamName ?? "";
         break;
+      case SimCVB:
+      case SimPVB:
+        label = vbTeam?.Name ?? league;
+        break;
       default:
         break;
     }
     return label;
-  }, [league, selectedTeam]);
+  }, [league, selectedTeam, vbTeam]);
 
   const seasonOptions = useMemo(() => {
     const noneOption = { label: "None", value: "-1" };
@@ -110,6 +125,13 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
       return [noneOption, ...Array.from({ length: currentSeason }, (_, index) => ({
         label: String(2026 + index), value: String(index + 1),
       }))];
+    }
+    if (volleyball) {
+      // Volleyball news is loaded a season at a time, so there is no "None".
+      return ((ts?.Seasons ?? []) as number[]).map((year) => ({
+        label: String(year),
+        value: String(year),
+      }));
     }
     if (!ts) {
       return [noneOption, { label: "2025", value: "1" }];
@@ -125,12 +147,14 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
       options = [{ label: "2025", value: "1" }];
     }
     return [noneOption, ...options];
-  }, [ts, league]);
+  }, [ts, league, volleyball]);
 
   const weekOptions = useMemo(() => {
     const noneOption = { label: "None", value: "-1" };
     let options = [];
-    if (league === SimCLAX) {
+    if (volleyball) {
+      options = Array.from({ length: 15 }, (_, index) => ({ label: `Week ${index + 1}`, value: String(index + 1) }));
+    } else if (league === SimCLAX) {
       options = Array.from({ length: 14 }, (_, index) => ({ label: `Week ${index + 1}`, value: String(index + 1) }));
     } else if (league === SimCHL || league === SimPHL) {
       options = MakeHCKWeeksOptionList(selectedSeason);
@@ -142,7 +166,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
       options = MakeHCKWeeksOptionList(selectedSeason);
     }
     return [noneOption, ...options];
-  }, [selectedSeason, league]);
+  }, [selectedSeason, league, volleyball]);
 
   return (
     <div className="flex flex-col w-full h-fit max-[768px]:gap-y-1 max-[1024px]:gap-y-2 mb-2 sticky top-20 max-[768px]:mt-2 mt-4 z-10">
@@ -189,7 +213,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
             />
             <CategoryDropdown
               label="News Type"
-              options={NewsTypeOptions}
+              options={newsTypeOptions}
               isMulti={false}
               isMobile={false}
               change={SelectNewsTypeOption}
@@ -224,7 +248,7 @@ export const NewsSideBar: FC<NewsSideBarProps> = ({
               />
               <NewsDropdown
                 label="Type"
-                options={NewsTypeOptions}
+                options={newsTypeOptions}
                 isMulti={false}
                 isMobile={true}
                 change={SelectNewsTypeOption}

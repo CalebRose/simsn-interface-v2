@@ -3,10 +3,8 @@ import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { PillButton, ButtonGroup } from "../../../_design/Buttons";
 import { PageContainer } from "../../../_design/Container";
-import { SimMLB } from "../../../_constants/constants";
-import { getLogo } from "../../../_utility/getLogo";
+import { SportBannerAside } from "../../Common/SportBanner";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
-import { useAuthStore } from "../../../context/AuthContext";
 import { useModal } from "../../../_hooks/useModal";
 import { BaseballService } from "../../../_services/baseballService";
 import {
@@ -29,7 +27,6 @@ import {
 } from "./BaseballRosterTable";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
-import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { useSnackbar } from "notistack";
 import "./baseballMobile.css";
 
@@ -177,7 +174,6 @@ export const BaseballIntamScoutingPage = (
   _props: BaseballIntamScoutingPageProps,
 ) => {
   const { enqueueSnackbar } = useSnackbar();
-  const { currentUser } = useAuthStore();
   const { mlbOrganization, seasonContext } = useSimBaseballStore();
   const orgId = mlbOrganization?.id ?? 0;
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
@@ -200,17 +196,6 @@ export const BaseballIntamScoutingPage = (
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const headerTextClass = getTextColorBasedOnBg(headerColor);
-
-  const logo = useMemo(() => {
-    if (!primaryTeam) return "";
-    return getLogo(SimMLB, primaryTeam.team_id, currentUser?.IsRetro);
-  }, [primaryTeam, currentUser?.IsRetro]);
-
-  const pageTitle = useMemo(() => {
-    if (!primaryTeam) return "International Scouting";
-    return `${primaryTeam.team_full_name} International Scouting`;
-  }, [primaryTeam]);
 
   // ── Server-side pool table ──
   const fetcher = useCallback(
@@ -445,8 +430,6 @@ export const BaseballIntamScoutingPage = (
     if (activeTab === "signings") loadSignings();
   }, [activeTab, loadSignings]);
 
-  const orgAbbrev = mlbOrganization?.org_abbrev ?? "";
-
   const th = "px-2 py-1 text-xs font-semibold text-left whitespace-nowrap";
   const td = "px-2 py-1";
 
@@ -647,25 +630,8 @@ export const BaseballIntamScoutingPage = (
   return (
     <PageContainer>
       <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
-        {/* Team-colored header */}
-        <div
-          className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{
-            backgroundColor: headerColor,
-            borderBottom: `3px solid ${borderColor}`,
-          }}
-        >
-          {logo && (
-            <img
-              src={logo}
-              className="w-10 h-10 object-contain"
-              alt={orgAbbrev}
-            />
-          )}
-          <Text variant="h4" classes={headerTextClass}>
-            {pageTitle}
-          </Text>
-          <div className="ml-auto">
+        {/* The page's controls sit on the banner; the banner names the page. */}
+        <SportBannerAside>
             {orgId > 0 && leagueYearId > 0 && (
               <ScoutingBudgetBar
                 orgId={orgId}
@@ -674,8 +640,7 @@ export const BaseballIntamScoutingPage = (
                 refreshKey={budgetRefreshKey}
               />
             )}
-          </div>
-        </div>
+        </SportBannerAside>
 
         {/* Scouting Department Expansion */}
         {orgId > 0 && leagueYearId > 0 && (

@@ -15,6 +15,8 @@ import {
   SimCollegeBaseball,
   SimMLB,
   SimCLAX,
+  SimCVB,
+  SimPVB,
 } from "../../_constants/constants";
 import { useAuthStore } from "../../context/AuthContext";
 import { useSimBBAStore } from "../../context/SimBBAContext";
@@ -30,6 +32,8 @@ import { teamByLeague } from "../../_utility/useLeagueSelector";
 import { BaseballLandingPage } from "../LandingPage/BaseballLandingPage";
 import { useSimLAXStore } from "../../context/SimLAXContext";
 import { CollegeLacrosseDashboard } from "../Lacrosse/CollegeLacrosseDashboard";
+import { useSimVBStore } from "../../context/SimVBContext";
+import { VolleyballHomeSection } from "../Volleyball/VolleyballLeaguePages";
 
 export const Home = () => {
   const { currentUser } = useAuthStore();
@@ -49,6 +53,14 @@ export const Home = () => {
     refreshClaxStatistics,
     refreshClaxRoster,
   } = useSimLAXStore();
+  const { cvbTeam, pvbTeam } = useSimVBStore();
+  // The leagues whose home shows the sport banner, which has its own row of
+  // the user's leagues.
+  const bannerHasLeagues =
+    (Boolean(selectedTeam) &&
+      (selectedLeague === SimCollegeBaseball || selectedLeague === SimMLB)) ||
+    (Boolean(cvbTeam) && selectedLeague === SimCVB) ||
+    (Boolean(pvbTeam) && selectedLeague === SimPVB);
   const [claxDashboardReadyKey, setClaxDashboardReadyKey] = useState<
     string | null
   >(null);
@@ -246,7 +258,9 @@ export const Home = () => {
       !NBATeamID &&
       !collegeOrganization &&
       !mlbOrganization &&
-      !claxTeam
+      !claxTeam &&
+      !cvbTeam &&
+      !pvbTeam
     ) {
       return false;
     }
@@ -259,12 +273,21 @@ export const Home = () => {
       NBATeamID === 0 &&
       !collegeOrganization &&
       !mlbOrganization &&
-      !claxTeam
+      !claxTeam &&
+      !cvbTeam &&
+      !pvbTeam
     ) {
       return false;
     }
     return true;
-  }, [currentUser, collegeOrganization, mlbOrganization, claxTeam]);
+  }, [
+    currentUser,
+    collegeOrganization,
+    mlbOrganization,
+    claxTeam,
+    cvbTeam,
+    pvbTeam,
+  ]);
 
   const isBanned = useMemo(() => {
     if (!currentUser) return false;
@@ -292,9 +315,10 @@ export const Home = () => {
   // SimLAX dashboard data is intentionally background work. A slow or
   // unavailable SimLAX API must not hold the entire SimSN dashboard behind its
   // loading screen; the lacrosse panel consumes the store as each request
-  // eventually resolves.
+  // eventually resolves. The same holds for volleyball.
   const homeLoading =
-    teamButtonsLoading || (!selectedTeam && !claxTeam && isParticipating);
+    teamButtonsLoading ||
+    (!selectedTeam && !claxTeam && !cvbTeam && !pvbTeam && isParticipating);
 
   useEffect(() => {
     if (!homeLoading) {
@@ -405,6 +429,8 @@ export const Home = () => {
       )}
       {!isBanned && (
         <div className="flex flex-col px-[1vw] md:px-2 mt-1">
+          {/* Baseball and volleyball show the user's leagues on their banner. */}
+          {!bannerHasLeagues && (
           <div className="flex flex-row mb-1">
             <LeagueSelector
               selectedLeague={selectedLeague as League}
@@ -419,9 +445,12 @@ export const Home = () => {
                 collegeBaseballOrg: collegeOrganization,
                 mlbOrg: mlbOrganization,
                 claxTeam,
+                cvbTeam,
+                pvbTeam,
               }}
             />
           </div>
+          )}
           {selectedTeam &&
             (selectedLeague === SimCollegeBaseball ||
               selectedLeague === SimMLB) && (
@@ -445,8 +474,17 @@ export const Home = () => {
             ) : (
               <CollegeLacrosseDashboard team={claxTeam} />
             ))}
+          {/* The league home itself, so both places show the same page. */}
+          {cvbTeam && selectedLeague === SimCVB && (
+            <VolleyballHomeSection kind="college" />
+          )}
+          {pvbTeam && selectedLeague === SimPVB && (
+            <VolleyballHomeSection kind="pro" />
+          )}
           {selectedTeam &&
             selectedLeague !== SimCLAX &&
+            selectedLeague !== SimCVB &&
+            selectedLeague !== SimPVB &&
             selectedLeague !== SimCollegeBaseball &&
             selectedLeague !== SimMLB && (
               <TeamLandingPage

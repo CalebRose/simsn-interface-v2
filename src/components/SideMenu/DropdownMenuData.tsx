@@ -6,10 +6,12 @@ import {
   SimCHL,
   SimCLAX,
   SimCollegeBaseball,
+  SimCVB,
   SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
+  SimPVB,
 } from "../../_constants/constants";
 import routes from "../../_constants/routes";
 import { useNavigate } from "react-router-dom";
@@ -36,6 +38,17 @@ export const useSideMenu = () => {
 
   const toggleMenu = () => setIsOpen((prev) => !prev);
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+  const volleyballLinks = (
+    league: League,
+    links: Array<[label: string, route: string]>,
+  ): DropdownItem[] =>
+    links.map(([label, route]) => ({
+      label,
+      isRoute: true,
+      route: clax(route),
+      league,
+      toggle: () => toggleMenu(),
+    }));
   const dropdowns: Record<string, DropdownItem[]> = {
     SimCFB: [
       {
@@ -625,6 +638,36 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
     ],
+    SimCVB: volleyballLinks(SimCVB, [
+      ["Team", routes.CVB_TEAM],
+      ["Lineup", routes.CVB_LINEUP],
+      ["Tactics", routes.CVB_TACTICS],
+      ["Development", routes.CVB_DEVELOPMENT],
+      ["Recruiting", routes.CVB_RECRUITING],
+      ["Transfer Portal", routes.CVB_TRANSFER],
+      ["Staff", routes.CVB_STAFF],
+      ["Finances", routes.CVB_FINANCES],
+      ["Coaching Changes", routes.CVB_CAROUSEL],
+      ["Schedule", routes.CVB_SCHEDULE],
+      ["Statistics", routes.CVB_STATISTICS],
+      ["History", routes.CVB_HISTORY],
+      ["Coach", routes.CVB_COACH],
+    ]),
+    SimPVB: volleyballLinks(SimPVB, [
+      ["Team", routes.PVB_TEAM],
+      ["Lineup", routes.PVB_LINEUP],
+      ["Tactics", routes.PVB_TACTICS],
+      ["Development", routes.PVB_DEVELOPMENT],
+      ["Free Agency", routes.PVB_FREE_AGENCY],
+      ["Trades", routes.PVB_TRADES],
+      ["Draft", routes.PVB_DRAFT],
+      ["Staff", routes.PVB_STAFF],
+      ["Finances", routes.PVB_FINANCES],
+      ["Schedule", routes.PVB_SCHEDULE],
+      ["Statistics", routes.PVB_STATISTICS],
+      ["History", routes.PVB_HISTORY],
+      ["Coach", routes.PVB_COACH],
+    ]),
   };
 
   return {

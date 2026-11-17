@@ -3,6 +3,12 @@ scripts/serviceAccountKey.json
 firebase.json
 firestore.rules
 
+# Volleyball hand-off material, kept locally: the backend's docs and the
+# zipped deliveries of the replay viewer (installed in src/_vendor).
+/TechDocs/volleyball/
+/replay-viewer-v13.zip
+/vbanim.zip
+
 
 # Logs
 logs
