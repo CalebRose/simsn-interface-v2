@@ -8,6 +8,8 @@ import {
   SimNFL,
   SimPHL,
   SimMLB,
+  SimCVB,
+  SimPVB,
 } from "../_constants/constants";
 import {
   BaseballLogos,
@@ -71,6 +73,8 @@ export const getLogo = (
   if (league === SimCHL) return getCHLLogo(id, retro);
   if (league === SimPHL) return getPHLLogo(id, retro);
   if (league === SimMLB) return getMLBLogo(id, retro);
+  if (league === SimCVB) return getCVBLogo(id, retro);
+  if (league === SimPVB) return getPVBLogo(id, retro);
   if (league === SimCollegeBaseball) return getCollegeBaseballLogo(id, retro);
   return `${baseUrl}/icons/simsn_icon.webp`;
 };
@@ -3208,5 +3212,22 @@ export const getCollegeBaseballLogo = (id: number, IsRetro: boolean) => {
 
     default:
       return logoObj.Unknown;
+  }
+};
+
+export const getCVBLogo = (id: number, retro?: boolean) => {
+  const logoObj = retro ? retro_logos : logos;
+  switch (id) {
+    // Add CVB logo cases here
+    default:
+      return "";
+  }
+};
+
+export const getPVBLogo = (id: number, retro?: boolean) => {
+  switch (id) {
+    // Add PVB logo cases here
+    default:
+      return "";
   }
 };
