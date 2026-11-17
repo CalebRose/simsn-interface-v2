@@ -10,6 +10,8 @@ import {
   SimCFB,
   SimCHL,
   SimCLAX,
+  SimCVB,
+  SimPVB,
   SimCollegeBaseball,
   SimMLB,
   SimNBA,
@@ -47,6 +49,8 @@ import { BaseballOrganization } from "../../models/baseball/baseballModels";
 import { ProfileTeamCardModal } from "./ProfileTeamCardModal";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { getLaxLogoUrl, LacrosseService, LaxTeam } from "../../_services/lacrosseService";
+import { VbTeam } from "../../_services/volleyballService";
+import { simLogos } from "../../_constants/logos";
 import { useProfileResignation } from "./useProfileResignation";
 import { enqueueSnackbar } from "notistack";
 
@@ -199,6 +203,42 @@ export const ProfileCLAXTeamCard: React.FC<ProfileCLAXTeamCardProps> = ({
         </ProfileTeamCardModal>
       )}
     </>
+  );
+};
+
+interface ProfileVBTeamCardProps {
+  Team: VbTeam | null;
+}
+
+// Volleyball: read-only here. A coach leaves their team from their coach page.
+export const ProfileVBTeamCard: React.FC<ProfileVBTeamCardProps> = ({
+  Team,
+}) => {
+  if (!Team) return null;
+  const college = Team.Kind === "college_program";
+  const backgroundColor = Team.ColorOne || "#4B5563";
+  const borderColor = Team.ColorTwo || "#4B5563";
+  return (
+    <ProfileTeamCard
+      teamID={Team.TeamID}
+      teamLabel={
+        Team.Nickname && !Team.Name.includes(Team.Nickname)
+          ? `${Team.Name} ${Team.Nickname}`
+          : Team.Name
+      }
+      conference={Team.Conference || ""}
+      role="Coach"
+      backgroundColor={backgroundColor}
+      borderColor={borderColor}
+      secondaryBorderColor={Team.ColorThree || borderColor}
+      league={college ? SimCVB : SimPVB}
+      textColorClass={getTextColorBasedOnBg(backgroundColor)}
+      removeUser={() => {}}
+      isUser={false}
+      logoUrl={
+        Team.LogoURL || (college ? simLogos.SimCVB : simLogos.SimPVB)
+      }
+    />
   );
 };
 

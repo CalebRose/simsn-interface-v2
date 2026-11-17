@@ -1,3 +1,4 @@
+import { ReactElement } from "react";
 import { Navigate, Route } from "react-router-dom";
 import { AuthGuard } from "../guards/AuthGuards";
 import { RootRoute } from "../components/Home/RootRoute";
@@ -35,6 +36,8 @@ import { PlayoffBracketPage } from "../components/SpecialEvents/BaseballEvents/P
 import { ConferenceTournamentPage } from "../components/SpecialEvents/BaseballEvents/ConferenceTournamentPage";
 import { AllStarGamePage } from "../components/SpecialEvents/BaseballEvents/AllStarGamePage";
 import { WBCPage } from "../components/SpecialEvents/BaseballEvents/WBCPage";
+import { BaseballRouteFrame } from "../components/LandingPage/baseballNav";
+import { SportUiPage } from "../components/Common/SportUiPage";
 import { GameplanPage } from "../components/Gameplan/GameplanPage";
 import { RecruitingPage } from "../components/Recruiting/RecruitingPage";
 import { SchedulePage } from "../components/Schedule/SchedulePage";
@@ -63,10 +66,108 @@ import { CollegeLacrosseAdminPage } from "../components/Lacrosse/CollegeLacrosse
 import { CollegeLacrosseRecruitingPage } from "../components/Lacrosse/CollegeLacrosseRecruitingPage";
 import { CollegeLacrosseSchedulePage } from "../components/Lacrosse/CollegeLacrosseSchedulePage";
 import { CollegeLacrosseStatisticsPage } from "../components/Lacrosse/CollegeLacrosseStatisticsPage";
+import { VolleyballTeamPage } from "../components/Volleyball/VolleyballTeamPage";
+import { VolleyballSchedulePage } from "../components/Volleyball/VolleyballSchedulePage";
+import { VolleyballMatchPage } from "../components/Volleyball/VolleyballMatchPage";
+import { VolleyballHistoryPage } from "../components/Volleyball/VolleyballHistoryPage";
+import {
+  VolleyballCoachPage,
+  VolleyballCoachPersonPage,
+  VolleyballApplyPage,
+  VolleyballCoachViewPage,
+} from "../components/Volleyball/VolleyballCoachPage";
+import { VolleyballLineupPage } from "../components/Volleyball/VolleyballLineupPage";
+import { VolleyballTacticsPage } from "../components/Volleyball/VolleyballTacticsPage";
+import { VolleyballDevelopmentPage } from "../components/Volleyball/VolleyballDevelopmentPage";
+import { VolleyballStaffPage } from "../components/Volleyball/VolleyballStaffPage";
+import { VolleyballRecruitingPage } from "../components/Volleyball/VolleyballRecruitingPage";
+import {
+  VolleyballCarouselPage,
+  VolleyballFinancesPage,
+} from "../components/Volleyball/VolleyballOfficePages";
+import {
+  VolleyballDraftPage,
+  VolleyballFreeAgencyPage,
+  VolleyballTradesPage,
+} from "../components/Volleyball/VolleyballProPages";
+import {
+  VolleyballLeagueHome,
+  VolleyballPlayerPage,
+  VolleyballTeamsPage,
+} from "../components/Volleyball/VolleyballLeaguePages";
+import {
+  VolleyballStatisticsPage,
+  VolleyballTopPlaysPage,
+} from "../components/Volleyball/VolleyballStatsPages";
+
+// The volleyball pages that exist. The rally path opens the match page; the
+// rally viewer itself is still to come.
+const volleyballPages: Array<[path: string, page: ReactElement]> = [
+  [routes.CVB_STATISTICS, <VolleyballStatisticsPage kind="college" />],
+  [routes.PVB_STATISTICS, <VolleyballStatisticsPage kind="pro" />],
+  [routes.CVB_TOP_PLAYS, <VolleyballTopPlaysPage kind="college" />],
+  [routes.PVB_TOP_PLAYS, <VolleyballTopPlaysPage kind="pro" />],
+  [routes.CVB_STAFF, <VolleyballStaffPage kind="college" />],
+  [routes.PVB_STAFF, <VolleyballStaffPage kind="pro" />],
+  [routes.PVB_FREE_AGENCY, <VolleyballFreeAgencyPage />],
+  [routes.PVB_TRADES, <VolleyballTradesPage />],
+  [routes.PVB_DRAFT, <VolleyballDraftPage />],
+  [routes.CVB_RECRUITING, <VolleyballRecruitingPage market="hs" />],
+  [routes.CVB_TRANSFER, <VolleyballRecruitingPage market="portal" />],
+  [routes.CVB_CAROUSEL, <VolleyballCarouselPage />],
+  [routes.CVB_FINANCES, <VolleyballFinancesPage kind="college" />],
+  [routes.PVB_FINANCES, <VolleyballFinancesPage kind="pro" />],
+  [routes.CVB_HOME, <VolleyballLeagueHome kind="college" />],
+  [routes.CVB_TEAMS, <VolleyballTeamsPage kind="college" />],
+  [routes.CVB_TEAM, <VolleyballTeamPage kind="college" />],
+  [routes.CVB_SCHEDULE, <VolleyballSchedulePage kind="college" />],
+  [routes.CVB_MATCH, <VolleyballMatchPage kind="college" />],
+  [routes.CVB_MATCH_RALLY, <VolleyballMatchPage kind="college" />],
+  [routes.CVB_HISTORY, <VolleyballHistoryPage kind="college" />],
+  [routes.CVB_PLAYER, <VolleyballPlayerPage kind="college" />],
+  [routes.CVB_COACH, <VolleyballCoachPage kind="college" />],
+  [routes.PVB_COACH, <VolleyballCoachPage kind="pro" />],
+  [routes.CVB_COACH_VIEW, <VolleyballCoachViewPage />],
+  [routes.CVB_COACH_PERSON, <VolleyballCoachPersonPage />],
+  [routes.CVB_APPLY, <VolleyballApplyPage kind="college" />],
+  [routes.PVB_APPLY, <VolleyballApplyPage kind="pro" />],
+  [routes.CVB_LINEUP, <VolleyballLineupPage kind="college" />],
+  [routes.CVB_TACTICS, <VolleyballTacticsPage kind="college" />],
+  [routes.CVB_DEVELOPMENT, <VolleyballDevelopmentPage kind="college" />],
+  [routes.PVB_LINEUP, <VolleyballLineupPage kind="pro" />],
+  [routes.PVB_TACTICS, <VolleyballTacticsPage kind="pro" />],
+  [routes.PVB_DEVELOPMENT, <VolleyballDevelopmentPage kind="pro" />],
+  [routes.PVB_HOME, <VolleyballLeagueHome kind="pro" />],
+  [routes.PVB_TEAMS, <VolleyballTeamsPage kind="pro" />],
+  [routes.PVB_TEAM, <VolleyballTeamPage kind="pro" />],
+  [routes.PVB_SCHEDULE, <VolleyballSchedulePage kind="pro" />],
+  [routes.PVB_MATCH, <VolleyballMatchPage kind="pro" />],
+  [routes.PVB_MATCH_RALLY, <VolleyballMatchPage kind="pro" />],
+  [routes.PVB_HISTORY, <VolleyballHistoryPage kind="pro" />],
+  [routes.PVB_PLAYER, <VolleyballPlayerPage kind="pro" />],
+];
 
 // Will Add More Pages here for authorized users (Logged in)
 export const AuthRoutes = [
   <Route key="Home" path={routes.HOME} element={<RootRoute />} />,
+  <Route
+    key="Sport UI"
+    path={routes.SPORT_UI}
+    element={
+      <AuthGuard>
+        <SportUiPage />
+      </AuthGuard>
+    }
+  />,
+  ...volleyballPages.map(([path, page]) => (
+    <Route
+      key={`Volleyball ${path}`}
+      path={path}
+      // Keyed by path so a page starts fresh when the league changes,
+      // instead of carrying one league's choices into the other.
+      element={<AuthGuard key={path}>{page}</AuthGuard>}
+    />
+  )),
   <Route
     key="CLAX Home"
     path={routes.CLAX_HOME}
@@ -559,7 +660,9 @@ export const AuthRoutes = [
     path={routes.COLLEGE_BASEBALL_TEAM}
     element={
       <AuthGuard>
-        <BaseballTeamPage league={SimCollegeBaseball} />
+        <BaseballRouteFrame league={SimCollegeBaseball}>
+          <BaseballTeamPage league={SimCollegeBaseball} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -568,7 +671,9 @@ export const AuthRoutes = [
     path={routes.MLB_TEAM}
     element={
       <AuthGuard>
-        <BaseballTeamPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballTeamPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -577,7 +682,9 @@ export const AuthRoutes = [
     path={routes.MLB_FINANCIALS}
     element={
       <AuthGuard>
-        <BaseballFinancialsPage />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballFinancialsPage />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -586,7 +693,9 @@ export const AuthRoutes = [
     path={routes.COLLEGE_BASEBALL_GAMEPLAN}
     element={
       <AuthGuard>
-        <BaseballGameplanPage league={SimCollegeBaseball} />
+        <BaseballRouteFrame league={SimCollegeBaseball}>
+          <BaseballGameplanPage league={SimCollegeBaseball} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -595,7 +704,9 @@ export const AuthRoutes = [
     path={routes.MLB_GAMEPLAN}
     element={
       <AuthGuard>
-        <BaseballGameplanPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballGameplanPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -604,7 +715,9 @@ export const AuthRoutes = [
     path={routes.MLB_TRADES}
     element={
       <AuthGuard>
-        <BaseballTradePage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballTradePage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -613,7 +726,9 @@ export const AuthRoutes = [
     path={routes.MLB_FREE_AGENCY}
     element={
       <AuthGuard>
-        <BaseballFreeAgencyPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballFreeAgencyPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -622,7 +737,9 @@ export const AuthRoutes = [
     path={routes.MLB_PRO_SCOUTING}
     element={
       <AuthGuard>
-        <BaseballProScoutingPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballProScoutingPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -631,7 +748,9 @@ export const AuthRoutes = [
     path={routes.MLB_INTAM_SCOUTING}
     element={
       <AuthGuard>
-        <BaseballIntamScoutingPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballIntamScoutingPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -640,7 +759,9 @@ export const AuthRoutes = [
     path={routes.COLLEGE_BASEBALL_RECRUITING}
     element={
       <AuthGuard>
-        <BaseballRecruitingPage league={SimCollegeBaseball} />
+        <BaseballRouteFrame league={SimCollegeBaseball}>
+          <BaseballRecruitingPage league={SimCollegeBaseball} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -649,7 +770,9 @@ export const AuthRoutes = [
     path={routes.MLB_SCHEDULE}
     element={
       <AuthGuard>
-        <MLBSchedulePage />
+        <BaseballRouteFrame league={SimMLB}>
+          <MLBSchedulePage />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -658,7 +781,9 @@ export const AuthRoutes = [
     path={routes.COLLEGE_BASEBALL_SCHEDULE}
     element={
       <AuthGuard>
-        <CollegeBaseballSchedulePage />
+        <BaseballRouteFrame league={SimCollegeBaseball}>
+          <CollegeBaseballSchedulePage />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -667,7 +792,9 @@ export const AuthRoutes = [
     path={routes.MLB_STATS}
     element={
       <AuthGuard>
-        <BaseballStatsPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballStatsPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -676,7 +803,9 @@ export const AuthRoutes = [
     path={routes.COLLEGE_BASEBALL_STATS}
     element={
       <AuthGuard>
-        <BaseballStatsPage league={SimCollegeBaseball} />
+        <BaseballRouteFrame league={SimCollegeBaseball}>
+          <BaseballStatsPage league={SimCollegeBaseball} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -685,7 +814,9 @@ export const AuthRoutes = [
     path={routes.MLB_INJURIES}
     element={
       <AuthGuard>
-        <BaseballInjuryPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballInjuryPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -694,7 +825,9 @@ export const AuthRoutes = [
     path={routes.COLLEGE_BASEBALL_INJURIES}
     element={
       <AuthGuard>
-        <BaseballInjuryPage league={SimCollegeBaseball} />
+        <BaseballRouteFrame league={SimCollegeBaseball}>
+          <BaseballInjuryPage league={SimCollegeBaseball} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -703,7 +836,9 @@ export const AuthRoutes = [
     path={routes.MLB_TRAINING_CAMP}
     element={
       <AuthGuard>
-        <BaseballTrainingCampPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballTrainingCampPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -712,7 +847,9 @@ export const AuthRoutes = [
     path={routes.COLLEGE_BASEBALL_TRAINING_CAMP}
     element={
       <AuthGuard>
-        <BaseballTrainingCampPage league={SimCollegeBaseball} />
+        <BaseballRouteFrame league={SimCollegeBaseball}>
+          <BaseballTrainingCampPage league={SimCollegeBaseball} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -721,7 +858,9 @@ export const AuthRoutes = [
     path={routes.MLB_PLAYOFFS}
     element={
       <AuthGuard>
-        <PlayoffBracketPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <PlayoffBracketPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -730,7 +869,9 @@ export const AuthRoutes = [
     path={routes.COLLEGE_BASEBALL_PLAYOFFS}
     element={
       <AuthGuard>
-        <PlayoffBracketPage league={SimCollegeBaseball} />
+        <BaseballRouteFrame league={SimCollegeBaseball}>
+          <PlayoffBracketPage league={SimCollegeBaseball} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -739,7 +880,9 @@ export const AuthRoutes = [
     path={routes.COLLEGE_BASEBALL_CONF_TOURNAMENT}
     element={
       <AuthGuard>
-        <ConferenceTournamentPage />
+        <BaseballRouteFrame league={SimCollegeBaseball}>
+          <ConferenceTournamentPage />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -748,7 +891,9 @@ export const AuthRoutes = [
     path={routes.MLB_ALLSTAR}
     element={
       <AuthGuard>
-        <AllStarGamePage />
+        <BaseballRouteFrame league={SimMLB}>
+          <AllStarGamePage />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -757,7 +902,9 @@ export const AuthRoutes = [
     path={routes.MLB_WBC}
     element={
       <AuthGuard>
-        <WBCPage />
+        <BaseballRouteFrame league={SimMLB}>
+          <WBCPage />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -766,7 +913,9 @@ export const AuthRoutes = [
     path={routes.MLB_DRAFT_ROOM}
     element={
       <AuthGuard>
-        <DraftPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <DraftPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,
@@ -775,7 +924,9 @@ export const AuthRoutes = [
     path={routes.MLB_IFA}
     element={
       <AuthGuard>
-        <BaseballIFAPage league={SimMLB} />
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballIFAPage league={SimMLB} />
+        </BaseballRouteFrame>
       </AuthGuard>
     }
   />,

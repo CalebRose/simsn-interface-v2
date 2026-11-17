@@ -7,6 +7,7 @@ import { SimBBAProvider } from "./context/SimBBAContext";
 import { SimFBAProvider } from "./context/SimFBAContext";
 import { SimHCKProvider } from "./context/SimHockeyContext";
 import { SimLAXProvider } from "./context/SimLAXContext";
+import { SimVBProvider } from "./context/SimVBContext";
 import { ForumProvider } from "./context/ForumContext";
 import { DMProvider } from "./context/DMContext";
 import AppRoutes from "./routes/AppRoutes";
@@ -32,23 +33,25 @@ const InnerApp = () => {
   return (
     <div className={overallTheme}>
       <SimLAXProvider>
-        <SimFBAProvider>
-          <SimBBAProvider>
-            <SimHCKProvider>
-              <SimBaseballProvider>
-                <LeagueProvider>
-                  <AdminPageProvider>
-                    <ForumProvider currentUser={currentUser}>
-                      <DMProvider currentUser={currentUser}>
-                        <AppRoutes />
-                      </DMProvider>
-                    </ForumProvider>
-                  </AdminPageProvider>
-                </LeagueProvider>
-              </SimBaseballProvider>
-            </SimHCKProvider>
-          </SimBBAProvider>
-        </SimFBAProvider>
+        <SimVBProvider>
+          <SimFBAProvider>
+            <SimBBAProvider>
+              <SimHCKProvider>
+                <SimBaseballProvider>
+                  <LeagueProvider>
+                    <AdminPageProvider>
+                      <ForumProvider currentUser={currentUser}>
+                        <DMProvider currentUser={currentUser}>
+                          <AppRoutes />
+                        </DMProvider>
+                      </ForumProvider>
+                    </AdminPageProvider>
+                  </LeagueProvider>
+                </SimBaseballProvider>
+              </SimHCKProvider>
+            </SimBBAProvider>
+          </SimFBAProvider>
+        </SimVBProvider>
       </SimLAXProvider>
     </div>
   );

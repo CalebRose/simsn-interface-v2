@@ -1,11 +1,8 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Border } from "../../_design/Borders";
 import { Text } from "../../_design/Typography";
 import { Button } from "../../_design/Buttons";
-import { SectionCards } from "../../_design/SectionCards";
 import { CheckCircle, Medic, TrashCan } from "../../_design/Icons";
-import { SelectDropdown } from "../../_design/Select";
 import { SelectOption } from "../../_hooks/useSelectStyles";
 import routes from "../../_constants/routes";
 import {
@@ -32,7 +29,6 @@ import { useAuthStore } from "../../context/AuthContext";
 import { useResponsive } from "../../_hooks/useMobile";
 import {
   displayLevel,
-  LEVEL_ORDER,
   LEVEL_TO_NUMERIC,
 } from "../../_utility/baseballHelpers";
 import { useTeamColors } from "../../_hooks/useTeamColors";
@@ -40,7 +36,16 @@ import { isBrightColor } from "../../_utility/isBrightColor";
 import { getTextColorBasedOnBg } from "../../_utility/getBorderClass";
 import { getThemeColors } from "../../_utility/themeHelpers";
 import { getThemeAwareDarkenColor } from "../../_utility/getDarkerColor";
-import { ForumPortal, TeamQuickLinks } from "./TeamLandingPageComponents";
+import { TeamQuickLinks } from "./TeamLandingPageComponents";
+import { SportForumPanel } from "../Common/SportForumPanel";
+import { SportBanner, SportBannerPicker, SportNavRow } from "../Common/SportBanner";
+import { SportSectionCard } from "../Common/SportKit";
+import { BaseballLevelTabs, baseballNavGroups } from "./baseballNav";
+import {
+  sportStateCard,
+  sportStatePill,
+  sportStateText,
+} from "../Common/sportTheme";
 import { BaseballBoxScoreModal } from "../Schedule/BaseballSchedule/BaseballBoxScoreModal";
 import {
   BattingLeaderRow,
@@ -204,7 +209,6 @@ export const BaseballLandingPage = ({
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const headerTextClass = getTextColorBasedOnBg(headerColor);
 
   // Theme-aware background colors (for ForumPortal)
   const themeColors = getThemeColors(isDarkMode);
@@ -565,104 +569,52 @@ export const BaseballLandingPage = ({
 
   return (
     <div className="flex flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6">
-      {/* Team-colored header bar with integrated level tabs */}
-      <div
-        className="mb-2 rounded-lg overflow-hidden"
-        style={{ borderBottom: `3px solid ${borderColor}` }}
-      >
-        {/* Title row */}
-        <div
-          className={`flex items-center gap-3 flex-wrap px-4 py-2 ${headerTextClass}`}
-          style={{ backgroundColor: headerColor }}
-        >
-          {logo && (
-            <img
-              src={logo}
-              className="w-10 h-10 object-contain"
-              alt={viewedOrg.org_abbrev}
-            />
-          )}
-          <div className="flex flex-col">
-            <Text variant="h5" classes={`font-semibold ${headerTextClass}`}>
-              {pageTitle}
-            </Text>
-            {seasonLabel && (
-              <Text
-                variant="small"
-                classes={headerTextClass}
-                style={{ opacity: 0.8 }}
-              >
-                {seasonLabel}
-              </Text>
+      {/* The banner every baseball page shares: the organisation, its levels,
+          then its pages. The pages replace the old Quick Links card. */}
+      <SportBanner
+        league={league as League}
+        color={headerColor}
+        accent={borderColor}
+        logo={logo || undefined}
+        title={pageTitle}
+        subtitle={seasonLabel || undefined}
+        aside={
+          <>
+            {!isOwnOrg && (
+              <span className="text-xs italic opacity-70">
+                Viewing — roster actions disabled
+              </span>
             )}
-          </div>
-          {!isOwnOrg && (
-            <span
-              className={`text-xs italic ${headerTextClass}`}
-              style={{ opacity: 0.7 }}
-            >
-              Viewing — roster actions disabled
-            </span>
-          )}
-        </div>
-
-        {/* Level Navigation Tabs — inline within header */}
-        {viewedOrg.teams && Object.keys(viewedOrg.teams).length > 1 && (
-          <div
-            className="flex items-stretch overflow-x-auto"
-            style={{ backgroundColor: `${headerColor}cc` }}
-          >
-            {(league === SimCollegeBaseball
-              ? Object.keys(viewedOrg.teams)
-              : LEVEL_ORDER.filter((l) => viewedOrg.teams?.[l])
-            ).map((level) => {
-              const team = viewedOrg.teams[level];
-              const isActive = activeLevel === level;
-              return (
-                <button
-                  key={level}
-                  onClick={() =>
-                    setSelectedLevel(level === defaultLevel ? null : level)
-                  }
-                  className={`relative flex items-center gap-1.5 px-4 py-2 text-sm whitespace-nowrap transition-all cursor-pointer ${headerTextClass}`}
-                  style={{
-                    backgroundColor: isActive
-                      ? "rgba(255,255,255,0.15)"
-                      : "transparent",
-                    opacity: isActive ? 1 : 0.7,
-                    borderBottom: isActive
-                      ? `2px solid ${borderColor}`
-                      : "2px solid transparent",
-                    fontWeight: isActive ? 600 : 400,
-                  }}
-                >
-                  <img
-                    src={getLogo(
-                      league === SimMLB ? SimMLB : SimCollegeBaseball,
-                      team.team_id,
-                      currentUser?.IsRetro,
-                    )}
-                    className="w-5 h-5 object-contain"
-                    alt=""
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                  <span>{displayLevel(level)}</span>
-                  {team.team_abbrev && (
-                    <span
-                      className={headerTextClass}
-                      style={{ fontSize: "0.65rem", opacity: 0.7 }}
-                    >
-                      {team.team_abbrev}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+            <SportBannerPicker
+              options={orgOptions}
+              value={selectedOrgOption}
+              onChange={(opt) => {
+                if (opt) handleOrgChange(Number((opt as SelectOption).value));
+              }}
+              isSearchable
+              placeholder="View an organization..."
+              formatOptionLabel={formatOrgLabel}
+            />
+          </>
+        }
+      >
+        {/* Level switch: changes the team shown here, not the page. */}
+        <BaseballLevelTabs
+          league={league}
+          org={viewedOrg}
+          activeLevel={activeLevel}
+          onSelect={(level) =>
+            setSelectedLevel(level === defaultLevel ? null : level)
+          }
+          color={headerColor}
+          accent={borderColor}
+        />
+        <SportNavRow
+          color={headerColor}
+          accent={borderColor}
+          groups={baseballNavGroups(league)}
+        />
+      </SportBanner>
 
       {/* Games Bar */}
       {seasonGames.length > 0 && activeTeamId && !isDataStale && (
@@ -678,18 +630,12 @@ export const BaseballLandingPage = ({
         />
       )}
 
-      <div className="flex-col lg:flex lg:flex-row gap-[1vw] md:gap-4 items-start w-full justify-center">
+      <div className="grid w-full items-start gap-3 lg:grid-cols-3">
         {/* Left Column: Standings + Matchup */}
-        <div className="flex md:gap-[2vw] lg:gap-4 flex-col-reverse md:flex-row">
+        <div className="grid w-full min-w-0 items-start gap-3 md:grid-cols-2 lg:col-span-2">
           {/* Standings */}
-          <Border
-            classes="border-4 py-0 px-0 h-[90vw] max-h-[90vh] w-full md:max-w-[45vw] lg:max-w-120 md:h-auto"
-            styles={{
-              backgroundColor: borderColor,
-              borderColor: backgroundColor,
-            }}
-          >
-            <SectionCards
+          <div className="order-2 h-[90vw] max-h-[90vh] w-full min-w-0 md:order-none md:h-auto">
+            <SportSectionCard
               team={activeTeam}
               header={
                 isCollege
@@ -803,20 +749,14 @@ export const BaseballLandingPage = ({
                   )}
                 </div>
               )}
-            </SectionCards>
-          </Border>
+            </SportSectionCard>
+          </div>
 
           {/* Middle Column: Matchup + Inbox + News */}
-          <div className="flex flex-col items-center md:h-auto w-full md:w-[50vw] lg:w-[32em] 3xl:w-[40em]">
+          <div className="order-1 flex w-full min-w-0 flex-col items-center gap-3 md:order-none md:h-auto">
             {/* Next Game Matchup */}
-            <Border
-              classes="border-4 py-0 px-0 w-full md:h-auto md:max-h-[30vh] lg:max-h-[24em] 3xl:max-h-[36em]"
-              styles={{
-                backgroundColor: borderColor,
-                borderColor: backgroundColor,
-              }}
-            >
-              <SectionCards
+            <div className="w-full md:h-auto">
+              <SportSectionCard
                 team={activeTeam}
                 header="Next Game"
                 classes={textColorClass}
@@ -886,19 +826,13 @@ export const BaseballLandingPage = ({
                     No upcoming games.
                   </Text>
                 )}
-              </SectionCards>
-            </Border>
+              </SportSectionCard>
+            </div>
 
             {/* Injuries (mobile) */}
             {isMobile && !isDataStale && (
-              <Border
-                classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] md:max-w-[45vw] lg:max-w-[30em] md:max-h-[40em]"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <SectionCards
+              <div className="h-full md:h-auto w-full min-w-0 md:max-h-[40em]">
+                <SportSectionCard
                   team={activeTeam}
                   header="Injury Report"
                   classes={`${textColorClass} h-full`}
@@ -912,31 +846,10 @@ export const BaseballLandingPage = ({
                     injuries={teamInjuries}
                     textColorClass={textColorClass}
                   />
-                </SectionCards>
-              </Border>
+                </SportSectionCard>
+              </div>
             )}
 
-            {/* Quick Links (mobile) */}
-            {isMobile && (
-              <Border
-                classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full md:min-w-[18em] md:max-w-[45vw] lg:max-w-[30em] md:max-h-[35em]"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <BaseballQuickLinks
-                  league={league}
-                  isCollege={isCollege}
-                  backgroundColor={backgroundColor}
-                  headerColor={headerColor}
-                  borderColor={borderColor}
-                  textColorClass={textColorClass}
-                  darkerBackgroundColor={darkerBackgroundColor}
-                  activeTeam={activeTeam}
-                />
-              </Border>
-            )}
 
             {/* Scouting Department (mobile, MLB only) */}
             {isMobile &&
@@ -945,14 +858,8 @@ export const BaseballLandingPage = ({
               deptEligible &&
               orgId > 0 &&
               leagueYearId > 0 && (
-                <Border
-                  classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full"
-                  styles={{
-                    backgroundColor: borderColor,
-                    borderColor: backgroundColor,
-                  }}
-                >
-                  <SectionCards
+                <div className="h-full md:h-auto w-full max-w-full">
+                  <SportSectionCard
                     team={activeTeam}
                     header="Scouting Department"
                     classes={`${textColorClass} h-full`}
@@ -968,20 +875,14 @@ export const BaseballLandingPage = ({
                       budget={scoutingBudget}
                       onPurchased={refreshBudget}
                     />
-                  </SectionCards>
-                </Border>
+                  </SportSectionCard>
+                </div>
               )}
 
             {/* Financial Summary (mobile, MLB only, own org only) */}
             {isMobile && !isCollege && isOwnOrg && financialSummary && (
-              <Border
-                classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <SectionCards
+              <div className="h-full md:h-auto w-full max-w-full">
+                <SportSectionCard
                   team={activeTeam}
                   header="Finances"
                   classes={`${textColorClass} h-full`}
@@ -992,22 +893,16 @@ export const BaseballLandingPage = ({
                   textColorClass={textColorClass}
                 >
                   <FinancialSummaryPanel data={financialSummary} />
-                </SectionCards>
-              </Border>
+                </SportSectionCard>
+              </div>
             )}
 
             {/* Team Inbox (only for own org) + Forum + News in a row */}
-            <div className="flex flex-row gap-[1vw] md:gap-2 w-full lg:gap-0 lg:flex-col">
+            <div className="flex w-full flex-col gap-3">
               {/* Team Inbox (only for own org) */}
               {isOwnOrg && (
-                <Border
-                  classes="border-4 py-0 px-0 w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
-                  styles={{
-                    backgroundColor: borderColor,
-                    borderColor: backgroundColor,
-                  }}
-                >
-                  <SectionCards
+                <div className="w-full min-w-0">
+                  <SportSectionCard
                     team={activeTeam}
                     header="Team Inbox"
                     classes={`${textColorClass} h-full`}
@@ -1059,38 +954,18 @@ export const BaseballLandingPage = ({
                         ))}
                       </div>
                     )}
-                  </SectionCards>
-                </Border>
+                  </SportSectionCard>
+                </div>
               )}
 
               {/* Forum Preview */}
-              <Border
-                classes="border-4 py-0 px-0 w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <ForumPortal
-                  team={activeTeam}
-                  league={league as League}
-                  backgroundColor={backgroundColor}
-                  headerColor={headerColor}
-                  borderColor={borderColor}
-                  textColorClass={textColorClass}
-                  darkerBackgroundColor={darkerBackgroundColor}
-                />
-              </Border>
+              <div className="w-full min-w-0">
+                <SportForumPanel league={league as League} />
+              </div>
 
               {/* Team News */}
-              <Border
-                classes="border-4 py-0 px-0 w-full md:min-w-[50vw] lg:min-w-[32em] md:max-h-[20vh] lg:max-h-[40vh] 3xl:max-h-[40vh]"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <SectionCards
+              <div className="w-full min-w-0">
+                <SportSectionCard
                   team={activeTeam}
                   header="Team News"
                   classes={`${textColorClass} h-full`}
@@ -1119,35 +994,14 @@ export const BaseballLandingPage = ({
                       ))}
                     </div>
                   )}
-                </SectionCards>
-              </Border>
+                </SportSectionCard>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Quick Links + Org Info + Financials + Injuries + Stats */}
-        <div className="flex flex-col items-start pt-1 md:pt-0 h-full md:h-auto md:w-[30vw] lg:w-[32em] md:min-w-[20em] lg:min-w-[20em] md:max-w-[35vw] lg:max-w-[30em] 3xl:min-w-[20em] 3xl:max-w-[42em] justify-center">
-          {/* Quick Links (desktop) */}
-          {!isMobile && (
-            <Border
-              classes="border-4 h-full md:h-auto py-0 px-0 w-full max-w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[35em]"
-              styles={{
-                backgroundColor: borderColor,
-                borderColor: backgroundColor,
-              }}
-            >
-              <BaseballQuickLinks
-                league={league}
-                isCollege={isCollege}
-                backgroundColor={backgroundColor}
-                headerColor={headerColor}
-                borderColor={borderColor}
-                textColorClass={textColorClass}
-                darkerBackgroundColor={darkerBackgroundColor}
-                activeTeam={activeTeam}
-              />
-            </Border>
-          )}
+        {/* Right Column: Org Info + Financials + Injuries + Stats */}
+        <div className="flex w-full min-w-0 flex-col items-start gap-3 md:h-auto">
 
           {/* Scouting Department (desktop, MLB only) */}
           {!isMobile &&
@@ -1156,14 +1010,8 @@ export const BaseballLandingPage = ({
             deptEligible &&
             orgId > 0 &&
             leagueYearId > 0 && (
-              <Border
-                classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em]"
-                styles={{
-                  backgroundColor: borderColor,
-                  borderColor: backgroundColor,
-                }}
-              >
-                <SectionCards
+              <div className="h-full md:h-auto w-full min-w-0">
+                <SportSectionCard
                   team={activeTeam}
                   header="Scouting Department"
                   classes={`${textColorClass} h-full`}
@@ -1180,20 +1028,14 @@ export const BaseballLandingPage = ({
                     onPurchased={refreshBudget}
                     accentColor={borderColor}
                   />
-                </SectionCards>
-              </Border>
+                </SportSectionCard>
+              </div>
             )}
 
           {/* Financial Summary (desktop, MLB only, own org only) */}
           {!isMobile && !isCollege && isOwnOrg && financialSummary && (
-            <Border
-              classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em]"
-              styles={{
-                backgroundColor: borderColor,
-                borderColor: backgroundColor,
-              }}
-            >
-              <SectionCards
+            <div className="h-full md:h-auto w-full min-w-0">
+              <SportSectionCard
                 team={activeTeam}
                 header="Finances"
                 classes={`${textColorClass} h-full`}
@@ -1204,20 +1046,14 @@ export const BaseballLandingPage = ({
                 textColorClass={textColorClass}
               >
                 <FinancialSummaryPanel data={financialSummary} />
-              </SectionCards>
-            </Border>
+              </SportSectionCard>
+            </div>
           )}
 
           {/* Injuries (desktop) */}
           {!isMobile && !isDataStale && (
-            <Border
-              classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[40em]"
-              styles={{
-                backgroundColor: borderColor,
-                borderColor: backgroundColor,
-              }}
-            >
-              <SectionCards
+            <div className="h-full md:h-auto w-full min-w-0 md:max-h-[40em]">
+              <SportSectionCard
                 team={activeTeam}
                 header="Injury Report"
                 classes={`${textColorClass} h-full`}
@@ -1231,20 +1067,14 @@ export const BaseballLandingPage = ({
                   injuries={teamInjuries}
                   textColorClass={textColorClass}
                 />
-              </SectionCards>
-            </Border>
+              </SportSectionCard>
+            </div>
           )}
 
           {/* Team Leaders */}
           <div className="flex flex-row md:flex-none md:flex-col w-full">
-            <Border
-              classes="border-4 h-full md:h-auto py-0 px-0 w-full md:min-w-[18em] lg:min-w-[18em] md:max-w-[35vw] lg:max-w-[30em] md:max-h-[40em]"
-              styles={{
-                backgroundColor: borderColor,
-                borderColor: backgroundColor,
-              }}
-            >
-              <SectionCards
+            <div className="h-full md:h-auto w-full min-w-0 md:max-h-[40em]">
+              <SportSectionCard
                 team={activeTeam}
                 header="Team Leaders"
                 classes={`${textColorClass} h-full`}
@@ -1323,8 +1153,8 @@ export const BaseballLandingPage = ({
                     )}
                   </div>
                 )}
-              </SectionCards>
-            </Border>
+              </SportSectionCard>
+            </div>
           </div>
         </div>
       </div>
@@ -1398,90 +1228,6 @@ const BaseballInjuriesContent = ({
     )}
   </>
 );
-
-// ─── Quick Links ────────────────────────────────────────────────────────────
-
-const BaseballQuickLinks = ({
-  league,
-  isCollege,
-  backgroundColor,
-  headerColor,
-  borderColor,
-  textColorClass,
-  darkerBackgroundColor,
-  activeTeam,
-}: {
-  league: string;
-  isCollege: boolean;
-  backgroundColor: string;
-  headerColor: string;
-  borderColor: string;
-  textColorClass: string;
-  darkerBackgroundColor: string;
-  activeTeam: BaseballTeam | null;
-}) => {
-  const navigate = useNavigate();
-  return (
-    <SectionCards
-      team={activeTeam}
-      header="Quick Links"
-      classes={`${textColorClass} h-full`}
-      backgroundColor={backgroundColor}
-      headerColor={headerColor}
-      borderColor={borderColor}
-      textColorClass={textColorClass}
-      darkerBackgroundColor={darkerBackgroundColor}
-    >
-      <div className="flex justify-around p-1 md:py-3 mt-4 flex-wrap gap-2">
-        <Button
-          size="xs"
-          onClick={() =>
-            navigate(isCollege ? routes.COLLEGE_BASEBALL_TEAM : routes.MLB_TEAM)
-          }
-        >
-          Roster
-        </Button>
-        {!isCollege && (
-          <Button size="xs" onClick={() => navigate(routes.MLB_FINANCIALS)}>
-            Finances
-          </Button>
-        )}
-        <Button
-          size="xs"
-          onClick={() =>
-            navigate(
-              isCollege ? routes.COLLEGE_BASEBALL_RECRUITING : routes.MLB_IFA,
-            )
-          }
-        >
-          {isCollege ? "Recruiting" : "IFA"}
-        </Button>
-        <Button
-          size="xs"
-          onClick={() =>
-            navigate(
-              isCollege ? routes.COLLEGE_BASEBALL_STATS : routes.MLB_STATS,
-            )
-          }
-        >
-          Statistics
-        </Button>
-        <Button
-          size="xs"
-          onClick={() =>
-            navigate(
-              isCollege
-                ? routes.COLLEGE_BASEBALL_SCHEDULE
-                : routes.MLB_SCHEDULE,
-            )
-          }
-        >
-          Schedule
-        </Button>
-      </div>
-    </SectionCards>
-  );
-};
 
 // ─── Leader Card ─────────────────────────────────────────────────────────────
 
@@ -1591,7 +1337,7 @@ const BaseballGamesBar = ({
           {/* Left scroll button */}
           <button
             onClick={scrollLeft}
-            className="absolute left-0 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-gray-800 text-white border border-gray-600 hover:bg-gray-700 transition-colors"
+            className="absolute left-0 z-10 flex h-8 w-8 items-center justify-center rounded-full border-0 bg-(--sport-surface) p-0 text-(--text-primary) [box-shadow:var(--sport-shadow)] hover:border-0 hover:bg-(--sport-surface-2)"
           >
             &lt;
           </button>
@@ -1599,7 +1345,7 @@ const BaseballGamesBar = ({
           {/* Scrollable container */}
           <div
             ref={scrollRef}
-            className="flex flex-row gap-2 overflow-x-auto w-full px-8 py-1"
+            className="flex flex-row gap-2 overflow-x-auto w-full px-10 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {games.map((game, idx) => {
               const isHome = game.home_team_id === activeTeamId;
@@ -1613,30 +1359,16 @@ const BaseballGamesBar = ({
               const lost = isComplete && teamScore < oppScore;
               const isNextGame = idx === firstUpcomingIdx;
 
-              let cardBg = isHome
-                ? "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600"
-                : "bg-white dark:bg-gray-800/60 border-gray-200 dark:border-gray-600/60";
-              if (isComplete) {
-                if (won)
-                  cardBg = "bg-green-50 dark:bg-green-900/20 border-green-500";
-                else if (lost)
-                  cardBg = "bg-red-50 dark:bg-red-900/20 border-red-500";
-                else cardBg = "bg-gray-100 dark:bg-gray-700 border-gray-400";
-              }
+              // The sports' shared card: a surface with a coloured top edge.
+              const cardBg =
+                sportStateCard[
+                  won ? "win" : lost ? "loss" : isNextGame ? "next" : "upcoming"
+                ];
 
               return (
                 <div
                   key={game.id}
-                  className={`flex flex-col items-center shrink-0 w-28 md:w-32 lg:w-36 rounded-lg border-2 px-2 py-1.5 ${cardBg} ${isComplete && onGameClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
-                  style={
-                    isNextGame
-                      ? {
-                          boxShadow: `0 0 0 2px ${accentColor || "#60a5fa"}`,
-                          outline: "1px solid transparent",
-                          outlineOffset: "1px",
-                        }
-                      : undefined
-                  }
+                  className={`flex flex-col items-center shrink-0 w-28 md:w-32 lg:w-36 rounded-lg px-2 py-1.5 ${cardBg} ${isComplete && onGameClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
                   onClick={
                     isComplete && onGameClick
                       ? () => onGameClick(game.id)
@@ -1644,7 +1376,7 @@ const BaseballGamesBar = ({
                   }
                 >
                   {/* Week */}
-                  <span className="text-[0.6rem] text-gray-500 dark:text-gray-400">
+                  <span className="text-[0.6rem] text-(--text-muted)">
                     Wk {game.week}
                     {game.game_day ? ` ${game.game_day.toUpperCase()}` : ""}
                   </span>
@@ -1668,17 +1400,17 @@ const BaseballGamesBar = ({
                   {isComplete ? (
                     <div className="flex flex-col items-center mt-0.5">
                       <span
-                        className={`text-sm font-bold ${won ? "text-green-600 dark:text-green-400" : lost ? "text-red-600 dark:text-red-400" : ""}`}
+                        className={`text-sm font-bold ${won ? sportStateText.win : lost ? sportStateText.loss : ""}`}
                       >
                         {teamScore} - {oppScore}
                       </span>
                       <span
                         className={`text-[0.55rem] font-bold uppercase tracking-wider px-1.5 py-px rounded-sm mt-0.5 ${
                           won
-                            ? "bg-green-600 text-white"
+                            ? sportStatePill.win
                             : lost
-                              ? "bg-red-600 text-white"
-                              : "bg-gray-500 text-white"
+                              ? sportStatePill.loss
+                              : "bg-(--text-muted) text-white"
                         }`}
                       >
                         {won ? "W" : lost ? "L" : "T"}
@@ -1686,7 +1418,7 @@ const BaseballGamesBar = ({
                     </div>
                   ) : (
                     <span
-                      className={`text-[0.65rem] mt-1 ${isNextGame ? "font-bold text-blue-500" : "text-gray-400 dark:text-gray-500"}`}
+                      className={`text-[0.65rem] mt-1 ${isNextGame ? `font-bold ${sportStateText.next}` : sportStateText.upcoming}`}
                     >
                       {isNextGame ? "NEXT" : "—"}
                     </span>
@@ -1699,7 +1431,7 @@ const BaseballGamesBar = ({
           {/* Right scroll button */}
           <button
             onClick={scrollRight}
-            className="absolute right-0 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-gray-800 text-white border border-gray-600 hover:bg-gray-700 transition-colors"
+            className="absolute right-0 z-10 flex h-8 w-8 items-center justify-center rounded-full border-0 bg-(--sport-surface) p-0 text-(--text-primary) [box-shadow:var(--sport-shadow)] hover:border-0 hover:bg-(--sport-surface-2)"
           >
             &gt;
           </button>

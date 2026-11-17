@@ -29,10 +29,12 @@ export function UnderlineTabs<K extends string>({
           role="tab"
           aria-selected={value === key}
           onClick={() => onChange(key)}
-          className={`min-h-11 border-b-2 mb-2 text-sm font-medium transition-colors ${
+          // The site-wide button style (a filled, rounded box with an outline
+          // on hover) is undone here: a tab is text with an underline.
+          className={`min-h-11 rounded-none border-0 border-b-2 bg-transparent text-sm font-medium transition-colors hover:bg-transparent ${
             value === key
-              ? "border-(--accent-primary) text-(--text-primary)"
-              : "border-transparent text-(--text-muted)"
+              ? "border-b-(--accent-primary) text-(--text-primary) hover:border-b-(--accent-primary)"
+              : "border-b-transparent text-(--text-muted) hover:border-b-(--border-primary) hover:text-(--text-primary)"
           }`}
         >
           {label}

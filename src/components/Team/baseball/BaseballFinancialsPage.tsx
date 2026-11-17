@@ -2,8 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { PageContainer } from "../../../_design/Container";
+import {
+  SportBannerAside,
+  SportBannerPicker,
+  useSportBannerContent,
+} from "../../Common/SportBanner";
 import { TabGroup, Tab } from "../../../_design/Tabs";
-import { SelectDropdown } from "../../../_design/Select";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 import { SimMLB } from "../../../_constants/constants";
 import { getLogo } from "../../../_utility/getLogo";
@@ -121,9 +125,10 @@ export const BaseballFinancialsPage = () => {
     return organization.org_abbrev;
   }, [organization]);
 
-  const seasonLabel = seasonContext
-    ? `Season ${seasonContext.league_year}`
-    : "";
+  // The organisation on screen is the banner's.
+  useSportBannerContent(
+    organization ? { title: pageTitle, logo: logo || undefined } : null,
+  );
 
   if (!organization) {
     return (
@@ -138,46 +143,20 @@ export const BaseballFinancialsPage = () => {
   return (
     <PageContainer>
       <div className="flex-col w-full px-2 sm:px-4 md:px-0 md:mb-6">
-        {/* Org selector */}
+        {/* On the banner: the organisation picker. */}
         {orgOptions.length > 1 && (
-          <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <div className="w-full sm:min-w-[280px] sm:max-w-[400px]">
-              <SelectDropdown
-                options={orgOptions}
-                value={selectedOrgOption}
-                onChange={(opt) => {
-                  if (opt) handleOrgChange(Number((opt as SelectOption).value));
-                }}
-                isSearchable
-                placeholder="Select organization..."
-              />
-            </div>
-          </div>
+          <SportBannerAside>
+            <SportBannerPicker
+              options={orgOptions}
+              value={selectedOrgOption}
+              onChange={(opt) => {
+                if (opt) handleOrgChange(Number((opt as SelectOption).value));
+              }}
+              isSearchable
+              placeholder="Select organization..."
+            />
+          </SportBannerAside>
         )}
-
-        {/* Header */}
-        <Border classes="p-4 mb-2">
-          <div className="flex items-center gap-4">
-            {logo && (
-              <img
-                src={logo}
-                className="w-12 h-12 object-contain"
-                alt={organization.org_abbrev}
-              />
-            )}
-            <div>
-              <Text variant="h4">{pageTitle} Financials</Text>
-              {seasonLabel && (
-                <Text
-                  variant="small"
-                  classes="text-gray-500 dark:text-gray-400"
-                >
-                  {seasonLabel}
-                </Text>
-              )}
-            </div>
-          </div>
-        </Border>
 
         {/* Scouting Department */}
         {deptEligible && viewedOrgIdForBudget > 0 && leagueYearId > 0 && (

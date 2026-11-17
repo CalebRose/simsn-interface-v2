@@ -21,10 +21,12 @@ import {
   SimCHL,
   SimCLAX,
   SimCollegeBaseball,
+  SimCVB,
   SimMLB,
   SimNBA,
   SimNFL,
   SimPHL,
+  SimPVB,
   Teams,
   Trades,
   Transactions,
@@ -46,6 +48,8 @@ import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { NFLUDFAAdminPanel } from "../Admin/NFLUDFAAdminPanel";
 import { CollegeLacrosseAdminPage } from "../Lacrosse/CollegeLacrosseAdminPage";
 import { useSimLAXStore } from "../../context/SimLAXContext";
+import { VolleyballAdminRequests } from "../Volleyball/VolleyballAdminRequests";
+import { isVolleyballConfigured } from "../../_services/volleyballService";
 
 const IFAAdminSection = () => {
   const { seasonContext } = useSimBaseballStore();
@@ -138,8 +142,22 @@ export const AdminPage = () => {
     return currentUser.roleID?.includes("PHL Commissioner");
   }, [currentUser]);
 
+  const isCVBCommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.roleID?.includes("CVB Commissioner");
+  }, [currentUser]);
+
+  const isPVBCommissioner = useMemo(() => {
+    if (!currentUser) return false;
+    return currentUser.roleID?.includes("PVB Commissioner");
+  }, [currentUser]);
+
   const leagueStore = useLeagueStore();
   const { ts, selectedLeague, setSelectedLeague } = leagueStore;
+  // Like lacrosse, volleyball brings its own admin panel instead of the
+  // shared tabs, which assume the older sports' data.
+  const isVolleyballLeague =
+    selectedLeague === SimCVB || selectedLeague === SimPVB;
 
   const columnCount = useMemo(() => {
     switch (selectedLeague) {
@@ -258,6 +276,24 @@ export const AdminPage = () => {
                   {SimCLAX}
                 </PillButton>
               )}
+              {isVolleyballConfigured && (isAdmin || isCVBCommissioner) && (
+                <PillButton
+                  isSelected={selectedLeague === SimCVB}
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimCVB)}
+                >
+                  {SimCVB}
+                </PillButton>
+              )}
+              {isVolleyballConfigured && (isAdmin || isPVBCommissioner) && (
+                <PillButton
+                  isSelected={selectedLeague === SimPVB}
+                  classes="w-[8rem]"
+                  onClick={() => setSelectedLeague(SimPVB)}
+                >
+                  {SimPVB}
+                </PillButton>
+              )}
               {isAdmin && (
                 <PillButton
                   isSelected={selectedLeague === SimCollegeBaseball}
@@ -279,7 +315,7 @@ export const AdminPage = () => {
             </ButtonGroup>
           </Border>
         </div>
-        {ts && selectedLeague !== SimCLAX && (
+        {ts && selectedLeague !== SimCLAX && !isVolleyballLeague && (
           <Border classes="w-full p-4 mt-2">
             <Text variant="h6">{selectedLeague} Controls</Text>
             <div className="flex flex-row justify-between pb-2">
@@ -312,7 +348,7 @@ export const AdminPage = () => {
             </div>
           </Border>
         )}
-        {selectedLeague !== SimCLAX && (
+        {selectedLeague !== SimCLAX && !isVolleyballLeague && (
           <Border classes="w-full">
             <div className="flex flex-row flex-wrap w-full pt-1 pb-2 mb-2">
               <TabGrid classes="w-full" columns={columnCount}>
@@ -399,6 +435,12 @@ export const AdminPage = () => {
         )}
 
         {selectedLeague === SimCLAX && <CollegeLacrosseAdminPage embedded />}
+        {selectedLeague === SimCVB && (isAdmin || isCVBCommissioner) && (
+          <VolleyballAdminRequests kind="college" />
+        )}
+        {selectedLeague === SimPVB && (isAdmin || isPVBCommissioner) && (
+          <VolleyballAdminRequests kind="pro" />
+        )}
 
         {/* SimNFL Section: Hub + UDFA Panel */}
         {selectedLeague === SimNFL && (

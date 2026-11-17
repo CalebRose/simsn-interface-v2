@@ -133,7 +133,6 @@ export const BaseballProScoutingPage = (_props: BaseballProScoutingPageProps) =>
       <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
         <Border classes="p-4 mb-2">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-            <Text variant="h4">MLB Scouting</Text>
             {orgId > 0 && leagueYearId > 0 && (
               <ScoutingBudgetBar
                 orgId={orgId}

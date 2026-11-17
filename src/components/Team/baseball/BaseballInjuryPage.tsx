@@ -15,7 +15,6 @@ import {
 } from "../../../_utility/baseballHelpers";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
-import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { getLogo } from "../../../_utility/getLogo";
 import { BaseballService } from "../../../_services/baseballService";
 import {
@@ -75,16 +74,6 @@ export const BaseballInjuryPage = ({ league }: Props) => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const headerTextClass = getTextColorBasedOnBg(headerColor);
-
-  const logo = useMemo(() => {
-    if (!primaryTeam) return "";
-    return getLogo(
-      league === SimMLB ? SimMLB : SimCollegeBaseball,
-      primaryTeam.team_id,
-      currentUser?.IsRetro,
-    );
-  }, [primaryTeam, league, currentUser?.IsRetro]);
 
   // Player modal
   const { isModalOpen, handleOpenModal, handleCloseModal } = useModal();
@@ -457,8 +446,6 @@ export const BaseballInjuryPage = ({ league }: Props) => {
     [playerContractMap, leagueYearId, fetchData],
   );
 
-  const pageTitle = isCollege ? "College Baseball" : "MLB";
-
   if (!seasonContext) {
     return (
       <PageContainer>
@@ -472,26 +459,6 @@ export const BaseballInjuryPage = ({ league }: Props) => {
   return (
     <PageContainer>
       <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
-        {/* Header */}
-        <div
-          className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{
-            backgroundColor: headerColor,
-            borderBottom: `3px solid ${borderColor}`,
-          }}
-        >
-          {logo && (
-            <img src={logo} className="w-10 h-10 object-contain" alt="" />
-          )}
-          <div>
-            <Text variant="h4" classes={headerTextClass}>
-              {pageTitle} Injury Report
-            </Text>
-            <Text variant="small" classes={`${headerTextClass} opacity-75`}>
-              Season {seasonContext.league_year}
-            </Text>
-          </div>
-        </div>
 
         {/* Tabs */}
         <TabGroup>

@@ -21,7 +21,14 @@ import {
   SimNBA,
   SimNFL,
   SimPHL,
+  SimCVB,
+  SimPVB,
 } from "../../_constants/constants";
+import {
+  VbAvailableTeamDetail,
+  useVbApplication,
+  VbRequestNotice,
+} from "../Volleyball/VbAvailableTeam";
 import { Button, ButtonGroup } from "../../_design/Buttons";
 import { useModal } from "../../_hooks/useModal";
 import { SelectedTeamModal } from "./SelectedTeamModal";
@@ -49,6 +56,8 @@ const isTeamDisabled = (team: any | undefined, league: string): boolean => {
     case SimCBB:
     case SimCHL:
     case SimCLAX:
+    case SimCVB:
+    case SimPVB:
       return team.IsUserCoached || false;
     case SimCollegeBaseball:
       return team.coach != null && team.coach !== "AI" && team.coach.length > 0;
@@ -141,6 +150,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState("");
 
+  const isVolleyball = league === SimCVB || league === SimPVB;
   const isBaseball = league === SimMLB || league === SimCollegeBaseball;
   const primaryBaseballTeam = isBaseball
     ? getPrimaryBaseballTeam(selectedTeam)
@@ -150,6 +160,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
     : selectedTeam?.ID;
   const logo = selectedTeam.LogoURL || getLogo(league as League, teamID, retro);
   const disable = sentRequest || isTeamDisabled(selectedTeam, league);
+  // Volleyball, for a user with no coach: one application page that builds
+  // the coach and asks for the team, in place of the request window.
+  const vbApply = useVbApplication(league, teamID);
   const colorOne = isBaseball
     ? primaryBaseballTeam?.color_one || ""
     : selectedTeam.ColorOne || "";
@@ -479,7 +492,14 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             </div>
           )}
         </div>
-        {league !== SimCLAX && (
+        {isVolleyball && (
+          <VbAvailableTeamDetail
+            league={league}
+            team={selectedTeam}
+            data={data}
+          />
+        )}
+        {league !== SimCLAX && !isVolleyball && (
           <Border>
             <div className="flex flex-row gap-4 justify-between sm:relative">
               <div className="flex flex-col">
@@ -647,6 +667,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 league === SimCBB ||
                 league === SimCHL ||
                 league === SimCLAX ||
+                isVolleyball ||
                 league === SimCollegeBaseball) && (
                 <Button
                   onClick={() => void handleClick("")}
@@ -926,6 +947,13 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 )}
               </>
             )}
+          {isVolleyball && (
+            <VbRequestNotice
+              league={league}
+              teamName={String(teamLabel)}
+              teamId={teamID}
+            />
+          )}
           <Text variant="xs" classes="mb-4 text-start">
             Coaching the {teamLabel} in {league} can be a wonderful experience.
             You will be coaching alongside others users in the{" "}
@@ -954,6 +982,10 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
             {league === SimMLB &&
               `competing not only for the
             postseason, but also the opportunity to win the World Series.`}
+            {league === SimCVB &&
+              `competing not only for the conference championship, but also a place in the national tournament.`}
+            {league === SimPVB &&
+              `competing for the playoffs and the league title.`}
           </Text>
           {/* ── Application form ─────────────────────────────────────────────── */}
           <div className="flex flex-col gap-3 mb-4 px-2">
@@ -1050,7 +1082,7 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
       {data && (
         <div className="flex flex-row justify-end">
           {!disable ? (
-            <Button onClick={handleOpenModal}>Request Team</Button>
+            <Button onClick={vbApply ?? handleOpenModal}>Request Team</Button>
           ) : (
             <LockIcon textColorClass={textColorClass} />
           )}

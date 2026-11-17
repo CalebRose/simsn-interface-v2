@@ -194,7 +194,9 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
-  /* Default light theme variables */
+  /* Default light theme variables. The scheme is stated so colours that
+     depend on it (the sport surfaces) work before a theme class is set. */
+  color-scheme: light;
   --bg-primary: #f2f1ed;
   --bg-secondary: #f7f5f0;
   --bg-surface: #ede9dc;
@@ -1841,4 +1843,18 @@ html.dark .high-contrast {
   .game-record {
     max-width: 100vw;
   }
+}
+
+/* Sport surfaces (baseball and volleyball, src/components/Common/SportKit.tsx).
+   Derived from each theme's own colours, so every theme gets them:
+   light themes get near-white cards on the page colour, dark themes a step
+   lighter than the page. TechDocs/sport-ui-guide.md. */
+:root {
+  --sport-surface: light-dark(
+    color-mix(in srgb, var(--bg-primary) 35%, #ffffff),
+    color-mix(in srgb, var(--bg-primary) 93%, var(--text-primary))
+  );
+  --sport-surface-2: color-mix(in srgb, var(--bg-primary) 88%, var(--text-primary));
+  --sport-divider: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  --sport-shadow: 0 1px 2px rgb(0 0 0 / 0.08), 0 0 0 1px rgb(0 0 0 / 0.04);
 }

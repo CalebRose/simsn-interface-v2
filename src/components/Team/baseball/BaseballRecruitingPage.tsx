@@ -3,10 +3,10 @@ import { Border } from "../../../_design/Borders";
 import { Text } from "../../../_design/Typography";
 import { PillButton, ButtonGroup } from "../../../_design/Buttons";
 import { PageContainer } from "../../../_design/Container";
+import { SportBannerAside } from "../../Common/SportBanner";
 import { SimCollegeBaseball } from "../../../_constants/constants";
 import { getLogo } from "../../../_utility/getLogo";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
-import { useAuthStore } from "../../../context/AuthContext";
 import { useModal } from "../../../_hooks/useModal";
 import { BaseballService } from "../../../_services/baseballService";
 import {
@@ -25,7 +25,6 @@ import {
 } from "./BaseballRosterTable";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
-import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import type {
   RecruitingState,
   BoardPlayer,
@@ -223,7 +222,6 @@ interface BaseballRecruitingPageProps {
 
 export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   const { enqueueSnackbar } = useSnackbar();
-  const { currentUser } = useAuthStore();
   const { collegeOrganization, seasonContext, allTeams } =
     useSimBaseballStore();
   const orgId = collegeOrganization?.id ?? 0;
@@ -247,21 +245,6 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const headerTextClass = getTextColorBasedOnBg(headerColor);
-
-  const logo = useMemo(() => {
-    if (!primaryTeam) return "";
-    return getLogo(
-      SimCollegeBaseball,
-      primaryTeam.team_id,
-      currentUser?.IsRetro,
-    );
-  }, [primaryTeam, currentUser?.IsRetro]);
-
-  const pageTitle = useMemo(() => {
-    if (!primaryTeam) return "Recruiting";
-    return `${primaryTeam.team_full_name} Recruiting`;
-  }, [primaryTeam]);
 
   // ── Server-side pool table (seniors only: age=18 hardcoded) ──
   const fetcher = useCallback(
@@ -668,8 +651,6 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
     [],
   );
 
-  const orgAbbrev = collegeOrganization?.org_abbrev ?? "";
-
   // Lookup map so pool rows can show board-level data (interest, competitors)
   const boardPlayerMap = useMemo(() => {
     const map = new Map<number, BoardPlayer>();
@@ -967,25 +948,8 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
   return (
     <PageContainer>
       <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
-        {/* Team-colored header */}
-        <div
-          className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{
-            backgroundColor: headerColor,
-            borderBottom: `3px solid ${borderColor}`,
-          }}
-        >
-          {logo && (
-            <img
-              src={logo}
-              className="w-10 h-10 object-contain"
-              alt={orgAbbrev}
-            />
-          )}
-          <Text variant="h4" classes={headerTextClass}>
-            {pageTitle}
-          </Text>
-          <div className="ml-auto">
+        {/* The page's controls sit on the banner; the banner names the page. */}
+        <SportBannerAside>
             {orgId > 0 && leagueYearId > 0 && (
               <ScoutingBudgetBar
                 orgId={orgId}
@@ -994,8 +958,7 @@ export const BaseballRecruitingPage = (_props: BaseballRecruitingPageProps) => {
                 refreshKey={budgetRefreshKey}
               />
             )}
-          </div>
-        </div>
+        </SportBannerAside>
 
         {/* Recruiting Status Banner */}
         {recruitingState && (

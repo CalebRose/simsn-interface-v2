@@ -30,6 +30,12 @@ import { Timestamp as BaseballTimestamp } from "../models/baseball/baseballModel
 
 export const GetTeamLabel = (league: League, team: any): String => {
   if (league === SimCLAX) return `${team.TeamName} ${team.Mascot}`;
+  if (league === "SimCVB" || league === "SimPVB") {
+    // A pro club's name already ends in its nickname.
+    return team.Mascot && !team.TeamName.includes(team.Mascot)
+      ? `${team.TeamName} ${team.Mascot}`
+      : team.TeamName;
+  }
   if (
     league === SimCFB ||
     league === SimNFL ||

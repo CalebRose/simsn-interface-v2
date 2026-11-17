@@ -10,7 +10,6 @@ import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
-import { getTextColorBasedOnBg } from "../../../_utility/getBorderClass";
 import { getLogo } from "../../../_utility/getLogo";
 import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
 import { BaseballService } from "../../../_services/baseballService";
@@ -369,16 +368,6 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
   if (isBrightColor(headerColor)) {
     [headerColor, borderColor] = [borderColor, headerColor];
   }
-  const headerTextClass = getTextColorBasedOnBg(headerColor);
-
-  const logo = useMemo(() => {
-    if (!primaryTeam) return "";
-    return getLogo(
-      league === SimMLB ? SimMLB : SimCollegeBaseball,
-      primaryTeam.team_id,
-      currentUser?.IsRetro,
-    );
-  }, [primaryTeam, league, currentUser?.IsRetro]);
 
   // Level state (MLB only: MLB/AAA/AA/High-A/A)
   const [selectedLevel, setSelectedLevel] = useState<number>(isCollege ? 3 : 9);
@@ -489,8 +478,6 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
     return pendingGames.filter((g) => conferenceSeriesIds.has(g.series_id));
   }, [pendingGames, activeConference, bracket]);
 
-  const pageTitle = isCollege ? "College World Series" : "Playoffs";
-
   if (!seasonContext) {
     return (
       <PageContainer>
@@ -502,26 +489,6 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
   return (
     <PageContainer>
       <div className="flex-col w-[95vw] sm:w-[90vw] md:w-full md:mb-6 px-2">
-        {/* Header */}
-        <div
-          className={`flex items-center gap-3 mb-2 flex-wrap rounded-t-lg px-4 py-2 ${headerTextClass}`}
-          style={{
-            backgroundColor: headerColor,
-            borderBottom: `3px solid ${borderColor}`,
-          }}
-        >
-          {logo && (
-            <img src={logo} className="w-10 h-10 object-contain" alt="" />
-          )}
-          <div>
-            <Text variant="h4" classes={headerTextClass}>
-              {pageTitle}
-            </Text>
-            <Text variant="small" classes={`${headerTextClass} opacity-75`}>
-              Season {seasonContext.league_year}
-            </Text>
-          </div>
-        </div>
 
         {/* Filters */}
         {!isCollege && levelOptions.length > 0 && (
