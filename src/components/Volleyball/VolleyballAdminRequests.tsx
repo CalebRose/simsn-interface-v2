@@ -20,7 +20,7 @@ import {
   vbTableClass,
 } from "./VbCommon";
 import { vbErrorText } from "./vbErrors";
-import { vbLeagueConstant } from "./vbFormatting";
+import { vbLeagueConstant, vbRoleLabel } from "./vbFormatting";
 
 // The pending team requests of one volleyball league, for the admin page.
 // The API takes approve and reject from any signed-in user by design, so this
@@ -64,7 +64,7 @@ export const VolleyballAdminRequests: FC<{ kind: VbLeagueKind }> = ({
       if (approve) {
         const result = await VolleyballClaimService.approve(kind, request.ID);
         enqueueSnackbar(
-          `${request.Username} now coaches ${request.TeamName}.${
+          `${request.Username} is now ${vbRoleLabel(request.Role).toLowerCase()} of ${request.TeamName}.${
             result.CoachCreated
               ? request.Coach
                 ? " Their coach was created from the application."
@@ -103,6 +103,7 @@ export const VolleyballAdminRequests: FC<{ kind: VbLeagueKind }> = ({
             <tr>
               <th className={vbCell}>User</th>
               <th className={vbCell}>Team</th>
+              {kind === "pro" && <th className={vbCell}>Job</th>}
               <th className={vbCell}>Coach</th>
               <th className={vbCell}>Sent</th>
               <th className={vbCell} />
@@ -116,6 +117,9 @@ export const VolleyballAdminRequests: FC<{ kind: VbLeagueKind }> = ({
                     {request.Username}
                   </td>
                   <td className={vbCell}>{request.TeamName}</td>
+                  {kind === "pro" && (
+                    <td className={vbCell}>{vbRoleLabel(request.Role)}</td>
+                  )}
                   <td className={vbCell}>
                     {request.Coach ? "Built in the application" : "None sent"}
                   </td>
@@ -136,28 +140,41 @@ export const VolleyballAdminRequests: FC<{ kind: VbLeagueKind }> = ({
                       >
                         Application
                       </SportButton>
-                      <SportButton
-                        size="xs"
-                        variant="success"
-                        disabled={busyId !== null}
-                        onClick={() => decide(request, true)}
-                      >
-                        Approve
-                      </SportButton>
-                      <SportButton
-                        size="xs"
-                        variant="danger"
-                        disabled={busyId !== null}
-                        onClick={() => decide(request, false)}
-                      >
-                        Reject
-                      </SportButton>
+                      {/* A pro club's assistant jobs are its staff's to
+                          decide, on their Coach page; admins only read them. */}
+                      {request.Approver === "staff" ? (
+                        <span
+                          className="self-center text-xs text-(--text-muted)"
+                          title="The club's staff approve or reject requests for its assistant jobs."
+                        >
+                          Club staff decide
+                        </span>
+                      ) : (
+                        <>
+                          <SportButton
+                            size="xs"
+                            variant="success"
+                            disabled={busyId !== null}
+                            onClick={() => decide(request, true)}
+                          >
+                            Approve
+                          </SportButton>
+                          <SportButton
+                            size="xs"
+                            variant="danger"
+                            disabled={busyId !== null}
+                            onClick={() => decide(request, false)}
+                          >
+                            Reject
+                          </SportButton>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
                 {openId === request.ID && (
                   <tr>
-                    <td colSpan={5} className="px-3 py-3">
+                    <td colSpan={kind === "pro" ? 6 : 5} className="px-3 py-3">
                       <VbApplicationSummary
                         request={request}
                         options={options.data}

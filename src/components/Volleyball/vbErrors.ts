@@ -5,7 +5,12 @@ import { VbApiError } from "../../_services/volleyballService";
 const messages: Record<string, string> = {
   TEAM_TAKEN: "That team already has a human coach.",
   EARLIER_PENDING:
-    "Someone asked for that team before you. Their request is decided first.",
+    "Someone asked for that job before this request. Theirs is decided first.",
+  ROLE: "That role is not offered there.",
+  ROLE_TAKEN: "A user already holds that role.",
+  STAFF_FULL: "Every assistant job at that club is held by a user.",
+  FORBIDDEN: "You cannot decide your own request.",
+  HUMAN: "A user holds that job, so they cannot be let go.",
   COOLDOWN: "You changed teams too recently to ask for another one.",
   WRONG_LEAGUE: "That team belongs to the other volleyball league.",
   NOT_PENDING: "That request has already been decided.",
@@ -15,7 +20,7 @@ const messages: Record<string, string> = {
   RESET_WINDOW:
     "Once you have coached a match, a rebuild is only possible in the offseason.",
   RESET_USED: "You have already rebuilt your coach this offseason.",
-  NOT_YOUR_TEAM: "Only that team's head coach can do this.",
+  NOT_YOUR_TEAM: "Only that team's staff can do this.",
   // Recruiting and the portal
   NOT_COLLEGE: "Only college programs recruit.",
   NO_WINDOW: "No recruiting window is open right now.",

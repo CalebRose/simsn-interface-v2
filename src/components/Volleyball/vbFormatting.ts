@@ -113,6 +113,21 @@ export const vbLabel = (value: string) =>
     .replace(/([a-z])([A-Z0-9])/g, "$1 $2")
     .replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
 
+const roleLabels: Record<string, string> = {
+  headCoach: "Head coach",
+  associateHeadCoach: "Associate head coach",
+  offensiveCoordinator: "Offensive coordinator",
+  defensiveCoordinator: "Defensive coordinator",
+  setterCoach: "Setter coach",
+  strengthConditioning: "Strength and conditioning coach",
+  athleticTrainer: "Athletic trainer",
+  videoAnalytics: "Video analyst",
+};
+
+/** A staff role's name: "Head coach", "Setter coach". */
+export const vbRoleLabel = (role: string | null | undefined) =>
+  role ? (roleLabels[role] ?? vbLabel(role)) : "Head coach";
+
 /** Centimetres as feet and inches: 185 -> 6'1". */
 export const vbHeight = (cm: number) => {
   const inches = Math.round(cm / 2.54);

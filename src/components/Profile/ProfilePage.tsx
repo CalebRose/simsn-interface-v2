@@ -34,6 +34,7 @@ import {
   ProfileMLBTeamCard,
   ProfileCLAXTeamCard,
   ProfileVBTeamCard,
+  ProfileVbTeam,
 } from "./ProfileTeamCard";
 import { CSSObjectWithLabel } from "react-select";
 import { useSimFBAStore } from "../../context/SimFBAContext";
@@ -55,7 +56,6 @@ import { useSimLAXStore } from "../../context/SimLAXContext";
 import { useSimVBStore } from "../../context/SimVBContext";
 import {
   isVolleyballConfigured,
-  VbTeam,
   VolleyballService,
 } from "../../_services/volleyballService";
 
@@ -273,7 +273,7 @@ interface PublicProfileContentProps {
   selectedCBLTeam: BaseballOrganization | null | undefined;
   selectedMLBTeam: BaseballOrganization | null | undefined;
   selectedCLAXTeam: LaxTeam | null;
-  selectedVBTeams: VbTeam[];
+  selectedVBTeams: ProfileVbTeam[];
   viewedTop5: CurrentUser[];
   viewedAchievements: Achievement[];
 }
@@ -529,13 +529,16 @@ export const ProfilePage = () => {
   const [viewedUserLoading, setViewedUserLoading] = useState(false);
   const [viewedCLAXTeam, setViewedCLAXTeam] = useState<LaxTeam | null>(null);
   const selectedCLAXTeam = isOwnProfile ? claxTeam : viewedCLAXTeam;
-  const { cvbTeam, pvbTeam } = useSimVBStore();
-  // A user can coach a college program and a pro club at once.
-  const [viewedVBTeams, setViewedVBTeams] = useState<VbTeam[]>([]);
-  const ownVBTeams = useMemo(
-    () => [cvbTeam, pvbTeam].filter((team): team is VbTeam => Boolean(team)),
-    [cvbTeam, pvbTeam],
-  );
+  const { cvbTeam, pvbTeam, vbCoaches } = useSimVBStore();
+  // A user can coach a college program and a pro club at once, each with
+  // their job there (a pro club also has assistant jobs).
+  const [viewedVBTeams, setViewedVBTeams] = useState<ProfileVbTeam[]>([]);
+  const ownVBTeams = useMemo(() => {
+    const teams: ProfileVbTeam[] = [];
+    if (cvbTeam) teams.push({ ...cvbTeam, StaffRole: vbCoaches.college?.Role });
+    if (pvbTeam) teams.push({ ...pvbTeam, StaffRole: vbCoaches.pro?.Role });
+    return teams;
+  }, [cvbTeam, pvbTeam, vbCoaches]);
   const selectedVBTeams = isOwnProfile ? ownVBTeams : viewedVBTeams;
   const [viewedAchievements, setViewedAchievements] = useState<Achievement[]>(
     [],
@@ -679,7 +682,16 @@ export const ProfilePage = () => {
       .then((found) =>
         Promise.all(
           found.Coaches.flatMap((coach) =>
-            coach.Team ? [VolleyballService.getTeam(coach.Team.TeamID)] : [],
+            coach.Team
+              ? [
+                  VolleyballService.getTeam(coach.Team.TeamID).then(
+                    (team): ProfileVbTeam => ({
+                      ...team,
+                      StaffRole: coach.Team?.Role,
+                    }),
+                  ),
+                ]
+              : [],
           ),
         ),
       )

@@ -39,6 +39,7 @@ import { useSimLAXStore } from "../../context/SimLAXContext";
 import {
   isVolleyballConfigured,
   VolleyballClaimService,
+  vbProStaffRoles,
 } from "../../_services/volleyballService";
 import { useSimVBStore } from "../../context/SimVBContext";
 import { useVbRequestKind, useVbTeams } from "../Volleyball/useVbData";
@@ -464,6 +465,9 @@ export const AvailableTeams = () => {
         // A user with a coach asks here; one without applies on the
         // volleyball application page, which also builds their coach.
         await VolleyballClaimService.create(kind, currentUser!.username, team.ID, {
+          // The job picked in the request window; pro clubs only.
+          Role:
+            kind === "pro" && vbProStaffRoles.includes(role) ? role : undefined,
           Answers: vbAnswersToSend({
             discordUsername,
             howMuchTimeAnswer,
@@ -783,7 +787,11 @@ export const AvailableTeams = () => {
                   team={x.TeamName}
                   conference={x.Conference}
                   league={selectedLeague as League}
-                  disable={sentRequestVB || x.IsUserCoached}
+                  // A pro club with a user as head coach may still have
+                  // assistant jobs open; its request window shows which.
+                  disable={
+                    sentRequestVB || (x.IsUserCoached && vbKind !== "pro")
+                  }
                   setSelectedTeam={setSelectedTeam}
                 />
               ))}

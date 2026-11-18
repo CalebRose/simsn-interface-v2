@@ -28,7 +28,9 @@ import {
   VbAvailableTeamDetail,
   useVbApplication,
   VbRequestNotice,
+  VbRolePicker,
 } from "../Volleyball/VbAvailableTeam";
+import { VbStaffRole } from "../../_services/volleyballService";
 import { Button, ButtonGroup } from "../../_design/Buttons";
 import { useModal } from "../../_hooks/useModal";
 import { SelectedTeamModal } from "./SelectedTeamModal";
@@ -57,8 +59,11 @@ const isTeamDisabled = (team: any | undefined, league: string): boolean => {
     case SimCHL:
     case SimCLAX:
     case SimCVB:
-    case SimPVB:
       return team.IsUserCoached || false;
+    // A pro volleyball club with a user as head coach still has assistant
+    // jobs to ask for; the role picker shows which are held.
+    case SimPVB:
+      return false;
     case SimCollegeBaseball:
       return team.coach != null && team.coach !== "AI" && team.coach.length > 0;
     case SimNFL:
@@ -151,6 +156,8 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
   const [submissionError, setSubmissionError] = useState("");
 
   const isVolleyball = league === SimCVB || league === SimPVB;
+  // The job asked for at a pro volleyball club.
+  const [vbRole, setVbRole] = useState<VbStaffRole>("headCoach");
   const isBaseball = league === SimMLB || league === SimCollegeBaseball;
   const primaryBaseballTeam = isBaseball
     ? getPrimaryBaseballTeam(selectedTeam)
@@ -670,7 +677,9 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
                 isVolleyball ||
                 league === SimCollegeBaseball) && (
                 <Button
-                  onClick={() => void handleClick("")}
+                  onClick={() =>
+                    void handleClick(league === SimPVB ? vbRole : "")
+                  }
                   disabled={!canSubmit || isSubmitting}
                 >
                   {isSubmitting ? "Submitting..." : "Confirm"}
@@ -954,6 +963,16 @@ export const SelectedTeamCard: React.FC<SelectedTeamCardProps> = ({
               teamId={teamID}
             />
           )}
+          {league === SimPVB && teamID ? (
+            <div className="mb-4 px-2">
+              <VbRolePicker
+                teamId={teamID}
+                value={vbRole}
+                onChange={setVbRole}
+                classes="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+          ) : null}
           <Text variant="xs" classes="mb-4 text-start">
             Coaching the {teamLabel} in {league} can be a wonderful experience.
             You will be coaching alongside others users in the{" "}
