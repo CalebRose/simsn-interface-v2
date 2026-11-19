@@ -297,9 +297,21 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
           return updated;
         }
         if (prev instanceof NBAExtensionOffer) {
+          const contractLengthName = name.match(/^TotalYears$/);
+          if (contractLengthName && val > 5) {
+            val = 5;
+          } else if (contractLengthName && val < 0) {
+            val = 0;
+          }
           return prev.updateField(name, val);
         }
         if (prev instanceof PHLExtensionOffer) {
+          const contractLengthName = name.match(/^ContractLength$/);
+          if (contractLengthName && val > 5) {
+            val = 5;
+          } else if (contractLengthName && val < 0) {
+            val = 0;
+          }
           return prev.updateField(name, val);
         }
         return prev;
@@ -483,6 +495,16 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
                 label="Length"
                 name="ContractLength"
                 value={offer.ContractLength || 0}
+                max={5}
+                onChange={ChangeInput}
+              />
+            )}
+            {offer instanceof NBAExtensionOffer && (
+              <Input
+                type="number"
+                label="Length"
+                name="TotalYears"
+                value={offer.TotalYears || 0}
                 max={5}
                 onChange={ChangeInput}
               />

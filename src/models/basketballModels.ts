@@ -3287,6 +3287,13 @@ export class NBAExtensionOffer {
     }
     return a;
   }
+
+  updateField(name: string, value: number): NBAExtensionOffer {
+    const copy = new NBAExtensionOffer();
+    Object.assign(copy, this);
+    (copy as any)[name] = value;
+    return copy;
+  }
 }
 export class NBAWaiverOffer {
   ID: number;
