@@ -3,6 +3,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   updateProfile,
   User,
 } from "firebase/auth";
@@ -41,6 +42,7 @@ export const AuthService: {
   getProfile: (hard?: boolean) => Promise<UserProfile | false>;
   logout: () => Promise<AuthResponse>;
   login: (email: string, password: string) => Promise<AuthResponse>;
+  resetPassword: (email: string) => Promise<AuthResponse>;
 } = {
   user: false,
 
@@ -157,5 +159,35 @@ export const AuthService: {
           });
         });
     });
+  },
+
+  resetPassword: async (email: string): Promise<AuthResponse> => {
+    try {
+        await sendPasswordResetEmail(getAuth(), email);
+        return {
+          status: true,
+          message:
+            "If an account exists for that email, you'll receive a password reset link shortly.",
+        };
+    } catch (error) {
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          "code" in error &&
+          error.code === "auth/user-not-found"
+        ) {
+          return {
+            status: true,
+            message:
+              "If an account exists for that email, you'll receive a password reset link shortly.",
+          };
+        }
+
+        console.error("Password reset error:", error);
+        return {
+          status: false,
+          message: "Unable to send a password reset email. Please try again.",
+        };
+    }
   },
 };
