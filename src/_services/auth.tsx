@@ -31,6 +31,9 @@ interface UserProfile {
   user: User;
 }
 
+const passwordResetMessage =
+  "If an account exists for that email, you'll receive a password reset link shortly.";
+
 // 🔥 AuthService Object with Typed Methods
 export const AuthService: {
   register: (
@@ -163,31 +166,23 @@ export const AuthService: {
 
   resetPassword: async (email: string): Promise<AuthResponse> => {
     try {
-        await sendPasswordResetEmail(getAuth(), email);
-        return {
-          status: true,
-          message:
-            "If an account exists for that email, you'll receive a password reset link shortly.",
-        };
+      await sendPasswordResetEmail(getAuth(), email);
+      return { status: true, message: passwordResetMessage };
     } catch (error) {
-        if (
-          typeof error === "object" &&
-          error !== null &&
-          "code" in error &&
-          error.code === "auth/user-not-found"
-        ) {
-          return {
-            status: true,
-            message:
-              "If an account exists for that email, you'll receive a password reset link shortly.",
-          };
-        }
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === "auth/user-not-found"
+      ) {
+        return { status: true, message: passwordResetMessage };
+      }
 
-        console.error("Password reset error:", error);
-        return {
-          status: false,
-          message: "Unable to send a password reset email. Please try again.",
-        };
+      console.error("Password reset error:", error);
+      return {
+        status: false,
+        message: "Unable to send a password reset email. Please try again.",
+      };
     }
   },
 };
