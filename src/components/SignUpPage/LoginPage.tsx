@@ -17,6 +17,7 @@ interface LoginForm {
 export const LoginPage = () => {
   const [passwordVisibility, setPasswordVisibility] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [resetProcessing, setResetProcessing] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const [fieldImg] = useState<string>(fieldImage());
   const navigate = useNavigate();
@@ -34,6 +35,28 @@ export const LoginPage = () => {
       ...prevForm,
       [name]: { value },
     }));
+  };
+
+  const handlePasswordReset = async () => {
+    const email = form.email.value.trim();
+    if (!email) {
+      enqueueSnackbar("Enter your email address to reset your password.", {
+        variant: "error",
+        autoHideDuration: 3000,
+      });
+      return;
+    }
+
+    setResetProcessing(true);
+    try {
+      const response = await AuthService.resetPassword(email);
+      enqueueSnackbar(response.message, {
+        variant: response.status ? "success" : "error",
+        autoHideDuration: 4000,
+      });
+    } finally {
+      setResetProcessing(false);
+    }
   };
 
   // ✅ Handle form submission
@@ -161,6 +184,14 @@ export const LoginPage = () => {
                 >
                   {processing ? "Processing..." : "Login"}
                 </button>
+                <button
+                  type="button"
+                  className="text-sm font-medium text-blue-400 underline hover:text-blue-300 disabled:opacity-50"
+                  onClick={handlePasswordReset}
+                  disabled={resetProcessing}
+                >
+                  {resetProcessing ? "Sending..." : "Forgot password?"}
+                </button>
 
                 <p className="mt-4 text-sm text-gray-500">
                   Don't have an account?{" "}
@@ -244,6 +275,14 @@ export const LoginPage = () => {
                       className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-transparent hover:text-blue-600 focus:outline-hidden focus:ring-3 active:text-blue-500"
                     >
                       {processing ? "Processing..." : "Login"}
+                    </button>
+                    <button
+                      type="button"
+                      className="text-sm font-medium text-blue-400 underline hover:text-blue-300 disabled:opacity-50"
+                      onClick={handlePasswordReset}
+                      disabled={resetProcessing}
+                    >
+                      {resetProcessing ? "Sending..." : "Forgot password?"}
                     </button>
 
                     <p className="mt-4 text-sm text-gray-500">
