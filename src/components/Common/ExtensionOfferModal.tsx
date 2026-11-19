@@ -268,10 +268,17 @@ export const ExtensionOfferModal: FC<ExtensionOfferModalProps> = ({
   const ChangeInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = event.target;
-      const val = Number(value);
+      let val = Number(value);
       setOffer((prev) => {
         if (prev instanceof NFLExtensionOffer) {
           let updated = new NFLExtensionOffer({ ...prev }); // Shallow clone with current values
+          const contractLengthName = name.match(/^ContractLength$/);
+          if (contractLengthName && val > 5) {
+            val = 5;
+          } else if (contractLengthName && val < 0) {
+            val = 0;
+          }
+
           const match = name.match(/^Y([1-5])Bonus$/);
 
           if (match) {
