@@ -212,7 +212,9 @@ export const CHLRequestCard: React.FC<CHLRequestCardProps> = ({
   };
   const createdAtDate = useMemo(() => {
     // Date into MM/DD/YYYY format
-    const date = new Date(request.CreatedAt.toString());
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   }, [request]);
   return (
@@ -269,7 +271,9 @@ export const PHLRequestCard: React.FC<PHLRequestCardProps> = ({
   };
 
   const createdAtDate = useMemo(() => {
-    const date = new Date(request.CreatedAt.toString());
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   }, [request]);
 
@@ -325,7 +329,9 @@ export const CBBRequestCard: React.FC<CBBRequestCardProps> = ({
   };
 
   const createdAtDate = useMemo(() => {
-    const date = new Date(request.CreatedAt.toString());
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   }, [request]);
 
@@ -404,7 +410,9 @@ export const NBARequestCard: React.FC<NBARequestCardProps> = ({
   }, [request]);
 
   const createdAtDate = useMemo(() => {
-    const date = new Date(request.CreatedAt.toString());
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   }, [request]);
 
@@ -462,7 +470,9 @@ export const CFBRequestCard: React.FC<CFBRequestCardProps> = ({
   };
 
   const createdAtDate = useMemo(() => {
-    const date = new Date(request.CreatedAt.toString());
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   }, [request]);
 
@@ -538,7 +548,9 @@ export const NFLRequestCard: React.FC<NFLRequestCardProps> = ({
   }, [nflTeam]);
 
   const createdAtDate = useMemo(() => {
-    const date = new Date(request.CreatedAt.toString());
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   }, [request]);
 

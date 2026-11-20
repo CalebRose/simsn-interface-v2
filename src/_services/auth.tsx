@@ -16,6 +16,7 @@ import {
   DocumentReference,
 } from "firebase/firestore";
 import { firebaseConfig } from "../firebase-config";
+import { refreshAccountEmail } from "./accountSettings";
 
 const firebaseApp = initializeApp(firebaseConfig);
 const fireStore = getFirestore(firebaseApp);
@@ -140,28 +141,25 @@ export const AuthService: {
   },
 
   // Login user with email and password
-  login: (email: string, password: string): Promise<AuthResponse> => {
+  login: async (email: string, password: string): Promise<AuthResponse> => {
     const fauth = getAuth();
-    return new Promise<AuthResponse>((resolve) => {
-      signInWithEmailAndPassword(fauth, email, password)
-        .then((userCredential) => {
-          if (userCredential.user) {
-            localStorage.setItem("userId", userCredential.user.uid);
-            resolve({ status: true, message: "Login successful." });
-          } else {
-            resolve({
-              status: false,
-              message: "Incorrect email or password.",
-            });
-          }
-        })
-        .catch(() => {
-          resolve({
-            status: false,
-            message: "Incorrect email or password.",
-          });
-        });
-    });
+    try {
+      const { user } = await signInWithEmailAndPassword(fauth, email, password);
+      localStorage.setItem("userId", user.uid);
+      try {
+        await refreshAccountEmail(user.uid);
+      } catch (error) {
+        console.error("Failed to sync account email:", error);
+        return {
+          status: true,
+          message:
+            "Login successful, but your profile email could not be synchronized. Open Account Settings to retry.",
+        };
+      }
+      return { status: true, message: "Login successful." };
+    } catch {
+      return { status: false, message: "Incorrect email or password." };
+    }
   },
 
   resetPassword: async (email: string): Promise<AuthResponse> => {

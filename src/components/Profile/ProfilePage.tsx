@@ -58,6 +58,7 @@ import {
   isVolleyballConfigured,
   VolleyballService,
 } from "../../_services/volleyballService";
+import { AccountSettingsModal } from "./AccountSettingsModal";
 
 // ─── Shared constants ────────────────────────────────────────────────────────
 
@@ -526,6 +527,7 @@ export const ProfilePage = () => {
   // ── All state (before any early return) ─────────────────────────
 
   const [viewedUser, setViewedUser] = useState<CurrentUser | null>(null);
+  const [accountSettingsOpen, setAccountSettingsOpen] = useState(false);
   const [viewedUserLoading, setViewedUserLoading] = useState(false);
   const [viewedCLAXTeam, setViewedCLAXTeam] = useState<LaxTeam | null>(null);
   const selectedCLAXTeam = isOwnProfile ? claxTeam : viewedCLAXTeam;
@@ -946,6 +948,13 @@ export const ProfilePage = () => {
       isLoading={false}
       title={`${currentUser?.username}'s Profile`}
     >
+      {currentUser && isOwnProfile && !isShowingOtherUser && accountSettingsOpen && (
+        <AccountSettingsModal
+          uid={currentUser.id}
+          isOpen
+          onClose={() => setAccountSettingsOpen(false)}
+        />
+      )}
       <div className="grid grid-cols-12">
         <div className="col-span-12 sm:col-span-2">
           {/* Settings */}
@@ -1047,6 +1056,16 @@ export const ProfilePage = () => {
                     placeholder="Search a user…"
                   />
                 </div>
+                {currentUser && isOwnProfile && !isShowingOtherUser && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setAccountSettingsOpen(true)}
+                  >
+                    Account Settings
+                  </Button>
+                )}
               </div>
             </div>
           </Border>
