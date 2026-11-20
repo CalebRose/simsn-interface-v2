@@ -158,6 +158,7 @@ interface AdminRequestCardProps {
   teamLabel?: string;
   role?: string;
   oneItem: boolean;
+  createdAt: string;
 }
 
 export const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
@@ -170,6 +171,7 @@ export const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
   teamLabel,
   role,
   oneItem,
+  createdAt,
 }) => {
   return (
     <Border classes={`${!oneItem ? "w-full" : "w-auto"} px-3`}>
@@ -193,6 +195,7 @@ export const AdminRequestCard: React.FC<AdminRequestCardProps> = ({
             User: {username}
           </Text>
           {role && <Text variant="small">Role: {role}</Text>}
+          <Text variant="small">Created At: {createdAt}</Text>
         </div>
         <div className="flex flex-col justify-center space-y-2 mr-1">
           <Button variant="success" size="sm" onClick={accept}>
