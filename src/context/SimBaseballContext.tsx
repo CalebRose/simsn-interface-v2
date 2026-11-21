@@ -274,6 +274,25 @@ export const SimBaseballProvider: React.FC<SimBaseballProviderProps> = ({
     }
   }, [baseball_Timestamp]);
 
+  // Seed the timestamp once so phase/round info (FreeAgencyRound, IsOffSeason…)
+  // is there before the first socket push. Marked as already seen so the
+  // effect above doesn't treat the seed as a sim advance and refetch.
+  useEffect(() => {
+    if (!currentUser || baseball_Timestamp) return;
+    let cancelled = false;
+    BaseballService.GetTimestamp()
+      .then((raw) => {
+        if (cancelled || !raw || typeof raw.ID !== "number") return;
+        const ts = new BaseballTimestamp(raw);
+        prevTimestamp.current = ts;
+        setBaseball_Timestamp((current) => current ?? ts);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser]);
+
   const mlbOrganization = useMemo(() => {
     if (!currentUser || !organizations || organizations.length === 0)
       return null;

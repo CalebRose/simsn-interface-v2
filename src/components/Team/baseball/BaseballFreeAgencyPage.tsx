@@ -11,7 +11,12 @@ import {
   FAPlayerDetailResponse,
   AuctionPhase,
   AuctionBoardEntry,
+  FAPlayerDemand,
+  FAPlayerOffer,
+  FA_ASK_FLOOR,
+  OFFER_STATUS_INFO,
 } from "../../../models/baseball/baseballFreeAgencyModels";
+import { formatMoney } from "./BaseballFinancials/financialConstants";
 import type { Player } from "../../../models/baseball/baseballModels";
 import { PlayerModal } from "./PlayerModal";
 import { SimMLB } from "../../../_constants/constants";
@@ -41,7 +46,7 @@ type FATab = "pool" | "auctions" | "waivers" | "market";
 interface BaseballFreeAgencyPageProps { league: string }
 
 export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) => {
-  const { mlbOrganization, seasonContext } = useSimBaseballStore();
+  const { mlbOrganization, seasonContext, baseball_Timestamp } = useSimBaseballStore();
   const orgId = mlbOrganization?.id ?? 0;
   const orgAbbrev = mlbOrganization?.org_abbrev ?? "";
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
@@ -112,13 +117,30 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
 
   useEffect(() => { loadPool(); }, [loadPool]);
 
+  // ── Round tracking: the commissioner advances rounds by hand (in season a
+  // round is a game week). Reload pool, board and budget when it moves. ──
+  const faRound = baseball_Timestamp?.FreeAgencyRound ?? 0;
+  const simWeek = baseball_Timestamp?.Week ?? 0;
+  const roundKey = `${faRound}-${simWeek}-${baseball_Timestamp?.IsOffSeason ?? ""}`;
+  const lastRoundKey = useRef(roundKey);
+  const [budgetKey, setBudgetKey] = useState(0);
+  useEffect(() => {
+    if (lastRoundKey.current === roundKey) return;
+    lastRoundKey.current = roundKey;
+    loadPool();
+    setRefreshKey((k) => k + 1);
+    setBudgetKey((k) => k + 1);
+    // Only a round change should trigger this, not a new loadPool identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roundKey]);
+
   // ── Load signing budget ──
   useEffect(() => {
     if (!orgId || !leagueYearId) return;
     BaseballService.GetFASigningBudget(orgId, leagueYearId)
       .then((res) => setSigningBudget(res.available_budget))
       .catch(() => {});
-  }, [orgId, leagueYearId]);
+  }, [orgId, leagueYearId, budgetKey]);
 
   // ── Sort handling ──
   const handleSort = (key: string) => {
@@ -182,8 +204,8 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     age: number;
     auctionId: number;
     phase: AuctionPhase;
-    demand: { min_aav: string; min_years: number; max_years?: number; war: number } | null;
-    existingOffer: any;
+    demand: FAPlayerDemand | null;
+    existingOffer: FAPlayerOffer | null;
   } | null>(null);
 
   const openOfferFromFAPlayer = (p: FAPlayer) => {
@@ -224,6 +246,7 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
         min_aav: String(entry.min_aav),
         min_years: entry.min_years,
         max_years: entry.max_years,
+        min_total_value: entry.min_total_value,
         war: entry.war,
       },
       existingOffer: entry.my_offer,
@@ -276,46 +299,74 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
     const potsScouted = fa.scouting?.pots_precise;
 
     let transactionBtn: React.ReactNode = null;
-    if (fa.fa_type === "mlb_fa") {
-      if (!fa.auction) {
-        // MLB FA without auction yet — pending creation
+    const statusChip = (offer: FAPlayerOffer) => {
+      const info = OFFER_STATUS_INFO[offer.status];
+      if (!info) return null;
+      const tone =
+        info.color === "green" ? "bg-green-600/20 text-green-400"
+          : info.color === "red" ? "bg-red-600/20 text-red-400"
+            : "bg-gray-600/20 text-gray-400";
+      return (
+        <span className={`${actionBtn} ${tone} cursor-help`} title={info.meaning}>
+          {info.label}
+        </span>
+      );
+    };
+
+    if (fa.auction) {
+      // In an auction: offers only, never a direct signing.
+      const { phase, my_offer: myOffer, offer_count: offerCount } = fa.auction;
+      const isActive = myOffer != null && (myOffer.status ?? "active") === "active";
+      const isClosed = phase === "completed" || phase === "expired" || phase === "withdrawn";
+
+      if (isClosed) {
+        transactionBtn = myOffer
+          ? statusChip(myOffer)
+          : <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Closed</span>;
+      } else if (isActive) {
+        transactionBtn = phase === "open"
+          ? <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromFAPlayer(fa)} title="Change or withdraw your offer">Update</button>
+          : <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromFAPlayer(fa)} title="After the Open stage you can only raise the yearly average">Increase</button>;
+      } else if (phase === "open") {
+        // Not bidding (or withdrew). Once anyone has bid, new clubs can join only until the next round.
+        const lastChance = offerCount > 0;
         transactionBtn = (
           <button
-            className={`${actionBtn} bg-yellow-600/20 text-yellow-400 cursor-default`}
-            title="Auction pending \u2014 will open after week processes"
+            className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
+            onClick={() => openOfferFromFAPlayer(fa)}
+            title={lastChance ? "Other clubs have bid. New clubs can only join until the next round." : "Make an offer"}
           >
-            Pending
+            {myOffer?.status === "withdrawn" ? "Offer again" : "Offer"}
+            {lastChance && <span className="ml-1 text-amber-400">· last chance</span>}
           </button>
         );
       } else {
-        const phase = fa.auction.phase;
-        const myOffer = fa.auction.my_offer;
-
-        if (phase === "completed" || phase === "withdrawn") {
-          transactionBtn = <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Closed</span>;
-        } else if (!myOffer) {
-          // No existing offer
-          if (phase === "open") {
-            transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openOfferFromFAPlayer(fa)}>Offer</button>;
-          } else {
-            // Listening or Finalize — too late to join
-            transactionBtn = <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Bidding Closed</span>;
-          }
-        } else if ((myOffer as any).status === "outbid") {
-          transactionBtn = <span className={`${actionBtn} bg-red-600/20 text-red-400 cursor-default`}>Eliminated</span>;
-        } else if ((myOffer as any).status === "withdrawn") {
-          transactionBtn = <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`}>Withdrawn</span>;
-        } else if (phase === "open") {
-          transactionBtn = <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromFAPlayer(fa)}>Update</button>;
-        } else {
-          // Listening or Finalize — can only raise
-          transactionBtn = <button className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`} onClick={() => openOfferFromFAPlayer(fa)}>Increase</button>;
-        }
+        transactionBtn = myOffer
+          ? statusChip(myOffer)
+          : <span className={`${actionBtn} bg-gray-600/20 text-gray-500 cursor-default`} title="New clubs can only join during the Open stage">Bidding closed</span>;
       }
+    } else if (fa.fa_type === "mlb_fa") {
+      // MLB FA without an auction yet: it opens when the round is processed.
+      transactionBtn = (
+        <span
+          className={`${actionBtn} bg-yellow-600/20 text-yellow-400 cursor-default`}
+          title="His auction opens when the next round is processed"
+        >
+          Pending
+        </span>
+      );
     } else if (!fa.demand) {
       transactionBtn = <button className={`${actionBtn} bg-gray-600/20 text-gray-400 hover:bg-gray-600/40`} onClick={() => openDetail(fa.id)}>View</button>;
     } else {
-      transactionBtn = <button className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`} onClick={() => openSignModal(fa)}>Sign</button>;
+      transactionBtn = (
+        <button
+          className={`${actionBtn} bg-green-600/20 text-green-400 hover:bg-green-600/40`}
+          onClick={() => openSignModal(fa)}
+          title={`Sign now at his ask: ${formatMoney(parseFloat(fa.demand.min_aav) || 0)} a year`}
+        >
+          Sign now
+        </button>
+      );
     }
 
     return (
@@ -367,11 +418,33 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
       <div className="flex-col w-full px-2 sm:px-4 md:px-0 md:mb-6">
         {/* Header + Budget */}
         <Border classes="p-4 mb-2">
+          {/* Where free agency stands: rounds move when the commissioner advances them */}
+          {baseball_Timestamp && (
+            <div className="mb-3 text-start">
+              <Text variant="body" classes="font-semibold">
+                {baseball_Timestamp.IsOffSeason
+                  ? faRound > 0
+                    ? `Free agency, round ${faRound}`
+                    : "Offseason free agency"
+                  : `In-season free agency, week ${simWeek}`}
+                {baseball_Timestamp.IsFreeAgencyLocked && (
+                  <span className="ml-2 text-sm text-amber-400">· Locked</span>
+                )}
+              </Text>
+              <Text variant="xs" classes="text-gray-400">
+                The commissioner advances rounds by hand; there is no clock.
+                {baseball_Timestamp.IsOffSeason ? "" : " In season, each game week is a round."}{" "}
+                Once anyone bids on a player, other clubs have until the next round to join.
+                A player with no offers for two rounds lowers his ask 10% a round, never
+                below {formatMoney(FA_ASK_FLOOR)}.
+              </Text>
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <div className="flex gap-4 text-sm">
               {signingBudget != null && (
-                <span className="text-gray-300">
-                  Budget: <strong className="text-white">${signingBudget.toLocaleString()}</strong>
+                <span className="text-gray-300" title="Cash for signing bonuses and first-season salaries. Active offers hold part of it.">
+                  Cash for signings: <strong className="text-white">{formatMoney(signingBudget)}</strong>
                 </span>
               )}
               {scoutingBudget != null && (

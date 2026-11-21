@@ -12,6 +12,7 @@ import { ContractDemand } from "../../../models/baseball/baseballFreeAgencyModel
 import { BaseballService } from "../../../_services/baseballService";
 import { displayLevel, LEVEL_ORDER, LEVEL_TO_NUMERIC, SCOUTING_ACTION_LABELS, SCOUTING_ACTION_COSTS } from "../../../_utility/baseballHelpers";
 import { enqueueSnackbar } from "notistack";
+import { ContractExtensionModal } from "./ContractExtensionModal";
 import { SelectOption } from "../../../_hooks/useSelectStyles";
 
 // ═══════════════════════════════════════════════
@@ -506,7 +507,7 @@ const BuyoutModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
 };
 
 // ═══════════════════════════════════════════════
-// Extension
+// Extension — see ContractExtensionModal
 // ═══════════════════════════════════════════════
 
 const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
@@ -518,193 +519,22 @@ const ExtensionModal: FC<Omit<BaseballTransactionModalProps, "action">> = ({
   onSuccess,
   demand,
 }) => {
-  const minYears = demand?.min_years ?? 1;
-  const [years, setYears] = useState(Math.max(1, minYears));
-  const [salaries, setSalaries] = useState<number[]>([0, 0, 0, 0, 0]);
-  const [bonus, setBonus] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const name = `${player.firstname} ${player.lastname}`;
-  const demandMinAav = demand?.min_aav ? parseFloat(demand.min_aav) : 0;
-
-  const totalSalary = useMemo(() => {
-    return salaries.slice(0, years).reduce((sum, s) => sum + s, 0);
-  }, [salaries, years]);
-
-  const totalValue = totalSalary + bonus;
-  const aav = years > 0 ? totalValue / years : 0;
-
-  const errors = useMemo(() => {
-    const errs: string[] = [];
-    if (!player.contract) errs.push("Player has no active contract");
-    if (years < 1 || years > 5) errs.push("Contract must be 1-5 years");
-    if (totalSalary <= 0 && bonus <= 0) errs.push("Contract must have some value");
-    for (let i = 0; i < years; i++) {
-      if (salaries[i] < 0) errs.push(`Year ${i + 1} salary cannot be negative`);
-    }
-    if (bonus < 0) errs.push("Bonus cannot be negative");
-    if (demandMinAav > 0 && aav > 0 && aav < demandMinAav) {
-      errs.push(`AAV ($${aav.toLocaleString()}) below player minimum ($${demandMinAav.toLocaleString()})`);
-    }
-    if (demand && years < minYears) {
-      errs.push(`Years (${years}) below player minimum (${minYears})`);
-    }
-    return errs;
-  }, [player.contract, years, salaries, bonus, totalSalary, demandMinAav, aav, demand, minYears]);
-
-  const handleSalaryChange = useCallback(
-    (index: number, value: string) => {
-      setSalaries((prev) => {
-        const next = [...prev];
-        next[index] = Number(value) || 0;
-        return next;
-      });
-    },
-    [],
-  );
-
-  const handleConfirm = useCallback(async () => {
-    if (!player.contract || errors.length > 0) return;
-    setIsSubmitting(true);
-    try {
-      const res = await BaseballService.ExtendContract({
-        contract_id: player.contract.id,
-        org_id: orgId,
-        years,
-        salaries: salaries.slice(0, years),
-        bonus,
-        league_year_id: seasonContext.current_league_year_id,
-        game_week_id: seasonContext.current_week_index,
-      });
-      enqueueSnackbar(
-        `Extension offered to ${name} — ${res.years} year(s), starts year ${res.starts_league_year}`,
-        { variant: "success", autoHideDuration: 4000 },
-      );
-      onSuccess(player.id);
-      onClose();
-    } catch (err: any) {
-      enqueueSnackbar(err?.message || "Extension failed", { variant: "error", autoHideDuration: 4000 });
-    }
-    setIsSubmitting(false);
-  }, [player, orgId, years, salaries, bonus, seasonContext, errors, onSuccess, onClose, name]);
-
+  if (!player.contract) return null;
   return (
-    <Modal
+    <ContractExtensionModal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Extend ${name}`}
-      maxWidth="min-[1025px]:max-w-[60vw]"
-      actions={
-        <ButtonGroup>
-          <Button size="sm" variant="danger" onClick={onClose}>
-            <Text variant="small">Cancel</Text>
-          </Button>
-          <Button
-            size="sm"
-            variant={errors.length === 0 ? "success" : "warning"}
-            onClick={handleConfirm}
-            disabled={errors.length > 0 || isSubmitting}
-          >
-            <Text variant="small">{isSubmitting ? "Processing..." : "Confirm"}</Text>
-          </Button>
-        </ButtonGroup>
-      }
-    >
-      {/* Player Demands */}
-      {demand && (
-        <Border direction="col" classes="p-3 mb-4 text-start">
-          <Text variant="h6" classes="mb-2">Player Demands</Text>
-          <div className="flex flex-wrap gap-x-6 gap-y-1">
-            <Text variant="small">
-              Min AAV: <strong>${demandMinAav.toLocaleString()}</strong>
-            </Text>
-            <Text variant="small">
-              Years: <strong>{minYears}-5</strong>
-            </Text>
-            {demand.war > 0 && (
-              <Text variant="small">
-                WAR: <strong>{demand.war}</strong>
-              </Text>
-            )}
-          </div>
-        </Border>
-      )}
-
-      {/* Rules + Errors */}
-      <div className="grid grid-cols-1 sm:grid-cols-[2fr_3fr] gap-2 mb-4">
-        <Border direction="col" classes="text-start p-3">
-          <Text variant="h6">Rules</Text>
-          <Text variant="xs">Contracts must be {minYears} through 5 years.</Text>
-          <Text variant="xs">Extension starts the year after the current contract ends.</Text>
-          <Text variant="xs">Bonus is validated against signing budget and hits the ledger immediately.</Text>
-        </Border>
-        <Border direction="col" classes="text-start p-3 overflow-y-auto">
-          <Text variant="h6">Errors</Text>
-          {errors.length === 0 && <Text variant="small">None</Text>}
-          {errors.map((err) => (
-            <Text key={err} variant="small" classes="text-red-500">{err}</Text>
-          ))}
-        </Border>
-      </div>
-
-      {/* Length + Bonus + Computed */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
-        <Input
-          type="number"
-          label="Years"
-          name="years"
-          value={years}
-          min={minYears}
-          max={5}
-          onChange={(e) => setYears(Math.min(5, Math.max(minYears, Number(e.target.value) || minYears)))}
-        />
-        <Input
-          type="number"
-          label="Bonus ($)"
-          name="bonus"
-          value={bonus}
-          min={0}
-          onChange={(e) => setBonus(Number(e.target.value) || 0)}
-        />
-        <Input
-          type="number"
-          label="Total Value"
-          name="total"
-          value={totalValue}
-          disabled
-        />
-        <Input
-          type="number"
-          label="AAV"
-          name="aav"
-          value={Math.round(aav)}
-          disabled
-        />
-      </div>
-
-      {/* Per-year salary inputs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-2">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div key={i} className={i >= years ? "opacity-30 pointer-events-none" : ""}>
-            <Input
-              type="number"
-              label={`Y${i + 1}`}
-              name={`salary_${i}`}
-              value={salaries[i]}
-              min={0}
-              disabled={i >= years}
-              onChange={(e) => handleSalaryChange(i, e.target.value)}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Meets minimum indicator */}
-      {demandMinAav > 0 && aav > 0 && (
-        <Text variant="small" classes={`mt-2 ${aav >= demandMinAav ? "text-green-400" : "text-red-400"}`}>
-          {aav >= demandMinAav ? "Meets player minimum" : "Below player minimum AAV"}
-        </Text>
-      )}
-    </Modal>
+      playerId={player.id}
+      playerName={`${player.firstname} ${player.lastname}`}
+      contractId={player.contract.id}
+      orgId={orgId}
+      leagueYearId={seasonContext.current_league_year_id}
+      demand={demand}
+      // No roster patch for extensions: the caller refreshes the roster and
+      // contract overview (has_extension / extension_eligible).
+      onSigned={() => onSuccess(player.id)}
+      onStale={() => onSuccess(player.id)}
+    />
   );
 };
 

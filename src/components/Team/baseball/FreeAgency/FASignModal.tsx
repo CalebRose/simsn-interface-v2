@@ -42,12 +42,11 @@ export const FASignModal: FC<FASignModalProps> = ({
   const { enqueueSnackbar } = useSnackbar();
   const demand = player.demand;
 
-  // Guard — parent should not open this modal without demand data
-  if (!demand) return null;
-
-  const demandMinAav = parseFloat(demand.min_aav);
-  const demandMinYears = demand.min_years;
-  const demandMaxYears = demand.max_years ?? 5;
+  // Every hook must run on every render, so a missing demand is handled by
+  // defaults here and the early return sits below the hooks.
+  const demandMinAav = demand ? parseFloat(demand.min_aav) || 0 : 0;
+  const demandMinYears = demand?.min_years ?? 1;
+  const demandMaxYears = demand?.max_years ?? 5;
 
   const [years, setYears] = useState(demandMinYears);
   const [salaries, setSalaries] = useState<number[]>(() =>
@@ -60,14 +59,12 @@ export const FASignModal: FC<FASignModalProps> = ({
   // Reset form when modal opens or player changes
   useEffect(() => {
     if (isOpen) {
-      const minAav = parseFloat(demand.min_aav);
-      const minYrs = demand.min_years;
-      setYears(minYrs);
-      setSalaries(Array(5).fill(minAav));
+      setYears(demandMinYears);
+      setSalaries(Array(5).fill(demandMinAav));
       setBonus(0);
       setLevelId(player.last_level >= 4 ? player.last_level : 9);
     }
-  }, [isOpen, player]);
+  }, [isOpen, player, demandMinYears, demandMinAav]);
 
   const totalSalary = useMemo(
     () => salaries.slice(0, years).reduce((sum, s) => sum + s, 0),
@@ -181,7 +178,8 @@ export const FASignModal: FC<FASignModalProps> = ({
     enqueueSnackbar,
   ]);
 
-  if (!isOpen) return null;
+  // Parent should not open this modal without demand data.
+  if (!isOpen || !demand) return null;
 
   const playerName = `${player.firstname} ${player.lastname}`;
   const tierLabel = FA_TYPE_LABELS[player.fa_type] ?? player.fa_type;

@@ -81,6 +81,7 @@ import {
     PlayerCareerResponse,
     PlayerSplitsResponse,
     PlayerAwardsResponse,
+    AwardsHistoryParams, AwardsHistoryResponse,
     InjuryReportParams, InjuryReportResponse,
     InjuryHistoryParams, InjuryHistoryResponse,
     PlayerInjuryHistoryParams, PlayerInjuryHistoryResponse,
@@ -156,6 +157,8 @@ import {
     MarketSummary, MarketRateResponse,
     FASigningBudgetResponse,
     ContractOverviewWithDemand,
+    ExtensionDemandResponse,
+    ComputeExtensionDemandRequest,
     FAScoutingBudgetResponse,
     FASignRequest, FASignResponse,
     WaiverListResponse, WaiverDetailResponse,
@@ -197,6 +200,9 @@ export const normalizeFaceData = (f: any): FaceDataResponse => {
         HairColor:       f.HairColor       ?? f.hairColor       ?? f.hair_color      ?? "",
     } as FaceDataResponse;
 };
+
+/** Session cache for GET /awards/history, keyed by query string. */
+const awardsHistoryCache = new Map<string, Promise<AwardsHistoryResponse>>();
 
 /** Build a URLSearchParams from a params object, skipping null/undefined values. */
 const buildQueryString = (params: Record<string, string | number | boolean | null | undefined>): string => {
@@ -629,6 +635,30 @@ export const BaseballService = {
     GetPlayerAwards: async (playerId: number): Promise<PlayerAwardsResponse> => {
         return await GetCall<PlayerAwardsResponse>(`${baseballUrl}awards/player/${playerId}`);
     },
+    /**
+     * Every season's winners plus career leaderboards (public read). Cached for
+     * the session per query: awards only change when an admin records one or a
+     * postseason series clinches. Pass `fresh` to bypass the cache.
+     */
+    GetAwardsHistory: async (params: AwardsHistoryParams = {}, fresh = false): Promise<AwardsHistoryResponse> => {
+        const qs = buildQueryString({
+            league_level: params.league_level,
+            award_code: params.award_code,
+            from_year: params.from_year,
+            to_year: params.to_year,
+            include_finalists: params.include_finalists ? 1 : undefined,
+            include_rosters: params.include_rosters ? 1 : undefined,
+            include_selections: params.include_selections ? 1 : undefined,
+            leaders_limit: params.leaders_limit,
+        });
+        const cached = awardsHistoryCache.get(qs);
+        if (cached && !fresh) return cached;
+        const request = GetCall<AwardsHistoryResponse>(`${baseballUrl}awards/history${qs ? `?${qs}` : ""}`);
+        awardsHistoryCache.set(qs, request);
+        // A failed request must not stay cached.
+        request.catch(() => awardsHistoryCache.delete(qs));
+        return await request;
+    },
     // --- Injuries ---
     GetInjuries: async (params: InjuryReportParams): Promise<InjuryReportResponse> => {
         const qs = new URLSearchParams();
@@ -838,8 +868,11 @@ export const BaseballService = {
         await PostCall(`${baseballUrl}draft/prefs`, dto);
     },
     // Draft Signing
-    SignDraftPick: async (pickId: number, leagueYearId: number): Promise<SignPickResponse> => {
-        return await PostCall<{ league_year_id: number }, SignPickResponse>(`${baseballUrl}draft/sign/${pickId}`, { league_year_id: leagueYearId });
+    /** One offer in the signing negotiation. A rejection is still a 200: check `accepted`. */
+    SignDraftPick: async (pickId: number, leagueYearId: number, bonus?: number): Promise<SignPickResponse> => {
+        const body: { league_year_id: number; bonus?: number } = { league_year_id: leagueYearId };
+        if (bonus != null) body.bonus = bonus;
+        return await PostCall<typeof body, SignPickResponse>(`${baseballUrl}draft/sign/${pickId}`, body);
     },
     PassDraftPick: async (pickId: number, leagueYearId: number): Promise<PassPickResponse> => {
         return await PostCall<{ league_year_id: number }, PassPickResponse>(`${baseballUrl}draft/pass/${pickId}`, { league_year_id: leagueYearId });
@@ -901,6 +934,18 @@ export const BaseballService = {
     GetContractOverviewWithDemands: async (orgId: number, leagueYearId: number): Promise<ContractOverviewWithDemand[]> => {
         return await GetCall<ContractOverviewWithDemand[]>(
             `${baseballUrl}transactions/contract-overview/${orgId}?league_year_id=${leagueYearId}`,
+        );
+    },
+    /** Cached extension demand; throws ApiError(404) when none has been computed yet. */
+    GetExtensionDemand: async (playerId: number, leagueYearId: number): Promise<ExtensionDemandResponse> => {
+        return await GetCall<ExtensionDemandResponse>(
+            `${baseballUrl}fa-auction/player-demand/${playerId}?league_year_id=${leagueYearId}&type=extension`,
+        );
+    },
+    ComputeExtensionDemand: async (dto: ComputeExtensionDemandRequest): Promise<ExtensionDemandResponse> => {
+        return await PostCall<ComputeExtensionDemandRequest, ExtensionDemandResponse>(
+            `${baseballUrl}fa-auction/compute-demands`,
+            dto,
         );
     },
     GetFAScoutingBudget: async (orgId: number, leagueYearId: number): Promise<FAScoutingBudgetResponse> => {

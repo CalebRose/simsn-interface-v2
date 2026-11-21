@@ -16,16 +16,20 @@ import {
   PRE_ARB_SALARY,
   ARB_ESTIMATED_SALARY,
 } from "./financialConstants";
+import { ContractOverviewWithDemand } from "../../../../models/baseball/baseballFreeAgencyModels";
+import { ContractExtensionModal } from "../ContractExtensionModal";
 import "../baseballMobile.css";
 
 interface ContractsTabProps {
   orgId: number;
   leagueYearId: number;
+  /** Viewing the user's own org — enables contract actions (extensions). */
+  isOwnOrg?: boolean;
 }
 
 type SubView = "payroll" | "roster";
 
-export const ContractsTab = ({ orgId, leagueYearId }: ContractsTabProps) => {
+export const ContractsTab = ({ orgId, leagueYearId, isOwnOrg = false }: ContractsTabProps) => {
   const [subView, setSubView] = useState<SubView>("payroll");
 
   // Signing budget
@@ -89,7 +93,9 @@ export const ContractsTab = ({ orgId, leagueYearId }: ContractsTabProps) => {
       </div>
 
       {subView === "payroll" && <PayrollSubView orgId={orgId} />}
-      {subView === "roster" && <RosterContractsSubView orgId={orgId} />}
+      {subView === "roster" && (
+        <RosterContractsSubView orgId={orgId} leagueYearId={leagueYearId} isOwnOrg={isOwnOrg} />
+      )}
     </div>
   );
 };
@@ -614,18 +620,32 @@ const PHASE_ORDER: Record<string, number> = {
   fa_eligible: 3,
 };
 
-const RosterContractsSubView = ({ orgId }: { orgId: number }) => {
-  const [data, setData] = useState<ContractOverviewPlayer[] | null>(null);
+const RosterContractsSubView = ({
+  orgId,
+  leagueYearId,
+  isOwnOrg,
+}: {
+  orgId: number;
+  leagueYearId: number;
+  isOwnOrg: boolean;
+}) => {
+  const [data, setData] = useState<ContractOverviewWithDemand[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [extendTarget, setExtendTarget] = useState<ContractOverviewWithDemand | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      setIsLoading(true);
+      // Keep the table on screen during a post-extension refresh.
+      if (reloadKey === 0) setIsLoading(true);
       setError(null);
       try {
-        const res = await BaseballService.GetContractOverview(orgId);
+        // league_year_id attaches cached demands to extension-eligible rows.
+        const res = leagueYearId
+          ? await BaseballService.GetContractOverviewWithDemands(orgId, leagueYearId)
+          : ((await BaseballService.GetContractOverview(orgId)) as ContractOverviewWithDemand[]);
         if (!cancelled) setData(res);
       } catch {
         if (!cancelled) setError("Contract data is not available yet.");
@@ -637,7 +657,7 @@ const RosterContractsSubView = ({ orgId }: { orgId: number }) => {
     return () => {
       cancelled = true;
     };
-  }, [orgId]);
+  }, [orgId, leagueYearId, reloadKey]);
 
   if (isLoading) {
     return (
@@ -657,13 +677,38 @@ const RosterContractsSubView = ({ orgId }: { orgId: number }) => {
     );
   }
 
-  return <RosterContractsView players={data} />;
+  const refresh = () => setReloadKey((k) => k + 1);
+
+  return (
+    <>
+      <RosterContractsView
+        players={data}
+        onExtend={isOwnOrg && leagueYearId ? setExtendTarget : undefined}
+      />
+      {extendTarget && (
+        <ContractExtensionModal
+          isOpen
+          onClose={() => setExtendTarget(null)}
+          playerId={extendTarget.player_id}
+          playerName={extendTarget.player_name}
+          contractId={extendTarget.contract_id}
+          orgId={orgId}
+          leagueYearId={leagueYearId}
+          demand={extendTarget.demand}
+          onSigned={refresh}
+          onStale={refresh}
+        />
+      )}
+    </>
+  );
 };
 
 const RosterContractsView = ({
   players,
+  onExtend,
 }: {
-  players: ContractOverviewPlayer[];
+  players: ContractOverviewWithDemand[];
+  onExtend?: (player: ContractOverviewWithDemand) => void;
 }) => {
   const [sortKey, setSortKey] = useState<SortKey>("level");
   const [sortAsc, setSortAsc] = useState(false);
@@ -729,7 +774,7 @@ const RosterContractsView = ({
   }, [filtered, sortKey, sortAsc]);
 
   const levelGroups = useMemo(() => {
-    const groups = new Map<number, ContractOverviewPlayer[]>();
+    const groups = new Map<number, ContractOverviewWithDemand[]>();
     for (const p of sorted) {
       if (!groups.has(p.current_level)) groups.set(p.current_level, []);
       groups.get(p.current_level)!.push(p);
@@ -878,7 +923,7 @@ const RosterContractsView = ({
                   right
                 />
                 <th className="px-2 py-2 text-center w-20">Contract</th>
-                <th className="px-2 py-2 text-left w-32">Status</th>
+                <th className="px-2 py-2 text-left w-40">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -887,6 +932,7 @@ const RosterContractsView = ({
                   key={level}
                   level={level}
                   players={groupPlayers}
+                  onExtend={onExtend}
                 />
               ))}
               {sorted.length === 0 && (
@@ -942,9 +988,11 @@ const RosterSortHeader = ({
 const RosterLevelSection = ({
   level,
   players,
+  onExtend,
 }: {
   level: number;
-  players: ContractOverviewPlayer[];
+  players: ContractOverviewWithDemand[];
+  onExtend?: (player: ContractOverviewWithDemand) => void;
 }) => (
   <>
     <tr>
@@ -956,14 +1004,20 @@ const RosterLevelSection = ({
       </td>
     </tr>
     {players.map((p) => (
-      <RosterPlayerRow key={p.contract_id} player={p} />
+      <RosterPlayerRow key={p.contract_id} player={p} onExtend={onExtend} />
     ))}
   </>
 );
 
 // --- Roster Player Row ---
 
-const RosterPlayerRow = ({ player }: { player: ContractOverviewPlayer }) => {
+const RosterPlayerRow = ({
+  player,
+  onExtend,
+}: {
+  player: ContractOverviewWithDemand;
+  onExtend?: (player: ContractOverviewWithDemand) => void;
+}) => {
   const phase = PHASE_CONFIG[player.contract_phase];
 
   return (
@@ -1012,7 +1066,18 @@ const RosterPlayerRow = ({ player }: { player: ContractOverviewPlayer }) => {
         )}
       </td>
       <td className="px-2 py-1.5">
-        <ExpiringStatus player={player} />
+        <div className="flex items-center gap-1.5">
+          <ExpiringStatus player={player} />
+          {onExtend && player.extension_eligible && (
+            <button
+              onClick={() => onExtend(player)}
+              className="px-1.5 py-0.5 text-[10px] rounded-sm font-semibold bg-purple-600/20 text-purple-600 dark:text-purple-400 hover:bg-purple-600/40"
+              title="Offer contract extension"
+            >
+              Extend
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   );
@@ -1021,6 +1086,16 @@ const RosterPlayerRow = ({ player }: { player: ContractOverviewPlayer }) => {
 // --- Expiring Status Badge ---
 
 const ExpiringStatus = ({ player }: { player: ContractOverviewPlayer }) => {
+  if (player.has_extension) {
+    return (
+      <span
+        className="px-1.5 py-0.5 text-[10px] rounded-sm bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+        title="Extension signed — takes over when the current contract ends"
+      >
+        Extended
+      </span>
+    );
+  }
   if (player.is_expiring) {
     if (
       player.contract_phase === "minor" ||

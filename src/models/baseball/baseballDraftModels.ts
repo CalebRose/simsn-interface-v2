@@ -40,6 +40,51 @@ export interface BaseballDraftState {
 
 export type SignStatus = "pending" | "signed" | "passed" | "refused";
 
+/** College class after the season just played; "hs_senior" = HS graduate. */
+export type DraftClassYear = "hs_senior" | "freshman" | "sophomore" | "junior" | "senior";
+
+export const DRAFT_CLASS_LABELS: Record<DraftClassYear, { short: string; long: string }> = {
+  hs_senior: { short: "HS", long: "High school senior" },
+  freshman: { short: "FR", long: "College freshman" },
+  sophomore: { short: "SO", long: "College sophomore" },
+  junior: { short: "JR", long: "College junior" },
+  senior: { short: "SR", long: "College senior" },
+};
+
+/**
+ * How willing a class is to sign below his ask (draft guide §9): underclassmen
+ * would rather go back to school. Used only for the client-side estimate.
+ */
+export const DRAFT_SIGN_WILLINGNESS: Record<DraftClassYear, number> = {
+  hs_senior: 1.0,
+  senior: 1.0,
+  junior: 0.6,
+  sophomore: 0.35,
+  freshman: 0.2,
+};
+
+/** Offers per pick before the player refuses and returns to school. */
+export const DRAFT_MAX_OFFERS = 3;
+
+/** Estimated chance an offer is accepted (the server's answer is final). */
+export const estimateDraftAcceptance = (
+  offer: number,
+  ask: number,
+  classYear: DraftClassYear | null | undefined,
+): number => {
+  if (!ask || offer >= ask) return 1;
+  const willingness = classYear ? DRAFT_SIGN_WILLINGNESS[classYear] ?? 1 : 1;
+  const base = Math.min(Math.max((offer / ask - 0.6) / 0.4, 0), 1);
+  return base * willingness;
+};
+
+export interface DraftSignOffer {
+  offer_no: number;
+  amount: number;
+  result: "accepted" | "rejected" | string;
+  created_at?: string;
+}
+
 export interface BaseballDraftPick {
   pick_id: number;
   round: number;
@@ -53,6 +98,14 @@ export interface BaseballDraftPick {
   is_auto_pick: boolean;
   slot_value: number;
   sign_status: SignStatus | null;
+  class_year?: DraftClassYear | null;
+  offers_made?: number;
+  bonus_agreed?: number | null;
+  // Org-private negotiation fields (GET /draft/picks/{org} only)
+  ask_bonus?: number | null;
+  offers_remaining?: number;
+  offers?: DraftSignOffer[];
+  contract_id?: number | null;
 }
 
 // ═══════════════════════════════════════════════
@@ -74,6 +127,7 @@ export interface BaseballDraftee {
   age: number;
   source: "college" | "hs";
   draft_rank: number | null;
+  class_year?: DraftClassYear | null;
   composite_score: number | null;
   star_rating: number | null;
   pitcher_role: string | null;
@@ -216,14 +270,36 @@ export interface AutoRoundsResponse {
 // Signing (POST /draft/sign/{pick_id})
 // ═══════════════════════════════════════════════
 
+export interface SignPickRequest {
+  league_year_id: number;
+  /** Defaults to the slot value on the server when omitted. */
+  bonus?: number;
+}
+
+/**
+ * A rejected offer is still a 200: check `accepted`. `status` becomes
+ * "refused" on the third rejection (he returns to school).
+ */
 export interface SignPickResponse {
-  transaction_id: number;
-  contract_id: number;
+  accepted: boolean;
+  status: SignStatus;
+  draft_pick_id: number;
   player_id: number;
   player_name: string;
   org_id: number;
   slot_value: number;
-  years: number;
+  ask_bonus: number;
+  class_year?: DraftClassYear | null;
+  offer_no: number;
+  offer: number;
+  accept_probability: number;
+  offers_remaining: number;
+  // Present when accepted
+  transaction_id?: number;
+  contract_id?: number;
+  bonus?: number;
+  years?: number;
+  level?: number;
 }
 
 export interface PassPickResponse {
@@ -265,7 +341,8 @@ export type BaseballDraftWSMessage =
   | { type: "draft_pick_made"; pick_id: number; round: number; pick_in_round: number; overall_pick: number; org_id: number; player_id: number; player_name: string; is_auto_pick: boolean; draft_complete: boolean; auto_round_next: boolean }
   | { type: "draft_trade_completed"; round: number; pick_in_round: number; from_org_id: number; to_org_id: number }
   | { type: "auto_rounds_started"; league_year_id: number; starting_round: number }
-  | { type: "auto_rounds_completed"; league_year_id: number; picks_made: number };
+  | { type: "auto_rounds_completed"; league_year_id: number; picks_made: number }
+  | { type: "draft_trade_proposed" | "draft_trade_rejected"; [key: string]: unknown };
 
 // ═══════════════════════════════════════════════
 // Constants & Helpers

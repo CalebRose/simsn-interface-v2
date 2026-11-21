@@ -16,6 +16,7 @@ import {
   DraftInitializeParams,
   DraftInitializeResponse,
   AutoRoundsResponse,
+  SignPickResponse,
 } from "../../../models/baseball/baseballDraftModels";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
 
@@ -95,8 +96,8 @@ export interface UseBaseballDraftReturn {
   orgPicks: BaseballDraftPick[];
   refreshOrgPicks: () => void;
 
-  // Signing
-  signPick: (pickId: number) => Promise<void>;
+  // Signing: one offer per call; a rejection resolves (accepted: false), it doesn't throw
+  signPick: (pickId: number, bonus: number) => Promise<SignPickResponse | null>;
   passPick: (pickId: number) => Promise<void>;
 
   // Trade
@@ -179,6 +180,7 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     error,
     refetchState,
     refetchBoard,
+    tradeVersion,
   } = useBaseballDraftState(leagueYearId);
 
   // ── Round modes ──
@@ -327,12 +329,17 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
   // ═══════════════════════════════════════════════
 
   const signPick = useCallback(
-    async (pickId: number) => {
-      if (!leagueYearId) return;
-      await BaseballService.SignDraftPick(pickId, leagueYearId);
-      refreshOrgPicks();
+    async (pickId: number, bonus: number) => {
+      if (!leagueYearId) return null;
+      try {
+        return await BaseballService.SignDraftPick(pickId, leagueYearId, bonus);
+      } finally {
+        // Offer history, offers left and status all change either way.
+        refreshOrgPicks();
+        refetchBoard();
+      }
     },
-    [leagueYearId, refreshOrgPicks],
+    [leagueYearId, refreshOrgPicks, refetchBoard],
   );
 
   const passPick = useCallback(
@@ -518,12 +525,20 @@ export function useBaseballDraft(): UseBaseballDraftReturn {
     }
   }, [phase, refreshOrgPicks]);
 
-  // When tab changes to mypicks: fetch org picks
+  // When tab changes to mypicks or signing: fetch org picks
   useEffect(() => {
-    if (activeTab === "mypicks") {
+    if (activeTab === "mypicks" || activeTab === "signing") {
       refreshOrgPicks();
     }
   }, [activeTab, refreshOrgPicks]);
+
+  // Trade proposals: load on mount and whenever a trade event arrives
+  // (draft_trade_proposed / _rejected / _completed) or the socket reconnects.
+  useEffect(() => {
+    if (userOrgId && leagueYearId) {
+      refreshTradeProposals();
+    }
+  }, [userOrgId, leagueYearId, tradeVersion, refreshTradeProposals]);
 
   // ═══════════════════════════════════════════════
   // Return

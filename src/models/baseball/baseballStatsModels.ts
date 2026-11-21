@@ -757,12 +757,16 @@ export interface PlayerStatsResponse {
 // Awards persist across seasons — one row per win, newest season first.
 // ═══════════════════════════════════════════════
 
-/** Award grouping. "selection" is All-Star; the rest are trophies. */
+/**
+ * Award grouping. "selection" is All-Star; "championship" is a team honour
+ * (pennant, World Series) given to every rostered player; the rest are trophies.
+ */
 export type AwardCategory =
   | "major"
   | "pitching"
   | "batting"
   | "fielding"
+  | "championship"
   | "selection";
 
 export interface PlayerAward {
@@ -797,6 +801,117 @@ export interface PlayerAwardsResponse {
   awards: PlayerAward[];
   summary: Record<string, AwardSummaryEntry>;
   total_wins: number;
+}
+
+// ── Awards History (GET /awards/history) ─────────────────────
+
+/** Which bucket of a history season holds an award. */
+export type AwardKind = "individual" | "championship" | "selection";
+
+/** One award in the catalog (GET /awards/types; `kind` only on /awards/history). */
+export interface AwardType {
+  code: string;
+  name: string;
+  category: AwardCategory | string;
+  kind?: AwardKind;
+  ptype_scope: "any" | "pitcher" | "hitter" | string;
+  has_league_split: boolean;
+  is_per_position: boolean;
+  allows_multiple: boolean;
+  sort_order: number;
+  description?: string | null;
+}
+
+/** Team snapshot at award time. */
+export interface AwardTeam {
+  team_id: number;
+  team_abbrev: string;
+  team_city?: string | null;
+  team_name?: string | null;
+  color_one?: string | null;
+  color_two?: string | null;
+}
+
+export interface AwardHistoryPlayer {
+  player_id: number;
+  name: string;
+  first_name?: string;
+  last_name?: string;
+  ptype?: "Pitcher" | "Position" | string;
+}
+
+export interface AwardHistoryWinner extends AwardHistoryPlayer {
+  award_id: number;
+  sub_league: "AL" | "NL" | null;
+  position_code: string | null;
+  rank: number;
+  is_winner: boolean;
+  vote_points: number | null;
+  vote_share: number | null;
+  /** Null for a hand-entered award on a player with no active contract. */
+  team: AwardTeam | null;
+}
+
+export interface AwardHistoryChampion {
+  sub_league: "AL" | "NL" | null;
+  roster_size: number;
+  /** Winner's side, e.g. "4-2". Null for a title entered by hand. */
+  series_result: string | null;
+  team: AwardTeam;
+  opponent: AwardTeam | null;
+  /** Only with ?include_rosters=1. */
+  players?: AwardHistoryPlayer[];
+}
+
+export interface AwardHistorySelectionBucket {
+  count: number;
+  /** Only with ?include_selections=1. */
+  players?: (AwardHistoryPlayer & { team?: AwardTeam | null })[];
+}
+
+export interface AwardHistorySeason {
+  league_year_id: number;
+  league_year: number;
+  /** Keyed by award_code. Key order is alphabetical — iterate award_types instead. */
+  individual: Record<string, AwardHistoryWinner[]>;
+  championships: Record<string, AwardHistoryChampion[]>;
+  /** award_code → "AL" | "NL" | "ALL" → bucket. */
+  selections: Record<string, Record<string, AwardHistorySelectionBucket>>;
+}
+
+export interface AwardLeaderPlayer extends AwardHistoryPlayer {
+  trophies: number;
+  selections: number;
+  awards: Record<string, { wins: number; years: number[] }>;
+}
+
+export interface AwardLeaderTeam extends AwardTeam {
+  titles: Record<string, { count: number; years: number[] }>;
+}
+
+export interface AwardsHistoryResponse {
+  league_level: number;
+  /** Display order (sort_order). */
+  award_types: AwardType[];
+  /** Newest season first. */
+  seasons: AwardHistorySeason[];
+  leaders: {
+    players: AwardLeaderPlayer[];
+    teams: AwardLeaderTeam[];
+  };
+}
+
+export interface AwardsHistoryParams {
+  league_level?: number;
+  /** Comma list, e.g. "mvp,cy_young". */
+  award_code?: string;
+  from_year?: number;
+  to_year?: number;
+  include_finalists?: boolean;
+  include_rosters?: boolean;
+  include_selections?: boolean;
+  /** 0 = no cap (default 25). */
+  leaders_limit?: number;
 }
 
 // ═══════════════════════════════════════════════

@@ -11,7 +11,7 @@ import { useAuthStore } from "../../../context/AuthContext";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getLogo } from "../../../_utility/getLogo";
-import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
+import { getPrimaryBaseballTeam, getResultsSeason } from "../../../_utility/baseballHelpers";
 import { BaseballService } from "../../../_services/baseballService";
 import {
   PlayoffBracketResponse, PlayoffSeries, CWSBracketEntry, PendingGame,
@@ -404,7 +404,7 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
     } else {
       setIsLoading(true);
       try {
-        const data = await BaseballService.GetPlayoffBracket(seasonContext.current_league_year_id, selectedLevel);
+        const data = await BaseballService.GetPlayoffBracket(getResultsSeason(seasonContext).leagueYearId, selectedLevel);
         setBracket(data);
       } catch (e) {
         console.error("Failed to load playoff bracket", e);
@@ -414,7 +414,7 @@ export const PlayoffBracketPage = ({ league }: PlayoffBracketPageProps) => {
     }
     // Fetch pending games in parallel (no bootstrap source for these)
     try {
-      const pg = await BaseballService.GetPendingPlayoffGames(seasonContext.current_league_year_id, selectedLevel);
+      const pg = await BaseballService.GetPendingPlayoffGames(getResultsSeason(seasonContext).leagueYearId, selectedLevel);
       setPendingGames(pg.games ?? []);
     } catch {
       setPendingGames([]);

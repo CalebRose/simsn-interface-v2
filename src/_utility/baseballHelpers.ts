@@ -1,4 +1,4 @@
-import { BaseballOrganization, BaseballTeam, DisplayValue, Player, PlayerContract, PlayerRatings, PlayerPotentials, VisibilityContext } from "../models/baseball/baseballModels";
+import { BaseballOrganization, BaseballSeasonContext, BaseballTeam, DisplayValue, Player, PlayerContract, PlayerRatings, PlayerPotentials, VisibilityContext } from "../models/baseball/baseballModels";
 import type { PoolPlayer } from "../models/baseball/baseballScoutingModels";
 import type { ScoutingActionType } from "../models/baseball/baseballScoutingModels";
 import { ratingColor, gradeColor } from "../components/Team/baseball/baseballColorConfig";
@@ -17,6 +17,28 @@ export const getPrimaryBaseballTeam = (org: BaseballOrganization): BaseballTeam 
   }
   // College orgs typically have one team keyed as "college"
   return org.teams["college"] ?? Object.values(org.teams)[0];
+};
+
+/**
+ * The season that results pages (stats, leaders, schedule, brackets) should show.
+ *
+ * `POST /games/end-season` moves the calendar to Y+1 straight away, so during the
+ * offseason `current_*` points at a year with no games. The bootstrap's `display_*`
+ * fields name the last season with results; they equal `current_*` in season.
+ * Free agency, the draft, recruiting, contracts, budgets and scouting keep using
+ * `current_league_year_id`.
+ */
+export const getResultsSeason = (ctx: BaseballSeasonContext | null | undefined) => {
+  const leagueYearId = ctx?.display_league_year_id ?? ctx?.current_league_year_id ?? 0;
+  const leagueYear = ctx?.display_league_year ?? ctx?.league_year ?? 0;
+  const seasonId = ctx?.display_season_id ?? ctx?.current_season_id ?? 0;
+  return {
+    leagueYearId,
+    leagueYear,
+    seasonId,
+    /** True when results pages are showing a finished season (the offseason). */
+    isPastSeason: !!ctx && leagueYearId !== ctx.current_league_year_id,
+  };
 };
 
 // Numeric team_level values from the API → string level keys

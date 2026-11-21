@@ -9,6 +9,7 @@ import React, {
 import {
   BaseballDraftee,
   BASEBALL_DRAFT_POSITIONS,
+  DRAFT_CLASS_LABELS,
 } from "../../../models/baseball/baseballDraftModels";
 import type { Player } from "../../../models/baseball/baseballModels";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
@@ -17,6 +18,7 @@ import {
   AllPlayersTable,
   PositionTable,
   PitcherTable,
+  comparePlayers,
   type BaseballCategory,
   type SortConfig,
 } from "../../Team/baseball/BaseballRosterTable";
@@ -65,10 +67,11 @@ const BaseballEligiblePlayers: FC<BaseballEligiblePlayersProps> = ({
   const [category, setCategory] = useState<BaseballCategory>("Attributes");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Sort state (client-side within the current page)
-  const [sortKey, setSortKey] = useState("lastname");
+  // Sort state. null = consensus draft rank (the server's order, 1 = best).
+  // Header sorts apply within the current page only.
+  const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
-  const sortConfig: SortConfig = { key: sortKey, dir: sortDir };
+  const sortConfig: SortConfig = sortKey ? { key: sortKey, dir: sortDir } : null;
   const handleSort = (key: string) => {
     if (sortKey === key) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
@@ -129,8 +132,34 @@ const BaseballEligiblePlayers: FC<BaseballEligiblePlayersProps> = ({
     if (selectedPosition) {
       visible = visible.filter((d) => d.position === selectedPosition);
     }
-    return visible.map(adaptDraftee);
-  }, [eligiblePlayers, draftedPlayerIds, showDrafted, selectedPosition]);
+    const adapted = visible.map(adaptDraftee);
+    if (!sortConfig) {
+      const rank = (p: DraftPlayer) => p.draft_rank ?? Number.MAX_SAFE_INTEGER;
+      return adapted.sort((a, b) => rank(a) - rank(b));
+    }
+    return adapted.sort((a, b) => comparePlayers(a, b, sortConfig));
+    // sortConfig is derived from sortKey/sortDir
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eligiblePlayers, draftedPlayerIds, showDrafted, selectedPosition, sortKey, sortDir]);
+
+  // Rank, class and age share the Age column: "#12 JR (21)".
+  const renderRankClassAge = useCallback((p: Player) => {
+    const dp = p as DraftPlayer;
+    const cls = dp.class_year ? DRAFT_CLASS_LABELS[dp.class_year] : null;
+    return (
+      <span className="whitespace-nowrap">
+        {dp.draft_rank != null && (
+          <span className="font-semibold tabular-nums" title="Consensus draft rank">#{dp.draft_rank}</span>
+        )}
+        {cls && (
+          <span className="ml-1 rounded-sm bg-gray-700 px-1 text-[11px] font-semibold text-gray-200" title={cls.long}>
+            {cls.short}
+          </span>
+        )}
+        <span className="ml-1 text-xs text-gray-400">({dp.age})</span>
+      </span>
+    );
+  }, []);
 
   // Action button styling
   const actionBtn =
@@ -269,6 +298,17 @@ const BaseballEligiblePlayers: FC<BaseballEligiblePlayersProps> = ({
             </button>
           ))}
         </div>
+        <button
+          onClick={() => setSortKey(null)}
+          className={`px-3 py-1 rounded-sm text-sm font-medium transition-colors ${
+            sortKey === null
+              ? "bg-blue-600 text-white"
+              : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+          }`}
+          title="Order by consensus draft rank (1 = best)"
+        >
+          By draft rank
+        </button>
         <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer select-none">
           <input
             type="checkbox"
@@ -291,6 +331,7 @@ const BaseballEligiblePlayers: FC<BaseballEligiblePlayersProps> = ({
         isCollege
         isFuzzed
         renderActions={renderActions}
+        ageOverride={renderRankClassAge}
       />
 
       {/* Pagination */}

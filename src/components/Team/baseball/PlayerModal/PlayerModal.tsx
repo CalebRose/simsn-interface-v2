@@ -44,6 +44,8 @@ export interface PlayerModalProps {
   ifaStatus?: "active" | "pending" | "complete";
   onMakeOfferIFA?: (detail: IFAAuctionDetail) => void;
   onWithdraw?: (auctionId: number) => void;
+  /** Tab to show each time the modal opens, e.g. "Awards". */
+  initialTab?: string;
 }
 
 export const PlayerModal: FC<PlayerModalProps> = ({
@@ -63,8 +65,10 @@ export const PlayerModal: FC<PlayerModalProps> = ({
   ifaStatus,
   onMakeOfferIFA,
   onWithdraw,
+  initialTab,
 }) => {
   const data = usePlayerModalData({
+    initialTab,
     playerId,
     orgId,
     leagueYearId,

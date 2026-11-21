@@ -126,6 +126,7 @@ export default {
   COLLEGE_BASEBALL_PLAYOFFS: "/collegebaseball/playoffs/",
   COLLEGE_BASEBALL_CONF_TOURNAMENT: "/collegebaseball/tournament/",
   MLB_ALLSTAR: "/mlb/allstar/",
+  MLB_AWARDS: "/mlb/awards/",
   MLB_WBC: "/mlb/wbc/",
   MLB_DRAFT_ROOM: "/mlb/draft/",
   MLB_IFA: "/mlb/ifa/",

@@ -74,7 +74,7 @@ import {
   injuryEffects,
   affectedAttributeKeys,
 } from "../../_utility/injuryUtils";
-import { getClassYear } from "../../_utility/baseballHelpers";
+import { getClassYear, getResultsSeason } from "../../_utility/baseballHelpers";
 import { ratingColor as ovrRatingColor } from "../Team/baseball/baseballColorConfig";
 import { useSimBaseballStore } from "../../context/SimBaseballContext";
 import { displayLevel } from "../../_utility/baseballHelpers";
@@ -3773,15 +3773,19 @@ export const BaseballPlayerInfoModalBody: FC<
     };
   }, [selectedTab, player.id]);
 
+  // Season stats, game logs, splits and position usage show the last season
+  // with results (the previous year during the offseason).
+  const resultsLeagueYearId = getResultsSeason(seasonContext).leagueYearId;
+
   useEffect(() => {
     if (selectedTab !== "Positions") return;
-    if (!seasonContext?.current_league_year_id) return;
+    if (!resultsLeagueYearId) return;
     let cancelled = false;
     const load = async () => {
       setPosUsageLoading(true);
       try {
         const data = await BaseballService.GetPositionUsage({
-          league_year_id: seasonContext.current_league_year_id,
+          league_year_id: resultsLeagueYearId,
           player_id: player.id,
         });
         if (!cancelled) setPositionUsage(data.positions);
@@ -3794,7 +3798,7 @@ export const BaseballPlayerInfoModalBody: FC<
     return () => {
       cancelled = true;
     };
-  }, [selectedTab, player.id, seasonContext?.current_league_year_id]);
+  }, [selectedTab, player.id, resultsLeagueYearId]);
 
   useEffect(() => {
     if (selectedTab !== "Statistics") return;
@@ -3803,7 +3807,7 @@ export const BaseballPlayerInfoModalBody: FC<
       setStatsLoading(true);
       try {
         const data = await BaseballService.GetPlayerStats(player.id, {
-          league_year_id: seasonContext?.current_league_year_id,
+          league_year_id: resultsLeagueYearId,
         });
         if (!cancelled) setPlayerStats(data);
       } catch {
@@ -3815,19 +3819,19 @@ export const BaseballPlayerInfoModalBody: FC<
     return () => {
       cancelled = true;
     };
-  }, [selectedTab, player.id, seasonContext?.current_league_year_id]);
+  }, [selectedTab, player.id, resultsLeagueYearId]);
 
   // Game log fetch
   useEffect(() => {
     if (selectedTab !== "Statistics" || statsSubTab !== "Game Log") return;
-    if (!seasonContext?.current_league_year_id) return;
+    if (!resultsLeagueYearId) return;
     let cancelled = false;
     const load = async () => {
       setGamelogLoading(true);
       try {
         const data = await BaseballService.GetPlayerGamelog(
           player.id,
-          seasonContext.current_league_year_id,
+          resultsLeagueYearId,
         );
         if (!cancelled) setGamelog(data);
       } catch {
@@ -3843,7 +3847,7 @@ export const BaseballPlayerInfoModalBody: FC<
     selectedTab,
     statsSubTab,
     player.id,
-    seasonContext?.current_league_year_id,
+    resultsLeagueYearId,
   ]);
 
   // Career fetch
@@ -3869,14 +3873,14 @@ export const BaseballPlayerInfoModalBody: FC<
   // Splits fetch
   useEffect(() => {
     if (selectedTab !== "Statistics" || statsSubTab !== "Splits") return;
-    if (!seasonContext?.current_league_year_id) return;
+    if (!resultsLeagueYearId) return;
     let cancelled = false;
     const load = async () => {
       setSplitsLoading(true);
       try {
         const data = await BaseballService.GetPlayerSplits(
           player.id,
-          seasonContext.current_league_year_id,
+          resultsLeagueYearId,
         );
         if (!cancelled) setSplits(data);
       } catch {
@@ -3892,7 +3896,7 @@ export const BaseballPlayerInfoModalBody: FC<
     selectedTab,
     statsSubTab,
     player.id,
-    seasonContext?.current_league_year_id,
+    resultsLeagueYearId,
   ]);
 
   const heightObj = HeightToFeetAndInches(player.height);

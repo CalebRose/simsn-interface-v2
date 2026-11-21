@@ -1,11 +1,13 @@
 import type { Player, PlayerRatings, PlayerPotentials } from "../../../models/baseball/baseballModels";
-import type { BaseballDraftee } from "../../../models/baseball/baseballDraftModels";
+import type { BaseballDraftee, DraftClassYear } from "../../../models/baseball/baseballDraftModels";
 
 /**
  * Player extended with draft-specific fields.
  */
 export interface DraftPlayer extends Player {
   draft_rank: number | null;
+  class_year: DraftClassYear | null;
+  source: "college" | "hs";
   college_team: string;
   college_abbrev: string;
   overall_grade: string | null;
@@ -54,6 +56,8 @@ export function adaptDraftee(d: BaseballDraftee): DraftPlayer {
     potentials: (d.potentials ?? {}) as PlayerPotentials,
     // Draft-specific
     draft_rank: d.draft_rank,
+    class_year: d.class_year ?? (d.source === "hs" ? "hs_senior" : null),
+    source: d.source,
     college_team: d.college_team ?? "",
     college_abbrev: d.college_abbrev ?? "",
     overall_grade: d.overall_grade,

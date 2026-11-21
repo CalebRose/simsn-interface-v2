@@ -280,8 +280,7 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
             phase={phase}
             orgMap={orgMap}
             userOrgAbbrev={userOrgAbbrev}
-            onSignPick={signPick}
-            onPassPick={passPick}
+            onOpenSigning={() => setActiveTab("signing")}
             onRefresh={refreshOrgPicks}
           />
         )}
@@ -289,7 +288,9 @@ export const BaseballDraftPage: FC<BaseballDraftPageProps> = ({ league }) => {
         {activeTab === "signing" && (
           <BaseballPickSigning
             orgPicks={orgPicks}
-            orgMap={orgMap}
+            phase={phase}
+            orgId={userOrgId}
+            leagueYearId={leagueYearId}
             onSignPick={signPick}
             onPassPick={passPick}
             onRefresh={refreshOrgPicks}

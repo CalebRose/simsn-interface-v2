@@ -81,6 +81,16 @@ export const useWebSockets = (url: string, sport: string) => {
           return;
         }
 
+        // Baseball's socket also carries draft events; only "timestamp"
+        // messages are ours. The draft hook handles the other types.
+        const msgType = (data as { type?: unknown })?.type;
+        const isBaseball = sport === SimMLB || sport === SimCollegeBaseball;
+        if (isBaseball && typeof msgType === "string") {
+          if (msgType !== "timestamp") return;
+          const nested = (data as { data?: unknown }).data;
+          if (isTimestampMessage(nested)) data = nested as unknown as typeof data;
+        }
+
         if (!isTimestampMessage(data)) {
           console.error(`${sport} WebSocket received an invalid timestamp`);
           return;
