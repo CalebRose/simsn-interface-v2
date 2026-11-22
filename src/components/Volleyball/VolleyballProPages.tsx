@@ -45,7 +45,7 @@ import {
   vbPaths,
   vbPhaseLabel,
 } from "./vbFormatting";
-import { VbChoice, vbFieldClass, VbSaveBar, useVbManaged } from "./VbManage";
+import { VbChoice, vbFieldClass, VbMoneyInput, VbSaveBar, useVbManaged } from "./VbManage";
 import { VbPlayerLink } from "./VbPlayerCard";
 import { VbPageShell } from "./VbPageShell";
 import { vbFamilies, VbGrade, vbGradeRank } from "./VbGrades";
@@ -222,7 +222,7 @@ const Shortlist: FC<{ club: VbTeam }> = ({ club }) => {
               <tr>
                 <th className={`${vbCell} text-right`}>Priority</th>
                 <th className={vbCell}>Player</th>
-                <th className={vbCell}>Most you will pay ($)</th>
+                <th className={vbCell}>Most you will pay</th>
                 <th className={vbCell} />
               </tr>
             </thead>
@@ -234,25 +234,16 @@ const Shortlist: FC<{ club: VbTeam }> = ({ club }) => {
                     <VbPlayerLink playerId={row.PlayerID} name={row.Name} />
                   </td>
                   <td className={vbCell}>
-                    <input
-                      type="number"
-                      className={`${vbFieldClass} w-32`}
-                      aria-label={`Most you will pay ${row.Name}`}
-                      min={0}
-                      step={500}
+                    <VbMoneyInput
+                      className="w-36"
+                      ariaLabel={`Most you will pay ${row.Name}`}
                       disabled={!saved.Open}
                       value={row.MaxSalary}
-                      onChange={(event) =>
+                      onChange={(value) =>
                         change(
                           current.map((item) =>
                             item.PlayerID === row.PlayerID
-                              ? {
-                                  ...item,
-                                  MaxSalary: Math.max(
-                                    0,
-                                    Math.round(Number(event.target.value)),
-                                  ),
-                                }
+                              ? { ...item, MaxSalary: value ?? 0 }
                               : item,
                           ),
                         )

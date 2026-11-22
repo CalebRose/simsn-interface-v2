@@ -1,27 +1,46 @@
-import { FC, ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { Modal } from "../../../_design/Modal";
 import { Button, ButtonGroup } from "../../../_design/Buttons";
 import { Text } from "../../../_design/Typography";
-import { Input } from "../../../_design/Inputs";
 import { Border } from "../../../_design/Borders";
 import { BaseballService } from "../../../_services/baseballService";
 import { ApiError } from "../../../_helper/fetchHelper";
 import { ContractDemand } from "../../../models/baseball/baseballFreeAgencyModels";
 import { ExtendErrorCode, ExtendResponse } from "../../../models/baseball/baseballTransactionModels";
+import { stepPresets } from "../../Common/MoneyInput";
+import { CurrencyInput } from "./FreeAgency/CurrencyInput";
+import {
+  MAX_CONTRACT_YEARS,
+  OfferLedger,
+  targetNoteFor,
+  SalaryRows,
+  YearsPicker,
+  BonusHint,
+  BonusShare,
+  ValueRules,
+  floorError,
+  offerValue,
+  salaryToAsk,
+  valueRules,
+} from "./ContractTerms";
 
 // ═══════════════════════════════════════════════
 // Contract Extension modal
 //
 // Rules (server-enforced, see contract extensions frontend guide):
 //  - Only for rows where contract overview `extension_eligible` is true.
-//  - Accepted iff AAV >= min_aav and years >= min_years, where
-//    AAV = (sum of salaries + bonus) / years. No chance, unlimited attempts.
+//  - Accepted iff value per year >= min_aav and years >= min_years, where
+//    value = salaries + bonus x (1 + bonus_value_premium): the player counts a
+//    bonus dollar at $1.15. No chance, unlimited attempts.
+//  - Veterans (veteran_min_salary set) must be paid at least that salary in
+//    every season; the bonus doesn't count toward it. Extensions are MLB-only,
+//    so the floor always applies when it's set.
+//  - The bonus is paid at signing from cash not reserved by open FA offers.
 //  - A rejected offer keeps the modal open so the user can raise it and resend.
 // ═══════════════════════════════════════════════
 
-const MAX_YEARS = 5;
-const YEAR_OPTIONS = [1, 2, 3, 4, 5];
+const MAX_YEARS = MAX_CONTRACT_YEARS;
 
 /** Codes meaning the action is no longer valid for this contract — close and refresh. */
 const STALE_CODES: ReadonlySet<ExtendErrorCode> = new Set([
@@ -38,21 +57,12 @@ interface NormalizedDemand {
   minAav: number;
   minYears: number;
   war: number;
+  rules: ValueRules;
 }
 
-const formatDollars = (n: number) =>
+const formatMoney = (n: number) =>
   `$${Math.round(n).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
-const formatMillions = (n: number) => `$${(n / 1_000_000).toFixed(2)}M`;
-
-const FieldLabel: FC<{ htmlFor: string; children: ReactNode }> = ({ htmlFor, children }) => (
-  <label
-    htmlFor={htmlFor}
-    className="block mb-1 text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap"
-  >
-    {children}
-  </label>
-);
 
 export interface ContractExtensionModalProps {
   isOpen: boolean;
@@ -89,6 +99,7 @@ export const ContractExtensionModal: FC<ContractExtensionModalProps> = ({
           minAav: parseFloat(cachedDemand.min_aav) || 0,
           minYears: cachedDemand.min_years,
           war: cachedDemand.war,
+          rules: valueRules(cachedDemand.bonus_value_premium, cachedDemand.veteran_min_salary),
         }
       : null;
   const [demand, setDemand] = useState<NormalizedDemand | null>(initialDemand);
@@ -130,6 +141,7 @@ export const ContractExtensionModal: FC<ContractExtensionModalProps> = ({
           minAav: parseFloat(res.min_aav) || 0,
           minYears: res.min_years,
           war: res.war,
+          rules: valueRules(res.bonus_value_premium, res.veteran_min_salary),
         });
       } catch {
         // Non-fatal: the server computes the demand on the first offer anyway.
@@ -165,13 +177,27 @@ export const ContractExtensionModal: FC<ContractExtensionModalProps> = ({
     }
   }, [demand, yearsTouched]);
 
+  // Start the salaries at his demand (never below the veteran minimum) once it
+  // is known, unless the user has already entered something.
+  useEffect(() => {
+    if (!demand) return;
+    setSalaries((prev) =>
+      prev.every((s) => s === 0)
+        ? Array(MAX_YEARS).fill(salaryToAsk(demand.minAav, 1, 0, demand.rules))
+        : prev,
+    );
+  }, [demand]);
+
   // --- Derived ---
+  // Cash is what the club pays; value is what the player weighs (bonus x 1.15).
+  const rules: ValueRules = demand?.rules ?? valueRules(0, null);
   const activeSalaries = salaries.slice(0, years);
   const totalSalary = activeSalaries.reduce((sum, s) => sum + s, 0);
   const totalValue = totalSalary + bonus;
-  const aav = years > 0 ? totalValue / years : 0;
+  const value = offerValue(salaries, years, bonus, rules);
+  const valuePerYear = years > 0 ? value / years : 0;
 
-  const meetsAav = demand ? aav >= demand.minAav : null;
+  const meetsAav = demand ? valuePerYear >= demand.minAav : null;
   const meetsYears = demand ? years >= demand.minYears : null;
   const meetsDemand = meetsAav === true && meetsYears === true;
 
@@ -181,11 +207,13 @@ export const ContractExtensionModal: FC<ContractExtensionModalProps> = ({
     if (activeSalaries.some((s) => s < 0)) errs.push("Salaries cannot be negative");
     if (bonus < 0) errs.push("Bonus cannot be negative");
     if (totalValue <= 0) errs.push("Enter salaries and/or a bonus");
+    const floor = floorError(salaries, years, rules);
+    if (floor) errs.push(floor);
     if (budget != null && bonus > budget) {
-      errs.push(`Bonus exceeds available signing budget (${formatDollars(budget)})`);
+      errs.push(`Bonus is paid at signing but only ${formatMoney(budget)} is available`);
     }
     return errs;
-  }, [years, activeSalaries, bonus, totalValue, budget]);
+  }, [years, activeSalaries, salaries, rules, bonus, totalValue, budget]);
 
   // --- Handlers ---
   const clearRejection = () => setRejection(null);
@@ -196,23 +224,17 @@ export const ContractExtensionModal: FC<ContractExtensionModalProps> = ({
     clearRejection();
   };
 
-  const handleSalaryChange = useCallback((index: number, value: string) => {
-    setSalaries((prev) => {
-      const next = [...prev];
-      next[index] = Math.max(0, Number(value) || 0);
-      return next;
-    });
-    setRejection(null);
-  }, []);
+  const handleSalariesChange = (next: number[]) => {
+    setSalaries(next);
+    clearRejection();
+  };
 
-  /** Spread the remaining value evenly so the offer exactly meets the demanded AAV. */
+  /** Spread what the bonus doesn't cover evenly, so the offer's value meets the demand. */
   const handleFillToDemand = () => {
     if (!demand) return;
-    const y = Math.max(years, demand.minYears);
-    const needed = Math.max(0, demand.minAav * y - bonus);
-    // Round each year up to the nearest $1,000 so AAV never lands just under.
-    const perYear = Math.ceil(needed / y / 1000) * 1000;
-    setYears(Math.min(MAX_YEARS, y));
+    const y = Math.min(MAX_YEARS, Math.max(years, demand.minYears));
+    const perYear = salaryToAsk(demand.minAav * y, y, bonus, demand.rules);
+    setYears(y);
     setYearsTouched(true);
     setSalaries((prev) => prev.map((s, i) => (i < y ? perYear : s)));
     clearRejection();
@@ -276,7 +298,38 @@ export const ContractExtensionModal: FC<ContractExtensionModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Extend ${playerName}`}
-      maxWidth="min-[1025px]:max-w-[60vw]"
+      maxWidth="sm:max-w-2xl min-[1025px]:max-w-[60vw]"
+      mobileSheet
+      closeOnOutsideClick={false}
+      footer={
+        <>
+          <OfferLedger
+            years={years}
+            salaries={salaries}
+            bonus={bonus}
+            rules={rules}
+            target={demand ? demand.minAav * years : 0}
+            targetNote={demand ? targetNoteFor(years, demand.minAav) : ""}
+            blocker={demand && !meetsYears ? `Needs at least ${demand.minYears} years` : null}
+          />
+          {formErrors.map((e) => (
+            <Text key={e} variant="xs" classes="mt-1 text-start text-red-500">
+              {e}
+            </Text>
+          ))}
+          {/* Server rejection: the modal stays open so the user can adjust and resend */}
+          {rejection && (
+            <div className="mt-2 p-2 rounded-sm border border-red-400/50 bg-red-50 dark:bg-red-900/20 text-start">
+              <Text variant="small" classes="font-semibold text-red-600 dark:text-red-400">
+                {rejection.title}
+              </Text>
+              <Text variant="xs" classes="text-red-600 dark:text-red-400">
+                {rejection.message}
+              </Text>
+            </div>
+          )}
+        </>
+      }
       actions={
         <ButtonGroup>
           <Button size="sm" variant="danger" onClick={onClose}>
@@ -295,18 +348,7 @@ export const ContractExtensionModal: FC<ContractExtensionModalProps> = ({
     >
       {/* Player demand */}
       <Border direction="col" classes="p-3 mb-4 text-start">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-          <Text variant="h6">Player Demand</Text>
-          {demand && (
-            <button
-              type="button"
-              onClick={handleFillToDemand}
-              className="px-2 py-0.5 text-xs rounded-sm bg-blue-600/20 text-blue-500 dark:text-blue-400 hover:bg-blue-600/40"
-            >
-              Fill salaries to demand
-            </button>
-          )}
-        </div>
+        <Text variant="h6" classes="mb-1">Player Demand</Text>
         {demandLoading && (
           <Text variant="small" classes="text-gray-500 dark:text-gray-400">
             Loading demand...
@@ -315,7 +357,7 @@ export const ContractExtensionModal: FC<ContractExtensionModalProps> = ({
         {!demandLoading && demand && (
           <div className="flex flex-wrap gap-x-6 gap-y-1">
             <Text variant="small">
-              Min AAV: <strong>{formatDollars(demand.minAav)}</strong>
+              Min value per year: <strong>{formatMoney(demand.minAav)}</strong>
             </Text>
             <Text variant="small">
               Min years: <strong>{demand.minYears}</strong>
@@ -331,128 +373,82 @@ export const ContractExtensionModal: FC<ContractExtensionModalProps> = ({
           </Text>
         )}
         <Text variant="xs" classes="mt-2 text-gray-500 dark:text-gray-400">
-          Accepted immediately if AAV (salaries + bonus, divided by years) meets the minimum
-          and the length meets the minimum years. You can resend as often as you like.
+          Accepted immediately if the value per year meets the minimum and the length meets
+          the minimum years. Value counts each bonus dollar at{" "}
+          {(1 + rules.premium).toFixed(2)}x. You can resend as often as you like.
         </Text>
       </Border>
 
-      {/* Years selector */}
+      {/* Years */}
       <div className="mb-4 text-start">
         <Text variant="small" classes="mb-1 font-semibold">
           Years
         </Text>
-        <div className="flex gap-1.5">
-          {YEAR_OPTIONS.map((y) => {
-            const selected = y === years;
-            const belowMin = demand != null && y < demand.minYears;
-            return (
-              <button
-                key={y}
-                type="button"
-                onClick={() => handleYearsChange(y)}
-                className={`w-10 !px-0 py-1 text-sm rounded-sm border transition-colors ${
-                  selected
-                    ? "bg-blue-600 border-blue-600 text-white"
-                    : "bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:hover:bg-gray-600"
-                } ${belowMin && !selected ? "opacity-50" : ""}`}
-                title={belowMin ? `Below the player's minimum of ${demand!.minYears}` : undefined}
-              >
-                {y}
-              </button>
-            );
-          })}
-        </div>
+        <YearsPicker
+          value={years}
+          onChange={handleYearsChange}
+          softMin={demand?.minYears}
+          softMinTitle={demand ? `Below the player's minimum of ${demand.minYears}` : undefined}
+        />
       </div>
 
       {/* Per-year salaries */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-3">
-        {YEAR_OPTIONS.map((y, i) => (
-          <div key={y} className={`text-start ${i >= years ? "opacity-30 pointer-events-none" : ""}`}>
-            <FieldLabel htmlFor={`ext_salary_${i}`}>Year {y} salary ($)</FieldLabel>
-            <Input
-              type="number"
-              showLabel={false}
-              classes="w-full"
-              id={`ext_salary_${i}`}
-              name={`salary_${i}`}
-              value={salaries[i]}
-              min={0}
-              step={100000}
-              disabled={i >= years}
-              onChange={(e) => handleSalaryChange(i, e.target.value)}
-            />
-          </div>
-        ))}
+      <div className="mb-4 text-start">
+        <SalaryRows
+          years={years}
+          salaries={salaries}
+          onChange={handleSalariesChange}
+          idPrefix="ext"
+          minSalary={rules.minSalary}
+          onFillToAsk={demand ? handleFillToDemand : undefined}
+          fillToAskLabel="Fill to demand"
+        />
       </div>
 
       {/* Bonus */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2 mb-4 items-end">
-        <div className="text-start">
-          <FieldLabel htmlFor="ext_bonus">Signing bonus ($)</FieldLabel>
-          <Input
-            type="number"
-            showLabel={false}
-            classes="w-full"
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2 mb-2 items-start text-start">
+        <div>
+          <CurrencyInput
             id="ext_bonus"
-            name="bonus"
+            label="Signing bonus"
             value={bonus}
-            min={0}
-            step={100000}
-            onChange={(e) => {
-              setBonus(Math.max(0, Number(e.target.value) || 0));
+            onChange={(v) => {
+              setBonus(v);
               clearRejection();
             }}
+            presets={stepPresets(-1_000_000, -100_000, 100_000, 1_000_000)}
           />
-        </div>
-        <Text variant="xs" classes="text-start text-gray-500 dark:text-gray-400 pb-2">
-          Charged immediately and counted in AAV.
-          {budget != null && <> Available signing budget: <strong>{formatDollars(budget)}</strong>.</>}
-        </Text>
-      </div>
-
-      {/* Live summary */}
-      <Border direction="col" classes="p-3 mb-3 text-start">
-        <div className="flex flex-wrap gap-x-6 gap-y-1 items-center">
-          <Text variant="small">
-            Total: <strong>{formatMillions(totalValue)}</strong>
-          </Text>
-          <Text variant="small">
-            AAV: <strong>{formatMillions(aav)}</strong>
-          </Text>
           {demand && (
-            <span
-              className={`px-2 py-0.5 text-xs rounded-sm font-medium ${
-                meetsDemand
-                  ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                  : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-              }`}
-            >
-              {meetsDemand
-                ? "Meets the player's demand"
-                : !meetsYears
-                  ? `Needs at least ${demand.minYears} years`
-                  : `AAV ${formatDollars(demand.minAav - aav)} short`}
-            </span>
+            <BonusShare
+              askTotal={demand.minAav * years}
+              years={years}
+              bonus={bonus}
+              salaries={salaries}
+              rules={rules}
+              onPick={(b, perYear) => {
+                setBonus(b);
+                setSalaries(Array(MAX_YEARS).fill(perYear));
+                clearRejection();
+              }}
+            />
           )}
+          <BonusHint rules={rules} />
         </div>
-        {formErrors.map((e) => (
-          <Text key={e} variant="small" classes="mt-1 text-red-500">
-            {e}
+        <div className="sm:pt-6 text-start">
+          <Text variant="small">
+            Paid at signing: <strong>{formatMoney(bonus)}</strong>
+            {budget != null && (
+              <>
+                {" "}of <strong>{formatMoney(budget)}</strong> available
+              </>
+            )}
           </Text>
-        ))}
-      </Border>
-
-      {/* Server rejection — modal stays open so the user can adjust and resend */}
-      {rejection && (
-        <div className="p-3 rounded-sm border border-red-400/50 bg-red-50 dark:bg-red-900/20 text-start">
-          <Text variant="small" classes="font-semibold text-red-600 dark:text-red-400">
-            {rejection.title}
-          </Text>
-          <Text variant="small" classes="text-red-600 dark:text-red-400">
-            {rejection.message}
+          <Text variant="xs" classes="text-gray-500 dark:text-gray-400">
+            The bonus is paid the day the deal is signed, from cash not already reserved by your
+            open free-agent offers. Salaries are paid over the seasons.
           </Text>
         </div>
-      )}
+      </div>
     </Modal>
   );
 };

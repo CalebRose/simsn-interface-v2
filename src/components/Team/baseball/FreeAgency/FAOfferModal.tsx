@@ -5,6 +5,20 @@ import { Border } from "../../../../_design/Borders";
 import { Button, ButtonGroup } from "../../../../_design/Buttons";
 import { BaseballService } from "../../../../_services/baseballService";
 import { CurrencyInput } from "./CurrencyInput";
+import { stepPresets } from "../../../Common/MoneyInput";
+import {
+  MAX_CONTRACT_YEARS,
+  OfferLedger,
+  targetNoteFor,
+  SalaryRows,
+  YearsPicker,
+  BonusHint,
+  BonusShare,
+  floorError,
+  offerValue,
+  salaryToAsk,
+  valueRules,
+} from "../ContractTerms";
 import { useSnackbar } from "notistack";
 import {
   FAPlayerDemand,
@@ -15,6 +29,11 @@ import {
 } from "../../../../models/baseball/baseballFreeAgencyModels";
 import { formatMoney } from "../BaseballFinancials/financialConstants";
 
+const MLB_LEVEL = 9;
+
+/** Prefix of the below-the-ask errors; the footer ledger shows the shortfall, so they aren't listed twice. */
+const ASK_ERROR = "Below his ask";
+
 const PRO_LEVEL_OPTIONS = [
   { value: 4, label: "Unassigned" },
   { value: 5, label: "A" },
@@ -24,9 +43,6 @@ const PRO_LEVEL_OPTIONS = [
   { value: 9, label: "MLB" },
 ];
 
-/** Contracts are 1–5 years; the player's demand narrows that range. */
-const MAX_CONTRACT_YEARS = 5;
-
 /** Money compared to the cent, so a restored 41M/3 offer equals the API's 13,666,666.67. */
 const cents = (n: number) => Math.round(n * 100);
 
@@ -35,10 +51,10 @@ const ageWeighting = (age: number) =>
   age <= 28
     ? { aav: 30, total: 70, hint: "He values total guaranteed money, so more years help." }
     : age <= 31
-      ? { aav: 50, total: 50, hint: "He weighs yearly salary and total value equally." }
+      ? { aav: 50, total: 50, hint: "He weighs value per year and total value equally." }
       : age <= 33
-        ? { aav: 70, total: 30, hint: "He leans toward yearly salary over total value." }
-        : { aav: 85, total: 15, hint: "He is almost entirely after the highest yearly salary." };
+        ? { aav: 70, total: 30, hint: "He leans toward value per year over total value." }
+        : { aav: 85, total: 15, hint: "He is almost entirely after the highest value per year." };
 
 interface FAOfferModalProps {
   isOpen: boolean;
@@ -82,16 +98,20 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
     MAX_CONTRACT_YEARS,
   );
   const demandMinTotal = demand?.min_total_value ?? 0;
+  const premium = demand?.bonus_value_premium ?? 0;
+  const vetMin = demand?.veteran_min_salary ?? null;
 
   // A withdrawn, outbid, lost or failed offer is history, not something to update.
   const offerStatus = existingOffer?.status ?? "active";
   const hasActiveOffer = existingOffer != null && offerStatus === "active";
   const isUpdate = hasActiveOffer;
-  const canLowerAav = phase === "open";
+  // After the Open stage an offer's value per year can't drop; moving salary
+  // into bonus is fine as long as the value holds.
+  const canLowerValue = phase === "open";
 
   const [years, setYears] = useState(demandMinYears);
   const [salaries, setSalaries] = useState<number[]>(
-    Array(MAX_CONTRACT_YEARS).fill(demandMinAav),
+    Array(MAX_CONTRACT_YEARS).fill(Math.max(demandMinAav, vetMin ?? 0)),
   );
   const [bonus, setBonus] = useState(0);
   const [levelId, setLevelId] = useState(9);
@@ -114,20 +134,25 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
       setSalaries(Array(MAX_CONTRACT_YEARS).fill(Math.max(perYear, 0)));
     } else {
       setYears(demandMinYears);
-      setSalaries(Array(MAX_CONTRACT_YEARS).fill(demandMinAav));
+      setSalaries(Array(MAX_CONTRACT_YEARS).fill(Math.max(demandMinAav, vetMin ?? 0)));
       setBonus(0);
       setLevelId(9);
     }
-  }, [isOpen, hasActiveOffer, existingOffer, demandMinYears, demandMinAav]);
+  }, [isOpen, hasActiveOffer, existingOffer, demandMinYears, demandMinAav, vetMin]);
 
-  const totalSalary = useMemo(
-    () => salaries.slice(0, years).reduce((sum, s) => sum + s, 0),
-    [salaries, years],
-  );
-  const totalValue = totalSalary + bonus;
-  const aav = years > 0 ? totalValue / years : 0;
+  // Cash is what the club pays; value is what the player weighs (bonus counts
+  // extra). The veteran floor only binds MLB-level deals.
+  const rules = valueRules(premium, vetMin, levelId === MLB_LEVEL);
+  const value = offerValue(salaries, years, bonus, rules);
+  const valuePerYear = years > 0 ? value / years : 0;
   // What an active offer reserves against the club's cash.
   const heldAmount = bonus + (salaries[0] ?? 0);
+  // The current offer as he values it; older payloads lack offer_value.
+  const existingValuePerYear =
+    existingOffer && existingOffer.years > 0
+      ? (existingOffer.offer_value ?? existingOffer.total_value + existingOffer.bonus * premium) /
+        existingOffer.years
+      : 0;
 
   // Why this club can't offer at all right now, if it can't.
   const blockedReason = useMemo(() => {
@@ -163,15 +188,17 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
         }
       }
     }
+    const floor = floorError(salaries, years, rules);
+    if (floor) errs.push(floor);
     if (bonus < 0) errs.push("Bonus cannot be negative");
-    if (demandMinAav > 0 && cents(aav) < cents(demandMinAav)) {
+    if (demandMinAav > 0 && cents(valuePerYear) < cents(demandMinAav)) {
       errs.push(
-        `Yearly average ${formatMoney(Math.round(aav))} is below his ask of ${formatMoney(demandMinAav)}`,
+        `${ASK_ERROR}: value per year ${formatMoney(Math.round(valuePerYear))} vs ${formatMoney(demandMinAav)}`,
       );
     }
-    if (demandMinTotal > 0 && totalValue < demandMinTotal) {
+    if (demandMinTotal > 0 && cents(value) < cents(demandMinTotal)) {
       errs.push(
-        `Total ${formatMoney(totalValue)} is below his minimum total of ${formatMoney(demandMinTotal)}`,
+        `${ASK_ERROR}: value ${formatMoney(Math.round(value))} vs his minimum total of ${formatMoney(demandMinTotal)}`,
       );
     }
     if (availableBudget != null && heldAmount > availableBudget) {
@@ -179,9 +206,9 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
         `This offer holds ${formatMoney(heldAmount)} but only ${formatMoney(availableBudget)} is available`,
       );
     }
-    if (isUpdate && existingOffer && !canLowerAav && cents(aav) < cents(existingOffer.aav)) {
+    if (isUpdate && existingOffer && !canLowerValue && cents(valuePerYear) < cents(existingValuePerYear)) {
       errs.push(
-        `Yearly average can't go below your current ${formatMoney(Math.round(existingOffer.aav))}`,
+        `Value per year can't go below your current offer's ${formatMoney(Math.round(existingValuePerYear))}`,
       );
     }
     return errs;
@@ -191,25 +218,27 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
     demandMinYears,
     demandMaxYears,
     salaries,
+    rules,
     bonus,
     demandMinAav,
     demandMinTotal,
-    aav,
-    totalValue,
+    value,
+    valuePerYear,
     availableBudget,
     heldAmount,
     isUpdate,
     existingOffer,
-    canLowerAav,
+    existingValuePerYear,
+    canLowerValue,
   ]);
 
-  const handleSalaryChange = useCallback((index: number, value: string) => {
-    setSalaries((prev) => {
-      const next = [...prev];
-      next[index] = Number(value) || 0;
-      return next;
-    });
-  }, []);
+  /** His ask in value over the current length: the larger of value per year x years and his minimum total. */
+  const askTotal = Math.max(demandMinAav * years, demandMinTotal);
+
+  /** Spread what the bonus doesn't cover evenly (never below the floor), so the value meets his ask. */
+  const handleFillToAsk = () => {
+    setSalaries(Array(MAX_CONTRACT_YEARS).fill(salaryToAsk(askTotal, years, bonus, rules)));
+  };
 
   const handleConfirm = useCallback(async () => {
     if (errors.length > 0) return;
@@ -227,7 +256,7 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
         executed_by: "user",
       });
       enqueueSnackbar(
-        `${isUpdate ? "Updated" : "Submitted"} offer for ${playerName}: ${res.years} yr, ${formatMoney(Math.round(res.aav))} a year`,
+        `${isUpdate ? "Updated" : "Submitted"} offer for ${playerName}: ${res.years} yr, ${formatMoney(Math.round(res.aav))} a year in cash`,
         { variant: "success", autoHideDuration: 4000 },
       );
       onSuccess();
@@ -273,10 +302,10 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
     ? playerName
     : !isUpdate
     ? `Make Offer: ${playerName}`
-    : canLowerAav
+    : canLowerValue
       ? `Update Offer: ${playerName}`
       : `Increase Offer: ${playerName}`;
-  const submitLabel = !isUpdate ? "Submit Offer" : canLowerAav ? "Update Offer" : "Increase Offer";
+  const submitLabel = !isUpdate ? "Submit Offer" : canLowerValue ? "Update Offer" : "Increase Offer";
   const canWithdraw = hasActiveOffer && phase === "open";
   const weighting = age != null ? ageWeighting(age) : null;
   const pastStatus =
@@ -287,7 +316,28 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={modalTitle}
-      maxWidth="min-[1025px]:max-w-[60vw]"
+      maxWidth="sm:max-w-2xl min-[1025px]:max-w-[60vw]"
+      mobileSheet
+      closeOnOutsideClick={false}
+      footer={
+        blockedReason ? undefined : (
+          <>
+            <OfferLedger
+              years={years}
+              salaries={salaries}
+              bonus={bonus}
+              rules={rules}
+              target={askTotal}
+              targetNote={targetNoteFor(years, demandMinAav, demandMinTotal)}
+            />
+            {errors.filter((err) => !err.startsWith(ASK_ERROR)).map((err) => (
+              <Text key={err} variant="xs" classes="mt-1 text-start text-red-500">
+                {err}
+              </Text>
+            ))}
+          </>
+        )
+      }
       actions={
         <ButtonGroup>
           <Button size="sm" variant="danger" onClick={onClose}>
@@ -323,9 +373,12 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
         <Border direction="col" classes="p-3 mb-4 text-start">
           <Text variant="h6" classes="mb-2">His Ask</Text>
           <div className="flex flex-wrap gap-x-6 gap-y-1">
-            <Text variant="small">Yearly average: <strong>{formatMoney(demandMinAav)}</strong></Text>
+            <Text variant="small">Value per year: <strong>{formatMoney(demandMinAav)}</strong></Text>
             {demandMinTotal > 0 && (
               <Text variant="small">Minimum total: <strong>{formatMoney(demandMinTotal)}</strong></Text>
+            )}
+            {vetMin != null && (
+              <Text variant="small">MLB salary floor: <strong>{formatMoney(vetMin)}</strong> a season</Text>
             )}
             <Text variant="small">
               Length: <strong>{demandMinYears === demandMaxYears ? demandMinYears : `${demandMinYears}–${demandMaxYears}`} yr</strong>
@@ -335,7 +388,7 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
           </div>
           {weighting && (
             <Text variant="xs" classes="mt-2 text-gray-400">
-              How he chooses: at {age}, he weighs yearly average {weighting.aav}% and
+              How he chooses: at {age}, he weighs value per year {weighting.aav}% and
               total value {weighting.total}%. {weighting.hint}
             </Text>
           )}
@@ -360,12 +413,13 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
           <Text variant="h6" classes="mb-2">Your Current Offer</Text>
           <div className="flex flex-wrap gap-x-6 gap-y-1">
             <Text variant="small">Years: <strong>{existingOffer.years}</strong></Text>
-            <Text variant="small">Yearly average: <strong>{formatMoney(Math.round(existingOffer.aav))}</strong></Text>
-            <Text variant="small">Total: <strong>{formatMoney(existingOffer.total_value)}</strong></Text>
+            <Text variant="small">Cash: <strong>{formatMoney(existingOffer.total_value)}</strong></Text>
+            <Text variant="small">Value per year: <strong>{formatMoney(Math.round(existingValuePerYear))}</strong></Text>
           </div>
-          {!canLowerAav && (
+          {!canLowerValue && (
             <Text variant="xs" classes="text-yellow-400 mt-1">
-              After the Open stage you can only raise the yearly average.
+              After the Open stage the value per year can't go down. You can still move salary into
+              bonus, since bonus dollars count extra.
             </Text>
           )}
         </Border>
@@ -373,59 +427,60 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
 
       {!blockedReason && (
         <>
-          {/* Money held + Errors */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-            <Border direction="col" classes="p-3 text-start">
-              <Text variant="small" classes="font-semibold mb-1">
-                This offer holds {formatMoney(heldAmount)}
-              </Text>
-              <Text variant="xs" classes="text-gray-400">
-                Signing bonus plus first-season salary, held while the offer is active.
-              </Text>
-              {availableBudget != null && (
-                <Text variant="xs" classes="text-gray-400 mt-1">
-                  Cash available for signings: {formatMoney(availableBudget)}, less
-                  what your other active offers hold.
-                </Text>
-              )}
-              <Text variant="xs" classes="text-gray-400 mt-1">
-                Stage: <span className="font-semibold">{AUCTION_PHASE_LABELS[phase] ?? phase}</span>
-              </Text>
-            </Border>
-            <Border direction="col" classes="p-3 text-start overflow-y-auto">
-              <Text variant="h6">Problems</Text>
-              {errors.length === 0 && <Text variant="small">None</Text>}
-              {errors.map((err) => (
-                <Text key={err} variant="small" classes="text-red-500">{err}</Text>
-              ))}
-            </Border>
+          {/* Length */}
+          <div className="mb-4 text-start">
+            <Text variant="small" classes="mb-1 font-semibold">Years</Text>
+            <YearsPicker
+              value={years}
+              onChange={setYears}
+              min={demandMinYears}
+              max={demandMaxYears}
+            />
           </div>
 
-          {/* Length + Bonus + Level */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-            <div>
-              <label className="block text-xs text-gray-400 mb-1" htmlFor="fa-offer-years">Years</label>
-              <select
-                id="fa-offer-years"
-                className="w-full text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={years}
-                onChange={(e) => setYears(Number(e.target.value))}
-              >
-                {Array.from({ length: demandMaxYears - demandMinYears + 1 }, (_, i) => demandMinYears + i).map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </select>
-            </div>
-            <CurrencyInput
-              label="Signing Bonus"
-              value={bonus}
-              onChange={setBonus}
+          {/* Per-year salaries */}
+          <div className="mb-4 text-start">
+            <SalaryRows
+              years={years}
+              salaries={salaries}
+              onChange={setSalaries}
+              idPrefix="fa-offer"
+              raiseLaterYears
+              minSalary={rules.minSalary}
+              onFillToAsk={demandMinAav > 0 || demandMinTotal > 0 ? handleFillToAsk : undefined}
             />
+          </div>
+
+          {/* Bonus + Level */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-start">
             <div>
-              <label className="block text-xs text-gray-400 mb-1" htmlFor="fa-offer-level">Level</label>
+              <CurrencyInput
+                id="fa-offer-bonus"
+                label="Signing bonus"
+                value={bonus}
+                onChange={setBonus}
+                presets={stepPresets(-1_000_000, -100_000, 100_000, 1_000_000)}
+              />
+              <BonusShare
+                askTotal={askTotal}
+                years={years}
+                bonus={bonus}
+                salaries={salaries}
+                rules={rules}
+                onPick={(b, perYear) => {
+                  setBonus(b);
+                  setSalaries(Array(MAX_CONTRACT_YEARS).fill(perYear));
+                }}
+              />
+              <BonusHint rules={valueRules(premium, vetMin)} />
+            </div>
+            <div>
+              <label className="block mb-1 text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="fa-offer-level">
+                Assign to level
+              </label>
               <select
                 id="fa-offer-level"
-                className="w-full text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="w-full min-h-10 text-base sm:text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 value={levelId}
                 onChange={(e) => setLevelId(Number(e.target.value))}
               >
@@ -434,33 +489,32 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
                 ))}
               </select>
             </div>
-            <div className="flex flex-col">
-              <Text variant="xs" classes="text-gray-400 mb-1">Computed</Text>
-              <Text variant="small">Total: <strong>{formatMoney(totalValue)}</strong></Text>
-              <Text variant="small">Yearly avg: <strong>{formatMoney(Math.round(aav))}</strong></Text>
-            </div>
           </div>
 
-          {/* Per-year salary inputs */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-2">
-            {Array.from({ length: MAX_CONTRACT_YEARS }, (_, i) => (
-              <div key={i} className={i >= years ? "opacity-30 pointer-events-none" : ""}>
-                <CurrencyInput
-                  label={`Y${i + 1} Salary`}
-                  value={salaries[i]}
-                  disabled={i >= years}
-                  onChange={(val) => handleSalaryChange(i, String(val))}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Meets ask indicator (text, not just color) */}
-          {demandMinAav > 0 && totalValue > 0 && (
-            <Text variant="small" classes={`mt-2 ${cents(aav) >= cents(demandMinAav) ? "text-green-400" : "text-red-400"}`}>
-              {cents(aav) >= cents(demandMinAav) ? "✓ Meets his ask" : "✗ Below his ask"}
+          {/* Money held */}
+          <Border direction="col" classes="p-3 text-start">
+            <Text variant="small" classes="font-semibold mb-1">
+              Paid at signing: {formatMoney(bonus)}
+              {availableBudget != null && (
+                <span className="font-normal text-gray-400"> of {formatMoney(availableBudget)} cash available</span>
+              )}
             </Text>
-          )}
+            <Text variant="small" classes="mb-1">
+              This offer holds {formatMoney(heldAmount)} while active
+            </Text>
+            <Text variant="xs" classes="text-gray-400">
+              Signing bonus plus first-season salary, held while the offer is active.
+            </Text>
+            {availableBudget != null && (
+              <Text variant="xs" classes="text-gray-400 mt-1">
+                Cash available for signings: {formatMoney(availableBudget)}, less
+                what your other active offers hold.
+              </Text>
+            )}
+            <Text variant="xs" classes="text-gray-400 mt-1">
+              Stage: <span className="font-semibold">{AUCTION_PHASE_LABELS[phase] ?? phase}</span>
+            </Text>
+          </Border>
         </>
       )}
     </Modal>

@@ -43,6 +43,8 @@ import {
   VbChoice,
   VbField,
   vbFieldClass,
+  vbFormFieldClass,
+  VbMoneyInput,
   VbSaveBar,
   useVbManaged,
 } from "./VbManage";
@@ -614,6 +616,8 @@ const Board: FC<BoardProps> = ({ team, market, view, store }) => {
 
       <Modal
         isOpen={Boolean(offering)}
+        mobileSheet
+        closeOnOutsideClick={false}
         onClose={() => !busy && setOffering(null)}
         title={offering ? `Offer to ${offering.Name}` : ""}
         actions={
@@ -642,17 +646,27 @@ const Board: FC<BoardProps> = ({ team, market, view, store }) => {
               {vbMoney(position.OfferCap)}; you have{" "}
               {vbMoney(position.Available)} available.
             </p>
-            <label className="flex items-center gap-2">
-              <span className="font-semibold">Amount ($)</span>
-              <input
-                type="number"
-                className={`${vbFieldClass} w-36`}
-                min={0}
-                step={500}
-                value={amount}
-                onChange={(event) => setAmount(event.target.value)}
-              />
-            </label>
+            <VbMoneyInput
+              label="Amount"
+              className="max-w-64"
+              value={amount === "" ? null : Number(amount)}
+              onChange={(value) => setAmount(value == null ? "" : String(value))}
+              presets={[
+                { label: `Her ask (${vbMoney(offering.Ask)})`, apply: () => offering.Ask },
+                ...(offering.Response?.Counter != null
+                  ? [
+                      {
+                        label: `Her counter (${vbMoney(offering.Response.Counter)})`,
+                        apply: () => offering.Response!.Counter!,
+                      },
+                    ]
+                  : []),
+                {
+                  label: `The cap (${vbMoney(position.OfferCap)})`,
+                  apply: () => position.OfferCap,
+                },
+              ]}
+            />
             {offering.Offer && (
               <p className="text-(--text-muted)">
                 This replaces your offer of {vbMoney(offering.Offer.Amount)}.
@@ -754,7 +768,7 @@ const Resign: FC<{ team: VbTeam }> = ({ team }) => {
               <th className={`${vbCell} text-right`}>Last year</th>
               <th className={`${vbCell} text-right`}>Her ask</th>
               <th className={vbCell}>Plan</th>
-              <th className={vbCell}>Amount ($)</th>
+              <th className={vbCell}>Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -770,7 +784,7 @@ const Resign: FC<{ team: VbTeam }> = ({ team }) => {
                   <td className={vbNum}>{vbMoney(player.Ask)}</td>
                   <td className={vbCell}>
                     <select
-                      className={vbFieldClass}
+                      className={vbFormFieldClass}
                       aria-label={`Plan for ${player.Name}`}
                       disabled={!saved.Open}
                       value={row.Plan}
@@ -794,21 +808,13 @@ const Resign: FC<{ team: VbTeam }> = ({ team }) => {
                   </td>
                   <td className={vbCell}>
                     {row.Plan === "offer" ? (
-                      <input
-                        type="number"
-                        className={`${vbFieldClass} w-28`}
-                        aria-label={`Amount for ${player.Name}`}
-                        min={0}
-                        step={500}
+                      <VbMoneyInput
+                        className="w-36"
+                        ariaLabel={`Amount for ${player.Name}`}
                         disabled={!saved.Open}
                         value={row.Amount ?? 0}
-                        onChange={(event) =>
-                          change(player.PlayerID, {
-                            Amount: Math.max(
-                              0,
-                              Math.round(Number(event.target.value)),
-                            ),
-                          })
+                        onChange={(value) =>
+                          change(player.PlayerID, { Amount: value ?? 0 })
                         }
                       />
                     ) : (

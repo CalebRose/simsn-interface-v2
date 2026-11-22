@@ -248,6 +248,8 @@ export const BaseballFreeAgencyPage = ({ league }: BaseballFreeAgencyPageProps) 
         max_years: entry.max_years,
         min_total_value: entry.min_total_value,
         war: entry.war,
+        bonus_value_premium: entry.bonus_value_premium,
+        veteran_min_salary: entry.veteran_min_salary,
       },
       existingOffer: entry.my_offer,
     });

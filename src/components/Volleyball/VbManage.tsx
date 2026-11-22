@@ -2,6 +2,7 @@ import { FC, ReactNode, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { SportButton } from "../Common/SportKit";
 import { SportSegmented } from "../Common/SportKit";
+import { MoneyInput, MoneyInputProps } from "../Common/MoneyInput";
 import { useSimVBStore } from "../../context/SimVBContext";
 import {
   VbLeagueKind,
@@ -137,6 +138,21 @@ export const VbSaveBar: FC<VbSaveBarProps> = ({
 
 export const vbFieldClass =
   "rounded-lg border-0 bg-(--sport-surface-2) px-2 py-1.5 text-sm text-(--text-primary) placeholder:text-(--text-muted) focus:outline-none focus:ring-2 focus:ring-(--accent-primary)";
+
+/** vbFieldClass at 16px on phones, so iOS doesn't zoom in when it's tapped. */
+export const vbFormFieldClass = vbFieldClass.replace("text-sm", "text-base sm:text-sm");
+
+/**
+ * Dollar entry in the volleyball look: commas kept while typing, a number
+ * keypad, and 16px text so phones don't zoom in on tap.
+ */
+export const VbMoneyInput: FC<MoneyInputProps> = (props) => (
+  <MoneyInput
+    fieldClassName="rounded-lg bg-(--sport-surface-2) text-(--text-primary) focus-within:ring-2 focus-within:ring-(--accent-primary)"
+    labelClassName="block mb-1 font-semibold"
+    {...props}
+  />
+);
 
 /** A labelled setting with a one-line note on what it does. */
 export const VbField: FC<{

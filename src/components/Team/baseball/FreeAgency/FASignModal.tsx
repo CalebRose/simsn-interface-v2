@@ -8,6 +8,25 @@ import { useSnackbar } from "notistack";
 import { FA_TYPE_LABELS } from "../../../../models/baseball/baseballFreeAgencyModels";
 import type { FAPlayer } from "./faPlayerAdapter";
 import { CurrencyInput } from "./CurrencyInput";
+import { stepPresets } from "../../../Common/MoneyInput";
+import {
+  MAX_CONTRACT_YEARS,
+  OfferLedger,
+  targetNoteFor,
+  SalaryRows,
+  YearsPicker,
+  BonusHint,
+  BonusShare,
+  floorError,
+  offerValue,
+  salaryToAsk,
+  valueRules,
+} from "../ContractTerms";
+
+const MLB_LEVEL = 9;
+
+/** Prefix of the below-the-ask error; the footer ledger shows the shortfall, so it isn't listed twice. */
+const ASK_ERROR = "Below his ask";
 
 const LEVEL_OPTIONS = [
   { value: 4, label: "Unassigned" },
@@ -46,11 +65,14 @@ export const FASignModal: FC<FASignModalProps> = ({
   // defaults here and the early return sits below the hooks.
   const demandMinAav = demand ? parseFloat(demand.min_aav) || 0 : 0;
   const demandMinYears = demand?.min_years ?? 1;
-  const demandMaxYears = demand?.max_years ?? 5;
+  const demandMaxYears = Math.min(demand?.max_years ?? MAX_CONTRACT_YEARS, MAX_CONTRACT_YEARS);
+  const premium = demand?.bonus_value_premium ?? 0;
+  const vetMin = demand?.veteran_min_salary ?? null;
+  const startSalary = Math.max(demandMinAav, vetMin ?? 0);
 
   const [years, setYears] = useState(demandMinYears);
   const [salaries, setSalaries] = useState<number[]>(() =>
-    Array(5).fill(demandMinAav),
+    Array(MAX_CONTRACT_YEARS).fill(startSalary),
   );
   const [bonus, setBonus] = useState(0);
   const [levelId, setLevelId] = useState(9);
@@ -60,19 +82,23 @@ export const FASignModal: FC<FASignModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setYears(demandMinYears);
-      setSalaries(Array(5).fill(demandMinAav));
+      setSalaries(Array(MAX_CONTRACT_YEARS).fill(startSalary));
       setBonus(0);
-      setLevelId(player.last_level >= 4 ? player.last_level : 9);
+      setLevelId(player.last_level >= 4 ? player.last_level : MLB_LEVEL);
     }
-  }, [isOpen, player, demandMinYears, demandMinAav]);
+  }, [isOpen, player, demandMinYears, startSalary]);
 
   const totalSalary = useMemo(
     () => salaries.slice(0, years).reduce((sum, s) => sum + s, 0),
     [salaries, years],
   );
 
+  // Cash is what the club pays; value is what the player weighs (bonus counts
+  // extra). The veteran floor only binds MLB-level deals.
+  const rules = valueRules(premium, vetMin, levelId === MLB_LEVEL);
   const totalValue = totalSalary + bonus;
-  const aav = years > 0 ? totalValue / years : 0;
+  const value = offerValue(salaries, years, bonus, rules);
+  const valuePerYear = years > 0 ? value / years : 0;
 
   const errors = useMemo(() => {
     const errs: string[] = [];
@@ -91,19 +117,18 @@ export const FASignModal: FC<FASignModalProps> = ({
         }
       }
     }
+    const floor = floorError(salaries, years, rules);
+    if (floor) errs.push(floor);
     if (bonus < 0) errs.push("Bonus cannot be negative");
     if (availableBudget != null && bonus > availableBudget) {
       errs.push(
-        `Bonus exceeds available budget ($${availableBudget.toLocaleString()})`,
+        `Bonus is paid at signing but only $${availableBudget.toLocaleString()} is available`,
       );
     }
-    if (demandMinAav > 0 && totalValue > 0) {
-      const minTotal = demandMinAav * years;
-      if (totalValue < minTotal) {
-        errs.push(
-          `Total value ($${totalValue.toLocaleString()}) below minimum ($${minTotal.toLocaleString()})`,
-        );
-      }
+    if (demandMinAav > 0 && totalValue > 0 && Math.round(valuePerYear) < Math.round(demandMinAav)) {
+      errs.push(
+        `${ASK_ERROR}: value per year $${Math.round(valuePerYear).toLocaleString()} vs $${demandMinAav.toLocaleString()}`,
+      );
     }
     return errs;
   }, [
@@ -111,22 +136,18 @@ export const FASignModal: FC<FASignModalProps> = ({
     demandMinYears,
     demandMaxYears,
     salaries,
+    rules,
     bonus,
     availableBudget,
     demandMinAav,
     totalValue,
+    valuePerYear,
   ]);
 
-  const handleSalaryChange = useCallback(
-    (index: number, value: string) => {
-      setSalaries((prev) => {
-        const next = [...prev];
-        next[index] = Number(value) || 0;
-        return next;
-      });
-    },
-    [],
-  );
+  /** Spread what the bonus doesn't cover evenly (never below the floor), so the value meets his minimum. */
+  const handleFillToAsk = () => {
+    setSalaries(Array(MAX_CONTRACT_YEARS).fill(salaryToAsk(demandMinAav * years, years, bonus, rules)));
+  };
 
   const handleConfirm = useCallback(async () => {
     if (errors.length > 0) return;
@@ -144,7 +165,7 @@ export const FASignModal: FC<FASignModalProps> = ({
         executed_by: "user",
       });
       enqueueSnackbar(
-        `Signed ${player.firstname} ${player.lastname} — ${years}yr, $${aav.toLocaleString()} AAV`,
+        `Signed ${player.firstname} ${player.lastname} — ${years}yr, $${Math.round(totalValue / years).toLocaleString()} a year in cash`,
         { variant: "success", autoHideDuration: 4000 },
       );
       if (res.roster_warning) {
@@ -172,7 +193,7 @@ export const FASignModal: FC<FASignModalProps> = ({
     levelId,
     leagueYearId,
     gameWeekId,
-    aav,
+    totalValue,
     onSuccess,
     onClose,
     enqueueSnackbar,
@@ -189,7 +210,26 @@ export const FASignModal: FC<FASignModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Sign: ${playerName}`}
-      maxWidth="min-[1025px]:max-w-[60vw]"
+      maxWidth="sm:max-w-2xl min-[1025px]:max-w-[60vw]"
+      mobileSheet
+      closeOnOutsideClick={false}
+      footer={
+        <>
+          <OfferLedger
+            years={years}
+            salaries={salaries}
+            bonus={bonus}
+            rules={rules}
+            target={demandMinAav * years}
+            targetNote={targetNoteFor(years, demandMinAav)}
+          />
+          {errors.filter((err) => !err.startsWith(ASK_ERROR)).map((err, i) => (
+            <Text key={i} variant="xs" classes="mt-1 text-start text-red-400">
+              {err}
+            </Text>
+          ))}
+        </>
+      }
       actions={
         <ButtonGroup>
           <Button size="sm" variant="danger" onClick={onClose}>
@@ -228,9 +268,14 @@ export const FASignModal: FC<FASignModalProps> = ({
         </Text>
         <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
           <span>
-            Min Salary:{" "}
+            Min value per year:{" "}
             <strong>${demandMinAav.toLocaleString()}</strong>
           </span>
+          {vetMin != null && (
+            <span>
+              MLB salary floor: <strong>${vetMin.toLocaleString()}</strong> a season
+            </span>
+          )}
           <span>
             Years:{" "}
             <strong>
@@ -247,94 +292,77 @@ export const FASignModal: FC<FASignModalProps> = ({
       </Border>
 
       {/* Offer form */}
-      <Border direction="col" classes="p-3 mb-4 text-start">
-        <Text variant="small" classes="font-semibold mb-2">
-          Your Offer
-        </Text>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
-          <div>
-            <Text variant="xs" classes="text-gray-400 mb-1">
-              Years
-            </Text>
-            <select
-              value={years}
-              onChange={(e) => setYears(Number(e.target.value))}
-              className="w-full text-sm border rounded-sm px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
-            >
-              {Array.from(
-                { length: demandMaxYears - demandMinYears + 1 },
-                (_, i) => demandMinYears + i,
-              ).map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div className="mb-4 text-start">
+        <Text variant="small" classes="mb-1 font-semibold">Years</Text>
+        <YearsPicker
+          value={years}
+          onChange={setYears}
+          min={demandMinYears}
+          max={demandMaxYears}
+        />
+      </div>
+
+      <div className="mb-4 text-start">
+        <SalaryRows
+          years={years}
+          salaries={salaries}
+          onChange={setSalaries}
+          idPrefix="fa-sign"
+          raiseLaterYears
+          minSalary={rules.minSalary}
+          onFillToAsk={demandMinAav > 0 ? handleFillToAsk : undefined}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2 text-start">
+        <div>
           <CurrencyInput
-            label="Signing Bonus"
+            id="fa-sign-bonus"
+            label="Signing bonus"
             value={bonus}
             onChange={setBonus}
+            presets={stepPresets(-1_000_000, -100_000, 100_000, 1_000_000)}
           />
-          <div>
-            <Text variant="xs" classes="text-gray-400 mb-1">
-              Assign to Level
-            </Text>
-            <select
-              value={levelId}
-              onChange={(e) => setLevelId(Number(e.target.value))}
-              className="w-full text-sm border rounded-sm px-2 py-1 dark:bg-gray-700 dark:border-gray-600"
-            >
-              {LEVEL_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <BonusShare
+            askTotal={demandMinAav * years}
+            years={years}
+            bonus={bonus}
+            salaries={salaries}
+            rules={rules}
+            onPick={(b, perYear) => {
+              setBonus(b);
+              setSalaries(Array(MAX_CONTRACT_YEARS).fill(perYear));
+            }}
+          />
+          <BonusHint rules={valueRules(premium, vetMin)} />
+          <p className="mt-1 text-sm">
+            Paid at signing: <strong>${bonus.toLocaleString()}</strong>
+            {availableBudget != null && (
+              <span className="text-gray-400"> of ${availableBudget.toLocaleString()} cash available</span>
+            )}
+          </p>
         </div>
-
-        {/* Salary per year */}
-        <div className="space-y-2 mb-3">
-          {Array.from({ length: years }, (_, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <div className="flex-1">
-                <CurrencyInput
-                  label={`Year ${i + 1}`}
-                  value={salaries[i]}
-                  onChange={(val) => handleSalaryChange(i, String(val))}
-                />
-              </div>
-            </div>
-          ))}
+        <div>
+          <label
+            htmlFor="fa-sign-level"
+            className="block mb-1 text-xs font-medium text-gray-500 dark:text-gray-400"
+          >
+            Assign to level
+          </label>
+          <select
+            id="fa-sign-level"
+            value={levelId}
+            onChange={(e) => setLevelId(Number(e.target.value))}
+            className="w-full min-h-10 text-base sm:text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600"
+          >
+            {LEVEL_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
-
-        {/* Summary */}
-        <div className="flex flex-wrap gap-x-6 text-sm border-t border-gray-700 pt-2">
-          <span>
-            Total Value: <strong>${totalValue.toLocaleString()}</strong>
-          </span>
-          <span>
-            AAV: <strong>${Math.round(aav).toLocaleString()}</strong>
-          </span>
-        </div>
-      </Border>
-
-      {/* Validation */}
-      {errors.length > 0 && (
-        <div className="space-y-1">
-          {errors.map((err, i) => (
-            <Text key={i} variant="xs" classes="text-red-400">
-              {err}
-            </Text>
-          ))}
-        </div>
-      )}
-      {errors.length === 0 && totalValue > 0 && (
-        <Text variant="xs" classes="text-green-400">
-          Meets player minimum
-        </Text>
-      )}
+      </div>
     </Modal>
   );
 };

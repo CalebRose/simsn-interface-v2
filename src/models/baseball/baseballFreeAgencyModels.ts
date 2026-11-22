@@ -78,6 +78,8 @@ export interface FAPlayerOffer {
     bonus: number;
     total_value: number;
     aav: number;
+    /** The offer valued as the player sees it: salaries + bonus x (1 + bonus_value_premium). total_value and aav stay cash. */
+    offer_value?: number;
     status: FAOfferStatus;
 }
 
@@ -96,6 +98,10 @@ export interface FAPlayerDemand {
     war: number;
     /** Sent on board entries; the pool's demand omits it. */
     min_total_value?: number;
+    /** Extra weight a bonus dollar carries toward the ask (0.15: bonus counts at 1.15x). */
+    bonus_value_premium?: number;
+    /** Lowest salary any MLB season may pay (veterans, 6+ service years); null when no floor applies. */
+    veteran_min_salary?: number | null;
 }
 
 export interface FAPlayerScouting {
@@ -174,6 +180,10 @@ export interface AuctionBoardEntry {
     min_total_value: number;
     min_years: number;
     max_years: number;
+    /** Extra weight a bonus dollar carries toward the ask (0.15: bonus counts at 1.15x). */
+    bonus_value_premium?: number;
+    /** Lowest salary any MLB season may pay (veterans, 6+ service years); null when no floor applies. */
+    veteran_min_salary?: number | null;
     offer_count: number;
     competing_teams: string[];
     my_offer: FAPlayerOffer | null;
@@ -379,6 +389,10 @@ export interface ContractDemand {
     min_years: number;
     war: number;
     buyout_price?: string;
+    /** Extra weight a bonus dollar carries toward the ask (0.15: bonus counts at 1.15x). */
+    bonus_value_premium?: number;
+    /** Lowest salary any MLB season may pay (veterans, 6+ service years); null when no floor applies. */
+    veteran_min_salary?: number | null;
 }
 
 /** GET fa-auction/player-demand/{id}?type=extension, POST fa-auction/compute-demands */
@@ -393,6 +407,10 @@ export interface ExtensionDemandResponse {
     min_total_value: string;
     age: number;
     service_years: number;
+    /** Extra weight a bonus dollar carries toward the ask (0.15: bonus counts at 1.15x). */
+    bonus_value_premium?: number;
+    /** Lowest salary any MLB season may pay (veterans, 6+ service years); null when no floor applies. */
+    veteran_min_salary?: number | null;
 }
 
 export interface ComputeExtensionDemandRequest {

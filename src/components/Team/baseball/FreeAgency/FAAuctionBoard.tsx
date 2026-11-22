@@ -178,9 +178,17 @@ export const FAAuctionBoard: FC<FAAuctionBoardProps> = ({
                   <td className="px-2 py-1">
                     {e.my_offer ? (
                       <span className="tabular-nums" title={statusInfo?.meaning}>
-                        {millions(e.my_offer.aav)}
+                        <span title="Cash per year">{millions(e.my_offer.aav)}</span>
                         {statusInfo && (
                           <span className="ml-1 text-xs text-gray-400">· {statusInfo.label}</span>
+                        )}
+                        {e.my_offer.offer_value != null && e.my_offer.years > 0 && (
+                          <span
+                            className="block text-xs text-gray-400"
+                            title="Your offer as he values it (bonus counts extra), per year. Compare with his ask."
+                          >
+                            value {millions(e.my_offer.offer_value / e.my_offer.years)}/yr
+                          </span>
                         )}
                       </span>
                     ) : (
