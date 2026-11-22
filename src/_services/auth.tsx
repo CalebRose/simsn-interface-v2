@@ -3,6 +3,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   updateProfile,
   User,
 } from "firebase/auth";
@@ -15,6 +16,7 @@ import {
   DocumentReference,
 } from "firebase/firestore";
 import { firebaseConfig } from "../firebase-config";
+import { refreshAccountEmail } from "./accountSettings";
 
 const firebaseApp = initializeApp(firebaseConfig);
 const fireStore = getFirestore(firebaseApp);
@@ -30,6 +32,9 @@ interface UserProfile {
   user: User;
 }
 
+const passwordResetMessage =
+  "If an account exists for that email, you'll receive a password reset link shortly.";
+
 // 🔥 AuthService Object with Typed Methods
 export const AuthService: {
   register: (
@@ -41,6 +46,7 @@ export const AuthService: {
   getProfile: (hard?: boolean) => Promise<UserProfile | false>;
   logout: () => Promise<AuthResponse>;
   login: (email: string, password: string) => Promise<AuthResponse>;
+  resetPassword: (email: string) => Promise<AuthResponse>;
 } = {
   user: false,
 
@@ -135,27 +141,46 @@ export const AuthService: {
   },
 
   // Login user with email and password
-  login: (email: string, password: string): Promise<AuthResponse> => {
+  login: async (email: string, password: string): Promise<AuthResponse> => {
     const fauth = getAuth();
-    return new Promise<AuthResponse>((resolve) => {
-      signInWithEmailAndPassword(fauth, email, password)
-        .then((userCredential) => {
-          if (userCredential.user) {
-            localStorage.setItem("userId", userCredential.user.uid);
-            resolve({ status: true, message: "Login successful." });
-          } else {
-            resolve({
-              status: false,
-              message: "Incorrect email or password.",
-            });
-          }
-        })
-        .catch(() => {
-          resolve({
-            status: false,
-            message: "Incorrect email or password.",
-          });
-        });
-    });
+    try {
+      const { user } = await signInWithEmailAndPassword(fauth, email, password);
+      localStorage.setItem("userId", user.uid);
+      try {
+        await refreshAccountEmail(user.uid);
+      } catch (error) {
+        console.error("Failed to sync account email:", error);
+        return {
+          status: true,
+          message:
+            "Login successful, but your profile email could not be synchronized. Open Account Settings to retry.",
+        };
+      }
+      return { status: true, message: "Login successful." };
+    } catch {
+      return { status: false, message: "Incorrect email or password." };
+    }
+  },
+
+  resetPassword: async (email: string): Promise<AuthResponse> => {
+    try {
+      await sendPasswordResetEmail(getAuth(), email);
+      return { status: true, message: passwordResetMessage };
+    } catch (error) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === "auth/user-not-found"
+      ) {
+        return { status: true, message: passwordResetMessage };
+      }
+
+      console.error("Password reset error:", error);
+      return {
+        status: false,
+        message: "Unable to send a password reset email. Please try again.",
+      };
+    }
   },
 };

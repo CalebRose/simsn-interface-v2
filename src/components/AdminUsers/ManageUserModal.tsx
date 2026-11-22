@@ -320,10 +320,31 @@ export const ManageUserModal: FC<ManageUserModalProps> = ({
 
   const handleToggleSubscriber = () =>
     withBusy(async () => {
-      await updateUser(u.id, { IsSubscribed: !u.IsSubscribed });
-      setViewingUser({ ...u, IsSubscribed: !u.IsSubscribed });
+      let cfbCrootSubscriptionBenefit = false;
+      let chlCrootSubscriptionBenefit = false;
+      let cbbCrootSubscriptionBenefit = false;
+      const subscriberStatus = !u.IsSubscribed;
+      if (subscriberStatus && !u.IsSubscribed) {
+        // Also populate three fields as true
+        cfbCrootSubscriptionBenefit = true;
+        chlCrootSubscriptionBenefit = true;
+        cbbCrootSubscriptionBenefit = true;
+      }
+      await updateUser(u.id, {
+        IsSubscribed: subscriberStatus,
+        cfbCrootSubscriptionBenefit,
+        chlCrootSubscriptionBenefit,
+        cbbCrootSubscriptionBenefit,
+      });
+      setViewingUser({
+        ...u,
+        IsSubscribed: subscriberStatus,
+        cfbCrootSubscriptionBenefit,
+        chlCrootSubscriptionBenefit,
+        cbbCrootSubscriptionBenefit,
+      });
       notify(
-        `${u.username} subscription ${!u.IsSubscribed ? "enabled" : "disabled"}`,
+        `${u.username} subscription ${subscriberStatus ? "enabled" : "disabled"}`,
         "success",
       );
     });

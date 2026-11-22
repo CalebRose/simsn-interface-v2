@@ -80,6 +80,8 @@ export const RecruitingSideBar: FC<RecruitingSideBarProps> = ({
       conf = t.ConferencePrestige;
       coach = t.CoachRating;
       season = t.SeasonMomentum;
+      campusLife = t.CampusLife;
+      mediaSpotlight = t.MediaSpotlight;
       offensiveSystem = getOffensiveSystemFromMap(tp.OffensiveSystem).label;
       defensiveSystem = getDefensiveSystemFromMap(tp.DefensiveSystem).label;
       break;

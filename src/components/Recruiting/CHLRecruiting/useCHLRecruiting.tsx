@@ -275,7 +275,7 @@ export const useCHLRecruiting = () => {
       if (newUserBonus) {
         // Apply any logic related to the new user bonus here
         newUserBonus = false;
-      } else if (user?.chlCrootSubscriptionBenefit) {
+      } else if (subscriptionBonus) {
         subscriptionBonus = false;
       } else if (user.SimCHLMediaPoints && user?.SimCHLMediaPoints >= 2) {
         mediaPoints -= 2;
