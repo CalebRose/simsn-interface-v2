@@ -8,11 +8,13 @@ import mainContent from "./maincontent.json";
 import { MarkdownDoc } from "./MarkdownDoc";
 import { DocTableOfContents } from "./DocTableOfContents";
 import {
+  normalizeMarkdownHeadings,
   parseMarkdownHeadings,
   stripEmbeddedToc,
 } from "../../_helper/markdownDocsHelper";
 import simHockeyDoc from "../../_techdocs/SimHCK.md?raw";
 import simbbaDoc from "../../_techdocs/SimBBA.md?raw";
+import simFootballDoc from "../../_techdocs/SimSN_Football.md?raw";
 
 type Documentation = {
   [key: string]: MainContentItem[];
@@ -26,6 +28,8 @@ type MainContentItem = {
 
 // Leagues that render from a markdown doc instead of the JSON content map.
 const leagueMarkdownDocs: Partial<Record<string, string>> = {
+  SimCFB: simFootballDoc,
+  SimNFL: simFootballDoc,
   SimCHL: simHockeyDoc,
   SimPHL: simHockeyDoc,
   SimCBB: simbbaDoc,
@@ -54,6 +58,7 @@ export const DocumentationMain = () => {
   const handleLeagueChange = (opts: any) => {
     const league = opts.value;
     setLeague(league);
+    setActiveId(null);
     if (league !== "None") {
       setSelectedLeague(league as League);
     }
@@ -69,13 +74,13 @@ export const DocumentationMain = () => {
 
   const markdownBody = useMemo(() => {
     if (!markdownDoc) return null;
-    return stripEmbeddedToc(markdownDoc);
+    return normalizeMarkdownHeadings(stripEmbeddedToc(markdownDoc));
   }, [markdownDoc]);
 
   const toc = useMemo(() => {
-    if (!markdownDoc) return [];
-    return parseMarkdownHeadings(markdownDoc);
-  }, [markdownDoc]);
+    if (!markdownBody) return [];
+    return parseMarkdownHeadings(markdownBody);
+  }, [markdownBody]);
 
   const handleTocSelect = (id: string) => {
     setActiveId(id);

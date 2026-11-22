@@ -210,6 +210,13 @@ export const CHLRequestCard: React.FC<CHLRequestCardProps> = ({
   const reject = async () => {
     await rejectCHLRequest(request);
   };
+  const createdAtDate = useMemo(() => {
+    // Date into MM/DD/YYYY format
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }, [request]);
   return (
     <AdminRequestCard
       teamLabel={`${chlTeam.TeamName} ${chlTeam.Mascot}`}
@@ -220,6 +227,7 @@ export const CHLRequestCard: React.FC<CHLRequestCardProps> = ({
       backgroundColor={backgroundColor}
       borderColor={borderColor}
       username={request.Username}
+      createdAt={createdAtDate}
     />
   );
 };
@@ -262,6 +270,13 @@ export const PHLRequestCard: React.FC<PHLRequestCardProps> = ({
     await rejectPHLRequest(request);
   };
 
+  const createdAtDate = useMemo(() => {
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }, [request]);
+
   if (!phlTeam) return null;
 
   return (
@@ -275,6 +290,7 @@ export const PHLRequestCard: React.FC<PHLRequestCardProps> = ({
       backgroundColor={backgroundColor}
       borderColor={borderColor}
       username={request.Username}
+      createdAt={createdAtDate}
     />
   );
 };
@@ -312,6 +328,13 @@ export const CBBRequestCard: React.FC<CBBRequestCardProps> = ({
     await rejectCBBRequest(request);
   };
 
+  const createdAtDate = useMemo(() => {
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }, [request]);
+
   return (
     <AdminRequestCard
       teamLabel={`${cbbTeam.Team} ${cbbTeam.Nickname}`}
@@ -322,6 +345,7 @@ export const CBBRequestCard: React.FC<CBBRequestCardProps> = ({
       backgroundColor={backgroundColor}
       borderColor={borderColor}
       username={request.Username}
+      createdAt={createdAtDate}
     />
   );
 };
@@ -385,6 +409,13 @@ export const NBARequestCard: React.FC<NBARequestCardProps> = ({
     return "Unknown Role";
   }, [request]);
 
+  const createdAtDate = useMemo(() => {
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }, [request]);
+
   return (
     <AdminRequestCard
       teamLabel={teamLabel}
@@ -396,6 +427,7 @@ export const NBARequestCard: React.FC<NBARequestCardProps> = ({
       borderColor={borderColor}
       username={request.Username}
       role={role}
+      createdAt={createdAtDate}
     />
   );
 };
@@ -437,6 +469,13 @@ export const CFBRequestCard: React.FC<CFBRequestCardProps> = ({
     await rejectCFBRequest(request);
   };
 
+  const createdAtDate = useMemo(() => {
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }, [request]);
+
   return (
     <AdminRequestCard
       teamLabel={`${cfbTeam.TeamName} ${cfbTeam.Mascot}`}
@@ -447,6 +486,7 @@ export const CFBRequestCard: React.FC<CFBRequestCardProps> = ({
       backgroundColor={backgroundColor}
       borderColor={borderColor}
       username={request.Username}
+      createdAt={createdAtDate}
     />
   );
 };
@@ -507,6 +547,13 @@ export const NFLRequestCard: React.FC<NFLRequestCardProps> = ({
     return `${nflTeam.TeamName} ${nflTeam.Mascot}`;
   }, [nflTeam]);
 
+  const createdAtDate = useMemo(() => {
+    const createdAt = request.CreatedAt;
+    const date = createdAt ? new Date(createdAt.toString()) : null;
+    if (!date) return "N/A";
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }, [request]);
+
   return (
     <AdminRequestCard
       teamLabel={teamLabel}
@@ -518,6 +565,7 @@ export const NFLRequestCard: React.FC<NFLRequestCardProps> = ({
       borderColor={borderColor}
       username={request.Username}
       role={role}
+      createdAt={createdAtDate}
     />
   );
 };
@@ -551,6 +599,10 @@ export const CollegeBaseballRequestCard: React.FC<
     return org.org_abbrev;
   }, [org]);
 
+  const createdAtDate = useMemo(() => {
+    return ``;
+  }, [request]);
+
   return (
     <AdminRequestCard
       teamLabel={teamLabel}
@@ -560,6 +612,7 @@ export const CollegeBaseballRequestCard: React.FC<
       reject={reject}
       username={request.Username}
       role="Coach"
+      createdAt={createdAtDate}
     />
   );
 };
@@ -604,6 +657,10 @@ export const MLBRequestCard: React.FC<MLBRequestCardProps> = ({
     return request.Role || "Unknown Role";
   }, [request]);
 
+  const createdAtDate = useMemo(() => {
+    return ``;
+  }, [request]);
+
   return (
     <AdminRequestCard
       teamLabel={teamLabel}
@@ -613,6 +670,7 @@ export const MLBRequestCard: React.FC<MLBRequestCardProps> = ({
       reject={reject}
       username={request.Username}
       role={role}
+      createdAt={createdAtDate}
     />
   );
 };

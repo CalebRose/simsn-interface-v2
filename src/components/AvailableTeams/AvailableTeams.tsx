@@ -464,18 +464,25 @@ export const AvailableTeams = () => {
         const kind = vbKindOf(league)!;
         // A user with a coach asks here; one without applies on the
         // volleyball application page, which also builds their coach.
-        await VolleyballClaimService.create(kind, currentUser!.username, team.ID, {
-          // The job picked in the request window; pro clubs only.
-          Role:
-            kind === "pro" && vbProStaffRoles.includes(role) ? role : undefined,
-          Answers: vbAnswersToSend({
-            discordUsername,
-            howMuchTimeAnswer,
-            howDidYouHearAboutSimSN,
-            communityReference,
-            aboutYourself,
-          }),
-        });
+        await VolleyballClaimService.create(
+          kind,
+          currentUser!.username,
+          team.ID,
+          {
+            // The job picked in the request window; pro clubs only.
+            Role:
+              kind === "pro" && vbProStaffRoles.includes(role)
+                ? role
+                : undefined,
+            Answers: vbAnswersToSend({
+              discordUsername,
+              howMuchTimeAnswer,
+              howDidYouHearAboutSimSN,
+              communityReference,
+              aboutYourself,
+            }),
+          },
+        );
         await refreshVbMe();
         await ForumService.CreateSimVolleyballJobApplicationThreadFromTeamRequest(
           kind,
@@ -483,7 +490,13 @@ export const AvailableTeams = () => {
           team.TeamName,
           currentUser!.id,
           currentUser!.username,
-          { howMuchTimeAnswer, howDidYouHearAboutSimSN, communityReference, aboutYourself, discordUsername },
+          {
+            howMuchTimeAnswer,
+            howDidYouHearAboutSimSN,
+            communityReference,
+            aboutYourself,
+            discordUsername,
+          },
         );
         break;
       }
@@ -684,10 +697,18 @@ export const AvailableTeams = () => {
                   </PillButton>
                   {isVolleyballConfigured && (
                     <>
-                      <PillButton variant="primaryOutline" isSelected={selectedLeague === SimCVB} onClick={() => selectSport(SimCVB)}>
+                      <PillButton
+                        variant="primaryOutline"
+                        isSelected={selectedLeague === SimCVB}
+                        onClick={() => selectSport(SimCVB)}
+                      >
                         <Text variant="small">SimCVB</Text>
                       </PillButton>
-                      <PillButton variant="primaryOutline" isSelected={selectedLeague === SimPVB} onClick={() => selectSport(SimPVB)}>
+                      <PillButton
+                        variant="primaryOutline"
+                        isSelected={selectedLeague === SimPVB}
+                        onClick={() => selectSport(SimPVB)}
+                      >
                         <Text variant="small">SimPVB</Text>
                       </PillButton>
                     </>
@@ -762,7 +783,7 @@ export const AvailableTeams = () => {
               <div className="col-span-full m-3 rounded-lg border border-red-400 p-4 text-red-400">
                 {claxLoadError}
               </div>
-            )}{" "}
+            )}
             {selectedLeague === SimCLAX &&
               filteredTeams.map((x) => (
                 <TeamCard
@@ -776,7 +797,7 @@ export const AvailableTeams = () => {
                   disable={sentRequestCLAX || x.IsUserCoached}
                   setSelectedTeam={setSelectedTeam}
                 />
-              ))}{" "}
+              ))}
             {vbKind &&
               filteredTeams.map((x) => (
                 <TeamCard

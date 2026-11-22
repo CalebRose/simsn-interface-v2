@@ -56,6 +56,7 @@ export const annotateRegion = (region: string): string => {
     "Tula Oblast": "Tula",
     "Tomsk Oblast": "Tomsk",
     Khakassia: "Khakassia",
+    "Chukotka Autonomous Okrug": "Chukotka",
     "Kaluga Oblast": "Kaluga",
     "Amur Oblast": "Amur",
     "Novgorod Oblast": "Novg.",

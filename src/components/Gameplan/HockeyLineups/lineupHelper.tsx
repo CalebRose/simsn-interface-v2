@@ -152,7 +152,7 @@ export const getLineupDropdownOptions = (
     .filter((x) => x.Position === "C" || x.Position === "F")
     .map((x) => {
       return {
-        label: `${x.Position} ${x.FirstName} ${x.LastName}`,
+        label: `${x.Position} ${x.FirstName} ${x.LastName} | ${getHockeyLetterGrade(x.Overall, x.Year)}`,
         value: x.ID.toString(),
       };
     });
@@ -160,7 +160,7 @@ export const getLineupDropdownOptions = (
     .filter((x) => x.Position === "F" || x.Position === "C")
     .map((x) => {
       return {
-        label: `${x.Position} ${x.FirstName} ${x.LastName}`,
+        label: `${x.Position} ${x.FirstName} ${x.LastName} | ${getHockeyLetterGrade(x.Overall, x.Year)}`,
         value: x.ID.toString(),
       };
     });
@@ -168,7 +168,7 @@ export const getLineupDropdownOptions = (
     .filter((x) => x.Position === "D")
     .map((x) => {
       return {
-        label: `${x.Position} ${x.FirstName} ${x.LastName}`,
+        label: `${x.Position} ${x.FirstName} ${x.LastName} | ${getHockeyLetterGrade(x.Overall, x.Year)}`,
         value: x.ID.toString(),
       };
     });
@@ -176,14 +176,14 @@ export const getLineupDropdownOptions = (
     .filter((x) => x.Position === "G")
     .map((x) => {
       return {
-        label: `${x.Position} ${x.FirstName} ${x.LastName}`,
+        label: `${x.Position} ${x.FirstName} ${x.LastName} | ${getHockeyLetterGrade(x.Overall, x.Year)}`,
         value: x.ID.toString(),
       };
     });
 
   const shootoutOptions = roster.map((x) => {
     return {
-      label: `${x.Position} ${x.FirstName} ${x.LastName}`,
+      label: `${x.Position} ${x.FirstName} ${x.LastName} | ${getHockeyLetterGrade(x.Overall, x.Year)}`,
       value: x.ID.toString(),
     };
   });

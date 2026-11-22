@@ -2198,6 +2198,8 @@ export class CollegeTeam {
   ConferencePrestige: number;
   CoachRating: number;
   SeasonMomentum: number;
+  CampusLife: number;
+  MediaSpotlight: number;
   LastLogin: Time;
   LeagueID: number;
 
@@ -2242,6 +2244,8 @@ export class CollegeTeam {
     this.ConferencePrestige = source["ConferencePrestige"];
     this.CoachRating = source["CoachRating"];
     this.SeasonMomentum = source["SeasonMomentum"];
+    this.CampusLife = source["CampusLife"];
+    this.MediaSpotlight = source["MediaSpotlight"];
     this.LastLogin = this.convertValues(source["LastLogin"], Time);
     this.LeagueID = source["LeagueID"];
   }
