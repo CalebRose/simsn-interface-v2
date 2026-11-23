@@ -3,7 +3,8 @@ import { Modal } from "../../../../_design/Modal";
 import { Text } from "../../../../_design/Typography";
 import { Border } from "../../../../_design/Borders";
 import { Button, ButtonGroup } from "../../../../_design/Buttons";
-import { Input } from "../../../../_design/Inputs";
+import { stepPresets } from "../../../Common/MoneyInput";
+import { CurrencyInput } from "../FreeAgency/CurrencyInput";
 import { BaseballService } from "../../../../_services/baseballService";
 import { useSnackbar } from "notistack";
 import type { IFAAuctionPhase, IFAMyOffer } from "../../../../models/baseball/baseballIFAModels";
@@ -105,7 +106,20 @@ export const IFAOfferModal: FC<IFAOfferModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`${isUpdate ? "Update" : "Make"} Offer: ${playerName}`}
-      maxWidth="min-[1025px]:max-w-[40vw]"
+      maxWidth="sm:max-w-xl min-[1025px]:max-w-[40vw]"
+      mobileSheet
+      closeOnOutsideClick={false}
+      footer={
+        <div className="text-start">
+          <Text variant="small">
+            Bonus: <strong>{formatCurrency(bonus)}</strong>
+            <span className="text-gray-400"> · pool left after: {formatCurrency(Math.max(0, effectiveRemaining - bonus))}</span>
+          </Text>
+          {errors.map((err) => (
+            <Text key={err} variant="xs" classes="mt-1 text-red-500">{err}</Text>
+          ))}
+        </div>
+      }
       actions={
         <ButtonGroup>
           <Button size="sm" variant="danger" onClick={onClose}>
@@ -139,36 +153,30 @@ export const IFAOfferModal: FC<IFAOfferModalProps> = ({
         </Border>
       )}
 
-      {/* Budget + Phase + Errors */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-        <Border direction="col" classes="p-3 text-start">
-          <Text variant="small" classes="font-semibold mb-1">
-            Pool Available: {formatCurrency(effectiveRemaining)}
-          </Text>
-          <Text variant="small" classes="text-gray-400">
-            Phase: <span className="font-semibold capitalize">{phase}</span>
-          </Text>
-        </Border>
-        <Border direction="col" classes="p-3 text-start overflow-y-auto">
-          <Text variant="h6">Errors</Text>
-          {errors.length === 0 && <Text variant="small">None</Text>}
-          {errors.map((err) => (
-            <Text key={err} variant="small" classes="text-red-500">{err}</Text>
-          ))}
-        </Border>
-      </div>
+      {/* Pool + Phase */}
+      <Border direction="col" classes="p-3 mb-4 text-start">
+        <Text variant="small" classes="font-semibold mb-1">
+          Pool Available: {formatCurrency(effectiveRemaining)}
+        </Text>
+        <Text variant="small" classes="text-gray-400">
+          Phase: <span className="font-semibold capitalize">{phase}</span>
+        </Text>
+      </Border>
 
       {/* Bonus input */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-        <Input
-          type="number"
-          label="Signing Bonus ($)"
-          name="bonus"
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2 text-start">
+        <CurrencyInput
+          id="ifa-offer-bonus"
+          label="Signing bonus"
           value={bonus}
-          min={slotValue}
-          onChange={(e) => setBonus(Number(e.target.value) || 0)}
+          onChange={setBonus}
+          presets={[
+            { label: "Slot value", apply: () => slotValue },
+            ...stepPresets(10_000, 100_000),
+            { label: "Whole pool", apply: () => effectiveRemaining },
+          ]}
         />
-        <div className="flex flex-col justify-end">
+        <div className="flex flex-col justify-start">
           <Text variant="xs" classes="text-gray-400 mb-1">Contract Terms (fixed)</Text>
           <Text variant="small">5 years at $40,000/year</Text>
           <Text variant="small">Assigned to Level 4 (Low Minors)</Text>

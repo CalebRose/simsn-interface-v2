@@ -9,7 +9,7 @@ import { useAuthStore } from "../../../context/AuthContext";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { getLogo } from "../../../_utility/getLogo";
-import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
+import { getPrimaryBaseballTeam, getResultsSeason } from "../../../_utility/baseballHelpers";
 import { BaseballService } from "../../../_services/baseballService";
 import {
   PlayoffBracketResponse,
@@ -444,7 +444,7 @@ export const ConferenceTournamentPage = () => {
     setIsLoading(true);
     try {
       const data = await BaseballService.GetPlayoffBracket(
-        seasonContext.current_league_year_id,
+        getResultsSeason(seasonContext).leagueYearId,
         3,
       );
       setBracket(data);

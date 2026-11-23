@@ -5,34 +5,33 @@ import type {
   PlayerAward,
   PlayerAwardsResponse,
 } from "../../../../../models/baseball/baseballStatsModels";
+import {
+  awardCategoryClass,
+  awardQualifiedLabel,
+  useLeagueYearLabels,
+} from "../../Awards/awardsDisplay";
 
 interface AwardsTabProps {
   awards: PlayerAwardsResponse | null;
   awardsLoading: boolean;
 }
 
-/** Tailwind classes per award category, used for the timeline badge. */
-const CATEGORY_BADGE: Record<string, string> = {
-  major: "bg-amber-200 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-  pitching: "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  batting: "bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200",
-  fielding:
-    "bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  selection: "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200",
-};
+type ShelfGroup = "trophies" | "championships" | "selections";
 
-const categoryClass = (category: string) =>
-  CATEGORY_BADGE[category] ?? CATEGORY_BADGE.selection;
-
-/** Build the display label for an award, e.g. "AL Silver Slugger (3B)". */
-const awardLabel = (a: PlayerAward): string => {
-  const prefix = a.sub_league ? `${a.sub_league} ` : "";
-  const suffix = a.position_code ? ` (${a.position_code})` : "";
-  return `${prefix}${a.award_name}${suffix}`;
-};
+const groupOf = (category: string | undefined): ShelfGroup =>
+  category === "selection"
+    ? "selections"
+    : category === "championship"
+      ? "championships"
+      : "trophies";
 
 export const AwardsTab: FC<AwardsTabProps> = memo(
   ({ awards, awardsLoading }) => {
+    // Season labels (league_year_id → year) come from the session-cached
+    // awards history; only fetched once this tab has something to show.
+    const hasAwards = (awards?.awards.length ?? 0) > 0;
+    const years = useLeagueYearLabels(hasAwards);
+
     // Group awards by season (already newest-first from the API).
     const seasons = useMemo(() => {
       const groups: { leagueYearId: number; awards: PlayerAward[] }[] = [];
@@ -49,13 +48,23 @@ export const AwardsTab: FC<AwardsTabProps> = memo(
       return groups;
     }, [awards]);
 
-    // Headline summary: "3× MVP · 2× Silver Slugger · 4× All-Star", most wins first.
-    const summaryParts = useMemo(() => {
-      const entries = Object.values(awards?.summary ?? {});
-      return entries
-        .filter((e) => e.wins > 0)
-        .sort((a, b) => b.wins - a.wins)
-        .map((e) => `${e.wins}× ${e.name}`);
+    // Headline lines from the career summary: "3× MVP · 2× Silver Slugger",
+    // split into trophies, championships and selections, most wins first.
+    const headline = useMemo(() => {
+      const categoryByCode = new Map<string, string>();
+      for (const a of awards?.awards ?? []) categoryByCode.set(a.award_code, a.category);
+      const lines: Record<ShelfGroup, string[]> = {
+        trophies: [],
+        championships: [],
+        selections: [],
+      };
+      Object.entries(awards?.summary ?? {})
+        .filter(([, e]) => e.wins > 0)
+        .sort(([, a], [, b]) => b.wins - a.wins)
+        .forEach(([code, e]) => {
+          lines[groupOf(categoryByCode.get(code))].push(`${e.wins}× ${e.name}`);
+        });
+      return lines;
     }, [awards]);
 
     if (awardsLoading) {
@@ -78,24 +87,34 @@ export const AwardsTab: FC<AwardsTabProps> = memo(
       );
     }
 
+    const headlineRows: [ShelfGroup, string][] = [
+      ["trophies", "Trophies"],
+      ["championships", "Championships"],
+      ["selections", "Selections"],
+    ];
+
     return (
       <Border classes="p-3">
-        {/* Headline summary line */}
-        {summaryParts.length > 0 && (
-          <Text variant="small" classes="font-semibold mb-3">
-            {summaryParts.join(" · ")}
-          </Text>
-        )}
+        {/* Headline summary */}
+        <div className="flex flex-col gap-0.5 mb-3 text-start">
+          {headlineRows
+            .filter(([key]) => headline[key].length > 0)
+            .map(([key, label]) => (
+              <Text key={key} variant="small">
+                <span className="text-gray-400 mr-1.5">{label}:</span>
+                <span className="font-semibold">{headline[key].join(" · ")}</span>
+              </Text>
+            ))}
+        </div>
 
         {/* Timeline grouped by season */}
         <div className="flex flex-col gap-3">
           {seasons.map((season) => (
             <div key={season.leagueYearId}>
-              <Text
-                variant="xs"
-                classes="font-semibold text-gray-400 mb-1"
-              >
-                Season {season.leagueYearId}
+              <Text variant="xs" classes="font-semibold text-gray-400 mb-1">
+                {years.has(season.leagueYearId)
+                  ? years.get(season.leagueYearId)
+                  : `Season ${season.leagueYearId}`}
               </Text>
               <div className="flex flex-col gap-1">
                 {season.awards.map((a) => (
@@ -105,37 +124,28 @@ export const AwardsTab: FC<AwardsTabProps> = memo(
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       <span
-                        className={`inline-block px-1.5 py-0.5 rounded-sm text-[10px] font-medium capitalize shrink-0 ${categoryClass(
+                        className={`inline-block px-1.5 py-0.5 rounded-sm text-[10px] font-medium capitalize shrink-0 ${awardCategoryClass(
                           a.category,
                         )}`}
                       >
                         {a.category}
                       </span>
                       <Text variant="xs" classes="truncate">
-                        {awardLabel(a)}
+                        {awardQualifiedLabel(a)}
                         {a.team_abbrev ? (
-                          <span className="text-gray-400">
-                            {" "}
-                            · {a.team_abbrev}
-                          </span>
+                          <span className="text-gray-400"> · {a.team_abbrev}</span>
                         ) : null}
                       </Text>
                     </div>
                     <span className="shrink-0">
                       {a.is_winner ? (
                         a.vote_share != null ? (
-                          <Text
-                            variant="xs"
-                            classes="text-gray-400 whitespace-nowrap"
-                          >
+                          <Text variant="xs" classes="text-gray-400 whitespace-nowrap">
                             {Math.round(a.vote_share * 100)}%
                           </Text>
                         ) : null
                       ) : (
-                        <Text
-                          variant="xs"
-                          classes="text-gray-400 whitespace-nowrap"
-                        >
+                        <Text variant="xs" classes="text-gray-400 whitespace-nowrap">
                           Finalist #{a.rank}
                         </Text>
                       )}

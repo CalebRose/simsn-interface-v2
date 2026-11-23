@@ -30,6 +30,7 @@ import { useResponsive } from "../../_hooks/useMobile";
 import {
   displayLevel,
   LEVEL_TO_NUMERIC,
+  getResultsSeason,
 } from "../../_utility/baseballHelpers";
 import { useTeamColors } from "../../_hooks/useTeamColors";
 import { isBrightColor } from "../../_utility/isBrightColor";
@@ -449,9 +450,12 @@ export const BaseballLandingPage = ({
     return full + partial / 3;
   };
 
+  // Team leaders show the last season with results (last year during the offseason).
+  const resultsLeagueYearId = getResultsSeason(seasonContext).leagueYearId;
+
   useEffect(() => {
     if (
-      !seasonContext?.current_league_year_id ||
+      !resultsLeagueYearId ||
       !activeNumericLevel ||
       !activeTeamId
     )
@@ -463,7 +467,7 @@ export const BaseballLandingPage = ({
         // Fetch team-specific leaders for the currently viewed team
         const [battingRes, pitchingRes] = await Promise.all([
           BaseballService.GetBattingLeaders({
-            league_year_id: seasonContext.current_league_year_id,
+            league_year_id: resultsLeagueYearId,
             league_level: activeNumericLevel,
             team_id: activeTeamId,
             sort: "h",
@@ -471,7 +475,7 @@ export const BaseballLandingPage = ({
             page_size: 30,
           }),
           BaseballService.GetPitchingLeaders({
-            league_year_id: seasonContext.current_league_year_id,
+            league_year_id: resultsLeagueYearId,
             league_level: activeNumericLevel,
             team_id: activeTeamId,
             sort: "wins",
@@ -532,7 +536,7 @@ export const BaseballLandingPage = ({
     return () => {
       cancelled = true;
     };
-  }, [seasonContext?.current_league_year_id, activeNumericLevel, activeTeamId]);
+  }, [resultsLeagueYearId, activeNumericLevel, activeTeamId]);
 
   const formatOrgLabel = useCallback(
     (option: SelectOption) => {

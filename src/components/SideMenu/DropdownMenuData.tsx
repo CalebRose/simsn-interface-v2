@@ -573,6 +573,14 @@ export const useSideMenu = () => {
         toggle: () => toggleMenu(),
       },
       {
+        label: "Awards",
+        isRoute: true,
+        route: routes.MLB_AWARDS,
+        league: SimMLB,
+        click: () => navigate(routes.MLB_AWARDS),
+        toggle: () => toggleMenu(),
+      },
+      {
         label: "World Baseball Classic",
         isRoute: true,
         route: routes.MLB_WBC,

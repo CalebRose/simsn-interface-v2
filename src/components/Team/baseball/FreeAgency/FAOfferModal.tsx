@@ -5,12 +5,34 @@ import { Border } from "../../../../_design/Borders";
 import { Button, ButtonGroup } from "../../../../_design/Buttons";
 import { BaseballService } from "../../../../_services/baseballService";
 import { CurrencyInput } from "./CurrencyInput";
+import { stepPresets } from "../../../Common/MoneyInput";
+import {
+  MAX_CONTRACT_YEARS,
+  OfferLedger,
+  targetNoteFor,
+  SalaryRows,
+  YearsPicker,
+  BonusHint,
+  BonusShare,
+  floorError,
+  offerValue,
+  salaryToAsk,
+  valueRules,
+} from "../ContractTerms";
 import { useSnackbar } from "notistack";
 import {
   FAPlayerDemand,
   FAPlayerOffer,
   AuctionPhase,
+  AUCTION_PHASE_LABELS,
+  OFFER_STATUS_INFO,
 } from "../../../../models/baseball/baseballFreeAgencyModels";
+import { formatMoney } from "../BaseballFinancials/financialConstants";
+
+const MLB_LEVEL = 9;
+
+/** Prefix of the below-the-ask errors; the footer ledger shows the shortfall, so they aren't listed twice. */
+const ASK_ERROR = "Below his ask";
 
 const PRO_LEVEL_OPTIONS = [
   { value: 4, label: "Unassigned" },
@@ -20,6 +42,19 @@ const PRO_LEVEL_OPTIONS = [
   { value: 8, label: "AAA" },
   { value: 9, label: "MLB" },
 ];
+
+/** Money compared to the cent, so a restored 41M/3 offer equals the API's 13,666,666.67. */
+const cents = (n: number) => Math.round(n * 100);
+
+/** How a player weighs yearly average vs total value at his age (free agency guide). */
+const ageWeighting = (age: number) =>
+  age <= 28
+    ? { aav: 30, total: 70, hint: "He values total guaranteed money, so more years help." }
+    : age <= 31
+      ? { aav: 50, total: 50, hint: "He weighs value per year and total value equally." }
+      : age <= 33
+        ? { aav: 70, total: 30, hint: "He leans toward value per year over total value." }
+        : { aav: 85, total: 15, hint: "He is almost entirely after the highest value per year." };
 
 interface FAOfferModalProps {
   isOpen: boolean;
@@ -53,44 +88,93 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
   onSuccess,
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const isUpdate = existingOffer != null;
-  const demandMinAav = demand ? parseFloat(demand.min_aav) : 0;
-  const demandMinYears = demand?.min_years ?? 1;
-  const demandMaxYears = 5; // hard cap per rules; demand sets the floor, not the ceiling
+  const demandMinAav = demand ? parseFloat(demand.min_aav) || 0 : 0;
+  const demandMinYears = Math.min(
+    Math.max(demand?.min_years ?? 1, 1),
+    MAX_CONTRACT_YEARS,
+  );
+  const demandMaxYears = Math.min(
+    Math.max(demand?.max_years ?? MAX_CONTRACT_YEARS, demandMinYears),
+    MAX_CONTRACT_YEARS,
+  );
+  const demandMinTotal = demand?.min_total_value ?? 0;
+  const premium = demand?.bonus_value_premium ?? 0;
+  const vetMin = demand?.veteran_min_salary ?? null;
+
+  // A withdrawn, outbid, lost or failed offer is history, not something to update.
+  const offerStatus = existingOffer?.status ?? "active";
+  const hasActiveOffer = existingOffer != null && offerStatus === "active";
+  const isUpdate = hasActiveOffer;
+  // After the Open stage an offer's value per year can't drop; moving salary
+  // into bonus is fine as long as the value holds.
+  const canLowerValue = phase === "open";
 
   const [years, setYears] = useState(demandMinYears);
-  const [salaries, setSalaries] = useState<number[]>(Array(5).fill(0));
+  const [salaries, setSalaries] = useState<number[]>(
+    Array(MAX_CONTRACT_YEARS).fill(Math.max(demandMinAav, vetMin ?? 0)),
+  );
   const [bonus, setBonus] = useState(0);
   const [levelId, setLevelId] = useState(9);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmWithdraw, setConfirmWithdraw] = useState(false);
 
-  // Reset form on open
+  // Reset on open. New offers start at his ask; an active offer is restored
+  // (the API doesn't return per-year salaries, so they're spread evenly,
+  // which keeps the same total and yearly average).
   useEffect(() => {
-    if (isOpen) {
-      if (existingOffer) {
-        setYears(existingOffer.years);
-        setBonus(existingOffer.bonus);
-      } else {
-        setYears(demandMinYears);
-        setSalaries(Array(5).fill(0));
-        setBonus(0);
-        setLevelId(9);
-      }
+    if (!isOpen) return;
+    setConfirmWithdraw(false);
+    if (hasActiveOffer && existingOffer) {
+      const y = Math.min(Math.max(existingOffer.years, 1), MAX_CONTRACT_YEARS);
+      const perYear = Math.round(
+        (existingOffer.total_value - existingOffer.bonus) / y,
+      );
+      setYears(y);
+      setBonus(existingOffer.bonus);
+      setSalaries(Array(MAX_CONTRACT_YEARS).fill(Math.max(perYear, 0)));
+    } else {
+      setYears(demandMinYears);
+      setSalaries(Array(MAX_CONTRACT_YEARS).fill(Math.max(demandMinAav, vetMin ?? 0)));
+      setBonus(0);
+      setLevelId(9);
     }
-  }, [isOpen, existingOffer, demandMinYears]);
+  }, [isOpen, hasActiveOffer, existingOffer, demandMinYears, demandMinAav, vetMin]);
 
-  const totalSalary = useMemo(
-    () => salaries.slice(0, years).reduce((sum, s) => sum + s, 0),
-    [salaries, years],
-  );
+  // Cash is what the club pays; value is what the player weighs (bonus counts
+  // extra). The veteran floor only binds MLB-level deals.
+  const rules = valueRules(premium, vetMin, levelId === MLB_LEVEL);
+  const value = offerValue(salaries, years, bonus, rules);
+  const valuePerYear = years > 0 ? value / years : 0;
+  // What an active offer reserves against the club's cash.
+  const heldAmount = bonus + (salaries[0] ?? 0);
+  // The current offer as he values it; older payloads lack offer_value.
+  const existingValuePerYear =
+    existingOffer && existingOffer.years > 0
+      ? (existingOffer.offer_value ?? existingOffer.total_value + existingOffer.bonus * premium) /
+        existingOffer.years
+      : 0;
 
-  const totalValue = totalSalary + bonus;
-  const aav = years > 0 ? totalValue / years : 0;
+  // Why this club can't offer at all right now, if it can't.
+  const blockedReason = useMemo(() => {
+    if (phase === "completed" || phase === "expired" || phase === "withdrawn") {
+      return "This auction is closed.";
+    }
+    if (phase !== "open" && !hasActiveOffer) {
+      if (offerStatus === "outbid") return OFFER_STATUS_INFO.outbid.meaning;
+      return `New clubs could only join during the Open stage. This auction is at ${AUCTION_PHASE_LABELS[phase]}.`;
+    }
+    return null;
+  }, [phase, hasActiveOffer, offerStatus]);
 
   const errors = useMemo(() => {
     const errs: string[] = [];
+    if (blockedReason) return [blockedReason];
     if (years < demandMinYears || years > demandMaxYears) {
-      errs.push(`Years must be ${demandMinYears}-${demandMaxYears}`);
+      errs.push(
+        demandMinYears === demandMaxYears
+          ? `Length must be ${demandMinYears} years`
+          : `Length must be ${demandMinYears}–${demandMaxYears} years`,
+      );
     }
     for (let i = 0; i < years; i++) {
       if (salaries[i] < 0) errs.push(`Year ${i + 1} salary cannot be negative`);
@@ -100,33 +184,61 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
       if (i > 0 && salaries[i] > salaries[i - 1]) {
         const maxRaise = Math.max(salaries[i - 1], 2_000_000);
         if (salaries[i] - salaries[i - 1] > maxRaise) {
-          errs.push(`Year ${i + 1} raise exceeds max ($${maxRaise.toLocaleString()})`);
+          errs.push(`Year ${i + 1} raise exceeds max (${formatMoney(maxRaise)})`);
         }
       }
     }
+    const floor = floorError(salaries, years, rules);
+    if (floor) errs.push(floor);
     if (bonus < 0) errs.push("Bonus cannot be negative");
-    if (availableBudget != null && bonus > availableBudget) {
-      errs.push(`Bonus exceeds available budget ($${availableBudget.toLocaleString()})`);
+    if (demandMinAav > 0 && cents(valuePerYear) < cents(demandMinAav)) {
+      errs.push(
+        `${ASK_ERROR}: value per year ${formatMoney(Math.round(valuePerYear))} vs ${formatMoney(demandMinAav)}`,
+      );
     }
-    if (demandMinAav > 0 && totalValue > 0) {
-      const minTotal = demandMinAav * years;
-      if (totalValue < minTotal) {
-        errs.push(`Total value ($${totalValue.toLocaleString()}) below minimum ($${minTotal.toLocaleString()})`);
-      }
+    if (demandMinTotal > 0 && cents(value) < cents(demandMinTotal)) {
+      errs.push(
+        `${ASK_ERROR}: value ${formatMoney(Math.round(value))} vs his minimum total of ${formatMoney(demandMinTotal)}`,
+      );
     }
-    if (isUpdate && existingOffer && phase !== "open" && aav < existingOffer.aav) {
-      errs.push(`AAV cannot decrease below previous ($${existingOffer.aav.toLocaleString()})`);
+    if (availableBudget != null && heldAmount > availableBudget) {
+      errs.push(
+        `This offer holds ${formatMoney(heldAmount)} but only ${formatMoney(availableBudget)} is available`,
+      );
+    }
+    if (isUpdate && existingOffer && !canLowerValue && cents(valuePerYear) < cents(existingValuePerYear)) {
+      errs.push(
+        `Value per year can't go below your current offer's ${formatMoney(Math.round(existingValuePerYear))}`,
+      );
     }
     return errs;
-  }, [years, demandMinYears, demandMaxYears, salaries, bonus, availableBudget, demandMinAav, totalValue, isUpdate, existingOffer, aav]);
+  }, [
+    blockedReason,
+    years,
+    demandMinYears,
+    demandMaxYears,
+    salaries,
+    rules,
+    bonus,
+    demandMinAav,
+    demandMinTotal,
+    value,
+    valuePerYear,
+    availableBudget,
+    heldAmount,
+    isUpdate,
+    existingOffer,
+    existingValuePerYear,
+    canLowerValue,
+  ]);
 
-  const handleSalaryChange = useCallback((index: number, value: string) => {
-    setSalaries((prev) => {
-      const next = [...prev];
-      next[index] = Number(value) || 0;
-      return next;
-    });
-  }, []);
+  /** His ask in value over the current length: the larger of value per year x years and his minimum total. */
+  const askTotal = Math.max(demandMinAav * years, demandMinTotal);
+
+  /** Spread what the bonus doesn't cover evenly (never below the floor), so the value meets his ask. */
+  const handleFillToAsk = () => {
+    setSalaries(Array(MAX_CONTRACT_YEARS).fill(salaryToAsk(askTotal, years, bonus, rules)));
+  };
 
   const handleConfirm = useCallback(async () => {
     if (errors.length > 0) return;
@@ -144,167 +256,266 @@ export const FAOfferModal: FC<FAOfferModalProps> = ({
         executed_by: "user",
       });
       enqueueSnackbar(
-        `${isUpdate ? "Updated" : "Submitted"} offer for ${playerName} — ${res.years}yr, $${res.aav.toLocaleString()} AAV`,
+        `${isUpdate ? "Updated" : "Submitted"} offer for ${playerName}: ${res.years} yr, ${formatMoney(Math.round(res.aav))} a year in cash`,
         { variant: "success", autoHideDuration: 4000 },
       );
       onSuccess();
       onClose();
     } catch (err: any) {
-      enqueueSnackbar(err?.message || "Offer failed", { variant: "error", autoHideDuration: 4000 });
+      // The server's message names the rule (and, for money, the cash and
+      // reserved amounts), so show it as is.
+      enqueueSnackbar(err?.message || "Offer failed", {
+        variant: "error",
+        autoHideDuration: 8000,
+      });
     }
     setIsSubmitting(false);
   }, [errors, auctionId, orgId, years, salaries, bonus, levelId, leagueYearId, gameWeekId, isUpdate, playerName, onSuccess, onClose, enqueueSnackbar]);
 
+  const handleWithdraw = useCallback(async () => {
+    if (!confirmWithdraw) {
+      setConfirmWithdraw(true);
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await BaseballService.WithdrawFAOffer(auctionId, orgId);
+      enqueueSnackbar(
+        `Withdrew your offer for ${playerName}. You can offer again while the auction is Open.`,
+        { variant: "info", autoHideDuration: 5000 },
+      );
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      enqueueSnackbar(err?.message || "Withdraw failed", {
+        variant: "error",
+        autoHideDuration: 8000,
+      });
+      setConfirmWithdraw(false);
+    }
+    setIsSubmitting(false);
+  }, [confirmWithdraw, auctionId, orgId, playerName, onSuccess, onClose, enqueueSnackbar]);
+
   if (!isOpen) return null;
 
-  const canLowerAav = phase === "open";
-  const modalTitle = !isUpdate
+  const modalTitle = blockedReason
+    ? playerName
+    : !isUpdate
     ? `Make Offer: ${playerName}`
-    : canLowerAav
+    : canLowerValue
       ? `Update Offer: ${playerName}`
       : `Increase Offer: ${playerName}`;
+  const submitLabel = !isUpdate ? "Submit Offer" : canLowerValue ? "Update Offer" : "Increase Offer";
+  const canWithdraw = hasActiveOffer && phase === "open";
+  const weighting = age != null ? ageWeighting(age) : null;
+  const pastStatus =
+    existingOffer && !hasActiveOffer ? OFFER_STATUS_INFO[offerStatus] : null;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={modalTitle}
-      maxWidth="min-[1025px]:max-w-[60vw]"
+      maxWidth="sm:max-w-2xl min-[1025px]:max-w-[60vw]"
+      mobileSheet
+      closeOnOutsideClick={false}
+      footer={
+        blockedReason ? undefined : (
+          <>
+            <OfferLedger
+              years={years}
+              salaries={salaries}
+              bonus={bonus}
+              rules={rules}
+              target={askTotal}
+              targetNote={targetNoteFor(years, demandMinAav, demandMinTotal)}
+            />
+            {errors.filter((err) => !err.startsWith(ASK_ERROR)).map((err) => (
+              <Text key={err} variant="xs" classes="mt-1 text-start text-red-500">
+                {err}
+              </Text>
+            ))}
+          </>
+        )
+      }
       actions={
         <ButtonGroup>
           <Button size="sm" variant="danger" onClick={onClose}>
             <Text variant="small">Cancel</Text>
           </Button>
-          <Button
-            size="sm"
-            variant={errors.length === 0 ? "success" : "warning"}
-            onClick={handleConfirm}
-            disabled={errors.length > 0 || isSubmitting}
-          >
-            <Text variant="small">{isSubmitting ? "Processing..." : !isUpdate ? "Submit Offer" : canLowerAav ? "Update Offer" : "Increase Offer"}</Text>
-          </Button>
+          {canWithdraw && (
+            <Button
+              size="sm"
+              variant="warning"
+              onClick={handleWithdraw}
+              disabled={isSubmitting}
+            >
+              <Text variant="small">
+                {confirmWithdraw ? "Confirm withdraw" : "Withdraw offer"}
+              </Text>
+            </Button>
+          )}
+          {!blockedReason && (
+            <Button
+              size="sm"
+              variant={errors.length === 0 ? "success" : "warning"}
+              onClick={handleConfirm}
+              disabled={errors.length > 0 || isSubmitting}
+            >
+              <Text variant="small">{isSubmitting ? "Processing..." : submitLabel}</Text>
+            </Button>
+          )}
         </ButtonGroup>
       }
     >
       {/* Player Demands */}
       {demand && (
         <Border direction="col" classes="p-3 mb-4 text-start">
-          <Text variant="h6" classes="mb-2">Player Demands</Text>
+          <Text variant="h6" classes="mb-2">His Ask</Text>
           <div className="flex flex-wrap gap-x-6 gap-y-1">
-            <Text variant="small">Min AAV: <strong>${demandMinAav.toLocaleString()}</strong></Text>
-            <Text variant="small">Years: <strong>{demandMinYears}-{demandMaxYears}</strong></Text>
+            <Text variant="small">Value per year: <strong>{formatMoney(demandMinAav)}</strong></Text>
+            {demandMinTotal > 0 && (
+              <Text variant="small">Minimum total: <strong>{formatMoney(demandMinTotal)}</strong></Text>
+            )}
+            {vetMin != null && (
+              <Text variant="small">MLB salary floor: <strong>{formatMoney(vetMin)}</strong> a season</Text>
+            )}
+            <Text variant="small">
+              Length: <strong>{demandMinYears === demandMaxYears ? demandMinYears : `${demandMinYears}–${demandMaxYears}`} yr</strong>
+            </Text>
             {demand.war > 0 && <Text variant="small">WAR: <strong>{demand.war}</strong></Text>}
             {age != null && <Text variant="small">Age: <strong>{age}</strong></Text>}
           </div>
-          {age != null && (
-            <Text variant="xs" classes="mt-2 text-gray-400 italic">
-              {age <= 28
-                ? "This player values total guaranteed money \u2014 consider more years."
-                : age <= 31
-                  ? "This player weighs annual salary and total value equally."
-                  : age <= 33
-                    ? "This player prioritizes annual salary over total years."
-                    : "This player is focused on maximizing per-year pay."}
+          {weighting && (
+            <Text variant="xs" classes="mt-2 text-gray-400">
+              How he chooses: at {age}, he weighs value per year {weighting.aav}% and
+              total value {weighting.total}%. {weighting.hint}
             </Text>
           )}
         </Border>
+      )}
+
+      {/* Why this club can't offer, or what happened to its last offer */}
+      {blockedReason && (
+        <Border direction="col" classes="p-3 mb-4 text-start">
+          <Text variant="small" classes="font-semibold">{blockedReason}</Text>
+        </Border>
+      )}
+      {!blockedReason && pastStatus && (
+        <Text variant="xs" classes="mb-3 text-gray-400">
+          Last offer: {pastStatus.label}. {pastStatus.meaning}
+        </Text>
       )}
 
       {/* Existing offer info */}
       {isUpdate && existingOffer && (
         <Border direction="col" classes="p-3 mb-4 text-start">
-          <Text variant="h6" classes="mb-2">Current Offer</Text>
+          <Text variant="h6" classes="mb-2">Your Current Offer</Text>
           <div className="flex flex-wrap gap-x-6 gap-y-1">
             <Text variant="small">Years: <strong>{existingOffer.years}</strong></Text>
-            <Text variant="small">AAV: <strong>${existingOffer.aav.toLocaleString()}</strong></Text>
-            <Text variant="small">Total: <strong>${existingOffer.total_value.toLocaleString()}</strong></Text>
+            <Text variant="small">Cash: <strong>{formatMoney(existingOffer.total_value)}</strong></Text>
+            <Text variant="small">Value per year: <strong>{formatMoney(Math.round(existingValuePerYear))}</strong></Text>
           </div>
+          {!canLowerValue && (
+            <Text variant="xs" classes="text-yellow-400 mt-1">
+              After the Open stage the value per year can't go down. You can still move salary into
+              bonus, since bonus dollars count extra.
+            </Text>
+          )}
         </Border>
       )}
 
-      {/* Budget + Errors */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
-        <Border direction="col" classes="p-3 text-start">
-          {availableBudget != null && (
-            <Text variant="small" classes="font-semibold mb-1">
-              Signing Budget: ${availableBudget.toLocaleString()}
-            </Text>
-          )}
-          <Text variant="small" classes="text-gray-400">
-            Phase: <span className="font-semibold capitalize">{phase}</span>
-          </Text>
-          {!canLowerAav && isUpdate && existingOffer && (
-            <Text variant="xs" classes="text-yellow-400 mt-1">
-              AAV floor: ${existingOffer.aav.toLocaleString()} (cannot decrease in {phase} phase)
-            </Text>
-          )}
-        </Border>
-        <Border direction="col" classes="p-3 text-start overflow-y-auto">
-          <Text variant="h6">Errors</Text>
-          {errors.length === 0 && <Text variant="small">None</Text>}
-          {errors.map((err) => (
-            <Text key={err} variant="small" classes="text-red-500">{err}</Text>
-          ))}
-        </Border>
-      </div>
-
-      {/* Length + Bonus + Level */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">Years</label>
-          <select
-            className="w-full text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            value={years}
-            onChange={(e) => setYears(Number(e.target.value))}
-          >
-            {Array.from({ length: demandMaxYears - demandMinYears + 1 }, (_, i) => demandMinYears + i).map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-        </div>
-        <CurrencyInput
-          label="Signing Bonus"
-          value={bonus}
-          onChange={setBonus}
-        />
-        <div>
-          <label className="block text-xs text-gray-400 mb-1">Level</label>
-          <select
-            className="w-full text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            value={levelId}
-            onChange={(e) => setLevelId(Number(e.target.value))}
-          >
-            {PRO_LEVEL_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-col">
-          <Text variant="xs" classes="text-gray-400 mb-1">Computed</Text>
-          <Text variant="small">Total: <strong>${totalValue.toLocaleString()}</strong></Text>
-          <Text variant="small">AAV: <strong>${Math.round(aav).toLocaleString()}</strong></Text>
-        </div>
-      </div>
-
-      {/* Per-year salary inputs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 mb-2">
-        {Array.from({ length: 5 }, (_, i) => (
-          <div key={i} className={i >= years ? "opacity-30 pointer-events-none" : ""}>
-            <CurrencyInput
-              label={`Y${i + 1} Salary`}
-              value={salaries[i]}
-              disabled={i >= years}
-              onChange={(val) => handleSalaryChange(i, String(val))}
+      {!blockedReason && (
+        <>
+          {/* Length */}
+          <div className="mb-4 text-start">
+            <Text variant="small" classes="mb-1 font-semibold">Years</Text>
+            <YearsPicker
+              value={years}
+              onChange={setYears}
+              min={demandMinYears}
+              max={demandMaxYears}
             />
           </div>
-        ))}
-      </div>
 
-      {/* Meets minimum indicator */}
-      {demandMinAav > 0 && totalValue > 0 && (
-        <Text variant="small" classes={`mt-2 ${aav >= demandMinAav ? "text-green-400" : "text-red-400"}`}>
-          {aav >= demandMinAav ? "Meets player minimum" : "Below player minimum AAV"}
-        </Text>
+          {/* Per-year salaries */}
+          <div className="mb-4 text-start">
+            <SalaryRows
+              years={years}
+              salaries={salaries}
+              onChange={setSalaries}
+              idPrefix="fa-offer"
+              raiseLaterYears
+              minSalary={rules.minSalary}
+              onFillToAsk={demandMinAav > 0 || demandMinTotal > 0 ? handleFillToAsk : undefined}
+            />
+          </div>
+
+          {/* Bonus + Level */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-start">
+            <div>
+              <CurrencyInput
+                id="fa-offer-bonus"
+                label="Signing bonus"
+                value={bonus}
+                onChange={setBonus}
+                presets={stepPresets(-1_000_000, -100_000, 100_000, 1_000_000)}
+              />
+              <BonusShare
+                askTotal={askTotal}
+                years={years}
+                bonus={bonus}
+                salaries={salaries}
+                rules={rules}
+                onPick={(b, perYear) => {
+                  setBonus(b);
+                  setSalaries(Array(MAX_CONTRACT_YEARS).fill(perYear));
+                }}
+              />
+              <BonusHint rules={valueRules(premium, vetMin)} />
+            </div>
+            <div>
+              <label className="block mb-1 text-xs font-medium text-gray-500 dark:text-gray-400" htmlFor="fa-offer-level">
+                Assign to level
+              </label>
+              <select
+                id="fa-offer-level"
+                className="w-full min-h-10 text-base sm:text-sm border rounded-sm px-2 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                value={levelId}
+                onChange={(e) => setLevelId(Number(e.target.value))}
+              >
+                {PRO_LEVEL_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Money held */}
+          <Border direction="col" classes="p-3 text-start">
+            <Text variant="small" classes="font-semibold mb-1">
+              Paid at signing: {formatMoney(bonus)}
+              {availableBudget != null && (
+                <span className="font-normal text-gray-400"> of {formatMoney(availableBudget)} cash available</span>
+              )}
+            </Text>
+            <Text variant="small" classes="mb-1">
+              This offer holds {formatMoney(heldAmount)} while active
+            </Text>
+            <Text variant="xs" classes="text-gray-400">
+              Signing bonus plus first-season salary, held while the offer is active.
+            </Text>
+            {availableBudget != null && (
+              <Text variant="xs" classes="text-gray-400 mt-1">
+                Cash available for signings: {formatMoney(availableBudget)}, less
+                what your other active offers hold.
+              </Text>
+            )}
+            <Text variant="xs" classes="text-gray-400 mt-1">
+              Stage: <span className="font-semibold">{AUCTION_PHASE_LABELS[phase] ?? phase}</span>
+            </Text>
+          </Border>
+        </>
       )}
     </Modal>
   );

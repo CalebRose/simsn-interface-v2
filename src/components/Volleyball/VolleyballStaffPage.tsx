@@ -29,7 +29,8 @@ import {
 } from "./VbCommon";
 import { vbErrorLines, vbErrorText } from "./vbErrors";
 import { vbLabel, vbMoney, vbRoleLabel } from "./vbFormatting";
-import { vbFieldClass, VbSlider } from "./VbManage";
+import { vbFieldClass, vbFormFieldClass, VbMoneyInput, VbSlider } from "./VbManage";
+import { stepPresets } from "../Common/MoneyInput";
 import { VbPageShell } from "./VbPageShell";
 import { useVbTeamPicker } from "./VbTeamPicker";
 import { VbStaffTab, vbStaffGrades } from "./VolleyballTeamTabs";
@@ -623,6 +624,8 @@ const ManageStaff: FC<{ team: VbTeam }> = ({ team }) => {
         isOpen={Boolean(hiring)}
         onClose={() => !busy && setHiring(null)}
         title={hiring ? `Hire ${hiring.Name}` : ""}
+        mobileSheet
+        closeOnOutsideClick={false}
         actions={
           <>
             <SportButton
@@ -643,7 +646,7 @@ const ManageStaff: FC<{ team: VbTeam }> = ({ team }) => {
             <label className="flex items-center gap-2">
               <span className="w-24 font-semibold">Role</span>
               <select
-                className={vbFieldClass}
+                className={vbFormFieldClass}
                 value={offer.role}
                 onChange={(event) =>
                   setOffer({ ...offer, role: event.target.value })
@@ -656,32 +659,60 @@ const ManageStaff: FC<{ team: VbTeam }> = ({ team }) => {
                 ))}
               </select>
             </label>
-            <label className="flex items-center gap-2">
-              <span className="w-24 font-semibold">Salary ($)</span>
-              <input
-                type="number"
-                className={`${vbFieldClass} w-36`}
-                min={hiring.MinimumSalary}
-                step={500}
-                value={offer.salary}
-                onChange={(event) =>
-                  setOffer({ ...offer, salary: event.target.value })
+            <div className="flex items-start gap-2">
+              <label htmlFor="vb-hire-salary" className="w-24 shrink-0 pt-2 font-semibold">
+                Salary
+              </label>
+              <VbMoneyInput
+                id="vb-hire-salary"
+                className="flex-1 max-w-56"
+                value={offer.salary === "" ? null : Number(offer.salary)}
+                onChange={(value) =>
+                  setOffer({ ...offer, salary: value == null ? "" : String(value) })
                 }
+                presets={[
+                  {
+                    label: "Their minimum",
+                    apply: () => hiring.MinimumSalary,
+                  },
+                  ...stepPresets(1_000, 5_000),
+                ]}
               />
-            </label>
-            <label className="flex items-center gap-2">
-              <span className="w-24 font-semibold">Years</span>
-              <input
-                type="number"
-                className={`${vbFieldClass} w-20`}
-                min={1}
-                max={10}
-                value={offer.years}
-                onChange={(event) =>
-                  setOffer({ ...offer, years: event.target.value })
-                }
-              />
-            </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <span id="vb-hire-years" className="w-24 shrink-0 font-semibold">
+                Years
+              </span>
+              <div
+                role="group"
+                aria-labelledby="vb-hire-years"
+                className="inline-flex items-center gap-1"
+              >
+                <SportButton
+                  variant="secondary"
+                  aria-label="One year fewer"
+                  disabled={Number(offer.years) <= 1}
+                  onClick={() =>
+                    setOffer({ ...offer, years: String(Math.max(1, Number(offer.years) - 1)) })
+                  }
+                >
+                  −
+                </SportButton>
+                <span className="w-10 text-center text-base font-semibold tabular-nums" aria-live="polite">
+                  {offer.years}
+                </span>
+                <SportButton
+                  variant="secondary"
+                  aria-label="One year more"
+                  disabled={Number(offer.years) >= 10}
+                  onClick={() =>
+                    setOffer({ ...offer, years: String(Math.min(10, Number(offer.years) + 1)) })
+                  }
+                >
+                  +
+                </SportButton>
+              </div>
+            </div>
             <p className="text-(--text-muted)">
               They will not take less than {vbMoney(hiring.MinimumSalary)}. You
               have {vbMoney(staff.Budget - staff.Payroll)} of staff budget

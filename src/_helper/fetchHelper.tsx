@@ -75,13 +75,16 @@ export const DELETECall = async <TRequest, TResponse>(
     });
 
     if (!response.ok) {
-      throw new ApiError(response.status, `HTTP Error: ${response.statusText}`);
+      let errorBody: any;
+      try { errorBody = await response.json(); } catch {}
+      const msg = apiErrorMessage(errorBody, `HTTP Error: ${response.statusText}`);
+      throw new ApiError(response.status, msg, errorBody);
     }
 
     const data = (await response.json()) as TResponse;
     return data;
   } catch (error) {
-    console.error(`POST request failed for URL: ${url}`, error);
+    console.error(`DELETE request failed for URL: ${url}`, error);
     throw error; // Rethrow to handle where the call is made
   }
 };

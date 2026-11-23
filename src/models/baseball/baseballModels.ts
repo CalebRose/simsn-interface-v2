@@ -25,6 +25,7 @@ export class Timestamp {
   RecruitingSynced: boolean;
   GMActionsCompleted: boolean;
   FreeAgencyRound: number;
+  Phase?: string;
 
   constructor(source: any = {}) {
       if ("string" === typeof source) source = JSON.parse(source);
@@ -37,7 +38,7 @@ export class Timestamp {
       this.WeekID = source["WeekID"];
       this.GamesARan = source["GamesARan"];
       this.GamesBRan = source["GamesBRan"];
-      this.GamesCRan = source["GameCRan"];
+      this.GamesCRan = source["GamesCRan"];
       this.GamesDRan = source["GamesDRan"];
       this.IsOffSeason = source["IsOffSeason"];
       this.IsRecruitingLocked = source["IsRecruitingLocked"];
@@ -48,6 +49,7 @@ export class Timestamp {
       this.RecruitingSynced = source["RecruitingSynced"];
       this.GMActionsCompleted = source["GMActionsCompleted"];
       this.FreeAgencyRound = source["FreeAgencyRound"];
+      this.Phase = source["Phase"];
     }  
 
     convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -449,6 +451,10 @@ export interface ContractOverviewPlayer {
     years_to_arb:     number | null;
     years_to_fa:      number | null;
     is_expiring:      boolean;
+    /** An extension is signed and takes over when this contract ends. */
+    has_extension:    boolean;
+    /** Server-computed: org may offer an extension (MLB, final year, FA-eligible, not yet extended). */
+    extension_eligible: boolean;
 }
 
 // Org Financial Summary (direct API call)
@@ -653,6 +659,11 @@ export interface BaseballSeasonContext {
     current_season_id: number;
     current_week_index: number;
     league_year: number;
+    /** Last season with results. Differs from current_* during the offseason,
+     *  when the calendar has already moved to Y+1. Read via getResultsSeason(). */
+    display_league_year_id?: number;
+    display_league_year?: number;
+    display_season_id?: number;
 }
 
 // --- Schedule API ---

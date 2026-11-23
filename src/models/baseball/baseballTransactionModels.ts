@@ -53,8 +53,20 @@ export interface ExtendRequest {
     salaries: number[];
     bonus: number;
     league_year_id: number;
-    game_week_id: number;
+    /** Optional — server uses the current week (none in the offseason). */
+    game_week_id?: number;
+    executed_by?: string;
 }
+
+/** 400 codes from POST transactions/extend (null code = offer rejected / bad input). */
+export type ExtendErrorCode =
+    | "not_holder"
+    | "not_mlb"
+    | "not_final_year"
+    | "not_fa_eligible"
+    | "already_extended"
+    | "not_in_force"
+    | "not_found";
 
 // ═══════════════════════════════════════════════
 // Response DTOs

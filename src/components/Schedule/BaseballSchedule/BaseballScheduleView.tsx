@@ -19,7 +19,7 @@ import { SimMLB, SimCollegeBaseball } from "../../../_constants/constants";
 import { getLogo } from "../../../_utility/getLogo";
 import { useSimBaseballStore } from "../../../context/SimBaseballContext";
 import { useAuthStore } from "../../../context/AuthContext";
-import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
+import { getPrimaryBaseballTeam, getResultsSeason } from "../../../_utility/baseballHelpers";
 import { BaseballService } from "../../../_services/baseballService";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
@@ -433,10 +433,20 @@ export const BaseballScheduleView = ({
     [headerColor, borderColor] = [borderColor, headerColor];
   }
 
+  // During the offseason the calendar is on Y+1 (week 0, no games yet), so the
+  // schedule shows the last season with results, opened on the full season.
+  const resultsSeason = getResultsSeason(seasonContext);
+  const scheduleYear = resultsSeason.leagueYear;
+  const currentWeek = resultsSeason.isPastSeason
+    ? null
+    : seasonContext.current_week_index;
+
   // --- State ---
-  const [viewMode, setViewMode] = useState<ScheduleViewMode>("weekly");
+  const [viewMode, setViewMode] = useState<ScheduleViewMode>(
+    resultsSeason.isPastSeason ? "season" : "weekly",
+  );
   const [selectedWeek, setSelectedWeek] = useState(
-    seasonContext.current_week_index,
+    currentWeek && currentWeek > 0 ? currentWeek : 1,
   );
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(
     defaultTeamId,
@@ -476,7 +486,7 @@ export const BaseballScheduleView = ({
       setIsLoading(true);
       try {
         const data = await BaseballService.GetSchedule({
-          season_year: seasonContext.league_year,
+          season_year: scheduleYear,
           league_level: defaultLevel,
           team_id: selectedTeamId ?? undefined,
           week_start: weekStart,
@@ -489,7 +499,7 @@ export const BaseballScheduleView = ({
       }
       setIsLoading(false);
     },
-    [seasonContext.league_year, defaultLevel, selectedTeamId],
+    [scheduleYear, defaultLevel, selectedTeamId],
   );
 
   // Refetch when view/week/month/team changes
@@ -638,6 +648,12 @@ export const BaseballScheduleView = ({
               </ButtonGroup>
             </div>
 
+            {resultsSeason.isPastSeason && (
+              <Text variant="small" classes="text-gray-500 dark:text-gray-400">
+                Offseason: showing the {scheduleYear} season.
+              </Text>
+            )}
+
             {/* Navigator (hidden for season — shows everything) */}
             {viewMode !== "season" && (
               <div className="flex items-center gap-2">
@@ -697,7 +713,7 @@ export const BaseballScheduleView = ({
 
                 {/* Current week indicator */}
                 {viewMode === "weekly" &&
-                  selectedWeek === seasonContext.current_week_index && (
+                  selectedWeek === currentWeek && (
                     <span className="text-xs text-green-600 dark:text-green-400 font-medium">
                       Current
                     </span>
@@ -871,7 +887,7 @@ export const BaseballScheduleView = ({
                             <tbody>
                               {weeks.map((weekNum) => {
                                 const isCurrent =
-                                  weekNum === seasonContext.current_week_index;
+                                  weekNum === currentWeek;
                                 let weekRecord = "";
                                 if (selectedTeamId) {
                                   let w = 0,

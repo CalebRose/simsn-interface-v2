@@ -26,6 +26,8 @@ interface UsePlayerModalDataOptions {
   scoutingBudget?: ScoutingBudget | null;
   onBudgetChanged?: () => void;
   onScouted?: (detail: FAPlayerDetailResponse) => void;
+  /** Tab to show each time the modal opens (default: keep the last one). */
+  initialTab?: string;
 }
 
 export interface PlayerModalData {
@@ -57,6 +59,7 @@ export function usePlayerModalData({
   scoutingBudget,
   onBudgetChanged,
   onScouted,
+  initialTab,
 }: UsePlayerModalDataOptions): PlayerModalData {
   const { enqueueSnackbar } = useSnackbar();
 
@@ -184,9 +187,15 @@ export function usePlayerModalData({
     };
   }, [selectedTab, playerId]);
 
-  // Lazy-load awards
+  // Open on the caller's tab (e.g. Awards from the awards history page).
   useEffect(() => {
-    if (selectedTab !== "Awards" || !playerId) return;
+    if (isOpen && initialTab) setSelectedTab(initialTab);
+  }, [isOpen, initialTab, playerId]);
+
+  // Lazy-load awards. Depends on isOpen too: closing clears `awards`, and a
+  // reopen on the same player and tab must fetch them again.
+  useEffect(() => {
+    if (!isOpen || selectedTab !== "Awards" || !playerId) return;
     let cancelled = false;
     setAwardsLoading(true);
     BaseballService.GetPlayerAwards(playerId)
@@ -202,7 +211,7 @@ export function usePlayerModalData({
     return () => {
       cancelled = true;
     };
-  }, [selectedTab, playerId]);
+  }, [isOpen, selectedTab, playerId]);
 
   // Scouting unlock handler (for scouting context)
   const handleUnlock = useCallback(

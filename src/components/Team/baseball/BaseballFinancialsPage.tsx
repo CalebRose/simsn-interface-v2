@@ -196,7 +196,11 @@ export const BaseballFinancialsPage = () => {
 
           {/* Contracts Tab */}
           {selectedTab === CONTRACTS_TAB && (
-            <ContractsTab orgId={organization.id} leagueYearId={leagueYearId} />
+            <ContractsTab
+              orgId={organization.id}
+              leagueYearId={leagueYearId}
+              isOwnOrg={organization.id === userOrg?.id}
+            />
           )}
         </Border>
       </div>

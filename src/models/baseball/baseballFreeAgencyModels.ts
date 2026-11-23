@@ -11,15 +11,38 @@ import type { ScoutingPlayerBio } from "./baseballScoutingModels";
 
 // ── Auction Phase ─────────────────────────────────────────────
 
-export type AuctionPhase = "open" | "listening" | "finalize" | "completed" | "withdrawn";
+export type AuctionPhase =
+    | "open"
+    | "listening"
+    | "finalize"
+    | "completed"
+    | "expired"
+    | "withdrawn";
 
 export const PHASE_COLORS: Record<AuctionPhase, string> = {
     open: "green",
     listening: "yellow",
     finalize: "red",
     completed: "gray",
+    expired: "gray",
     withdrawn: "gray",
 };
+
+/** Plain-words stage names; "finalize" is the final-three stage. */
+export const AUCTION_PHASE_LABELS: Record<AuctionPhase, string> = {
+    open: "Open",
+    listening: "Listening",
+    finalize: "Final three",
+    completed: "Signed",
+    expired: "Expired",
+    withdrawn: "Withdrawn",
+};
+
+/** Stages in order, for the stage stepper. */
+export const AUCTION_STAGES: AuctionPhase[] = ["open", "listening", "finalize", "completed"];
+
+/** Lowest the ask can fall to after rounds without an offer. */
+export const FA_ASK_FLOOR = 1_600_000;
 
 // ── Free Agent Pool ───────────────────────────────────────────
 
@@ -38,13 +61,26 @@ export interface FAPoolParams {
     has_auction?: string;
 }
 
+export type FAOfferStatus = "active" | "outbid" | "withdrawn" | "won" | "lost" | "failed";
+
+export const OFFER_STATUS_INFO: Record<FAOfferStatus, { label: string; meaning: string; color: string }> = {
+    active: { label: "Active", meaning: "Your offer is in the running.", color: "green" },
+    outbid: { label: "Outbid", meaning: "Your offer missed the final three.", color: "red" },
+    withdrawn: { label: "Withdrawn", meaning: "You withdrew this offer. You can offer again while the auction is Open.", color: "gray" },
+    won: { label: "Won", meaning: "He signed with your club.", color: "green" },
+    lost: { label: "Lost", meaning: "He signed with another club.", color: "gray" },
+    failed: { label: "Failed", meaning: "Your offer won but could not be completed, so the next offer signed.", color: "red" },
+};
+
 export interface FAPlayerOffer {
     offer_id: number;
     years: number;
     bonus: number;
     total_value: number;
     aav: number;
-    status: string;
+    /** The offer valued as the player sees it: salaries + bonus x (1 + bonus_value_premium). total_value and aav stay cash. */
+    offer_value?: number;
+    status: FAOfferStatus;
 }
 
 export interface FAPlayerAuction {
@@ -60,6 +96,12 @@ export interface FAPlayerDemand {
     min_years: number;
     max_years?: number;
     war: number;
+    /** Sent on board entries; the pool's demand omits it. */
+    min_total_value?: number;
+    /** Extra weight a bonus dollar carries toward the ask (0.15: bonus counts at 1.15x). */
+    bonus_value_premium?: number;
+    /** Lowest salary any MLB season may pay (veterans, 6+ service years); null when no floor applies. */
+    veteran_min_salary?: number | null;
 }
 
 export interface FAPlayerScouting {
@@ -138,10 +180,22 @@ export interface AuctionBoardEntry {
     min_total_value: number;
     min_years: number;
     max_years: number;
+    /** Extra weight a bonus dollar carries toward the ask (0.15: bonus counts at 1.15x). */
+    bonus_value_premium?: number;
+    /** Lowest salary any MLB season may pay (veterans, 6+ service years); null when no floor applies. */
+    veteran_min_salary?: number | null;
     offer_count: number;
     competing_teams: string[];
     my_offer: FAPlayerOffer | null;
     entered_week: number;
+    /** The ask when he entered free agency; min_aav is the live ask. */
+    initial_min_aav?: number;
+    /** How many times the ask has dropped 10%. */
+    ask_decay_steps?: number;
+    /** Rounds in a row without an offer. */
+    rounds_without_offer?: number;
+    /** Season the auction opened in (in-season releases keep theirs). */
+    auction_league_year_id?: number;
     listed_position: string | null;
     arm_angle: string | null;
     ratings: Record<string, any>;
@@ -334,7 +388,36 @@ export interface ContractDemand {
     min_aav: string;
     min_years: number;
     war: number;
-    buyout_price: string;
+    buyout_price?: string;
+    /** Extra weight a bonus dollar carries toward the ask (0.15: bonus counts at 1.15x). */
+    bonus_value_premium?: number;
+    /** Lowest salary any MLB season may pay (veterans, 6+ service years); null when no floor applies. */
+    veteran_min_salary?: number | null;
+}
+
+/** GET fa-auction/player-demand/{id}?type=extension, POST fa-auction/compute-demands */
+export interface ExtensionDemandResponse {
+    player_id: number;
+    demand_type: "extension";
+    war: number;
+    dollar_per_war: string;
+    min_aav: string;
+    min_years: number;
+    max_years: number;
+    min_total_value: string;
+    age: number;
+    service_years: number;
+    /** Extra weight a bonus dollar carries toward the ask (0.15: bonus counts at 1.15x). */
+    bonus_value_premium?: number;
+    /** Lowest salary any MLB season may pay (veterans, 6+ service years); null when no floor applies. */
+    veteran_min_salary?: number | null;
+}
+
+export interface ComputeExtensionDemandRequest {
+    player_id: number;
+    league_year_id: number;
+    demand_type: "extension";
+    contract_id: number;
 }
 
 export interface ContractOverviewWithDemand {
@@ -354,6 +437,8 @@ export interface ContractOverviewWithDemand {
     years_to_arb: number | null;
     years_to_fa: number | null;
     is_expiring: boolean;
+    has_extension: boolean;
+    extension_eligible: boolean;
     demand: ContractDemand | null;
 }
 

@@ -13,7 +13,7 @@ import { useAuthStore } from "../../../context/AuthContext";
 import { useModal } from "../../../_hooks/useModal";
 import { PlayerModal } from "../../Team/baseball/PlayerModal";
 import { ScoutingBudget } from "../../../models/baseball/baseballScoutingModels";
-import { getPrimaryBaseballTeam } from "../../../_utility/baseballHelpers";
+import { getPrimaryBaseballTeam, getResultsSeason } from "../../../_utility/baseballHelpers";
 import { useTeamColors } from "../../../_hooks/useTeamColors";
 import { isBrightColor } from "../../../_utility/isBrightColor";
 import { BaseballService } from "../../../_services/baseballService";
@@ -367,7 +367,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
     if (!seasonContext || isExporting) return;
     setIsExporting(true);
     try {
-      const lyId = seasonContext.current_league_year_id;
+      const lyId = getResultsSeason(seasonContext).leagueYearId;
       const levelLabel = isCollege ? "college" : String(selectedLevel);
       const tabLower = activeTab.toLowerCase();
 
@@ -518,7 +518,7 @@ export const BaseballStatsPage = ({ league }: BaseballStatsPageProps) => {
     if (!seasonContext) return;
     setIsLoading(true);
     try {
-      const leagueYearId = seasonContext.current_league_year_id;
+      const leagueYearId = getResultsSeason(seasonContext).leagueYearId;
 
       if (activeTab === "Batting") {
         const data = await BaseballService.GetBattingLeaders({

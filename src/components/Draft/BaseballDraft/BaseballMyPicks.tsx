@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   BaseballDraftPick,
   DraftPhase,
+  DRAFT_CLASS_LABELS,
   formatSlotValue,
-  SignStatus,
 } from "../../../models/baseball/baseballDraftModels";
 import "../../Team/baseball/baseballMobile.css";
 
@@ -12,10 +12,17 @@ interface BaseballMyPicksProps {
   phase: DraftPhase;
   orgMap: Record<number, string>;
   userOrgAbbrev: string;
-  onSignPick: (pickId: number) => Promise<void>;
-  onPassPick: (pickId: number) => Promise<void>;
+  /** Signing is a negotiation, so it happens in the Pick Signing tab. */
+  onOpenSigning: () => void;
   onRefresh: () => void;
 }
+
+const statusLabels: Record<string, string> = {
+  signed: "Signed",
+  passed: "Passed",
+  refused: "Refused, returned to school",
+  pending: "Not signed yet",
+};
 
 const statusColors: Record<string, string> = {
   signed: "bg-green-600 text-green-100",
@@ -29,26 +36,10 @@ const BaseballMyPicks: React.FC<BaseballMyPicksProps> = ({
   phase,
   orgMap,
   userOrgAbbrev,
-  onSignPick,
-  onPassPick,
+  onOpenSigning,
   onRefresh,
 }) => {
-  const [actionLoading, setActionLoading] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
   const isSigningPhase = phase === "SIGNING";
-
-  const runAction = async (pickId: number, action: () => Promise<void>) => {
-    setActionLoading(pickId);
-    setError(null);
-    try {
-      await action();
-    } catch (err: any) {
-      setError(err?.message || "Action failed");
-    } finally {
-      setActionLoading(null);
-    }
-  };
 
   // Separate picked vs empty picks
   const pickedPicks = orgPicks.filter((p) => p.player_id != null);
@@ -65,10 +56,6 @@ const BaseballMyPicks: React.FC<BaseballMyPicksProps> = ({
           Refresh
         </button>
       </div>
-
-      {error && (
-        <div className="rounded-sm bg-red-900/50 px-4 py-2 text-sm text-red-300">{error}</div>
-      )}
 
       {/* Picks with players */}
       <div className="baseball-table-wrapper overflow-x-auto">
@@ -92,7 +79,17 @@ const BaseballMyPicks: React.FC<BaseballMyPicksProps> = ({
               >
                 <td className="px-3 py-2">{p.round}</td>
                 <td className="px-3 py-2">{p.pick_in_round}</td>
-                <td className="px-3 py-2 font-medium">{p.player_name}</td>
+                <td className="px-3 py-2 font-medium">
+                  {p.player_name}
+                  {p.class_year && DRAFT_CLASS_LABELS[p.class_year] && (
+                    <span
+                      className="ml-2 rounded-sm bg-gray-700 px-1.5 py-0.5 text-[11px] font-semibold text-gray-200"
+                      title={DRAFT_CLASS_LABELS[p.class_year].long}
+                    >
+                      {DRAFT_CLASS_LABELS[p.class_year].short}
+                    </span>
+                  )}
+                </td>
                 <td className="px-3 py-2">
                   {p.is_auto_pick && (
                     <span className="rounded-sm bg-orange-600/30 text-orange-400 px-1.5 py-0.5 text-xs">
@@ -108,38 +105,20 @@ const BaseballMyPicks: React.FC<BaseballMyPicksProps> = ({
                         statusColors[p.sign_status] || statusColors.pending
                       }`}
                     >
-                      {p.sign_status}
+                      {statusLabels[p.sign_status] ?? p.sign_status}
                     </span>
                   )}
                 </td>
                 {isSigningPhase && (
                   <td className="px-3 py-2">
                     {p.sign_status === "pending" && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => runAction(p.pick_id, () => onSignPick(p.pick_id))}
-                          disabled={actionLoading === p.pick_id}
-                          className="rounded-sm bg-green-600 px-3 py-1 text-xs font-medium hover:bg-green-500 disabled:opacity-50"
-                        >
-                          {actionLoading === p.pick_id ? "..." : "Sign"}
-                        </button>
-                        <button
-                          onClick={() => runAction(p.pick_id, () => onPassPick(p.pick_id))}
-                          disabled={actionLoading === p.pick_id}
-                          className="rounded-sm bg-gray-600 px-3 py-1 text-xs font-medium hover:bg-gray-500 disabled:opacity-50"
-                        >
-                          Pass
-                        </button>
-                      </div>
-                    )}
-                    {p.sign_status === "signed" && (
-                      <span className="text-green-400">&#10003;</span>
-                    )}
-                    {p.sign_status === "passed" && (
-                      <span className="text-gray-500">Passed</span>
-                    )}
-                    {p.sign_status === "refused" && (
-                      <span className="text-red-400">Refused</span>
+                      <button
+                        onClick={onOpenSigning}
+                        className="rounded-sm bg-green-600 px-3 py-1 text-xs font-medium hover:bg-green-500"
+                        title={`${p.offers_remaining ?? 3} offers left`}
+                      >
+                        Make offers
+                      </button>
                     )}
                   </td>
                 )}

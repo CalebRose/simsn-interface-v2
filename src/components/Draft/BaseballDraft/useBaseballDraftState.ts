@@ -30,6 +30,8 @@ export interface UseBaseballDraftStateReturn {
   error: string | null;
   refetchState: () => Promise<void>;
   refetchBoard: () => Promise<void>;
+  /** Bumped on draft_trade_proposed / _rejected / _completed, to refresh proposals. */
+  tradeVersion: number;
 }
 
 export const useBaseballDraftState = (
@@ -42,9 +44,15 @@ export const useBaseballDraftState = (
   const [error, setError] = useState<string | null>(null);
   const [secondsRemaining, setSecondsRemaining] = useState(0);
   const [isAutoRoundsRunning, setIsAutoRoundsRunning] = useState(false);
+  const [tradeVersion, setTradeVersion] = useState(0);
 
   const wsRef = useRef<WebSocket | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Latest refetch/handler, so long-lived callbacks (countdown, socket) never
+  // call a stale closure from the first render.
+  const refetchStateRef = useRef<() => Promise<void>>(async () => {});
+  const refetchBoardRef = useRef<() => Promise<void>>(async () => {});
+  const handleWSMessageRef = useRef<(msg: BaseballDraftWSMessage) => void>(() => {});
 
   // Compute derived state
   const phase: DraftPhase = draftState?.phase ?? "SETUP";
@@ -81,7 +89,7 @@ export const useBaseballDraftState = (
         clearInterval(timerRef.current!);
         timerRef.current = null;
         // Server handles auto-pick on timer expiry; refetch state after short delay
-        setTimeout(() => refetchState(), 2000);
+        setTimeout(() => refetchStateRef.current(), 2000);
       }
     };
 
@@ -177,6 +185,13 @@ export const useBaseballDraftState = (
         case "draft_trade_completed": {
           // Pick ownership changed — refetch full board
           refetchBoard();
+          setTradeVersion((v) => v + 1);
+          break;
+        }
+
+        case "draft_trade_proposed":
+        case "draft_trade_rejected": {
+          setTradeVersion((v) => v + 1);
           break;
         }
 
@@ -196,6 +211,10 @@ export const useBaseballDraftState = (
     },
     [refetchState, refetchBoard, stopCountdown],
   );
+
+  refetchStateRef.current = refetchState;
+  refetchBoardRef.current = refetchBoard;
+  handleWSMessageRef.current = handleWSMessage;
 
   // Initial load + WebSocket connection
   useEffect(() => {
@@ -222,41 +241,62 @@ export const useBaseballDraftState = (
 
     init();
 
-    // Connect WebSocket
-    const ws = new WebSocket(baseball_ws);
-    wsRef.current = ws;
+    // WebSocket with reconnect. Events missed while disconnected are recovered
+    // by refetching state and board when the socket comes back.
+    let closedByEffect = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let retryDelay = 1000;
+    let hasConnectedBefore = false;
 
-    ws.onopen = () => {
-      setIsConnected(true);
-    };
+    const connect = () => {
+      const ws = new WebSocket(baseball_ws);
+      wsRef.current = ws;
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type && data.type.startsWith("draft_") || data.type === "auto_rounds_started" || data.type === "auto_rounds_completed") {
-          handleWSMessage(data as BaseballDraftWSMessage);
+      ws.onopen = () => {
+        setIsConnected(true);
+        retryDelay = 1000;
+        if (hasConnectedBefore) {
+          refetchStateRef.current();
+          refetchBoardRef.current();
+          setTradeVersion((v) => v + 1);
         }
-      } catch {
-        // Ignore non-JSON or non-draft messages
-      }
-    };
+        hasConnectedBefore = true;
+      };
 
-    ws.onerror = () => {
-      setIsConnected(false);
-    };
-
-    ws.onclose = () => {
-      setIsConnected(false);
-      // Reconnect after delay
-      setTimeout(() => {
-        if (wsRef.current === ws) {
-          // Will reconnect on next effect cycle or manual reconnect
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          const type = typeof data?.type === "string" ? data.type : "";
+          if (type.startsWith("draft_") || type === "auto_rounds_started" || type === "auto_rounds_completed") {
+            handleWSMessageRef.current(data as BaseballDraftWSMessage);
+          }
+        } catch {
+          // Ignore non-JSON messages
         }
-      }, 3000);
+      };
+
+      ws.onerror = () => {
+        setIsConnected(false);
+      };
+
+      ws.onclose = () => {
+        setIsConnected(false);
+        if (wsRef.current === ws) wsRef.current = null;
+        if (closedByEffect || retryTimer !== null) return;
+        retryTimer = setTimeout(() => {
+          retryTimer = null;
+          if (!closedByEffect) connect();
+        }, retryDelay);
+        retryDelay = Math.min(retryDelay * 2, 30000);
+      };
     };
+
+    connect();
 
     return () => {
-      ws.close();
+      closedByEffect = true;
+      if (retryTimer !== null) clearTimeout(retryTimer);
+      wsRef.current?.close();
       wsRef.current = null;
       stopCountdown();
     };
@@ -283,5 +323,6 @@ export const useBaseballDraftState = (
     error,
     refetchState,
     refetchBoard,
+    tradeVersion,
   };
 };

@@ -36,6 +36,7 @@ import { PlayoffBracketPage } from "../components/SpecialEvents/BaseballEvents/P
 import { ConferenceTournamentPage } from "../components/SpecialEvents/BaseballEvents/ConferenceTournamentPage";
 import { AllStarGamePage } from "../components/SpecialEvents/BaseballEvents/AllStarGamePage";
 import { WBCPage } from "../components/SpecialEvents/BaseballEvents/WBCPage";
+import { BaseballAwardsPage } from "../components/Team/baseball/Awards/BaseballAwardsPage";
 import { BaseballRouteFrame } from "../components/LandingPage/baseballNav";
 import { SportUiPage } from "../components/Common/SportUiPage";
 import { GameplanPage } from "../components/Gameplan/GameplanPage";
@@ -893,6 +894,17 @@ export const AuthRoutes = [
       <AuthGuard>
         <BaseballRouteFrame league={SimMLB}>
           <AllStarGamePage />
+        </BaseballRouteFrame>
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="MLB Awards"
+    path={routes.MLB_AWARDS}
+    element={
+      <AuthGuard>
+        <BaseballRouteFrame league={SimMLB}>
+          <BaseballAwardsPage />
         </BaseballRouteFrame>
       </AuthGuard>
     }

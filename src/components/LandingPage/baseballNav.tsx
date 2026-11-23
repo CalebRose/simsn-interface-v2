@@ -65,6 +65,7 @@ export const baseballNavGroups = (league: string): SportNavGroup[] => {
           { label: "Statistics", path: routes.MLB_STATS },
           { label: "Playoffs", path: routes.MLB_PLAYOFFS },
           { label: "All-Star", path: routes.MLB_ALLSTAR },
+          { label: "Awards", path: routes.MLB_AWARDS },
           { label: "WBC", path: routes.MLB_WBC },
         ],
       },

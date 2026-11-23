@@ -41,6 +41,7 @@ import {
   displayLevel,
   displayTeamName,
   LEVEL_ORDER,
+  getResultsSeason,
   normalizePlayer,
 } from "../../../_utility/baseballHelpers";
 import { useModal } from "../../../_hooks/useModal";
@@ -73,10 +74,7 @@ import {
   ScoutingActionType,
   ScoutingBudget,
 } from "../../../models/baseball/baseballScoutingModels";
-import {
-  ContractDemand,
-  ContractOverviewWithDemand,
-} from "../../../models/baseball/baseballFreeAgencyModels";
+import { ContractOverviewWithDemand } from "../../../models/baseball/baseballFreeAgencyModels";
 
 // ═══════════════════════════════════════════════
 // Constants
@@ -84,6 +82,11 @@ import {
 
 const ALL_ORGS = "__all__";
 const Stats = "Stats";
+
+type ExtensionFlags = Pick<
+  ContractOverviewWithDemand,
+  "contract_id" | "has_extension" | "extension_eligible" | "demand"
+>;
 
 // ═══════════════════════════════════════════════
 // Quick Action Buttons
@@ -96,12 +99,15 @@ const QuickActionButtons = ({
   player,
   isOwnOrg,
   isCollege,
+  extension,
   onTransaction,
   onScouting,
 }: {
   player: Player;
   isOwnOrg: boolean;
   isCollege: boolean;
+  /** Contract-overview extension flags for this player (pro only). */
+  extension?: ExtensionFlags;
   onTransaction: (player: Player, action: TransactionAction) => void;
   onScouting: (player: Player, actionType: ScoutingActionType) => void;
 }) => {
@@ -197,15 +203,34 @@ const QuickActionButtons = ({
           >
             {isCollege ? "Cut" : "Rel"}
           </button>
-          <button
-            className={`${actionBtn} ${isCollege ? "bg-orange-600/20 text-orange-400 hover:bg-orange-600/40" : "bg-gray-600/20 text-gray-500 cursor-not-allowed"}`}
-            onClick={isCollege ? () => onTransaction(player, "redshirt") : undefined}
-            disabled={!isCollege}
-            title={isCollege ? "Redshirt" : "Extend (coming soon)"}
-            aria-label={isCollege ? "Redshirt player" : "Extend contract"}
-          >
-            {isCollege ? "Redshirt" : "Ext"}
-          </button>
+          {isCollege ? (
+            <button
+              className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`}
+              onClick={() => onTransaction(player, "redshirt")}
+              title="Redshirt"
+              aria-label="Redshirt player"
+            >
+              Redshirt
+            </button>
+          ) : extension?.has_extension ? (
+            <button
+              className={`${actionBtn} bg-purple-600/20 text-purple-400 cursor-default`}
+              disabled
+              title="Extension signed — takes over when the current contract ends"
+              aria-label="Extension signed"
+            >
+              Ext ✓
+            </button>
+          ) : extension?.extension_eligible ? (
+            <button
+              className={`${actionBtn} bg-purple-600/20 text-purple-400 hover:bg-purple-600/40`}
+              onClick={() => onTransaction(player, "extend")}
+              title="Offer contract extension"
+              aria-label="Extend contract"
+            >
+              Ext
+            </button>
+          ) : null}
           {!isCollege && (
             <button
               className={`${actionBtn} bg-orange-600/20 text-orange-400 hover:bg-orange-600/40`}
@@ -393,6 +418,8 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
   );
 
   const leagueYearId = seasonContext?.current_league_year_id ?? 0;
+  // Roster stats show the last season with results (last year during the offseason).
+  const statsLeagueYearId = getResultsSeason(seasonContext).leagueYearId;
   const userOrgId = userOrg?.id ?? 0;
   const effectiveOrgId = viewedOrg?.id ?? userOrgId;
 
@@ -682,8 +709,9 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     refreshPlayerScouting(scoutingPlayerId);
   }, [scoutingModal, scoutingPlayerId, refreshPlayerScouting]);
 
-  // --- Contract Demands (for buyout/extend modals) ---
-  const [contractDemands, setContractDemands] = useState<Record<number, ContractDemand | null>>({});
+  // --- Contract overview rows (demands for buyout/extend + extension eligibility) ---
+  const [contractFlags, setContractFlags] = useState<Record<number, ExtensionFlags>>({});
+  const [contractOverviewVersion, setContractOverviewVersion] = useState(0);
 
   // --- Transaction Modal ---
   const txnModal = useModal();
@@ -759,11 +787,13 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
             .catch(() => {});
         }
       } else {
-        // No patch data (e.g. extension) — force refresh
+        // No patch data (e.g. extension) — force refresh, including the
+        // contract overview so has_extension / extension_eligible update.
         const orgId = viewedOrg?.id ?? userOrg?.id;
         if (orgId) {
           loadBootstrapForOrg(orgId, true).then(processBootstrapResult);
         }
+        setContractOverviewVersion((v) => v + 1);
       }
     },
     [viewedOrg, userOrg, loadBootstrapForOrg, processBootstrapResult, effectiveOrgId],
@@ -807,7 +837,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
   // --- Stats fetching (cached per org to avoid re-fetching on category toggle) ---
   useEffect(() => {
-    if (category !== Stats || !leagueYearId) {
+    if (category !== Stats || !statsLeagueYearId) {
       return;
     }
     const cacheKey: number | "all" = isAllView ? "all" : (viewedOrg?.id ?? 0);
@@ -815,7 +845,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     if (
       statsCache.current &&
       statsCache.current.orgId === cacheKey &&
-      statsCache.current.lyId === leagueYearId
+      statsCache.current.lyId === statsLeagueYearId
     ) {
       setPlayerStatsMap(statsCache.current.data);
       return;
@@ -834,13 +864,13 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
             orgIds.map((orgId) =>
               Promise.all([
                 BaseballService.GetBattingLeaders({
-                  league_year_id: leagueYearId,
+                  league_year_id: statsLeagueYearId,
                   org_id: orgId,
                   min_pa: 0,
                   page_size: 500,
                 }),
                 BaseballService.GetPitchingLeaders({
-                  league_year_id: leagueYearId,
+                  league_year_id: statsLeagueYearId,
                   org_id: orgId,
                   page_size: 500,
                 }),
@@ -854,13 +884,13 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         } else {
           const [battingRes, pitchingRes] = await Promise.all([
             BaseballService.GetBattingLeaders({
-              league_year_id: leagueYearId,
+              league_year_id: statsLeagueYearId,
               org_id: viewedOrg?.id ?? 0,
               min_pa: 0,
               page_size: 500,
             }),
             BaseballService.GetPitchingLeaders({
-              league_year_id: leagueYearId,
+              league_year_id: statsLeagueYearId,
               org_id: viewedOrg?.id ?? 0,
               page_size: 500,
             }),
@@ -871,7 +901,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
         const map: PlayerStatsMap = { batting, pitching };
         if (!cancelled) {
-          statsCache.current = { orgId: cacheKey, lyId: leagueYearId, data: map };
+          statsCache.current = { orgId: cacheKey, lyId: statsLeagueYearId, data: map };
           setPlayerStatsMap(map);
         }
       } catch {
@@ -883,7 +913,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
     return () => {
       cancelled = true;
     };
-  }, [category, leagueYearId, viewedOrg, isAllView, leagueOrgs]);
+  }, [category, statsLeagueYearId, viewedOrg, isAllView, leagueOrgs]);
 
   // --- Roster status (min/max limits per level) ---
   const [rosterStatus, setRosterStatus] = useState<RosterLevelStatus[]>([]);
@@ -913,26 +943,40 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
         player={p}
         isOwnOrg={isOwnOrg}
         isCollege={isCollege}
+        extension={contractFlags[p.id]}
         onTransaction={handleTransactionAction}
         onScouting={handleScoutingQuickAction}
       />
     ),
-    [isOwnOrg, isCollege, handleTransactionAction, handleScoutingQuickAction],
+    [isOwnOrg, isCollege, contractFlags, handleTransactionAction, handleScoutingQuickAction],
   );
 
-  // --- Load contract demands for buyout/extend modals (MLB only) ---
+  // --- Load contract overview for buyout/extend modals + Ext button (pro only) ---
   useEffect(() => {
-    if (!isOwnOrg || isCollege || !viewedOrg || !seasonContext) return;
+    if (!isOwnOrg || isCollege || !viewedOrg || !seasonContext) {
+      setContractFlags({});
+      return;
+    }
+    let cancelled = false;
     BaseballService.GetContractOverviewWithDemands(viewedOrg.id, seasonContext.current_league_year_id)
       .then((data) => {
-        const map: Record<number, ContractDemand | null> = {};
+        if (cancelled) return;
+        const map: Record<number, ExtensionFlags> = {};
         for (const p of data) {
-          map[p.player_id] = p.demand ?? null;
+          map[p.player_id] = {
+            contract_id: p.contract_id,
+            has_extension: p.has_extension ?? false,
+            extension_eligible: p.extension_eligible ?? false,
+            demand: p.demand ?? null,
+          };
         }
-        setContractDemands(map);
+        setContractFlags(map);
       })
       .catch(() => {});
-  }, [isOwnOrg, isCollege, viewedOrg, seasonContext]);
+    return () => {
+      cancelled = true;
+    };
+  }, [isOwnOrg, isCollege, viewedOrg, seasonContext, contractOverviewVersion]);
 
   // --- Position override handler ---
   const handlePositionOverride = useCallback(
@@ -1131,16 +1175,16 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
 
       // Resolve stats map — fetch if not yet loaded (and we have org context)
       let statsMap: PlayerStatsMap = playerStatsMap;
-      if (statsMap.batting.size === 0 && statsMap.pitching.size === 0 && !isAllView && leagueYearId && effectiveOrgId) {
+      if (statsMap.batting.size === 0 && statsMap.pitching.size === 0 && !isAllView && statsLeagueYearId && effectiveOrgId) {
         const [battingRes, pitchingRes] = await Promise.all([
           BaseballService.GetBattingLeaders({
-            league_year_id: leagueYearId,
+            league_year_id: statsLeagueYearId,
             org_id: effectiveOrgId,
             min_pa: 0,
             page_size: 500,
           }),
           BaseballService.GetPitchingLeaders({
-            league_year_id: leagueYearId,
+            league_year_id: statsLeagueYearId,
             org_id: effectiveOrgId,
             page_size: 500,
           }),
@@ -1158,7 +1202,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
       console.error("Full roster export failed", e);
     }
     setIsExportingFull(false);
-  }, [isExportingFull, isAllView, viewedOrg, allPlayers, playerStatsMap, leagueYearId, effectiveOrgId]);
+  }, [isExportingFull, isAllView, viewedOrg, allPlayers, playerStatsMap, statsLeagueYearId, effectiveOrgId]);
 
   const showPitchers = filterType === "Pitcher";
   const showPosition = filterType === "Position";
@@ -1567,7 +1611,7 @@ export const BaseballTeamPage = ({ league }: BaseballTeamPageProps) => {
           }}
           player={txnPlayer}
           action={txnAction}
-          demand={contractDemands[txnPlayer.id] ?? undefined}
+          demand={contractFlags[txnPlayer.id]?.demand ?? undefined}
           orgId={viewedOrg.id}
           seasonContext={seasonContext}
           onSuccess={handleTransactionSuccess}
