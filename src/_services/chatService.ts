@@ -29,7 +29,7 @@ import type {
 import { logFirestoreRead } from "../_utility/firestoreLogger";
 
 export const CHAT_ROOM_ID = "global";
-export const CHAT_RETENTION_DAYS = 14;
+export const CHAT_RETENTION_DAYS = 35;
 export const CHAT_PAGE_SIZE = 50;
 export const CHAT_NEW_USER_COOLDOWN_SECONDS = 30;
 export const CHAT_TEAM_COOLDOWN_SECONDS = 3;
