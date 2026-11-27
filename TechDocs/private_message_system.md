@@ -9,7 +9,7 @@
 
 ## 1. Overview
 
-A private mail-style forum messaging system where a user can start a conversation with 1–10 other users, give it a subject line, and exchange threaded replies. Conversations are strictly private to their participants — no one outside the conversation can read messages or receive notifications about them. Users have a capped inbox (10 active conversations), can block other users from messaging them (silently), and can report abusive users within a conversation (which also auto-mutes that conversation for the reporter).
+A private mail-style forum messaging system where a user can start a conversation with 1–10 other users, give it a subject line, and exchange threaded replies. Conversations are strictly private to their participants — no one outside the conversation can read messages or receive notifications about them. Users have a capped inbox (50 active conversations), can block other users from messaging them (silently), and can report abusive users within a conversation (which also auto-mutes that conversation for the reporter).
 
 ### 1.1 Goals
 
@@ -19,7 +19,7 @@ A private mail-style forum messaging system where a user can start a conversatio
 - Image/screenshot attachments reusing the existing forum attachment pattern
 - Reporting reusing the existing forum reporting pattern, extended with auto-mute
 - Strict access control — non-participants cannot read messages or be notified
-- Inbox cap of 10 conversations, enforced by requiring manual archive/delete before starting new ones
+- Inbox cap of 50 conversations, enforced by requiring manual archive/delete before starting new ones
 - Blocking with silent failure on send (no error shown to sender)
 
 ### 1.2 Non-Goals
@@ -92,13 +92,13 @@ Messages are a subcollection rather than an array on the conversation document b
 
 ### 2.3 `users/{userId}/inbox` (denormalized index — optional but recommended)
 
-To enforce the 10-conversation cap and render the inbox list without a collection-wide query with `array-contains`, maintain a small per-user index:
+To enforce the 50-conversation cap and render the inbox list without a collection-wide query with `array-contains`, maintain a small per-user index:
 
 ```ts
 // users/{userId}/inboxMeta/summary  (single doc)
 interface InboxSummary {
   activeConversationCount: number; // non-archived conversations this user participates in
-  conversationIds: string[]; // active (non-archived) conversation IDs, max 10
+  conversationIds: string[]; // active (non-archived) conversation IDs, max 50
 }
 ```
 
@@ -181,7 +181,7 @@ Server-side steps:
 
 1. Resolve `participantUsernames` → user IDs.
 2. Validate participant count is 2–10 (including creator).
-3. **Inbox cap check:** for the creator only — read `users/{creatorId}/inboxMeta/summary`; if `activeConversationCount >= 10`, reject with a clear error (`INBOX_FULL`) so the client can prompt the user to archive/delete an existing conversation. _(Per your decision, this is enforced only against the creator's own cap — recipients' inbox caps are not blocking; see open question in §9 about whether recipients should also be capped.)_
+3. **Inbox cap check:** for the creator only — read `users/{creatorId}/inboxMeta/summary`; if `activeConversationCount >= 50`, reject with a clear error (`INBOX_FULL`) so the client can prompt the user to archive/delete an existing conversation. _(Per your decision, this is enforced only against the creator's own cap — recipients' inbox caps are not blocking; see open question in §9 about whether recipients should also be capped.)_
 4. **Block check:** for each recipient, check `blocks/{recipientId}_{creatorId}` — if the recipient has blocked the creator, **silently drop that recipient** from the conversation without error (per your requirement). If _all_ recipients turn out to be blockers, the conversation is not created and the UI shows a generic "message sent" success state anyway (to avoid leaking block status) — **please confirm this is the desired UX for the all-blocked edge case**, see §9.
 5. Create `conversations/{conversationId}` doc + first `messages/{messageId}` doc in a transaction.
 6. Increment `activeConversationCount` / append to `conversationIds` in the inbox summary doc for every valid (non-blocked) participant.
@@ -266,10 +266,10 @@ Reuses the existing forum @mention implementation:
 
 ## 7. Inbox UI Behavior Summary
 
-- Inbox list query: read `users/{uid}/inboxMeta/summary.conversationIds`, then batch-fetch those `conversations` docs (max 10 → cheap, no pagination needed).
+- Inbox list query: read `users/{uid}/inboxMeta/summary.conversationIds`, then fetch those `conversations` docs in Firestore `in` query batches of up to 30 (max 50 total; no pagination needed).
 - Sort by `lastMessageAt` descending.
 - Show subject, last message preview, sender, unread badge (from `participantMeta.{uid}.unreadCount`), muted indicator if applicable.
-- "New Conversation" button disabled (or shows an inline prompt) when `activeConversationCount === 10`, directing the user to archive one first — matching your decision not to auto-archive.
+- "New Conversation" button disabled (or shows an inline prompt) when `activeConversationCount >= 50`, directing the user to archive one first — matching your decision not to auto-archive.
 - Archived conversations live in a separate "Archived" tab/view, not counted against the cap, still fully readable.
 
 ---
@@ -297,7 +297,7 @@ These need your input before implementation starts:
 2. **Blocking and existing conversations:** Should blocking someone you already share a conversation with also mute/hide that existing conversation, or only prevent _new_ conversations? Proposed default in §4.5 is "no retroactive effect."
 3. **Replying when blocked mid-conversation:** In a group conversation, if participant A blocks participant B after the conversation started, should B's future replies still reach A? Proposed default in §4.2 is "yes, block only affects new conversation creation," but this may not match intent.
 4. **Un-muting after a report:** Should the reporter be able to manually un-mute the conversation themselves, or should that require a moderator action (e.g. after the report is reviewed/dismissed)?
-5. **Recipient inbox cap:** Should the 10-conversation cap also block a _recipient_ from being added to a new conversation if they're already at 10 (rather than only capping the creator)? Current design in §4.1 only checks the creator.
+5. **Recipient inbox cap:** Should the 50-conversation cap also block a _recipient_ from being added to a new conversation if they're already at 50 (rather than only capping the creator)? Current design in §4.1 only checks the creator.
 6. **Message editing/deletion:** Any requirement for editing or deleting a sent message? Not mentioned in your requirements, currently out of scope.
 7. **Multiple attachments per message:** Confirm one image per message is sufficient, matching "a screenshot."
 8. **Read receipts:** Is per-recipient read status needed (e.g. "seen by X, Y") or is a single unread/read boolean per user sufficient? Current design only tracks the latter.

@@ -31,6 +31,7 @@ import type {
   InboxSummary,
   DMError,
 } from "../models/dmModels";
+import { INBOX_CAP } from "../models/dmModels";
 import type { PostMention, RichTextDocument } from "../models/forumModels";
 import { ForumService } from "./forumService";
 
@@ -46,7 +47,7 @@ const inboxSummaryDoc = (userId: string) =>
   doc(firestore, "users", userId, "inboxMeta", "summary");
 
 const PREVIEW_MAX = 100;
-const INBOX_CAP = 10;
+const FIRESTORE_IN_QUERY_LIMIT = 30;
 
 function makePreview(text: string): string {
   return text.length > PREVIEW_MAX ? text.slice(0, PREVIEW_MAX) + "…" : text;
@@ -279,32 +280,57 @@ export const DMService = {
       return () => {};
     }
 
-    // Firestore 'in' supports up to 30 values; inbox cap is 10, so we're safe
-    const q = query(
-      conversationsCol(),
-      where(documentId(), "in", conversationIds),
-    );
+    const conversationsById = new Map<string, Conversation>();
+    const unsubscribers: (() => void)[] = [];
 
-    return onSnapshot(
-      q,
-      (snap) => {
-        logFirestoreRead("subscribeToConversations", snap.docs.length);
-        const conversations = snap.docs
-          .map((d) => ({ id: d.id, ...d.data() }) as Conversation)
-          .sort(
-            (a, b) =>
-              (b.lastMessageAt?.toMillis() ?? 0) -
-              (a.lastMessageAt?.toMillis() ?? 0),
-          );
-        onUpdate(conversations);
-      },
-      (err) => {
-        if (err.code !== "permission-denied") {
-          console.warn("[DMService] conversations listener error:", err.code);
-        }
-        onError?.(err);
-      },
-    );
+    for (
+      let start = 0;
+      start < conversationIds.length;
+      start += FIRESTORE_IN_QUERY_LIMIT
+    ) {
+      const batchIds = conversationIds.slice(
+        start,
+        start + FIRESTORE_IN_QUERY_LIMIT,
+      );
+      const q = query(
+        conversationsCol(),
+        where(documentId(), "in", batchIds),
+      );
+
+      unsubscribers.push(
+        onSnapshot(
+          q,
+          (snap) => {
+            logFirestoreRead("subscribeToConversations", snap.docs.length);
+            batchIds.forEach((id) => conversationsById.delete(id));
+            snap.docs.forEach((d) => {
+              conversationsById.set(
+                d.id,
+                { id: d.id, ...d.data() } as Conversation,
+              );
+            });
+            onUpdate(
+              Array.from(conversationsById.values()).sort(
+                (a, b) =>
+                  (b.lastMessageAt?.toMillis() ?? 0) -
+                  (a.lastMessageAt?.toMillis() ?? 0),
+              ),
+            );
+          },
+          (err) => {
+            if (err.code !== "permission-denied") {
+              console.warn(
+                "[DMService] conversations listener error:",
+                err.code,
+              );
+            }
+            onError?.(err);
+          },
+        ),
+      );
+    }
+
+    return () => unsubscribers.forEach((unsubscribe) => unsubscribe());
   },
 
   /** Real-time subscription to messages in a conversation. */

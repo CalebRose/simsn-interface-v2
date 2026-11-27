@@ -9,6 +9,7 @@ import { useDMStore } from "../../context/DMContext";
 import { useAuthStore } from "../../context/AuthContext";
 import { useResponsive } from "../../_hooks/useMobile";
 import type { Conversation } from "../../models/dmModels";
+import { INBOX_CAP } from "../../models/dmModels";
 
 // ─────────────────────────────────────────────
 // Conversation list item
@@ -194,7 +195,8 @@ export const InboxModal: React.FC<InboxModalProps> = ({ isOpen, onClose }) => {
                   variant="xs"
                   className="text-yellow-600 dark:text-yellow-400"
                 >
-                  Inbox full (10/10). Archive a conversation to make room.
+                  Inbox full ({INBOX_CAP}/{INBOX_CAP}). Archive a conversation
+                  to make room.
                 </Text>
               </div>
             )}

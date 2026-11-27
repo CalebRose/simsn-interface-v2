@@ -10,6 +10,7 @@ import {
 import { DMService } from "../_services/dmService";
 import { CurrentUser } from "../_hooks/useCurrentUser";
 import type { Conversation, InboxSummary } from "../models/dmModels";
+import { INBOX_CAP } from "../models/dmModels";
 import { DMContext } from "./DMContextCore";
 
 // ─────────────────────────────────────────────
@@ -139,7 +140,7 @@ export function DMProvider({ children, currentUser }: DMProviderProps) {
     }, 0);
   }, [conversations, uid]);
 
-  const isInboxFull = inboxSummary.activeConversationCount >= 10;
+  const isInboxFull = inboxSummary.activeConversationCount >= INBOX_CAP;
 
   // ── Actions ──────────────────────────────────────────────────────────────────
   const archiveConversation = useCallback(

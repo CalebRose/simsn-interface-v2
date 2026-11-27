@@ -12,8 +12,8 @@ import { DMService } from "../../_services/dmService";
 import { useAuthStore } from "../../context/AuthContext";
 import { useDMStore } from "../../context/DMContext";
 import type { RichTextDocument, PostMention } from "../../models/forumModels";
+import { INBOX_CAP } from "../../models/dmModels";
 
-const INBOX_CAP = 10;
 const NEW_USER_HOURS = 48;
 const MAX_PARTICIPANTS = 10;
 
@@ -181,8 +181,8 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({
             variant="small"
             className="text-yellow-600 dark:text-yellow-400"
           >
-            Your inbox is full (10 conversations). Archive a conversation to
-            start a new one.
+            Your inbox is full ({INBOX_CAP} conversations). Archive a
+            conversation to start a new one.
           </Text>
         </div>
       )}

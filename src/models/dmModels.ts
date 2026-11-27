@@ -1,6 +1,8 @@
 import { Timestamp } from "firebase/firestore";
 import { RichTextDocument, PostMention } from "./forumModels";
 
+export const INBOX_CAP = 50;
+
 export interface ConversationParticipantMeta {
   unreadCount: number;
   archived: boolean;
