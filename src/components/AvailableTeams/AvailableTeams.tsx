@@ -453,7 +453,15 @@ export const AvailableTeams = () => {
         await LacrosseService.requestTeam(team.ID, currentUser!.username);
         setSentRequestCLAX(true);
         await ForumService.CreateSimCollegeLacrosseJobApplicationThreadFromTeamRequest(
-          { Username: currentUser!.username, TeamID: team.ID },
+          {
+            Username: currentUser!.username,
+            TeamID: team.ID,
+            DiscordUsername: discordUsername,
+            HowMuchTimeAnswer: howMuchTimeAnswer,
+            HowDidYouHearAboutSimSN: howDidYouHearAboutSimSN,
+            CommunityReference: communityReference,
+            AboutYourself: aboutYourself,
+          },
           team.Abbreviation || team.TeamName,
           currentUser!.id,
           currentUser!.username,

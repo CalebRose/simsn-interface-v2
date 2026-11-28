@@ -399,6 +399,11 @@ export const ForumService = {
     requestDto: {
       Username: string;
       TeamID: number;
+      DiscordUsername?: string;
+      HowMuchTimeAnswer?: string;
+      HowDidYouHearAboutSimSN?: string;
+      CommunityReference?: string;
+      AboutYourself?: string;
     },
     teamName: string,
     uid: string,
@@ -409,6 +414,20 @@ export const ForumService = {
     const paragraphs: string[] = [
       `${requestDto.Username} has applied to coach the ${teamName}. Please review their application below.`,
     ];
+    if (requestDto.DiscordUsername)
+      paragraphs.push(`Discord: ${requestDto.DiscordUsername}`);
+    if (requestDto.HowMuchTimeAnswer)
+      paragraphs.push(`Time commitment: ${requestDto.HowMuchTimeAnswer}`);
+    if (requestDto.HowDidYouHearAboutSimSN)
+      paragraphs.push(
+        `How they found SimSN: ${requestDto.HowDidYouHearAboutSimSN}`,
+      );
+    if (requestDto.CommunityReference)
+      paragraphs.push(`Community reference: ${requestDto.CommunityReference}`);
+    if (requestDto.AboutYourself)
+      paragraphs.push(
+        `About ${requestDto.Username}: ${requestDto.AboutYourself}`,
+      );
 
     const body = buildJobApplicationRichBody(paragraphs);
     const dto: CreateThreadDTO = {
