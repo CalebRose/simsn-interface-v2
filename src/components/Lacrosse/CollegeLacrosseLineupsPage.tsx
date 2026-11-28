@@ -15,7 +15,7 @@ import { getLacrosseGradeColor, getLacrosseYearAbbreviation } from "./lacrosseFo
 
 type Position = "Attack" | "Midfield" | "Defense" | "Goalie";
 type LineupTab = "FOGO" | Position;
-type LineupSortKey = "player" | "depth" | "starter" | "longShot" | "usage" | "FO" | "SPD" | "HND" | "PAS" | "SHP" | "SHA" | "BC" | "SC" | "GB" | "GV" | "IQ" | "STA";
+type LineupSortKey = "player" | "depth" | "starter" | "role" | "longShot" | "usage" | "FO" | "SPD" | "HND" | "PAS" | "SHP" | "SHA" | "BC" | "SC" | "GB" | "GV" | "IQ" | "STA";
 type SortDirection = "asc" | "desc";
 const positions: Position[] = ["Attack", "Midfield", "Defense", "Goalie"];
 const lineupTabs: LineupTab[] = ["FOGO", ...positions];
@@ -38,7 +38,13 @@ const defaultGameplan = (teamId: number): LaxGameplan => ({
 });
 const starterCounts: Record<Position, number> = { Attack: 3, Midfield: 3, Defense: 3, Goalie: 1 };
 const midfieldRoleLabels: Record<string, string> = { Offense: "Offensive", Defense: "Defensive", "Two-way": "Two-Way" };
-const errorText = (error: unknown) => error instanceof Error ? error.message : "The SimLAX API could not be reached.";
+const midfieldRoleOrder = ["Offensive", "Two-Way", "Defensive"];
+const midfieldRoleRank = (player: LaxPlayer) => {
+  const role = midfieldRoleLabels[player.roster.midfieldRole || ""] || player.roster.midfieldRole || "Two-Way";
+  const index = midfieldRoleOrder.indexOf(role);
+  return index === -1 ? midfieldRoleOrder.length : index;
+};
+const errorText =(error: unknown) => error instanceof Error ? error.message : "The SimLAX API could not be reached.";
 const positionAbbreviations: Record<Position, string> = { Attack: "Atk", Midfield: "Mid", Defense: "Def", Goalie: "G" };
 const gradeSortValues: Record<string, number> = { "A+": 13, A: 12, "A-": 11, "B+": 10, B: 9, "B-": 8, "C+": 7, C: 6, "C-": 5, "D+": 4, D: 3, "D-": 2, F: 1 };
 const lineupAttributeColumns: Array<{ label: string; title: string; value: (player: LaxPlayer) => string | number }> = [
@@ -159,6 +165,8 @@ export const CollegeLacrosseLineupsPage = () => {
   const [addPlayerId, setAddPlayerId] = useState("");
   const [sortKey, setSortKey] = useState<LineupSortKey>("player");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [groupByRole, setGroupByRole] = useState(false);
+  const [podSorts, setPodSorts] = useState<Record<string, { key: LineupSortKey; direction: SortDirection }>>({});
   const [profile, setProfile] = useState<LaxPlayer | null>(null);
   const [gameplan, setGameplan] = useState<LaxGameplan | null>(null);
   const [savedGameplan, setSavedGameplan] = useState<LaxGameplan | null>(null);
@@ -208,13 +216,23 @@ export const CollegeLacrosseLineupsPage = () => {
   const starters = players.filter((player) => player.roster.isStarter).sort((a, b) => (a.roster.starterSlot || 99) - (b.roster.starterSlot || 99));
   const positionPlayers = players.filter((player) => position === "FOGO"
     ? player.position === "Midfield" && player.roster.fogoDepth != null
-    : player.position === position && player.roster.usage != null).sort((a, b) => {
-    const starterOrder = position === "FOGO" ? 0 : Number(b.roster.isStarter) - Number(a.roster.isStarter);
-    if (starterOrder) return starterOrder;
-    if (sortKey === "starter") return `${a.lastName}, ${a.firstName}`.localeCompare(`${b.lastName}, ${b.firstName}`);
+    : player.position === position && player.roster.usage != null);
+  const isGrouped = position === "Midfield" && groupByRole;
+  const sortFor = (podKey: string): { key: LineupSortKey; direction: SortDirection } => isGrouped
+    ? podSorts[podKey] ?? { key: "player", direction: "asc" }
+    : { key: sortKey, direction: sortDirection };
+  const sortPlayers = (list: LaxPlayer[], { key: sortKey, direction: sortDirection }: { key: LineupSortKey; direction: SortDirection }) => [...list].sort((a, b) => {
+    const nameCompare = `${a.lastName}, ${a.firstName}`.localeCompare(`${b.lastName}, ${b.firstName}`);
+    if (sortKey === "starter") {
+      const starterOrder = Number(b.roster.isStarter) - Number(a.roster.isStarter);
+      if (starterOrder) return sortDirection === "desc" ? starterOrder : -starterOrder;
+      return nameCompare;
+    }
     let aValue: string | number;
     let bValue: string | number;
-    if (sortKey === "player") {
+    if (sortKey === "role") {
+      aValue = midfieldRoleRank(a); bValue = midfieldRoleRank(b);
+    } else if (sortKey === "player") {
       aValue = `${a.lastName}, ${a.firstName}`; bValue = `${b.lastName}, ${b.firstName}`;
     } else if (sortKey === "depth") {
       aValue = a.roster.fogoDepth ?? Number.MAX_SAFE_INTEGER; bValue = b.roster.fogoDepth ?? Number.MAX_SAFE_INTEGER;
@@ -229,8 +247,13 @@ export const CollegeLacrosseLineupsPage = () => {
     const comparison = typeof aValue === "string" && typeof bValue === "string"
       ? ((gradeSortValues[aValue] != null && gradeSortValues[bValue] != null) ? gradeSortValues[aValue] - gradeSortValues[bValue] : aValue.localeCompare(bValue))
       : Number(aValue) - Number(bValue);
+    if (comparison === 0) return nameCompare;
     return sortDirection === "asc" ? comparison : -comparison;
   });
+  const podGroups: Array<{ key: string; label: string; players: LaxPlayer[] }> = (isGrouped
+    ? ["Two-Way", "Offensive", "Defensive"].map((role) => ({ key: role, label: role, players: positionPlayers.filter((player) => midfieldRoleOrder[midfieldRoleRank(player)] === role) }))
+    : [{ key: "all", label: "", players: positionPlayers }]
+  ).map((pod) => ({ ...pod, players: sortPlayers(pod.players, sortFor(pod.key)) }));
   const visibleAttributeColumns = position === "FOGO" ? fogoAttributeColumns : position === "Goalie"
     ? lineupAttributeColumns
     : lineupAttributeColumns.filter((attribute) => attribute.label !== "GB" && attribute.label !== "GV");
@@ -246,17 +269,35 @@ export const CollegeLacrosseLineupsPage = () => {
 
   const updatePlayer = (id: number, changes: Partial<LaxPlayer["roster"]>) => setPlayers((current) => current.map((player) => player.id === id ? { ...player, roster: { ...player.roster, ...changes } } : player));
   const updateGameplan = (changes: Partial<LaxGameplan>) => setGameplan((current) => current ? { ...current, ...changes } : current);
-  const changeSort = (key: LineupSortKey) => {
-    if (key === "starter") {
-      setSortKey("starter");
-      setSortDirection("desc");
-      return;
+  const defaultDirection = (key: LineupSortKey): SortDirection => key === "player" || key === "depth" || key === "role" ? "asc" : "desc";
+  const changeSort = (key: LineupSortKey, podKey = "all") => {
+    if (isGrouped) {
+      return setPodSorts((current) => {
+        const existing = current[podKey] ?? { key: "player" as LineupSortKey, direction: "asc" as SortDirection };
+        return { ...current, [podKey]: existing.key === key ? { key, direction: existing.direction === "asc" ? "desc" : "asc" } : { key, direction: defaultDirection(key) } };
+      });
     }
     if (sortKey === key) return setSortDirection((current) => current === "asc" ? "desc" : "asc");
     setSortKey(key);
-    setSortDirection(key === "player" || key === "depth" ? "asc" : "desc");
+    setSortDirection(defaultDirection(key));
   };
-  const sortIndicator = (key: LineupSortKey) => sortKey === key ? (sortDirection === "asc" ? " ↑" : " ↓") : "";
+  const renderHeader = (podKey: string) => {
+    const current = sortFor(podKey);
+    const indicator = (key: LineupSortKey) => current.key === key ? (current.direction === "asc" ? " ↑" : " ↓") : "";
+    const headerButton = (key: LineupSortKey, label: string, title?: string, className = "whitespace-nowrap text-center font-semibold") => <button type="button" key={key} onClick={() => changeSort(key, podKey)} className={className} title={title} style={{ background: "transparent", border: 0 }}>{label}{indicator(key)}</button>;
+    return <div className="mb-1 hidden items-end gap-2 px-3 text-xs font-semibold opacity-80 sm:grid" style={{ minWidth: position === "FOGO" ? "900px" : position === "Goalie" ? "1400px" : position === "Midfield" ? "1420px" : "1280px", gridTemplateColumns: position === "FOGO" ? "36px minmax(240px, 1fr) repeat(6, 58px) 86px 140px 38px" : position === "Goalie" ? "36px minmax(240px, 1fr) repeat(11, 58px) 96px 86px 38px" : position === "Midfield" ? "36px minmax(240px, 1fr) repeat(9, 58px) 96px 126px 130px 86px 38px" : "36px minmax(240px, 1fr) repeat(9, 58px) 96px 126px 86px 38px" }}>
+      <span />
+      {headerButton("player", "Player (Last Name)", "Sort by last name", "text-left font-semibold")}
+      {visibleAttributeColumns.map((attribute) => headerButton(attribute.label as LineupSortKey, attribute.label, `Sort by ${attribute.title}`))}
+      {position === "FOGO" ? <>{headerButton("depth", "Depth")}<span className="text-center">Strategy</span></> : <>
+        {headerButton("starter", "Starter")}
+        {position !== "Goalie" && headerButton("longShot", "Shot Preference")}
+        {position === "Midfield" && headerButton("role", "Role", "Sort by Role")}
+      </>}
+      {position !== "FOGO" && headerButton("usage", "Usage")}
+      <span />
+    </div>;
+  };
   const toggleStarter = (player: LaxPlayer) => {
     if (!canEdit) return;
     if (player.roster.isStarter) return updatePlayer(player.id, { isStarter: false, starterSlot: undefined });
@@ -487,6 +528,7 @@ export const CollegeLacrosseLineupsPage = () => {
           <div className="min-w-0">
               <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <h3 className="text-lg font-bold">{position} depth chart ({positionPlayers.length})</h3>
+                {position === "Midfield" && <div className="flex items-center gap-2 text-sm font-semibold"><GameplanToggle label="Group by Role" checked={groupByRole} onChange={setGroupByRole} color={team.colors.primary || "#2563eb"} /><span>Group by Role</span></div>}
                 {canEdit && <div className="flex gap-2 sm:ml-auto">
                   <select value={addPlayerId} onChange={(event) => setAddPlayerId(event.target.value)} className="min-w-52 rounded border border-slate-500 bg-slate-900 px-3 py-2">
                     <option value="">{availablePlayers.length ? "Select a roster player..." : "All players added"}</option>
@@ -496,20 +538,13 @@ export const CollegeLacrosseLineupsPage = () => {
                 </div>}
               </div>
               <div className="overflow-x-auto">
-              <div className="mb-1 hidden items-end gap-2 px-3 text-xs font-semibold opacity-80 sm:grid" style={{ minWidth: position === "FOGO" ? "900px" : position === "Goalie" ? "1400px" : position === "Midfield" ? "1420px" : "1280px", gridTemplateColumns: position === "FOGO" ? "36px minmax(240px, 1fr) repeat(6, 58px) 86px 140px 38px" : position === "Goalie" ? "36px minmax(240px, 1fr) repeat(11, 58px) 96px 86px 38px" : position === "Midfield" ? "36px minmax(240px, 1fr) repeat(9, 58px) 96px 126px 130px 86px 38px" : "36px minmax(240px, 1fr) repeat(9, 58px) 96px 126px 86px 38px" }}>
-                <span />
-                <button type="button" onClick={() => changeSort("player")} className="text-left font-semibold" style={{ background: "transparent", border: 0 }}>Player{sortIndicator("player")}</button>
-                {visibleAttributeColumns.map((attribute) => <button type="button" key={attribute.label} onClick={() => changeSort(attribute.label as LineupSortKey)} className="whitespace-nowrap text-center font-semibold" title={`Sort by ${attribute.title}`} style={{ background: "transparent", border: 0 }}>{attribute.label}{sortIndicator(attribute.label as LineupSortKey)}</button>)}
-                {position === "FOGO" ? <><button type="button" onClick={() => changeSort("depth")} className="whitespace-nowrap text-center font-semibold" style={{ background: "transparent", border: 0 }}>Depth{sortIndicator("depth")}</button><span className="text-center">Strategy</span></> : <>
-                  <button type="button" onClick={() => changeSort("starter")} className="whitespace-nowrap text-center font-semibold" style={{ background: "transparent", border: 0 }}>Starter{sortIndicator("starter")}</button>
-                  {position !== "Goalie" && <button type="button" onClick={() => changeSort("longShot")} className="whitespace-nowrap text-center font-semibold" style={{ background: "transparent", border: 0 }}>Shot Preference{sortIndicator("longShot")}</button>}
-                  {position === "Midfield" && <span className="text-center">Role</span>}
-                </>}
-                {position !== "FOGO" && <button type="button" onClick={() => changeSort("usage")} className="whitespace-nowrap text-center font-semibold" style={{ background: "transparent", border: 0 }}>Usage{sortIndicator("usage")}</button>}
-                <span />
-              </div>
+              {!isGrouped && renderHeader("all")}
               <div className="space-y-2">
-                {positionPlayers.map((player, index) => <div key={player.id} className="rounded bg-slate-800/70 p-3">
+                {podGroups.map((pod) => <div key={pod.key} className={pod.label ? "space-y-2 rounded-lg border p-3" : "space-y-2"} style={pod.label ? { borderColor: team.colors.primary } : undefined}>
+                {pod.label && <h4 className="text-left text-base font-bold">{pod.label} ({pod.players.length})</h4>}
+                {isGrouped && !!pod.players.length && renderHeader(pod.key)}
+                {pod.label && !pod.players.length && <div className="p-3 text-center text-sm opacity-70">No {pod.label.toLowerCase()} midfielders.</div>}
+                {pod.players.map((player, index) => <div key={player.id} className="rounded bg-slate-800/70 p-3">
                   <div className="grid items-center gap-2" style={{ minWidth: position === "FOGO" ? "900px" : position === "Goalie" ? "1400px" : position === "Midfield" ? "1420px" : "1280px", gridTemplateColumns: position === "FOGO" ? "36px minmax(240px, 1fr) repeat(6, 58px) 86px 140px 38px" : position === "Goalie" ? "36px minmax(240px, 1fr) repeat(11, 58px) 96px 86px 38px" : position === "Midfield" ? "36px minmax(240px, 1fr) repeat(9, 58px) 96px 126px 130px 86px 38px" : "36px minmax(240px, 1fr) repeat(9, 58px) 96px 126px 86px 38px" }}>
                     <strong className="text-blue-400">{index + 1}</strong>
                     <div className="text-left">
@@ -549,6 +584,7 @@ export const CollegeLacrosseLineupsPage = () => {
                     {position !== "FOGO" && <input aria-label={`Usage for ${player.firstName} ${player.lastName}`} disabled={!canEdit} type="number" min="1" max="10" value={player.roster.usage ?? ""} onChange={(event) => updatePlayer(player.id, { usage: Number(event.target.value) })} className="w-full rounded border border-slate-500 bg-slate-900 p-2 text-center text-sm" />}
                     {canEdit && <Button size="xs" variant="danger" title={`Remove ${player.firstName} ${player.lastName} from the lineup`} onClick={() => removePlayer(player)}>×</Button>}
                   </div>
+                </div>)}
                 </div>)}
                 {!positionPlayers.length && <div className="p-6 text-center opacity-70">No {position.toLowerCase()} players are currently in the lineup.</div>}
               </div>
